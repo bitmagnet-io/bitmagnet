@@ -1,0 +1,35 @@
+#import "./Content"
+#import "./Torrent"
+
+fragment TorrentContent on TorrentContent {
+  id
+  infoHash
+  contentType
+  title
+  torrent {
+    ...Torrent
+  }
+  content {
+    ...Content
+  }
+  languages {
+    id
+    name
+  }
+  episodes {
+    label
+    seasons {
+      season
+      episodes
+    }
+  }
+  video3d
+  videoCodec
+  videoModifier
+  videoResolution
+  videoSource
+  releaseDate
+  releaseYear
+  createdAt
+  updatedAt
+}

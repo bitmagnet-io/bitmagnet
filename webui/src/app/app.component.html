@@ -1,0 +1,23 @@
+<p [style.margin-bottom]="0">
+  <mat-toolbar color="primary">
+    <mat-icon style="position: relative; top: 1px" svgIcon="magnet"></mat-icon>
+    <span style="margin-left: 10px">bitmagnet</span>
+    <span class="spacer"></span>
+    <button mat-icon-button aria-label="Menu" [matMenuTriggerFor]="menu">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <a mat-menu-item href="https://bitmagnet.io" target="_blank"
+        >bitmagnet.io</a
+      >
+      <a
+        mat-menu-item
+        href="https://github.com/bitmagnet-io/bitmagnet"
+        target="_blank"
+        >bitmagnet on GitHub</a
+      >
+    </mat-menu>
+  </mat-toolbar>
+</p>
+<app-torrent-content></app-torrent-content>
+<router-outlet></router-outlet>

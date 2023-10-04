@@ -1,0 +1,27 @@
+title: bitmagnet
+baseurl: ""
+url: "http://localhost:4001"
+markdown: kramdown
+theme: just-the-docs
+mermaid:
+  version: "10.1.0"
+callouts_level: quiet # or loud
+callouts:
+  highlight:
+    color: yellow
+  important:
+    title: Important
+    color: blue
+  new:
+    title: New
+    color: green
+  note:
+    title: Note
+    color: purple
+  warning:
+    title: Warning
+    color: red
+nav_external_links:
+  - title: bitmagnet on GitHub
+    url: https://github.com/bitmagnet-io/bitmagnet
+favicon_ico: "/assets/images/favicon.png"
