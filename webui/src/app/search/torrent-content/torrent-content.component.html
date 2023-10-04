@@ -1,0 +1,327 @@
+<mat-drawer-container class="example-container">
+  <mat-drawer #drawer [mode]="'side'" opened>
+    <mat-expansion-panel class="panel-content-type" [expanded]="true">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>interests</mat-icon> Content Type
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <section>
+        <mat-radio-group [formControl]="contentType">
+          <mat-radio-button>
+            <mat-icon>emergency</mat-icon>All
+          </mat-radio-button>
+          <mat-radio-button
+            *ngFor="let t of contentTypeEntries"
+            [value]="t.type"
+          >
+            <mat-icon>{{ t.icon }}</mat-icon>
+            {{ t.plural }}
+            <small>({{ contentTypeAgg(t.type)?.count ?? 0 | number }})</small>
+          </mat-radio-button>
+        </mat-radio-group>
+      </section>
+    </mat-expansion-panel>
+    <ng-container *ngFor="let facet of facets">
+      <mat-expansion-panel
+        *ngIf="facet.isRelevant(contentType.value)"
+        [expanded]="facet.isActive()"
+        (opened)="facet.activate(); loadResult()"
+        (closed)="facet.deactivateAndReset(); loadResult()"
+      >
+        <mat-expansion-panel-header>
+          <mat-panel-title
+            ><mat-icon>{{ facet.icon }}</mat-icon>
+            {{ facet.name }}</mat-panel-title
+          >
+        </mat-expansion-panel-header>
+        <section [class]="facet.isEmpty() ? 'empty' : 'active'">
+          <mat-checkbox
+            *ngFor="let r of facet.aggregations"
+            [checked]="facet.isEmpty() || facet.isSelected(r.value)"
+            [color]="'accent'"
+            (change)="
+              $event.checked || facet.isEmpty()
+                ? facet.select(r.value)
+                : facet.deselect(r.value);
+              loadResult()
+            "
+            [style.display]="'block'"
+          >
+            {{ r.label }} <small>({{ r.count | number }})</small>
+          </mat-checkbox>
+          <span *ngIf="!loading && !facet.aggregations?.length" class="empty"
+            >No aggregation results</span
+          >
+        </section>
+      </mat-expansion-panel>
+    </ng-container>
+  </mat-drawer>
+  <mat-drawer-content [style.z-index]="100" [style.overflow]="'visible'">
+    <div class="results">
+      <div class="search-form">
+        <mat-icon
+          [class]="'toggle-drawer ' + (drawer.opened ? 'opened' : 'closed')"
+          (click)="drawer.toggle()"
+          >{{
+            drawer.opened ? "arrow_circle_left" : "arrow_circle_right"
+          }}</mat-icon
+        >
+        <mat-form-field class="field-search-query">
+          <input
+            matInput
+            placeholder="Search"
+            [formControl]="queryString"
+            (keyup.enter)="pageIndex = 0; loadResult()"
+          />
+          <button
+            *ngIf="queryString.value"
+            matSuffix
+            mat-icon-button
+            aria-label="Clear"
+            (click)="queryString.reset(); pageIndex = 0; loadResult()"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-form-field>
+        <mat-form-field class="field-auto-refresh">
+          <mat-label>Auto-refresh</mat-label>
+          <mat-select [formControl]="autoRefresh" (valueChange)="loadResult()">
+            <mat-option
+              *ngFor="let interval of autoRefreshIntervals"
+              [value]="interval"
+            >
+              {{ interval === 0 ? "Off" : interval + "s" }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="progress-bar-container" style="height: 10px">
+        <mat-progress-bar
+          mode="indeterminate"
+          *ngIf="loading"
+        ></mat-progress-bar>
+      </div>
+      <table
+        mat-table
+        [dataSource]="dataSource"
+        multiTemplateDataRows
+        class="table-results"
+      >
+        <ng-container matColumnDef="summary">
+          <th mat-header-cell *matHeaderCellDef>Summary</th>
+          <td
+            mat-cell
+            *matCellDef="let i"
+            (click)="
+              expandedItem = expandedItem === i.id ? null : i.id;
+              $event.stopPropagation()
+            "
+          >
+            <button mat-icon-button aria-label="expand row">
+              <mat-icon *ngIf="expandedItem !== i.id"
+                >keyboard_arrow_down</mat-icon
+              >
+              <mat-icon *ngIf="expandedItem === i.id"
+                >keyboard_arrow_up</mat-icon
+              >
+            </button>
+            <mat-icon
+              [attr.title]="
+                contentTypeInfo(item(i).contentType)?.singular ?? 'Unknown'
+              "
+              >{{
+                contentTypeInfo(item(i).contentType)?.icon ?? "question_mark"
+              }}</mat-icon
+            >
+            <span class="title">{{ item(i).title }}</span>
+            <mat-chip-set>
+              <mat-chip *ngIf="item(i).languages; let languages">
+                <ng-container *ngFor="let l of languages; index as j">
+                  {{ j > 0 ? ", " : "" }}{{ l.name }}
+                </ng-container>
+              </mat-chip>
+              <mat-chip *ngIf="item(i).video3d?.slice(1) as video3d">{{
+                video3d
+              }}</mat-chip>
+              <mat-chip
+                *ngIf="item(i).videoResolution?.slice(1) as videoResolution"
+                >{{ videoResolution }}</mat-chip
+              >
+              <mat-chip *ngIf="item(i).videoSource as videoSource">{{
+                videoSource
+              }}</mat-chip>
+              <mat-chip *ngIf="item(i).videoCodec as videoCodec">{{
+                videoCodec
+              }}</mat-chip>
+              <mat-chip *ngIf="item(i).videoModifier as videoModifier">{{
+                videoModifier
+              }}</mat-chip>
+            </mat-chip-set>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="size">
+          <th mat-header-cell *matHeaderCellDef>Size</th>
+          <td mat-cell *matCellDef="let i">
+            {{ item(i).torrent.size | filesize }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="peers">
+          <th mat-header-cell *matHeaderCellDef>
+            <abbr title="Seeders / Leechers">S / L</abbr>
+          </th>
+          <td mat-cell *matCellDef="let i">
+            {{ item(i).torrent.seeders ?? "?" }} /
+            {{ item(i).torrent.leechers ?? "?" }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="magnet">
+          <th mat-header-cell *matHeaderCellDef style="text-align: center">
+            Magnet
+          </th>
+          <td mat-cell *matCellDef="let i">
+            <a href="magnet:?xt=urn:btih:{{ item(i).infoHash }}"
+              ><mat-icon svgIcon="magnet"></mat-icon
+            ></a>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="expandedDetail">
+          <td
+            mat-cell
+            *matCellDef="let i"
+            [attr.colspan]="displayedColumns.length"
+          >
+            <div
+              [class]="
+                'item-detail' +
+                (expandedItem === i.id ? ' expanded' : ' collapsed')
+              "
+              [@detailExpand]="expandedItem === i.id ? 'expanded' : 'collapsed'"
+            >
+              <img
+                *ngIf="
+                  getAttribute(item(i), 'poster_path', 'tmdb') as posterPath
+                "
+                [src]="'https://image.tmdb.org/t/p/w300/' + posterPath"
+                class="poster"
+              />
+              <h2>{{ item(i).torrent.name }}</h2>
+              <p>
+                <strong>Info hash:</strong>
+                <span
+                  class="info-hash"
+                  title="Copy to clipboard"
+                  [cdkCopyToClipboard]="item(i).infoHash"
+                  >{{ item(i).infoHash }}</span
+                >
+              </p>
+              <p>
+                <strong>Source:</strong>&nbsp;<span
+                  *ngFor="let s of item(i).torrent.sources; index as j"
+                  >{{ (j > 0 ? ", " : "") + s.name }}</span
+                >
+              </p>
+              <p *ngIf="item(i).content">
+                <strong>Title:</strong> {{ item(i).content?.title }}
+              </p>
+              <p *ngIf="item(i).languages?.length">
+                <strong>Language:</strong>&nbsp;<ng-container
+                  *ngFor="let l of item(i).languages; index as j"
+                >
+                  {{
+                    (j > 0 ? ", " : "") +
+                      l.name +
+                      (l.id === item(i).content?.originalLanguage?.id
+                        ? " (original)"
+                        : "")
+                  }}
+                </ng-container>
+              </p>
+              <p *ngIf="item(i).content?.releaseYear">
+                <strong>Original release date:</strong>
+                {{
+                  item(i).content?.releaseDate ?? item(i).content?.releaseYear
+                }}
+              </p>
+              <p *ngIf="item(i).episodes">
+                <strong>Episodes:</strong> {{ item(i).episodes!.label }}
+              </p>
+              <p *ngIf="item(i).content?.overview">
+                {{ item(i).content!.overview }}
+              </p>
+              <ng-container *ngIf="getCollections(i, 'genre'); let genres">
+                <p><strong>Genres:</strong> {{ genres.join(", ") }}</p>
+              </ng-container>
+              <p *ngIf="item(i).content?.voteAverage != null">
+                <strong>Rating:</strong> {{ item(i).content?.voteAverage }} / 10
+                <ng-container *ngIf="item(i).content?.voteCount != null"
+                  >({{ item(i).content?.voteCount }} votes)</ng-container
+                >
+              </p>
+              <p *ngIf="item(i).content?.externalLinks; let externalLinks">
+                <strong>External links:</strong>&nbsp;
+                <ng-container *ngFor="let l of externalLinks; index as j">
+                  {{ j > 0 ? ", " : ""
+                  }}<a [href]="l.url" target="_blank">{{
+                    l.metadataSource.name
+                  }}</a>
+                </ng-container>
+              </p>
+
+              <div *ngIf="item(i).torrent.files?.length" class="torrent-files">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>File</th>
+                      <th>Type</th>
+                      <th>Size</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let f of item(i).torrent.files">
+                      <td class="table-torrent-files-td-file">{{ f.path }}</td>
+                      <td>
+                        {{
+                          f.fileType
+                            ? f.fileType.charAt(0).toUpperCase() +
+                              f.fileType.slice(1)
+                            : "Unknown"
+                        }}
+                      </td>
+                      <td class="table-torrent-files-td-size">
+                        {{ f.size | filesize }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let _; columns: displayedColumns"></tr>
+        <tr
+          mat-row
+          *matRowDef="let _; columns: ['expandedDetail']"
+          class="expanded-detail-row"
+        ></tr>
+      </table>
+      <span class="spacer"></span>
+      <mat-paginator
+        (page)="handlePageEvent($event)"
+        [pageIndex]="pageIndex"
+        [length]="totalCount"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[10, 25, 50, 100]"
+        [showFirstLastButtons]="true"
+        aria-label="Select page"
+      >
+      </mat-paginator>
+    </div>
+  </mat-drawer-content>
+</mat-drawer-container>

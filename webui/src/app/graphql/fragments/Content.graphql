@@ -1,0 +1,52 @@
+fragment Content on Content {
+  type
+  source
+  id
+  metadataSource {
+    key
+    name
+  }
+  title
+  releaseDate
+  releaseYear
+  overview
+  runtime
+  voteAverage
+  voteCount
+  originalLanguage {
+    id
+    name
+  }
+  attributes {
+    metadataSource {
+      key
+      name
+    }
+    source
+    key
+    value
+    createdAt
+    updatedAt
+  }
+  collections {
+    metadataSource {
+      key
+      name
+    }
+    type
+    source
+    id
+    name
+    createdAt
+    updatedAt
+  }
+  externalLinks {
+    metadataSource {
+      key
+      name
+    }
+    url
+  }
+  createdAt
+  updatedAt
+}

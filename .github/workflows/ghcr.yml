@@ -1,0 +1,23 @@
+name: Deploy Image to GHCR
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout GitHub Action"
+        uses: actions/checkout@main
+      - name: "Login to GitHub Container Registry"
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Build and push"
+        run: |
+          docker build . --tag ghcr.io/bitmagnet-io/bitmagnet:${GITHUB_REF#refs/tags/} --tag ghcr.io/bitmagnet-io/bitmagnet:latest
+          docker push --all-tags ghcr.io/bitmagnet-io/bitmagnet

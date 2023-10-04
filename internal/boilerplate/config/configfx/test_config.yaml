@@ -1,0 +1,12 @@
+unknown_key:
+  foo: bar
+test:
+  foo: foo
+  duration_2: 3s
+  nested:
+    nested_key_from_config: from_config
+    nested_key_from_env: 3
+    int_slice:
+      - 1
+      - 2
+      - 3

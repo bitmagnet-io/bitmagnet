@@ -1,0 +1,82 @@
+version: "3"
+
+tasks:
+  gen:
+    cmds:
+      - find . -name "*.gen.go" -type f -delete
+      - go generate ./...
+      - go run ./internal/dev gorm gen
+      - go run ./internal/gql/enums/gen/genenums.go
+      - go run ./internal/torznab/gencategories/gencategories.go
+      - go run github.com/99designs/gqlgen generate --config ./internal/gql/gqlgen.yml
+
+  lint:
+    cmds:
+      - golangci-lint run
+
+  test:
+    cmds:
+      - go test ./...
+
+  migrate:
+    cmds:
+      - go run ./internal/dev migrate up
+
+  build:
+    cmds:
+      - go build -ldflags "-X github.com/bitmagnet-io/bitmagnet/internal/version.GitTag=$(git describe --tags --always --dirty)"
+
+  build-webui:
+    dir: ./webui
+    cmds:
+      - ng build -c embedded
+
+  build-docsite:
+    dir: ./bitmagnet.io
+    cmds:
+      - bundle install
+      - bundle exec jekyll build
+
+  serve-webui:
+    dir: ./webui
+    cmds:
+      - ng serve --host {{.HOST}} --port {{.PORT}}
+    vars:
+      HOST: localhost
+      PORT: 3334
+
+  serve-docsite:
+    dir: ./bitmagnet.io
+    cmds:
+      - bundle exec jekyll serve --host {{.HOST}} --port {{.PORT}} --livereload
+    vars:
+      HOST: localhost
+      PORT: 3335
+
+  export-data:
+    cmds:
+      - |
+        pg_dump \
+        --column-inserts \
+        --data-only \
+        --on-conflict-do-nothing \
+        --rows-per-insert=1000 \
+        --table=metadata_sources \
+        --table=content \
+        --table=content_attributes \
+        --table=content_collections \
+        --table=content_collections_content \
+        --table=torrent_sources \
+        --table=torrents \
+        --table=torrent_files \
+        --table=torrent_contents \
+        --table=torrents_torrent_sources \
+        bitmagnet \
+        > export.sql
+
+  create-migration:
+    dir: ./migrations
+    cmds:
+      - goose -s create {{.NAME}} sql
+    vars:
+      NAME: migration

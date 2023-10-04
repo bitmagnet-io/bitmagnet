@@ -1,0 +1,21 @@
+#import "./TorrentFile"
+
+fragment Torrent on Torrent {
+  infoHash
+  name
+  size
+  private
+  hasFilesInfo
+  singleFile
+  files {
+    ...TorrentFile
+  }
+  sources {
+    key
+    name
+  }
+  seeders
+  leechers
+  createdAt
+  updatedAt
+}
