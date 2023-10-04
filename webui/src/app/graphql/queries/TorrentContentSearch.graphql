@@ -1,0 +1,12 @@
+#import "../fragments/TorrentContentResult"
+
+query TorrentContentSearch(
+  $query: SearchQueryInput
+  $facets: TorrentContentFacetsInput
+) {
+  search {
+    torrentContent(query: $query, facets: $facets) {
+      ...TorrentContentResult
+    }
+  }
+}

@@ -1,0 +1,138 @@
+enum ContentType {
+  movie
+  tv_show
+  music
+  game
+  software
+  book
+  xxx
+}
+
+enum FacetLogic {
+  and
+  or
+}
+
+enum FileType {
+  archive
+  audio
+  data
+  document
+  image
+  software
+  subtitles
+  video
+}
+
+enum Language {
+  ar
+  bs
+  bg
+  ca
+  zh
+  cs
+  da
+  nl
+  en
+  et
+  fi
+  fr
+  de
+  el
+  he
+  hi
+  hr
+  hu
+  is
+  id
+  it
+  ja
+  ko
+  lv
+  lt
+  mk
+  ml
+  no
+  fa
+  pl
+  pt
+  ro
+  ru
+  sk
+  sl
+  es
+  sr
+  sv
+  ta
+  th
+  tr
+  uk
+  vi
+  af
+  hy
+  az
+  eu
+  be
+  ce
+  co
+  ka
+  ku
+  mi
+  ms
+  mt
+  mn
+  sa
+  sm
+  so
+  cy
+  yi
+  zu
+}
+
+enum Video3d {
+  V3D
+  V3DSBS
+  V3DOU
+}
+
+enum VideoCodec {
+  H264
+  x264
+  x265
+  XviD
+  DivX
+  MPEG2
+  MPEG4
+}
+
+enum VideoModifier {
+  REGIONAL
+  SCREENER
+  RAWHD
+  BRDISK
+  REMUX
+}
+
+enum VideoResolution {
+  V360p
+  V480p
+  V540p
+  V576p
+  V720p
+  V1080p
+  V1440p
+  V2160p
+  V4320p
+}
+
+enum VideoSource {
+  CAM
+  TELESYNC
+  TELECINE
+  WORKPRINT
+  DVD
+  TV
+  WEBDL
+  WEBRip
+  BluRay
+}

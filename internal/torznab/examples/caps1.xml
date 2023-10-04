@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<caps>
+  <server title="bitmagnet" />
+  <limits max="100" default="100" />
+  <searching>
+    <search available="yes" supportedParams="q" />
+    <tv-search available="yes" supportedParams="q,season,ep" />
+    <movie-search available="yes" supportedParams="q" />
+    <music-search available="yes" supportedParams="q" />
+    <book-search available="yes" supportedParams="q" />
+    <audio-search available="no" />
+  </searching>
+  <categories>
+    <category id="0" name="Other" />
+    <category id="1000" name="Console" />
+    <category id="2000" name="Movies" />
+    <category id="3000" name="Audio" />
+    <category id="4000" name="PC">
+      <subcat id="4010" name="PC/0day" />
+    </category>
+    <category id="5000" name="TV">
+      <subcat id="5070" name="TV/Anime" />
+    </category>
+    <category id="7000" name="Books">
+      <subcat id="7020" name="Books/EBook" />
+    </category>
+    <category id="146065" name="Anime" />
+    <category id="151062" name="Applications" />
+    <category id="121527" name="E-books" />
+    <category id="136409" name="Games" />
+    <category id="100467" name="Movies" />
+    <category id="104627" name="Music" />
+    <category id="127246" name="Other" />
+    <category id="112972" name="TV shows" />
+  </categories>
+  <tags />
+</caps>

@@ -1,0 +1,2 @@
+webui/dist/**/*.*
+webui/src/app/graphql/generated/**/*.*
