@@ -1,3 +1,5 @@
+// This command isn't currently intended to be usable, it's more of a testbed for trying things out, but may become user-friendly in future.
+
 package searchcmd
 
 import (
@@ -100,15 +102,6 @@ func New(p Params) (Result, error) {
 						return jsonErr
 					}
 					p.Logger.Infof("Result: %v", string(jsonResult))
-					//tw := table.NewWriter()
-					//tw.SetOutputMirror(ctx.App.Writer)
-					//tw.AppendHeader(table.Row{"Title", "Year", "VideoResolution", "VideoSource", "Torrent name", "Rank"})
-					//for _, r := range result.Items {
-					//	tw.AppendRow(table.Row{r.Movie.Title, r.Movie.ReleaseDate.YearString(), r.VideoResolution, r.VideoSource, r.Torrent.name, r.QueryStringRank})
-					//}
-					//tw.SetTitle("Search results (Total: " + fmt.Sprint(result.TotalCount) + ")")
-					//tw.Render()
-					//fmt.Printf("Aggs: %+v\n", result.Aggregations)
 					return nil
 				},
 			},

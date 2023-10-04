@@ -12,7 +12,6 @@ nav_order: 1
 The quickest way to get up-and-running with **bitmagnet** is by using Docker with a docker-compose file. Adapt the following `docker-compose.yml` file to your needs:
 
 ```yml
-version: "3.7"
 services:
   bitmagnet:
     image: ghcr.io/bitmagnet-io/bitmagnet:latest
@@ -54,6 +53,7 @@ services:
         - CMD-SHELL
         - pg_isready
       start_period: 20s
+      interval: 10s
 
   redis:
     image: redis:7-alpine
@@ -70,6 +70,7 @@ services:
         - redis-cli
         - ping
       start_period: 20s
+      interval: 10s
 ```
 
 After running `docker-compose up -d` you should be able to access the web interface at `http://localhost:3333`. The DHT crawler should have started and you should see items appear in the web UI; try enabling auto-refresh to see live crawling and classification results.
