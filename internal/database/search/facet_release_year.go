@@ -80,6 +80,9 @@ func (r yearFacet) Criteria() []query.Criteria {
 				}
 				strYear := v
 				vInt, intErr := strconv.Atoi(strYear)
+				if intErr == nil && (vInt < 1000 || vInt > 9999) {
+					intErr = fmt.Errorf("out-of-bounds year filter specified: %s", strYear)
+				}
 				if intErr != nil {
 					return nil, fmt.Errorf("invalid year filter specified: %w", intErr)
 				}
