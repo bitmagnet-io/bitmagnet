@@ -8,7 +8,7 @@ nav_order: -1
 
 **A self-hosted BitTorrent indexer, DHT crawler, content classifier and torrent search engine with web UI, GraphQL API and Servarr stack integration.**
 
-![bitmagnet WebUI screenshot](/assets/images/webui-1.png)
+![WebUI screenshot](/assets/images/webui-1.png)
 
 {: .warning-title }
 
