@@ -29,7 +29,8 @@ services:
       - run
       - --keys=http_server
       - --keys=queue_server
-      - --keys=dht_crawler # disable this line to run without DHT crawler
+      # disable the next line to run without DHT crawler
+      - --keys=dht_crawler
     depends_on:
       postgres:
         condition: service_healthy
