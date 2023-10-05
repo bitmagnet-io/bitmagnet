@@ -52,33 +52,42 @@ func (t Torrent) Magnet() string {
 }
 
 // HasFilesInfo returns true if we know about the files in this torrent.
-// The nullable boolean field SingleFile is a surrogate for determining this.
 func (t Torrent) HasFilesInfo() bool {
-	return t.SingleFile.Valid
+	return t.FilesStatus == FilesStatusSingle || t.FilesStatus == FilesStatusMulti
+}
+
+func (t Torrent) WantFilesInfo() bool {
+	return t.FilesStatus == FilesStatusNoInfo
+}
+
+func (t Torrent) SingleFile() bool {
+	return t.FilesStatus == FilesStatusSingle
 }
 
 func (t Torrent) FileExtensions() []string {
-	exts := make([]string, 0, len(t.Files))
-	if t.HasFilesInfo() {
-		if t.SingleFile.Bool {
-			ext := fileExtensionFromPath(t.Name)
+	switch t.FilesStatus {
+	case FilesStatusSingle:
+		exts := make([]string, 0, 1)
+		ext := fileExtensionFromPath(t.Name)
+		if ext.Valid {
+			exts = append(exts, ext.String)
+		}
+		return exts
+	case FilesStatusMulti:
+		exts := make([]string, 0, len(t.Files))
+		extMap := make(map[string]struct{})
+		for _, file := range t.Files {
+			ext := fileExtensionFromPath(file.Path)
 			if ext.Valid {
-				exts = append(exts, ext.String)
-			}
-		} else {
-			extMap := make(map[string]struct{})
-			for _, file := range t.Files {
-				ext := fileExtensionFromPath(file.Path)
-				if ext.Valid {
-					if _, ok := extMap[ext.String]; !ok {
-						extMap[ext.String] = struct{}{}
-						exts = append(exts, ext.String)
-					}
+				if _, ok := extMap[ext.String]; !ok {
+					extMap[ext.String] = struct{}{}
+					exts = append(exts, ext.String)
 				}
 			}
 		}
+		return exts
 	}
-	return exts
+	return nil
 }
 
 func (t Torrent) FileType() NullFileType {

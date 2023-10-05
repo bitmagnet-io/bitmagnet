@@ -37,6 +37,10 @@ func createTorrentModel(
 	if sourceErr != nil {
 		return model.Torrent{}, sourceErr
 	}
+	filesStatus := model.FilesStatusSingle
+	if len(files) > 0 {
+		filesStatus = model.FilesStatusMulti
+	}
 	return model.Torrent{
 		InfoHash:    infoHash,
 		Name:        name,
@@ -45,7 +49,7 @@ func createTorrentModel(
 		PieceLength: model.NewNullUint64(uint64(info.PieceLength)),
 		Pieces:      info.Pieces,
 		Files:       files,
-		SingleFile:  model.NewNullBool(len(files) == 0),
+		FilesStatus: filesStatus,
 		Sources: []model.TorrentsTorrentSource{
 			source,
 		},

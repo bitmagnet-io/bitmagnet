@@ -15,6 +15,10 @@ type Config struct {
 	MaxStagingSize             uint
 	// SaveFiles when true, torrent files metadata will be persisted to the database.
 	SaveFiles bool
+	// SaveFilesThreshold specifies a maximum number of files in a torrent before file information is discarded.
+	// Some torrents contain thousands of files which can severely impact performance and uses a lot of disk space.
+	// A value of 0 means no threshold.
+	SaveFilesThreshold uint
 	// SavePieces when true, torrent pieces will be persisted to the database.
 	// The pieces take up quite a lot of space, and aren't currently very useful, but they may be used by future features.
 	SavePieces bool
@@ -31,6 +35,7 @@ func NewDefaultConfig() Config {
 		DiscardUnscrapableTorrents:  false,
 		MaxStagingSize:              250,
 		SaveFiles:                   true,
+		SaveFilesThreshold:          50,
 		SavePieces:                  false,
 		RescrapeThreshold:           time.Hour * 24 * 7,
 	}
