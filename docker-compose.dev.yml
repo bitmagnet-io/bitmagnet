@@ -3,6 +3,7 @@ services:
     build:
       context: .
     container_name: bitmagnet
+#    image: ghcr.io/bitmagnet-io/bitmagnet:latest
     ports:
       - "3333:3333"
     restart: unless-stopped
@@ -14,7 +15,9 @@ services:
     command:
       - worker
       - run
-      - --keys=http_server,queue_server,dht_crawler
+      - --keys=http_server
+      - --keys=queue_server
+      - --keys=dht_crawler
     depends_on:
       postgres:
         condition: service_healthy
