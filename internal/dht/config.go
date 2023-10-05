@@ -13,6 +13,8 @@ type Config struct {
 	// DiscardUnscrapableTorrents when true, torrents that cannot be scraped to find seeders and leechers will be discarded
 	DiscardUnscrapableTorrents bool
 	MaxStagingSize             uint
+	// SaveFiles when true, torrent files metadata will be persisted to the database.
+	SaveFiles bool
 	// SavePieces when true, torrent pieces will be persisted to the database.
 	// The pieces take up quite a lot of space, and aren't currently very useful, but they may be used by future features.
 	SavePieces bool
@@ -28,6 +30,7 @@ func NewDefaultConfig() Config {
 		SampleInfoHashesInterval:    time.Millisecond * 100,
 		DiscardUnscrapableTorrents:  false,
 		MaxStagingSize:              250,
+		SaveFiles:                   true,
 		SavePieces:                  false,
 		RescrapeThreshold:           time.Hour * 24 * 7,
 	}

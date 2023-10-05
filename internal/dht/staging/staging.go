@@ -53,6 +53,7 @@ func New(p Params) (r Result, err error) {
 		holding:             make(chan InfoHashWithPeer),
 		holdingSize:         100,
 		maxHoldingTime:      time.Second,
+		saveFiles:           p.Config.SaveFiles,
 		savePieces:          p.Config.SavePieces,
 		rescrapeThreshold:   p.Config.RescrapeThreshold,
 		requested:           make(chan Request),
@@ -109,6 +110,7 @@ type staging struct {
 	holdingSize         uint
 	maxHoldingTime      time.Duration
 	rescrapeThreshold   time.Duration
+	saveFiles           bool
 	savePieces          bool
 	requested           chan Request
 	search              search.TorrentSearch
@@ -249,7 +251,7 @@ func (s *staging) getIndexerRequests(ctx context.Context, hashesWithPeers map[mo
 				torrentIsPersisted: false,
 			})
 		} else {
-			needMetaInfo := !t.HasFilesInfo()
+			needMetaInfo := s.saveFiles && !t.HasFilesInfo()
 			needScrape := true
 			for _, src := range t.Sources {
 				if src.Source == "dht" {
@@ -296,6 +298,10 @@ func (s *staging) Respond(ctx context.Context, res Response) {
 		if tErr != nil {
 			s.logger.Errorf("error creating torrent model: %s", tErr.Error())
 			return
+		}
+		if !s.saveFiles && t.SingleFile.Valid && !t.SingleFile.Bool {
+			t.SingleFile = model.NullBool{}
+			t.Files = nil
 		}
 		if !s.savePieces {
 			t.PieceLength = model.NullUint64{}
