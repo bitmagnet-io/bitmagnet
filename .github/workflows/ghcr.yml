@@ -6,7 +6,7 @@ on:
       - "v*.*.*"
 
 env:
-  REGISTRY_IMAGE: ghcr.io/thanzex/bitmagnet
+  REGISTRY_IMAGE: ghcr.io/bitmagnet-io/bitmagnet
 
 jobs:
   build:
