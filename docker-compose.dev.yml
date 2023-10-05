@@ -3,7 +3,7 @@ services:
     build:
       context: .
     container_name: bitmagnet
-#    image: ghcr.io/bitmagnet-io/bitmagnet:latest
+    #    image: ghcr.io/bitmagnet-io/bitmagnet:latest
     ports:
       - "3333:3333"
     restart: unless-stopped
