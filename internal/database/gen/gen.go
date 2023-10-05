@@ -123,7 +123,11 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		),
 		infoHashType,
 		infoHashReadOnly,
-		gen.FieldType("single_file", "NullBool"),
+		gen.FieldType("files_status", "FilesStatus"),
+		gen.FieldGORMTag("files_status", func(tag field.GormTag) field.GormTag {
+			tag.Remove("default")
+			return tag
+		}),
 		gen.FieldGenType("extension", "String"),
 		gen.FieldGORMTag("extension", func(tag field.GormTag) field.GormTag {
 			tag.Set("<-", "false")

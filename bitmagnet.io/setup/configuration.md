@@ -12,7 +12,8 @@ nav_order: 2
 - `postgres.host`, `postgres.name` `postgres.user` `postgres.password` (default: `localhost`, `bitmagnet`, `postgres`, _empty_): Set these values to configure connection to your Postgres database.
 - `redis.addr`, `redis.db`, `redis.username`, `redis.password` (default: `localhost:6379`, `0`, _empty_, _empty_): Configure access to your Redis instance.
 - `tmdb.api_key`: This is quite an important one, please [see below](#obtaining-a-tmdb-api-key) for more details.
-- `dht_crawler.save_files` (default: `true`): If true, file metadata from the DHT crawler will be saved to the database. This provides more rich information about a torrent, but will use a lot more disk space. If disk space is at a premium you may want to consider disabling this.
+- `dht_crawler.save_files` (default: `true`): If true, file metadata from the DHT crawler will be saved to the database. This provides more rich information about a torrent, but will use more disk space. If disk space is at a premium you may want to consider disabling this.
+- `dht_crawler.save_files_threshold` (default: `50`): This parameter provides a compromise over disabling the saving of files altogether. Some torrents contain many thousands of files, which impacts performance and uses a lot of database disk space. When greater than `0`, this parameter will discard the files info when the number of files is greater than the threshold.
 - `dht_crawler.save_pieces` (default: `false`): If true, the DHT crawler will save the pieces bytes from the torrent metadata. The pieces take up quite a lot of space, and aren't currently very useful, but they may be used by future features.
 - `log.level` (default: `info`): If you're developing or just curious then you may want to set this to `debug`; note that `debug` output will be very verbose.
 - `log.development` (default: `false`): If you're developing you may want to enable this flag to enable more verbose output such as stack traces.

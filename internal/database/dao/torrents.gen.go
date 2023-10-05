@@ -31,13 +31,13 @@ func newTorrent(db *gorm.DB, opts ...gen.DOOption) torrent {
 	_torrent.Name = field.NewString(tableName, "name")
 	_torrent.Size = field.NewUint64(tableName, "size")
 	_torrent.Private = field.NewBool(tableName, "private")
-	_torrent.SingleFile = field.NewField(tableName, "single_file")
-	_torrent.Extension = field.NewString(tableName, "extension")
 	_torrent.PieceLength = field.NewField(tableName, "piece_length")
 	_torrent.Pieces = field.NewBytes(tableName, "pieces")
 	_torrent.SearchString = field.NewString(tableName, "search_string")
 	_torrent.CreatedAt = field.NewTime(tableName, "created_at")
 	_torrent.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_torrent.FilesStatus = field.NewField(tableName, "files_status")
+	_torrent.Extension = field.NewString(tableName, "extension")
 	_torrent.Contents = torrentHasManyContents{
 		db: db.Session(&gorm.Session{}),
 
@@ -74,13 +74,13 @@ type torrent struct {
 	Name         field.String
 	Size         field.Uint64
 	Private      field.Bool
-	SingleFile   field.Field
-	Extension    field.String
 	PieceLength  field.Field
 	Pieces       field.Bytes
 	SearchString field.String
 	CreatedAt    field.Time
 	UpdatedAt    field.Time
+	FilesStatus  field.Field
+	Extension    field.String
 	Contents     torrentHasManyContents
 
 	Sources torrentHasManySources
@@ -106,13 +106,13 @@ func (t *torrent) updateTableName(table string) *torrent {
 	t.Name = field.NewString(table, "name")
 	t.Size = field.NewUint64(table, "size")
 	t.Private = field.NewBool(table, "private")
-	t.SingleFile = field.NewField(table, "single_file")
-	t.Extension = field.NewString(table, "extension")
 	t.PieceLength = field.NewField(table, "piece_length")
 	t.Pieces = field.NewBytes(table, "pieces")
 	t.SearchString = field.NewString(table, "search_string")
 	t.CreatedAt = field.NewTime(table, "created_at")
 	t.UpdatedAt = field.NewTime(table, "updated_at")
+	t.FilesStatus = field.NewField(table, "files_status")
+	t.Extension = field.NewString(table, "extension")
 
 	t.fillFieldMap()
 
@@ -134,13 +134,13 @@ func (t *torrent) fillFieldMap() {
 	t.fieldMap["name"] = t.Name
 	t.fieldMap["size"] = t.Size
 	t.fieldMap["private"] = t.Private
-	t.fieldMap["single_file"] = t.SingleFile
-	t.fieldMap["extension"] = t.Extension
 	t.fieldMap["piece_length"] = t.PieceLength
 	t.fieldMap["pieces"] = t.Pieces
 	t.fieldMap["search_string"] = t.SearchString
 	t.fieldMap["created_at"] = t.CreatedAt
 	t.fieldMap["updated_at"] = t.UpdatedAt
+	t.fieldMap["files_status"] = t.FilesStatus
+	t.fieldMap["extension"] = t.Extension
 
 }
 
