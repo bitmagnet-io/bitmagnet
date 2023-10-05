@@ -78,11 +78,12 @@ var (
 
 func (i importer) New(ctx context.Context, info Info) ActiveImport {
 	ai := &activeImport{
-		importer: i,
-		wg:       &sync.WaitGroup{},
-		mutex:    &sync.RWMutex{},
-		info:     info,
-		itemChan: make(chan Item),
+		importer:        i,
+		wg:              &sync.WaitGroup{},
+		mutex:           &sync.RWMutex{},
+		info:            info,
+		itemChan:        make(chan Item),
+		importedSources: make(map[string]struct{}),
 	}
 	ai.run(ctx)
 	return ai
@@ -245,10 +246,11 @@ func createTorrentModel(info Info, item Item) model.Torrent {
 		title = item.Title.String
 	}
 	return model.Torrent{
-		InfoHash: item.InfoHash,
-		Name:     item.Name,
-		Size:     item.Size,
-		Private:  item.Private,
+		InfoHash:    item.InfoHash,
+		Name:        item.Name,
+		Size:        item.Size,
+		Private:     item.Private,
+		FilesStatus: model.FilesStatusNoInfo,
 		Sources: []model.TorrentsTorrentSource{
 			{
 				Source:      item.Source,
