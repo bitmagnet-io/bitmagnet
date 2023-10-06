@@ -5,6 +5,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/dht/crawler"
 	"github.com/bitmagnet-io/bitmagnet/internal/dht/healthcheck"
+	"github.com/bitmagnet-io/bitmagnet/internal/dht/responder"
 	"github.com/bitmagnet-io/bitmagnet/internal/dht/server"
 	"github.com/bitmagnet-io/bitmagnet/internal/dht/staging"
 	"go.uber.org/fx"
@@ -16,9 +17,10 @@ func New() fx.Option {
 		configfx.NewConfigModule[dht.Config]("dht_crawler", dht.NewDefaultConfig()),
 		configfx.NewConfigModule[server.Config]("dht_server", server.NewDefaultConfig()),
 		fx.Provide(
-			server.New,
 			crawler.New,
 			healthcheck.New,
+			responder.New,
+			server.New,
 			staging.New,
 		),
 	)

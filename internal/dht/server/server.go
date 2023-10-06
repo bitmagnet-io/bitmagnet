@@ -3,10 +3,10 @@ package server
 import (
 	"context"
 	"errors"
-	"github.com/anacrolix/dht/v2"
 	"github.com/anacrolix/dht/v2/krpc"
 	"github.com/anacrolix/dht/v2/transactions"
 	"github.com/anacrolix/torrent/bencode"
+	"github.com/bitmagnet-io/bitmagnet/internal/dht/responder"
 	sockaddr "github.com/libp2p/go-sockaddr/net"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -18,8 +18,9 @@ import (
 
 type Params struct {
 	fx.In
-	Config Config
-	Logger *zap.SugaredLogger
+	Config    Config
+	Responder responder.Responder
+	Logger    *zap.SugaredLogger
 }
 
 type Result struct {
@@ -44,10 +45,12 @@ func New(p Params) (r Result, err error) {
 			IP:   localIp[:],
 			Port: 0,
 		},
-		queryTimeout: p.Config.QueryTimeout,
-		mutex:        &sync.Mutex{},
-		limiter:      rate.NewLimiter(rate.Every(p.Config.RateLimit), 1),
-		logger:       p.Logger.Named("dht_server"),
+		queryTimeout:     p.Config.QueryTimeout,
+		mutex:            &sync.Mutex{},
+		limiter:          rate.NewLimiter(rate.Every(p.Config.RateLimit), 1),
+		responder:        p.Responder,
+		responderTimeout: time.Second * 5,
+		logger:           p.Logger.Named("dht_server"),
 	}
 	r.AppHook = fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -64,24 +67,24 @@ func New(p Params) (r Result, err error) {
 	return
 }
 
-type QueryInput = dht.QueryInput
-
 type RecvMsg struct {
-	Reply krpc.Msg
-	From  krpc.NodeAddr
+	Msg  krpc.Msg
+	From krpc.NodeAddr
 }
 
 type server struct {
-	mutex        *sync.Mutex
-	started      bool
-	stop         func()
-	localIp      [4]byte
-	localAddr    krpc.NodeAddr
-	fd           int
-	limiter      *rate.Limiter
-	queryTimeout time.Duration
-	queries      map[string]chan RecvMsg
-	logger       *zap.SugaredLogger
+	mutex            *sync.Mutex
+	started          bool
+	stop             func()
+	localIp          [4]byte
+	localAddr        krpc.NodeAddr
+	fd               int
+	limiter          *rate.Limiter
+	queryTimeout     time.Duration
+	queries          map[string]chan RecvMsg
+	responder        responder.Responder
+	responderTimeout time.Duration
+	logger           *zap.SugaredLogger
 }
 
 var (
@@ -185,24 +188,47 @@ func (s *server) read(ctx context.Context) {
 			continue
 		}
 
-		go s.handleRecvMessage(RecvMsg{
-			Reply: msg,
+		recvMsg := RecvMsg{
+			Msg: msg,
 			From: krpc.NodeAddr{
 				IP:   from.IP,
 				Port: from.Port,
 			},
-		})
+		}
+
+		switch msg.Y {
+		case krpc.YResponse:
+			go s.handleResponse(recvMsg)
+		case krpc.YQuery:
+			go s.handleQuery(recvMsg)
+		}
 	}
 }
 
-func (s *server) handleRecvMessage(msg RecvMsg) {
+func (s *server) handleResponse(msg RecvMsg) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	transactionId := msg.Reply.T
+	transactionId := msg.Msg.T
 	ch, ok := s.queries[transactionId]
 	if ok {
 		ch <- msg
 	}
+}
+
+func (s *server) handleQuery(msg RecvMsg) {
+	ctx, cancel := context.WithTimeout(context.Background(), s.responderTimeout)
+	defer cancel()
+	ret, err := s.responder.Respond(ctx, msg.Msg)
+	if err != nil {
+		s.logger.Debugw("could not respond to query", "msg", msg, "err", err)
+		return
+	}
+	res := krpc.Msg{
+		T: msg.Msg.T,
+		Y: krpc.YResponse,
+		R: &ret,
+	}
+	_ = s.send(res, msg.From)
 }
 
 func (s *server) Query(ctx context.Context, addr krpc.NodeAddr, q string, args krpc.MsgArgs) (r RecvMsg, err error) {
@@ -235,26 +261,13 @@ func (s *server) QueryUrgent(ctx context.Context, addr krpc.NodeAddr, q string, 
 		Q: q,
 		T: transactionId,
 		A: &args,
-		Y: "q",
+		Y: krpc.YQuery,
 	}
-	data, encodeErr := bencode.Marshal(msg)
-	if encodeErr != nil {
-		err = encodeErr
-		return
-	}
-	addrS := sockaddr.NetAddrToSockaddr(addr.UDP())
-	if addrS == nil {
-		s.logger.Debugw("wrong net address for the remote peer", "addr", addr)
-		err = errors.New("wrong net address for the remote peer")
+	if sendErr := s.send(msg, addr); sendErr != nil {
 		return
 	}
 	queryCtx, cancel := context.WithTimeout(ctx, s.queryTimeout)
 	defer cancel()
-	if sendErr := unix.Sendto(s.fd, data, 0, addrS); sendErr != nil {
-		s.logger.Debugw("could not send packet to remote peer", "addr", addr, "err", err)
-		err = sendErr
-		return
-	}
 	select {
 	case <-queryCtx.Done():
 		err = queryCtx.Err()
@@ -267,6 +280,26 @@ func (s *server) QueryUrgent(ctx context.Context, addr krpc.NodeAddr, q string, 
 		r = res
 		return
 	}
+}
+
+func (s *server) send(msg krpc.Msg, addr krpc.NodeAddr) (err error) {
+	data, encodeErr := bencode.Marshal(msg)
+	if encodeErr != nil {
+		err = encodeErr
+		return
+	}
+	addrS := sockaddr.NetAddrToSockaddr(addr.UDP())
+	if addrS == nil {
+		s.logger.Debugw("wrong net address for the remote peer", "addr", addr)
+		err = errors.New("wrong net address for the remote peer")
+		return
+	}
+	if sendErr := unix.Sendto(s.fd, data, 0, addrS); sendErr != nil {
+		s.logger.Debugw("could not send packet to remote peer", "addr", addr, "err", err)
+		err = sendErr
+		return
+	}
+	return nil
 }
 
 func nextTransactionId() string {

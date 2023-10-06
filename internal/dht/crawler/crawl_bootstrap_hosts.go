@@ -31,8 +31,8 @@ func (c *crawler) crawlBootstrapHosts(ctx context.Context) {
 					Target: t,
 				})
 				if err == nil {
-					peersToReceive := make([]krpc.NodeAddr, 0, len(res.Reply.R.Nodes))
-					for _, thisNode := range res.Reply.R.Nodes {
+					peersToReceive := make([]krpc.NodeAddr, 0, len(res.Msg.R.Nodes))
+					for _, thisNode := range res.Msg.R.Nodes {
 						peersToReceive = append(peersToReceive, thisNode.Addr)
 					}
 					nAdded, nDiscarded := c.routingTable.ReceivePeers(peersToReceive...)

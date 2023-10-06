@@ -53,19 +53,19 @@ func (c *crawler) requestPeersForHash(
 		if err != nil {
 			return err
 		}
-		if res.Reply.R.BFsd != nil {
-			thisBfsd := bloom.FromScrape(*res.Reply.R.BFsd)
+		if res.Msg.R.BFsd != nil {
+			thisBfsd := bloom.FromScrape(*res.Msg.R.BFsd)
 			if bfsdErr := pfh.bfsd.Merge(&thisBfsd); bfsdErr != nil {
 				return bfsdErr
 			}
 		}
-		if res.Reply.R.BFpe != nil {
-			thisBfpe := bloom.FromScrape(*res.Reply.R.BFpe)
+		if res.Msg.R.BFpe != nil {
+			thisBfpe := bloom.FromScrape(*res.Msg.R.BFpe)
 			if bfpeErr := pfh.bfpe.Merge(&thisBfpe); bfpeErr != nil {
 				return bfpeErr
 			}
 		}
-		for _, peer := range res.Reply.R.Values {
+		for _, peer := range res.Msg.R.Values {
 			if peer.Port == 0 {
 				continue
 			}

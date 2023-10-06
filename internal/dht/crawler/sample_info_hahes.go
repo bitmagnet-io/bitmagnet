@@ -46,17 +46,17 @@ func (c *crawler) sampleInfoHashesFromLockedPeer(ctx context.Context, peer routi
 	if resErr != nil {
 		return resErr
 	}
-	if res.Reply.R == nil {
-		return fmt.Errorf("sample_infohashes nil ret: %v", res.Reply)
+	if res.Msg.R == nil {
+		return fmt.Errorf("sample_infohashes nil ret: %v", res.Msg)
 	}
-	peersToAdd := make([]krpc.NodeAddr, 0, len(res.Reply.R.Nodes))
-	for _, n := range res.Reply.R.Nodes {
+	peersToAdd := make([]krpc.NodeAddr, 0, len(res.Msg.R.Nodes))
+	for _, n := range res.Msg.R.Nodes {
 		peersToAdd = append(peersToAdd, n.Addr)
 	}
 	c.routingTable.ReceivePeers(peersToAdd...)
-	if res.Reply.R.Samples != nil {
-		hashesToStage := make([]staging.InfoHashWithPeer, 0, len(*res.Reply.R.Samples))
-		for _, s := range *res.Reply.R.Samples {
+	if res.Msg.R.Samples != nil {
+		hashesToStage := make([]staging.InfoHashWithPeer, 0, len(*res.Msg.R.Samples))
+		for _, s := range *res.Msg.R.Samples {
 			hashesToStage = append(hashesToStage, staging.InfoHashWithPeer{
 				InfoHash: s,
 				Peer:     peer.Addr(),
