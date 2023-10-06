@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"github.com/anacrolix/dht/v2/krpc"
+	"github.com/bitmagnet-io/bitmagnet/internal/dht"
 	"go.uber.org/fx"
 )
 
 type Params struct {
 	fx.In
+	Config dht.Config
 }
 
 type Result struct {
@@ -16,9 +18,11 @@ type Result struct {
 	Responder Responder
 }
 
-func New(Params) Result {
+func New(p Params) Result {
 	return Result{
-		Responder: responder{},
+		Responder: responder{
+			peerID: p.Config.PeerID,
+		},
 	}
 }
 
