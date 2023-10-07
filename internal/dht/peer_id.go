@@ -1,10 +1,14 @@
 package dht
 
-import "math/rand"
+import (
+	"github.com/anacrolix/dht/v2/krpc"
+	"math/rand"
+)
 
-const peerIDPrefix = "-MS0001-"
+// todo version number
+const peerIDPrefix = "-BM0001-"
 
-func RandomPeerID() [20]byte {
+func RandomPeerID() krpc.ID {
 	/* > The peer_id is exactly 20 bytes (characters) long.
 	 * >
 	 * > There are mainly two conventions how to encode client and client version information into the peer_id,

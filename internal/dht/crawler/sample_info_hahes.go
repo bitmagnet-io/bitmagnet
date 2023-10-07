@@ -5,7 +5,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"github.com/anacrolix/dht/v2/krpc"
-	"github.com/bitmagnet-io/bitmagnet/internal/dht/routing"
+	"github.com/bitmagnet-io/bitmagnet/internal/dht/routingtable"
 	"github.com/bitmagnet-io/bitmagnet/internal/dht/staging"
 	"time"
 )
@@ -16,7 +16,7 @@ func (c *crawler) crawlPeersForInfoHashes(ctx context.Context) {
 		if c.staging.Count() < c.maxStagingSize {
 			fullLogged = false
 			go (func() {
-				err := c.routingTable.TryEachPeer(ctx, c.sampleInfoHashesFromLockedPeer)
+				err := c.routingTable.TryEachNode(ctx, c.sampleInfoHashesFromLockedPeer)
 				if err != nil {
 					c.logger.Debugw("error crawling peers for info hashes", "err", err)
 				}
@@ -34,7 +34,7 @@ func (c *crawler) crawlPeersForInfoHashes(ctx context.Context) {
 	}
 }
 
-func (c *crawler) sampleInfoHashesFromLockedPeer(ctx context.Context, peer routing.PeerInfo) error {
+func (c *crawler) sampleInfoHashesFromLockedPeer(ctx context.Context, peer routingtable.PeerInfo) error {
 	t := [20]byte{}
 	if _, randErr := rand.Read(t[:]); randErr != nil {
 		return fmt.Errorf("could not generate random bytes: %w", randErr)
@@ -49,11 +49,7 @@ func (c *crawler) sampleInfoHashesFromLockedPeer(ctx context.Context, peer routi
 	if res.Msg.R == nil {
 		return fmt.Errorf("sample_infohashes nil ret: %v", res.Msg)
 	}
-	peersToAdd := make([]krpc.NodeAddr, 0, len(res.Msg.R.Nodes))
-	for _, n := range res.Msg.R.Nodes {
-		peersToAdd = append(peersToAdd, n.Addr)
-	}
-	c.routingTable.ReceivePeers(peersToAdd...)
+	c.routingTable.ReceiveNodeInfo(res.Msg.R.Nodes...)
 	if res.Msg.R.Samples != nil {
 		hashesToStage := make([]staging.InfoHashWithPeer, 0, len(*res.Msg.R.Samples))
 		for _, s := range *res.Msg.R.Samples {

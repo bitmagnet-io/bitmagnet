@@ -6,6 +6,7 @@ import (
 	"github.com/anacrolix/dht/v2/krpc"
 	"github.com/anacrolix/dht/v2/transactions"
 	"github.com/anacrolix/torrent/bencode"
+	"github.com/bitmagnet-io/bitmagnet/internal/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/dht/responder"
 	sockaddr "github.com/libp2p/go-sockaddr/net"
 	"go.uber.org/fx"
@@ -32,9 +33,9 @@ type Result struct {
 type Server interface {
 	Start() error
 	Shutdown() error
-	Query(ctx context.Context, addr krpc.NodeAddr, q string, args krpc.MsgArgs) (RecvMsg, error)
+	Query(ctx context.Context, addr krpc.NodeAddr, q string, args krpc.MsgArgs) (dht.RecvMsg, error)
 	// QueryUrgent is a query that is not rate limited (exposed for use by health check)
-	QueryUrgent(ctx context.Context, addr krpc.NodeAddr, q string, args krpc.MsgArgs) (RecvMsg, error)
+	QueryUrgent(ctx context.Context, addr krpc.NodeAddr, q string, args krpc.MsgArgs) (dht.RecvMsg, error)
 }
 
 func New(p Params) (r Result, err error) {
@@ -67,11 +68,6 @@ func New(p Params) (r Result, err error) {
 	return
 }
 
-type RecvMsg struct {
-	Msg  krpc.Msg
-	From krpc.NodeAddr
-}
-
 type server struct {
 	mutex            *sync.Mutex
 	started          bool
@@ -81,7 +77,7 @@ type server struct {
 	fd               int
 	limiter          *rate.Limiter
 	queryTimeout     time.Duration
-	queries          map[string]chan RecvMsg
+	queries          map[string]chan dht.RecvMsg
 	responder        responder.Responder
 	responderTimeout time.Duration
 	logger           *zap.SugaredLogger
@@ -112,7 +108,7 @@ func (s *server) Start() error {
 		return bindErr
 	}
 	s.fd = fd
-	s.queries = make(map[string]chan RecvMsg)
+	s.queries = make(map[string]chan dht.RecvMsg)
 	s.stop = cancel
 	s.started = true
 	unlock()
@@ -188,7 +184,7 @@ func (s *server) read(ctx context.Context) {
 			continue
 		}
 
-		recvMsg := RecvMsg{
+		recvMsg := dht.RecvMsg{
 			Msg: msg,
 			From: krpc.NodeAddr{
 				IP:   from.IP,
@@ -197,15 +193,41 @@ func (s *server) read(ctx context.Context) {
 		}
 
 		switch msg.Y {
-		case krpc.YResponse:
-			go s.handleResponse(recvMsg)
 		case krpc.YQuery:
 			go s.handleQuery(recvMsg)
+		case krpc.YResponse, krpc.YError:
+			go s.handleResponse(recvMsg)
 		}
 	}
 }
 
-func (s *server) handleResponse(msg RecvMsg) {
+func (s *server) handleQuery(msg dht.RecvMsg) {
+	ctx, cancel := context.WithTimeout(context.Background(), s.responderTimeout)
+	defer cancel()
+	res := krpc.Msg{
+		T: msg.Msg.T,
+		Y: krpc.YResponse,
+	}
+	ret, err := s.responder.Respond(ctx, msg)
+	if err != nil {
+		krpcErr := &krpc.Error{}
+		if ok := errors.As(err, krpcErr); ok {
+			res.E = krpcErr
+		} else {
+			res.E = &krpc.Error{
+				Code: krpc.ErrorCodeServerError,
+				Msg:  "server error",
+			}
+			s.logger.Errorw("server error", "msg", msg, "err", err)
+		}
+	} else {
+		res.R = &ret
+	}
+	s.logger.Debugw("responding", "msg", msg, "ret", ret)
+	_ = s.send(msg.From, res)
+}
+
+func (s *server) handleResponse(msg dht.RecvMsg) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	transactionId := msg.Msg.T
@@ -215,23 +237,7 @@ func (s *server) handleResponse(msg RecvMsg) {
 	}
 }
 
-func (s *server) handleQuery(msg RecvMsg) {
-	ctx, cancel := context.WithTimeout(context.Background(), s.responderTimeout)
-	defer cancel()
-	ret, err := s.responder.Respond(ctx, msg.Msg)
-	if err != nil {
-		s.logger.Debugw("could not respond to query", "msg", msg, "err", err)
-		return
-	}
-	res := krpc.Msg{
-		T: msg.Msg.T,
-		Y: krpc.YResponse,
-		R: &ret,
-	}
-	_ = s.send(res, msg.From)
-}
-
-func (s *server) Query(ctx context.Context, addr krpc.NodeAddr, q string, args krpc.MsgArgs) (r RecvMsg, err error) {
+func (s *server) Query(ctx context.Context, addr krpc.NodeAddr, q string, args krpc.MsgArgs) (r dht.RecvMsg, err error) {
 	if limitErr := s.limiter.Wait(ctx); limitErr != nil {
 		err = limitErr
 		return
@@ -239,9 +245,9 @@ func (s *server) Query(ctx context.Context, addr krpc.NodeAddr, q string, args k
 	return s.QueryUrgent(ctx, addr, q, args)
 }
 
-func (s *server) QueryUrgent(ctx context.Context, addr krpc.NodeAddr, q string, args krpc.MsgArgs) (r RecvMsg, err error) {
+func (s *server) QueryUrgent(ctx context.Context, addr krpc.NodeAddr, q string, args krpc.MsgArgs) (r dht.RecvMsg, err error) {
 	transactionId := nextTransactionId()
-	ch := make(chan RecvMsg, 1)
+	ch := make(chan dht.RecvMsg, 1)
 	s.mutex.Lock()
 	started := s.started
 	if !started {
@@ -263,7 +269,7 @@ func (s *server) QueryUrgent(ctx context.Context, addr krpc.NodeAddr, q string, 
 		A: &args,
 		Y: krpc.YQuery,
 	}
-	if sendErr := s.send(msg, addr); sendErr != nil {
+	if sendErr := s.send(addr, msg); sendErr != nil {
 		return
 	}
 	queryCtx, cancel := context.WithTimeout(ctx, s.queryTimeout)
@@ -278,11 +284,18 @@ func (s *server) QueryUrgent(ctx context.Context, addr krpc.NodeAddr, q string, 
 			return
 		}
 		r = res
+		if res.Msg.Y == krpc.YError {
+			err = res.Msg.E
+			if err == nil {
+				err = errors.New("error missing from response")
+			}
+			s.logger.Debugw("error response", "msg", msg, "res", res, "err", err)
+		}
 		return
 	}
 }
 
-func (s *server) send(msg krpc.Msg, addr krpc.NodeAddr) (err error) {
+func (s *server) send(addr krpc.NodeAddr, msg krpc.Msg) (err error) {
 	data, encodeErr := bencode.Marshal(msg)
 	if encodeErr != nil {
 		err = encodeErr

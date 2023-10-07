@@ -6,11 +6,10 @@ import (
 	"fmt"
 	"github.com/anacrolix/dht/v2/krpc"
 	"github.com/bitmagnet-io/bitmagnet/internal/bloom"
-	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
 
 type peersForHashRequest struct {
-	infoHash model.Hash20
+	infoHash krpc.ID
 	peer     krpc.NodeAddr
 	scrape   bool
 }

@@ -1,13 +1,11 @@
 package dht
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/dht/routing"
 	"time"
 )
 
 type Config struct {
-	PeerID                      [20]byte
-	Routing                     routing.Config
+	Routing                     RoutingTableConfig
 	CrawlBootstrapHostsInterval time.Duration
 	SampleInfoHashesInterval    time.Duration
 	// DiscardUnscrapableTorrents when true, torrents that cannot be scraped to find seeders and leechers will be discarded
@@ -26,10 +24,19 @@ type Config struct {
 	RescrapeThreshold time.Duration
 }
 
+type RoutingTableConfig struct {
+	MaxPeers              uint
+	MaxConcurrency        uint
+	MaxConcurrencyPerPeer uint
+}
+
 func NewDefaultConfig() Config {
 	return Config{
-		PeerID:                      RandomPeerID(),
-		Routing:                     routing.NewDefaultConfig(),
+		Routing: RoutingTableConfig{
+			MaxPeers:              1000,
+			MaxConcurrency:        500,
+			MaxConcurrencyPerPeer: 5,
+		},
 		CrawlBootstrapHostsInterval: time.Minute,
 		SampleInfoHashesInterval:    time.Millisecond * 100,
 		DiscardUnscrapableTorrents:  false,

@@ -41,7 +41,7 @@ type Staging interface {
 	Shutdown() error
 	Stage(hashes ...InfoHashWithPeer)
 	Requested() <-chan Request
-	Reject(hash model.Hash20)
+	Reject(hash krpc.ID)
 	Respond(ctx context.Context, response Response)
 	Count() uint
 }
@@ -49,7 +49,7 @@ type Staging interface {
 func New(p Params) (r Result, err error) {
 	r.Staging = &staging{
 		mutex:               &sync.RWMutex{},
-		activeRequests:      make(map[model.Hash20]Request),
+		activeRequests:      make(map[krpc.ID]Request),
 		holding:             make(chan InfoHashWithPeer),
 		holdingSize:         100,
 		maxHoldingTime:      time.Second,
@@ -79,7 +79,7 @@ func New(p Params) (r Result, err error) {
 }
 
 type InfoHashWithPeer struct {
-	InfoHash model.Hash20
+	InfoHash krpc.ID
 	Peer     krpc.NodeAddr
 }
 
@@ -91,7 +91,7 @@ type Request struct {
 }
 
 type Response struct {
-	InfoHash model.Hash20
+	InfoHash krpc.ID
 	MetaInfo metainfo.Info
 	Scrape   ResponseScrape
 }
@@ -106,7 +106,7 @@ type staging struct {
 	mutex               *sync.RWMutex
 	started             bool
 	stop                func()
-	activeRequests      map[model.Hash20]Request
+	activeRequests      map[krpc.ID]Request
 	holding             chan InfoHashWithPeer
 	holdingSize         uint
 	maxHoldingTime      time.Duration
@@ -171,7 +171,7 @@ func (s *staging) Stage(hashes ...InfoHashWithPeer) {
 
 func (s *staging) awaitHoldingHashes(ctx context.Context) {
 	holdingMutex := &sync.Mutex{}
-	holdingHashes := make(map[model.Hash20]InfoHashWithPeer, s.holdingSize)
+	holdingHashes := make(map[krpc.ID]InfoHashWithPeer, s.holdingSize)
 	flushLocked := func() {
 		if len(holdingHashes) == 0 {
 			return
@@ -185,7 +185,7 @@ func (s *staging) awaitHoldingHashes(ctx context.Context) {
 		for _, req := range requests {
 			s.requested <- req
 		}
-		holdingHashes = make(map[model.Hash20]InfoHashWithPeer, s.holdingSize)
+		holdingHashes = make(map[krpc.ID]InfoHashWithPeer, s.holdingSize)
 	}
 	flush := func() {
 		holdingMutex.Lock()
@@ -221,10 +221,10 @@ func (s *staging) awaitHoldingHashes(ctx context.Context) {
 	}
 }
 
-func (s *staging) getIndexerRequests(ctx context.Context, hashesWithPeers map[model.Hash20]InfoHashWithPeer) []Request {
+func (s *staging) getIndexerRequests(ctx context.Context, hashesWithPeers map[krpc.ID]InfoHashWithPeer) []Request {
 	hashes := make([]model.Hash20, 0, len(hashesWithPeers))
 	for _, h := range hashesWithPeers {
-		hashes = append(hashes, h.InfoHash)
+		hashes = append(hashes, model.Hash20(h.InfoHash))
 	}
 	searchResult, searchErr := s.search.Torrents(
 		ctx,
@@ -239,9 +239,9 @@ func (s *staging) getIndexerRequests(ctx context.Context, hashesWithPeers map[mo
 		s.logger.Errorf("failed to search existing torrents: %s", searchErr.Error())
 		return nil
 	}
-	foundTorrents := make(map[model.Hash20]model.Torrent)
+	foundTorrents := make(map[krpc.ID]model.Torrent)
 	for _, t := range searchResult.Items {
-		foundTorrents[t.InfoHash] = t
+		foundTorrents[krpc.ID(t.InfoHash)] = t
 	}
 	requests := make([]Request, 0, len(hashesWithPeers))
 	for _, h := range hashesWithPeers {
@@ -280,7 +280,7 @@ func (s *staging) Requested() <-chan Request {
 	return s.requested
 }
 
-func (s *staging) Reject(hash model.Hash20) {
+func (s *staging) Reject(hash krpc.ID) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	delete(s.activeRequests, hash)

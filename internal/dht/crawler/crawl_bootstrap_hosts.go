@@ -31,12 +31,7 @@ func (c *crawler) crawlBootstrapHosts(ctx context.Context) {
 					Target: t,
 				})
 				if err == nil {
-					peersToReceive := make([]krpc.NodeAddr, 0, len(res.Msg.R.Nodes))
-					for _, thisNode := range res.Msg.R.Nodes {
-						peersToReceive = append(peersToReceive, thisNode.Addr)
-					}
-					nAdded, nDiscarded := c.routingTable.ReceivePeers(peersToReceive...)
-					c.logger.Debugw("received peers", "node", node, "nAdded", nAdded, "nDiscarded", nDiscarded)
+					c.routingTable.ReceiveNodeInfo(res.Msg.R.Nodes...)
 				} else {
 					c.logger.Debugw("find_node error", "node", node, "err", err)
 				}

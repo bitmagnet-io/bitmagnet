@@ -63,7 +63,7 @@ func New(p Params) (Result, error) {
 					}
 					nodeAddr := krpc.NodeAddr{}
 					nodeAddr.FromAddrPort(addr)
-					info, err := p.MetaInfoRequester.Request(ctx.Context, infoHash, nodeAddr)
+					info, err := p.MetaInfoRequester.Request(ctx.Context, krpc.ID(infoHash), nodeAddr)
 					if err != nil {
 						return err
 					}

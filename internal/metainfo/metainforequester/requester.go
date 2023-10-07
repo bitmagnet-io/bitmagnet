@@ -9,9 +9,7 @@ import (
 	"github.com/anacrolix/dht/v2/krpc"
 	"github.com/anacrolix/torrent/bencode"
 	"github.com/anacrolix/torrent/peer_protocol"
-	"github.com/bitmagnet-io/bitmagnet/internal/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/metainfo"
-	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"go.uber.org/fx"
 	"golang.org/x/sync/semaphore"
 	"io"
@@ -22,6 +20,7 @@ import (
 
 type Params struct {
 	fx.In
+	PeerID krpc.ID `name:"dht_peer_id"`
 	Config Config
 }
 
@@ -33,7 +32,7 @@ type Result struct {
 func New(p Params) Result {
 	return Result{
 		Requester: requester{
-			clientID: dht.RandomPeerID(),
+			clientID: p.PeerID,
 			timeout:  p.Config.RequestTimeout,
 			dialer: &net.Dialer{
 				Timeout:   5 * time.Second,
@@ -45,17 +44,17 @@ func New(p Params) Result {
 }
 
 type Requester interface {
-	Request(ctx context.Context, infoHash model.Hash20, node krpc.NodeAddr) (metainfo.Info, error)
+	Request(ctx context.Context, infoHash krpc.ID, node krpc.NodeAddr) (metainfo.Info, error)
 }
 
 type requester struct {
-	clientID  model.Hash20
+	clientID  krpc.ID
 	timeout   time.Duration
 	dialer    *net.Dialer
 	semaphore *semaphore.Weighted
 }
 
-func (r requester) Request(ctx context.Context, infoHash model.Hash20, node krpc.NodeAddr) (metainfo.Info, error) {
+func (r requester) Request(ctx context.Context, infoHash krpc.ID, node krpc.NodeAddr) (metainfo.Info, error) {
 	if semErr := r.semaphore.Acquire(ctx, 1); semErr != nil {
 		return metainfo.Info{}, semErr
 	}
@@ -130,7 +129,7 @@ func (r requester) connect(ctx context.Context, addr krpc.NodeAddr) (conn *net.T
 	return tcpConn, nil
 }
 
-func btHandshake(rw io.ReadWriter, infoHash model.Hash20, clientID model.Hash20) error {
+func btHandshake(rw io.ReadWriter, infoHash krpc.ID, clientID krpc.ID) error {
 	handshakeBytes := make([]byte, 0, 68)
 	handshakeBytes = append(handshakeBytes, []byte(peer_protocol.Protocol+"\u0000\u0000\u0000\u0000\u0000\u0010\u0000\u0001")...)
 	handshakeBytes = append(handshakeBytes, infoHash[:]...)

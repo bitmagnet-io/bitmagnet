@@ -1,0 +1,10 @@
+with-expecter: True
+dir: internal/mocks/{{ replaceAll .InterfaceDirRelative "internal/" "" }}
+mockname: "{{.InterfaceName}}"
+outpkg: "{{.PackageName}}"
+filename: "{{.InterfaceName}}.go"
+all: True
+packages:
+  github.com/bitmagnet-io/bitmagnet/internal/dht/routingtable:
+    interfaces:
+      Table:

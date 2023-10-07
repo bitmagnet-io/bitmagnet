@@ -3,9 +3,10 @@ package crawler
 import (
 	"context"
 	"errors"
+	"github.com/anacrolix/dht/v2/krpc"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/worker"
 	"github.com/bitmagnet-io/bitmagnet/internal/dht"
-	"github.com/bitmagnet-io/bitmagnet/internal/dht/routing"
+	"github.com/bitmagnet-io/bitmagnet/internal/dht/routingtable"
 	"github.com/bitmagnet-io/bitmagnet/internal/dht/server"
 	"github.com/bitmagnet-io/bitmagnet/internal/dht/staging"
 	"github.com/bitmagnet-io/bitmagnet/internal/metainfo/metainforequester"
@@ -17,8 +18,10 @@ import (
 
 type Params struct {
 	fx.In
+	PeerID            krpc.ID `name:"dht_peer_id"`
 	Config            dht.Config
 	DhtServer         server.Server
+	RoutingTable      routingtable.Table
 	Staging           staging.Staging
 	MetainfoRequester metainforequester.Requester
 	Logger            *zap.SugaredLogger
@@ -37,10 +40,10 @@ type Crawler interface {
 
 func New(p Params) (r Result, err error) {
 	r.Crawler = &crawler{
-		peerID:                      p.Config.PeerID,
+		peerID:                      p.PeerID,
 		dhtServer:                   p.DhtServer,
 		staging:                     p.Staging,
-		routingTable:                routing.NewTable(p.Config.Routing),
+		routingTable:                p.RoutingTable,
 		metainfoRequester:           p.MetainfoRequester,
 		crawlBootstrapHostsInterval: p.Config.CrawlBootstrapHostsInterval,
 		sampleInfoHashesInterval:    p.Config.SampleInfoHashesInterval,
@@ -70,7 +73,7 @@ func New(p Params) (r Result, err error) {
 
 type crawler struct {
 	peerID                      [20]byte
-	routingTable                routing.Table
+	routingTable                routingtable.Table
 	staging                     staging.Staging
 	dhtServer                   server.Server
 	metainfoRequester           metainforequester.Requester

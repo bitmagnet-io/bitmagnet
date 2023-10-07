@@ -2,13 +2,14 @@ package staging
 
 import (
 	"errors"
+	"github.com/anacrolix/dht/v2/krpc"
 	"github.com/bitmagnet-io/bitmagnet/internal/metainfo"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"unicode/utf8"
 )
 
 func createTorrentModel(
-	infoHash model.Hash20,
+	infoHash krpc.ID,
 	info metainfo.Info,
 	peers ResponseScrape,
 ) (model.Torrent, error) {
@@ -42,7 +43,7 @@ func createTorrentModel(
 		filesStatus = model.FilesStatusMulti
 	}
 	return model.Torrent{
-		InfoHash:    infoHash,
+		InfoHash:    model.Hash20(infoHash),
 		Name:        name,
 		Size:        uint64(info.TotalLength()),
 		Private:     private,
@@ -57,7 +58,7 @@ func createTorrentModel(
 }
 
 func createTorrentSourceModel(
-	infoHash model.Hash20,
+	infoHash krpc.ID,
 	peers ResponseScrape,
 ) (model.TorrentsTorrentSource, error) {
 	seeders := model.NullUint{}
@@ -83,7 +84,7 @@ func createTorrentSourceModel(
 	}
 	return model.TorrentsTorrentSource{
 		Source:   "dht",
-		InfoHash: infoHash,
+		InfoHash: model.Hash20(infoHash),
 		Bfsd:     bfsdBytes,
 		Bfpe:     bfpeBytes,
 		Leechers: seeders,
