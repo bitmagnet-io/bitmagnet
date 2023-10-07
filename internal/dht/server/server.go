@@ -223,7 +223,6 @@ func (s *server) handleQuery(msg dht.RecvMsg) {
 	} else {
 		res.R = &ret
 	}
-	s.logger.Debugw("responding", "msg", msg, "ret", ret)
 	_ = s.send(msg.From, res)
 }
 

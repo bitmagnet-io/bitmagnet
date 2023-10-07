@@ -2,6 +2,14 @@ package dht
 
 import "github.com/anacrolix/dht/v2/krpc"
 
+const (
+	QPing             = "ping"
+	QFindNode         = "find_node"
+	QGetPeers         = "get_peers"
+	QAnnouncePeer     = "announce_peer"
+	QSampleInfohashes = "sample_infohashes"
+)
+
 type RecvMsg struct {
 	Msg  krpc.Msg
 	From krpc.NodeAddr

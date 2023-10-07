@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"github.com/anacrolix/dht/v2/krpc"
 	"github.com/bitmagnet-io/bitmagnet/internal/dht"
-	"github.com/bitmagnet-io/bitmagnet/internal/lru"
+	"github.com/bitmagnet-io/bitmagnet/internal/lru/expirable"
 	"go.uber.org/fx"
 	"golang.org/x/sync/semaphore"
-	"sort"
+	"net"
 	"sync"
 	"time"
 )
@@ -25,8 +25,6 @@ type Result struct {
 }
 
 func New(p Params) Result {
-	findNode, _ := lru.New[krpc.ID, krpc.NodeAddr](10000)
-	getPeers, _ := lru.New[krpc.ID, peersForHash](10000)
 	return Result{
 		Table: &table{
 			mutex:                 &sync.RWMutex{},
@@ -34,8 +32,9 @@ func New(p Params) Result {
 			crawlerNodes:          make(map[string]*crawlerNode, p.Config.Routing.MaxPeers),
 			maxNodes:              p.Config.Routing.MaxPeers,
 			maxConcurrencyPerPeer: p.Config.Routing.MaxConcurrencyPerPeer,
-			findNode:              findNode,
-			getPeers:              getPeers,
+			findNode:              expirable.NewLRU[krpc.ID, krpc.NodeAddr](10000, nil, time.Minute*60),
+			getPeers:              expirable.NewLRU[krpc.ID, peersForHash](10000, nil, time.Minute*60),
+			goodBadNodes:          expirable.NewLRU[string, bool](10000, nil, time.Minute*15),
 		},
 	}
 }
@@ -47,9 +46,9 @@ type Table interface {
 	FindNode(krpc.ID) krpc.CompactIPv4NodeInfo
 	GetPeers(hash krpc.ID) ([]krpc.NodeAddr, krpc.CompactIPv4NodeInfo)
 	SampleInfoHashes() (krpc.CompactInfohashes, krpc.CompactIPv4NodeInfo, int64)
-	WithPeer(context.Context, krpc.NodeAddr, func(ctx context.Context) error) error
+	WithPeer(context.Context, krpc.NodeAddr, func(context.Context) error) error
 	// TryEachNode tries to execute the given function on each node in the routing table, until the function returns nil.
-	TryEachNode(context.Context, func(ctx context.Context, peer PeerInfo) error) error
+	TryEachNode(context.Context, func(context.Context, krpc.NodeAddr) error) error
 }
 
 type table struct {
@@ -60,19 +59,22 @@ type table struct {
 	maxConcurrencyPerPeer uint
 	// bep5, bep51 stores:
 	// findNode a map of node IDs to node addresses
-	findNode *lru.Cache[krpc.ID, krpc.NodeAddr]
+	findNode *expirable.LRU[krpc.ID, krpc.NodeAddr]
 	// getPeers a map of infohashes to a set of node addresses
-	getPeers *lru.Cache[krpc.ID, peersForHash]
+	getPeers     *expirable.LRU[krpc.ID, peersForHash]
+	goodBadNodes *expirable.LRU[string, bool]
 }
 
 type peersForHash struct {
+	table *table
 	mutex *sync.RWMutex
 	addrs *map[string]krpc.NodeAddr
 }
 
-func newPeersForHash() peersForHash {
+func (t *table) newPeersForHash() peersForHash {
 	a := make(map[string]krpc.NodeAddr)
 	return peersForHash{
+		table: t,
 		mutex: &sync.RWMutex{},
 		addrs: &a,
 	}
@@ -81,27 +83,63 @@ func newPeersForHash() peersForHash {
 func (p peersForHash) receiveAddrs(addrs ...krpc.NodeAddr) {
 	p.mutex.Lock()
 	for _, addr := range addrs {
+		if p.table.isBadNode(addr.IP) {
+			continue
+		}
 		(*p.addrs)[addr.String()] = addr
 	}
 	p.mutex.Unlock()
 }
 
 func (p peersForHash) getAddrs() []krpc.NodeAddr {
+	target := 8
 	p.mutex.RLock()
-	addrs := make([]krpc.NodeAddr, 0, 8)
+	sampledFirstPass := make(map[string]struct{}, target)
+	addrs := make([]krpc.NodeAddr, 0, target)
+	// first try to get known good nodes
 	for _, addr := range *p.addrs {
-		addrs = append(addrs, addr)
-		if len(addrs) == 8 {
-			break
+		if p.table.isGoodNode(addr.IP) {
+			addrs = append(addrs, addr)
+			sampledFirstPass[addr.String()] = struct{}{}
+			if len(addrs) == target {
+				break
+			}
+		}
+	}
+	// if not enough then add nodes that aren't bad
+	if len(addrs) < target {
+		for _, addr := range *p.addrs {
+			if _, ok := sampledFirstPass[addr.String()]; ok {
+				continue
+			}
+			if !p.table.isBadNode(addr.IP) {
+				addrs = append(addrs, addr)
+				if len(addrs) == target {
+					break
+				}
+			}
 		}
 	}
 	p.mutex.RUnlock()
 	return addrs
 }
 
+func (t *table) isBadNode(ip net.IP) bool {
+	good, ok := t.goodBadNodes.Get(ip.String())
+	return ok && !good
+}
+
+func (t *table) isGoodNode(ip net.IP) bool {
+	good, ok := t.goodBadNodes.Get(ip.String())
+	return ok && good
+}
+
 func (t *table) ReceiveNodeInfo(nodes ...krpc.NodeInfo) {
 	addrs := make([]krpc.NodeAddr, 0, len(nodes))
 	for _, node := range nodes {
+		if t.isBadNode(node.Addr.IP) {
+			continue
+		}
 		addrs = append(addrs, node.Addr)
 		t.findNode.Add(node.ID, node.Addr)
 	}
@@ -114,17 +152,16 @@ func (t *table) ReceiveNodeAddr(peers ...krpc.NodeAddr) {
 	}
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
-	now := time.Now()
 	peersToAdd := make([]krpc.NodeAddr, 0, len(peers))
 	for _, nodeAddr := range peers {
 		if nodeAddr.Port == 0 {
 			continue
 		}
-		if existingPeer, ok := t.crawlerNodes[nodeAddr.String()]; !ok {
+		if t.isBadNode(nodeAddr.IP) {
+			continue
+		}
+		if _, ok := t.crawlerNodes[nodeAddr.String()]; !ok {
 			peersToAdd = append(peersToAdd, nodeAddr)
-		} else {
-			existingPeer.lastDiscoveredAt = now
-			existingPeer.discoveredCount++
 		}
 	}
 	nPeersToAdd := len(peersToAdd)
@@ -141,46 +178,26 @@ func (t *table) ReceiveNodeAddr(peers ...krpc.NodeAddr) {
 }
 
 func (t *table) newPeer(nodeAddr krpc.NodeAddr) *crawlerNode {
-	now := time.Now()
 	return &crawlerNode{
-		peerSemaphore:    semaphore.NewWeighted(int64(t.maxConcurrencyPerPeer)),
-		tableSemaphore:   t.semaphore,
-		nodeAddr:         nodeAddr,
-		discoveredAt:     now,
-		lastDiscoveredAt: now,
-		discoveredCount:  1,
+		table:     t,
+		semaphore: semaphore.NewWeighted(int64(t.maxConcurrencyPerPeer)),
+		nodeAddr:  nodeAddr,
 	}
 }
 
-// tryEvictPeersLocked tries to evict n crawlerNodes from the routing table based on the oldest crawlerNodes to receive a successful response that can be unlocked.
-// Will only consider crawlerNodes with at least one response or error.
+// tryEvictPeersLocked tries to evict n crawlerNodes from the routing table based on known bad nodes.
 // Assumes that the caller has already locked the routing table.
-// todo: Improve eviction strategy.
 func (t *table) tryEvictPeersLocked(n int) int {
-	maxCandidates := n * 5
-	if maxCandidates > len(t.crawlerNodes) {
-		maxCandidates = len(t.crawlerNodes)
-	}
-	candidates := make([]*crawlerNode, 0, maxCandidates)
+	nEvicted := 0
 	for _, peer := range t.crawlerNodes {
-		if peer.responseCount+peer.errorCount > 0 && peer.peerSemaphore.TryAcquire(int64(t.maxConcurrencyPerPeer)) {
-			candidates = append(candidates, peer)
-			if len(candidates) >= maxCandidates {
+		if t.isBadNode(peer.nodeAddr.IP) {
+			peer.evicted = true
+			delete(t.crawlerNodes, peer.nodeAddr.String())
+			nEvicted++
+			if nEvicted >= n {
 				break
 			}
 		}
-	}
-	sort.Slice(candidates, func(i, j int) bool {
-		return candidates[i].lastRespondedAt.Before(candidates[j].lastRespondedAt)
-	})
-	nEvicted := 0
-	for i := 0; i < len(candidates); i++ {
-		if nEvicted < n {
-			candidates[i].evicted = true
-			delete(t.crawlerNodes, candidates[i].nodeAddr.String())
-			nEvicted++
-		}
-		candidates[i].peerSemaphore.Release(int64(t.maxConcurrencyPerPeer))
 	}
 	return nEvicted
 }
@@ -188,10 +205,37 @@ func (t *table) tryEvictPeersLocked(n int) int {
 func (t *table) ReceivePeersForHash(hash krpc.ID, addrs ...krpc.NodeAddr) {
 	current, ok := t.getPeers.Peek(hash)
 	if !ok {
-		current = newPeersForHash()
+		current = t.newPeersForHash()
 	}
 	current.receiveAddrs(addrs...)
 	t.getPeers.Add(hash, current)
+}
+
+func (t *table) sampleBestNodes() krpc.CompactIPv4NodeInfo {
+	target := 8
+	firstPassSampled := make(map[krpc.ID]struct{}, target)
+	// try to return all good nodes
+	sample := t.findNode.Sample(8, func(id krpc.ID, addr krpc.NodeAddr) bool {
+		firstPassSampled[id] = struct{}{}
+		return t.isGoodNode(addr.IP)
+	})
+	// if not enough then add nodes that aren't bad
+	if len(sample) < target {
+		sample = append(sample, t.findNode.Sample(target-len(sample), func(id krpc.ID, addr krpc.NodeAddr) bool {
+			if _, ok := firstPassSampled[id]; ok {
+				return false
+			}
+			return !t.isBadNode(addr.IP)
+		})...)
+	}
+	addrs := make([]krpc.NodeInfo, 0, len(sample))
+	for _, e := range sample {
+		addrs = append(addrs, krpc.NodeInfo{
+			ID:   e.Key,
+			Addr: e.Value,
+		})
+	}
+	return addrs
 }
 
 func (t *table) FindNode(id krpc.ID) krpc.CompactIPv4NodeInfo {
@@ -204,15 +248,7 @@ func (t *table) FindNode(id krpc.ID) krpc.CompactIPv4NodeInfo {
 			},
 		}
 	}
-	sample := t.findNode.Sample(8)
-	addrs := make([]krpc.NodeInfo, 0, len(sample))
-	for _, e := range sample {
-		addrs = append(addrs, krpc.NodeInfo{
-			ID:   e.Key,
-			Addr: e.Value,
-		})
-	}
-	return addrs
+	return t.sampleBestNodes()
 }
 
 func (t *table) GetPeers(hash krpc.ID) ([]krpc.NodeAddr, krpc.CompactIPv4NodeInfo) {
@@ -220,15 +256,7 @@ func (t *table) GetPeers(hash krpc.ID) ([]krpc.NodeAddr, krpc.CompactIPv4NodeInf
 	if ok {
 		return pfh.getAddrs(), nil
 	}
-	nodesSample := t.findNode.Sample(8)
-	nodes := make(krpc.CompactIPv4NodeInfo, 0, len(nodesSample))
-	for _, e := range nodesSample {
-		nodes = append(nodes, krpc.NodeInfo{
-			ID:   e.Key,
-			Addr: e.Value,
-		})
-	}
-	return nil, nodes
+	return nil, t.sampleBestNodes()
 }
 
 func (t *table) AnnouncePeer(hash krpc.ID, node krpc.NodeInfo) {
@@ -236,25 +264,17 @@ func (t *table) AnnouncePeer(hash krpc.ID, node krpc.NodeInfo) {
 }
 
 func (t *table) SampleInfoHashes() (krpc.CompactInfohashes, krpc.CompactIPv4NodeInfo, int64) {
-	hashesSample := t.getPeers.Sample(8)
+	hashesSample := t.getPeers.Sample(8, nil)
 	hashes := make(krpc.CompactInfohashes, 0, len(hashesSample))
 	for _, e := range hashesSample {
 		hashes = append(hashes, e.Key)
 	}
-	nodesSample := t.findNode.Sample(8)
-	nodes := make(krpc.CompactIPv4NodeInfo, 0, len(nodesSample))
-	for _, e := range nodesSample {
-		nodes = append(nodes, krpc.NodeInfo{
-			ID:   e.Key,
-			Addr: e.Value,
-		})
-	}
-	return hashes, nodes, int64(t.getPeers.Len())
+	return hashes, t.sampleBestNodes(), int64(t.getPeers.Len())
 }
 
 func (t *table) TryEachNode(
 	ctx context.Context,
-	fn func(ctx context.Context, peer PeerInfo) error,
+	fn func(context.Context, krpc.NodeAddr) error,
 ) error {
 	t.mutex.RLock()
 	peersToTry := make([]*crawlerNode, 0, len(t.crawlerNodes))
@@ -285,14 +305,14 @@ func (t *table) TryEachNode(
 func (t *table) tryPeerLocked(
 	ctx context.Context,
 	peer *crawlerNode,
-	fn func(ctx context.Context, peer PeerInfo) error,
+	fn func(context.Context, krpc.NodeAddr) error,
 ) (bool, error) {
 	ok := false
 	errChan := make(chan error)
 	go (func() {
 		_, err := peer.tryWithLock(ctx, func(ctx context.Context) error {
 			ok = true
-			return fn(ctx, peer)
+			return fn(ctx, peer.nodeAddr)
 		})
 		errChan <- err
 		close(errChan)
@@ -320,65 +340,43 @@ func (t *table) WithPeer(ctx context.Context, info krpc.NodeAddr, fn func(ctx co
 	return thePeer.WithLock(ctx, fn)
 }
 
-type PeerInfo interface {
-	Addr() krpc.NodeAddr
-	ResponseCount() uint
-	LastRespondedAt() time.Time
-}
-
 type Peer interface {
-	PeerInfo
+	Addr() krpc.NodeAddr
 	WithLock(ctx context.Context, fn func(ctx context.Context) error) error
 }
 
 type crawlerNode struct {
-	peerSemaphore    *semaphore.Weighted
-	tableSemaphore   *semaphore.Weighted
-	nodeAddr         krpc.NodeAddr
-	discoveredAt     time.Time
-	discoveredCount  uint
-	lastDiscoveredAt time.Time
-	responseCount    uint
-	lastRespondedAt  time.Time
-	errorCount       uint
-	lastErroredAt    time.Time
-	lastError        error
-	evicted          bool
+	table     *table
+	semaphore *semaphore.Weighted
+	nodeAddr  krpc.NodeAddr
+	evicted   bool
 }
 
 func (p *crawlerNode) Addr() krpc.NodeAddr {
 	return p.nodeAddr
 }
 
-func (p *crawlerNode) ResponseCount() uint {
-	return p.responseCount
-}
-
-func (p *crawlerNode) LastRespondedAt() time.Time {
-	return p.lastRespondedAt
-}
-
 func (p *crawlerNode) WithLock(ctx context.Context, fn func(ctx context.Context) error) error {
-	if err := p.peerSemaphore.Acquire(ctx, 1); err != nil {
+	if err := p.semaphore.Acquire(ctx, 1); err != nil {
 		return err
 	}
-	defer p.peerSemaphore.Release(1)
-	if err := p.tableSemaphore.Acquire(ctx, 1); err != nil {
+	defer p.semaphore.Release(1)
+	if err := p.table.semaphore.Acquire(ctx, 1); err != nil {
 		return err
 	}
-	defer p.tableSemaphore.Release(1)
+	defer p.table.semaphore.Release(1)
 	return p.doLocked(ctx, fn)
 }
 
 func (p *crawlerNode) tryWithLock(ctx context.Context, fn func(ctx context.Context) error) (bool, error) {
-	if ok := p.peerSemaphore.TryAcquire(1); !ok {
+	if ok := p.semaphore.TryAcquire(1); !ok {
 		return false, nil
 	}
-	defer p.peerSemaphore.Release(1)
-	if ok := p.tableSemaphore.TryAcquire(1); !ok {
+	defer p.semaphore.Release(1)
+	if ok := p.table.semaphore.TryAcquire(1); !ok {
 		return false, nil
 	}
-	defer p.tableSemaphore.Release(1)
+	defer p.table.semaphore.Release(1)
 	err := p.doLocked(ctx, fn)
 	return true, err
 }
@@ -391,13 +389,6 @@ func (p *crawlerNode) doLocked(ctx context.Context, fn func(ctx context.Context)
 		return errors.New("crawlerNode evicted")
 	}
 	err := fn(ctx)
-	if err != nil {
-		p.errorCount++
-		p.lastErroredAt = time.Now()
-		p.lastError = err
-	} else {
-		p.responseCount++
-		p.lastRespondedAt = time.Now()
-	}
+	p.table.goodBadNodes.Add(p.nodeAddr.IP.String(), err == nil)
 	return err
 }

@@ -336,3 +336,28 @@ func (c *LRU[K, V]) addToBucket(e *list.Entry[K, V]) {
 func (c *LRU[K, V]) removeFromBucket(e *list.Entry[K, V]) {
 	delete(c.buckets[e.ExpireBucket].entries, e.Key)
 }
+
+// Sample returns a random sample of the cache entries not exceeding size n.
+// A check can be supplied to exclude any given item from the sample.
+func (c *LRU[K, V]) Sample(n int, check func(K, V) bool) []list.Entry[K, V] {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if n > len(c.items) {
+		n = len(c.items)
+	}
+	sample := make([]list.Entry[K, V], 0, n)
+	now := time.Now()
+	for _, ent := range c.items {
+		if now.After(ent.ExpiresAt) {
+			continue
+		}
+		if check != nil && !check(ent.Key, ent.Value) {
+			continue
+		}
+		sample = append(sample, *ent)
+		if len(sample) == n {
+			break
+		}
+	}
+	return sample
+}

@@ -9,12 +9,14 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/dht/routingtable"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 type Params struct {
 	fx.In
 	PeerID krpc.ID `name:"dht_peer_id"`
 	Table  routingtable.Table
+	Logger *zap.SugaredLogger
 }
 
 type Result struct {
@@ -29,6 +31,7 @@ func New(p Params) Result {
 			table:                    p.Table,
 			tokenSecret:              []byte(transactions.DefaultIdIssuer.Issue()),
 			sampleInfoHashesInterval: 10,
+			logger:                   p.Logger.Named("dht_responder"),
 		},
 	}
 }
@@ -42,6 +45,7 @@ type responder struct {
 	table                    routingtable.Table
 	tokenSecret              []byte
 	sampleInfoHashesInterval int64
+	logger                   *zap.SugaredLogger
 }
 
 var ErrMissingArguments = krpc.Error{
@@ -61,6 +65,11 @@ var ErrMethodUnknown = krpc.Error{
 
 func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret krpc.Return, err error) {
 	args := msg.Msg.A
+	defer (func() {
+		if err != nil {
+			r.logger.Debugw("responding with error", "q", msg.Msg.Q, "args", args, "error", err)
+		}
+	})()
 	if args == nil {
 		err = ErrMissingArguments
 		return
@@ -71,15 +80,17 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret krpc.Return,
 		Addr: msg.From,
 	}
 	switch msg.Msg.Q {
-	case "ping":
+	case dht.QPing:
+		r.logger.Debug(dht.QPing)
 		break
-	case "find_node":
+	case dht.QFindNode:
 		if args.Target == [20]byte{} {
 			err = ErrMissingArguments
 			return
 		}
 		ret.Nodes = r.table.FindNode(args.Target)
-	case "get_peers":
+		r.logger.Debugw(dht.QFindNode, "n", len(ret.Nodes))
+	case dht.QGetPeers:
 		if args.InfoHash == [20]byte{} {
 			err = ErrMissingArguments
 			return
@@ -89,7 +100,8 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret krpc.Return,
 		ret.Token = &token
 		ret.Values = values
 		ret.Nodes = nodes
-	case "announce_peer":
+		r.logger.Debugw(dht.QGetPeers, "nValues", len(ret.Values), "nNodes", len(ret.Nodes))
+	case dht.QAnnouncePeer:
 		if args.InfoHash == [20]byte{} {
 			err = ErrMissingArguments
 			return
@@ -102,12 +114,14 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret krpc.Return,
 			IP:   nodeInfo.Addr.IP,
 			Port: msg.AnnouncePort(),
 		})
-	case "sample_infohashes":
+		r.logger.Debug(dht.QAnnouncePeer)
+	case dht.QSampleInfohashes:
 		hashes, addrs, num := r.table.SampleInfoHashes()
 		ret.Samples = &hashes
 		ret.Nodes = addrs
 		ret.Num = &num
 		ret.Interval = &r.sampleInfoHashesInterval
+		r.logger.Debugw(dht.QSampleInfohashes, "nSamples", len(hashes), "nNodes", len(ret.Nodes), "nTotalHashes", num)
 	default:
 		err = ErrMethodUnknown
 		return

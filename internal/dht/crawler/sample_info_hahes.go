@@ -5,7 +5,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"github.com/anacrolix/dht/v2/krpc"
-	"github.com/bitmagnet-io/bitmagnet/internal/dht/routingtable"
+	"github.com/bitmagnet-io/bitmagnet/internal/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/dht/staging"
 	"time"
 )
@@ -34,12 +34,12 @@ func (c *crawler) crawlPeersForInfoHashes(ctx context.Context) {
 	}
 }
 
-func (c *crawler) sampleInfoHashesFromLockedPeer(ctx context.Context, peer routingtable.PeerInfo) error {
+func (c *crawler) sampleInfoHashesFromLockedPeer(ctx context.Context, addr krpc.NodeAddr) error {
 	t := [20]byte{}
 	if _, randErr := rand.Read(t[:]); randErr != nil {
 		return fmt.Errorf("could not generate random bytes: %w", randErr)
 	}
-	res, resErr := c.dhtServer.Query(ctx, peer.Addr(), "sample_infohashes", krpc.MsgArgs{
+	res, resErr := c.dhtServer.Query(ctx, addr, dht.QSampleInfohashes, krpc.MsgArgs{
 		ID:     c.peerID,
 		Target: t,
 	})
@@ -55,7 +55,7 @@ func (c *crawler) sampleInfoHashesFromLockedPeer(ctx context.Context, peer routi
 		for _, s := range *res.Msg.R.Samples {
 			hashesToStage = append(hashesToStage, staging.InfoHashWithPeer{
 				InfoHash: s,
-				Peer:     peer.Addr(),
+				Peer:     addr,
 			})
 		}
 		c.staging.Stage(hashesToStage...)

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/anacrolix/dht/v2/krpc"
 	"github.com/bitmagnet-io/bitmagnet/internal/bloom"
+	"github.com/bitmagnet-io/bitmagnet/internal/dht"
 )
 
 type peersForHashRequest struct {
@@ -43,7 +44,7 @@ func (c *crawler) requestPeersForHash(
 		if req.scrape {
 			scrape = 1
 		}
-		res, err := c.dhtServer.Query(ctx, req.peer, "get_peers", krpc.MsgArgs{
+		res, err := c.dhtServer.Query(ctx, req.peer, dht.QGetPeers, krpc.MsgArgs{
 			ID:       c.peerID,
 			InfoHash: req.infoHash,
 			Target:   t,

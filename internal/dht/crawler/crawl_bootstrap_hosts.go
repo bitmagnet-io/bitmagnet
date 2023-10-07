@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	adht "github.com/anacrolix/dht/v2"
 	"github.com/anacrolix/dht/v2/krpc"
+	"github.com/bitmagnet-io/bitmagnet/internal/dht"
 	"net"
 	"time"
 )
@@ -27,7 +28,7 @@ func (c *crawler) crawlBootstrapHosts(ctx context.Context) {
 				res, err := c.dhtServer.Query(ctx, krpc.NodeAddr{
 					IP:   addr.IP.To4(),
 					Port: addr.Port,
-				}, "find_node", krpc.MsgArgs{
+				}, dht.QFindNode, krpc.MsgArgs{
 					Target: t,
 				})
 				if err == nil {
