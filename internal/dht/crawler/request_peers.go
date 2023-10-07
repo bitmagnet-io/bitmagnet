@@ -45,7 +45,7 @@ func (c *crawler) requestPeersForHash(
 		}
 		res, err := c.dhtServer.Query(ctx, req.peer, "get_peers", krpc.MsgArgs{
 			ID:       c.peerID,
-			InfoHash: krpc.ID(req.infoHash),
+			InfoHash: req.infoHash,
 			Target:   t,
 			Scrape:   scrape,
 		})
