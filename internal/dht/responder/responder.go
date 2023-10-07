@@ -82,7 +82,6 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret krpc.Return,
 	switch msg.Msg.Q {
 	case dht.QPing:
 		r.logger.Debug(dht.QPing)
-		break
 	case dht.QFindNode:
 		if args.Target == [20]byte{} {
 			err = ErrMissingArguments
