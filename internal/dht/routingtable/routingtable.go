@@ -58,10 +58,11 @@ type table struct {
 	maxNodes              uint
 	maxConcurrencyPerPeer uint
 	// bep5, bep51 stores:
-	// findNode a map of node IDs to node addresses
+	// findNode an expiring map of node IDs to node addresses
 	findNode *lru.Expirable[krpc.ID, krpc.NodeAddr]
-	// getPeers a map of infohashes to a set of node addresses
-	getPeers     *lru.Expirable[krpc.ID, peersForHash]
+	// getPeers an expiring map of infohashes to a set of node addresses
+	getPeers *lru.Expirable[krpc.ID, peersForHash]
+	// goodBadNodes an expiring map of node IPs to a bool indicating if a success or error was received
 	goodBadNodes *lru.Expirable[string, bool]
 }
 

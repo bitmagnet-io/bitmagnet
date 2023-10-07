@@ -6,6 +6,8 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/mocks/dht/routingtable"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 	"testing"
 )
 
@@ -14,11 +16,13 @@ type testResponderMocks struct {
 	table     *routingtable.Table
 	responder responder
 	sender    krpc.NodeInfo
+	logger    *zap.SugaredLogger
 }
 
 func newTestResponderMocks(t *testing.T) testResponderMocks {
 	peerID := dht.RandomPeerID()
 	tableMock := routingtable.NewTable(t)
+	logger := zaptest.NewLogger(t).Sugar()
 	return testResponderMocks{
 		peerID: peerID,
 		table:  tableMock,
@@ -26,8 +30,10 @@ func newTestResponderMocks(t *testing.T) testResponderMocks {
 			peerID:                   peerID,
 			table:                    tableMock,
 			sampleInfoHashesInterval: 20,
+			logger:                   logger,
 		},
 		sender: krpc.RandomNodeInfo(4),
+		logger: logger,
 	}
 }
 
