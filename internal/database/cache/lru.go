@@ -2,7 +2,7 @@ package cache
 
 import (
 	"context"
-	"github.com/hashicorp/golang-lru/v2/expirable"
+	"github.com/bitmagnet-io/bitmagnet/internal/lru/expirable"
 	caches "github.com/mgdigital/gorm-cache/v2"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
