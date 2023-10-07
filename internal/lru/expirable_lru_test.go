@@ -1,7 +1,7 @@
 // Copyright (c) HashiCorp, Inc.
 // SPDX-License-Identifier: MPL-2.0
 
-package expirable
+package lru
 
 import (
 	"crypto/rand"
@@ -15,7 +15,7 @@ import (
 )
 
 func BenchmarkLRU_Rand_NoExpire(b *testing.B) {
-	l := NewLRU[int64, int64](8192, nil, 0)
+	l := NewExpirable[int64, int64](8192, nil, 0)
 
 	trace := make([]int64, b.N*2)
 	for i := 0; i < b.N*2; i++ {
@@ -40,7 +40,7 @@ func BenchmarkLRU_Rand_NoExpire(b *testing.B) {
 }
 
 func BenchmarkLRU_Freq_NoExpire(b *testing.B) {
-	l := NewLRU[int64, int64](8192, nil, 0)
+	l := NewExpirable[int64, int64](8192, nil, 0)
 
 	trace := make([]int64, b.N*2)
 	for i := 0; i < b.N*2; i++ {
@@ -68,7 +68,7 @@ func BenchmarkLRU_Freq_NoExpire(b *testing.B) {
 }
 
 func BenchmarkLRU_Rand_WithExpire(b *testing.B) {
-	l := NewLRU[int64, int64](8192, nil, time.Millisecond*10)
+	l := NewExpirable[int64, int64](8192, nil, time.Millisecond*10)
 
 	trace := make([]int64, b.N*2)
 	for i := 0; i < b.N*2; i++ {
@@ -93,7 +93,7 @@ func BenchmarkLRU_Rand_WithExpire(b *testing.B) {
 }
 
 func BenchmarkLRU_Freq_WithExpire(b *testing.B) {
-	l := NewLRU[int64, int64](8192, nil, time.Millisecond*10)
+	l := NewExpirable[int64, int64](8192, nil, time.Millisecond*10)
 
 	trace := make([]int64, b.N*2)
 	for i := 0; i < b.N*2; i++ {
@@ -121,7 +121,7 @@ func BenchmarkLRU_Freq_WithExpire(b *testing.B) {
 }
 
 func TestLRUNoPurge(t *testing.T) {
-	lc := NewLRU[string, string](10, nil, 0)
+	lc := NewExpirable[string, string](10, nil, 0)
 
 	lc.Add("key1", "val1")
 	if lc.Len() != 1 {
@@ -168,7 +168,7 @@ func TestLRUNoPurge(t *testing.T) {
 }
 
 func TestLRUEdgeCases(t *testing.T) {
-	lc := NewLRU[string, *string](2, nil, 0)
+	lc := NewExpirable[string, *string](2, nil, 0)
 
 	// Adding a nil value
 	lc.Add("key1", nil)
@@ -189,7 +189,7 @@ func TestLRUEdgeCases(t *testing.T) {
 }
 
 func TestLRU_Values(t *testing.T) {
-	lc := NewLRU[string, string](3, nil, 0)
+	lc := NewExpirable[string, string](3, nil, 0)
 
 	lc.Add("key1", "val1")
 	lc.Add("key2", "val2")
@@ -202,7 +202,7 @@ func TestLRU_Values(t *testing.T) {
 }
 
 // func TestExpirableMultipleClose(_ *testing.T) {
-//	lc := NewLRU[string, string](10, nil, 0)
+//	lc := NewExpirable[string, string](10, nil, 0)
 //	lc.Close()
 //	// should not panic
 //	lc.Close()
@@ -210,7 +210,7 @@ func TestLRU_Values(t *testing.T) {
 
 func TestLRUWithPurge(t *testing.T) {
 	var evicted []string
-	lc := NewLRU(10, func(key string, value string) { evicted = append(evicted, key, value) }, 150*time.Millisecond)
+	lc := NewExpirable(10, func(key string, value string) { evicted = append(evicted, key, value) }, 150*time.Millisecond)
 
 	k, v, ok := lc.GetOldest()
 	if k != "" {
@@ -291,7 +291,7 @@ func TestLRUWithPurge(t *testing.T) {
 }
 
 func TestLRUWithPurgeEnforcedBySize(t *testing.T) {
-	lc := NewLRU[string, string](10, nil, time.Hour)
+	lc := NewExpirable[string, string](10, nil, time.Hour)
 
 	for i := 0; i < 100; i++ {
 		i := i
@@ -314,7 +314,7 @@ func TestLRUWithPurgeEnforcedBySize(t *testing.T) {
 }
 
 func TestLRUConcurrency(t *testing.T) {
-	lc := NewLRU[string, string](0, nil, 0)
+	lc := NewExpirable[string, string](0, nil, 0)
 	wg := sync.WaitGroup{}
 	wg.Add(1000)
 	for i := 0; i < 1000; i++ {
@@ -331,7 +331,7 @@ func TestLRUConcurrency(t *testing.T) {
 
 func TestLRUInvalidateAndEvict(t *testing.T) {
 	var evicted int
-	lc := NewLRU(-1, func(_, _ string) { evicted++ }, 0)
+	lc := NewExpirable(-1, func(_, _ string) { evicted++ }, 0)
 
 	lc.Add("key1", "val1")
 	lc.Add("key2", "val2")
@@ -361,7 +361,7 @@ func TestLRUInvalidateAndEvict(t *testing.T) {
 }
 
 func TestLoadingExpired(t *testing.T) {
-	lc := NewLRU[string, string](0, nil, time.Millisecond*5)
+	lc := NewExpirable[string, string](0, nil, time.Millisecond*5)
 
 	lc.Add("key1", "val1")
 	if lc.Len() != 1 {
@@ -417,7 +417,7 @@ func TestLoadingExpired(t *testing.T) {
 }
 
 func TestLRURemoveOldest(t *testing.T) {
-	lc := NewLRU[string, string](2, nil, 0)
+	lc := NewExpirable[string, string](2, nil, 0)
 
 	k, v, ok := lc.RemoveOldest()
 	if k != "" {
@@ -484,7 +484,7 @@ func TestLRURemoveOldest(t *testing.T) {
 
 func ExampleLRU() {
 	// make cache with 10ms TTL and 5 max keys
-	cache := NewLRU[string, string](5, nil, time.Millisecond*10)
+	cache := NewExpirable[string, string](5, nil, time.Millisecond*10)
 
 	// set value under key1.
 	cache.Add("key1", "val1")
@@ -522,7 +522,7 @@ func getRand(tb testing.TB) int64 {
 	return out.Int64()
 }
 
-func (c *LRU[K, V]) wantKeys(t *testing.T, want []K) {
+func (c *Expirable[K, V]) wantKeys(t *testing.T, want []K) {
 	t.Helper()
 	got := c.Keys()
 	if !reflect.DeepEqual(got, want) {
@@ -533,7 +533,7 @@ func (c *LRU[K, V]) wantKeys(t *testing.T, want []K) {
 func TestCache_EvictionSameKey(t *testing.T) {
 	var evictedKeys []int
 
-	cache := NewLRU[int, struct{}](
+	cache := NewExpirable[int, struct{}](
 		2,
 		func(key int, _ struct{}) {
 			evictedKeys = append(evictedKeys, key)

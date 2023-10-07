@@ -2,7 +2,7 @@ package cache
 
 import (
 	"context"
-	"github.com/bitmagnet-io/bitmagnet/internal/lru/expirable"
+	"github.com/bitmagnet-io/bitmagnet/internal/lru"
 	caches "github.com/mgdigital/gorm-cache/v2"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -22,7 +22,7 @@ type Result struct {
 func NewInMemoryCacher(p Params) Result {
 	return Result{
 		Cacher: &inMemoryCacher{
-			lru:    expirable.NewLRU[string, *caches.Query](int(p.Config.MaxKeys), nil, p.Config.Ttl),
+			lru:    lru.NewExpirable[string, *caches.Query](int(p.Config.MaxKeys), nil, p.Config.Ttl),
 			logger: p.Logger.Named("gorm_cache"),
 		},
 	}
@@ -46,7 +46,7 @@ type modeKey string
 const ModeKey modeKey = "gorm_cache_mode"
 
 type inMemoryCacher struct {
-	lru    *expirable.LRU[string, *caches.Query]
+	lru    *lru.Expirable[string, *caches.Query]
 	logger *zap.SugaredLogger
 }
 

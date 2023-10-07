@@ -1,4 +1,4 @@
-// The HashiCorp package has been copied as we need the ability to take a random sample from the cache.
+// The HashiCorp package has been copied as we need the ability to take a random sample from an expirable cache.
 
 // Copyright (c) HashiCorp, Inc.
 // SPDX-License-Identifier: MPL-2.0

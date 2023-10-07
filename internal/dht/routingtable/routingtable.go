@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/anacrolix/dht/v2/krpc"
 	"github.com/bitmagnet-io/bitmagnet/internal/dht"
-	"github.com/bitmagnet-io/bitmagnet/internal/lru/expirable"
+	"github.com/bitmagnet-io/bitmagnet/internal/lru"
 	"go.uber.org/fx"
 	"golang.org/x/sync/semaphore"
 	"net"
@@ -32,9 +32,9 @@ func New(p Params) Result {
 			crawlerNodes:          make(map[string]*crawlerNode, p.Config.Routing.MaxPeers),
 			maxNodes:              p.Config.Routing.MaxPeers,
 			maxConcurrencyPerPeer: p.Config.Routing.MaxConcurrencyPerPeer,
-			findNode:              expirable.NewLRU[krpc.ID, krpc.NodeAddr](10000, nil, time.Minute*60),
-			getPeers:              expirable.NewLRU[krpc.ID, peersForHash](10000, nil, time.Minute*60),
-			goodBadNodes:          expirable.NewLRU[string, bool](10000, nil, time.Minute*15),
+			findNode:              lru.NewExpirable[krpc.ID, krpc.NodeAddr](10000, nil, time.Minute*60),
+			getPeers:              lru.NewExpirable[krpc.ID, peersForHash](10000, nil, time.Minute*60),
+			goodBadNodes:          lru.NewExpirable[string, bool](10000, nil, time.Minute*15),
 		},
 	}
 }
@@ -59,10 +59,10 @@ type table struct {
 	maxConcurrencyPerPeer uint
 	// bep5, bep51 stores:
 	// findNode a map of node IDs to node addresses
-	findNode *expirable.LRU[krpc.ID, krpc.NodeAddr]
+	findNode *lru.Expirable[krpc.ID, krpc.NodeAddr]
 	// getPeers a map of infohashes to a set of node addresses
-	getPeers     *expirable.LRU[krpc.ID, peersForHash]
-	goodBadNodes *expirable.LRU[string, bool]
+	getPeers     *lru.Expirable[krpc.ID, peersForHash]
+	goodBadNodes *lru.Expirable[string, bool]
 }
 
 type peersForHash struct {

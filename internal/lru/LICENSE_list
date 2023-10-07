@@ -1,11 +1,4 @@
-I'm assuming this license applies to list.go in what was the internal
-folder of the original package. The naming below seems to be slightly
-wrong but am leaving the license intact in its original location relative
-to the rest of the package that was copied.
-
----
-
-This license applies to simplelru/list.go
+This license applies to list.go
 
 Copyright (c) 2009 The Go Authors. All rights reserved.
 
