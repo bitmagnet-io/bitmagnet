@@ -290,6 +290,8 @@ func (s *server) QueryUrgent(ctx context.Context, addr krpc.NodeAddr, q string, 
 				err = errors.New("error missing from response")
 			}
 			s.logger.Debugw("error response", "msg", msg, "res", res, "err", err)
+		} else if r.Msg.R == nil {
+			err = errors.New("return data missing from response")
 		}
 		return
 	}
