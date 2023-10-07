@@ -35,7 +35,7 @@ func NewDefaultConfig() Config {
 		Routing: RoutingTableConfig{
 			MaxPeers:              1000,
 			MaxConcurrency:        500,
-			MaxConcurrencyPerPeer: 5,
+			MaxConcurrencyPerPeer: 2,
 		},
 		CrawlBootstrapHostsInterval: time.Minute,
 		SampleInfoHashesInterval:    time.Millisecond * 100,
