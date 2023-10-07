@@ -171,6 +171,21 @@ func TestResponder_get_peers__nodes(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestResponder_get_peers__missing_info_hash(t *testing.T) {
+	mocks := newTestResponderMocks(t)
+	msg := dht.RecvMsg{
+		From: mocks.sender.Addr,
+		Msg: krpc.Msg{
+			Q: "get_peers",
+			A: &krpc.MsgArgs{
+				ID: mocks.sender.ID,
+			},
+		},
+	}
+	_, err := mocks.responder.Respond(context.Background(), msg)
+	assert.Equal(t, ErrMissingArguments, err)
+}
+
 func TestResponder_announce_peer__implied_port(t *testing.T) {
 	mocks := newTestResponderMocks(t)
 	infoHash := dht.RandomPeerID()
