@@ -28,6 +28,8 @@ func coerceStringValue(stringValue string, valueType reflect.Type) (interface{},
 		}
 	case reflect.Int, reflect.Int64:
 		return strconv.Atoi(stringValue)
+	case reflect.Uint, reflect.Uint64:
+		return strconv.ParseUint(stringValue, 10, 64)
 	case reflect.Slice:
 		strValues := strings.Split(stringValue, ",")
 		values := make([]interface{}, len(strValues))
