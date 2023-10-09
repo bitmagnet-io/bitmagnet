@@ -249,7 +249,7 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 			Title:    item.Torrent.Name,
 			Size:     item.Torrent.Size,
 			Category: category,
-			GUID:     item.ID,
+			GUID:     item.InfoHash.String(),
 			PubDate:  torznab.RssDate(date),
 			Enclosure: torznab.SearchResultItemEnclosure{
 				URL:    item.Torrent.Magnet(),
