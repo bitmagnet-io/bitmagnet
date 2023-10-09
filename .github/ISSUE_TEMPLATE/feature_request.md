@@ -3,8 +3,7 @@ name: Feature request
 about: Suggest an idea for this project
 title: Short description of feature
 labels: enhancement
-assignees: ''
-
+assignees: ""
 ---
 
 Please do not open issues asking for general support with setting up the app and configuring Docker, as such requests are too time consuming to handle. All the information you need to get up and running is in the Bitmagnet docs, the Docker docs and on Google. If you'd like to suggest improvements or corrections to the docs then please open a PR. :heart:
