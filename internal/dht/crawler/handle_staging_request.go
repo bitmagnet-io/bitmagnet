@@ -70,7 +70,7 @@ func (c *crawler) handleStagingRequest(ctx context.Context, req staging.Request)
 			}
 		}
 		if res.MetaInfo.PieceLength == 0 {
-			c.logger.Debugw("failed not get meta info from any peers", "infoHash", req.InfoHash.String())
+			c.logger.Debugw("failed to get meta info from any peers", "infoHash", req.InfoHash.String())
 		}
 	}
 	go c.routingTable.ReceivePeers(discoveredPeers...)
