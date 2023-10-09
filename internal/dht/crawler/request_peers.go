@@ -3,6 +3,7 @@ package crawler
 import (
 	"context"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"github.com/anacrolix/dht/v2/krpc"
 	"github.com/bitmagnet-io/bitmagnet/internal/bloom"
@@ -52,6 +53,9 @@ func (c *crawler) requestPeersForHash(
 		})
 		if err != nil {
 			return err
+		}
+		if res.Reply.R == nil {
+			return errors.New("response has no return body")
 		}
 		if res.Reply.R.BFsd != nil {
 			thisBfsd := bloom.FromScrape(*res.Reply.R.BFsd)
