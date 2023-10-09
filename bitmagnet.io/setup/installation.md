@@ -74,7 +74,7 @@ services:
       interval: 10s
 ```
 
-After running `docker-compose up -d` you should be able to access the web interface at `http://localhost:3333`. The DHT crawler should have started and you should see items appear in the web UI; try enabling auto-refresh to see live crawling and classification results.
+After running `docker compose up -d` you should be able to access the web interface at `http://localhost:3333`. The DHT crawler should have started and you should see items appear in the web UI; try enabling auto-refresh to see live crawling and classification results.
 
 ## go install
 
