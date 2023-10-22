@@ -418,6 +418,47 @@ func (_c *TableBatch_SampleHashesAndPeers_Call) RunAndReturn(run func() ktable.S
 	return _c
 }
 
+// Stats provides a mock function with given fields:
+func (_m *TableBatch) Stats() ktable.Stats {
+	ret := _m.Called()
+
+	var r0 ktable.Stats
+	if rf, ok := ret.Get(0).(func() ktable.Stats); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(ktable.Stats)
+	}
+
+	return r0
+}
+
+// TableBatch_Stats_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Stats'
+type TableBatch_Stats_Call struct {
+	*mock.Call
+}
+
+// Stats is a helper method to define mock.On call
+func (_e *TableBatch_Expecter) Stats() *TableBatch_Stats_Call {
+	return &TableBatch_Stats_Call{Call: _e.mock.On("Stats")}
+}
+
+func (_c *TableBatch_Stats_Call) Run(run func()) *TableBatch_Stats_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *TableBatch_Stats_Call) Return(_a0 ktable.Stats) *TableBatch_Stats_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *TableBatch_Stats_Call) RunAndReturn(run func() ktable.Stats) *TableBatch_Stats_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewTableBatch creates a new instance of TableBatch. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewTableBatch(t interface {
