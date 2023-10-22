@@ -173,6 +173,8 @@ func (s *server) handleQuery(msg dht.RecvMsg) {
 	}
 	if sendErr := s.send(msg.From, res); sendErr != nil {
 		s.logger.Debugw("could not send response", "msg", msg, "retErr", sendErr)
+	} else {
+		s.logger.Debugw("sent response", "msg", msg, "res", res)
 	}
 }
 
