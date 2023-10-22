@@ -26,7 +26,6 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/mgdigital/gorm-cache/v2 v2.0.0-20230912113927-f2a8dd92a386
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/paulbellamy/ratecounter v0.2.0
 	github.com/pressly/goose/v3 v3.15.0
 	github.com/redis/go-redis/v9 v9.2.1
 	github.com/rs/cors v1.10.1
