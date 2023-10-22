@@ -3,7 +3,6 @@ package ktable
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"net/netip"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -22,11 +21,11 @@ func newBatcher(t *table) TableBatch {
 		commandChannel: concurrency.NewBatchingChannel[Command](make(chan Command, 2000), 1000, time.Second/4),
 		queryChannel:   concurrency.NewBatchingChannel[batchQuery](make(chan batchQuery, 2000), 100, time.Second/10),
 		resultChannels: batchResultChannels{
-			peers:                       make(map[string]chan []Peer),
-			addrs:                       make(map[string]chan []netip.Addr),
-			id:                          make(map[string]chan ID),
-			getHashOrClosestPeersResult: make(map[string]chan GetHashOrClosestPeersResult),
-			sampleHashesAndPeersResult:  make(map[string]chan SampleHashesAndPeersResult),
+			peers:                       make(map[int]chan []Peer),
+			addrs:                       make(map[int]chan []netip.Addr),
+			id:                          make(map[int]chan ID),
+			getHashOrClosestPeersResult: make(map[int]chan GetHashOrClosestPeersResult),
+			sampleHashesAndPeersResult:  make(map[int]chan SampleHashesAndPeersResult),
 		},
 		table: t,
 	}
@@ -105,8 +104,8 @@ func (b *batcher) SampleHashesAndPeers() SampleHashesAndPeersResult {
 	return <-b.addSampleHashesAndPeersResult(SampleHashesAndPeers{})
 }
 
-func (b *batcher) nextKey() string {
-	return strconv.Itoa(b.counter.Inc(1))
+func (b *batcher) nextKey() int {
+	return b.counter.Inc(1)
 }
 
 func (b *batcher) addPeers(q Query[[]Peer]) chan []Peer {
@@ -116,7 +115,7 @@ func (b *batcher) addPeers(q Query[[]Peer]) chan []Peer {
 	b.resultChannels.peers[key] = ch
 	b.mutex.Unlock()
 	b.queryChannel.In() <- batchQuery{
-		peers: map[string]Query[[]Peer]{
+		peers: map[int]Query[[]Peer]{
 			key: q,
 		},
 	}
@@ -130,7 +129,7 @@ func (b *batcher) addAddrs(q Query[[]netip.Addr]) chan []netip.Addr {
 	b.resultChannels.addrs[key] = ch
 	b.mutex.Unlock()
 	b.queryChannel.In() <- batchQuery{
-		addrs: map[string]Query[[]netip.Addr]{
+		addrs: map[int]Query[[]netip.Addr]{
 			key: q,
 		},
 	}
@@ -144,7 +143,7 @@ func (b *batcher) addID(q Query[ID]) chan ID {
 	b.resultChannels.id[key] = ch
 	b.mutex.Unlock()
 	b.queryChannel.In() <- batchQuery{
-		id: map[string]Query[ID]{
+		id: map[int]Query[ID]{
 			key: q,
 		},
 	}
@@ -158,7 +157,7 @@ func (b *batcher) addGetHashOrClosestPeersResult(q Query[GetHashOrClosestPeersRe
 	b.resultChannels.getHashOrClosestPeersResult[key] = ch
 	b.mutex.Unlock()
 	b.queryChannel.In() <- batchQuery{
-		getHashOrClosestPeersResult: map[string]Query[GetHashOrClosestPeersResult]{
+		getHashOrClosestPeersResult: map[int]Query[GetHashOrClosestPeersResult]{
 			key: q,
 		},
 	}
@@ -172,7 +171,7 @@ func (b *batcher) addSampleHashesAndPeersResult(q Query[SampleHashesAndPeersResu
 	b.resultChannels.sampleHashesAndPeersResult[key] = ch
 	b.mutex.Unlock()
 	b.queryChannel.In() <- batchQuery{
-		sampleHashesAndPeersResult: map[string]Query[SampleHashesAndPeersResult]{
+		sampleHashesAndPeersResult: map[int]Query[SampleHashesAndPeersResult]{
 			key: q,
 		},
 	}
@@ -188,7 +187,7 @@ func (b *batcher) execQuery(query batchQuery) {
 	for k, v := range query.peers {
 		if ch, ok := b.resultChannels.peers[k]; ok {
 			wg.Add(1)
-			go (func(k string, v Query[[]Peer], ch chan []Peer) {
+			go (func(k int, v Query[[]Peer], ch chan []Peer) {
 				defer wg.Done()
 				ch <- v.execReturn(b.table)
 			})(k, v, ch)
@@ -197,7 +196,7 @@ func (b *batcher) execQuery(query batchQuery) {
 	for k, v := range query.addrs {
 		if ch, ok := b.resultChannels.addrs[k]; ok {
 			wg.Add(1)
-			go (func(k string, v Query[[]netip.Addr], ch chan []netip.Addr) {
+			go (func(k int, v Query[[]netip.Addr], ch chan []netip.Addr) {
 				defer wg.Done()
 				ch <- v.execReturn(b.table)
 			})(k, v, ch)
@@ -206,7 +205,7 @@ func (b *batcher) execQuery(query batchQuery) {
 	for k, v := range query.id {
 		if ch, ok := b.resultChannels.id[k]; ok {
 			wg.Add(1)
-			go (func(k string, v Query[ID], ch chan ID) {
+			go (func(k int, v Query[ID], ch chan ID) {
 				defer wg.Done()
 				ch <- v.execReturn(b.table)
 			})(k, v, ch)
@@ -215,7 +214,7 @@ func (b *batcher) execQuery(query batchQuery) {
 	for k, v := range query.getHashOrClosestPeersResult {
 		if ch, ok := b.resultChannels.getHashOrClosestPeersResult[k]; ok {
 			wg.Add(1)
-			go (func(k string, v Query[GetHashOrClosestPeersResult], ch chan GetHashOrClosestPeersResult) {
+			go (func(k int, v Query[GetHashOrClosestPeersResult], ch chan GetHashOrClosestPeersResult) {
 				defer wg.Done()
 				ch <- v.execReturn(b.table)
 			})(k, v, ch)
@@ -224,7 +223,7 @@ func (b *batcher) execQuery(query batchQuery) {
 	for k, v := range query.sampleHashesAndPeersResult {
 		if ch, ok := b.resultChannels.sampleHashesAndPeersResult[k]; ok {
 			wg.Add(1)
-			go (func(k string, v Query[SampleHashesAndPeersResult], ch chan SampleHashesAndPeersResult) {
+			go (func(k int, v Query[SampleHashesAndPeersResult], ch chan SampleHashesAndPeersResult) {
 				defer wg.Done()
 				ch <- v.execReturn(b.table)
 			})(k, v, ch)
@@ -238,7 +237,7 @@ func (b *batcher) execQuery(query batchQuery) {
 	cleanupChannels(b.resultChannels.sampleHashesAndPeersResult)
 }
 
-func cleanupChannels[T any](chans map[string]chan T) {
+func cleanupChannels[T any](chans map[int]chan T) {
 	for k, ch := range chans {
 		close(ch)
 		delete(chans, k)
@@ -246,20 +245,20 @@ func cleanupChannels[T any](chans map[string]chan T) {
 }
 
 type batchQuery struct {
-	peers                       map[string]Query[[]Peer]
-	addrs                       map[string]Query[[]netip.Addr]
-	id                          map[string]Query[ID]
-	getHashOrClosestPeersResult map[string]Query[GetHashOrClosestPeersResult]
-	sampleHashesAndPeersResult  map[string]Query[SampleHashesAndPeersResult]
+	peers                       map[int]Query[[]Peer]
+	addrs                       map[int]Query[[]netip.Addr]
+	id                          map[int]Query[ID]
+	getHashOrClosestPeersResult map[int]Query[GetHashOrClosestPeersResult]
+	sampleHashesAndPeersResult  map[int]Query[SampleHashesAndPeersResult]
 }
 
 func newBatchQuery() *batchQuery {
 	return &batchQuery{
-		peers:                       make(map[string]Query[[]Peer]),
-		addrs:                       make(map[string]Query[[]netip.Addr]),
-		id:                          make(map[string]Query[ID]),
-		getHashOrClosestPeersResult: make(map[string]Query[GetHashOrClosestPeersResult]),
-		sampleHashesAndPeersResult:  make(map[string]Query[SampleHashesAndPeersResult]),
+		peers:                       make(map[int]Query[[]Peer]),
+		addrs:                       make(map[int]Query[[]netip.Addr]),
+		id:                          make(map[int]Query[ID]),
+		getHashOrClosestPeersResult: make(map[int]Query[GetHashOrClosestPeersResult]),
+		sampleHashesAndPeersResult:  make(map[int]Query[SampleHashesAndPeersResult]),
 	}
 }
 
@@ -282,9 +281,9 @@ func (q *batchQuery) merge(m batchQuery) {
 }
 
 type batchResultChannels struct {
-	peers                       map[string]chan []Peer
-	addrs                       map[string]chan []netip.Addr
-	id                          map[string]chan ID
-	getHashOrClosestPeersResult map[string]chan GetHashOrClosestPeersResult
-	sampleHashesAndPeersResult  map[string]chan SampleHashesAndPeersResult
+	peers                       map[int]chan []Peer
+	addrs                       map[int]chan []netip.Addr
+	id                          map[int]chan ID
+	getHashOrClosestPeersResult map[int]chan GetHashOrClosestPeersResult
+	sampleHashesAndPeersResult  map[int]chan SampleHashesAndPeersResult
 }
