@@ -16,12 +16,12 @@ type Hash interface {
 }
 
 type hash struct {
-	id              ID
-	peers           map[string]HashPeer
-	discoveredAt    time.Time
-	lastRequestedAt time.Time
-	droppedReason   error
-	reverseMap      *reverseMap
+	id           ID
+	peers        map[string]HashPeer
+	discoveredAt time.Time
+	//lastRequestedAt time.Time
+	droppedReason error
+	reverseMap    *reverseMap
 }
 
 type HashPeer struct {

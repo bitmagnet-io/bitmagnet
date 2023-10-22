@@ -79,13 +79,6 @@ func (r bucketRoot[Input, Option, _, ItemPrivate]) put(id ID, input Input, optio
 	return putResult
 }
 
-func (r bucketRoot[_, _, ItemPublic, _]) get(id ID) (it ItemPublic, _ bool) {
-	if prv, ok := r.items[id]; ok {
-		return prv.public(), true
-	}
-	return it, false
-}
-
 func (r bucketRoot[_, _, ItemPublic, _]) getRandom(n int) []ItemPublic {
 	if n > len(r.items) {
 		n = len(r.items)

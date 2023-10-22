@@ -14,18 +14,6 @@ type CommandReturn[T any] interface {
 	Query[T]
 }
 
-type command[T any] struct {
-	fn func(*table) T
-}
-
-func (c command[T]) exec(t *table) {
-	c.fn(t)
-}
-
-func (c command[T]) execReturn(t *table) T {
-	return c.fn(t)
-}
-
 var _ CommandReturn[btree.PutResult] = PutPeer{}
 
 type PutPeer struct {

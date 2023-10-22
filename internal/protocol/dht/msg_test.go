@@ -100,9 +100,9 @@ func TestMarshalUnmarshalMsg(t *testing.T) {
 	}, "d2:ip6:|\xa8\xb4\b\xf5|1:rd2:id20:\xeb\xff6isQ\xffJ\xec)ͺ\xab\xf2\xfb\xe3F|\xc2ge1:t1:\x031:y1:re")
 
 	var k [32]byte
-	rand.Read(k[:])
+	_, _ = rand.Read(k[:])
 	var sig [64]byte
-	rand.Read(sig[:])
+	_, _ = rand.Read(sig[:])
 	testMarshalUnmarshalMsg(t, Msg{
 		A: &MsgArgs{
 			V:    nil,

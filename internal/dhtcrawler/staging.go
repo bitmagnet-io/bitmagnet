@@ -60,15 +60,7 @@ type staging struct {
 	search                 search.TorrentSearch
 	dao                    *dao.Query
 	classifierPublisher    publisher.Publisher[message.ClassifyTorrentPayload]
-	stopped                chan struct{}
 	logger                 *zap.SugaredLogger
-}
-
-func (s *staging) start() {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	go s.awaitHoldingHashes(ctx)
-	<-s.stopped
 }
 
 func (s *staging) stage(hashes ...infoHashWithPeer) {
@@ -187,12 +179,6 @@ func (s *staging) getIndexerRequests(ctx context.Context, hashesWithPeers map[pr
 		}
 	}
 	return requests
-}
-
-func (s *staging) drop(hash protocol.ID) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	delete(s.activeRequests, hash)
 }
 
 func (s *staging) awaitResponses(ctx context.Context) {

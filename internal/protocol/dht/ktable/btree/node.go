@@ -195,10 +195,6 @@ func (n emptyNode) countCloserThanSubpath(Bits) int {
 	return 0
 }
 
-func (n emptyNode) diffKCloserThanSubpath(_ Bits, k int) int {
-	return k
-}
-
 func (n emptyNode) countAtSubpath(Bits) int {
 	return 0
 }

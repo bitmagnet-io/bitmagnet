@@ -35,34 +35,22 @@ func newBatcher(t *table) TableBatch {
 }
 
 func (b *batcher) batchCommands() {
-	for {
-		select {
-		case cs, ok := <-b.commandChannel.Out():
-			if !ok {
-				return
-			}
-			b.table.mutex.Lock()
-			for _, c := range cs {
-				c.exec(b.table)
-			}
-			b.table.mutex.Unlock()
+	for cs := range b.commandChannel.Out() {
+		b.table.mutex.Lock()
+		for _, c := range cs {
+			c.exec(b.table)
 		}
+		b.table.mutex.Unlock()
 	}
 }
 
 func (b *batcher) batchQueries() {
-	for {
-		select {
-		case qs, ok := <-b.queryChannel.Out():
-			if !ok {
-				return
-			}
-			q := newBatchQuery()
-			for _, v := range qs {
-				q.merge(v)
-			}
-			b.execQuery(*q)
+	for qs := range b.queryChannel.Out() {
+		q := newBatchQuery()
+		for _, v := range qs {
+			q.merge(v)
 		}
+		b.execQuery(*q)
 	}
 }
 

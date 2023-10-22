@@ -86,7 +86,7 @@ type GetHashOrClosestPeers struct {
 }
 
 func (c GetHashOrClosestPeers) execReturn(t *table) GetHashOrClosestPeersResult {
-	h, ok := t.hashes.get(c.ID)
+	h, ok := t.hashes.items[c.ID]
 	if ok {
 		return GetHashOrClosestPeersResult{
 			Hash:  h,

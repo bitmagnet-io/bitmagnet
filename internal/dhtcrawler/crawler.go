@@ -59,7 +59,6 @@ func New(params Params) Result {
 			search:                 params.Search,
 			dao:                    params.Dao,
 			classifierPublisher:    params.ClassifierPublisher,
-			stopped:                make(chan struct{}),
 			logger:                 params.Logger.Named("dht_staging"),
 		},
 		targetStagingSize:            100,
