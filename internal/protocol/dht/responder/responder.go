@@ -4,12 +4,10 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
-	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 	"golang.org/x/time/rate"
 	"net/netip"
 	"time"
@@ -33,8 +31,7 @@ func New(p Params) Result {
 			kTable:                   p.KTable,
 			tokenSecret:              protocol.RandomNodeID().Bytes(),
 			sampleInfoHashesInterval: 10,
-			limiter:                  rate.NewLimiter(rate.Every(time.Second/5), 20),
-			ipLimiter:                concurrency.NewKeyedLimiter(rate.Every(time.Second), 10, 1000, time.Second*20),
+			limiter:                  NewLimiter(rate.Every(time.Second/5), 20, rate.Every(time.Second), 10, 1000, time.Second*20),
 		},
 	}
 }
@@ -48,9 +45,7 @@ type responder struct {
 	kTable                   ktable.TableBatch
 	tokenSecret              []byte
 	sampleInfoHashesInterval int64
-	limiter                  *rate.Limiter
-	ipLimiter                concurrency.KeyedLimiter
-	logger                   *zap.SugaredLogger
+	limiter                  Limiter
 }
 
 var ErrMissingArguments = dht.Error{
@@ -81,7 +76,7 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 		}
 	})()
 	// apply both overall and per-IP rate limiting:
-	if !r.ipLimiter.Allow(msg.From.Addr().String()) || !r.limiter.Allow() {
+	if !r.limiter.Allow(msg.From.Addr()) {
 		err = ErrTooManyRequests
 		return
 	}

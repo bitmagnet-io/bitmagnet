@@ -7,9 +7,8 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable/mocks"
+	responder_mocks "github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/responder/mocks"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zaptest"
 	"net/netip"
 	"testing"
 	"time"
@@ -17,16 +16,16 @@ import (
 
 type testResponderMocks struct {
 	peerID    protocol.ID
-	table     *ktable_mocks.Table
+	table     *ktable_mocks.TableBatch
 	responder responder
 	sender    dht.NodeInfo
-	logger    *zap.SugaredLogger
+	limiter   *responder_mocks.Limiter
 }
 
 func newTestResponderMocks(t *testing.T) testResponderMocks {
 	peerID := protocol.RandomNodeID()
-	tableMock := ktable_mocks.NewTable(t)
-	logger := zaptest.NewLogger(t).Sugar()
+	tableMock := ktable_mocks.NewTableBatch(t)
+	limiter := responder_mocks.NewLimiter(t)
 	return testResponderMocks{
 		peerID: peerID,
 		table:  tableMock,
@@ -34,12 +33,14 @@ func newTestResponderMocks(t *testing.T) testResponderMocks {
 			peerID:                   peerID,
 			kTable:                   tableMock,
 			sampleInfoHashesInterval: 20,
-			logger:                   logger,
+			limiter:                  limiter,
 		},
-		sender: dht.RandomNodeInfo(4),
-		logger: logger,
+		sender:  dht.RandomNodeInfo(4),
+		limiter: limiter,
 	}
 }
+
+var _ ktable.Peer = mockedPeer{}
 
 type mockedPeer struct {
 	dht.NodeInfo
@@ -59,6 +60,10 @@ func (m mockedPeer) Time() time.Time {
 
 func (m mockedPeer) Dropped() bool {
 	return false
+}
+
+func (m mockedPeer) IsSampleInfoHashesCandidate() bool {
+	return true
 }
 
 type mockedHash struct {
@@ -85,6 +90,14 @@ func (m mockedHash) Dropped() bool {
 	return false
 }
 
+func expectLimiterAllow(m testResponderMocks) {
+	m.limiter.On("Allow", m.sender.Addr.ToAddrPort().Addr()).Return(true)
+}
+
+func expectPutPeer(m testResponderMocks) {
+	m.table.On("BatchCommand", ktable.PutPeer{ID: m.sender.ID, Addr: m.sender.Addr.ToAddrPort()}).Return(nil)
+}
+
 func TestResponder_ping(t *testing.T) {
 	mocks := newTestResponderMocks(t)
 	msg := dht.RecvMsg{
@@ -96,6 +109,8 @@ func TestResponder_ping(t *testing.T) {
 			},
 		},
 	}
+	expectLimiterAllow(mocks)
+	expectPutPeer(mocks)
 	ret, err := mocks.responder.Respond(context.Background(), msg)
 	assert.Equal(t, dht.Return{ID: mocks.peerID}, ret)
 	assert.NoError(t, err)
@@ -109,6 +124,7 @@ func TestResponder_ping__missing_args(t *testing.T) {
 			Q: "ping",
 		},
 	}
+	expectLimiterAllow(mocks)
 	_, err := mocks.responder.Respond(context.Background(), msg)
 	assert.Equal(t, ErrMissingArguments, err)
 }
@@ -136,6 +152,8 @@ func TestResponder_find_node(t *testing.T) {
 		mockedPeer{nodes[1]},
 		mockedPeer{nodes[2]},
 	}
+	expectLimiterAllow(mocks)
+	expectPutPeer(mocks)
 	mocks.table.On("GetClosestPeers", target).Return(peers)
 	ret, err := mocks.responder.Respond(context.Background(), msg)
 	assert.Equal(t, dht.Return{
@@ -156,6 +174,7 @@ func TestResponder_find_node__missing_target(t *testing.T) {
 			},
 		},
 	}
+	expectLimiterAllow(mocks)
 	_, err := mocks.responder.Respond(context.Background(), msg)
 	assert.Equal(t, ErrMissingArguments, err)
 }
@@ -179,7 +198,12 @@ func TestResponder_get_peers__values(t *testing.T) {
 		dht.RandomNodeInfo(4),
 	}
 	expectedToken := mocks.responder.announceToken(infoHash, mocks.sender.ID, mocks.sender.Addr.ToAddrPort().Addr())
-	mocks.table.On("GetHashOrClosestPeers", infoHash).Return(mockedHash{nodeInfos: nodeInfos}, nil, true)
+	expectLimiterAllow(mocks)
+	expectPutPeer(mocks)
+	mocks.table.On("GetHashOrClosestPeers", infoHash).Return(ktable.GetHashOrClosestPeersResult{
+		Hash:  mockedHash{nodeInfos: nodeInfos},
+		Found: true,
+	})
 	ret, err := mocks.responder.Respond(context.Background(), msg)
 	assert.Equal(t, dht.Return{
 		ID: mocks.peerID,
@@ -196,6 +220,8 @@ func TestResponder_get_peers__values(t *testing.T) {
 
 func TestResponder_get_peers__nodes(t *testing.T) {
 	mocks := newTestResponderMocks(t)
+	expectLimiterAllow(mocks)
+	expectPutPeer(mocks)
 	infoHash := protocol.RandomNodeID()
 	msg := dht.RecvMsg{
 		From: mocks.sender.Addr.ToAddrPort(),
@@ -218,7 +244,9 @@ func TestResponder_get_peers__nodes(t *testing.T) {
 		mockedPeer{nodes[2]},
 	}
 	expectedToken := mocks.responder.announceToken(infoHash, mocks.sender.ID, mocks.sender.Addr.ToAddrPort().Addr())
-	mocks.table.On("GetHashOrClosestPeers", infoHash).Return(nil, peers, false)
+	mocks.table.On("GetHashOrClosestPeers", infoHash).Return(ktable.GetHashOrClosestPeersResult{
+		ClosestPeers: peers,
+	})
 	ret, err := mocks.responder.Respond(context.Background(), msg)
 	assert.Equal(t, dht.Return{
 		ID:     mocks.peerID,
@@ -231,6 +259,7 @@ func TestResponder_get_peers__nodes(t *testing.T) {
 
 func TestResponder_get_peers__missing_info_hash(t *testing.T) {
 	mocks := newTestResponderMocks(t)
+	expectLimiterAllow(mocks)
 	msg := dht.RecvMsg{
 		From: mocks.sender.Addr.ToAddrPort(),
 		Msg: dht.Msg{
@@ -246,6 +275,8 @@ func TestResponder_get_peers__missing_info_hash(t *testing.T) {
 
 func TestResponder_announce_peer__implied_port(t *testing.T) {
 	mocks := newTestResponderMocks(t)
+	expectLimiterAllow(mocks)
+	expectPutPeer(mocks)
 	infoHash := protocol.RandomNodeID()
 	expectedToken := mocks.responder.announceToken(infoHash, mocks.sender.ID, mocks.sender.Addr.ToAddrPort().Addr())
 	msg := dht.RecvMsg{
@@ -260,10 +291,13 @@ func TestResponder_announce_peer__implied_port(t *testing.T) {
 			},
 		},
 	}
-	mocks.table.On("PutHash", infoHash, []ktable.HashPeer{{
-		ID:   mocks.sender.ID,
-		Addr: mocks.sender.Addr.ToAddrPort(),
-	}}).Return(true)
+	mocks.table.On("BatchCommand", ktable.PutHash{
+		ID: infoHash,
+		Peers: []ktable.HashPeer{{
+			ID:   mocks.sender.ID,
+			Addr: mocks.sender.Addr.ToAddrPort(),
+		}},
+	}).Return(nil)
 	ret, err := mocks.responder.Respond(context.Background(), msg)
 	assert.Equal(t, dht.Return{
 		ID: mocks.peerID,
@@ -273,6 +307,8 @@ func TestResponder_announce_peer__implied_port(t *testing.T) {
 
 func TestResponder_announce_peer__specified_port(t *testing.T) {
 	mocks := newTestResponderMocks(t)
+	expectLimiterAllow(mocks)
+	expectPutPeer(mocks)
 	infoHash := protocol.RandomNodeID()
 	expectedToken := mocks.responder.announceToken(infoHash, mocks.sender.ID, mocks.sender.Addr.ToAddrPort().Addr())
 	port := krpc.RandomNodeInfo(4).Addr.Port
@@ -288,10 +324,13 @@ func TestResponder_announce_peer__specified_port(t *testing.T) {
 			},
 		},
 	}
-	mocks.table.On("PutHash", infoHash, []ktable.HashPeer{{
-		ID:   mocks.sender.ID,
-		Addr: mocks.sender.Addr.ToAddrPort(),
-	}}).Return(true)
+	mocks.table.On("BatchCommand", ktable.PutHash{
+		ID: infoHash,
+		Peers: []ktable.HashPeer{{
+			ID:   mocks.sender.ID,
+			Addr: mocks.sender.Addr.ToAddrPort(),
+		}},
+	}).Return(nil)
 	ret, err := mocks.responder.Respond(context.Background(), msg)
 	assert.Equal(t, dht.Return{
 		ID: mocks.peerID,
@@ -301,6 +340,8 @@ func TestResponder_announce_peer__specified_port(t *testing.T) {
 
 func TestResponder_sample_infohashes(t *testing.T) {
 	mocks := newTestResponderMocks(t)
+	expectLimiterAllow(mocks)
+	expectPutPeer(mocks)
 	msg := dht.RecvMsg{
 		From: mocks.sender.Addr.ToAddrPort(),
 		Msg: dht.Msg{
@@ -326,7 +367,11 @@ func TestResponder_sample_infohashes(t *testing.T) {
 		mockedPeer{nodes[2]},
 	}
 	num := int64(123)
-	mocks.table.On("SampleHashesAndPeers").Return(infoHashes, peers, int(num))
+	mocks.table.On("SampleHashesAndPeers").Return(ktable.SampleHashesAndPeersResult{
+		Hashes:      infoHashes,
+		Peers:       peers,
+		TotalHashes: int(num),
+	})
 	ret, err := mocks.responder.Respond(context.Background(), msg)
 	assert.Equal(t, dht.Return{
 		ID:    mocks.peerID,
@@ -346,6 +391,7 @@ func TestResponder_sample_infohashes(t *testing.T) {
 
 func TestResponder_unknown_method(t *testing.T) {
 	mocks := newTestResponderMocks(t)
+	expectLimiterAllow(mocks)
 	msg := dht.RecvMsg{
 		From: mocks.sender.Addr.ToAddrPort(),
 		Msg: dht.Msg{
