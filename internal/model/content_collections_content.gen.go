@@ -15,7 +15,7 @@ type ContentCollectionContent struct {
 	ContentCollectionSource string            `gorm:"column:content_collection_source;primaryKey" json:"contentCollectionSource"`
 	ContentCollectionID     string            `gorm:"column:content_collection_id;primaryKey" json:"contentCollectionId"`
 	Content                 Content           `json:"content"`
-	Collection              ContentCollection `gorm:"foreignKey:ContentCollectionType,ContentCollectionSource,ContentCollectionID;references:Type,Source,id" json:"collection"`
+	Collection              ContentCollection `gorm:"foreignKey:ContentCollectionType,ContentCollectionSource,ContentCollectionID;references:Type,Source,ID" json:"collection"`
 }
 
 // TableName ContentCollectionContent's table name
