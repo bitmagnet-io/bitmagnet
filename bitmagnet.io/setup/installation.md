@@ -17,7 +17,11 @@ services:
     image: ghcr.io/bitmagnet-io/bitmagnet:latest
     container_name: bitmagnet
     ports:
+      # API and WebUI port:
       - "3333:3333"
+      # BitTorrent ports:
+      - "3334:3334/tcp"
+      - "3334:3334/udp"
     restart: unless-stopped
     environment:
       - POSTGRES_HOST=postgres

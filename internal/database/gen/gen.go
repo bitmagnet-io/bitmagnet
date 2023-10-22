@@ -41,7 +41,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		},
 	})
 
-	infoHashType := gen.FieldType("info_hash", "Hash20")
+	infoHashType := gen.FieldType("info_hash", "protocol.ID")
 	infoHashReadOnly := readAndCreateField("info_hash")
 	createdAtReadOnly := readAndCreateField("created_at")
 
@@ -242,7 +242,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 			&field.RelateConfig{
 				GORMTag: field.GormTag{
 					"foreignKey": {"ContentCollectionType,ContentCollectionSource,ContentCollectionID"},
-					"references": {"Type,Source,ID"},
+					"references": {"Type,Source,id"},
 				},
 			},
 		),

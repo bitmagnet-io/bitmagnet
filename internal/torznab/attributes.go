@@ -1,7 +1,7 @@
 package torznab
 
 const (
-	// AttrCategory is the Category ID
+	// AttrCategory is the Category id
 	AttrCategory    = "category"
 	AttrSize        = "size"
 	AttrPublishDate = "publishdate"

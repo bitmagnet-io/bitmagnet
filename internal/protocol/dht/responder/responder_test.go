@@ -1,0 +1,360 @@
+package responder
+
+import (
+	"context"
+	"github.com/anacrolix/dht/v2/krpc"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable/mocks"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
+	"net/netip"
+	"testing"
+	"time"
+)
+
+type testResponderMocks struct {
+	peerID    protocol.ID
+	table     *ktable_mocks.Table
+	responder responder
+	sender    dht.NodeInfo
+	logger    *zap.SugaredLogger
+}
+
+func newTestResponderMocks(t *testing.T) testResponderMocks {
+	peerID := protocol.RandomNodeID()
+	tableMock := ktable_mocks.NewTable(t)
+	logger := zaptest.NewLogger(t).Sugar()
+	return testResponderMocks{
+		peerID: peerID,
+		table:  tableMock,
+		responder: responder{
+			peerID:                   peerID,
+			kTable:                   tableMock,
+			sampleInfoHashesInterval: 20,
+			logger:                   logger,
+		},
+		sender: dht.RandomNodeInfo(4),
+		logger: logger,
+	}
+}
+
+type mockedPeer struct {
+	dht.NodeInfo
+}
+
+func (m mockedPeer) ID() protocol.ID {
+	return m.NodeInfo.ID
+}
+
+func (m mockedPeer) Addr() netip.AddrPort {
+	return m.NodeInfo.Addr.ToAddrPort()
+}
+
+func (m mockedPeer) Time() time.Time {
+	return time.Time{}
+}
+
+func (m mockedPeer) Dropped() bool {
+	return false
+}
+
+type mockedHash struct {
+	id        protocol.ID
+	nodeInfos []dht.NodeInfo
+}
+
+func (m mockedHash) ID() protocol.ID {
+	return m.id
+}
+
+func (m mockedHash) Peers() []ktable.HashPeer {
+	var peers []ktable.HashPeer
+	for _, nodeInfo := range m.nodeInfos {
+		peers = append(peers, ktable.HashPeer{
+			ID:   nodeInfo.ID,
+			Addr: nodeInfo.Addr.ToAddrPort(),
+		})
+	}
+	return peers
+}
+
+func (m mockedHash) Dropped() bool {
+	return false
+}
+
+func TestResponder_ping(t *testing.T) {
+	mocks := newTestResponderMocks(t)
+	msg := dht.RecvMsg{
+		From: mocks.sender.Addr.ToAddrPort(),
+		Msg: dht.Msg{
+			Q: "ping",
+			A: &dht.MsgArgs{
+				ID: mocks.sender.ID,
+			},
+		},
+	}
+	ret, err := mocks.responder.Respond(context.Background(), msg)
+	assert.Equal(t, dht.Return{ID: mocks.peerID}, ret)
+	assert.NoError(t, err)
+}
+
+func TestResponder_ping__missing_args(t *testing.T) {
+	mocks := newTestResponderMocks(t)
+	msg := dht.RecvMsg{
+		From: mocks.sender.Addr.ToAddrPort(),
+		Msg: dht.Msg{
+			Q: "ping",
+		},
+	}
+	_, err := mocks.responder.Respond(context.Background(), msg)
+	assert.Equal(t, ErrMissingArguments, err)
+}
+
+func TestResponder_find_node(t *testing.T) {
+	mocks := newTestResponderMocks(t)
+	target := protocol.RandomNodeID()
+	msg := dht.RecvMsg{
+		From: mocks.sender.Addr.ToAddrPort(),
+		Msg: dht.Msg{
+			Q: "find_node",
+			A: &dht.MsgArgs{
+				ID:     mocks.sender.ID,
+				Target: target,
+			},
+		},
+	}
+	nodes := dht.CompactIPv4NodeInfo{
+		dht.RandomNodeInfo(4),
+		dht.RandomNodeInfo(4),
+		dht.RandomNodeInfo(4),
+	}
+	peers := []ktable.Peer{
+		mockedPeer{nodes[0]},
+		mockedPeer{nodes[1]},
+		mockedPeer{nodes[2]},
+	}
+	mocks.table.On("GetClosestPeers", target).Return(peers)
+	ret, err := mocks.responder.Respond(context.Background(), msg)
+	assert.Equal(t, dht.Return{
+		ID:    mocks.peerID,
+		Nodes: nodes,
+	}, ret)
+	assert.NoError(t, err)
+}
+
+func TestResponder_find_node__missing_target(t *testing.T) {
+	mocks := newTestResponderMocks(t)
+	msg := dht.RecvMsg{
+		From: mocks.sender.Addr.ToAddrPort(),
+		Msg: dht.Msg{
+			Q: "find_node",
+			A: &dht.MsgArgs{
+				ID: mocks.sender.ID,
+			},
+		},
+	}
+	_, err := mocks.responder.Respond(context.Background(), msg)
+	assert.Equal(t, ErrMissingArguments, err)
+}
+
+func TestResponder_get_peers__values(t *testing.T) {
+	mocks := newTestResponderMocks(t)
+	infoHash := protocol.RandomNodeID()
+	msg := dht.RecvMsg{
+		From: mocks.sender.Addr.ToAddrPort(),
+		Msg: dht.Msg{
+			Q: "get_peers",
+			A: &dht.MsgArgs{
+				ID:       mocks.sender.ID,
+				InfoHash: infoHash,
+			},
+		},
+	}
+	nodeInfos := []dht.NodeInfo{
+		dht.RandomNodeInfo(4),
+		dht.RandomNodeInfo(4),
+		dht.RandomNodeInfo(4),
+	}
+	expectedToken := mocks.responder.announceToken(infoHash, mocks.sender.ID, mocks.sender.Addr.ToAddrPort().Addr())
+	mocks.table.On("GetHashOrClosestPeers", infoHash).Return(mockedHash{nodeInfos: nodeInfos}, nil, true)
+	ret, err := mocks.responder.Respond(context.Background(), msg)
+	assert.Equal(t, dht.Return{
+		ID: mocks.peerID,
+		Values: []dht.NodeAddr{
+			nodeInfos[0].Addr,
+			nodeInfos[1].Addr,
+			nodeInfos[2].Addr,
+		},
+		Nodes: nil,
+		Token: &expectedToken,
+	}, ret)
+	assert.NoError(t, err)
+}
+
+func TestResponder_get_peers__nodes(t *testing.T) {
+	mocks := newTestResponderMocks(t)
+	infoHash := protocol.RandomNodeID()
+	msg := dht.RecvMsg{
+		From: mocks.sender.Addr.ToAddrPort(),
+		Msg: dht.Msg{
+			Q: "get_peers",
+			A: &dht.MsgArgs{
+				ID:       mocks.sender.ID,
+				InfoHash: infoHash,
+			},
+		},
+	}
+	nodes := dht.CompactIPv4NodeInfo{
+		dht.RandomNodeInfo(4),
+		dht.RandomNodeInfo(4),
+		dht.RandomNodeInfo(4),
+	}
+	peers := []ktable.Peer{
+		mockedPeer{nodes[0]},
+		mockedPeer{nodes[1]},
+		mockedPeer{nodes[2]},
+	}
+	expectedToken := mocks.responder.announceToken(infoHash, mocks.sender.ID, mocks.sender.Addr.ToAddrPort().Addr())
+	mocks.table.On("GetHashOrClosestPeers", infoHash).Return(nil, peers, false)
+	ret, err := mocks.responder.Respond(context.Background(), msg)
+	assert.Equal(t, dht.Return{
+		ID:     mocks.peerID,
+		Values: nil,
+		Nodes:  nodes,
+		Token:  &expectedToken,
+	}, ret)
+	assert.NoError(t, err)
+}
+
+func TestResponder_get_peers__missing_info_hash(t *testing.T) {
+	mocks := newTestResponderMocks(t)
+	msg := dht.RecvMsg{
+		From: mocks.sender.Addr.ToAddrPort(),
+		Msg: dht.Msg{
+			Q: "get_peers",
+			A: &dht.MsgArgs{
+				ID: mocks.sender.ID,
+			},
+		},
+	}
+	_, err := mocks.responder.Respond(context.Background(), msg)
+	assert.Equal(t, ErrMissingArguments, err)
+}
+
+func TestResponder_announce_peer__implied_port(t *testing.T) {
+	mocks := newTestResponderMocks(t)
+	infoHash := protocol.RandomNodeID()
+	expectedToken := mocks.responder.announceToken(infoHash, mocks.sender.ID, mocks.sender.Addr.ToAddrPort().Addr())
+	msg := dht.RecvMsg{
+		From: mocks.sender.Addr.ToAddrPort(),
+		Msg: dht.Msg{
+			Q: "announce_peer",
+			A: &dht.MsgArgs{
+				ID:          mocks.sender.ID,
+				InfoHash:    infoHash,
+				Token:       expectedToken,
+				ImpliedPort: true,
+			},
+		},
+	}
+	mocks.table.On("PutHash", infoHash, []ktable.HashPeer{{
+		ID:   mocks.sender.ID,
+		Addr: mocks.sender.Addr.ToAddrPort(),
+	}}).Return(true)
+	ret, err := mocks.responder.Respond(context.Background(), msg)
+	assert.Equal(t, dht.Return{
+		ID: mocks.peerID,
+	}, ret)
+	assert.NoError(t, err)
+}
+
+func TestResponder_announce_peer__specified_port(t *testing.T) {
+	mocks := newTestResponderMocks(t)
+	infoHash := protocol.RandomNodeID()
+	expectedToken := mocks.responder.announceToken(infoHash, mocks.sender.ID, mocks.sender.Addr.ToAddrPort().Addr())
+	port := krpc.RandomNodeInfo(4).Addr.Port
+	msg := dht.RecvMsg{
+		From: mocks.sender.Addr.ToAddrPort(),
+		Msg: dht.Msg{
+			Q: "announce_peer",
+			A: &dht.MsgArgs{
+				ID:       mocks.sender.ID,
+				InfoHash: infoHash,
+				Token:    expectedToken,
+				Port:     &port,
+			},
+		},
+	}
+	mocks.table.On("PutHash", infoHash, []ktable.HashPeer{{
+		ID:   mocks.sender.ID,
+		Addr: mocks.sender.Addr.ToAddrPort(),
+	}}).Return(true)
+	ret, err := mocks.responder.Respond(context.Background(), msg)
+	assert.Equal(t, dht.Return{
+		ID: mocks.peerID,
+	}, ret)
+	assert.NoError(t, err)
+}
+
+func TestResponder_sample_infohashes(t *testing.T) {
+	mocks := newTestResponderMocks(t)
+	msg := dht.RecvMsg{
+		From: mocks.sender.Addr.ToAddrPort(),
+		Msg: dht.Msg{
+			Q: "sample_infohashes",
+			A: &dht.MsgArgs{
+				ID: mocks.sender.ID,
+			},
+		},
+	}
+	infoHashes := []ktable.Hash{
+		mockedHash{id: protocol.RandomNodeID()},
+		mockedHash{id: protocol.RandomNodeID()},
+		mockedHash{id: protocol.RandomNodeID()},
+	}
+	nodes := dht.CompactIPv4NodeInfo{
+		dht.RandomNodeInfo(4),
+		dht.RandomNodeInfo(4),
+		dht.RandomNodeInfo(4),
+	}
+	peers := []ktable.Peer{
+		mockedPeer{nodes[0]},
+		mockedPeer{nodes[1]},
+		mockedPeer{nodes[2]},
+	}
+	num := int64(123)
+	mocks.table.On("SampleHashesAndPeers").Return(infoHashes, peers, int(num))
+	ret, err := mocks.responder.Respond(context.Background(), msg)
+	assert.Equal(t, dht.Return{
+		ID:    mocks.peerID,
+		Nodes: nodes,
+		Bep51Return: dht.Bep51Return{
+			Samples: &dht.CompactInfohashes{
+				infoHashes[0].ID(),
+				infoHashes[1].ID(),
+				infoHashes[2].ID(),
+			},
+			Num:      &num,
+			Interval: &mocks.responder.sampleInfoHashesInterval,
+		},
+	}, ret)
+	assert.NoError(t, err)
+}
+
+func TestResponder_unknown_method(t *testing.T) {
+	mocks := newTestResponderMocks(t)
+	msg := dht.RecvMsg{
+		From: mocks.sender.Addr.ToAddrPort(),
+		Msg: dht.Msg{
+			Q: "foo",
+			A: &dht.MsgArgs{
+				ID: mocks.sender.ID,
+			},
+		},
+	}
+	_, err := mocks.responder.Respond(context.Background(), msg)
+	assert.Equal(t, err, ErrMethodUnknown)
+}

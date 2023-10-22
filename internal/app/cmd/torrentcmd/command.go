@@ -1,10 +1,9 @@
 package torrentcmd
 
 import (
-	"github.com/anacrolix/dht/v2/krpc"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
-	"github.com/bitmagnet-io/bitmagnet/internal/metainfo/metainforequester"
-	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainforequester"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -35,7 +34,7 @@ func New(p Params) (Result, error) {
 					},
 				},
 				Action: func(ctx *cli.Context) error {
-					infoHash, err := model.NewHash20FromString(ctx.String("infoHash"))
+					infoHash, err := protocol.ParseID(ctx.String("infoHash"))
 					if err != nil {
 						return err
 					}
@@ -53,7 +52,7 @@ func New(p Params) (Result, error) {
 					},
 				},
 				Action: func(ctx *cli.Context) error {
-					infoHash, err := model.NewHash20FromString(ctx.String("infoHash"))
+					infoHash, err := protocol.ParseID(ctx.String("infoHash"))
 					if err != nil {
 						return err
 					}
@@ -61,9 +60,7 @@ func New(p Params) (Result, error) {
 					if err != nil {
 						return err
 					}
-					nodeAddr := krpc.NodeAddr{}
-					nodeAddr.FromAddrPort(addr)
-					info, err := p.MetaInfoRequester.Request(ctx.Context, krpc.ID(infoHash), nodeAddr)
+					info, err := p.MetaInfoRequester.Request(ctx.Context, protocol.ID(infoHash), addr)
 					if err != nil {
 						return err
 					}

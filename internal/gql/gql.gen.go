@@ -20,6 +20,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -4227,9 +4228,9 @@ func (ec *executionContext) _Torrent_infoHash(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(model.Hash20)
+	res := resTmp.(protocol.ID)
 	fc.Result = res
-	return ec.marshalNHash202githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐHash20(ctx, field.Selections, res)
+	return ec.marshalNHash202githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋprotocolᚐID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Torrent_infoHash(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4940,9 +4941,9 @@ func (ec *executionContext) _TorrentContent_infoHash(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(model.Hash20)
+	res := resTmp.(protocol.ID)
 	fc.Result = res
-	return ec.marshalNHash202githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐHash20(ctx, field.Selections, res)
+	return ec.marshalNHash202githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋprotocolᚐID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_TorrentContent_infoHash(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6404,9 +6405,9 @@ func (ec *executionContext) _TorrentFile_infoHash(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(model.Hash20)
+	res := resTmp.(protocol.ID)
 	fc.Result = res
-	return ec.marshalNHash202githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐHash20(ctx, field.Selections, res)
+	return ec.marshalNHash202githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋprotocolᚐID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_TorrentFile_infoHash(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -11828,13 +11829,13 @@ func (ec *executionContext) marshalNGenreAgg2githubᚗcomᚋbitmagnetᚑioᚋbit
 	return ec._GenreAgg(ctx, sel, &v)
 }
 
-func (ec *executionContext) unmarshalNHash202githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐHash20(ctx context.Context, v interface{}) (model.Hash20, error) {
-	var res model.Hash20
+func (ec *executionContext) unmarshalNHash202githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋprotocolᚐID(ctx context.Context, v interface{}) (protocol.ID, error) {
+	var res protocol.ID
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNHash202githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐHash20(ctx context.Context, sel ast.SelectionSet, v model.Hash20) graphql.Marshaler {
+func (ec *executionContext) marshalNHash202githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋprotocolᚐID(ctx context.Context, sel ast.SelectionSet, v protocol.ID) graphql.Marshaler {
 	return v
 }
 

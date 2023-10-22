@@ -6,13 +6,15 @@ package model
 
 import (
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
 const TableNameTorrent = "torrents"
 
 // Torrent mapped from table <torrents>
 type Torrent struct {
-	InfoHash     Hash20                  `gorm:"column:info_hash;primaryKey;<-:create" json:"infoHash"`
+	InfoHash     protocol.ID             `gorm:"column:info_hash;primaryKey;<-:create" json:"infoHash"`
 	Name         string                  `gorm:"column:name;not null" json:"name"`
 	Size         uint64                  `gorm:"column:size;not null" json:"size"`
 	Private      bool                    `gorm:"column:private;not null" json:"private"`

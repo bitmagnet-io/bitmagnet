@@ -4,19 +4,20 @@ import (
 	"context"
 	"database/sql/driver"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"gorm.io/gorm/clause"
 )
 
 type TorrentPersistence interface {
-	GetTorrent(ctx context.Context, infoHash model.Hash20) (torrent model.Torrent, err error)
-	GetTorrents(ctx context.Context, infoHashes ...model.Hash20) (torrents []model.Torrent, missingInfoHashes []model.Hash20, err error)
+	GetTorrent(ctx context.Context, infoHash protocol.ID) (torrent model.Torrent, err error)
+	GetTorrents(ctx context.Context, infoHashes ...protocol.ID) (torrents []model.Torrent, missingInfoHashes []protocol.ID, err error)
 	PutTorrent(ctx context.Context, torrent model.Torrent) error
-	TorrentExists(ctx context.Context, infoHash model.Hash20) (bool, error)
+	TorrentExists(ctx context.Context, infoHash protocol.ID) (bool, error)
 	// GetPersistedInfoHashes returns the subset of provided hashes that are persisted in the database.
-	GetPersistedInfoHashes(ctx context.Context, infoHashesToCheck []model.Hash20) ([]model.Hash20, error)
+	GetPersistedInfoHashes(ctx context.Context, infoHashesToCheck []protocol.ID) ([]protocol.ID, error)
 }
 
-func (p *persistence) GetTorrent(ctx context.Context, infoHash model.Hash20) (t model.Torrent, _ error) {
+func (p *persistence) GetTorrent(ctx context.Context, infoHash protocol.ID) (t model.Torrent, _ error) {
 	torrents, _, err := p.GetTorrents(ctx, infoHash)
 	if err != nil {
 		return t, err
@@ -27,7 +28,7 @@ func (p *persistence) GetTorrent(ctx context.Context, infoHash model.Hash20) (t 
 	return torrents[0], nil
 }
 
-func (p *persistence) GetTorrents(ctx context.Context, infoHashes ...model.Hash20) ([]model.Torrent, []model.Hash20, error) {
+func (p *persistence) GetTorrents(ctx context.Context, infoHashes ...protocol.ID) ([]model.Torrent, []protocol.ID, error) {
 	valuers := make([]driver.Valuer, 0, len(infoHashes))
 	for _, infoHash := range infoHashes {
 		valuers = append(valuers, infoHash)
@@ -46,8 +47,8 @@ func (p *persistence) GetTorrents(ctx context.Context, infoHashes ...model.Hash2
 		return nil, nil, findErr
 	}
 	torrents := make([]model.Torrent, 0, len(rawTorrents))
-	missingInfoHashes := make([]model.Hash20, 0, len(infoHashes)-len(rawTorrents))
-	foundInfoHashes := make(map[model.Hash20]struct{}, len(rawTorrents))
+	missingInfoHashes := make([]protocol.ID, 0, len(infoHashes)-len(rawTorrents))
+	foundInfoHashes := make(map[protocol.ID]struct{}, len(rawTorrents))
 nextInfoHash:
 	for _, h := range infoHashes {
 		for _, t := range rawTorrents {
@@ -71,7 +72,7 @@ func (p *persistence) PutTorrent(ctx context.Context, torrent model.Torrent) err
 	}).Create(&torrent)
 }
 
-func (p *persistence) TorrentExists(ctx context.Context, infoHash model.Hash20) (bool, error) {
+func (p *persistence) TorrentExists(ctx context.Context, infoHash protocol.ID) (bool, error) {
 	count, err := p.q.WithContext(ctx).Torrent.Where(p.q.Torrent.InfoHash.Eq(infoHash)).Count()
 	if err != nil {
 		return false, err
@@ -79,12 +80,12 @@ func (p *persistence) TorrentExists(ctx context.Context, infoHash model.Hash20) 
 	return count > 0, nil
 }
 
-func (p *persistence) GetPersistedInfoHashes(ctx context.Context, infoHashesToCheck []model.Hash20) ([]model.Hash20, error) {
+func (p *persistence) GetPersistedInfoHashes(ctx context.Context, infoHashesToCheck []protocol.ID) ([]protocol.ID, error) {
 	valuers := make([]driver.Valuer, 0, len(infoHashesToCheck))
 	for _, infoHash := range infoHashesToCheck {
 		valuers = append(valuers, infoHash)
 	}
-	var persistedInfoHashes []model.Hash20
+	var persistedInfoHashes []protocol.ID
 	if err := p.q.WithContext(ctx).Torrent.Where(p.q.Torrent.InfoHash.In(valuers...)).Pluck(p.q.Torrent.InfoHash, &persistedInfoHashes); err != nil {
 		return nil, err
 	}

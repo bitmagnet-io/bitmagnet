@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
 const TableNameTorrentContent = "torrent_contents"
@@ -15,7 +16,7 @@ const TableNameTorrentContent = "torrent_contents"
 // TorrentContent mapped from table <torrent_contents>
 type TorrentContent struct {
 	ID              string                 `gorm:"column:id;primaryKey;<-:false" json:"id"`
-	InfoHash        Hash20                 `gorm:"column:info_hash;not null;<-:create" json:"infoHash"`
+	InfoHash        protocol.ID            `gorm:"column:info_hash;not null;<-:create" json:"infoHash"`
 	ContentType     NullContentType        `gorm:"column:content_type" json:"contentType"`
 	ContentSource   NullString             `gorm:"column:content_source" json:"contentSource"`
 	ContentID       NullString             `gorm:"column:content_id" json:"contentId"`

@@ -2,7 +2,7 @@ package bloom
 
 import (
 	"encoding/binary"
-	"github.com/anacrolix/dht/v2/krpc"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	bloom "github.com/bits-and-blooms/bloom/v3"
 )
 
@@ -19,7 +19,7 @@ func New() Filter {
 	return *bloom.New(M, K)
 }
 
-func FromScrape(f krpc.ScrapeBloomFilter) Filter {
+func FromScrape(f dht.ScrapeBloomFilter) Filter {
 	return *bloom.FromWithM(convertBytes(f), M, K)
 }
 

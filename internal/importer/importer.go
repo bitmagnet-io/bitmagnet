@@ -7,6 +7,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/publisher"
 	"go.uber.org/fx"
 	"gorm.io/gorm/clause"
@@ -42,7 +43,7 @@ func New(p Params) (Result, error) {
 
 type Item struct {
 	Source          string
-	InfoHash        model.Hash20
+	InfoHash        protocol.ID
 	Name            string
 	Size            uint64
 	Private         bool
@@ -95,7 +96,7 @@ type ActiveImport interface {
 	Closed() bool
 	Close() error
 	Err() error
-	ImportedHashes() []model.Hash20
+	ImportedHashes() []protocol.ID
 }
 
 type ImportItemsError struct {
@@ -135,7 +136,7 @@ type activeImport struct {
 	itemChan        chan Item
 	itemBuffer      []Item
 	importedSources map[string]struct{}
-	importedHashes  []model.Hash20
+	importedHashes  []protocol.ID
 	errors          ImportErrors
 }
 
@@ -199,7 +200,7 @@ func (i *activeImport) persistItems(items ...Item) error {
 	var sources []*model.TorrentSource
 	sourcesMap := make(map[string]struct{})
 	torrents := make([]*model.Torrent, 0, len(items))
-	infoHashes := make([]model.Hash20, 0, len(items))
+	infoHashes := make([]protocol.ID, 0, len(items))
 	for _, item := range items {
 		if _, ok1 := i.importedSources[item.Source]; !ok1 {
 			if _, ok2 := sourcesMap[item.Source]; !ok2 {
@@ -323,7 +324,7 @@ func (i *activeImport) Close() error {
 	return i.errors.OrNil()
 }
 
-func (i *activeImport) ImportedHashes() []model.Hash20 {
+func (i *activeImport) ImportedHashes() []protocol.ID {
 	i.mutex.RLock()
 	defer i.mutex.RUnlock()
 	return i.importedHashes

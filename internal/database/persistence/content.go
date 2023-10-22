@@ -3,6 +3,7 @@ package persistence
 import (
 	"context"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
 type ContentPersistence interface {
@@ -11,7 +12,7 @@ type ContentPersistence interface {
 
 type TorrentContentRef struct {
 	model.ContentRef
-	InfoHash model.Hash20
+	InfoHash protocol.ID
 }
 
 func (p *persistence) GetContent(ctx context.Context, ref model.ContentRef) (movie model.Content, err error) {
