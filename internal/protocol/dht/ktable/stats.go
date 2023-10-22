@@ -11,6 +11,10 @@ type Stats struct {
 func (t *table) Stats() Stats {
 	t.mutex.RLock()
 	defer t.mutex.RUnlock()
+	return t.stats()
+}
+
+func (t *table) stats() Stats {
 	return Stats{
 		TotalPeers:  t.peers.count(),
 		TotalHashes: t.hashes.count(),

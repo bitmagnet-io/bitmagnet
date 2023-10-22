@@ -13,6 +13,7 @@ type batcher struct {
 	counter        concurrency.AtomicCounter
 	queryChannel   concurrency.BatchingChannel[batchQuery]
 	resultChannels batchResultChannels
+	stats          Stats
 	table          *table
 }
 
@@ -40,6 +41,7 @@ func (b *batcher) batchCommands() {
 		for _, c := range cs {
 			c.exec(b.table)
 		}
+		b.stats = b.table.stats()
 		b.table.mutex.Unlock()
 	}
 }
@@ -90,6 +92,10 @@ func (b *batcher) GetHashOrClosestPeers(id ID) GetHashOrClosestPeersResult {
 
 func (b *batcher) SampleHashesAndPeers() SampleHashesAndPeersResult {
 	return <-b.addSampleHashesAndPeersResult(SampleHashesAndPeers{})
+}
+
+func (b *batcher) Stats() Stats {
+	return b.stats
 }
 
 func (b *batcher) nextKey() int {

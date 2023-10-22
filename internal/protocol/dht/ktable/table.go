@@ -53,6 +53,7 @@ type TableBatch interface {
 	TableOrigin
 	TableQuery
 	BatchCommand(commands ...Command)
+	Stats() Stats
 }
 
 type Table interface {
