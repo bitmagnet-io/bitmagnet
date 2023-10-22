@@ -78,26 +78,6 @@ func (id ID) GetBit(i int) bool {
 	return id[i/8]>>(7-uint(i%8))&1 == 1
 }
 
-func (id ID) Distance(other ID) ID {
-	var ret ID
-	for i := 0; i < 20; i++ {
-		ret[i] = id[i] ^ other[i]
-	}
-	return ret
-}
-
-func (id ID) LeadingZeros(offset int) int {
-	l := 0
-	for i := offset; i < 160; i++ {
-		if !id.GetBit(i) {
-			l++
-		} else {
-			break
-		}
-	}
-	return l
-}
-
 func (id ID) Bytes() []byte {
 	return id[:]
 }
