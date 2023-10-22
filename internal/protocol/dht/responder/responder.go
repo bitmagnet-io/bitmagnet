@@ -120,10 +120,9 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 			err = ErrInvalidToken
 			return
 		}
-		// todo: is this the right thing to do with the announce port?
 		r.kTable.BatchCommand(ktable.PutHash{ID: args.InfoHash, Peers: []ktable.HashPeer{{
 			ID:   args.ID,
-			Addr: msg.From,
+			Addr: netip.AddrPortFrom(msg.From.Addr(), msg.AnnouncePort()),
 		}}})
 	case dht.QSampleInfohashes:
 		result := r.kTable.SampleHashesAndPeers()

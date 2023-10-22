@@ -328,7 +328,7 @@ func TestResponder_announce_peer__specified_port(t *testing.T) {
 		ID: infoHash,
 		Peers: []ktable.HashPeer{{
 			ID:   mocks.sender.ID,
-			Addr: mocks.sender.Addr.ToAddrPort(),
+			Addr: netip.AddrPortFrom(mocks.sender.Addr.ToAddrPort().Addr(), uint16(port)),
 		}},
 	}).Return(nil)
 	ret, err := mocks.responder.Respond(context.Background(), msg)
