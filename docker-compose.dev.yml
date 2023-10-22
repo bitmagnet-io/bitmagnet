@@ -11,8 +11,7 @@ services:
       - "3334:3334/udp"
     restart: unless-stopped
     environment:
-#      - LOG_LEVEL=debug
-      - LOG_LEVEL=info
+      - LOG_LEVEL=debug
       - POSTGRES_HOST=postgres
       - POSTGRES_PASSWORD=postgres
       - REDIS_ADDR=redis:6379
