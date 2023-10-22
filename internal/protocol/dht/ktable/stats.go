@@ -3,17 +3,7 @@ package ktable
 import "github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable/btree"
 
 type Stats struct {
-	//origin              string
-	//PeersK              int
-	//MinPeers            int
-	//MaxPeers            int
-	//NonEmptyPeerBuckets int
-	//GrownPeerBuckets    int
-	//MaxPeersK           int
-	//MedianPeers int
-	//Quartiles   stats.Quartiles
-	TotalPeers int
-	//HashesK     int
+	TotalPeers  int
 	TotalHashes int
 	btree.Stats
 }

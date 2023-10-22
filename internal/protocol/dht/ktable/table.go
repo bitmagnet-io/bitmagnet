@@ -1,12 +1,15 @@
 package ktable
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable/btree"
 	"go.uber.org/fx"
 	"net/netip"
 	"sync"
 	"time"
 )
+
+type ID = protocol.ID
 
 type Params struct {
 	fx.In
@@ -35,8 +38,6 @@ type TableCommand interface {
 }
 
 type TableQuery interface {
-	//HasPeer(id ID) bool
-	//HasAddr(addr netip.Addr) bool
 	GetClosestPeers(id ID) []Peer
 	GetOldestPeers(cutoff time.Time, n int) []Peer
 	GetPeersForSampleInfoHashes(n int) []Peer

@@ -35,19 +35,6 @@ type HashOption interface {
 
 var _ bucketItemPrivate[[]HashPeer, HashOption, Hash] = (*hash)(nil)
 
-//func (h *hash) init(id ID, peers []HashPeer, rm *reverseMap) {
-//	var peersMap = make(map[string]HashPeer, len(peers))
-//	for _, p := range peers {
-//		peersMap[p.Addr.Addr().String()] = p
-//		rm.putAddrHashes(p.Addr.Addr(), id)
-//	}
-//	*h = hash{
-//		id:           id,
-//		peers:        peersMap,
-//		discoveredAt: discoveredAt.Now(),
-//	}
-//}
-
 func (h *hash) update(peers []HashPeer) {
 	for _, p := range peers {
 		h.peers[p.Addr.Addr().String()] = p
@@ -79,14 +66,6 @@ func (h *hash) hasPeers() bool {
 func (h *hash) ID() ID {
 	return h.id
 }
-
-//func (h *hash) String() string {
-//	parts := make([]string, 0, len(h.peers))
-//	for _, p := range h.peers {
-//		parts = append(parts, p.Addr.String())
-//	}
-//	return strings.Join(parts, ", ")
-//}
 
 func (h *hash) Peers() []HashPeer {
 	peers := make([]HashPeer, 0, len(h.peers))

@@ -111,10 +111,6 @@ func (p *peer) ID() ID {
 	return p.id
 }
 
-//func (p *peer) String() string {
-//	return p.addr.String()
-//}
-
 func (p *peer) Addr() netip.AddrPort {
 	return p.addr
 }

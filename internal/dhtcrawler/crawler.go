@@ -69,12 +69,9 @@ func New(params Params) Result {
 		getOldestPeersInterval:       time.Second * 10,
 		oldPeerThreshold:             time.Minute * 15,
 		findNodesInterval:            time.Second / 4,
-		findNodesBatchSize:           64,
 		findNodeSemaphore:            semaphore.NewWeighted(1000),
 		sampleInfoHashesSemaphore:    semaphore.NewWeighted(1000),
 		sampleInfoHashesInterval:     time.Second,
-		//sampleInfoHashesBatchSize:    32,
-		//discoveredHoldingThreshold: 500,
 		discoveredPeers: concurrency.NewBatchingDedupedChannel[ktable.Peer, string](
 			make(chan ktable.Peer, 1000),
 			100,
@@ -119,21 +116,17 @@ type crawler struct {
 	getOldestPeersInterval       time.Duration
 	oldPeerThreshold             time.Duration
 	findNodesInterval            time.Duration
-	findNodesBatchSize           int
-	//discoveredHoldingSize        atomicValue[int]
-	//discoveredHoldingThreshold int
-	findNodeSemaphore         *semaphore.Weighted
-	sampleInfoHashesSemaphore *semaphore.Weighted
-	sampleInfoHashesInterval  time.Duration
-	//sampleInfoHashesBatchSize     int
-	sampleInfoHashesShortfall atomicValue[int]
-	discoveredPeers           concurrency.BatchingDedupedChannel[ktable.Peer, string]
-	peersForPing              concurrency.BufferedDedupedChannel[ktable.Peer, string]
-	peersForFindNode          concurrency.BufferedDedupedChannel[ktable.Peer, string]
-	peersForSampleInfoHashes  concurrency.BufferedDedupedChannel[ktable.Peer, string]
-	soughtPeerId              *concurrency.AtomicValue[protocol.ID]
-	stopped                   chan struct{}
-	logger                    *zap.SugaredLogger
+	findNodeSemaphore            *semaphore.Weighted
+	sampleInfoHashesSemaphore    *semaphore.Weighted
+	sampleInfoHashesInterval     time.Duration
+	sampleInfoHashesShortfall    atomicValue[int]
+	discoveredPeers              concurrency.BatchingDedupedChannel[ktable.Peer, string]
+	peersForPing                 concurrency.BufferedDedupedChannel[ktable.Peer, string]
+	peersForFindNode             concurrency.BufferedDedupedChannel[ktable.Peer, string]
+	peersForSampleInfoHashes     concurrency.BufferedDedupedChannel[ktable.Peer, string]
+	soughtPeerId                 *concurrency.AtomicValue[protocol.ID]
+	stopped                      chan struct{}
+	logger                       *zap.SugaredLogger
 }
 
 func newPeerChan(cap int) concurrency.BufferedDedupedChannel[ktable.Peer, string] {

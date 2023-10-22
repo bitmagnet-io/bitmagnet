@@ -14,9 +14,6 @@ func (c *crawler) findNode(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-time.After(c.findNodesInterval):
-			//if c.discoveredPeers.SpareCap() < 1 {
-			//	break
-			//}
 			findNodesBatchSize := c.sampleInfoHashesShortfall.Get()
 			if findNodesBatchSize < 1 {
 				findNodesBatchSize = 4

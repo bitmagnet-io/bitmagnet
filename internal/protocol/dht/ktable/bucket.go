@@ -141,7 +141,6 @@ func (r bucketRoot[_, _, _, _]) generateRandomID() ID {
 
 type bucketItem interface {
 	ID() ID
-	//String() string
 }
 
 type bucketItemPrivate[
