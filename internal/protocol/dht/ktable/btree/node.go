@@ -69,6 +69,14 @@ func (n *rootNode) Put(id NodeID) (_ PutResult, evictedID NodeID) {
 			}
 		}
 	}
+	// additionally, if eviction is enabled and we have more than k*n nodes, evict the furthest to avoid uncontrolled memory growth
+	if n.evictionEnabled && evictedID == nil && n.Count() > (n.k*n.N()) {
+		if furthest, ok := n.furthest(xor); ok {
+			if n.Drop(furthest) {
+				evictedID = furthest
+			}
+		}
+	}
 	newNode, result := n.node.put(xor)
 	if result == PutAccepted {
 		n.node = newNode
