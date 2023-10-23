@@ -4,6 +4,8 @@ services:
       context: .
     container_name: bitmagnet
     #    image: ghcr.io/bitmagnet-io/bitmagnet:latest
+    volumes:
+      - ./data/bitmagnet:/tmp
     ports:
       - "3333:3333"
       # BitTorrent ports:
