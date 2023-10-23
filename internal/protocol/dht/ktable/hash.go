@@ -25,7 +25,6 @@ type hash struct {
 }
 
 type HashPeer struct {
-	ID   ID
 	Addr netip.AddrPort
 }
 

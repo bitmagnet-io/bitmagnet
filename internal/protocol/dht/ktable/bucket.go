@@ -33,7 +33,7 @@ func newBucketRoot[
 	return bucketRoot[Input, Option, ItemPublic, ItemPrivate]{
 		origin:  origin,
 		k:       k,
-		btree:   btree.New(origin[:], k, true, true),
+		btree:   btree.New(origin[:], k, true, false),
 		items:   make(map[ID]ItemPrivate, k),
 		newItem: newItem,
 	}

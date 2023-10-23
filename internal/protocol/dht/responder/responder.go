@@ -70,11 +70,11 @@ var ErrTooManyRequests = dht.Error{
 
 func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, err error) {
 	args := msg.Msg.A
-	defer (func() {
-		if err == nil {
-			r.kTable.BatchCommand(ktable.PutPeer{ID: args.ID, Addr: msg.From})
-		}
-	})()
+	//defer (func() {
+	//	if err == nil {
+	//		r.kTable.BatchCommand(ktable.PutPeer{ID: args.ID, Addr: msg.From})
+	//	}
+	//})()
 	// apply both overall and per-IP rate limiting:
 	if !r.limiter.Allow(msg.From.Addr()) {
 		err = ErrTooManyRequests
@@ -121,7 +121,6 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 			return
 		}
 		r.kTable.BatchCommand(ktable.PutHash{ID: args.InfoHash, Peers: []ktable.HashPeer{{
-			ID:   args.ID,
 			Addr: netip.AddrPortFrom(msg.From.Addr(), msg.AnnouncePort()),
 		}}})
 	case dht.QSampleInfohashes:

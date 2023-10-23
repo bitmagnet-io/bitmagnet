@@ -54,31 +54,32 @@ func (c *crawler) handleStagingRequest(ctx context.Context, req stagingRequest) 
 			return
 		}
 	}
+	var hashPeers []ktable.HashPeer
 	if req.needMetaInfo && res.metaInfo.PieceLength == 0 {
 		var errs []error
 		for _, p := range pfh.peers {
+			var metaInfoErr error
 			if res.metaInfo.PieceLength == 0 {
-				metaInfoRes, metaInfoErr := c.metainfoRequester.Request(ctx, req.infoHash, p)
-				if metaInfoErr == nil {
+				if metaInfoRes, err := c.metainfoRequester.Request(ctx, req.infoHash, p); err == nil {
 					res.metaInfo = metaInfoRes.Info
-					peerID := metaInfoRes.PeerID
-					c.kTable.BatchCommand(
-						ktable.PutHash{ID: req.infoHash, Peers: []ktable.HashPeer{{
-							ID:   peerID,
-							Addr: p,
-						}}},
-						ktable.PutPeer{ID: peerID, Addr: p, Options: []ktable.PeerOption{ktable.PeerResponded()}},
-					)
-					break
 				} else {
-					c.kTable.BatchCommand(ktable.DropAddr{Addr: p.Addr(), Reason: fmt.Errorf("failed to fetch meta info from peer: %w", metaInfoErr)})
-					errs = append(errs, metaInfoErr)
+					metaInfoErr = err
+					errs = append(errs, err)
 				}
-			} else {
+			}
+			if metaInfoErr == nil {
+				hashPeers = append(hashPeers, ktable.HashPeer{
+					Addr: p,
+				})
 				_ = c.discoveredPeers.TryIn(peer{
 					addr: p,
 				})
 			}
+		}
+		if len(hashPeers) > 0 {
+			c.kTable.BatchCommand(
+				ktable.PutHash{ID: req.infoHash, Peers: hashPeers},
+			)
 		}
 		if res.metaInfo.PieceLength == 0 {
 			c.logger.Debugw("failed to get meta info from any peers", "infoHash", req.infoHash.String(), "err", errors.Join(errs...))

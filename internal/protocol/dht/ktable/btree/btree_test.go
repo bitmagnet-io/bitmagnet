@@ -121,7 +121,6 @@ func TestBtree_eviction(t *testing.T) {
 
 func TestBtree_closest(t *testing.T) {
 	root := New(testOrigin, testK, true, false)
-	assertPut(t, root, testOrigin, PutRejected, nil)
 	for i := 0; i < 16; i++ {
 		assertPut(t, root, testIDs[i], PutAccepted, nil)
 	}
