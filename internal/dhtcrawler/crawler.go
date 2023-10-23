@@ -61,7 +61,7 @@ func New(params Params) Result {
 			classifierPublisher:    params.ClassifierPublisher,
 			logger:                 params.Logger.Named("dht_staging"),
 		},
-		targetStagingSize:            100,
+		targetStagingSize:            1000,
 		metainfoRequester:            params.MetainfoRequester,
 		bootstrapNodes:               params.BootstrapNodes,
 		reseedBootstrapNodesInterval: time.Minute * 10,
