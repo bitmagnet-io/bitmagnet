@@ -299,9 +299,14 @@ func (s *staging) Respond(ctx context.Context, res Response) {
 	defer delete(s.activeRequests, res.InfoHash)
 	if req.NeedMetaInfo && res.MetaInfo.PieceLength > 0 {
 
-		if reject.ContainsBanWord(res.MetaInfo.BestName()) {
+		bestName := res.MetaInfo.BestName()
+		if reject.ContainsBanWord(bestName) {
 			s.logger.Infof("Found ban word")
 			return
+		}
+
+		if reject.IsLanguageNotAllowed(bestName) {
+			s.logger.Infof("Reject language not wanted : %s", bestName)
 		}
 
 		t, tErr := createTorrentModel(res.InfoHash, res.MetaInfo, res.Scrape)
