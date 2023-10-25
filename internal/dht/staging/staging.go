@@ -3,6 +3,9 @@ package staging
 import (
 	"context"
 	"errors"
+	"sync"
+	"time"
+
 	"github.com/anacrolix/dht/v2/krpc"
 	"github.com/bitmagnet-io/bitmagnet/internal/bloom"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/asynq/message"
@@ -13,12 +16,11 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/metainfo"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/publisher"
+	"github.com/bitmagnet-io/bitmagnet/internal/reject"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"gorm.io/gen/field"
 	"gorm.io/gorm/clause"
-	"sync"
-	"time"
 )
 
 type Params struct {
@@ -296,6 +298,12 @@ func (s *staging) Respond(ctx context.Context, res Response) {
 	}
 	defer delete(s.activeRequests, res.InfoHash)
 	if req.NeedMetaInfo && res.MetaInfo.PieceLength > 0 {
+
+		if reject.ContainsBanWord(res.MetaInfo.BestName()) {
+			s.logger.Infof("Found ban word")
+			return
+		}
+
 		t, tErr := createTorrentModel(res.InfoHash, res.MetaInfo, res.Scrape)
 		if tErr != nil {
 			s.logger.Errorf("error creating torrent model: %s", tErr.Error())

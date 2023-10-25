@@ -2,6 +2,8 @@ module github.com/bitmagnet-io/bitmagnet
 
 go 1.21
 
+replace github.com/bitmagnet-io/bitmagnet/internal/reject => ./internal/reject
+
 require (
 	github.com/99designs/gqlgen v0.17.38
 	github.com/abice/go-enum v0.5.8
