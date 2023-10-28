@@ -204,8 +204,15 @@ func MovieDetailsToMovieModel(details tmdb.MovieDetails) (movie model.Content, e
 		})
 	}
 	releaseYear := releaseDate.Year
+
+	typeVideo := model.ContentTypeMovie
+
+	if details.Adult {
+		typeVideo = model.ContentTypeXxx
+	}
+
 	return model.Content{
-		Type:             model.ContentTypeMovie,
+		Type:             typeVideo,
 		Source:           SourceTmdb,
 		ID:               strconv.Itoa(int(details.ID)),
 		Title:            details.Title,
