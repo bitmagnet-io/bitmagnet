@@ -6,7 +6,7 @@ filename: "{{.InterfaceName}}.go"
 packages:
   github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable:
     interfaces:
-      TableBatch:
+      Table:
   github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/responder:
     interfaces:
       Limiter:

@@ -58,6 +58,14 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		infoHashReadOnly,
 		gen.FieldType("size", "uint64"),
 		gen.FieldType("index", "uint32"),
+		gen.FieldGORMTag("index", func(tag field.GormTag) field.GormTag {
+			tag.Set("<-", "create")
+			return tag
+		}),
+		gen.FieldGORMTag("path", func(tag field.GormTag) field.GormTag {
+			tag.Set("<-", "create")
+			return tag
+		}),
 		gen.FieldGenType("extension", "String"),
 		gen.FieldGORMTag("extension", func(tag field.GormTag) field.GormTag {
 			tag.Set("<-", "false")

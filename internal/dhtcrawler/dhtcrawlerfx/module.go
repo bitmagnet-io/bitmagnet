@@ -29,6 +29,7 @@ func New() fx.Option {
 				},
 			},
 			dhtcrawler.New,
+			dhtcrawler.NewDiscoveredNodes,
 		),
 	)
 }

@@ -15,7 +15,7 @@ func New() fx.Option {
 		configfx.NewConfigModule[server.Config]("dht_server", server.NewDefaultConfig()),
 		fx.Provide(
 			fx.Annotated{
-				Name: "peer_id",
+				Name: "dht_node_id",
 				Target: func() protocol.ID {
 					return protocol.RandomNodeID()
 				},

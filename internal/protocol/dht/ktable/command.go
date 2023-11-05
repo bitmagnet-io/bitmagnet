@@ -14,37 +14,37 @@ type CommandReturn[T any] interface {
 	Query[T]
 }
 
-var _ CommandReturn[btree.PutResult] = PutPeer{}
+var _ CommandReturn[btree.PutResult] = PutNode{}
 
-type PutPeer struct {
+type PutNode struct {
 	ID      ID
 	Addr    netip.AddrPort
-	Options []PeerOption
+	Options []NodeOption
 }
 
-func (c PutPeer) execReturn(t *table) btree.PutResult {
+func (c PutNode) execReturn(t *table) btree.PutResult {
 	if !c.Addr.IsValid() {
 		return btree.PutRejected
 	}
-	return t.peers.put(c.ID, c.Addr, c.Options...)
+	return t.nodes.put(c.ID, c.Addr, c.Options...)
 }
 
-func (c PutPeer) exec(t *table) {
+func (c PutNode) exec(t *table) {
 	c.execReturn(t)
 }
 
-var _ CommandReturn[bool] = DropPeer{}
+var _ CommandReturn[bool] = DropNode{}
 
-type DropPeer struct {
+type DropNode struct {
 	ID     ID
 	Reason error
 }
 
-func (c DropPeer) execReturn(t *table) bool {
-	return t.peers.drop(c.ID, c.Reason)
+func (c DropNode) execReturn(t *table) bool {
+	return t.nodes.drop(c.ID, c.Reason)
 }
 
-func (c DropPeer) exec(t *table) {
+func (c DropNode) exec(t *table) {
 	c.execReturn(t)
 }
 
@@ -60,7 +60,7 @@ func (c DropAddr) execReturn(t *table) bool {
 	if !ok {
 		return false
 	}
-	return t.peers.drop(id, c.Reason)
+	return t.nodes.drop(id, c.Reason)
 }
 
 func (c DropAddr) exec(t *table) {

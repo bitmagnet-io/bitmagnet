@@ -8,55 +8,39 @@ import (
 	"time"
 )
 
-func (c *crawler) findNode(ctx context.Context) {
+func (c *crawler) getNodesForFindNode(ctx context.Context) {
 	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-time.After(c.findNodesInterval):
-			findNodesBatchSize := c.sampleInfoHashesShortfall.Get()
-			if findNodesBatchSize < 1 {
-				findNodesBatchSize = 4
-			}
-			peers := c.kTable.GetOldestPeers(time.Now().Add(-(5 * time.Second)), findNodesBatchSize)
-			for _, p := range peers {
-				_ = c.peersForFindNode.In(ctx, p)
+		peers := c.kTable.GetOldestNodes(time.Now().Add(-(5 * time.Second)), 10)
+		for _, p := range peers {
+			select {
+			case <-ctx.Done():
+				return
+			case c.nodesForFindNode.In() <- p:
+				continue
 			}
 		}
 	}
 }
 
-func (c *crawler) awaitPeersForFindNode(ctx context.Context) {
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case p := <-c.peersForFindNode.Out():
-			if err := c.findNodeSemaphore.Acquire(ctx, 1); err != nil {
-				break
-			}
-			go (func() {
-				defer c.findNodeSemaphore.Release(1)
-				id := c.soughtPeerId.Get()
-				args := dht.MsgArgs{
-					Target: id,
-				}
-				res, err := c.server.Query(ctx, p.Addr(), dht.QFindNode, args)
-				if err != nil {
-					c.kTable.BatchCommand(ktable.DropPeer{ID: p.ID(), Reason: fmt.Errorf("find_node failed: %w", err)})
-				} else {
-					if p.IsSampleInfoHashesCandidate() {
-						_ = c.peersForSampleInfoHashes.TryIn(p)
-					}
-					c.kTable.BatchCommand(ktable.PutPeer{ID: p.ID(), Addr: p.Addr(), Options: []ktable.PeerOption{ktable.PeerResponded()}})
-					for _, n := range res.Msg.R.Nodes {
-						c.discoveredPeers.InContext(ctx, peer{
-							id:   n.ID,
-							addr: n.Addr.ToAddrPort(),
-						})
-					}
-				}
-			})()
+func (c *crawler) runFindNode(ctx context.Context) {
+	_ = c.nodesForFindNode.Run(ctx, func(p ktable.Node) {
+		id := c.soughtNodeID.Get()
+		args := dht.MsgArgs{
+			Target: id,
 		}
-	}
+		res, err := c.server.Query(ctx, p.Addr(), dht.QFindNode, args)
+		if err != nil {
+			c.kTable.BatchCommand(ktable.DropNode{ID: p.ID(), Reason: fmt.Errorf("find_node failed: %w", err)})
+		} else {
+			c.kTable.BatchCommand(ktable.PutNode{ID: p.ID(), Addr: p.Addr(), Options: []ktable.NodeOption{ktable.NodeResponded()}})
+			for _, n := range res.Msg.R.Nodes {
+				select {
+				case <-ctx.Done():
+					return
+				case c.discoveredNodes.In() <- ktable.NewNode(n.ID, n.Addr.ToAddrPort()):
+					continue
+				}
+			}
+		}
+	})
 }

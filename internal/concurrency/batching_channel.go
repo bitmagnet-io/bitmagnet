@@ -1,8 +1,7 @@
 package concurrency
 
 import (
-  "sync"
-  "time"
+	"time"
 )
 
 type BatchingChannel[T any] interface {
@@ -11,7 +10,6 @@ type BatchingChannel[T any] interface {
 }
 
 type batchingChannel[T any] struct {
-	mutex        sync.Mutex
 	input        chan T
 	output       chan []T
 	buffer       []T
@@ -20,10 +18,10 @@ type batchingChannel[T any] struct {
 	ticker       *time.Ticker
 }
 
-func NewBatchingChannel[T any](input chan T, maxBatchSize int, maxWaitTime time.Duration) BatchingChannel[T] {
+func NewBatchingChannel[T any](capacity int, maxBatchSize int, maxWaitTime time.Duration) BatchingChannel[T] {
 	ch := &batchingChannel[T]{
-		input:        input,
-		output:       make(chan []T),
+		input:        make(chan T, capacity),
+		output:       make(chan []T, 1),
 		maxBatchSize: maxBatchSize,
 		maxWaitTime:  maxWaitTime,
 		ticker:       time.NewTicker(maxWaitTime),
@@ -52,18 +50,14 @@ func (ch *batchingChannel[T]) batch() {
 			if !ok {
 				break
 			}
-			ch.mutex.Lock()
 			ch.buffer = append(ch.buffer, next)
 			if len(ch.buffer) >= ch.maxBatchSize {
 				ch.flush()
 			}
-			ch.mutex.Unlock()
 		case <-ch.ticker.C:
-			ch.mutex.Lock()
-			if len(ch.buffer) >= 0 {
+			if len(ch.buffer) > 0 {
 				ch.flush()
 			}
-			ch.mutex.Unlock()
 		}
 	}
 }
@@ -72,6 +66,6 @@ func (ch *batchingChannel[T]) flush() {
 	ch.ticker.Stop()
 	batch := ch.buffer
 	ch.buffer = nil
-	ch.output <- batch
 	ch.ticker.Reset(ch.maxWaitTime)
+	ch.output <- batch
 }

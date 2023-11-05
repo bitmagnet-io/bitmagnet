@@ -40,29 +40,25 @@ var testIDs = []NodeID{
 	newTestID("1010000000001001"), // 19
 }
 
-func assertPut(t *testing.T, root Btree, id NodeID, expectedResult PutResult, expectedEvicted NodeID) {
+func assertPut(t *testing.T, root Btree, id NodeID, expectedResult PutResult) {
 	label := "xor: " + id.MustXor(testOrigin).BinaryString()
-	if expectedEvicted != nil {
-		label += " / evicted: " + expectedEvicted.MustXor(testOrigin).BinaryString()
-	}
-	result, evicted := root.Put(id)
+	result := root.Put(id)
 	assert.Equal(t, expectedResult, result, label)
-	assert.Equal(t, expectedEvicted, evicted, label)
 }
 
 func TestBtree_simple(t *testing.T) {
-	root := New(testOrigin, testK, false, false)
-	assertPut(t, root, testOrigin, PutRejected, nil)
+	root := New(testOrigin, testK, false)
+	assertPut(t, root, testOrigin, PutRejected)
 	for range []int{1, 2} {
 		for i := 0; i < 12; i++ {
-			assertPut(t, root, testIDs[i], PutAccepted, nil)
+			assertPut(t, root, testIDs[i], PutAccepted)
 			assert.True(t, root.Has(testIDs[i]), i)
 		}
 		for i := 12; i < 20; i++ {
-			assertPut(t, root, testIDs[i], PutRejected, nil)
+			assertPut(t, root, testIDs[i], PutRejected)
 		}
 		for i := 0; i < 12; i++ {
-			assertPut(t, root, testIDs[i], PutAlreadyExists, nil)
+			assertPut(t, root, testIDs[i], PutAlreadyExists)
 		}
 		assert.Equal(t, 12, root.Count())
 		for i := 0; i < 12; i++ {
@@ -82,14 +78,14 @@ func TestBtree_simple(t *testing.T) {
 }
 
 func TestBtree_splitting(t *testing.T) {
-	root := New(testOrigin, testK, true, false)
-	assertPut(t, root, testOrigin, PutRejected, nil)
+	root := New(testOrigin, testK, true)
+	assertPut(t, root, testOrigin, PutRejected)
 	for i := 0; i < 16; i++ {
-		assertPut(t, root, testIDs[i], PutAccepted, nil)
+		assertPut(t, root, testIDs[i], PutAccepted)
 	}
 	assert.Equal(t, 12, root.countCloserThan(testIDs[16]))
 	for i := 16; i < 20; i++ {
-		assertPut(t, root, testIDs[i], PutRejected, nil)
+		assertPut(t, root, testIDs[i], PutRejected)
 	}
 	for i := 0; i < 16; i++ {
 		assert.True(t, root.Has(testIDs[i]), i)
@@ -106,23 +102,10 @@ func TestBtree_splitting(t *testing.T) {
 	assert.Equal(t, 0, root.Count())
 }
 
-func TestBtree_eviction(t *testing.T) {
-	root := New(testOrigin, testK, false, true)
-	assertPut(t, root, testOrigin, PutRejected, nil)
-	for i := 4; i < 8; i++ {
-		assertPut(t, root, testIDs[i], PutAccepted, nil)
-	}
-	assertPut(t, root, testIDs[19], PutAccepted, nil)
-	assertPut(t, root, testIDs[12], PutAccepted, testIDs[19])
-	assertPut(t, root, testIDs[13], PutAccepted, testIDs[7])
-	assertPut(t, root, testIDs[14], PutAccepted, testIDs[6])
-	assertPut(t, root, testIDs[15], PutAccepted, testIDs[5])
-}
-
 func TestBtree_closest(t *testing.T) {
-	root := New(testOrigin, testK, true, false)
+	root := New(testOrigin, testK, true)
 	for i := 0; i < 16; i++ {
-		assertPut(t, root, testIDs[i], PutAccepted, nil)
+		assertPut(t, root, testIDs[i], PutAccepted)
 	}
 	assert.Equal(t, []NodeID{testIDs[4], testIDs[5], testIDs[6], testIDs[7]}, root.Closest(testIDs[16], 4))
 	assert.Equal(t, []NodeID{

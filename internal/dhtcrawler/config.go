@@ -5,16 +5,10 @@ import (
 )
 
 type Config struct {
+	ScalingFactor               uint
 	CrawlBootstrapHostsInterval time.Duration
-	SampleInfoHashesInterval    time.Duration
-	// DiscardUnscrapableTorrents when true, torrents that cannot be scraped to find seeders and leechers will be discarded
-	DiscardUnscrapableTorrents bool
-	MaxStagingSize             uint
-	// SaveFiles when true, torrent files metadata will be persisted to the database.
-	SaveFiles bool
 	// SaveFilesThreshold specifies a maximum number of files in a torrent before file information is discarded.
 	// Some torrents contain thousands of files which can severely impact performance and uses a lot of disk space.
-	// A value of 0 means no threshold.
 	SaveFilesThreshold uint
 	// SavePieces when true, torrent pieces will be persisted to the database.
 	// The pieces take up quite a lot of space, and aren't currently very useful, but they may be used by future features.
@@ -25,13 +19,10 @@ type Config struct {
 
 func NewDefaultConfig() Config {
 	return Config{
+		ScalingFactor:               10,
 		CrawlBootstrapHostsInterval: time.Minute,
-		SampleInfoHashesInterval:    time.Millisecond * 100,
-		DiscardUnscrapableTorrents:  false,
-		MaxStagingSize:              250,
-		SaveFiles:                   true,
 		SaveFilesThreshold:          50,
 		SavePieces:                  false,
-		RescrapeThreshold:           time.Hour * 24 * 7,
+		RescrapeThreshold:           time.Hour * 24 * 30,
 	}
 }

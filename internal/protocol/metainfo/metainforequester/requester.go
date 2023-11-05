@@ -22,7 +22,6 @@ import (
 
 type Params struct {
 	fx.In
-	PeerID protocol.ID `name:"peer_id"`
 	Config Config
 }
 
@@ -34,13 +33,13 @@ type Result struct {
 func New(p Params) Result {
 	return Result{
 		Requester: requester{
-			clientID: p.PeerID,
+			clientID: protocol.RandomPeerID(),
 			timeout:  p.Config.RequestTimeout,
 			dialer: &net.Dialer{
 				Timeout:   3 * time.Second,
 				KeepAlive: -1,
 			},
-			limiter: concurrency.NewKeyedLimiter(rate.Every(time.Second*2), 2, 1000, time.Second*20),
+			limiter: concurrency.NewKeyedLimiter(rate.Every(time.Second/2), 4, 1000, time.Second*20),
 		},
 	}
 }
@@ -104,67 +103,44 @@ type Response struct {
 	Info metainfo.Info
 }
 
-type rawResponse struct {
-	HandshakeInfo
-	pieces []byte
-}
-
 func (r requester) Request(ctx context.Context, infoHash protocol.ID, node netip.AddrPort) (Response, error) {
 	if limitErr := r.limiter.Wait(ctx, node.Addr().String()); limitErr != nil {
 		return Response{}, limitErr
 	}
-	gotRawResponse := make(chan rawResponse)
-	gotErr := make(chan error)
 	timeoutCtx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
-	go (func() {
-		conn, connErr := r.connect(timeoutCtx, node)
-		if connErr != nil {
-			gotErr <- connErr
-			return
-		}
-		defer func() {
-			_ = conn.Close()
-		}()
-		hsInfo, btHandshakeErr := btHandshake(conn, infoHash, r.clientID)
-		if btHandshakeErr != nil {
-			gotErr <- btHandshakeErr
-			return
-		}
-		metadataSize, utMetadata, exHandshakeErr := exHandshake(conn)
-		if exHandshakeErr != nil {
-			gotErr <- exHandshakeErr
-			return
-		}
-		if requestAllPiecesErr := requestAllPieces(conn, metadataSize, utMetadata); requestAllPiecesErr != nil {
-			gotErr <- requestAllPiecesErr
-			return
-		}
-		pieces, readAllPiecesErr := readAllPieces(conn, metadataSize)
-		if readAllPiecesErr != nil {
-			gotErr <- readAllPiecesErr
-			return
-		}
-		gotRawResponse <- rawResponse{
-			HandshakeInfo: hsInfo,
-			pieces:        pieces,
-		}
-	})()
-	select {
-	case <-timeoutCtx.Done():
-		return Response{}, timeoutCtx.Err()
-	case err := <-gotErr:
-		return Response{}, err
-	case raw := <-gotRawResponse:
-		parsed, parseErr := metainfo.ParseMetaInfoBytes(infoHash, raw.pieces)
-		if parseErr != nil {
-			return Response{}, parseErr
-		}
-		return Response{
-			HandshakeInfo: raw.HandshakeInfo,
-			Info:          parsed,
-		}, nil
+	conn, connErr := r.connect(timeoutCtx, node)
+	if connErr != nil {
+		return Response{}, connErr
 	}
+	defer func() {
+		if closeErr := conn.Close(); closeErr != nil {
+			fmt.Printf("failed to close connection (req): %s\n", closeErr.Error())
+		}
+	}()
+	hsInfo, btHandshakeErr := btHandshake(conn, infoHash, r.clientID)
+	if btHandshakeErr != nil {
+		return Response{}, btHandshakeErr
+	}
+	metadataSize, utMetadata, exHandshakeErr := exHandshake(conn)
+	if exHandshakeErr != nil {
+		return Response{}, exHandshakeErr
+	}
+	if requestAllPiecesErr := requestAllPieces(conn, metadataSize, utMetadata); requestAllPiecesErr != nil {
+		return Response{}, requestAllPiecesErr
+	}
+	pieces, readAllPiecesErr := readAllPieces(conn, metadataSize)
+	if readAllPiecesErr != nil {
+		return Response{}, readAllPiecesErr
+	}
+	parsed, parseErr := metainfo.ParseMetaInfoBytes(infoHash, pieces)
+	if parseErr != nil {
+		return Response{}, parseErr
+	}
+	return Response{
+		HandshakeInfo: hsInfo,
+		Info:          parsed,
+	}, nil
 }
 
 func (r requester) connect(ctx context.Context, addr netip.AddrPort) (conn *net.TCPConn, err error) {
@@ -175,7 +151,9 @@ func (r requester) connect(ctx context.Context, addr netip.AddrPort) (conn *net.
 	}
 	tcpConn := c.(*net.TCPConn)
 	closeConn := func() {
-		_ = tcpConn.Close()
+		if closeErr := tcpConn.Close(); closeErr != nil {
+			fmt.Printf("failed to close connection: %s\n", closeErr.Error())
+		}
 	}
 	// If sec == 0, operating system discards any unsent or unacknowledged data [after Close() has been called].
 	if setLingerErr := tcpConn.SetLinger(0); setLingerErr != nil {
@@ -336,18 +314,17 @@ func readAllPieces(r io.Reader, metadataSize uint) ([]byte, error) {
 			if len(metadataPiece) > 16*1024 {
 				return nil, errors.New("metadataPiece > 16kiB")
 			}
-			piece := rExtDict.Piece
-			copy(metadataBytes[piece*int(math.Pow(2, 14)):piece*int(math.Pow(2, 14))+len(metadataPiece)], metadataPiece)
 			receivedSize += uint(len(metadataPiece))
 			// ... if the length of @metadataPiece is less than 16kiB AND metadataBytes is NOT
 			// complete then we err.
 			if len(metadataPiece) < 16*1024 && receivedSize != metadataSize {
 				return nil, errors.New("metadataPiece < 16 kiB but incomplete")
 			}
-
 			if receivedSize > metadataSize {
 				return nil, errors.New("receivedSize > metadataSize")
 			}
+			piece := rExtDict.Piece
+			copy(metadataBytes[piece*int(math.Pow(2, 14)):piece*int(math.Pow(2, 14))+len(metadataPiece)], metadataPiece)
 		}
 	}
 	return metadataBytes, nil

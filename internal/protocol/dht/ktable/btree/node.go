@@ -19,11 +19,10 @@ type rootNode struct {
 	k                int
 	node             iNode
 	splittingEnabled bool
-	evictionEnabled  bool
-	bucketCounts     map[int]int
+	bucketCounts map[int]int
 }
 
-func New(origin NodeID, k int, splittingEnabled bool, evictionEnabled bool) Btree {
+func New(origin NodeID, k int, splittingEnabled bool) Btree {
 	return &rootNode{
 		baseNode: baseNode{
 			origin: origin,
@@ -36,8 +35,7 @@ func New(origin NodeID, k int, splittingEnabled bool, evictionEnabled bool) Btre
 		},
 		k:                k,
 		splittingEnabled: splittingEnabled,
-		evictionEnabled:  evictionEnabled,
-		bucketCounts:     make(map[int]int, len(origin)*8),
+		bucketCounts: make(map[int]int, len(origin)*8),
 	}
 }
 
@@ -45,36 +43,19 @@ func (n *rootNode) Has(id NodeID) bool {
 	return n.node.has(id.MustXor(n.origin))
 }
 
-func (n *rootNode) Put(id NodeID) (_ PutResult, evictedID NodeID) {
+func (n *rootNode) Put(id NodeID) PutResult {
 	if id.Equals(n.origin) {
-		return PutRejected, nil
+		return PutRejected
 	}
 	xor := id.MustXor(n.origin)
 	if n.node.has(xor) {
-		return PutAlreadyExists, nil
+		return PutAlreadyExists
 	}
 	// first check if we have a "bucket" with capacity
 	if n.getBucketCount(xor) >= n.k {
 		// then if "splitting" is enabled, check if we have fewer than k nodes closer to the origin
 		if !n.splittingEnabled || n.node.countCloserThanSubpath(xor.Bits()) >= n.k {
-			if n.evictionEnabled {
-				if furthest, ok := n.furthest(xor); ok {
-					if n.Drop(furthest) {
-						evictedID = furthest
-					}
-				}
-			}
-			if evictedID == nil {
-				return PutRejected, nil
-			}
-		}
-	}
-	// additionally, if eviction is enabled and we have more than k*n nodes, evict the furthest to avoid uncontrolled memory growth
-	if n.evictionEnabled && evictedID == nil && n.Count() > (n.k*n.N()) {
-		if furthest, ok := n.furthest(xor); ok {
-			if n.Drop(furthest) {
-				evictedID = furthest
-			}
+			return PutRejected
 		}
 	}
 	newNode, result := n.node.put(xor)
@@ -82,7 +63,7 @@ func (n *rootNode) Put(id NodeID) (_ PutResult, evictedID NodeID) {
 		n.node = newNode
 		n.putBucketCount(xor)
 	}
-	return result, evictedID
+	return result
 }
 
 func (n *rootNode) putBucketCount(xor NodeID) {

@@ -19,6 +19,7 @@ FROM alpine:3.18
 
 RUN apk --update add \
     curl \
+    iproute2-ss \
     && rm -rf /var/cache/apk/*
 
 COPY --from=build /build/bitmagnet /usr/bin/bitmagnet

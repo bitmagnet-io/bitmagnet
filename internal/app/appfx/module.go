@@ -3,7 +3,6 @@ package appfx
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/app/cmd/searchcmd"
 	"github.com/bitmagnet-io/bitmagnet/internal/app/cmd/torrentcmd"
-	"github.com/bitmagnet-io/bitmagnet/internal/app/freeosmemory"
 	"github.com/bitmagnet-io/bitmagnet/internal/app/tracing"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/app/boilerplateappfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpserver/httpserverfx"
@@ -44,7 +43,6 @@ func New() fx.Option {
 			searchcmd.New,
 			torrentcmd.New,
 		),
-		fx.Provide(freeosmemory.New),
 		fx.Provide(tracing.New),
 		fx.Provide(webui.New),
 		fx.Decorate(migrations.NewDecorator),

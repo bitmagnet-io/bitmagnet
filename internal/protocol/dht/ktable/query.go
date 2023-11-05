@@ -10,25 +10,25 @@ type Query[T any] interface {
 	execReturn(*table) T
 }
 
-var _ Query[[]Peer] = GetClosestPeers{}
+var _ Query[[]Node] = GetClosestPeers{}
 
 type GetClosestPeers struct {
 	ID ID
 }
 
-func (c GetClosestPeers) execReturn(t *table) []Peer {
-	return t.peers.getClosest(c.ID)
+func (c GetClosestPeers) execReturn(t *table) []Node {
+	return t.nodes.getClosest(c.ID)
 }
 
-var _ Query[[]Peer] = GetOldestPeers{}
+var _ Query[[]Node] = GetOldestPeers{}
 
 type GetOldestPeers struct {
 	Cutoff time.Time
 	N      int
 }
 
-func (c GetOldestPeers) execReturn(t *table) []Peer {
-	peers := t.peers.getLastRespondedBefore(c.Cutoff)
+func (c GetOldestPeers) execReturn(t *table) []Node {
+	peers := t.nodes.getLastRespondedBefore(c.Cutoff)
 	sort.Slice(peers, func(i, j int) bool {
 		return peers[i].Time().Before(peers[j].Time())
 	})
@@ -54,15 +54,15 @@ func (c FilterKnownAddrs) execReturn(t *table) []netip.Addr {
 	return unknown
 }
 
-var _ Query[[]Peer] = GetPeersForSampleInfoHashes{}
+var _ Query[[]Node] = GetNodesForSampleInfoHashes{}
 
-type GetPeersForSampleInfoHashes struct {
+type GetNodesForSampleInfoHashes struct {
 	N int
 }
 
-func (c GetPeersForSampleInfoHashes) execReturn(t *table) []Peer {
-	peers := make([]Peer, 0, c.N)
-	for _, p := range t.peers.getCandidatesForSampleInfoHashes(c.N) {
+func (c GetNodesForSampleInfoHashes) execReturn(t *table) []Node {
+	peers := make([]Node, 0, c.N)
+	for _, p := range t.nodes.getCandidatesForSampleInfoHashes(c.N) {
 		peers = append(peers, p)
 		if len(peers) >= c.N {
 			break
@@ -71,47 +71,47 @@ func (c GetPeersForSampleInfoHashes) execReturn(t *table) []Peer {
 	return peers
 }
 
-var _ Query[ID] = GeneratePeerID{}
+var _ Query[ID] = GenerateNodeID{}
 
-type GeneratePeerID struct{}
+type GenerateNodeID struct{}
 
-func (c GeneratePeerID) execReturn(t *table) ID {
-	return t.peers.generateRandomID()
+func (c GenerateNodeID) execReturn(t *table) ID {
+	return t.nodes.generateRandomID()
 }
 
-var _ Query[GetHashOrClosestPeersResult] = GetHashOrClosestPeers{}
+var _ Query[GetHashOrClosestNodesResult] = GetHashOrClosestNodes{}
 
-type GetHashOrClosestPeers struct {
+type GetHashOrClosestNodes struct {
 	ID ID
 }
 
-func (c GetHashOrClosestPeers) execReturn(t *table) GetHashOrClosestPeersResult {
+func (c GetHashOrClosestNodes) execReturn(t *table) GetHashOrClosestNodesResult {
 	h, ok := t.hashes.items[c.ID]
 	if ok {
-		return GetHashOrClosestPeersResult{
+		return GetHashOrClosestNodesResult{
 			Hash:  h,
 			Found: true,
 		}
 	}
-	closestPeers := t.peers.getClosest(c.ID)
-	return GetHashOrClosestPeersResult{
-		ClosestPeers: closestPeers,
+	closestNodes := t.nodes.getClosest(c.ID)
+	return GetHashOrClosestNodesResult{
+		ClosestNodes: closestNodes,
 	}
 }
 
-var _ Query[SampleHashesAndPeersResult] = SampleHashesAndPeers{}
+var _ Query[SampleHashesAndNodesResult] = SampleHashesAndNodes{}
 
-type SampleHashesAndPeers struct{}
+type SampleHashesAndNodes struct{}
 
-func (c SampleHashesAndPeers) execReturn(t *table) SampleHashesAndPeersResult {
-	nHashes := 8
+func (c SampleHashesAndNodes) execReturn(t *table) SampleHashesAndNodesResult {
+	nHashes := 20
 	hashes := t.hashes.getRandom(nHashes)
-	nPeers := 8 + (nHashes - len(hashes))
-	peers := t.peers.getRandom(nPeers)
+	nNodes := 20 + (nHashes - len(hashes))
+	nodes := t.nodes.getRandom(nNodes)
 	totalHashes := t.hashes.count()
-	return SampleHashesAndPeersResult{
+	return SampleHashesAndNodesResult{
 		Hashes:      hashes,
-		Peers:       peers,
+		Nodes:       nodes,
 		TotalHashes: totalHashes,
 	}
 }

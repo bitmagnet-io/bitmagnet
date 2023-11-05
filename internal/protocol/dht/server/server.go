@@ -42,7 +42,7 @@ func New(p Params) Result {
 		socket:           NewSocket(),
 		queries:          make(map[string]chan dht.RecvMsg),
 		queryTimeout:     p.Config.QueryTimeout,
-		queryLimiter:     concurrency.NewKeyedLimiter(rate.Every(time.Second*2), 2, 1000, time.Second*20),
+		queryLimiter:     concurrency.NewKeyedLimiter(rate.Every(time.Second), 4, 1000, time.Second*20),
 		responder:        p.Responder,
 		responderTimeout: time.Second * 5,
 		idIssuer:         &variantIdIssuer{},

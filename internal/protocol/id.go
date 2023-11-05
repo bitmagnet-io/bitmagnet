@@ -167,9 +167,9 @@ func (id *MutableID) SetBit(i int, v bool) {
 	}
 }
 
-const clientIDPrefix = "-BM0001-"
+const peerIDPrefix = "-BM0001-"
 
-func RendomClientID() ID {
+func RandomPeerID() ID {
 	// There are 2 main conventions for encodeing client and client version information into the client ID,
 	// Azureus-style and Shadow's-style.
 	//
@@ -186,7 +186,7 @@ func RendomClientID() ID {
 	// - Patch version number is not encoded.
 	clientID := RandomNodeID()
 	i := 0
-	for _, c := range clientIDPrefix {
+	for _, c := range peerIDPrefix {
 		clientID[i] = byte(c)
 		i++
 	}

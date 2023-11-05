@@ -33,7 +33,7 @@ func newBucketRoot[
 	return bucketRoot[Input, Option, ItemPublic, ItemPrivate]{
 		origin:  origin,
 		k:       k,
-		btree:   btree.New(origin[:], k, true, false),
+		btree:   btree.New(origin[:], k, true),
 		items:   make(map[ID]ItemPrivate, k),
 		newItem: newItem,
 	}
@@ -46,27 +46,13 @@ func (r bucketRoot[_, _, _, _]) count() int {
 func (r bucketRoot[Input, Option, _, ItemPrivate]) put(id ID, input Input, options ...Option) btree.PutResult {
 	var it ItemPrivate
 	var putResult btree.PutResult
-	var evictedID btree.NodeID
 	it, ok := r.items[id]
-	if ok {
-		putResult = btree.PutAlreadyExists
-	} else {
-		putResult, evictedID = r.btree.Put(id[:])
-		if putResult == btree.PutAlreadyExists {
-			panic("shouldn't happen")
-		}
-	}
-	if evictedID != nil {
-		evictedItem, ok := r.items[protocol.MustNewIDFromByteSlice(evictedID)]
-		if !ok {
-			panic("shouldn't happen")
-		}
-		evictedItem.drop(errors.New("evicted"))
-		delete(r.items, evictedItem.ID())
-	}
+	putResult = r.btree.Put(id[:])
 	switch putResult {
 	case btree.PutAccepted:
-		it = r.newItem(id, input)
+		if !ok {
+			it = r.newItem(id, input)
+		}
 		r.items[id] = it
 	case btree.PutAlreadyExists:
 		it.update(input)
@@ -96,15 +82,16 @@ func (r bucketRoot[_, _, ItemPublic, _]) getRandom(n int) []ItemPublic {
 var ErrDropReasonNotProvided = errors.New("drop reason not provided")
 
 func (r bucketRoot[_, _, _, _]) drop(id ID, reason error) bool {
-	if !r.btree.Drop(id[:]) {
+	it, ok := r.items[id]
+	if !ok {
 		return false
 	}
 	if reason == nil {
 		reason = ErrDropReasonNotProvided
 	}
-	r.items[id].drop(reason)
+	it.drop(reason)
 	delete(r.items, id)
-	return true
+	return r.btree.Drop(id[:])
 }
 
 func (r bucketRoot[_, _, ItemPublic, _]) getClosest(id ID) []ItemPublic {

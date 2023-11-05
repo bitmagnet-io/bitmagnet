@@ -4,10 +4,12 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 	"golang.org/x/time/rate"
 	"net/netip"
 	"time"
@@ -15,8 +17,9 @@ import (
 
 type Params struct {
 	fx.In
-	PeerID protocol.ID `name:"peer_id"`
-	KTable ktable.TableBatch
+	KTable          ktable.Table
+	DiscoveredNodes concurrency.BatchingChannel[ktable.Node] `name:"dht_discovered_nodes"`
+	Logger          *zap.SugaredLogger
 }
 
 type Result struct {
@@ -27,11 +30,13 @@ type Result struct {
 func New(p Params) Result {
 	return Result{
 		Responder: responder{
-			peerID:                   p.PeerID,
+			nodeID:                   p.KTable.Origin(),
 			kTable:                   p.KTable,
 			tokenSecret:              protocol.RandomNodeID().Bytes(),
 			sampleInfoHashesInterval: 10,
 			limiter:                  NewLimiter(rate.Every(time.Second/5), 20, rate.Every(time.Second), 10, 1000, time.Second*20),
+			discoveredNodes:          p.DiscoveredNodes.In(),
+			logger:                   p.Logger,
 		},
 	}
 }
@@ -41,11 +46,13 @@ type Responder interface {
 }
 
 type responder struct {
-	peerID                   [20]byte
-	kTable                   ktable.TableBatch
+	nodeID                   protocol.ID
+	kTable                   ktable.Table
 	tokenSecret              []byte
 	sampleInfoHashesInterval int64
 	limiter                  Limiter
+	discoveredNodes          chan<- ktable.Node
+	logger                   *zap.SugaredLogger
 }
 
 var ErrMissingArguments = dht.Error{
@@ -70,11 +77,21 @@ var ErrTooManyRequests = dht.Error{
 
 func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, err error) {
 	args := msg.Msg.A
-	//defer (func() {
-	//	if err == nil {
-	//		r.kTable.BatchCommand(ktable.PutPeer{ID: args.ID, Addr: msg.From})
-	//	}
-	//})()
+	defer func() {
+		if err == nil {
+			r.logger.Debugw("responded", "msg", msg, "ret", ret)
+			go func() {
+				ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+				defer cancel()
+				select {
+				case <-ctx.Done():
+				case r.discoveredNodes <- ktable.NewNode(args.ID, msg.From):
+				}
+			}()
+		} else {
+			r.logger.Debugw("failed to respond", "msg", msg, "err", err)
+		}
+	}()
 	// apply both overall and per-IP rate limiting:
 	if !r.limiter.Allow(msg.From.Addr()) {
 		err = ErrTooManyRequests
@@ -84,7 +101,7 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 		err = ErrMissingArguments
 		return
 	}
-	ret.ID = r.peerID
+	ret.ID = r.nodeID
 	switch msg.Msg.Q {
 	case dht.QPing:
 	case dht.QFindNode:
@@ -92,14 +109,14 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 			err = ErrMissingArguments
 			return
 		}
-		closestPeers := r.kTable.GetClosestPeers(args.Target)
-		ret.Nodes = nodeInfosFromPeers(closestPeers...)
+		closestNodes := r.kTable.GetClosestNodes(args.Target)
+		ret.Nodes = nodeInfosFromNodes(closestNodes...)
 	case dht.QGetPeers:
 		if args.InfoHash == [20]byte{} {
 			err = ErrMissingArguments
 			return
 		}
-		result := r.kTable.GetHashOrClosestPeers(args.InfoHash)
+		result := r.kTable.GetHashOrClosestNodes(args.InfoHash)
 		if result.Found {
 			hashPeers := result.Hash.Peers()
 			values := make([]dht.NodeAddr, 0, len(hashPeers))
@@ -108,7 +125,7 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 			}
 			ret.Values = values
 		}
-		ret.Nodes = nodeInfosFromPeers(result.ClosestPeers...)
+		ret.Nodes = nodeInfosFromNodes(result.ClosestNodes...)
 		token := r.announceToken(args.InfoHash, args.ID, msg.From.Addr())
 		ret.Token = &token
 	case dht.QAnnouncePeer:
@@ -124,13 +141,13 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 			Addr: netip.AddrPortFrom(msg.From.Addr(), msg.AnnouncePort()),
 		}}})
 	case dht.QSampleInfohashes:
-		result := r.kTable.SampleHashesAndPeers()
+		result := r.kTable.SampleHashesAndNodes()
 		samples := make(dht.CompactInfohashes, 0, len(result.Hashes))
 		for _, h := range result.Hashes {
 			samples = append(samples, h.ID())
 		}
 		ret.Samples = &samples
-		ret.Nodes = nodeInfosFromPeers(result.Peers...)
+		ret.Nodes = nodeInfosFromNodes(result.Nodes...)
 		numInt64 := int64(result.TotalHashes)
 		ret.Num = &numInt64
 		ret.Interval = &r.sampleInfoHashesInterval
@@ -151,7 +168,7 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 // https://www.bittorrent.org/beps/bep_0005.html
 func (r responder) announceToken(infoHash protocol.ID, nodeID protocol.ID, nodeAddr netip.Addr) string {
 	bytes := r.tokenSecret
-	bytes = append(bytes, r.peerID[:]...)
+	bytes = append(bytes, r.nodeID[:]...)
 	bytes = append(bytes, infoHash[:]...)
 	bytes = append(bytes, nodeID[:]...)
 	bytes = append(bytes, []byte(nodeAddr.String())...)
@@ -159,20 +176,20 @@ func (r responder) announceToken(infoHash protocol.ID, nodeID protocol.ID, nodeA
 	return hex.EncodeToString(tokenHash[:])
 }
 
-func nodeInfosFromPeers(p ...ktable.Peer) []dht.NodeInfo {
-	if len(p) == 0 {
+func nodeInfosFromNodes(ns ...ktable.Node) []dht.NodeInfo {
+	if len(ns) == 0 {
 		return nil
 	}
-	nodes := make([]dht.NodeInfo, 0, len(p))
-	for _, peer := range p {
-		nodes = append(nodes, nodeInfoFromPeer(peer))
+	nodes := make([]dht.NodeInfo, 0, len(ns))
+	for _, n := range ns {
+		nodes = append(nodes, nodeInfoFromNode(n))
 	}
 	return nodes
 }
 
-func nodeInfoFromPeer(p ktable.Peer) dht.NodeInfo {
+func nodeInfoFromNode(n ktable.Node) dht.NodeInfo {
 	return dht.NodeInfo{
-		ID:   p.ID(),
-		Addr: dht.NewNodeAddrFromAddrPort(p.Addr()),
+		ID:   n.ID(),
+		Addr: dht.NewNodeAddrFromAddrPort(n.Addr()),
 	}
 }

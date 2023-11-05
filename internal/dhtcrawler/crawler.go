@@ -2,6 +2,7 @@ package dhtcrawler
 
 import (
 	"context"
+	"github.com/bitmagnet-io/bitmagnet/internal/bloom"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/worker"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/asynq/message"
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
@@ -10,11 +11,11 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/server"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainforequester"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/publisher"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"golang.org/x/sync/semaphore"
 	"net/netip"
 	"sync"
 	"time"
@@ -23,13 +24,14 @@ import (
 type Params struct {
 	fx.In
 	Config              Config
-	KTable              ktable.TableBatch
+	KTable              ktable.Table
 	Server              server.Server
 	MetainfoRequester   metainforequester.Requester
 	Search              search.Search
 	Dao                 *dao.Query
 	ClassifierPublisher publisher.Publisher[message.ClassifyTorrentPayload]
-	BootstrapNodes      []netip.AddrPort `name:"dht_bootstrap_nodes"`
+	BootstrapNodes      []netip.AddrPort                         `name:"dht_bootstrap_nodes"`
+	DiscoveredNodes     concurrency.BatchingChannel[ktable.Node] `name:"dht_discovered_nodes"`
 	Logger              *zap.SugaredLogger
 }
 
@@ -39,54 +41,48 @@ type Result struct {
 }
 
 func New(params Params) Result {
+	scalingFactor := int(params.Config.ScalingFactor)
 	c := crawler{
-		kTable: params.KTable,
-		server: params.Server,
-		staging: staging{
-			mutex:                  sync.RWMutex{},
-			activeRequests:         make(map[protocol.ID]stagingRequest),
-			requestHolding:         make(chan infoHashWithPeer, 100),
-			requestHoldingSize:     100,
-			responseHolding:        make(chan stagingResponse, 2000),
-			responseHoldingSize:    500,
-			maxResponseHoldingTime: 10 * time.Second,
-			maxRequestHoldingTime:  time.Second,
-			saveFiles:              params.Config.SaveFiles,
-			saveFilesThreshold:     params.Config.SaveFilesThreshold,
-			savePieces:             params.Config.SavePieces,
-			rescrapeThreshold:      params.Config.RescrapeThreshold,
-			requested:              make(chan stagingRequest),
-			search:                 params.Search,
-			dao:                    params.Dao,
-			classifierPublisher:    params.ClassifierPublisher,
-			logger:                 params.Logger.Named("dht_staging"),
-		},
-		targetStagingSize:            1000,
+		kTable:                       params.KTable,
+		server:                       params.Server,
 		metainfoRequester:            params.MetainfoRequester,
 		bootstrapNodes:               params.BootstrapNodes,
 		reseedBootstrapNodesInterval: time.Minute * 10,
-		getOldestPeersInterval:       time.Second * 10,
+		getOldestNodesInterval:       time.Second * 10,
 		oldPeerThreshold:             time.Minute * 15,
-		findNodesInterval:            time.Second / 4,
-		findNodeSemaphore:            semaphore.NewWeighted(1000),
-		sampleInfoHashesSemaphore:    semaphore.NewWeighted(1000),
-		sampleInfoHashesInterval:     time.Second,
-		discoveredPeers: concurrency.NewBatchingDedupedChannel[ktable.Peer, string](
-			make(chan ktable.Peer, 1000),
+
+		discoveredNodes:          params.DiscoveredNodes,
+		nodesForPing:             concurrency.NewBufferedConcurrentChannel[ktable.Node](scalingFactor, scalingFactor),
+		nodesForFindNode:         concurrency.NewBufferedConcurrentChannel[ktable.Node](10*scalingFactor, 10*scalingFactor),
+		nodesForSampleInfoHashes: concurrency.NewBufferedConcurrentChannel[ktable.Node](10*scalingFactor, 100*scalingFactor),
+		infoHashTriage:           concurrency.NewBatchingChannel[nodeHasPeersForHash](100*scalingFactor, 100, 5*time.Second),
+		getPeers:                 concurrency.NewBufferedConcurrentChannel[nodeHasPeersForHash](10*scalingFactor, 100*scalingFactor),
+		scrape:                   concurrency.NewBufferedConcurrentChannel[nodeHasPeersForHash](10*scalingFactor, 100*scalingFactor),
+		requestMetaInfo:          concurrency.NewBufferedConcurrentChannel[infoHashWithPeers](10*scalingFactor, 100*scalingFactor),
+
+		persistTorrents: concurrency.NewBatchingChannel[infoHashWithMetaInfo](
+			1000,
 			100,
-			time.Second/4,
-			func(p ktable.Peer) string {
-				return p.Addr().Addr().String()
-			},
+			10*time.Second,
 		),
-		peersForPing:             newPeerChan(1000),
-		peersForFindNode:         newPeerChan(1000),
-		peersForSampleInfoHashes: newPeerChan(1000),
-		soughtPeerId:             &concurrency.AtomicValue[protocol.ID]{},
-		stopped:                  make(chan struct{}),
-		logger:                   params.Logger.Named("dht_crawler"),
+		persistSources: concurrency.NewBatchingChannel[infoHashWithScrape](
+			1000,
+			100,
+			10*time.Second,
+		),
+		saveFilesThreshold:  params.Config.SaveFilesThreshold,
+		savePieces:          params.Config.SavePieces,
+		rescrapeThreshold:   params.Config.RescrapeThreshold,
+		dao:                 params.Dao,
+		classifierPublisher: params.ClassifierPublisher,
+		ignoreHashes: &ignoreHashes{
+			bloom: *bloom.NewWithEstimates(1000000, 0.0001),
+		},
+		soughtNodeID: &concurrency.AtomicValue[protocol.ID]{},
+		stopped:      make(chan struct{}),
+		logger:       params.Logger.Named("dht_crawler"),
 	}
-	c.soughtPeerId.Set(protocol.RandomNodeID())
+	c.soughtNodeID.Set(protocol.RandomNodeID())
 	return Result{
 		Worker: worker.NewWorker(
 			"dht_crawler",
@@ -105,33 +101,36 @@ func New(params Params) Result {
 }
 
 type crawler struct {
-	kTable                       ktable.TableBatch
+	kTable                       ktable.Table
 	server                       server.Server
-	staging                      staging
-	targetStagingSize            int
 	metainfoRequester            metainforequester.Requester
 	bootstrapNodes               []netip.AddrPort
 	reseedBootstrapNodesInterval time.Duration
-	getOldestPeersInterval       time.Duration
+	getOldestNodesInterval       time.Duration
 	oldPeerThreshold             time.Duration
-	findNodesInterval            time.Duration
-	findNodeSemaphore            *semaphore.Weighted
-	sampleInfoHashesSemaphore    *semaphore.Weighted
-	sampleInfoHashesInterval     time.Duration
-	sampleInfoHashesShortfall    atomicValue[int]
-	discoveredPeers              concurrency.BatchingDedupedChannel[ktable.Peer, string]
-	peersForPing                 concurrency.BufferedDedupedChannel[ktable.Peer, string]
-	peersForFindNode             concurrency.BufferedDedupedChannel[ktable.Peer, string]
-	peersForSampleInfoHashes     concurrency.BufferedDedupedChannel[ktable.Peer, string]
-	soughtPeerId                 *concurrency.AtomicValue[protocol.ID]
-	stopped                      chan struct{}
-	logger                       *zap.SugaredLogger
-}
+	discoveredNodes              concurrency.BatchingChannel[ktable.Node]
+	nodesForPing                 concurrency.BufferedConcurrentChannel[ktable.Node]
+	nodesForFindNode             concurrency.BufferedConcurrentChannel[ktable.Node]
+	nodesForSampleInfoHashes     concurrency.BufferedConcurrentChannel[ktable.Node]
+	infoHashTriage               concurrency.BatchingChannel[nodeHasPeersForHash]
+	getPeers                     concurrency.BufferedConcurrentChannel[nodeHasPeersForHash]
+	scrape                       concurrency.BufferedConcurrentChannel[nodeHasPeersForHash]
+	requestMetaInfo              concurrency.BufferedConcurrentChannel[infoHashWithPeers]
 
-func newPeerChan(cap int) concurrency.BufferedDedupedChannel[ktable.Peer, string] {
-	return concurrency.NewBufferedDedupedChannel[ktable.Peer, string](cap, func(p ktable.Peer) string {
-		return p.Addr().Addr().String()
-	})
+	persistTorrents     concurrency.BatchingChannel[infoHashWithMetaInfo]
+	persistSources      concurrency.BatchingChannel[infoHashWithScrape]
+	rescrapeThreshold   time.Duration
+	saveFilesThreshold  uint
+	savePieces          bool
+	dao                 *dao.Query
+	classifierPublisher publisher.Publisher[message.ClassifyTorrentPayload]
+
+	ignoreHashes *ignoreHashes
+
+	soughtNodeID *concurrency.AtomicValue[protocol.ID]
+
+	stopped chan struct{}
+	logger  *zap.SugaredLogger
 }
 
 func (c *crawler) start() {
@@ -145,44 +144,81 @@ func (c *crawler) start() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	// start the various pipeline workers
-	go c.rotateSoughtPeerId(ctx)
-	go c.awaitDiscoveredPeers(ctx)
-	go c.awaitPeersForPing(ctx)
-	go c.awaitPeersForFindNode(ctx)
-	go c.findNode(ctx)
-	go c.awaitPeersForSampleInfoHashes(ctx)
-	go c.sampleInfoHashes(ctx)
-	// start seeding the table with the bootstrap nodes
+	go c.rotateSoughtNodeId(ctx)
+	go c.runDiscoveredNodes(ctx)
+	go c.runPing(ctx)
+	go c.runFindNode(ctx)
+	go c.getNodesForFindNode(ctx)
+	go c.runSampleInfoHashes(ctx)
+	go c.getNodesForSampleInfoHashes(ctx)
+	go c.runInfoHashTriage(ctx)
+	go c.runGetPeers(ctx)
+	go c.runRequestMetaInfo(ctx)
+	go c.runScrape(ctx)
 	go c.reseedBootstrapNodes(ctx)
-	// start the staging workers
-	go c.staging.awaitHoldingHashes(ctx)
-	go c.staging.awaitResponses(ctx)
-	// await info hashes from staging
-	go c.awaitInfoHashes(ctx)
-	go c.getOldPeers(ctx)
+	go c.runPersistTorrents(ctx)
+	go c.runPersistSources(ctx)
+	go c.getOldNodes(ctx)
+	go c.rotateIgnoreHashes(ctx)
 	<-c.stopped
 }
 
-type atomicValue[T any] struct {
-	mutex sync.RWMutex
-	value T
+type nodeHasPeersForHash struct {
+	infoHash protocol.ID
+	node     netip.AddrPort
 }
 
-func (a *atomicValue[T]) Get() T {
-	a.mutex.RLock()
-	defer a.mutex.RUnlock()
-	return a.value
+type infoHashWithMetaInfo struct {
+	nodeHasPeersForHash
+	metaInfo metainfo.Info
 }
 
-func (a *atomicValue[T]) Set(value T) {
-	a.mutex.Lock()
-	defer a.mutex.Unlock()
-	a.value = value
+type infoHashWithPeers struct {
+	nodeHasPeersForHash
+	peers []netip.AddrPort
 }
 
-func (a *atomicValue[T]) Update(fn func(T) T) T {
-	a.mutex.Lock()
-	defer a.mutex.Unlock()
-	a.value = fn(a.value)
-	return a.value
+type infoHashWithScrape struct {
+	nodeHasPeersForHash
+	bfsd bloom.Filter
+	bfpe bloom.Filter
+}
+
+type ignoreHashes struct {
+	mutex sync.Mutex
+	bloom bloom.Filter
+}
+
+func (i *ignoreHashes) testOrAdd(id protocol.ID) bool {
+	i.mutex.Lock()
+	defer i.mutex.Unlock()
+	return i.bloom.TestOrAdd(id[:])
+}
+
+func (i *ignoreHashes) clearAll() {
+	i.mutex.Lock()
+	defer i.mutex.Unlock()
+	i.bloom.ClearAll()
+}
+
+func (c *crawler) rotateIgnoreHashes(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(6 * time.Hour):
+			c.ignoreHashes.clearAll()
+		}
+	}
+}
+
+func (c *crawler) rotateSoughtNodeId(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(10 * time.Second):
+			c.soughtNodeID.Set(protocol.RandomNodeID())
+		}
+	}
 }

@@ -9,7 +9,7 @@ type Config struct {
 
 func NewDefaultConfig() Config {
 	return Config{
-		RequestTimeout: 6 * time.Second,
-		KeyMutexSize:   5000,
+		RequestTimeout: 4 * time.Second,
+		KeyMutexSize:   1000,
 	}
 }

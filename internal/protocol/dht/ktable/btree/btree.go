@@ -7,14 +7,14 @@ import (
 
 type Btree interface {
 	N() int
-	Put(NodeID) (result PutResult, evictedId NodeID)
+	Put(NodeID) PutResult
 	Has(NodeID) bool
 	Drop(NodeID) bool
 	Closest(NodeID, int) []NodeID
 	Count() int
-	countCloserThan(id NodeID) int
 	EmptiestPrefixLengths() []int
 	Stats() Stats
+	countCloserThan(id NodeID) int
 }
 
 type NodeID []byte

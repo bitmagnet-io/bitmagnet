@@ -3,7 +3,7 @@ package ktable
 import "github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable/btree"
 
 type Stats struct {
-	TotalPeers  int
+	TotalNodes  int
 	TotalHashes int
 	btree.Stats
 }
@@ -16,8 +16,8 @@ func (t *table) Stats() Stats {
 
 func (t *table) stats() Stats {
 	return Stats{
-		TotalPeers:  t.peers.count(),
+		TotalNodes:  t.nodes.count(),
 		TotalHashes: t.hashes.count(),
-		Stats:       t.peers.btree.Stats(),
+		Stats:       t.nodes.btree.Stats(),
 	}
 }
