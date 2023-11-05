@@ -34,8 +34,8 @@ services:
     container_name: bitmagnet-postgres
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
-    #    ports:
-    #      - "5433:5432"
+    ports:
+      - "5433:5432"
     restart: unless-stopped
     environment:
       - POSTGRES_PASSWORD=postgres
