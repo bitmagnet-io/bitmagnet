@@ -50,16 +50,14 @@ func New(params Params) Result {
 		reseedBootstrapNodesInterval: time.Minute * 10,
 		getOldestNodesInterval:       time.Second * 10,
 		oldPeerThreshold:             time.Minute * 15,
-
-		discoveredNodes:          params.DiscoveredNodes,
-		nodesForPing:             concurrency.NewBufferedConcurrentChannel[ktable.Node](scalingFactor, scalingFactor),
-		nodesForFindNode:         concurrency.NewBufferedConcurrentChannel[ktable.Node](10*scalingFactor, 10*scalingFactor),
-		nodesForSampleInfoHashes: concurrency.NewBufferedConcurrentChannel[ktable.Node](10*scalingFactor, 100*scalingFactor),
-		infoHashTriage:           concurrency.NewBatchingChannel[nodeHasPeersForHash](100*scalingFactor, 100, 5*time.Second),
-		getPeers:                 concurrency.NewBufferedConcurrentChannel[nodeHasPeersForHash](10*scalingFactor, 100*scalingFactor),
-		scrape:                   concurrency.NewBufferedConcurrentChannel[nodeHasPeersForHash](10*scalingFactor, 100*scalingFactor),
-		requestMetaInfo:          concurrency.NewBufferedConcurrentChannel[infoHashWithPeers](10*scalingFactor, 100*scalingFactor),
-
+		discoveredNodes:              params.DiscoveredNodes,
+		nodesForPing:                 concurrency.NewBufferedConcurrentChannel[ktable.Node](scalingFactor, scalingFactor),
+		nodesForFindNode:             concurrency.NewBufferedConcurrentChannel[ktable.Node](10*scalingFactor, 10*scalingFactor),
+		nodesForSampleInfoHashes:     concurrency.NewBufferedConcurrentChannel[ktable.Node](10*scalingFactor, 100*scalingFactor),
+		infoHashTriage:               concurrency.NewBatchingChannel[nodeHasPeersForHash](100*scalingFactor, 100, 5*time.Second),
+		getPeers:                     concurrency.NewBufferedConcurrentChannel[nodeHasPeersForHash](10*scalingFactor, 100*scalingFactor),
+		scrape:                       concurrency.NewBufferedConcurrentChannel[nodeHasPeersForHash](10*scalingFactor, 100*scalingFactor),
+		requestMetaInfo:              concurrency.NewBufferedConcurrentChannel[infoHashWithPeers](10*scalingFactor, 100*scalingFactor),
 		persistTorrents: concurrency.NewBatchingChannel[infoHashWithMetaInfo](
 			1000,
 			100,
@@ -116,21 +114,17 @@ type crawler struct {
 	getPeers                     concurrency.BufferedConcurrentChannel[nodeHasPeersForHash]
 	scrape                       concurrency.BufferedConcurrentChannel[nodeHasPeersForHash]
 	requestMetaInfo              concurrency.BufferedConcurrentChannel[infoHashWithPeers]
-
-	persistTorrents     concurrency.BatchingChannel[infoHashWithMetaInfo]
-	persistSources      concurrency.BatchingChannel[infoHashWithScrape]
-	rescrapeThreshold   time.Duration
-	saveFilesThreshold  uint
-	savePieces          bool
-	dao                 *dao.Query
-	classifierPublisher publisher.Publisher[message.ClassifyTorrentPayload]
-
-	ignoreHashes *ignoreHashes
-
-	soughtNodeID *concurrency.AtomicValue[protocol.ID]
-
-	stopped chan struct{}
-	logger  *zap.SugaredLogger
+	persistTorrents              concurrency.BatchingChannel[infoHashWithMetaInfo]
+	persistSources               concurrency.BatchingChannel[infoHashWithScrape]
+	rescrapeThreshold            time.Duration
+	saveFilesThreshold           uint
+	savePieces                   bool
+	dao                          *dao.Query
+	classifierPublisher          publisher.Publisher[message.ClassifyTorrentPayload]
+	ignoreHashes                 *ignoreHashes
+	soughtNodeID                 *concurrency.AtomicValue[protocol.ID]
+	stopped                      chan struct{}
+	logger                       *zap.SugaredLogger
 }
 
 func (c *crawler) start() {

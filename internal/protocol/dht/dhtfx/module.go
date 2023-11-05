@@ -20,7 +20,6 @@ func New() fx.Option {
 					return protocol.RandomNodeID()
 				},
 			},
-			//healthcheck.New,
 			ktable.New,
 			responder.New,
 			server.New,

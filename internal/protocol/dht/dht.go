@@ -16,8 +16,7 @@ const (
 )
 
 type RecvMsg struct {
-	Msg Msg
-	// todo Do we need this or can we use Msg.IP?
+	Msg  Msg
 	From netip.AddrPort
 }
 
