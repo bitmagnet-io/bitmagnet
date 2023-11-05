@@ -24,7 +24,12 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 				}
 			}
 			if persistErr := c.dao.WithContext(ctx).Torrent.Clauses(clause.OnConflict{
-				UpdateAll: true,
+				Columns: []clause.Column{{Name: string(c.dao.Torrent.InfoHash.ColumnName())}},
+				DoUpdates: clause.AssignmentColumns([]string{
+					string(c.dao.Torrent.FilesStatus.ColumnName()),
+					string(c.dao.Torrent.PieceLength.ColumnName()),
+					string(c.dao.Torrent.Pieces.ColumnName()),
+				}),
 			}).CreateInBatches(ts, 100); persistErr != nil {
 				c.logger.Errorf("error persisting torrents: %s", persistErr)
 			} else {
