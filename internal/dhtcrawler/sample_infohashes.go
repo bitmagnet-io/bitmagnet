@@ -19,6 +19,7 @@ func (c *crawler) getNodesForSampleInfoHashes(ctx context.Context) {
 				continue
 			}
 		}
+		<-time.After(time.Second)
 	}
 }
 
