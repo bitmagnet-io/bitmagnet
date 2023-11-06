@@ -20,13 +20,9 @@ nav_order: -1
 
 ## DHT what now...?
 
-The DHT crawler is **bitmagnet**'s killer feature that (currently) makes it unique. Well, almost unique, read on...
-
-So what is it? You might be aware that you can enable DHT in your BitTorrent client, and that this allows you find peers who are announcing a torrent's hash to a Distributed Hash Table (DHT), rather than to a centralized tracker. DHT's lesser known feature is that it allows you to crawl the info hashes it knows about. This is how **bitmagnet**'s DHT crawler works works - it crawls the DHT network, requesting metadata about each info hash it discovers. It then further enriches this metadata by attempting to classify it and associate it with known pieces of content, such as movies and TV shows. It then allows you to search everything it has indexed.
+The DHT crawler is **bitmagnet**'s killer feature that makes it unique. So what is it? You might be aware that you can enable DHT in your BitTorrent client, and that this allows you find peers who are announcing a torrent's hash to a Distributed Hash Table (DHT), rather than to a centralized tracker. DHT's lesser known feature is that it allows you to crawl the info hashes it knows about. This is how **bitmagnet**'s DHT crawler works works - it crawls the DHT network, requesting metadata about each info hash it discovers. It then further enriches this metadata by attempting to classify it and associate it with known pieces of content, such as movies and TV shows. It then allows you to search everything it has indexed.
 
 This means that **bitmagnet** is not reliant on any external trackers or torrent indexers. It's a self-contained, self-hosted torrent indexer, connected via DHT to a global network of peers and constantly discovering new content.
-
-The DHT crawler is _not quite_ unique to **bitmagnet**; another open-source project, [magnetico](https://github.com/boramalper/magnetico){:target="\_blank"} was first (as far as I know) to implement a usable DHT crawler, and was a crucial reference point for implementing this feature. However this project is no longer maintained, and does not provide the other features such as content classification, and integration with other software in the ecosystem, that greatly improve usability.
 
 [You can find some more technical details about **bitmagnet**'s DHT crawler here](/internals-development/dht-crawler.html).
 
@@ -34,7 +30,7 @@ The DHT crawler is _not quite_ unique to **bitmagnet**; another open-source proj
 
 ### Currently implemented features
 
-- [x] A DHT crawler
+- [x] A DHT crawler and protocol implementation
 - [x] A generic BitTorrent indexer: **bitmagnet** can index torrents from any source, not only the DHT network - currently this is only possible via [the `/import` endpoint](/tutorials/importing.html); more user-friendly methods are in the pipeline, see high-priority features below
 - [x] A content classifier that can currently identify movie and television content, along with key related attributes such as language, resolution, source (BluRay, webrip etc.) and enriches this with data from [The Movie Database](https://www.themoviedb.org/)
 - [x] [An import facility for ingesting torrents from any source, for example the RARBG backup](/tutorials/importing.html)
@@ -53,7 +49,7 @@ The DHT crawler is _not quite_ unique to **bitmagnet**; another open-source proj
 - [ ] An admin API, and in general a more complete GraphQL API
 - [ ] A more complete web UI
 - [ ] Saved searches for content of particular interest, enabling custom feeds in addition to the following feature
-- [ ] Smart deletion: there's a lot of crap out there; crawling DHT can quickly use lots of database disk space, and search becomes slower with millions of indexed torrents of which 90% are of no interest. A smart deletion feature would use saved searches to identify content that you're _not_ interested in, including but not limited to <abbr title="child sexual abuse material">CSAM</abbr>, and low quality content (such as low resolution movies). It would automatically delete associated metadata and add the info hash to a bloom filter, preventing the torrent from being re-indexed in future.
+- [ ] Smart deletion: there's a lot of crap out there; crawling DHT can quickly use lots of database disk space, and search becomes slower with millions of indexed torrents of which 90% are of no interest. A smart deletion feature would use saved searches to identify content that you're _not_ interested in, including low quality content (such as low resolution movies). It would automatically delete associated metadata and add the info hash to a bloom filter, preventing the torrent from being re-indexed in future.
 - [ ] Bi-directional integration with the [Prowlarr indexer proxy](https://prowlarr.com/){:target="\_blank"}: Currently **bitmagnet** can be added as an indexer in Prowlarr; bi-directional integration would allow **bitmagnet** to crawl content from any indexer configured in Prowlarr, unlocking many new sources of content
 - [ ] More documentation and more tests!
 

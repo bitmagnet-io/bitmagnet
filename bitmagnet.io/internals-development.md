@@ -8,4 +8,4 @@ has_children: true
 # Internals & Development
 
 {: .highlight }
-Are you an experienced developer with knowledge of GoLang, Postgres, TypeScript/Angular and/or BitTorrent protocols? Are you interested in contributing to **bitmagnet**? If so I'd like to hear from you! I'm currently a lone developer with a full time job and many other commitments, and have been working on this in spare moments for the past few months. This project is too big for one person! Contact me at [hello@bitmagnet.io](mailto:hello@bitmagnet.io), or just open a PR - I'll endeavour to be responsive!
+Are you an experienced developer with knowledge of GoLang, Postgres, TypeScript/Angular and/or BitTorrent protocols? I'm currently a lone developer with a full time job and many other commitments, and have been working on this in spare moments for the past few months. This project is too big for one person! If you're interested in contributing please [review the open issues](https://github.com/bitmagnet-io/bitmagnet/issues) and feel free to open a PR!
