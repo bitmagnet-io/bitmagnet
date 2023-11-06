@@ -37,6 +37,8 @@ func (c *crawler) runPing(ctx context.Context) {
 	})
 }
 
+// getOldNodes periodically adds the oldest nodes from the routing table to the nodesForPing channel,
+// so they can be pruned from the routing table if no longer responsive.
 func (c *crawler) getOldNodes(ctx context.Context) {
 	for {
 		select {

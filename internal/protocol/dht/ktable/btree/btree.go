@@ -5,6 +5,10 @@ import (
 	"errors"
 )
 
+// Btree is the binary tree implementation used by the Kademlia routing table.
+// The Kademlia literature refers to "buckets" that can be "split" according to certain rules when they are full.
+// This implementation does not use buckets exactly as described in the literature, but rather a simpler binary tree,
+// however the end result is largely equivalent.
 type Btree interface {
 	N() int
 	Put(NodeID) PutResult
@@ -62,22 +66,6 @@ func (b Bits) String() string {
 		}
 	}
 	return str
-}
-
-func ParseNodeID(str string) (NodeID, error) {
-	b, err := hex.DecodeString(str)
-	if err != nil {
-		return nil, err
-	}
-	return b, nil
-}
-
-func MustParseNodeID(str string) NodeID {
-	id, err := ParseNodeID(str)
-	if err != nil {
-		panic(err)
-	}
-	return id
 }
 
 func ParseBinaryNodeID(str string) (NodeID, error) {

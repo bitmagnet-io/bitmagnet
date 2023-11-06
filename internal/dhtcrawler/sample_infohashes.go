@@ -28,10 +28,9 @@ func (c *crawler) runSampleInfoHashes(ctx context.Context) {
 		if !n.IsSampleInfoHashesCandidate() {
 			return
 		}
-		target := c.soughtNodeID.Get()
 		args := dht.MsgArgs{
 			ID:     c.kTable.Origin(),
-			Target: target,
+			Target: c.soughtNodeID.Get(),
 		}
 		res, err := c.server.Query(ctx, n.Addr(), dht.QSampleInfohashes, args)
 		if err != nil {
@@ -80,17 +79,20 @@ func (c *crawler) runSampleInfoHashes(ctx context.Context) {
 				time.Now().Add(time.Duration(interval)*time.Second),
 			),
 		}})
-		go func() {
-			timeoutCtx, cancel := context.WithTimeout(ctx, time.Second)
-			defer cancel()
-			for _, n := range res.Msg.R.Nodes {
-				select {
-				case <-timeoutCtx.Done():
-					return
-				case c.discoveredNodes.In() <- ktable.NewNode(n.ID, n.Addr.ToAddrPort()):
-					continue
+		if len(res.Msg.R.Nodes) > 0 {
+			// block on the channel for up to a second trying to add sampled nodes to the discoveredNodes channel
+			go func() {
+				timeoutCtx, cancel := context.WithTimeout(ctx, time.Second)
+				defer cancel()
+				for _, n := range res.Msg.R.Nodes {
+					select {
+					case <-timeoutCtx.Done():
+						return
+					case c.discoveredNodes.In() <- ktable.NewNode(n.ID, n.Addr.ToAddrPort()):
+						continue
+					}
 				}
-			}
-		}()
+			}()
+		}
 	})
 }

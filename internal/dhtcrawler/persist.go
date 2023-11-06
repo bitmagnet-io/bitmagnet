@@ -9,6 +9,9 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+// runPersistTorrents waits on the persistTorrents channel, and persists torrents to the database in batches.
+// After persisting each batch it will publish a message to the classifier,
+// and forward the hash on the scrape channel to attempt finding the seeders/leechers.
 func (c *crawler) runPersistTorrents(ctx context.Context) {
 	for {
 		select {
@@ -26,6 +29,7 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 			if persistErr := c.dao.WithContext(ctx).Torrent.Clauses(clause.OnConflict{
 				Columns: []clause.Column{{Name: string(c.dao.Torrent.InfoHash.ColumnName())}},
 				DoUpdates: clause.AssignmentColumns([]string{
+					string(c.dao.Torrent.Name.ColumnName()),
 					string(c.dao.Torrent.FilesStatus.ColumnName()),
 					string(c.dao.Torrent.PieceLength.ColumnName()),
 					string(c.dao.Torrent.Pieces.ColumnName()),
@@ -99,6 +103,8 @@ func createTorrentModel(
 	}, nil
 }
 
+// runPersistSources waits on the persistSources channel for scraped torrents, and persists sources
+// (which includes discovery date, seeders and leechers) to the database in batches.
 func (c *crawler) runPersistSources(ctx context.Context) {
 	for {
 		select {

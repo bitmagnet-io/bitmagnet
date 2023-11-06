@@ -1,12 +1,17 @@
 package dhtcrawler
 
 import (
+	adht "github.com/anacrolix/dht/v2"
 	"time"
 )
 
 type Config struct {
-	ScalingFactor               uint
-	CrawlBootstrapHostsInterval time.Duration
+	// ScalingFactor is a rough proxy for resource usage of the crawler; concurrency and buffer size of the various
+	// pipeline channels are multiplied by this value. Diminishing returns may result from exceeding the default value of 10.
+	// Since the software has not been tested on a wide variety of hardware and network conditions your mileage may vary here...
+	ScalingFactor                uint
+	BootstrapNodes               []string
+	ReseedBootstrapNodesInterval time.Duration
 	// SaveFilesThreshold specifies a maximum number of files in a torrent before file information is discarded.
 	// Some torrents contain thousands of files which can severely impact performance and uses a lot of disk space.
 	SaveFilesThreshold uint
@@ -19,10 +24,11 @@ type Config struct {
 
 func NewDefaultConfig() Config {
 	return Config{
-		ScalingFactor:               10,
-		CrawlBootstrapHostsInterval: time.Minute,
-		SaveFilesThreshold:          50,
-		SavePieces:                  false,
-		RescrapeThreshold:           time.Hour * 24 * 30,
+		ScalingFactor:                10,
+		BootstrapNodes:               adht.DefaultGlobalBootstrapHostPorts,
+		ReseedBootstrapNodesInterval: time.Minute,
+		SaveFilesThreshold:           50,
+		SavePieces:                   false,
+		RescrapeThreshold:            time.Hour * 24 * 30,
 	}
 }

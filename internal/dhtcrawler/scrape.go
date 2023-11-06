@@ -28,6 +28,8 @@ func (c *crawler) runScrape(ctx context.Context) {
 	})
 }
 
+// requestScrape requests a scrape from a node to find seeders/leechers for a given info hash;
+// see https://www.bittorrent.org/beps/bep_0033.html
 func (c *crawler) requestScrape(
 	ctx context.Context,
 	req nodeHasPeersForHash,

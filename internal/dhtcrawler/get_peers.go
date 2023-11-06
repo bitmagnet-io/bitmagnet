@@ -13,9 +13,6 @@ import (
 func (c *crawler) runGetPeers(ctx context.Context) {
 	_ = c.getPeers.Run(ctx, func(req nodeHasPeersForHash) {
 		pfh, pfhErr := c.requestPeersForHash(ctx, req)
-		if pfhErr == nil && len(pfh.peers) < 1 {
-			pfhErr = errors.New("no peers found")
-		}
 		if pfhErr != nil {
 			c.logger.Debugw("error getting peers", "infoHash", req.infoHash.String(), "err", pfhErr)
 			return
@@ -52,12 +49,13 @@ func (c *crawler) requestPeersForHash(
 		InfoHash: req.infoHash,
 	})
 	if err != nil {
-		c.kTable.BatchCommand(ktable.DropAddr{Addr: req.node.Addr(), Reason: fmt.Errorf("failed to get peers from p: %w", err)})
+		c.kTable.BatchCommand(ktable.DropAddr{Addr: req.node.Addr(), Reason: fmt.Errorf("failed to get peers: %w", err)})
 		return infoHashWithPeers{}, err
 	} else {
 		c.kTable.BatchCommand(ktable.PutNode{ID: res.Msg.R.ID, Addr: req.node, Options: []ktable.NodeOption{ktable.NodeResponded()}})
 	}
 	if len(res.Msg.R.Nodes) > 0 {
+		// block the channel for up to a second in an attempt to add the nodes to the discoveredNodes channel
 		cancelCtx, cancel := context.WithTimeout(ctx, time.Second)
 		for _, n := range res.Msg.R.Nodes {
 			select {
@@ -68,6 +66,9 @@ func (c *crawler) requestPeersForHash(
 			}
 		}
 		cancel()
+	}
+	if len(res.Msg.R.Values) < 1 {
+		return infoHashWithPeers{}, errors.New("no peers found")
 	}
 	addrs := make([]netip.AddrPort, 0, len(res.Msg.R.Values))
 	for _, p := range res.Msg.R.Values {

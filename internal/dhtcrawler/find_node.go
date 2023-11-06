@@ -34,6 +34,7 @@ func (c *crawler) runFindNode(ctx context.Context) {
 			c.kTable.BatchCommand(ktable.DropNode{ID: p.ID(), Reason: fmt.Errorf("find_node failed: %w", err)})
 		} else {
 			c.kTable.BatchCommand(ktable.PutNode{ID: p.ID(), Addr: p.Addr(), Options: []ktable.NodeOption{ktable.NodeResponded()}})
+			// block this channel until all nodes can be added to the discoveredNodes channel
 			for _, n := range res.Msg.R.Nodes {
 				select {
 				case <-ctx.Done():
