@@ -30,7 +30,7 @@ func New(p Params) (Result, error) {
 					p.Logger.Debugw("resolved config", "cfg", p.Config)
 					tw := table.NewWriter()
 					tw.SetOutputMirror(ctx.App.Writer)
-					tw.AppendHeader(table.Row{"Path", "Type", "Value", "Default", "From"})
+					tw.AppendHeader(table.Row{"path", "Type", "Value", "Default", "From"})
 					for _, node := range p.Config.Nodes() {
 						appendRows(tw, node)
 					}

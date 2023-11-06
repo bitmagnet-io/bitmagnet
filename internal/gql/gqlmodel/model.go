@@ -3,6 +3,7 @@ package gqlmodel
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"time"
 )
 
@@ -10,7 +11,7 @@ type SearchQuery struct{}
 
 type TorrentContent struct {
 	ID              string
-	InfoHash        model.Hash20
+	InfoHash        protocol.ID
 	ContentType     model.NullContentType
 	ContentSource   model.NullString
 	ContentID       model.NullString

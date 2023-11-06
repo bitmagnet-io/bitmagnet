@@ -1,14 +1,14 @@
 package bloom
 
 import (
-	"github.com/anacrolix/dht/v2/krpc"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/stretchr/testify/assert"
 	"net"
 	"testing"
 )
 
 func TestScrapeBloomFilter(t *testing.T) {
-	var s krpc.ScrapeBloomFilter
+	var s dht.ScrapeBloomFilter
 	assert.Equal(t, 0.5, s.EstimateCount())
 	s.AddIp(net.IPv4(127, 0, 0, 1))
 	c := s.EstimateCount()
@@ -17,7 +17,7 @@ func TestScrapeBloomFilter(t *testing.T) {
 }
 
 func TestConvertBloom(t *testing.T) {
-	var s krpc.ScrapeBloomFilter
+	var s dht.ScrapeBloomFilter
 	s.AddIp(net.IPv4(127, 0, 0, 1))
 	s.AddIp(net.IPv4(127, 0, 0, 2))
 	f := FromScrape(s)

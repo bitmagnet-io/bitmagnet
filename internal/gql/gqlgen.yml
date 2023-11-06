@@ -111,7 +111,7 @@ models:
       - github.com/99designs/gqlgen/graphql.Time
   Hash20:
     model:
-      - github.com/bitmagnet-io/bitmagnet/internal/model.Hash20
+      - github.com/bitmagnet-io/bitmagnet/internal/protocol.ID
   ContentType:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/model.ContentType

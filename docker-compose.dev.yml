@@ -4,8 +4,13 @@ services:
       context: .
     container_name: bitmagnet
     #    image: ghcr.io/bitmagnet-io/bitmagnet:latest
+    volumes:
+      - ./data/bitmagnet:/tmp
     ports:
       - "3333:3333"
+      # BitTorrent ports:
+      - "3334:3334/tcp"
+      - "3334:3334/udp"
     restart: unless-stopped
     environment:
       - LOG_LEVEL=debug
@@ -29,8 +34,8 @@ services:
     container_name: bitmagnet-postgres
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
-    #    ports:
-    #      - "5433:5432"
+    ports:
+      - "5433:5432"
     restart: unless-stopped
     environment:
       - POSTGRES_PASSWORD=postgres

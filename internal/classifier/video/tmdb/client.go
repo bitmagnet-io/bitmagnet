@@ -42,6 +42,10 @@ func New(p Params) (r Result, err error) {
 		logger.Warnln("you are using the default TMDB api key; TMDB requests will be limited to 1 per second; to remove this warning please configure a personal TMDB api key")
 	}
 	httpClient := http.Client{
+		// need to set a non-zero value as the underlying client unfortunately sets 10 seconds as the default if none is provided;
+		// this does not work well with the rate limiter; a 30 second timeout fixes this assuming a concurrency of 10 on the queue
+		// (and a maximum of 2 TMDB requests per classification)
+		Timeout: time.Second * 30,
 		Transport: httpratelimiter.NewDecorator(
 			rateLimit,
 			rateLimitBurst,

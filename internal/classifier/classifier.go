@@ -7,6 +7,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/resolver"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/persistence"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -24,7 +25,7 @@ type Result struct {
 }
 
 type Classifier interface {
-	Classify(ctx context.Context, infoHashes ...model.Hash20) error
+	Classify(ctx context.Context, infoHashes ...protocol.ID) error
 }
 
 func New(p Params) (Result, error) {
@@ -44,14 +45,14 @@ type classifier struct {
 }
 
 type MissingHashesError struct {
-	InfoHashes []model.Hash20
+	InfoHashes []protocol.ID
 }
 
 func (e MissingHashesError) Error() string {
 	return fmt.Sprintf("missing %d info hashes", len(e.InfoHashes))
 }
 
-func (c classifier) Classify(ctx context.Context, infoHashes ...model.Hash20) error {
+func (c classifier) Classify(ctx context.Context, infoHashes ...protocol.ID) error {
 	torrents, missingHashes, findErr := c.p.GetTorrents(ctx, infoHashes...)
 	if findErr != nil {
 		return findErr

@@ -6,6 +6,8 @@ package model
 
 import (
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
 const TableNameTorrentsTorrentSource = "torrents_torrent_sources"
@@ -13,7 +15,7 @@ const TableNameTorrentsTorrentSource = "torrents_torrent_sources"
 // TorrentsTorrentSource mapped from table <torrents_torrent_sources>
 type TorrentsTorrentSource struct {
 	Source        string        `gorm:"column:source;primaryKey;<-:create" json:"source"`
-	InfoHash      Hash20        `gorm:"column:info_hash;primaryKey;<-:create" json:"infoHash"`
+	InfoHash      protocol.ID   `gorm:"column:info_hash;primaryKey;<-:create" json:"infoHash"`
 	ImportID      NullString    `gorm:"column:import_id" json:"importId"`
 	Bfsd          []byte        `gorm:"column:bfsd" json:"bfsd"`
 	Bfpe          []byte        `gorm:"column:bfpe" json:"bfpe"`
