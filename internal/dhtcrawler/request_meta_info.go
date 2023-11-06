@@ -43,6 +43,10 @@ func (c *crawler) doRequestMetaInfo(
 			addErr(err)
 			continue
 		}
+		if banErr := c.banningChecker.Check(res.Info); banErr != nil {
+			c.logger.Debugf("banning torrent '%s': %s", res.Info.BestName(), banErr)
+			return metainforequester.Response{}, banErr
+		}
 		return res, nil
 	}
 	return metainforequester.Response{}, errors.Join(errs...)

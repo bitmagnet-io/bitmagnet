@@ -12,6 +12,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/server"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/banning"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainforequester"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/publisher"
 	"go.uber.org/fx"
@@ -27,6 +28,7 @@ type Params struct {
 	KTable              ktable.Table
 	Server              server.Server
 	MetainfoRequester   metainforequester.Requester
+	BanningChecker      banning.Checker `name:"metainfo_banning_checker"`
 	Search              search.Search
 	Dao                 *dao.Query
 	ClassifierPublisher publisher.Publisher[message.ClassifyTorrentPayload]
@@ -45,6 +47,7 @@ func New(params Params) Result {
 		kTable:                       params.KTable,
 		server:                       params.Server,
 		metainfoRequester:            params.MetainfoRequester,
+		banningChecker:               params.BanningChecker,
 		bootstrapNodes:               params.Config.BootstrapNodes,
 		reseedBootstrapNodesInterval: time.Minute * 10,
 		getOldestNodesInterval:       time.Second * 10,
@@ -101,6 +104,7 @@ type crawler struct {
 	kTable                       ktable.Table
 	server                       server.Server
 	metainfoRequester            metainforequester.Requester
+	banningChecker               banning.Checker
 	bootstrapNodes               []string
 	reseedBootstrapNodesInterval time.Duration
 	getOldestNodesInterval       time.Duration
