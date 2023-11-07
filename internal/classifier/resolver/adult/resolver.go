@@ -55,6 +55,7 @@ func (r adultResolver) Resolve(ctx context.Context, content model.TorrentContent
 				content.SearchString = contentAdult.SearchString
 				return content, nil
 			}
+			return model.TorrentContent{}, resolver.ErrNoMatch
 		}
 		content.ContentType.Valid = true
 		content.ContentType.ContentType = model.ContentTypeXxx
