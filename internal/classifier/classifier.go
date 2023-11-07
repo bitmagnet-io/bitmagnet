@@ -66,12 +66,15 @@ func (c classifier) Classify(ctx context.Context, infoHashes ...protocol.ID) err
 			torrentContent.ContentID = model.NullString{}
 			torrentContent.Torrent = torrent
 			torrentContent.Torrent.Contents = nil
+			// c.l.Infof(torrentContent.ContentType.ContentType.String())
 		} else {
 			torrentContent = model.TorrentContent{
 				InfoHash: infoHashes[0],
 				Torrent:  torrent,
 			}
 		}
+		// c.l.Infof(torrent.Name)
+		// This line call the Resolve in the file resolver/resolve.go which will loop over the subresolver sorted by priority
 		r, resolveErr := c.r.Resolve(ctx, torrentContent)
 		if resolveErr != nil {
 			if errors.Is(resolveErr, resolver.ErrNoMatch) {
