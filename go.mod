@@ -1,8 +1,9 @@
 module github.com/bitmagnet-io/bitmagnet
 
-go 1.21
+go 1.21.3
 
 require (
+	git.sr.ht/~dragnel/go-tpdb v0.0.3
 	github.com/99designs/gqlgen v0.17.40
 	github.com/abice/go-enum v0.5.8
 	github.com/adrg/xdg v0.4.0

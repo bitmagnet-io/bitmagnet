@@ -255,6 +255,16 @@ export class TorrentContentComponent
     this.loadResult();
   }
 
+  addTorrent(magnet: string, category: string | undefined ) {
+    var uri = ""
+    if (category == undefined) {
+      uri = '/add/'+ magnet + '/other'
+    } else {
+      uri = '/add/'+ magnet + '/' + category.toLowerCase()
+    }
+    fetch(uri );
+  }
+
   /**
    * Workaround for untyped table cell definitions
    */

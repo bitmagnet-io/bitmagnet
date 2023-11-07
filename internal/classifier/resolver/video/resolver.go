@@ -58,6 +58,16 @@ func (r videoResolver) Resolve(ctx context.Context, content model.TorrentContent
 }
 
 func (r videoResolver) resolveMovie(ctx context.Context, content model.TorrentContent) (model.TorrentContent, error) {
+
+	// The movie Onlyfans an horror story always false positive with onlyfans adult site
+	titleLower := strings.ToLower(content.Torrent.Name)
+	if strings.Contains(titleLower, "onlyfans") && strings.Contains(titleLower, "xxx") {
+		output := content
+		output.ContentType.Valid = true
+		output.ContentType.ContentType = model.ContentTypeXxx
+		return output, nil
+	}
+
 	externalIds := content.ExternalIds.OrderedEntries()
 	if len(externalIds) > 0 {
 		for _, id := range externalIds {
