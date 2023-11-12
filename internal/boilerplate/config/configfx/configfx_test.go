@@ -16,6 +16,7 @@ func TestConfig(t *testing.T) {
 		NestedKeyFromConfig string
 		NestedKeyFromEnv    int `validate:"min=1,max=10"`
 		IntSlice            []int
+		DB                  int
 	}
 	type TestConfig struct {
 		Foo         string `validate:"lowercase"`
@@ -42,6 +43,7 @@ func TestConfig(t *testing.T) {
 					return configresolver.NewEnv(map[string]string{
 						"TEST_DURATION":                   "2s",
 						"TEST_NESTED_NESTED_KEY_FROM_ENV": "2",
+						"TEST_NESTED_DB":                  "3",
 					}, configresolver.WithPriority(-10)), nil
 				},
 			},
@@ -76,6 +78,7 @@ func TestConfig(t *testing.T) {
 					NestedKeyFromConfig: "from_config",
 					NestedKeyFromEnv:    2,
 					IntSlice:            []int{1, 2, 3},
+					DB:                  3,
 				},
 			}, cfg)
 			shutdownErr := shutdowner.Shutdown()
