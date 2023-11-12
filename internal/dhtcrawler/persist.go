@@ -20,7 +20,7 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 		case is := <-c.persistTorrents.Out():
 			ts := make([]*model.Torrent, 0, len(is))
 			for _, i := range is {
-				if t, err := createTorrentModel(i.infoHash, i.metaInfo, c.saveFilesThreshold); err != nil {
+				if t, err := createTorrentModel(i.infoHash, i.metaInfo, c.savePieces, c.saveFilesThreshold); err != nil {
 					c.logger.Errorf("error creating torrent model: %s", err.Error())
 				} else {
 					ts = append(ts, &t)
@@ -63,6 +63,7 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 func createTorrentModel(
 	hash protocol.ID,
 	info metainfo.Info,
+	savePieces bool,
 	saveFilesThreshold uint,
 ) (model.Torrent, error) {
 	name := info.BestName()
@@ -85,13 +86,19 @@ func createTorrentModel(
 	} else if len(files) > 0 {
 		filesStatus = model.FilesStatusMulti
 	}
+	var pieceLength model.NullUint64
+	var pieces []byte
+	if savePieces {
+		pieceLength = model.NewNullUint64(uint64(info.PieceLength))
+		pieces = info.Pieces
+	}
 	return model.Torrent{
 		InfoHash:    hash,
 		Name:        name,
 		Size:        uint64(info.TotalLength()),
 		Private:     private,
-		PieceLength: model.NewNullUint64(uint64(info.PieceLength)),
-		Pieces:      info.Pieces,
+		PieceLength: pieceLength,
+		Pieces:      pieces,
 		Files:       files,
 		FilesStatus: filesStatus,
 		Sources: []model.TorrentsTorrentSource{
