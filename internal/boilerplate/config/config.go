@@ -73,6 +73,7 @@ type ResolvedNode struct {
 	Type         reflect.Type
 	ParentPath   []string
 	PathString   string
+	StructKey    string
 	Value        interface{}
 	ValueRaw     interface{}
 	ValueLabel   string
@@ -103,7 +104,7 @@ func resolveRootNode(
 	val *validator.Validate,
 	spec Spec,
 ) (ResolvedNode, error) {
-	return resolveStructNode(resolvers, val, []string{}, spec.Key, reflect.ValueOf(spec.DefaultValue))
+	return resolveStructNode(resolvers, val, []string{}, spec.Key, "", reflect.ValueOf(spec.DefaultValue))
 }
 
 func resolveStructNode(
@@ -111,6 +112,7 @@ func resolveStructNode(
 	val *validator.Validate,
 	parentPath []string,
 	key string,
+	structKey string,
 	value reflect.Value,
 ) (ResolvedNode, error) {
 	if value.Type().Kind() != reflect.Struct {
@@ -125,7 +127,7 @@ func resolveStructNode(
 		fieldValue := value.FieldByName(field.Name)
 		switch field.Type.Kind() {
 		case reflect.Struct:
-			if structResolved, err := resolveStructNode(resolvers, val, thisPath, fieldKey, fieldValue); err != nil {
+			if structResolved, err := resolveStructNode(resolvers, val, thisPath, fieldKey, field.Name, fieldValue); err != nil {
 				return ResolvedNode{}, err
 			} else {
 				children[fieldKey] = structResolved
@@ -152,6 +154,7 @@ func resolveStructNode(
 				Type:         field.Type,
 				ParentPath:   thisPath,
 				PathString:   strings.Join(append(thisPath, fieldKey), "."),
+				StructKey:    field.Name,
 				Value:        rv,
 				ValueRaw:     rv,
 				ValueLabel:   createValueLabel(rv),
@@ -159,16 +162,16 @@ func resolveStructNode(
 			}
 		}
 	}
-	valueMap := make(map[string]interface{})
-	for k, c := range children {
-		valueMap[k] = c.ValueRaw
+	valueMap := make(map[string]interface{}, len(children))
+	for _, c := range children {
+		valueMap[c.StructKey] = c.ValueRaw
 	}
 	resolvedValue := reflect.New(value.Type())
 	decodeConfig := &mapstructure.DecoderConfig{
 		Metadata: nil,
 		Result:   resolvedValue.Interface(),
 		MatchName: func(mapKey, fieldName string) bool {
-			return strcase.ToCamel(mapKey) == fieldName
+			return mapKey == fieldName
 		},
 	}
 	decoder, decoderErr := mapstructure.NewDecoder(decodeConfig)
@@ -188,6 +191,7 @@ func resolveStructNode(
 		},
 		ParentPath: parentPath,
 		PathString: strings.Join(thisPath, "."),
+		StructKey:  structKey,
 		IsStruct:   true,
 		Type:       value.Type(),
 		Value:      reflect.Indirect(resolvedValue).Interface(),
