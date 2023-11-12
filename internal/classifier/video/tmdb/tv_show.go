@@ -3,7 +3,6 @@ package tmdb
 import (
 	"context"
 	"errors"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/persistence"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
@@ -90,16 +89,16 @@ func (c *client) searchTvShowTmdb(ctx context.Context, p SearchTvShowParams) (tv
 }
 
 func (c *client) GetTvShowByExternalId(ctx context.Context, source, id string) (tvShow model.Content, err error) {
-	if dbTvShow, getTvShowErr := c.p.GetContent(ctx, model.ContentRef{
+	searchResult, searchErr := c.s.Content(ctx, query.Where(search.ContentIdentifierCriteria(model.ContentRef{
 		Type:   model.ContentTypeTvShow,
 		Source: source,
 		ID:     id,
-	}); getTvShowErr == nil {
-		tvShow = dbTvShow
-		return
-	} else if !errors.Is(getTvShowErr, persistence.ErrRecordNotFound) {
-		err = getTvShowErr
-		return
+	})), query.Limit(1))
+	if searchErr != nil {
+		return model.Content{}, searchErr
+	}
+	if len(searchResult.Items) > 0 {
+		return searchResult.Items[0].Content, nil
 	}
 	if source == SourceTmdb {
 		intId, idErr := strconv.Atoi(id)

@@ -19,7 +19,6 @@ import { ClipboardModule } from "@angular/cdk/clipboard";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatRadioModule } from "@angular/material/radio";
 import { TorrentContentComponent } from "./torrent-content/torrent-content.component";
-import { TorrentContentService } from "./torrent-content/torrent-content.service";
 
 @NgModule({
   declarations: [TorrentContentComponent],
@@ -45,6 +44,5 @@ import { TorrentContentService } from "./torrent-content/torrent-content.service
     MatRadioModule,
   ],
   exports: [TorrentContentComponent],
-  providers: [TorrentContentService],
 })
 export class SearchModule {}

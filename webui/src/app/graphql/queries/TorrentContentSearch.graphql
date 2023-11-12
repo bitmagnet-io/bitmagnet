@@ -1,6 +1,6 @@
 #import "../fragments/TorrentContentResult"
 
-query TorrentContentSearch(
+query SearchTorrentContent(
   $query: SearchQueryInput
   $facets: TorrentContentFacetsInput
 ) {

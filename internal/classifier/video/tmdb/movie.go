@@ -3,7 +3,6 @@ package tmdb
 import (
 	"context"
 	"errors"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/persistence"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
@@ -64,7 +63,7 @@ func (c *client) searchMovieLocal(ctx context.Context, p SearchMovieParams) (mov
 	return
 }
 
-func (c *client) searchMovieTmdb(ctx context.Context, p SearchMovieParams) (movie model.Content, err error) {
+func (c *client) searchMovieTmdb(ctx context.Context, p SearchMovieParams) (model.Content, error) {
 	urlOptions := make(map[string]string)
 	if !p.Year.IsNil() {
 		urlOptions["year"] = strconv.Itoa(int(p.Year))
@@ -77,53 +76,47 @@ func (c *client) searchMovieTmdb(ctx context.Context, p SearchMovieParams) (movi
 		urlOptions,
 	)
 	if searchErr != nil {
-		err = searchErr
-		return
+		return model.Content{}, searchErr
 	}
 	for _, item := range searchResult.Results {
 		if levenshteinCheck(p.Title, []string{item.Title, item.OriginalTitle}, p.LevenshteinThreshold) {
 			return c.GetMovieByExternalId(ctx, SourceTmdb, strconv.Itoa(int(item.ID)))
 		}
 	}
-	err = ErrNotFound
-	return
+	return model.Content{}, ErrNotFound
 }
 
-func (c *client) GetMovieByExternalId(ctx context.Context, source, id string) (movie model.Content, err error) {
-	if dbMovie, getMovieErr := c.p.GetContent(ctx, model.ContentRef{
+func (c *client) GetMovieByExternalId(ctx context.Context, source, id string) (model.Content, error) {
+	searchResult, searchErr := c.s.Content(ctx, query.Where(search.ContentIdentifierCriteria(model.ContentRef{
 		Type:   model.ContentTypeMovie,
 		Source: source,
 		ID:     id,
-	}); getMovieErr == nil {
-		movie = dbMovie
-		return
-	} else if !errors.Is(getMovieErr, persistence.ErrRecordNotFound) {
-		err = getMovieErr
-		return
+	})), query.Limit(1))
+	if searchErr != nil {
+		return model.Content{}, searchErr
+	}
+	if len(searchResult.Items) > 0 {
+		return searchResult.Items[0].Content, nil
 	}
 	if source == SourceTmdb {
 		intId, idErr := strconv.Atoi(id)
 		if idErr != nil {
-			err = idErr
-			return
+			return model.Content{}, idErr
 		}
 		return c.getMovieByTmbdId(ctx, intId)
 	}
 	externalSource, externalId, externalSourceErr := getExternalSource(source, id)
 	if externalSourceErr != nil {
-		err = externalSourceErr
-		return
+		return model.Content{}, externalSourceErr
 	}
 	byIdResult, byIdErr := c.c.GetFindByID(externalId, map[string]string{
 		"external_source": externalSource,
 	})
 	if byIdErr != nil {
-		err = byIdErr
-		return
+		return model.Content{}, byIdErr
 	}
 	if len(byIdResult.MovieResults) == 0 {
-		err = ErrNotFound
-		return
+		return model.Content{}, ErrNotFound
 	}
 	return c.getMovieByTmbdId(ctx, int(byIdResult.MovieResults[0].ID))
 }

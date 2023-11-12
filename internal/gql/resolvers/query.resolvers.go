@@ -8,23 +8,15 @@ import (
 	"context"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
+	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 )
 
-// Empty is the resolver for the _empty field.
-func (r *mutationResolver) Empty(ctx context.Context) (*string, error) {
-	return nil, nil
+// Search is the resolver for the search field.
+func (r *queryResolver) Search(ctx context.Context) (gqlmodel.SearchQuery, error) {
+	return gqlmodel.SearchQuery{}, nil
 }
-
-// Empty is the resolver for the _empty field.
-func (r *queryResolver) Empty(ctx context.Context) (*string, error) {
-	return nil, nil
-}
-
-// Mutation returns gql.MutationResolver implementation.
-func (r *Resolver) Mutation() gql.MutationResolver { return &mutationResolver{r} }
 
 // Query returns gql.QueryResolver implementation.
 func (r *Resolver) Query() gql.QueryResolver { return &queryResolver{r} }
 
-type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

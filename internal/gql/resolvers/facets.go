@@ -29,6 +29,19 @@ func torrentSourceFacet(input gen.TorrentSourceFacetInput) q.Facet {
 	return facet(input.Aggregate, input.Logic, filter, search.TorrentSourceFacet)
 }
 
+func torrentTagFacet(input gen.TorrentTagFacetInput) q.Facet {
+	var filter graphql.Omittable[[]*string]
+	if f, ok := input.Filter.ValueOK(); ok {
+		filterValues := make([]*string, 0, len(f))
+		for _, v := range f {
+			vv := v
+			filterValues = append(filterValues, &vv)
+		}
+		filter = graphql.OmittableOf[[]*string](filterValues)
+	}
+	return facet(input.Aggregate, input.Logic, filter, search.TorrentTagsFacet)
+}
+
 func torrentFileTypeFacet(input gen.TorrentFileTypeFacetInput) q.Facet {
 	var filter graphql.Omittable[[]*model.FileType]
 	if f, ok := input.Filter.ValueOK(); ok {
@@ -130,6 +143,12 @@ func contentTypeAggs(items q.AggregationItems) ([]gen.ContentTypeAgg, error) {
 func torrentSourceAggs(items q.AggregationItems) ([]gen.TorrentSourceAgg, error) {
 	return aggs(items, func(s string) (string, error) { return s, nil }, func(value *string, label string, count uint) gen.TorrentSourceAgg {
 		return gen.TorrentSourceAgg{Value: *value, Label: label, Count: int(count)}
+	})
+}
+
+func torrentTagAggs(items q.AggregationItems) ([]gen.TorrentTagAgg, error) {
+	return aggs(items, func(s string) (string, error) { return s, nil }, func(value *string, label string, count uint) gen.TorrentTagAgg {
+		return gen.TorrentTagAgg{Value: *value, Label: label, Count: int(count)}
 	})
 }
 

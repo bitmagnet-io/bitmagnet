@@ -199,13 +199,10 @@ type MetadataSource {
 }
 
 type Mutation {
-  """Placeholder for the root mutation"""
-  _empty: String
+  torrent: TorrentMutation!
 }
 
 type Query {
-  """Placeholder for the root query"""
-  _empty: String
   search: SearchQuery!
 }
 
@@ -252,6 +249,7 @@ type Torrent {
   singleFile: Boolean
   size: Int!
   sources: [TorrentSource!]!
+  tagNames: [String!]!
   updatedAt: DateTime!
 }
 
@@ -285,6 +283,7 @@ type TorrentContentAggregations {
   releaseYear: [ReleaseYearAgg!]
   torrentFileType: [TorrentFileTypeAgg!]
   torrentSource: [TorrentSourceAgg!]
+  torrentTag: [TorrentTagAgg!]
   videoResolution: [VideoResolutionAgg!]
   videoSource: [VideoSourceAgg!]
 }
@@ -296,6 +295,7 @@ input TorrentContentFacetsInput {
   releaseYear: ReleaseYearFacetInput
   torrentFileType: TorrentFileTypeFacetInput
   torrentSource: TorrentSourceFacetInput
+  torrentTag: TorrentTagFacetInput
   videoResolution: VideoResolutionFacetInput
   videoSource: VideoSourceFacetInput
 }
@@ -329,6 +329,12 @@ input TorrentFileTypeFacetInput {
   logic: FacetLogic
 }
 
+type TorrentMutation {
+  deleteTags(infoHashes: [Hash20!], tagNames: [String!]): Void
+  putTags(infoHashes: [Hash20!]!, tagNames: [String!]!): Void
+  setTags(infoHashes: [Hash20!]!, tagNames: [String!]!): Void
+}
+
 type TorrentSource {
   importId: String
   key: String!
@@ -344,6 +350,18 @@ type TorrentSourceAgg {
 }
 
 input TorrentSourceFacetInput {
+  aggregate: Boolean
+  filter: [String!]
+  logic: FacetLogic
+}
+
+type TorrentTagAgg {
+  count: Int!
+  label: String!
+  value: String!
+}
+
+input TorrentTagFacetInput {
   aggregate: Boolean
   filter: [String!]
   logic: FacetLogic
@@ -418,5 +436,7 @@ input VideoSourceFacetInput {
   aggregate: Boolean
   filter: [VideoSource]
 }
+
+scalar Void
 
 scalar Year

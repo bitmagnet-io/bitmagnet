@@ -11,9 +11,10 @@ import {
 } from "@angular/animations";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import * as generated from "../../graphql/generated";
-import { TorrentContentService } from "./torrent-content.service";
+import { GraphQLService } from "../../graphql/graphql.service";
 import { TorrentContentDataSource } from "./torrent-content.datasource";
 import { Facet } from "./facet";
+import { ExpandedItem } from "./expanded-item";
 
 type ContentTypeInfo = {
   singular: string;
@@ -103,9 +104,10 @@ export class TorrentContentComponent
     undefined,
   );
 
-  expandedItem: string | null = null;
-
+  // expandedItem: string | null = null;
+  expandedItem: ExpandedItem;
   torrentSourceFacet: Facet<string, false>;
+  torrentTagFacet: Facet<string, false>;
   torrentFileTypeFacet: Facet<generated.FileType, false>;
   languageFacet: Facet<generated.Language, false>;
   genreFacet: Facet<string, false>;
@@ -119,10 +121,11 @@ export class TorrentContentComponent
   autoRefreshSubscription: Subscription | undefined;
 
   constructor(
-    private torrentContentService: TorrentContentService,
+    graphQLService: GraphQLService,
     private errorSnackBar: MatSnackBar,
   ) {
-    this.dataSource = new TorrentContentDataSource(this.torrentContentService);
+    this.dataSource = new TorrentContentDataSource(graphQLService);
+    this.expandedItem = new ExpandedItem(this.dataSource.items);
     this.dataSource.error.subscribe((error: Error | undefined) => {
       if (error) {
         this.errorSnackBar.open(
@@ -134,11 +137,6 @@ export class TorrentContentComponent
         );
       } else {
         this.errorSnackBar.dismiss();
-      }
-    });
-    this.dataSource.items.subscribe((items) => {
-      if (this.expandedItem && !items.some((i) => i.id === this.expandedItem)) {
-        this.expandedItem = null;
       }
     });
     this.dataSource.aggregations.subscribe((aggregations) => {
@@ -154,6 +152,12 @@ export class TorrentContentComponent
       null,
       this.dataSource.torrentSourceAggs,
     );
+    this.torrentTagFacet = new Facet<string, false>(
+      "Torrent Tag",
+      "sell",
+      null,
+      this.dataSource.torrentTagAggs,
+    );
     this.torrentFileTypeFacet = new Facet<generated.FileType, false>(
       "File Type",
       "file_present",
@@ -163,7 +167,7 @@ export class TorrentContentComponent
     this.languageFacet = new Facet<generated.Language, false>(
       "Language",
       "translate",
-      ["movie", "tv_show"],
+      null,
       this.dataSource.languageAggs,
     );
     this.genreFacet = new Facet<string, false>(
@@ -175,17 +179,18 @@ export class TorrentContentComponent
     this.videoResolutionFacet = new Facet<generated.VideoResolution>(
       "Video Resolution",
       "screenshot_monitor",
-      ["movie", "tv_show"],
+      ["movie", "tv_show", "xxx"],
       this.dataSource.videoResolutionAggs,
     );
     this.videoSourceFacet = new Facet<generated.VideoSource>(
       "Video Source",
       "album",
-      ["movie", "tv_show"],
+      ["movie", "tv_show", "xxx"],
       this.dataSource.videoSourceAggs,
     );
     this.facets = [
       this.torrentSourceFacet,
+      this.torrentTagFacet,
       this.torrentFileTypeFacet,
       this.languageFacet,
       this.videoResolutionFacet,
@@ -240,6 +245,7 @@ export class TorrentContentComponent
           })(),
         },
         torrentSource: this.torrentSourceFacet.facetParams(),
+        torrentTag: this.torrentTagFacet.facetParams(),
         torrentFileType: this.torrentFileTypeFacet.facetParams(),
         language: this.languageFacet.facetParams(),
         genre: this.genreFacet.facetParams(),

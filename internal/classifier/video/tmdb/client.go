@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpclient/httplogger"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpclient/httpratelimiter"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/persistence"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/cyruzin/golang-tmdb"
 	"go.uber.org/fx"
@@ -15,10 +14,9 @@ import (
 
 type Params struct {
 	fx.In
-	Config      Config
-	Logger      *zap.SugaredLogger
-	Search      search.Search
-	Persistence persistence.Persistence
+	Config Config
+	Logger *zap.SugaredLogger
+	Search search.Search
 }
 
 type Result struct {
@@ -61,7 +59,6 @@ func New(p Params) (r Result, err error) {
 	}
 	r.Client = &client{
 		c: c,
-		p: p.Persistence,
 		s: p.Search,
 	}
 	r.TmdbClient = c
@@ -71,7 +68,6 @@ func New(p Params) (r Result, err error) {
 type client struct {
 	c *tmdb.Client
 	s search.Search
-	p persistence.Persistence
 }
 
 const SourceTmdb = "tmdb"

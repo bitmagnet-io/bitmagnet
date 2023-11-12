@@ -24,6 +24,7 @@ const config: CodegenConfig = {
           Date: "string",
           DateTime: "string",
           Hash20: "string",
+          Void: "null",
           Year: "number",
         },
       },

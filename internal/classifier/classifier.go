@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/resolver"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/persistence"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"go.uber.org/fx"
@@ -14,9 +14,9 @@ import (
 
 type Params struct {
 	fx.In
-	Persistence persistence.Persistence
-	Resolver    resolver.RootResolver
-	Logger      *zap.SugaredLogger
+	Search   search.Search
+	Resolver resolver.RootResolver
+	Logger   *zap.SugaredLogger
 }
 
 type Result struct {
@@ -31,7 +31,7 @@ type Classifier interface {
 func New(p Params) (Result, error) {
 	return Result{
 		Classifier: classifier{
-			p.Persistence,
+			p.Search,
 			p.Resolver,
 			p.Logger,
 		},
@@ -39,7 +39,7 @@ func New(p Params) (Result, error) {
 }
 
 type classifier struct {
-	p persistence.Persistence
+	s search.Search
 	r resolver.RootResolver
 	l *zap.SugaredLogger
 }
@@ -53,12 +53,12 @@ func (e MissingHashesError) Error() string {
 }
 
 func (c classifier) Classify(ctx context.Context, infoHashes ...protocol.ID) error {
-	torrents, missingHashes, findErr := c.p.GetTorrents(ctx, infoHashes...)
-	if findErr != nil {
-		return findErr
+	searchResult, searchErr := c.s.TorrentsWithMissingInfoHashes(ctx, infoHashes)
+	if searchErr != nil {
+		return searchErr
 	}
-	resolved := make([]model.TorrentContent, 0, len(torrents))
-	for _, torrent := range torrents {
+	resolved := make([]model.TorrentContent, 0, len(searchResult.Torrents))
+	for _, torrent := range searchResult.Torrents {
 		var torrentContent model.TorrentContent
 		if len(torrent.Contents) > 0 {
 			torrentContent = torrent.Contents[0]
@@ -68,7 +68,7 @@ func (c classifier) Classify(ctx context.Context, infoHashes ...protocol.ID) err
 			torrentContent.Torrent.Contents = nil
 		} else {
 			torrentContent = model.TorrentContent{
-				InfoHash: infoHashes[0],
+				InfoHash: torrent.InfoHash,
 				Torrent:  torrent,
 			}
 		}
@@ -85,9 +85,9 @@ func (c classifier) Classify(ctx context.Context, infoHashes ...protocol.ID) err
 	if resolveErr := c.r.Persist(ctx, resolved...); resolveErr != nil {
 		return resolveErr
 	}
-	if len(missingHashes) > 0 {
+	if len(searchResult.MissingInfoHashes) > 0 {
 		return MissingHashesError{
-			InfoHashes: missingHashes,
+			InfoHashes: searchResult.MissingInfoHashes,
 		}
 	}
 	return nil

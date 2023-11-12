@@ -55,6 +55,7 @@ type ReleaseYearFacetInput struct {
 type TorrentContentAggregations struct {
 	ContentType     []ContentTypeAgg     `json:"contentType,omitempty"`
 	TorrentSource   []TorrentSourceAgg   `json:"torrentSource,omitempty"`
+	TorrentTag      []TorrentTagAgg      `json:"torrentTag,omitempty"`
 	TorrentFileType []TorrentFileTypeAgg `json:"torrentFileType,omitempty"`
 	Language        []LanguageAgg        `json:"language,omitempty"`
 	Genre           []GenreAgg           `json:"genre,omitempty"`
@@ -66,6 +67,7 @@ type TorrentContentAggregations struct {
 type TorrentContentFacetsInput struct {
 	ContentType     graphql.Omittable[*ContentTypeFacetInput]     `json:"contentType,omitempty"`
 	TorrentSource   graphql.Omittable[*TorrentSourceFacetInput]   `json:"torrentSource,omitempty"`
+	TorrentTag      graphql.Omittable[*TorrentTagFacetInput]      `json:"torrentTag,omitempty"`
 	TorrentFileType graphql.Omittable[*TorrentFileTypeFacetInput] `json:"torrentFileType,omitempty"`
 	Language        graphql.Omittable[*LanguageFacetInput]        `json:"language,omitempty"`
 	Genre           graphql.Omittable[*GenreFacetInput]           `json:"genre,omitempty"`
@@ -93,6 +95,18 @@ type TorrentSourceAgg struct {
 }
 
 type TorrentSourceFacetInput struct {
+	Aggregate graphql.Omittable[*bool]             `json:"aggregate,omitempty"`
+	Logic     graphql.Omittable[*model.FacetLogic] `json:"logic,omitempty"`
+	Filter    graphql.Omittable[[]string]          `json:"filter,omitempty"`
+}
+
+type TorrentTagAgg struct {
+	Value string `json:"value"`
+	Label string `json:"label"`
+	Count int    `json:"count"`
+}
+
+type TorrentTagFacetInput struct {
 	Aggregate graphql.Omittable[*bool]             `json:"aggregate,omitempty"`
 	Logic     graphql.Omittable[*model.FacetLogic] `json:"logic,omitempty"`
 	Filter    graphql.Omittable[[]string]          `json:"filter,omitempty"`

@@ -9,6 +9,8 @@ import (
 
 type SearchQuery struct{}
 
+type TorrentMutation struct{}
+
 type TorrentContent struct {
 	ID              string
 	InfoHash        protocol.ID

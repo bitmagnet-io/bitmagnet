@@ -12,6 +12,7 @@ type Torrent {
   sources: [TorrentSource!]!
   seeders: Int
   leechers: Int
+  tagNames: [String!]!
   createdAt: DateTime!
   updatedAt: DateTime!
 }

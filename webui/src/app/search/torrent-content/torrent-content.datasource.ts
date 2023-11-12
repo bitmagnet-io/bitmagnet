@@ -1,7 +1,7 @@
 import { CollectionViewer, DataSource } from "@angular/cdk/collections";
-import { BehaviorSubject, catchError, EMPTY, map, Observable } from "rxjs";
+import { BehaviorSubject, catchError, EMPTY, map, Observable, tap } from "rxjs";
 import * as generated from "../../graphql/generated";
-import { TorrentContentService } from "./torrent-content.service";
+import { GraphQLService } from "../../graphql/graphql.service";
 import { GenreAgg, VideoResolutionAgg, VideoSourceAgg } from "./facet";
 
 export class TorrentContentDataSource
@@ -12,9 +12,17 @@ export class TorrentContentDataSource
     totalCount: 0,
     aggregations: {},
   });
+  private inputSubject =
+    new BehaviorSubject<generated.SearchTorrentContentQueryVariables>({});
   private loadingSubject = new BehaviorSubject(false);
   private errorSubject = new BehaviorSubject<Error | undefined>(undefined);
   private lastRequestTimeSubject = new BehaviorSubject<number>(0);
+  private expandedItemSubject = new BehaviorSubject<
+    generated.TorrentContent | undefined
+  >(undefined);
+  private editedTagsSubject = new BehaviorSubject<string[] | undefined>(
+    undefined,
+  );
 
   public result = this.resultSubject.asObservable();
   public items = this.result.pipe(map((result) => result.items));
@@ -25,6 +33,8 @@ export class TorrentContentDataSource
 
   public torrentSourceAggs: Observable<generated.TorrentSourceAgg[]> =
     this.aggregations.pipe(map((aggs) => aggs.torrentSource ?? []));
+  public torrentTagAggs: Observable<generated.TorrentTagAgg[]> =
+    this.aggregations.pipe(map((aggs) => aggs.torrentTag ?? []));
   public torrentFileTypeAggs: Observable<generated.TorrentFileTypeAgg[]> =
     this.aggregations.pipe(map((aggs) => aggs.torrentFileType ?? []));
   public languageAggs: Observable<generated.LanguageAgg[]> =
@@ -40,7 +50,7 @@ export class TorrentContentDataSource
     map((aggs) => (aggs.videoSource ?? []) as VideoSourceAgg[]),
   );
 
-  constructor(private torrentContentService: TorrentContentService) {}
+  constructor(private graphQLService: GraphQLService) {}
 
   connect(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -55,11 +65,12 @@ export class TorrentContentDataSource
     this.errorSubject.complete();
   }
 
-  loadResult(input: generated.TorrentContentSearchQueryVariables): void {
+  loadResult(input: generated.SearchTorrentContentQueryVariables): void {
     const requestTime = Date.now();
     this.loadingSubject.next(true);
-    this.torrentContentService
-      .search(input)
+    this.inputSubject.next(input);
+    this.graphQLService
+      .searchTorrentContent(input)
       .pipe(
         catchError((err: Error) => {
           this.errorSubject.next(err);
@@ -74,7 +85,65 @@ export class TorrentContentDataSource
           this.errorSubject.next(undefined);
           this.resultSubject.next(result);
           this.loadingSubject.next(false);
+          const expandedItem = this.expandedItemSubject.getValue();
+          if (
+            expandedItem &&
+            !result.items.some((i) => i.id === expandedItem.id)
+          ) {
+            this.expandItem(undefined);
+          }
         }
       });
+  }
+
+  refreshResult(): void {
+    const input = this.inputSubject.getValue();
+    const uncachedInput = {
+      ...input,
+      query: {
+        ...input.query,
+        cached: false,
+      },
+    };
+    return this.loadResult(uncachedInput);
+  }
+
+  expandItem(id?: string): void {
+    const nextItem = this.resultSubject
+      .getValue()
+      .items.find((i) => i.id === id);
+    const current = this.expandedItemSubject.getValue();
+    if (current?.id !== id) {
+      this.expandedItemSubject.next(nextItem);
+      this.editedTagsSubject.next(undefined);
+    }
+  }
+
+  expandedSaveTags(): void {
+    const expanded = this.expandedItemSubject.getValue();
+    if (!expanded) {
+      return;
+    }
+    const editedTags = this.editedTagsSubject.getValue();
+    if (!editedTags) {
+      return;
+    }
+    this.graphQLService
+      .torrentSetTags({
+        infoHashes: [expanded.infoHash],
+        tagNames: editedTags,
+      })
+      .pipe(
+        catchError((err: Error) => {
+          this.errorSubject.next(err);
+          return EMPTY;
+        }),
+      )
+      .pipe(
+        tap(() => {
+          this.editedTagsSubject.next(undefined);
+          this.refreshResult();
+        }),
+      );
   }
 }

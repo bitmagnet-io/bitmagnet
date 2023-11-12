@@ -271,6 +271,26 @@
                   }}</a>
                 </ng-container>
               </p>
+              <mat-form-field class="form-edit-tags">
+                <mat-label>Tags</mat-label>
+                <mat-chip-grid #chipGrid aria-label="Enter tags">
+                  <mat-chip-row
+                    *ngFor="let tagName of item(i).torrent.tagNames; let j = index"
+                    [editable]="true"
+                    (edited)="torrentPutTags([item(i).infoHash], [$event.value])"
+                    [aria-description]="'press enter to edit'">
+                  {{tagName}}
+                  <button matChipRemove [attr.aria-label]="'remove ' + tagName">
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                </mat-chip-row>
+                  <input placeholder="New tag..."
+                         [matChipInputFor]="chipGrid"
+                         [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                         [matChipInputAddOnBlur]="addOnBlur"
+                         (matChipInputTokenEnd)="add($event)"/>
+                </mat-chip-grid>
+              </mat-form-field>
 
               <div *ngIf="item(i).torrent.files?.length" class="torrent-files">
                 <table>

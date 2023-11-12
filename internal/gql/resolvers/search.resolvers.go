@@ -14,11 +14,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
 )
 
-// Search is the resolver for the search field.
-func (r *queryResolver) Search(ctx context.Context) (gqlmodel.SearchQuery, error) {
-	return gqlmodel.SearchQuery{}, nil
-}
-
 // TorrentContent is the resolver for the torrentContent field.
 func (r *searchQueryResolver) TorrentContent(ctx context.Context, obj *gqlmodel.SearchQuery, query *q.SearchParams, facets *gen.TorrentContentFacetsInput) (q.GenericResult[search.TorrentContentResultItem], error) {
 	options := []q.Option{
@@ -34,6 +29,9 @@ func (r *searchQueryResolver) TorrentContent(ctx context.Context, obj *gqlmodel.
 		}
 		if torrentSource, ok := facets.TorrentSource.ValueOK(); ok {
 			qFacets = append(qFacets, torrentSourceFacet(*torrentSource))
+		}
+		if torrentTag, ok := facets.TorrentTag.ValueOK(); ok {
+			qFacets = append(qFacets, torrentTagFacet(*torrentTag))
 		}
 		if torrentFileType, ok := facets.TorrentFileType.ValueOK(); ok {
 			qFacets = append(qFacets, torrentFileTypeFacet(*torrentFileType))
@@ -83,6 +81,13 @@ func (r *torrentContentResultResolver) Aggregations(ctx context.Context, obj *q.
 			return a, err
 		}
 		a.TorrentSource = aggs
+	}
+	if torrentTags, ok := obj.Aggregations[search.TorrentTagFacetKey]; ok {
+		aggs, err := torrentTagAggs(torrentTags.Items)
+		if err != nil {
+			return a, err
+		}
+		a.TorrentTag = aggs
 	}
 	if fileTypes, ok := obj.Aggregations[search.TorrentFileTypeFacetKey]; ok {
 		aggs, err := torrentFileTypeAggs(fileTypes.Items)

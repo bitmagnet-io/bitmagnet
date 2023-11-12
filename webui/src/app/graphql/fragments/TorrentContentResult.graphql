@@ -16,6 +16,11 @@ fragment TorrentContentResult on TorrentContentResult {
       label
       count
     }
+    torrentTag {
+      value
+      label
+      count
+    }
     torrentFileType {
       value
       label
