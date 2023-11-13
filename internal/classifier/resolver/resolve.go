@@ -7,6 +7,9 @@ import (
 	"sort"
 )
 
+// This is where the subresolvers are called sorted by priority
+// If we found something in the subresolver we should return a model.Torrent and nil
+// Else we return an empty model and an error
 func (r resolver) Resolve(ctx context.Context, content model.TorrentContent) (model.TorrentContent, error) {
 	for _, subResolver := range r.sortedSubResolvers() {
 		preEnrichedContent, preEnrichedErr := subResolver.PreEnrich(content)
