@@ -134,7 +134,9 @@
                 contentTypeInfo(item(i).contentType)?.icon ?? "question_mark"
               }}</mat-icon
             >
-            <span class="title">{{ item(i).title }}</span>
+            <span class="title"><span *ngIf="getAttribute(item(i), 'site', 'tpdb') as site ">
+                {{ site }} - </span>
+              {{ item(i).title }}</span>
             <mat-chip-set>
               <mat-chip *ngIf="item(i).languages; let languages">
                 <ng-container *ngFor="let l of languages; index as j">
@@ -209,6 +211,14 @@
                 [src]="'https://image.tmdb.org/t/p/w300/' + posterPath"
                 class="poster"
               />
+              <img
+                *ngIf="
+                  getAttribute(item(i), 'bg', 'tpdb') as posterPath
+                "
+                [src]="posterPath"
+                class="poster"
+                style="max-width:300px;"
+              />
               <h2>{{ item(i).torrent.name }}</h2>
               <p>
                 <strong>Info hash:</strong>
@@ -253,6 +263,19 @@
               <p *ngIf="item(i).content?.overview">
                 {{ item(i).content!.overview }}
               </p>
+
+              <ng-container *ngIf="getCollections(i, 'performer'); let performers">
+                <p><strong>Performers:</strong> {{ performers.join(", ") }}</p>
+              </ng-container>
+
+              <ng-container *ngIf="getCollections(i, 'tag'); let tags">
+                <mat-chip-set>
+                  <ng-container *ngFor="let tag of tags">
+                    <mat-chip color="primary">{{ tag }}</mat-chip>
+                  </ng-container>
+                </mat-chip-set>
+              </ng-container>
+
               <ng-container *ngIf="getCollections(i, 'genre'); let genres">
                 <p><strong>Genres:</strong> {{ genres.join(", ") }}</p>
               </ng-container>
