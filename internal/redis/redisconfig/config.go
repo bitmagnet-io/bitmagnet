@@ -1,8 +1,11 @@
 package redisconfig
 
 import (
-	redis "github.com/redis/go-redis/v9"
+	"crypto/tls"
+	"strings"
 	"time"
+
+	redis "github.com/redis/go-redis/v9"
 )
 
 func NewDefaultConfig() Config {
@@ -59,18 +62,37 @@ type Config struct {
 	// Maximum number of socket connections.
 	// Default is 10 connections per every CPU as reported by runtime.NumCPU.
 	PoolSize int
+
+	// Enable TLS for connection. Only used when Network is "tcp".
+	// Default is false.
+	TLS bool
 }
 
 func (c Config) RedisClientOptions() *redis.Options {
-	return &redis.Options{
-		Network:      c.Network,
-		Addr:         c.Addr,
-		Username:     c.Username,
-		Password:     c.Password,
-		DB:           c.DB,
-		DialTimeout:  c.DialTimeout,
-		ReadTimeout:  c.ReadTimeout,
-		WriteTimeout: c.WriteTimeout,
-		PoolSize:     c.PoolSize,
+	if c.TLS == false || c.Network != "tcp" {
+		return &redis.Options{
+			Network:      c.Network,
+			Addr:         c.Addr,
+			Username:     c.Username,
+			Password:     c.Password,
+			DB:           c.DB,
+			DialTimeout:  c.DialTimeout,
+			ReadTimeout:  c.ReadTimeout,
+			WriteTimeout: c.WriteTimeout,
+			PoolSize:     c.PoolSize,
+		}
+	} else {
+		return &redis.Options{
+			Network:      c.Network,
+			Addr:         c.Addr,
+			Username:     c.Username,
+			Password:     c.Password,
+			DB:           c.DB,
+			DialTimeout:  c.DialTimeout,
+			ReadTimeout:  c.ReadTimeout,
+			WriteTimeout: c.WriteTimeout,
+			PoolSize:     c.PoolSize,
+			TLSConfig:    &tls.Config{ServerName: strings.Split(c.Addr, ":")[0]},
+		}
 	}
 }
