@@ -1,48 +1,21 @@
 package metainforequester
 
 import (
-	"bytes"
-	"context"
-	"encoding/binary"
-	"errors"
-	"fmt"
-	"github.com/anacrolix/torrent/bencode"
-	"github.com/anacrolix/torrent/peer_protocol"
-	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
-	"go.uber.org/fx"
-	"golang.org/x/time/rate"
-	"io"
-	"math"
-	"net"
-	"net/netip"
-	"time"
+  "bytes"
+  "context"
+  "encoding/binary"
+  "errors"
+  "fmt"
+  "github.com/anacrolix/torrent/bencode"
+  "github.com/anacrolix/torrent/peer_protocol"
+  "github.com/bitmagnet-io/bitmagnet/internal/protocol"
+  "github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
+  "io"
+  "math"
+  "net"
+  "net/netip"
+  "time"
 )
-
-type Params struct {
-	fx.In
-	Config Config
-}
-
-type Result struct {
-	fx.Out
-	Requester Requester
-}
-
-func New(p Params) Result {
-	return Result{
-		Requester: requester{
-			clientID: protocol.RandomPeerID(),
-			timeout:  p.Config.RequestTimeout,
-			dialer: &net.Dialer{
-				Timeout:   3 * time.Second,
-				KeepAlive: -1,
-			},
-			limiter: concurrency.NewKeyedLimiter(rate.Every(time.Second/2), 4, 1000, time.Second*20),
-		},
-	}
-}
 
 type Requester interface {
 	Request(context.Context, protocol.ID, netip.AddrPort) (Response, error)
@@ -52,7 +25,6 @@ type requester struct {
 	clientID protocol.ID
 	timeout  time.Duration
 	dialer   *net.Dialer
-	limiter  concurrency.KeyedLimiter
 }
 
 type ExtensionBit uint
@@ -103,13 +75,10 @@ type Response struct {
 	Info metainfo.Info
 }
 
-func (r requester) Request(ctx context.Context, infoHash protocol.ID, node netip.AddrPort) (Response, error) {
-	if limitErr := r.limiter.Wait(ctx, node.Addr().String()); limitErr != nil {
-		return Response{}, limitErr
-	}
+func (r requester) Request(ctx context.Context, infoHash protocol.ID, addr netip.AddrPort) (Response, error) {
 	timeoutCtx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
-	conn, connErr := r.connect(timeoutCtx, node)
+	conn, connErr := r.connect(timeoutCtx, addr)
 	if connErr != nil {
 		return Response{}, connErr
 	}

@@ -37,7 +37,7 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 			}).CreateInBatches(ts, 100); persistErr != nil {
 				c.logger.Errorf("error persisting torrents: %s", persistErr)
 			} else {
-				c.logger.Debugf("persisted %d torrents", len(ts))
+				c.logger.Debugw("persisted torrents", "count", len(ts))
 				hashesToClassify := make([]protocol.ID, 0, len(ts))
 				for _, t := range ts {
 					hashesToClassify = append(hashesToClassify, t.InfoHash)
@@ -131,7 +131,7 @@ func (c *crawler) runPersistSources(ctx context.Context) {
 			}).CreateInBatches(srcs, 100); persistErr != nil {
 				c.logger.Errorf("error persisting torrent sources: %s", persistErr.Error())
 			} else {
-				c.logger.Debugf("persisted %d torrent sources", len(srcs))
+				c.logger.Debugw("persisted torrent sources", "count", len(srcs))
 			}
 		}
 	}

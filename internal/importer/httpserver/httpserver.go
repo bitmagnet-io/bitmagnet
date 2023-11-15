@@ -49,13 +49,13 @@ func (p Params) handler(ctx *gin.Context) {
 	addItem := func() error {
 		item := importer.Item{}
 		if err := json.Unmarshal([]byte(string(currentLine)), &item); err != nil {
-			p.Logger.Errorw("error adding item", "err", err)
+			p.Logger.Errorw("error adding item", "error", err)
 			ctx.Status(400)
 			_, _ = ctx.Writer.WriteString(err.Error())
 			return err
 		}
 		if err := i.Import(item); err != nil {
-			p.Logger.Errorw("error importing item", "err", err)
+			p.Logger.Errorw("error importing item", "error", err)
 			ctx.Status(400)
 			_, _ = ctx.Writer.WriteString(err.Error())
 			return err
@@ -88,7 +88,7 @@ func (p Params) handler(ctx *gin.Context) {
 	}
 	i.Drain()
 	if err := i.Close(); err != nil {
-		p.Logger.Errorw("error closing import", "err", err)
+		p.Logger.Errorw("error closing import", "error", err)
 		ctx.Status(400)
 		_, _ = ctx.Writer.WriteString(err.Error())
 		return

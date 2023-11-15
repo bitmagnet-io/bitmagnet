@@ -9,8 +9,8 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/client"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/server"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/banning"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainforequester"
@@ -26,7 +26,7 @@ type Params struct {
 	fx.In
 	Config              Config
 	KTable              ktable.Table
-	Server              server.Server
+	Client              client.Client
 	MetainfoRequester   metainforequester.Requester
 	BanningChecker      banning.Checker `name:"metainfo_banning_checker"`
 	Search              search.Search
@@ -45,7 +45,7 @@ func New(params Params) Result {
 	scalingFactor := int(params.Config.ScalingFactor)
 	c := crawler{
 		kTable:                       params.KTable,
-		server:                       params.Server,
+		client:                       params.Client,
 		metainfoRequester:            params.MetainfoRequester,
 		banningChecker:               params.BanningChecker,
 		bootstrapNodes:               params.Config.BootstrapNodes,
@@ -102,7 +102,7 @@ func New(params Params) Result {
 
 type crawler struct {
 	kTable                       ktable.Table
-	server                       server.Server
+	client                       client.Client
 	metainfoRequester            metainforequester.Requester
 	banningChecker               banning.Checker
 	bootstrapNodes               []string
@@ -140,7 +140,7 @@ func (c *crawler) start() {
 	select {
 	case <-c.stopped:
 		return
-	case <-c.server.Ready():
+	case <-c.client.Ready():
 		break
 	}
 	ctx, cancel := context.WithCancel(context.Background())

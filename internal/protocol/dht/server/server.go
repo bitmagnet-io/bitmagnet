@@ -131,7 +131,7 @@ func (s *server) read(ctx context.Context) {
 		var msg dht.Msg
 		err = bencode.Unmarshal(buffer[:n], &msg)
 		if err != nil {
-			s.logger.Debugw("could not unmarshal packet data", "err", err)
+			s.logger.Debugw("could not unmarshal packet data", "error", err)
 			continue
 		}
 
@@ -173,8 +173,6 @@ func (s *server) handleQuery(msg dht.RecvMsg) {
 	}
 	if sendErr := s.send(msg.From, res); sendErr != nil {
 		s.logger.Debugw("could not send response", "msg", msg, "retErr", sendErr)
-	} else {
-		s.logger.Debugw("sent response", "msg", msg, "res", res)
 	}
 }
 
@@ -230,11 +228,8 @@ func (s *server) Query(ctx context.Context, addr netip.AddrPort, q string, args 
 			if err == nil {
 				err = errors.New("error missing from response")
 			}
-			s.logger.Debugw("error response", "msg", msg, "res", res, "err", err)
 		} else if r.Msg.R == nil {
 			err = errors.New("return data missing from response")
-		} else {
-			s.logger.Debugw("successful response", "msg", msg, "res", res)
 		}
 		return
 	}

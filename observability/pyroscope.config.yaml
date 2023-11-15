@@ -1,0 +1,4 @@
+storage-path: "/var/lib/pyroscope"
+
+retention: 360h # 15 days
+exemplars-retention: 72h # 3 days

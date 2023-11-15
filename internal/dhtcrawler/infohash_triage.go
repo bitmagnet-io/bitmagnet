@@ -40,7 +40,7 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 				c.dao.Torrent.InfoHash.In(hashes...),
 			).UnderlyingDB().Find(&result).Error; queryErr != nil {
 				c.logger.Errorf("failed to search existing torrents: %s", queryErr.Error())
-				return
+				break
 			}
 			foundTorrents := make(map[protocol.ID]triageResult)
 			for _, t := range result {

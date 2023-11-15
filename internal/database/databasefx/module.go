@@ -9,6 +9,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/persistence"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/postgres"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/telemetry"
 	"go.uber.org/fx"
 )
 
@@ -29,6 +30,12 @@ func New() fx.Option {
 		),
 		fx.Decorate(
 			cache.NewDecorator,
+		),
+		fx.Module(
+			"database_telemetry",
+			fx.Decorate(
+				telemetry.NewDecorator,
+			),
 		),
 	)
 }

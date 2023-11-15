@@ -36,7 +36,7 @@ func New(p Params) Result {
 			sampleInfoHashesInterval: 10,
 			limiter:                  NewLimiter(rate.Every(time.Second/5), 20, rate.Every(time.Second), 10, 1000, time.Second*20),
 			discoveredNodes:          p.DiscoveredNodes.In(),
-			logger:                   p.Logger,
+			logger:                   p.Logger.Named("dht_responder"),
 		},
 	}
 }
@@ -77,9 +77,15 @@ var ErrTooManyRequests = dht.Error{
 
 func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, err error) {
 	args := msg.Msg.A
+	var logData []interface{}
+	log := func(k string, v interface{}) {
+		logData = append(logData, k, v)
+	}
+	log("from", msg.From)
+	start := time.Now()
 	defer func() {
+		log("duration", time.Since(start))
 		if err == nil {
-			r.logger.Debugw("responded", "msg", msg, "ret", ret)
 			go func() {
 				ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 				defer cancel()
@@ -89,8 +95,9 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 				}
 			}()
 		} else {
-			r.logger.Debugw("failed to respond", "msg", msg, "err", err)
+			log("error", err)
 		}
+		r.logger.Debugw(msg.Msg.Q, logData...)
 	}()
 	// apply both overall and per-IP rate limiting:
 	if !r.limiter.Allow(msg.From.Addr()) {
@@ -111,11 +118,14 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 		}
 		closestNodes := r.kTable.GetClosestNodes(args.Target)
 		ret.Nodes = nodeInfosFromNodes(closestNodes...)
+		log("target", args.Target)
+		log("nodes", len(ret.Nodes))
 	case dht.QGetPeers:
 		if args.InfoHash == [20]byte{} {
 			err = ErrMissingArguments
 			return
 		}
+		log("infoHash", args.InfoHash)
 		result := r.kTable.GetHashOrClosestNodes(args.InfoHash)
 		if result.Found {
 			hashPeers := result.Hash.Peers()
@@ -128,6 +138,10 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 		ret.Nodes = nodeInfosFromNodes(result.ClosestNodes...)
 		token := r.announceToken(args.InfoHash, args.ID, msg.From.Addr())
 		ret.Token = &token
+		log("found", result.Found)
+		log("values", len(ret.Values))
+		log("nodes", len(ret.Nodes))
+		log("token", token)
 	case dht.QAnnouncePeer:
 		if args.InfoHash == [20]byte{} {
 			err = ErrMissingArguments
@@ -140,6 +154,9 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 		r.kTable.BatchCommand(ktable.PutHash{ID: args.InfoHash, Peers: []ktable.HashPeer{{
 			Addr: netip.AddrPortFrom(msg.From.Addr(), msg.AnnouncePort()),
 		}}})
+		log("infoHash", args.InfoHash)
+		log("port", msg.AnnouncePort())
+		log("token", args.Token)
 	case dht.QSampleInfohashes:
 		result := r.kTable.SampleHashesAndNodes()
 		samples := make(dht.CompactInfohashes, 0, len(result.Hashes))
@@ -151,6 +168,10 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 		numInt64 := int64(result.TotalHashes)
 		ret.Num = &numInt64
 		ret.Interval = &r.sampleInfoHashesInterval
+		log("samples", len(samples))
+		log("nodes", len(ret.Nodes))
+		log("num", result.TotalHashes)
+		log("interval", r.sampleInfoHashesInterval)
 	default:
 		err = ErrMethodUnknown
 		return

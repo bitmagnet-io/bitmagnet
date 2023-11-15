@@ -3,6 +3,7 @@ package dhtfx
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/config/configfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/client"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/responder"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/server"
@@ -20,6 +21,7 @@ func New() fx.Option {
 					return protocol.RandomNodeID()
 				},
 			},
+			client.New,
 			ktable.New,
 			responder.New,
 			server.New,
