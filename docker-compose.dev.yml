@@ -22,19 +22,20 @@ services:
       - POSTGRES_HOST=postgres
       - POSTGRES_PASSWORD=postgres
       - REDIS_ADDR=redis:6379
+      - DHT_CRAWLER_SCALING_FACTOR=1
 #      - TELEMETRY_PYROSCOPE_ENABLED=true
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    entrypoint:
-      - go
-      - run
-      - "."
-      - worker
-      - run
-      - --all
+#    entrypoint:
+#      - go
+#      - run
+#      - "."
+#      - worker
+#      - run
+#      - --all
 
   postgres:
     image: postgres:16-alpine
@@ -102,7 +103,7 @@ services:
     ports:
       - "12345:12345"
     depends_on:
-      - bitmagnet
+#      - bitmagnet
       - loki
 
   prometheus:
@@ -150,3 +151,4 @@ services:
       - "server"
     volumes:
       - ./observability/pyroscope.config.yaml:/etc/pyroscope/server.yaml
+      - ./data/pyroscope:/var/lib/pyroscope

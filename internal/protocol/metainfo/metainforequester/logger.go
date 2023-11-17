@@ -21,14 +21,16 @@ func (r requestLogger) Request(ctx context.Context, infoHash protocol.ID, addr n
 		"addr", addr,
 		"duration", time.Since(start),
 	}
+	message := "request"
 	if err != nil {
 		keyValues = append(keyValues, "error", err)
+		message += " failed"
 	} else {
 		keyValues = append(keyValues,
 			"peerId", resp.PeerID,
 			"torrentName", resp.Info.BestName(),
 		)
 	}
-	r.logger.Debugw("request", keyValues...)
+	r.logger.Debugw(message, keyValues...)
 	return resp, err
 }

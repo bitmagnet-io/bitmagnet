@@ -15,6 +15,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/banning"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainforequester"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/publisher"
+	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"net/netip"
@@ -38,11 +39,18 @@ type Params struct {
 
 type Result struct {
 	fx.Out
-	Worker worker.Worker `group:"workers"`
+	Worker         worker.Worker        `group:"workers"`
+	PersistedTotal prometheus.Collector `group:"prometheus_collectors"`
 }
 
 func New(params Params) Result {
 	scalingFactor := int(params.Config.ScalingFactor)
+	persistedTotal := prometheus.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "bitmagnet",
+		Subsystem: "dht_crawler",
+		Name:      "persisted_total",
+		Help:      "A counter of persisted database entities.",
+	}, []string{"entity"})
 	c := crawler{
 		kTable:                       params.KTable,
 		client:                       params.Client,
@@ -78,9 +86,10 @@ func New(params Params) Result {
 		ignoreHashes: &ignoreHashes{
 			bloom: *bloom.NewWithEstimates(1000000, 0.0001),
 		},
-		soughtNodeID: &concurrency.AtomicValue[protocol.ID]{},
-		stopped:      make(chan struct{}),
-		logger:       params.Logger.Named("dht_crawler"),
+		soughtNodeID:   &concurrency.AtomicValue[protocol.ID]{},
+		stopped:        make(chan struct{}),
+		persistedTotal: persistedTotal,
+		logger:         params.Logger.Named("dht_crawler"),
 	}
 	c.soughtNodeID.Set(protocol.RandomNodeID())
 	return Result{
@@ -97,6 +106,7 @@ func New(params Params) Result {
 				},
 			},
 		),
+		PersistedTotal: persistedTotal,
 	}
 }
 
@@ -130,9 +140,10 @@ type crawler struct {
 	ignoreHashes *ignoreHashes
 	// soughtNodeID is a random node ID used as the target for find_node and sample_infohashes requests.
 	// It is rotated every 10 seconds.
-	soughtNodeID *concurrency.AtomicValue[protocol.ID]
-	stopped      chan struct{}
-	logger       *zap.SugaredLogger
+	soughtNodeID   *concurrency.AtomicValue[protocol.ID]
+	stopped        chan struct{}
+	persistedTotal *prometheus.CounterVec
+	logger         *zap.SugaredLogger
 }
 
 func (c *crawler) start() {

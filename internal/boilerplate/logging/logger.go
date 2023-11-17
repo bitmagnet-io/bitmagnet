@@ -21,7 +21,7 @@ type Result struct {
 	AppHook     fx.Hook `group:"app_hooks"`
 }
 
-func New(params Params) (Result, error) {
+func New(params Params) Result {
 	var appHook fx.Hook
 	var encoder zapcore.Encoder
 	if params.Config.Json {
@@ -59,5 +59,5 @@ func New(params Params) (Result, error) {
 		Sugar:       sugar,
 		AtomicLevel: atomicLevel,
 		AppHook:     appHook,
-	}, nil
+	}
 }

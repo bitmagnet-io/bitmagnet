@@ -6,6 +6,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
+	"github.com/prometheus/client_golang/prometheus"
 	"gorm.io/gorm/clause"
 )
 
@@ -37,6 +38,7 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 			}).CreateInBatches(ts, 100); persistErr != nil {
 				c.logger.Errorf("error persisting torrents: %s", persistErr)
 			} else {
+				c.persistedTotal.With(prometheus.Labels{"entity": "Torrent"}).Add(float64(len(ts)))
 				c.logger.Debugw("persisted torrents", "count", len(ts))
 				hashesToClassify := make([]protocol.ID, 0, len(ts))
 				for _, t := range ts {
@@ -131,6 +133,7 @@ func (c *crawler) runPersistSources(ctx context.Context) {
 			}).CreateInBatches(srcs, 100); persistErr != nil {
 				c.logger.Errorf("error persisting torrent sources: %s", persistErr.Error())
 			} else {
+				c.persistedTotal.With(prometheus.Labels{"entity": "TorrentsTorrentSource"}).Add(float64(len(srcs)))
 				c.logger.Debugw("persisted torrent sources", "count", len(srcs))
 			}
 		}

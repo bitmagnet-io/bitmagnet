@@ -34,10 +34,10 @@ func NewDefaultConfig() Config {
 			Enabled:    false,
 			Path:       path.Join(xdg.DataHome, "bitmagnet", "logs"),
 			BaseName:   "bitmagnet",
-			MaxAge:     time.Minute * 30,
+			MaxAge:     time.Minute * 60,
 			MaxSize:    1_000_000 * 100,
+			BufferSize: 1_000,
 			MaxBackups: 5,
-			BufferSize: 1_000_000,
 		},
 	}
 }

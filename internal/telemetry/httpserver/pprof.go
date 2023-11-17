@@ -1,32 +1,19 @@
 package httpserver
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpserver"
 	"github.com/gin-gonic/gin"
 	pyroscope "github.com/grafana/pyroscope-go/godeltaprof/http/pprof"
-	"go.uber.org/fx"
 	"net/http/pprof"
 	"runtime"
 )
 
-type Result struct {
-	fx.Out
-	Option httpserver.Option `group:"http_server_options"`
+type pprofBuilder struct{}
+
+func (b pprofBuilder) Priority() int {
+	return 0
 }
 
-func New() Result {
-	return Result{
-		Option: &builder{},
-	}
-}
-
-type builder struct{}
-
-func (b *builder) Priority() int {
-	return 100
-}
-
-func (b *builder) Apply(e *gin.Engine) error {
+func (b pprofBuilder) Apply(e *gin.Engine) error {
 	runtime.SetMutexProfileFraction(5)
 	runtime.SetBlockProfileRate(5)
 	e.Any("/debug/pprof/", func(c *gin.Context) {

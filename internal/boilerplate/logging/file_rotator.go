@@ -99,7 +99,7 @@ func (r *fileRotator) rotate() error {
 	return r.pruneBackups(now)
 }
 
-const timeFormat = "2006-01-02-15-04-05Z07-00"
+const timeFormat = "2006-01-02-15-04-05"
 
 func (r *fileRotator) newFilePath(now time.Time) string {
 	return path.Join(r.path, fmt.Sprintf("%s.%s.log", r.baseName, now.Format(timeFormat)))
