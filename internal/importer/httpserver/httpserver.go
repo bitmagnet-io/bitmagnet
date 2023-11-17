@@ -101,10 +101,6 @@ type builder struct {
 	handler gin.HandlerFunc
 }
 
-func (b *builder) Priority() int {
-	return 0
-}
-
 func (b *builder) Apply(e *gin.Engine) error {
 	e.POST("/import", b.handler)
 	return nil

@@ -33,10 +33,6 @@ type builder struct {
 	client torznab.Client
 }
 
-func (b builder) Priority() int {
-	return 0
-}
-
 func (b builder) Apply(e *gin.Engine) error {
 	e.GET("/torznab/*any", func(c *gin.Context) {
 		writeInternalError := func(err error) {

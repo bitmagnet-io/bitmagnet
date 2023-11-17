@@ -31,10 +31,6 @@ type builder struct {
 	handler gin.HandlerFunc
 }
 
-func (b *builder) Priority() int {
-	return 0
-}
-
 func (b *builder) Apply(e *gin.Engine) error {
 	e.GET("/status", b.handler)
 	return nil

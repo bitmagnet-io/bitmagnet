@@ -10,7 +10,6 @@ import (
 	"go.uber.org/zap"
 	"net"
 	"net/http"
-	"sort"
 	"time"
 )
 
@@ -32,11 +31,7 @@ func New(p Params) (r Result, err error) {
 	gin.SetMode(p.Config.GinMode)
 	g := gin.New()
 	g.Use(ginzap.Ginzap(p.Logger.Named("gin"), time.RFC3339, true), gin.Recovery())
-	options := p.Options
-	sort.Slice(options, func(i, j int) bool {
-		return options[i].Priority() < options[j].Priority()
-	})
-	for _, o := range options {
+	for _, o := range p.Options {
 		if buildErr := o.Apply(g); buildErr != nil {
 			err = buildErr
 			return
@@ -72,6 +67,5 @@ func New(p Params) (r Result, err error) {
 }
 
 type Option interface {
-	Priority() int
 	Apply(engine *gin.Engine) error
 }

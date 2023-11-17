@@ -48,10 +48,6 @@ type corsOption struct {
 	handlerFunc gin.HandlerFunc
 }
 
-func (c corsOption) Priority() int {
-	return -100
-}
-
 func (c corsOption) Apply(g *gin.Engine) error {
 	g.Use(c.handlerFunc)
 	return nil

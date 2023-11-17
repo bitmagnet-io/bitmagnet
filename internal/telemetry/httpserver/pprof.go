@@ -9,10 +9,6 @@ import (
 
 type pprofBuilder struct{}
 
-func (b pprofBuilder) Priority() int {
-	return 0
-}
-
 func (b pprofBuilder) Apply(e *gin.Engine) error {
 	runtime.SetMutexProfileFraction(5)
 	runtime.SetBlockProfileRate(5)

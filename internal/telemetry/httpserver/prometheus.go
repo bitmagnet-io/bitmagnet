@@ -10,10 +10,6 @@ type prometheusBuilder struct {
 	registry *prometheus.Registry
 }
 
-func (b prometheusBuilder) Priority() int {
-	return 0
-}
-
 func (b prometheusBuilder) Apply(e *gin.Engine) error {
 	h := promhttp.HandlerFor(b.registry, promhttp.HandlerOpts{
 		EnableOpenMetrics: true,

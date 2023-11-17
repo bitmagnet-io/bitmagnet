@@ -41,10 +41,6 @@ type builder struct {
 	playgroundHandler gin.HandlerFunc
 }
 
-func (b *builder) Priority() int {
-	return 0
-}
-
 func (b *builder) Apply(e *gin.Engine) error {
 	e.POST("/graphql", b.gqlHandler)
 	e.GET("/graphql", b.playgroundHandler)

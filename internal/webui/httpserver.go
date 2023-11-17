@@ -34,10 +34,6 @@ type builder struct {
 	logger *zap.SugaredLogger
 }
 
-func (b *builder) Priority() int {
-	return 100
-}
-
 func (b *builder) Apply(e *gin.Engine) error {
 	webuiFS := webui.StaticFS()
 	appRoot, appRootErr := fs.Sub(webuiFS, "dist/bitmagnet")

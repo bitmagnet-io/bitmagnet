@@ -35,10 +35,6 @@ type asynqmonBuilder struct {
 	options asynqmon.Options
 }
 
-func (b asynqmonBuilder) Priority() int {
-	return 0
-}
-
 func (b asynqmonBuilder) Apply(e *gin.Engine) error {
 	handler := asynqmon.New(b.options)
 	e.Any(rootPath+"/*path", func(c *gin.Context) {
