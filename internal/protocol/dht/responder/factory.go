@@ -39,7 +39,7 @@ func New(p Params) Result {
 			tokenSecret:              protocol.RandomNodeID().Bytes(),
 			sampleInfoHashesInterval: 10,
 		},
-		limiter: NewLimiter(rate.Every(time.Second/10), 20, rate.Every(time.Second), 10, 1000, time.Second*20),
+		limiter: NewLimiter(rate.Every(time.Second/50), 20, rate.Every(time.Second), 10, 1000, time.Second*20),
 	})
 	return Result{
 		Responder: responderNodeDiscovery{

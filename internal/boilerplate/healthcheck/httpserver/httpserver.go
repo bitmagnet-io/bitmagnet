@@ -31,7 +31,7 @@ type builder struct {
 	handler gin.HandlerFunc
 }
 
-func (b *builder) Key() string {
+func (builder) Key() string {
 	return "status"
 }
 

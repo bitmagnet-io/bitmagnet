@@ -50,14 +50,7 @@ func (c *crawler) runSampleInfoHashes(ctx context.Context) {
 				continue
 			}
 		}
-		//totalNum := 0
 		interval := res.Interval
-		//if res.Msg.R.Num != nil {
-		//	totalNum = int(*res.Msg.R.Num)
-		//}
-		//if res.Msg.R.Interval != nil {
-		//	interval = int(*res.Msg.R.Interval)
-		//}
 		// most nodes request a 6 hour backoff time(!)
 		// if we're still discovering info hashes from them then let's set a respectful interval instead
 		if len(discoveredHashes) > 0 && interval > 300 {

@@ -12,6 +12,7 @@ services:
     # image: ghcr.io/bitmagnet-io/bitmagnet:latest
     volumes:
       - ./:/app
+      # Mount data folder (currently only used for logs when file rotation is enabled):
       - ./data/bitmagnet:/root/.local/share/bitmagnet
     ports:
       - "3333:3333"
