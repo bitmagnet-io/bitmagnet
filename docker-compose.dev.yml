@@ -78,8 +78,10 @@ services:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
     volumes:
-      - ./observability/grafana.datasources.yaml:/etc/grafana/provisioning/datasources/ds.yaml
       - ./data/grafana:/var/lib/grafana
+      - ./observability/grafana.datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - ./observability/grafana.dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
+      - ./observability/grafana-dashboards:/etc/dashboards
     ports:
       - "3000:3000"
 
