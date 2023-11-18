@@ -128,18 +128,6 @@ services:
       - ./data/prometheus:/prometheus
       - ./observability/prometheus.config.yaml:/etc/prometheus/prometheus.yml
 
-  # Prometheus metrics for Postgres:
-  postgres-exporter:
-    image: prometheuscommunity/postgres-exporter:latest
-    container_name: bitmagnet-postgres-exporter
-    ports:
-      - 9187:9187
-    environment:
-      DATA_SOURCE_NAME: "postgresql://postgres:postgres@postgres:5432/bitmagnet?sslmode=disable"
-    links:
-      - postgres
-      - prometheus
-
   # Log storage and aggregation:
   loki:
     container_name: bitmagnet-loki
@@ -165,3 +153,15 @@ services:
     volumes:
       - ./observability/pyroscope.config.yaml:/etc/pyroscope/server.yaml
       - ./data/pyroscope:/var/lib/pyroscope
+
+  # Prometheus metrics for Postgres:
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: bitmagnet-postgres-exporter
+    ports:
+      - 9187:9187
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:postgres@postgres:5432/bitmagnet?sslmode=disable"
+    links:
+      - postgres
+      - prometheus
