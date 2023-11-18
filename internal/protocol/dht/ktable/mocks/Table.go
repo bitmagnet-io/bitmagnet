@@ -161,49 +161,6 @@ func (_c *Table_FilterKnownAddrs_Call) RunAndReturn(run func([]netip.Addr) []net
 	return _c
 }
 
-// GenerateNodeID provides a mock function with given fields:
-func (_m *Table) GenerateNodeID() protocol.ID {
-	ret := _m.Called()
-
-	var r0 protocol.ID
-	if rf, ok := ret.Get(0).(func() protocol.ID); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(protocol.ID)
-		}
-	}
-
-	return r0
-}
-
-// Table_GenerateNodeID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GenerateNodeID'
-type Table_GenerateNodeID_Call struct {
-	*mock.Call
-}
-
-// GenerateNodeID is a helper method to define mock.On call
-func (_e *Table_Expecter) GenerateNodeID() *Table_GenerateNodeID_Call {
-	return &Table_GenerateNodeID_Call{Call: _e.mock.On("GenerateNodeID")}
-}
-
-func (_c *Table_GenerateNodeID_Call) Run(run func()) *Table_GenerateNodeID_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run()
-	})
-	return _c
-}
-
-func (_c *Table_GenerateNodeID_Call) Return(_a0 protocol.ID) *Table_GenerateNodeID_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *Table_GenerateNodeID_Call) RunAndReturn(run func() protocol.ID) *Table_GenerateNodeID_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // GetClosestNodes provides a mock function with given fields: id
 func (_m *Table) GetClosestNodes(id protocol.ID) []ktable.Node {
 	ret := _m.Called(id)
@@ -575,47 +532,6 @@ func (_c *Table_SampleHashesAndNodes_Call) Return(_a0 ktable.SampleHashesAndNode
 }
 
 func (_c *Table_SampleHashesAndNodes_Call) RunAndReturn(run func() ktable.SampleHashesAndNodesResult) *Table_SampleHashesAndNodes_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// Stats provides a mock function with given fields:
-func (_m *Table) Stats() ktable.Stats {
-	ret := _m.Called()
-
-	var r0 ktable.Stats
-	if rf, ok := ret.Get(0).(func() ktable.Stats); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(ktable.Stats)
-	}
-
-	return r0
-}
-
-// Table_Stats_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Stats'
-type Table_Stats_Call struct {
-	*mock.Call
-}
-
-// Stats is a helper method to define mock.On call
-func (_e *Table_Expecter) Stats() *Table_Stats_Call {
-	return &Table_Stats_Call{Call: _e.mock.On("Stats")}
-}
-
-func (_c *Table_Stats_Call) Run(run func()) *Table_Stats_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run()
-	})
-	return _c
-}
-
-func (_c *Table_Stats_Call) Return(_a0 ktable.Stats) *Table_Stats_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *Table_Stats_Call) RunAndReturn(run func() ktable.Stats) *Table_Stats_Call {
 	_c.Call.Return(run)
 	return _c
 }

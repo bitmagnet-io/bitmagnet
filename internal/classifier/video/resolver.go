@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier/resolver"
+	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/video/tmdb"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/regex"
@@ -20,24 +20,24 @@ type Params struct {
 
 type Result struct {
 	fx.Out
-	Resolver resolver.SubResolver `group:"content_resolvers"`
+	Resolver classifier.SubResolver `group:"content_resolvers"`
 }
 
 func New(p Params) Result {
 	return Result{
 		Resolver: videoResolver{
-			config:     resolver.SubResolverConfig{Key: "video", Priority: 1},
+			config:     classifier.SubResolverConfig{Key: "video", Priority: 1},
 			tmdbClient: p.TmdbClient,
 		},
 	}
 }
 
 type videoResolver struct {
-	config     resolver.SubResolverConfig
+	config     classifier.SubResolverConfig
 	tmdbClient tmdb.Client
 }
 
-func (r videoResolver) Config() resolver.SubResolverConfig {
+func (r videoResolver) Config() classifier.SubResolverConfig {
 	return r.config
 }
 
@@ -54,7 +54,7 @@ func (r videoResolver) Resolve(ctx context.Context, content model.TorrentContent
 			return r.resolveTvShow(ctx, content)
 		}
 	}
-	return model.TorrentContent{}, resolver.ErrNoMatch
+	return model.TorrentContent{}, classifier.ErrNoMatch
 }
 
 func (r videoResolver) resolveMovie(ctx context.Context, content model.TorrentContent) (model.TorrentContent, error) {
@@ -81,7 +81,7 @@ func (r videoResolver) resolveMovie(ctx context.Context, content model.TorrentCo
 			return model.TorrentContent{}, err
 		}
 	}
-	return model.TorrentContent{}, resolver.ErrNoMatch
+	return model.TorrentContent{}, classifier.ErrNoMatch
 }
 
 func (r videoResolver) resolveTvShow(ctx context.Context, content model.TorrentContent) (model.TorrentContent, error) {
@@ -108,7 +108,7 @@ func (r videoResolver) resolveTvShow(ctx context.Context, content model.TorrentC
 			return model.TorrentContent{}, err
 		}
 	}
-	return model.TorrentContent{}, resolver.ErrNoMatch
+	return model.TorrentContent{}, classifier.ErrNoMatch
 }
 
 func postEnrich(tc model.TorrentContent) model.TorrentContent {

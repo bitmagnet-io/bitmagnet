@@ -71,14 +71,6 @@ func (c GetNodesForSampleInfoHashes) execReturn(t *table) []Node {
 	return peers
 }
 
-var _ Query[ID] = GenerateNodeID{}
-
-type GenerateNodeID struct{}
-
-func (c GenerateNodeID) execReturn(t *table) ID {
-	return t.nodes.generateRandomID()
-}
-
 var _ Query[GetHashOrClosestNodesResult] = GetHashOrClosestNodes{}
 
 type GetHashOrClosestNodes struct {
@@ -86,7 +78,7 @@ type GetHashOrClosestNodes struct {
 }
 
 func (c GetHashOrClosestNodes) execReturn(t *table) GetHashOrClosestNodesResult {
-	h, ok := t.hashes.items[c.ID]
+	h, ok := t.hashes.get(c.ID)
 	if ok {
 		return GetHashOrClosestNodesResult{
 			Hash:  h,

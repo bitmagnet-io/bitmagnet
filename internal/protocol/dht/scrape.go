@@ -2,6 +2,8 @@ package dht
 
 import (
 	"crypto/sha1"
+	"encoding/binary"
+	"github.com/bits-and-blooms/bloom/v3"
 	"math"
 	"math/bits"
 	"net"
@@ -46,4 +48,24 @@ func (me *ScrapeBloomFilter) EstimateCount() float64 {
 		c = m - 1
 	}
 	return math.Log(c/m) / (k * math.Log(1.-1./m))
+}
+
+const (
+	size     = 32
+	byteSize = size * 8
+	M        = byteSize * 8
+	K        = 2
+)
+
+func (me *ScrapeBloomFilter) ToBloomFilter() *bloom.BloomFilter {
+	return bloom.FromWithM(convertBytes(*me), M, K)
+}
+
+func convertBytes(b [byteSize]byte) []uint64 {
+	ret := make([]uint64, size)
+	for i := 0; i < size; i++ {
+		startPos := i * 8
+		ret[i] = binary.BigEndian.Uint64(b[startPos : startPos+8])
+	}
+	return ret
 }
