@@ -41,7 +41,11 @@ type builder struct {
 	playgroundHandler gin.HandlerFunc
 }
 
-func (b *builder) Apply(e *gin.Engine) error {
+func (builder) Key() string {
+	return "graphql"
+}
+
+func (b builder) Apply(e *gin.Engine) error {
 	e.POST("/graphql", b.gqlHandler)
 	e.GET("/graphql", b.playgroundHandler)
 	return nil

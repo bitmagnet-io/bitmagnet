@@ -17,6 +17,7 @@ type Config struct {
 
 type FileRotatorConfig struct {
 	Enabled    bool
+	Level      string
 	Path       string
 	BaseName   string
 	MaxAge     time.Duration
@@ -32,6 +33,7 @@ func NewDefaultConfig() Config {
 		Json:        false,
 		FileRotator: FileRotatorConfig{
 			Enabled:    false,
+			Level:      "debug",
 			Path:       path.Join(xdg.DataHome, "bitmagnet", "logs"),
 			BaseName:   "bitmagnet",
 			MaxAge:     time.Minute * 60,

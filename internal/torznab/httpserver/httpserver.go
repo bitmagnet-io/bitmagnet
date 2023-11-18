@@ -33,6 +33,10 @@ type builder struct {
 	client torznab.Client
 }
 
+func (builder) Key() string {
+	return "torznab"
+}
+
 func (b builder) Apply(e *gin.Engine) error {
 	e.GET("/torznab/*any", func(c *gin.Context) {
 		writeInternalError := func(err error) {

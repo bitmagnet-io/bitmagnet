@@ -15,10 +15,9 @@ type Params struct {
 
 type Result struct {
 	fx.Out
-	Logger      *zap.Logger
-	Sugar       *zap.SugaredLogger
-	AtomicLevel zap.AtomicLevel
-	AppHook     fx.Hook `group:"app_hooks"`
+	Logger  *zap.Logger
+	Sugar   *zap.SugaredLogger
+	AppHook fx.Hook `group:"app_hooks"`
 }
 
 func New(params Params) Result {
@@ -29,17 +28,7 @@ func New(params Params) Result {
 	} else {
 		encoder = zapcore.NewConsoleEncoder(consoleEncoderConfig)
 	}
-	var writeSyncer zapcore.WriteSyncer
-	if params.Config.FileRotator.Enabled {
-		writeSyncer = NewFileRotator(params.Config.FileRotator)
-		appHook = fx.Hook{
-			OnStop: func(context.Context) error {
-				return writeSyncer.Sync()
-			},
-		}
-	} else {
-		writeSyncer = zapcore.AddSync(os.Stdout)
-	}
+	writeSyncer := zapcore.AddSync(os.Stdout)
 	opts := []zap.Option{
 		zap.AddStacktrace(zapcore.ErrorLevel),
 		zap.AddCaller(),
@@ -47,17 +36,31 @@ func New(params Params) Result {
 	if params.Config.Development {
 		opts = append(opts, zap.Development())
 	}
-	atomicLevel := zap.NewAtomicLevelAt(levelToZapLevel(params.Config.Level))
-	l := zap.New(zapcore.NewCore(
+	core := zapcore.NewCore(
 		encoder,
 		writeSyncer,
-		atomicLevel,
-	), opts...)
-	sugar := l.Sugar()
+		levelToZapLevel(params.Config.Level),
+	)
+	if params.Config.FileRotator.Enabled {
+		fWriteSyncer := NewFileRotator(params.Config.FileRotator)
+		core = zapcore.NewTee(
+			core,
+			zapcore.NewCore(
+				zapcore.NewJSONEncoder(jsonEncoderConfig),
+				fWriteSyncer,
+				levelToZapLevel(params.Config.FileRotator.Level),
+			),
+		)
+		appHook = fx.Hook{
+			OnStop: func(context.Context) error {
+				return fWriteSyncer.Sync()
+			},
+		}
+	}
+	l := zap.New(core, opts...)
 	return Result{
-		Logger:      l,
-		Sugar:       sugar,
-		AtomicLevel: atomicLevel,
-		AppHook:     appHook,
+		Logger:  l,
+		Sugar:   l.Sugar(),
+		AppHook: appHook,
 	}
 }

@@ -31,6 +31,10 @@ type builder struct {
 	handler gin.HandlerFunc
 }
 
+func (b *builder) Key() string {
+	return "status"
+}
+
 func (b *builder) Apply(e *gin.Engine) error {
 	e.GET("/status", b.handler)
 	return nil

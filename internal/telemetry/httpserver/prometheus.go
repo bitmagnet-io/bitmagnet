@@ -10,6 +10,10 @@ type prometheusBuilder struct {
 	registry *prometheus.Registry
 }
 
+func (prometheusBuilder) Key() string {
+	return "prometheus"
+}
+
 func (b prometheusBuilder) Apply(e *gin.Engine) error {
 	h := promhttp.HandlerFor(b.registry, promhttp.HandlerOpts{
 		EnableOpenMetrics: true,

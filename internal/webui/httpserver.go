@@ -34,6 +34,10 @@ type builder struct {
 	logger *zap.SugaredLogger
 }
 
+func (b *builder) Key() string {
+	return "webui"
+}
+
 func (b *builder) Apply(e *gin.Engine) error {
 	webuiFS := webui.StaticFS()
 	appRoot, appRootErr := fs.Sub(webuiFS, "dist/bitmagnet")

@@ -18,24 +18,31 @@ type Result struct {
 	HttpOption httpserver.Option `group:"http_server_options"`
 }
 
-const rootPath = "/asynqmon"
+const key = "asynqmon"
+
+const rootPath = "/" + key
 
 func New(p Params) Result {
 	return Result{
-		HttpOption: asynqmonBuilder{
+		HttpOption: builder{
 			options: asynqmon.Options{
-				RootPath:     rootPath, // RootPath specifies the root for asynqmon app
-				RedisConnOpt: redis.Wrapper{Redis: p.Redis},
+				RootPath:          rootPath, // RootPath specifies the root for asynqmon app
+				RedisConnOpt:      redis.Wrapper{Redis: p.Redis},
+				PrometheusAddress: "http://prometheus:9090",
 			},
 		},
 	}
 }
 
-type asynqmonBuilder struct {
+type builder struct {
 	options asynqmon.Options
 }
 
-func (b asynqmonBuilder) Apply(e *gin.Engine) error {
+func (builder) Key() string {
+	return key
+}
+
+func (b builder) Apply(e *gin.Engine) error {
 	handler := asynqmon.New(b.options)
 	e.Any(rootPath+"/*path", func(c *gin.Context) {
 		handler.ServeHTTP(c.Writer, c.Request)
