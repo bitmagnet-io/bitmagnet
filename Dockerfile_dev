@@ -6,8 +6,6 @@ RUN apk --update add \
     git \
     && rm -rf /var/cache/apk/*
 
-RUN go install github.com/google/gops@latest
-
 RUN mkdir /app
 
 WORKDIR /app

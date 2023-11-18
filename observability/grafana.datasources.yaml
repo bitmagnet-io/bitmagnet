@@ -17,8 +17,8 @@ datasources:
     url: http://pyroscope:4040
     version: 1
     jsonData:
-      minStep: '15s'
-      backendType: 'pyroscope'
+      minStep: "15s"
+      backendType: "pyroscope"
   - name: Postgres
     type: postgres
     url: postgres:5432
@@ -28,7 +28,7 @@ datasources:
       password: postgres
     jsonData:
       database: bitmagnet
-      sslmode: 'disable' # disable/require/verify-ca/verify-full
+      sslmode: "disable" # disable/require/verify-ca/verify-full
       maxOpenConns: 100 # Grafana v5.4+
       maxIdleConns: 100 # Grafana v5.4+
       maxIdleConnsAuto: true # Grafana v9.5.1+

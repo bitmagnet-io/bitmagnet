@@ -1,10 +1,15 @@
 services:
+  # This service definition is for running bitmagnet from source code.
+  # The default entrypoint of Dockerfile_dev is `tail -f /dev/null`.
+  # From there you can open a shell into the container with `docker exec -it bitmagnet sh`, then run bitmagnet with `go run .`.
+  # To automatically start bitmagnet when using Dockerfile_dev, enable the `entrypoint` and `command` parameters below.
+  # To run the container image from ghcr.io instead, disable the `build` parameter and enable the `image` parameter.
   bitmagnet:
+    container_name: bitmagnet
     build:
       context: .
       dockerfile: Dockerfile_dev
-    container_name: bitmagnet
-    #    image: ghcr.io/bitmagnet-io/bitmagnet:latest
+    # image: ghcr.io/bitmagnet-io/bitmagnet:latest
     volumes:
       - ./:/app
       - ./data/bitmagnet:/root/.local/share/bitmagnet
@@ -13,29 +18,25 @@ services:
       # BitTorrent ports:
       - "3334:3334/tcp"
       - "3334:3334/udp"
-      - "3335:3335"
     restart: unless-stopped
     environment:
-      - LOG_LEVEL=debug
-      - LOG_JSON=true
+      # Enable logging to rotating files for ingest to Loki:
       - LOG_FILE_ROTATOR_ENABLED=true
       - POSTGRES_HOST=postgres
       - POSTGRES_PASSWORD=postgres
       - REDIS_ADDR=redis:6379
-      - DHT_CRAWLER_SCALING_FACTOR=1
-#      - TELEMETRY_PYROSCOPE_ENABLED=true
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-#    entrypoint:
-#      - go
-#      - run
-#      - "."
-#      - worker
-#      - run
-#      - --all
+  #    entrypoint: ["go", "run", "."]
+  #    command:
+  #      - worker
+  #      - run
+  #      - --keys=http_server
+  #      - --keys=queue_server
+  #      - --keys=dht_crawler
 
   postgres:
     image: postgres:16-alpine
@@ -70,6 +71,10 @@ services:
       interval: 10s
       start_period: 20s
 
+  # Optional observability services:
+  # (ensure you have the config files in the `observability` directory in your project root)
+
+  # Visualization and dashboards:
   grafana:
     container_name: bitmagnet-grafana
     image: grafana/grafana:latest
@@ -79,18 +84,21 @@ services:
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
     volumes:
       - ./data/grafana:/var/lib/grafana
+      # Provisioned data sources and dashboards:
       - ./observability/grafana.datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
       - ./observability/grafana.dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
       - ./observability/grafana-dashboards:/etc/dashboards
     ports:
       - "3000:3000"
 
+  # Metrics and logs scraping:
   grafana-agent:
     container_name: bitmagnet-grafana-agent
     image: grafana/agent:latest
     volumes:
-      - ./observability/grafana-agent.config.river:/etc/agent-config/config.river
       - ./data/bitmagnet/logs:/var/log/bitmagnet
+      # Mount the logs and metrics scraping configurations:
+      - ./observability/grafana-agent.config.river:/etc/agent-config/config.river
     command:
       - run
       - /etc/agent-config/config.river
@@ -98,28 +106,28 @@ services:
     environment:
       HOSTNAME: grafana-agent
       AGENT_MODE: flow
-#      REMOTE_WRITE_HOST: mimir:9009
       LOKI_HOST: loki:3100
       POSTGRES_HOST: postgres:5432
       REDIS_HOST: redis:6379
     ports:
       - "12345:12345"
     depends_on:
-#      - bitmagnet
       - loki
 
+  # Metrics storage and aggregation:
   prometheus:
     image: prom/prometheus:latest
     container_name: bitmagnet-prometheus
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
+      - "--config.file=/etc/prometheus/prometheus.yml"
     ports:
       - 9090:9090
     restart: unless-stopped
     volumes:
-      - ./observability/prometheus.config.yaml:/etc/prometheus/prometheus.yml
       - ./data/prometheus:/prometheus
+      - ./observability/prometheus.config.yaml:/etc/prometheus/prometheus.yml
 
+  # Prometheus metrics for Postgres:
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter:latest
     container_name: bitmagnet-postgres-exporter
@@ -131,16 +139,18 @@ services:
       - postgres
       - prometheus
 
+  # Log storage and aggregation:
   loki:
     container_name: bitmagnet-loki
     image: grafana/loki:latest
     ports:
       - "3100:3100"
     volumes:
-      - ./observability/loki.config.yaml:/etc/loki/local-config.yaml
       - ./data/loki:/loki
+      - ./observability/loki.config.yaml:/etc/loki/local-config.yaml
     command: -config.file=/etc/loki/local-config.yaml
 
+  # Runtime profiling:
   pyroscope:
     container_name: bitmagnet-pyroscope
     image: grafana/pyroscope:latest
