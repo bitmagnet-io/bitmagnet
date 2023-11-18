@@ -21,6 +21,8 @@ require (
 	github.com/hedhyw/rex v0.6.0
 	github.com/hellofresh/health-go/v5 v5.5.0
 	github.com/hibiken/asynq v0.24.1
+	github.com/hibiken/asynq/x v0.0.0-20230908153724-6a7bf2ceff1e
+	github.com/hibiken/asynqmon v0.7.2
 	github.com/iancoleman/strcase v0.3.0
 	github.com/jedib0t/go-pretty/v6 v6.4.9
 	github.com/joho/godotenv v1.5.1
@@ -88,8 +90,6 @@ require (
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/hibiken/asynq/x v0.0.0-20230908153724-6a7bf2ceff1e // indirect
-	github.com/hibiken/asynqmon v0.7.2 // indirect
 	github.com/huandu/xstrings v1.4.0 // indirect
 	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
