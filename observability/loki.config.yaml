@@ -26,7 +26,6 @@ schema_config:
 
 compactor:
   working_directory: /loki/retention
-  #  shared_store: gcs
   compaction_interval: 10m
   retention_enabled: true
   retention_delete_delay: 6h
@@ -38,7 +37,6 @@ limits_config:
     - selector: '{job="bitmagnet"}'
       priority: 1
       period: 24h
-#  per_tenant_override_config: /etc/overrides.yaml
 
 ruler:
   alertmanager_url: http://localhost:9093
