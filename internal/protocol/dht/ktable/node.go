@@ -6,13 +6,13 @@ import (
 	"time"
 )
 
-type nodeBucketRoot struct {
-	bucketRoot[netip.AddrPort, NodeOption, Node, *node]
+type nodeKeyspace struct {
+	keyspace[netip.AddrPort, NodeOption, Node, *node]
 }
 
-func (b *nodeBucketRoot) getLastRespondedBefore(t time.Time) []Node {
+func (k *nodeKeyspace) getLastRespondedBefore(t time.Time) []Node {
 	var peers []Node
-	for _, it := range b.items {
+	for _, it := range k.items {
 		if it.lastRespondedAt.Before(t) {
 			peers = append(peers, it)
 		}
@@ -20,9 +20,9 @@ func (b *nodeBucketRoot) getLastRespondedBefore(t time.Time) []Node {
 	return peers
 }
 
-func (b *nodeBucketRoot) getCandidatesForSampleInfoHashes(n int) []*node {
+func (k *nodeKeyspace) getCandidatesForSampleInfoHashes(n int) []*node {
 	var candidates []*node
-	for _, it := range b.items {
+	for _, it := range k.items {
 		if !it.IsSampleInfoHashesCandidate() {
 			continue
 		}
@@ -35,7 +35,7 @@ func (b *nodeBucketRoot) getCandidatesForSampleInfoHashes(n int) []*node {
 }
 
 type Node interface {
-	bucketItem
+	keyspaceItem
 	Addr() netip.AddrPort
 	Time() time.Time
 	Dropped() bool
@@ -109,7 +109,7 @@ const (
 	protocolSupportNo
 )
 
-var _ bucketItemPrivate[netip.AddrPort, NodeOption, Node] = (*node)(nil)
+var _ keyspaceItemPrivate[netip.AddrPort, NodeOption, Node] = (*node)(nil)
 
 func (n *node) update(addr netip.AddrPort) {
 	if n.addr != addr {

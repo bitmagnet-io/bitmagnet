@@ -4,6 +4,7 @@ type Config struct {
 	LocalAddress string
 	GinMode      string
 	Cors         CorsConfig
+	Options      []string
 }
 
 type CorsConfig struct {
@@ -57,5 +58,6 @@ func NewDefaultConfig() Config {
 			AllowedHeaders: []string{"*"},
 			Debug:          true,
 		},
+		Options: []string{"*"},
 	}
 }

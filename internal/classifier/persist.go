@@ -1,4 +1,4 @@
-package resolver
+package classifier
 
 import (
 	"context"
@@ -8,11 +8,11 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func (r resolver) Persist(ctx context.Context, torrentContents ...model.TorrentContent) error {
+func (c classifier) Persist(ctx context.Context, torrentContents ...model.TorrentContent) error {
 	if len(torrentContents) == 0 {
 		return nil
 	}
-	return r.dao.Transaction(func(tx *dao.Query) error {
+	return c.dao.Transaction(func(tx *dao.Query) error {
 		torrentContentsPtr := make([]*model.TorrentContent, 0, len(torrentContents))
 		deleteHashes := make([]driver.Valuer, 0, len(torrentContents))
 		for _, content := range torrentContents {
@@ -24,8 +24,8 @@ func (r resolver) Persist(ctx context.Context, torrentContents ...model.TorrentC
 		}
 		if len(deleteHashes) > 0 {
 			if _, deleteErr := tx.TorrentContent.WithContext(ctx).Where(
-				r.dao.TorrentContent.InfoHash.In(deleteHashes...),
-				r.dao.TorrentContent.ContentID.IsNull(),
+				c.dao.TorrentContent.InfoHash.In(deleteHashes...),
+				c.dao.TorrentContent.ContentID.IsNull(),
 			).Delete(); deleteErr != nil {
 				return deleteErr
 			}

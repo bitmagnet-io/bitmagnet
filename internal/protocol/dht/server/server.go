@@ -5,65 +5,17 @@ import (
 	"errors"
 	"fmt"
 	"github.com/anacrolix/torrent/bencode"
-	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/responder"
-	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"golang.org/x/time/rate"
 	"net/netip"
 	"sync"
 	"time"
 )
 
-type Params struct {
-	fx.In
-	Config    Config
-	Responder responder.Responder
-	Logger    *zap.SugaredLogger
-}
-
-type Result struct {
-	fx.Out
-	Server  Server
-	AppHook fx.Hook `group:"app_hooks"`
-}
-
 type Server interface {
 	Ready() <-chan struct{}
 	Query(ctx context.Context, addr netip.AddrPort, q string, args dht.MsgArgs) (dht.RecvMsg, error)
-}
-
-func New(p Params) Result {
-	s := &server{
-		ready:            make(chan struct{}),
-		stopped:          make(chan struct{}),
-		localAddr:        netip.AddrPortFrom(netip.IPv4Unspecified(), 3334),
-		socket:           NewSocket(),
-		queries:          make(map[string]chan dht.RecvMsg),
-		queryTimeout:     p.Config.QueryTimeout,
-		queryLimiter:     concurrency.NewKeyedLimiter(rate.Every(time.Second), 4, 1000, time.Second*20),
-		responder:        p.Responder,
-		responderTimeout: time.Second * 5,
-		idIssuer:         &variantIdIssuer{},
-		logger:           p.Logger.Named("dht_server"),
-	}
-	return Result{
-		Server: s,
-		AppHook: fx.Hook{
-			OnStart: func(ctx context.Context) error {
-				if err := s.socket.Open(s.localAddr); err != nil {
-					return fmt.Errorf("could not open socket: %w", err)
-				}
-				go s.start()
-				return nil
-			},
-			OnStop: func(ctx context.Context) error {
-				close(s.stopped)
-				return nil
-			},
-		},
-	}
 }
 
 type server struct {
@@ -72,7 +24,6 @@ type server struct {
 	stopped          chan struct{}
 	localAddr        netip.AddrPort
 	socket           Socket
-	queryLimiter     concurrency.KeyedLimiter
 	queryTimeout     time.Duration
 	queries          map[string]chan dht.RecvMsg
 	responder        responder.Responder
@@ -131,7 +82,7 @@ func (s *server) read(ctx context.Context) {
 		var msg dht.Msg
 		err = bencode.Unmarshal(buffer[:n], &msg)
 		if err != nil {
-			s.logger.Debugw("could not unmarshal packet data", "err", err)
+			s.logger.Debugw("could not unmarshal packet data", "error", err)
 			continue
 		}
 
@@ -173,8 +124,6 @@ func (s *server) handleQuery(msg dht.RecvMsg) {
 	}
 	if sendErr := s.send(msg.From, res); sendErr != nil {
 		s.logger.Debugw("could not send response", "msg", msg, "retErr", sendErr)
-	} else {
-		s.logger.Debugw("sent response", "msg", msg, "res", res)
 	}
 }
 
@@ -189,9 +138,6 @@ func (s *server) handleResponse(msg dht.RecvMsg) {
 }
 
 func (s *server) Query(ctx context.Context, addr netip.AddrPort, q string, args dht.MsgArgs) (r dht.RecvMsg, err error) {
-	if limitErr := s.queryLimiter.Wait(ctx, addr.Addr().String()); limitErr != nil {
-		return r, limitErr
-	}
 	transactionId := s.idIssuer.Issue()
 	ch := make(chan dht.RecvMsg, 1)
 	s.mutex.Lock()
@@ -230,11 +176,8 @@ func (s *server) Query(ctx context.Context, addr netip.AddrPort, q string, args 
 			if err == nil {
 				err = errors.New("error missing from response")
 			}
-			s.logger.Debugw("error response", "msg", msg, "res", res, "err", err)
 		} else if r.Msg.R == nil {
 			err = errors.New("return data missing from response")
-		} else {
-			s.logger.Debugw("successful response", "msg", msg, "res", res)
 		}
 		return
 	}

@@ -83,7 +83,6 @@ func TestBtree_splitting(t *testing.T) {
 	for i := 0; i < 16; i++ {
 		assertPut(t, root, testIDs[i], PutAccepted)
 	}
-	assert.Equal(t, 12, root.countCloserThan(testIDs[16]))
 	for i := 16; i < 20; i++ {
 		assertPut(t, root, testIDs[i], PutRejected)
 	}

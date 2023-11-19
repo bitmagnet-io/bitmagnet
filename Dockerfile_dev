@@ -1,0 +1,17 @@
+FROM golang:alpine3.18
+
+RUN apk --update add \
+    gcc \
+    musl-dev \
+    git \
+    && rm -rf /var/cache/apk/*
+
+RUN mkdir /app
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+
+RUN go mod download
+
+ENTRYPOINT ["tail", "-f", "/dev/null"]

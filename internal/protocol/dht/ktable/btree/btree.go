@@ -16,9 +16,6 @@ type Btree interface {
 	Drop(NodeID) bool
 	Closest(NodeID, int) []NodeID
 	Count() int
-	EmptiestPrefixLengths() []int
-	Stats() Stats
-	countCloserThan(id NodeID) int
 }
 
 type NodeID []byte

@@ -6,6 +6,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
+	"github.com/prometheus/client_golang/prometheus"
 	"gorm.io/gorm/clause"
 )
 
@@ -20,7 +21,7 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 		case is := <-c.persistTorrents.Out():
 			ts := make([]*model.Torrent, 0, len(is))
 			for _, i := range is {
-				if t, err := createTorrentModel(i.infoHash, i.metaInfo, c.saveFilesThreshold); err != nil {
+				if t, err := createTorrentModel(i.infoHash, i.metaInfo, c.savePieces, c.saveFilesThreshold); err != nil {
 					c.logger.Errorf("error creating torrent model: %s", err.Error())
 				} else {
 					ts = append(ts, &t)
@@ -37,7 +38,8 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 			}).CreateInBatches(ts, 100); persistErr != nil {
 				c.logger.Errorf("error persisting torrents: %s", persistErr)
 			} else {
-				c.logger.Debugf("persisted %d torrents", len(ts))
+				c.persistedTotal.With(prometheus.Labels{"entity": "Torrent"}).Add(float64(len(ts)))
+				c.logger.Debugw("persisted torrents", "count", len(ts))
 				hashesToClassify := make([]protocol.ID, 0, len(ts))
 				for _, t := range ts {
 					hashesToClassify = append(hashesToClassify, t.InfoHash)
@@ -63,6 +65,7 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 func createTorrentModel(
 	hash protocol.ID,
 	info metainfo.Info,
+	savePieces bool,
 	saveFilesThreshold uint,
 ) (model.Torrent, error) {
 	name := info.BestName()
@@ -85,13 +88,19 @@ func createTorrentModel(
 	} else if len(files) > 0 {
 		filesStatus = model.FilesStatusMulti
 	}
+	var pieceLength model.NullUint64
+	var pieces []byte
+	if savePieces {
+		pieceLength = model.NewNullUint64(uint64(info.PieceLength))
+		pieces = info.Pieces
+	}
 	return model.Torrent{
 		InfoHash:    hash,
 		Name:        name,
 		Size:        uint64(info.TotalLength()),
 		Private:     private,
-		PieceLength: model.NewNullUint64(uint64(info.PieceLength)),
-		Pieces:      info.Pieces,
+		PieceLength: pieceLength,
+		Pieces:      pieces,
 		Files:       files,
 		FilesStatus: filesStatus,
 		Sources: []model.TorrentsTorrentSource{
@@ -124,7 +133,8 @@ func (c *crawler) runPersistSources(ctx context.Context) {
 			}).CreateInBatches(srcs, 100); persistErr != nil {
 				c.logger.Errorf("error persisting torrent sources: %s", persistErr.Error())
 			} else {
-				c.logger.Debugf("persisted %d torrent sources", len(srcs))
+				c.persistedTotal.With(prometheus.Labels{"entity": "TorrentsTorrentSource"}).Add(float64(len(srcs)))
+				c.logger.Debugw("persisted torrent sources", "count", len(srcs))
 			}
 		}
 	}

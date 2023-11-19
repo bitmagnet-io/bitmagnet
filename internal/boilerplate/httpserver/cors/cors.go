@@ -7,6 +7,8 @@ import (
 	gincors "github.com/rs/cors/wrapper/gin"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"time"
 )
 
 type Params struct {
@@ -34,7 +36,10 @@ func New(p Params) Result {
 			OptionsPassthrough:   config.OptionsPassthrough,
 			OptionsSuccessStatus: config.OptionsSuccessStatus,
 			Debug:                config.Debug,
-			Logger:               corsLogger{p.Logger.Named("cors")},
+			// we don't need every request logged so apply sampling
+			Logger: corsLogger{p.Logger.WithOptions(zap.WrapCore(func(core zapcore.Core) zapcore.Core {
+				return zapcore.NewSamplerWithOptions(core, time.Hour, 10, 0)
+			})).Named("cors")},
 		})},
 	}
 }
@@ -43,8 +48,8 @@ type corsOption struct {
 	handlerFunc gin.HandlerFunc
 }
 
-func (c corsOption) Priority() int {
-	return -100
+func (corsOption) Key() string {
+	return "cors"
 }
 
 func (c corsOption) Apply(g *gin.Engine) error {

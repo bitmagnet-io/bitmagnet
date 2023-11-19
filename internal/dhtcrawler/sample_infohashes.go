@@ -3,7 +3,6 @@ package dhtcrawler
 import (
 	"context"
 	"fmt"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"time"
 )
@@ -28,25 +27,19 @@ func (c *crawler) runSampleInfoHashes(ctx context.Context) {
 		if !n.IsSampleInfoHashesCandidate() {
 			return
 		}
-		args := dht.MsgArgs{
-			ID:     c.kTable.Origin(),
-			Target: c.soughtNodeID.Get(),
-		}
-		res, err := c.server.Query(ctx, n.Addr(), dht.QSampleInfohashes, args)
+		res, err := c.client.SampleInfoHashes(ctx, n.Addr(), c.soughtNodeID.Get())
 		if err != nil {
 			c.kTable.BatchCommand(ktable.DropNode{ID: n.ID(), Reason: fmt.Errorf("sample_infohashes failed: %w", err)})
 			return
 		}
 		var discoveredHashes []nodeHasPeersForHash
-		if res.Msg.R.Samples != nil {
-			for _, s := range *res.Msg.R.Samples {
-				toa := c.ignoreHashes.testOrAdd(s)
-				if !toa {
-					discoveredHashes = append(discoveredHashes, nodeHasPeersForHash{
-						infoHash: s,
-						node:     n.Addr(),
-					})
-				}
+		for _, s := range res.Samples {
+			toa := c.ignoreHashes.testOrAdd(s)
+			if !toa {
+				discoveredHashes = append(discoveredHashes, nodeHasPeersForHash{
+					infoHash: s,
+					node:     n.Addr(),
+				})
 			}
 		}
 		for _, h := range discoveredHashes {
@@ -57,14 +50,7 @@ func (c *crawler) runSampleInfoHashes(ctx context.Context) {
 				continue
 			}
 		}
-		totalNum := 0
-		interval := 0
-		if res.Msg.R.Num != nil {
-			totalNum = int(*res.Msg.R.Num)
-		}
-		if res.Msg.R.Interval != nil {
-			interval = int(*res.Msg.R.Interval)
-		}
+		interval := res.Interval
 		// most nodes request a 6 hour backoff time(!)
 		// if we're still discovering info hashes from them then let's set a respectful interval instead
 		if len(discoveredHashes) > 0 && interval > 300 {
@@ -75,20 +61,20 @@ func (c *crawler) runSampleInfoHashes(ctx context.Context) {
 			ktable.NodeBep51Support(true),
 			ktable.NodeSampleInfoHashesRes(
 				len(discoveredHashes),
-				totalNum,
+				res.Num,
 				time.Now().Add(time.Duration(interval)*time.Second),
 			),
 		}})
-		if len(res.Msg.R.Nodes) > 0 {
+		if len(res.Nodes) > 0 {
 			// block on the channel for up to a second trying to add sampled nodes to the discoveredNodes channel
 			go func() {
 				timeoutCtx, cancel := context.WithTimeout(ctx, time.Second)
 				defer cancel()
-				for _, n := range res.Msg.R.Nodes {
+				for _, n := range res.Nodes {
 					select {
 					case <-timeoutCtx.Done():
 						return
-					case c.discoveredNodes.In() <- ktable.NewNode(n.ID, n.Addr.ToAddrPort()):
+					case c.discoveredNodes.In() <- ktable.NewNode(n.ID, n.Addr):
 						continue
 					}
 				}

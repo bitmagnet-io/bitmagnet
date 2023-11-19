@@ -4,42 +4,11 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
-	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
-	"go.uber.org/fx"
-	"go.uber.org/zap"
-	"golang.org/x/time/rate"
 	"net/netip"
-	"time"
 )
-
-type Params struct {
-	fx.In
-	KTable          ktable.Table
-	DiscoveredNodes concurrency.BatchingChannel[ktable.Node] `name:"dht_discovered_nodes"`
-	Logger          *zap.SugaredLogger
-}
-
-type Result struct {
-	fx.Out
-	Responder Responder
-}
-
-func New(p Params) Result {
-	return Result{
-		Responder: responder{
-			nodeID:                   p.KTable.Origin(),
-			kTable:                   p.KTable,
-			tokenSecret:              protocol.RandomNodeID().Bytes(),
-			sampleInfoHashesInterval: 10,
-			limiter:                  NewLimiter(rate.Every(time.Second/5), 20, rate.Every(time.Second), 10, 1000, time.Second*20),
-			discoveredNodes:          p.DiscoveredNodes.In(),
-			logger:                   p.Logger,
-		},
-	}
-}
 
 type Responder interface {
 	Respond(context.Context, dht.RecvMsg) (dht.Return, error)
@@ -50,9 +19,6 @@ type responder struct {
 	kTable                   ktable.Table
 	tokenSecret              []byte
 	sampleInfoHashesInterval int64
-	limiter                  Limiter
-	discoveredNodes          chan<- ktable.Node
-	logger                   *zap.SugaredLogger
 }
 
 var ErrMissingArguments = dht.Error{
@@ -77,26 +43,6 @@ var ErrTooManyRequests = dht.Error{
 
 func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, err error) {
 	args := msg.Msg.A
-	defer func() {
-		if err == nil {
-			r.logger.Debugw("responded", "msg", msg, "ret", ret)
-			go func() {
-				ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-				defer cancel()
-				select {
-				case <-ctx.Done():
-				case r.discoveredNodes <- ktable.NewNode(args.ID, msg.From):
-				}
-			}()
-		} else {
-			r.logger.Debugw("failed to respond", "msg", msg, "err", err)
-		}
-	}()
-	// apply both overall and per-IP rate limiting:
-	if !r.limiter.Allow(msg.From.Addr()) {
-		err = ErrTooManyRequests
-		return
-	}
 	if args == nil {
 		err = ErrMissingArguments
 		return

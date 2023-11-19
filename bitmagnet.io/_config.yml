@@ -22,6 +22,8 @@ callouts:
     title: Warning
     color: red
 nav_external_links:
+  - title: bitmagnet on Discord
+    url: https://discord.gg/6mFNszX8qM
   - title: bitmagnet on GitHub
     url: https://github.com/bitmagnet-io/bitmagnet
 favicon_ico: "/assets/images/favicon.png"

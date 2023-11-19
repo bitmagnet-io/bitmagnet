@@ -3,7 +3,6 @@ package appfx
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/app/cmd/searchcmd"
 	"github.com/bitmagnet-io/bitmagnet/internal/app/cmd/torrentcmd"
-	"github.com/bitmagnet-io/bitmagnet/internal/app/tracing"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/app/boilerplateappfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpserver/httpserverfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classifierfx"
@@ -16,6 +15,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainfofx"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/queuefx"
 	"github.com/bitmagnet-io/bitmagnet/internal/redis/redisfx"
+	"github.com/bitmagnet-io/bitmagnet/internal/telemetry/telemetryfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab/torznabfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/version/versionfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/webui"
@@ -36,6 +36,7 @@ func New() fx.Option {
 		metainfofx.New(),
 		queuefx.New(),
 		redisfx.New(),
+		telemetryfx.New(),
 		torznabfx.New(),
 		versionfx.New(),
 		// cli commands:
@@ -43,7 +44,6 @@ func New() fx.Option {
 			searchcmd.New,
 			torrentcmd.New,
 		),
-		fx.Provide(tracing.New),
 		fx.Provide(webui.New),
 		fx.Decorate(migrations.NewDecorator),
 	)

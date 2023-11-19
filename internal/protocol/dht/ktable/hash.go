@@ -5,12 +5,12 @@ import (
 	"time"
 )
 
-type hashBucketRoot struct {
-	bucketRoot[[]HashPeer, HashOption, Hash, *hash]
+type hashKeyspace struct {
+	keyspace[[]HashPeer, HashOption, Hash, *hash]
 }
 
 type Hash interface {
-	bucketItem
+	keyspaceItem
 	Peers() []HashPeer
 	Dropped() bool
 }
@@ -32,7 +32,7 @@ type HashOption interface {
 	apply(*hash)
 }
 
-var _ bucketItemPrivate[[]HashPeer, HashOption, Hash] = (*hash)(nil)
+var _ keyspaceItemPrivate[[]HashPeer, HashOption, Hash] = (*hash)(nil)
 
 func (h *hash) update(peers []HashPeer) {
 	for _, p := range peers {

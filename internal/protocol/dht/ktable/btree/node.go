@@ -1,9 +1,5 @@
 package btree
 
-import (
-	"sort"
-)
-
 type baseNode struct {
 	origin NodeID
 	bit    Bit
@@ -120,16 +116,6 @@ func (n *rootNode) Closest(id NodeID, count int) []NodeID {
 		ids[i] = xor.MustXor(n.origin)
 	}
 	return ids
-}
-func (n *rootNode) EmptiestPrefixLengths() []int {
-	prefixLengths := make([]int, n.N())
-	for i := n.N() - 1; i >= 0; i-- {
-		prefixLengths[i] = i
-	}
-	sort.Slice(prefixLengths, func(i, j int) bool {
-		return n.bucketCounts[prefixLengths[i]] < n.bucketCounts[prefixLengths[j]]
-	})
-	return prefixLengths
 }
 
 type iNode interface {

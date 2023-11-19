@@ -12,8 +12,7 @@ import (
 func New() fx.Option {
 	return fx.Module(
 		"logging",
-		configfx.NewConfigModule[logging.Config]("log", logging.NewDefault()),
-		fx.Provide(logging.NewZapConfig),
+		configfx.NewConfigModule[logging.Config]("log", logging.NewDefaultConfig()),
 		fx.Provide(logging.New),
 	)
 }
