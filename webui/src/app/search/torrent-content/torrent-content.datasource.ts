@@ -17,12 +17,6 @@ export class TorrentContentDataSource
   private loadingSubject = new BehaviorSubject(false);
   private errorSubject = new BehaviorSubject<Error | undefined>(undefined);
   private lastRequestTimeSubject = new BehaviorSubject<number>(0);
-  private expandedItemSubject = new BehaviorSubject<
-    generated.TorrentContent | undefined
-  >(undefined);
-  private editedTagsSubject = new BehaviorSubject<string[] | undefined>(
-    undefined,
-  );
 
   public result = this.resultSubject.asObservable();
   public items = this.result.pipe(map((result) => result.items));
@@ -85,13 +79,6 @@ export class TorrentContentDataSource
           this.errorSubject.next(undefined);
           this.resultSubject.next(result);
           this.loadingSubject.next(false);
-          const expandedItem = this.expandedItemSubject.getValue();
-          if (
-            expandedItem &&
-            !result.items.some((i) => i.id === expandedItem.id)
-          ) {
-            this.expandItem(undefined);
-          }
         }
       });
   }
@@ -108,42 +95,99 @@ export class TorrentContentDataSource
     return this.loadResult(uncachedInput);
   }
 
-  expandItem(id?: string): void {
-    const nextItem = this.resultSubject
-      .getValue()
-      .items.find((i) => i.id === id);
-    const current = this.expandedItemSubject.getValue();
-    if (current?.id !== id) {
-      this.expandedItemSubject.next(nextItem);
-      this.editedTagsSubject.next(undefined);
-    }
-  }
+  expandedItem = new (class {
 
-  expandedSaveTags(): void {
-    const expanded = this.expandedItemSubject.getValue();
-    if (!expanded) {
-      return;
-    }
-    const editedTags = this.editedTagsSubject.getValue();
-    if (!editedTags) {
-      return;
-    }
-    this.graphQLService
-      .torrentSetTags({
-        infoHashes: [expanded.infoHash],
-        tagNames: editedTags,
+    private itemSubject = new BehaviorSubject<
+      generated.TorrentContent | undefined
+    >(undefined);
+    private editedTagsSubject = new BehaviorSubject<string[] | undefined>(
+      undefined,
+    );
+
+    constructor(private ds: TorrentContentDataSource) {
+      ds.result.subscribe((result) => {
+        const item = this.itemSubject.getValue();
+        if (!item) {
+          return
+        }
+        const nextItem = result.items.find((i) => i.id === item.id);
+        this.itemSubject.next(nextItem);
       })
-      .pipe(
-        catchError((err: Error) => {
-          this.errorSubject.next(err);
-          return EMPTY;
-        }),
-      )
-      .pipe(
-        tap(() => {
-          this.editedTagsSubject.next(undefined);
-          this.refreshResult();
-        }),
+    }
+
+    get id(): string | undefined {
+      return this.itemSubject.getValue()?.id;
+    }
+
+    select(id?: string): void {
+      const nextItem = this.ds.resultSubject
+        .getValue()
+        .items.find((i) => i.id === id);
+      const current = this.itemSubject.getValue();
+      if (current?.id !== id) {
+        this.itemSubject.next(nextItem);
+        this.editedTagsSubject.next(undefined);
+      }
+    }
+
+    addTag(tagName: string) {
+      this.editTags((tags) => [...tags, tagName]);
+      this.saveTags();
+    }
+
+    renameTag(oldTagName: string, newTagName: string) {
+      this.editTags((tags) =>
+        tags.map((t) => (t === oldTagName ? newTagName : t)),
       );
-  }
+      this.saveTags()
+    }
+
+    deleteTag(tagName: string) {
+      this.editTags((tags) => tags.filter((t) => t !== tagName));
+      this.saveTags();
+    }
+
+    private editTags(fn: (tagNames: string[]) => string[]) {
+      const item = this.itemSubject.getValue();
+      if (!item) {
+        return;
+      }
+      const editedTags =
+        this.editedTagsSubject.getValue() ?? item.torrent.tagNames;
+      this.editedTagsSubject.next(fn(editedTags));
+    }
+
+    saveTags(): void {
+      const expanded = this.itemSubject.getValue();
+      if (!expanded) {
+        return;
+      }
+      const editedTags = this.editedTagsSubject.getValue();
+      if (!editedTags) {
+        return;
+      }
+      this.ds.graphQLService
+        .torrentSetTags({
+          infoHashes: [expanded.infoHash],
+          tagNames: editedTags ?? [],
+        })
+        .pipe(
+          catchError((err: Error) => {
+            this.ds.errorSubject.next(err);
+            return EMPTY;
+          }),
+        )
+        .pipe(
+          tap(() => {
+            this.editedTagsSubject.next(undefined);
+            this.ds.refreshResult();
+          }),
+        ).subscribe();
+    }
+  })(this)
 }
+
+type EditedTags = {
+  infoHash: string;
+  tagNames?: string[];
+};

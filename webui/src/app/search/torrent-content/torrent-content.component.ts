@@ -14,7 +14,8 @@ import * as generated from "../../graphql/generated";
 import { GraphQLService } from "../../graphql/graphql.service";
 import { TorrentContentDataSource } from "./torrent-content.datasource";
 import { Facet } from "./facet";
-import { ExpandedItem } from "./expanded-item";
+
+import {COMMA, ENTER} from '@angular/cdk/keycodes';
 
 type ContentTypeInfo = {
   singular: string;
@@ -104,8 +105,6 @@ export class TorrentContentComponent
     undefined,
   );
 
-  // expandedItem: string | null = null;
-  expandedItem: ExpandedItem;
   torrentSourceFacet: Facet<string, false>;
   torrentTagFacet: Facet<string, false>;
   torrentFileTypeFacet: Facet<generated.FileType, false>;
@@ -120,12 +119,13 @@ export class TorrentContentComponent
   autoRefreshIntervals = [0, 10, 30];
   autoRefreshSubscription: Subscription | undefined;
 
+  readonly separatorKeysCodes = [ENTER, COMMA] as const;
+
   constructor(
     graphQLService: GraphQLService,
     private errorSnackBar: MatSnackBar,
   ) {
     this.dataSource = new TorrentContentDataSource(graphQLService);
-    this.expandedItem = new ExpandedItem(this.dataSource.items);
     this.dataSource.error.subscribe((error: Error | undefined) => {
       if (error) {
         this.errorSnackBar.open(
@@ -298,5 +298,25 @@ export class TorrentContentComponent
       ?.filter((a) => a.type === type)
       .map((a) => a.name);
     return collections?.length ? collections.sort() : undefined;
+  }
+
+  expandItem(id?: string) {
+    this.dataSource.expandedItem.select(id);
+  }
+
+  get expandedItemId(): string | undefined {
+    return this.dataSource.expandedItem.id;
+  }
+
+  addTag(tagName: string) {
+    this.dataSource.expandedItem.addTag(tagName);
+  }
+
+  renameTag(oldTagName: string, newTagName: string) {
+    this.dataSource.expandedItem.renameTag(oldTagName, newTagName);
+  }
+
+  deleteTag(tagName: string) {
+    this.dataSource.expandedItem.deleteTag(tagName);
   }
 }

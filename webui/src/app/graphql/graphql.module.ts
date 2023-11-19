@@ -35,6 +35,7 @@ export function createApollo(httpLink: HttpLink): ApolloClientOptions<unknown> {
       useFactory: createApollo,
       deps: [HttpLink],
     },
+    GraphQLService,
   ],
 })
 export class GraphQLModule {}

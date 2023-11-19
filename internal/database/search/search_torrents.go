@@ -36,6 +36,7 @@ func TorrentDefaultPreload() query.Option {
 			q.Torrent.Sources.RelationField.Order(q.TorrentsTorrentSource.CreatedAt),
 			q.Torrent.Sources.TorrentSource.RelationField,
 			q.Torrent.Files.RelationField.Order(q.TorrentFile.Index),
+			q.Torrent.Tags.RelationField,
 		}
 	})
 }

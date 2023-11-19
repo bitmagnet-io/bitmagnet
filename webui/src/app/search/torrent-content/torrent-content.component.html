@@ -114,15 +114,15 @@
             mat-cell
             *matCellDef="let i"
             (click)="
-              expandedItem = expandedItem === i.id ? null : i.id;
+              expandItem(expandedItemId === i.id ? undefined : i.id);
               $event.stopPropagation()
             "
           >
             <button mat-icon-button aria-label="expand row">
-              <mat-icon *ngIf="expandedItem !== i.id"
+              <mat-icon *ngIf="expandedItemId !== i.id"
                 >keyboard_arrow_down</mat-icon
               >
-              <mat-icon *ngIf="expandedItem === i.id"
+              <mat-icon *ngIf="expandedItemId === i.id"
                 >keyboard_arrow_up</mat-icon
               >
             </button>
@@ -198,9 +198,9 @@
             <div
               [class]="
                 'item-detail' +
-                (expandedItem === i.id ? ' expanded' : ' collapsed')
+                (expandedItemId === i.id ? ' expanded' : ' collapsed')
               "
-              [@detailExpand]="expandedItem === i.id ? 'expanded' : 'collapsed'"
+              [@detailExpand]="expandedItemId === i.id ? 'expanded' : 'collapsed'"
             >
               <img
                 *ngIf="
@@ -277,7 +277,8 @@
                   <mat-chip-row
                     *ngFor="let tagName of item(i).torrent.tagNames; let j = index"
                     [editable]="true"
-                    (edited)="torrentPutTags([item(i).infoHash], [$event.value])"
+                    (edited)="renameTag(tagName, $event.value)"
+                    (removed)="deleteTag(tagName)"
                     [aria-description]="'press enter to edit'">
                   {{tagName}}
                   <button matChipRemove [attr.aria-label]="'remove ' + tagName">
@@ -287,8 +288,7 @@
                   <input placeholder="New tag..."
                          [matChipInputFor]="chipGrid"
                          [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-                         [matChipInputAddOnBlur]="addOnBlur"
-                         (matChipInputTokenEnd)="add($event)"/>
+                         (matChipInputTokenEnd)="$event.value && addTag($event.value)"/>
                 </mat-chip-grid>
               </mat-form-field>
 
