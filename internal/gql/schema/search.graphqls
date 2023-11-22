@@ -133,15 +133,8 @@ type TorrentContentAggregations {
   videoSource: [VideoSourceAgg!]
 }
 
-type TorrentContentResult {
+type TorrentContentSearchResult {
   totalCount: Int!
   items: [TorrentContent!]!
   aggregations: TorrentContentAggregations!
-}
-
-type SearchQuery {
-  torrentContent(
-    query: SearchQueryInput
-    facets: TorrentContentFacetsInput
-  ): TorrentContentResult!
 }

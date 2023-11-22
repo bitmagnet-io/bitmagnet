@@ -6,6 +6,7 @@ package resolvers
 
 import (
 	"context"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"

@@ -11,9 +11,11 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 )
 
-// Search is the resolver for the search field.
-func (r *queryResolver) Search(ctx context.Context) (gqlmodel.SearchQuery, error) {
-	return gqlmodel.SearchQuery{}, nil
+// TorrentContent is the resolver for the torrentContent field.
+func (r *queryResolver) TorrentContent(ctx context.Context) (gqlmodel.TorrentContentQuery, error) {
+	return gqlmodel.TorrentContentQuery{
+		TorrentContentSearch: r.search,
+	}, nil
 }
 
 // Query returns gql.QueryResolver implementation.

@@ -1,4 +1,4 @@
-package resolvers
+package gqlmodel
 
 import (
 	"errors"

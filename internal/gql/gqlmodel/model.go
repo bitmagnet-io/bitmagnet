@@ -7,7 +7,9 @@ import (
 	"time"
 )
 
-type SearchQuery struct{}
+type TorrentContentQuery struct {
+	TorrentContentSearch search.TorrentContentSearch
+}
 
 type TorrentMutation struct{}
 

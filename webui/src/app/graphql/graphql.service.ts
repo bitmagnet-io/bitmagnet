@@ -5,18 +5,18 @@ import * as generated from "./generated";
 @Injectable()
 export class GraphQLService {
   constructor(
-    private readonly searchTorrentContentGql: generated.SearchTorrentContentGQL,
+    private readonly torrentContentSearchGql: generated.TorrentContentSearchGQL,
     private readonly torrentSetTagsGql: generated.TorrentSetTagsGQL,
   ) {}
 
-  searchTorrentContent(
-    input: generated.SearchTorrentContentQueryVariables,
-  ): Observable<generated.TorrentContentResult> {
-    return this.searchTorrentContentGql
+  torrentContentSearch(
+    input: generated.TorrentContentSearchQueryVariables,
+  ): Observable<generated.TorrentContentSearchResult> {
+    return this.torrentContentSearchGql
       .fetch(input, {
         fetchPolicy: "no-cache",
       })
-      .pipe(map((r) => r.data.search.torrentContent));
+      .pipe(map((r) => r.data.torrentContent.search));
   }
 
   torrentSetTags(

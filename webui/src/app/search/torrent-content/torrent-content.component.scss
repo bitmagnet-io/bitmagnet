@@ -155,3 +155,10 @@ tr.expanded-detail-row {
 .form-edit-tags {
   width: 800px;
 }
+
+.mat-mdc-standard-chip:not(.mdc-evolution-chip--disabled).chip-primary {
+  background-color: mat.get-color-from-palette($primary-palette, 100);
+  .mat-mdc-standard-chip:not(.mdc-evolution-chip--disabled).mdc-evolution-chip__text-label {
+    color: #fff;
+  }
+}

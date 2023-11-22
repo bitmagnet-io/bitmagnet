@@ -136,6 +136,9 @@
             >
             <span class="title">{{ item(i).title }}</span>
             <mat-chip-set>
+              <mat-chip *ngFor=" let tagName of item(i).torrent.tagNames" class="chip-primary">
+                {{tagName}}
+                </mat-chip>
               <mat-chip *ngIf="item(i).languages; let languages">
                 <ng-container *ngFor="let l of languages; index as j">
                   {{ j > 0 ? ", " : "" }}{{ l.name }}
@@ -335,7 +338,7 @@
       <mat-paginator
         (page)="handlePageEvent($event)"
         [pageIndex]="pageIndex"
-        [length]="totalCount"
+        [length]="result.totalCount"
         [pageSize]="pageSize"
         [pageSizeOptions]="[10, 25, 50, 100]"
         [showFirstLastButtons]="true"

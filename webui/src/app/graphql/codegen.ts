@@ -1,7 +1,8 @@
 import type { CodegenConfig } from "@graphql-codegen/cli";
+import * as path from "path"
 
 const config: CodegenConfig = {
-  schema: "http://localhost:3333/graphql",
+  schema: path.resolve(__dirname, "../../../../internal/gql/schema/**/*.graphqls"),
   documents: "./src/app/graphql/{fragments,mutations,queries}/*.graphql",
   generates: {
     "./src/app/graphql/generated/index.ts": {
@@ -28,16 +29,6 @@ const config: CodegenConfig = {
           Year: "number",
         },
       },
-    },
-    "./src/app/graphql/generated/schema.graphql": {
-      plugins: [
-        "schema-ast",
-        {
-          add: {
-            content: "# THIS FILE IS GENERATED, DO NOT EDIT!\n",
-          },
-        },
-      ],
     },
   },
 };

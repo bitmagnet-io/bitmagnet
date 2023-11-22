@@ -7,20 +7,19 @@ import { GenreAgg, VideoResolutionAgg, VideoSourceAgg } from "./facet";
 export class TorrentContentDataSource
   implements DataSource<generated.TorrentContent>
 {
-  private resultSubject = new BehaviorSubject<generated.TorrentContentResult>({
+  private resultSubject = new BehaviorSubject<generated.TorrentContentSearchResult>({
     items: [],
     totalCount: 0,
     aggregations: {},
   });
   private inputSubject =
-    new BehaviorSubject<generated.SearchTorrentContentQueryVariables>({});
+    new BehaviorSubject<generated.TorrentContentSearchQueryVariables>({});
   private loadingSubject = new BehaviorSubject(false);
   private errorSubject = new BehaviorSubject<Error | undefined>(undefined);
   private lastRequestTimeSubject = new BehaviorSubject<number>(0);
 
   public result = this.resultSubject.asObservable();
   public items = this.result.pipe(map((result) => result.items));
-  public totalCount = this.result.pipe(map((result) => result.totalCount));
   public aggregations = this.result.pipe(map((result) => result.aggregations));
   public loading = this.loadingSubject.asObservable();
   public error = this.errorSubject.asObservable();
@@ -59,12 +58,12 @@ export class TorrentContentDataSource
     this.errorSubject.complete();
   }
 
-  loadResult(input: generated.SearchTorrentContentQueryVariables): void {
+  loadResult(input: generated.TorrentContentSearchQueryVariables): void {
     const requestTime = Date.now();
     this.loadingSubject.next(true);
     this.inputSubject.next(input);
     this.graphQLService
-      .searchTorrentContent(input)
+      .torrentContentSearch(input)
       .pipe(
         catchError((err: Error) => {
           this.errorSubject.next(err);
