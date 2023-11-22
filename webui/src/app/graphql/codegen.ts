@@ -2,8 +2,8 @@ import type { CodegenConfig } from "@graphql-codegen/cli";
 import * as path from "path"
 
 const config: CodegenConfig = {
-  schema: path.resolve(__dirname, "../../../../internal/gql/schema/**/*.graphqls"),
-  documents: "./src/app/graphql/{fragments,mutations,queries}/*.graphql",
+  schema: path.resolve(__dirname, "../../../../graphql/schema/**/*.graphqls"),
+  documents: path.resolve(__dirname, "../../../../graphql/{fragments,mutations,queries}/*.graphql"),
   generates: {
     "./src/app/graphql/generated/index.ts": {
       plugins: [

@@ -5,7 +5,6 @@ package gql
 import (
 	"bytes"
 	"context"
-	"embed"
 	"errors"
 	"fmt"
 	"strconv"
@@ -1405,24 +1404,442 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema/enums.graphqls" "schema/models.graphqls" "schema/mutation.graphqls" "schema/query.graphqls" "schema/scalars.graphqls" "schema/search.graphqls"
-var sourcesFS embed.FS
-
-func sourceData(filename string) string {
-	data, err := sourcesFS.ReadFile(filename)
-	if err != nil {
-		panic(fmt.Sprintf("codegen problem: %s not available", filename))
-	}
-	return string(data)
+var sources = []*ast.Source{
+	{Name: "../../graphql/schema/enums.graphqls", Input: `enum ContentType {
+  movie
+  tv_show
+  music
+  game
+  software
+  book
+  xxx
 }
 
-var sources = []*ast.Source{
-	{Name: "schema/enums.graphqls", Input: sourceData("schema/enums.graphqls"), BuiltIn: false},
-	{Name: "schema/models.graphqls", Input: sourceData("schema/models.graphqls"), BuiltIn: false},
-	{Name: "schema/mutation.graphqls", Input: sourceData("schema/mutation.graphqls"), BuiltIn: false},
-	{Name: "schema/query.graphqls", Input: sourceData("schema/query.graphqls"), BuiltIn: false},
-	{Name: "schema/scalars.graphqls", Input: sourceData("schema/scalars.graphqls"), BuiltIn: false},
-	{Name: "schema/search.graphqls", Input: sourceData("schema/search.graphqls"), BuiltIn: false},
+enum FacetLogic {
+  and
+  or
+}
+
+enum FileType {
+  archive
+  audio
+  data
+  document
+  image
+  software
+  subtitles
+  video
+}
+
+enum Language {
+  ar
+  bs
+  bg
+  ca
+  zh
+  cs
+  da
+  nl
+  en
+  et
+  fi
+  fr
+  de
+  el
+  he
+  hi
+  hr
+  hu
+  is
+  id
+  it
+  ja
+  ko
+  lv
+  lt
+  mk
+  ml
+  no
+  fa
+  pl
+  pt
+  ro
+  ru
+  sk
+  sl
+  es
+  sr
+  sv
+  ta
+  th
+  tr
+  uk
+  vi
+  af
+  hy
+  az
+  eu
+  be
+  ce
+  co
+  ka
+  ku
+  mi
+  ms
+  mt
+  mn
+  sa
+  sm
+  so
+  cy
+  yi
+  zu
+}
+
+enum Video3d {
+  V3D
+  V3DSBS
+  V3DOU
+}
+
+enum VideoCodec {
+  H264
+  x264
+  x265
+  XviD
+  DivX
+  MPEG2
+  MPEG4
+}
+
+enum VideoModifier {
+  REGIONAL
+  SCREENER
+  RAWHD
+  BRDISK
+  REMUX
+}
+
+enum VideoResolution {
+  V360p
+  V480p
+  V540p
+  V576p
+  V720p
+  V1080p
+  V1440p
+  V2160p
+  V4320p
+}
+
+enum VideoSource {
+  CAM
+  TELESYNC
+  TELECINE
+  WORKPRINT
+  DVD
+  TV
+  WEBDL
+  WEBRip
+  BluRay
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/schema/models.graphqls", Input: `type Torrent {
+  infoHash: Hash20!
+  name: String!
+  size: Int!
+  private: Boolean!
+  hasFilesInfo: Boolean!
+  singleFile: Boolean
+  extension: String
+  fileType: FileType
+  fileTypes: [FileType!]
+  files: [TorrentFile!]
+  sources: [TorrentSource!]!
+  seeders: Int
+  leechers: Int
+  tagNames: [String!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type TorrentFile {
+  infoHash: Hash20!
+  index: Int!
+  path: String!
+  extension: String
+  fileType: FileType
+  size: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type TorrentSource {
+  key: String!
+  name: String!
+  importId: String
+  seeders: Int
+  leechers: Int
+}
+
+type TorrentContent {
+  id: ID!
+  infoHash: Hash20!
+  torrent: Torrent!
+  contentType: ContentType
+  contentSource: String
+  contentId: String
+  content: Content
+  title: String!
+  releaseDate: Date
+  releaseYear: Year
+  languages: [LanguageInfo!]
+  episodes: Episodes
+  videoResolution: VideoResolution
+  videoSource: VideoSource
+  videoCodec: VideoCodec
+  video3d: Video3d
+  videoModifier: VideoModifier
+  releaseGroup: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type LanguageInfo {
+  id: String!
+  name: String!
+}
+
+type Episodes {
+  label: String!
+  seasons: [Season!]!
+}
+
+type Season {
+  season: Int!
+  episodes: [Int!]
+}
+
+type MetadataSource {
+  key: String!
+  name: String!
+}
+
+type ExternalLink {
+  metadataSource: MetadataSource!
+  url: String!
+}
+
+type Content {
+  type: ContentType!
+  source: String!
+  id: String!
+  title: String!
+  releaseDate: Date
+  releaseYear: Year
+  adult: Boolean
+  originalLanguage: LanguageInfo
+  originalTitle: String
+  overview: String
+  runtime: Int
+  popularity: Float
+  voteAverage: Float
+  voteCount: Int
+  attributes: [ContentAttribute!]!
+  collections: [ContentCollection!]!
+  metadataSource: MetadataSource!
+  externalLinks: [ExternalLink!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ContentAttribute {
+  source: String!
+  key: String!
+  value: String!
+  metadataSource: MetadataSource!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ContentCollection {
+  type: String!
+  source: String!
+  id: String!
+  name: String!
+  metadataSource: MetadataSource!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/schema/mutation.graphqls", Input: `type Mutation {
+  torrent: TorrentMutation!
+}
+
+type TorrentMutation {
+  putTags(infoHashes: [Hash20!]!, tagNames: [String!]!): Void
+  setTags(infoHashes: [Hash20!]!, tagNames: [String!]!): Void
+  deleteTags(infoHashes: [Hash20!], tagNames: [String!]): Void
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/schema/query.graphqls", Input: `type Query {
+  torrentContent: TorrentContentQuery!
+}
+
+type TorrentContentQuery {
+  search(
+    query: SearchQueryInput
+    facets: TorrentContentFacetsInput
+  ): TorrentContentSearchResult!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/schema/scalars.graphqls", Input: `scalar Hash20
+scalar Date
+scalar DateTime
+scalar Void
+scalar Year
+`, BuiltIn: false},
+	{Name: "../../graphql/schema/search.graphqls", Input: `input SearchQueryInput {
+  queryString: String
+  limit: Int
+  offset: Int
+  totalCount: Boolean
+  cached: Boolean
+}
+
+input ContentTypeFacetInput {
+  aggregate: Boolean
+  filter: [ContentType]
+}
+
+input TorrentSourceFacetInput {
+  aggregate: Boolean
+  logic: FacetLogic
+  filter: [String!]
+}
+
+input TorrentTagFacetInput {
+  aggregate: Boolean
+  logic: FacetLogic
+  filter: [String!]
+}
+
+input TorrentFileTypeFacetInput {
+  aggregate: Boolean
+  logic: FacetLogic
+  filter: [FileType!]
+}
+
+input LanguageFacetInput {
+  aggregate: Boolean
+  filter: [Language!]
+}
+
+input GenreFacetInput {
+  aggregate: Boolean
+  logic: FacetLogic
+  filter: [String!]
+}
+
+input ReleaseYearFacetInput {
+  aggregate: Boolean
+  filter: [Year]
+}
+
+input VideoResolutionFacetInput {
+  aggregate: Boolean
+  filter: [VideoResolution]
+}
+
+input VideoSourceFacetInput {
+  aggregate: Boolean
+  filter: [VideoSource]
+}
+
+input TorrentContentFacetsInput {
+  contentType: ContentTypeFacetInput
+  torrentSource: TorrentSourceFacetInput
+  torrentTag: TorrentTagFacetInput
+  torrentFileType: TorrentFileTypeFacetInput
+  language: LanguageFacetInput
+  genre: GenreFacetInput
+  releaseYear: ReleaseYearFacetInput
+  videoResolution: VideoResolutionFacetInput
+  videoSource: VideoSourceFacetInput
+}
+
+type ContentTypeAgg {
+  value: ContentType
+  label: String!
+  count: Int!
+}
+
+type TorrentSourceAgg {
+  value: String!
+  label: String!
+  count: Int!
+}
+
+type TorrentTagAgg {
+  value: String!
+  label: String!
+  count: Int!
+}
+
+type TorrentFileTypeAgg {
+  value: FileType!
+  label: String!
+  count: Int!
+}
+
+type LanguageAgg {
+  value: Language!
+  label: String!
+  count: Int!
+}
+
+type GenreAgg {
+  value: String!
+  label: String!
+  count: Int!
+}
+
+type ReleaseYearAgg {
+  value: Year
+  label: String!
+  count: Int!
+}
+
+type VideoResolutionAgg {
+  value: VideoResolution
+  label: String!
+  count: Int!
+}
+
+type VideoSourceAgg {
+  value: VideoSource
+  label: String!
+  count: Int!
+}
+
+type TorrentContentAggregations {
+  contentType: [ContentTypeAgg!]
+  torrentSource: [TorrentSourceAgg!]
+  torrentTag: [TorrentTagAgg!]
+  torrentFileType: [TorrentFileTypeAgg!]
+  language: [LanguageAgg!]
+  genre: [GenreAgg!]
+  releaseYear: [ReleaseYearAgg!]
+  videoResolution: [VideoResolutionAgg!]
+  videoSource: [VideoSourceAgg!]
+}
+
+type TorrentContentSearchResult {
+  totalCount: Int!
+  items: [TorrentContent!]!
+  aggregations: TorrentContentAggregations!
+}
+`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
