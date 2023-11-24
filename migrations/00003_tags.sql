@@ -7,7 +7,8 @@ create table torrent_tags
   name          text                     not null,
   created_at    timestamp with time zone not null,
   updated_at    timestamp with time zone not null,
-  primary key (info_hash, name)
+  primary key (info_hash, name),
+  check (name ~ '^[a-z0-9]+(-[a-z0-9]+)*$')
 );
 create index on torrent_tags (name);
 create index on torrent_tags using gist (name gist_trgm_ops);
