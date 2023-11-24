@@ -186,9 +186,7 @@
             Magnet
           </th>
           <td mat-cell *matCellDef="let i">
-            <a href="magnet:?xt=urn:btih:{{ item(i).infoHash }}"
-              ><mat-icon svgIcon="magnet"></mat-icon
-            ></a>
+            <a href="{{ item(i).torrent.magnetUri }}"><mat-icon svgIcon="magnet"></mat-icon></a>
           </td>
         </ng-container>
 
