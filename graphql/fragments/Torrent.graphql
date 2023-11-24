@@ -16,6 +16,7 @@ fragment Torrent on Torrent {
   }
   seeders
   leechers
+  tagNames
   createdAt
   updatedAt
 }

@@ -28,6 +28,7 @@ type Torrent struct {
 	Contents     []TorrentContent        `gorm:"foreignKey:InfoHash" json:"contents"`
 	Sources      []TorrentsTorrentSource `gorm:"foreignKey:InfoHash" json:"sources"`
 	Files        []TorrentFile           `gorm:"foreignKey:InfoHash" json:"files"`
+	Tags         []TorrentTag            `gorm:"foreignKey:InfoHash" json:"tags"`
 }
 
 // TableName Torrent's table name

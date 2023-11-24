@@ -1,16 +1,16 @@
 package classifier
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/persistence"
-	"github.com/prometheus/client_golang/prometheus"
-	"go.uber.org/fx"
-	"go.uber.org/zap"
+  "github.com/bitmagnet-io/bitmagnet/internal/database/dao"
+  "github.com/bitmagnet-io/bitmagnet/internal/database/search"
+  "github.com/prometheus/client_golang/prometheus"
+  "go.uber.org/fx"
+  "go.uber.org/zap"
 )
 
 type Params struct {
 	fx.In
-	Persistence  persistence.Persistence
+	Search       search.Search
 	SubResolvers []SubResolver `group:"content_resolvers"`
 	Dao          *dao.Query
 	Logger       *zap.SugaredLogger
@@ -32,9 +32,9 @@ func New(p Params) Result {
 	})
 	return Result{
 		Classifier: classifier{
-			resolver:    collector,
-			dao:         p.Dao,
-			persistence: p.Persistence,
+			resolver: collector,
+			dao:      p.Dao,
+			search:   p.Search,
 		},
 		Duration:     collector.duration,
 		SuccessTotal: collector.successTotal,

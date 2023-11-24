@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/persistence"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
@@ -15,9 +15,9 @@ type Classifier interface {
 }
 
 type classifier struct {
-	resolver    Resolver
-	dao         *dao.Query
-	persistence persistence.Persistence
+	search   search.Search
+	resolver Resolver
+	dao      *dao.Query
 }
 
 type MissingHashesError struct {
@@ -29,12 +29,12 @@ func (e MissingHashesError) Error() string {
 }
 
 func (c classifier) Classify(ctx context.Context, infoHashes ...protocol.ID) error {
-	torrents, missingHashes, findErr := c.persistence.GetTorrents(ctx, infoHashes...)
-	if findErr != nil {
-		return findErr
+	searchResult, searchErr := c.search.TorrentsWithMissingInfoHashes(ctx, infoHashes)
+	if searchErr != nil {
+		return searchErr
 	}
-	resolved := make([]model.TorrentContent, 0, len(torrents))
-	for _, torrent := range torrents {
+	resolved := make([]model.TorrentContent, 0, len(searchResult.Torrents))
+	for _, torrent := range searchResult.Torrents {
 		var torrentContent model.TorrentContent
 		if len(torrent.Contents) > 0 {
 			torrentContent = torrent.Contents[0]
@@ -44,7 +44,7 @@ func (c classifier) Classify(ctx context.Context, infoHashes ...protocol.ID) err
 			torrentContent.Torrent.Contents = nil
 		} else {
 			torrentContent = model.TorrentContent{
-				InfoHash: infoHashes[0],
+				InfoHash: torrent.InfoHash,
 				Torrent:  torrent,
 			}
 		}
@@ -61,9 +61,9 @@ func (c classifier) Classify(ctx context.Context, infoHashes ...protocol.ID) err
 	if resolveErr := c.Persist(ctx, resolved...); resolveErr != nil {
 		return resolveErr
 	}
-	if len(missingHashes) > 0 {
+	if len(searchResult.MissingInfoHashes) > 0 {
 		return MissingHashesError{
-			InfoHashes: missingHashes,
+			InfoHashes: searchResult.MissingInfoHashes,
 		}
 	}
 	return nil

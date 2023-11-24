@@ -1,6 +1,6 @@
 #import "./TorrentContent"
 
-fragment TorrentContentResult on TorrentContentResult {
+fragment TorrentContentSearchResult on TorrentContentSearchResult {
   totalCount
   items {
     ...TorrentContent
@@ -12,6 +12,11 @@ fragment TorrentContentResult on TorrentContentResult {
       count
     }
     torrentSource {
+      value
+      label
+      count
+    }
+    torrentTag {
       value
       label
       count

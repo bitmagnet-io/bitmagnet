@@ -1,6 +1,6 @@
 # Where are all the schema files located? globs are supported eg  src/**/*.graphqls
 schema:
-  - internal/gql/schema/*.graphqls
+  - graphql/schema/*.graphqls
 
 # Where should the generated server code go?
 exec:
@@ -152,3 +152,9 @@ models:
   TorrentContentResult:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/database/search.TorrentContentResult
+  TorrentSuggestTagsResult:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/database/search.TorrentSuggestTagsResult
+  SuggestedTag:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/database/search.SuggestedTag

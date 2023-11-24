@@ -202,6 +202,7 @@ type OptionBuilder interface {
 	OrderBy(...clause.OrderByColumn) OptionBuilder
 	Limit(uint) OptionBuilder
 	Offset(uint) OptionBuilder
+	Group(...clause.Column) OptionBuilder
 	Facet(...Facet) OptionBuilder
 	Preload(...field.RelationField) OptionBuilder
 	Callback(...Callback) OptionBuilder
@@ -226,6 +227,7 @@ type optionBuilder struct {
 	scopes        []Scope
 	gormScopes    []GormScope
 	selections    []clause.Expr
+	groupBy       []clause.Column
 	orderBy       []clause.OrderByColumn
 	limit         model.NullUint
 	offset        uint
@@ -299,6 +301,11 @@ func (b optionBuilder) Select(selections ...clause.Expr) OptionBuilder {
 	return b
 }
 
+func (b optionBuilder) Group(columns ...clause.Column) OptionBuilder {
+	b.groupBy = append(b.groupBy, columns...)
+	return b
+}
+
 func (b optionBuilder) OrderBy(columns ...clause.OrderByColumn) OptionBuilder {
 	b.orderBy = append(b.orderBy, columns...)
 	return b
@@ -366,11 +373,15 @@ func (b optionBuilder) createContext(ctx context.Context) context.Context {
 }
 
 func (b optionBuilder) applySelect(sq SubQuery) error {
-	selectQueryParts := []string{"*"}
+	var selectQueryParts []string
 	selectQueryArgs := make([]interface{}, 0)
-	for _, s := range b.selections {
-		selectQueryParts = append(selectQueryParts, s.SQL)
-		selectQueryArgs = append(selectQueryArgs, s.Vars...)
+	if len(b.selections) == 0 {
+		selectQueryParts = append(selectQueryParts, "*")
+	} else {
+		for _, s := range b.selections {
+			selectQueryParts = append(selectQueryParts, s.SQL)
+			selectQueryArgs = append(selectQueryArgs, s.Vars...)
+		}
 	}
 	sq.UnderlyingDB().Select(strings.Join(selectQueryParts, ", "), selectQueryArgs...)
 	return nil
@@ -399,6 +410,11 @@ func (b optionBuilder) applyPre(sq SubQuery) error {
 	}
 	applyJoins(sq, joins...)
 	sq.UnderlyingDB().Where(rawAggC.Query, rawAggC.Args...)
+	if len(b.groupBy) > 0 {
+		sq.UnderlyingDB().Clauses(clause.GroupBy{
+			Columns: b.groupBy,
+		})
+	}
 	return nil
 }
 

@@ -1,6 +1,7 @@
 package resolvers
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/database/persistence"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 )
@@ -10,11 +11,16 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	search search.Search
+	persistence persistence.Persistence
+	search      search.Search
 }
 
-func New(search search.Search) gql.ResolverRoot {
+func New(
+	persistence persistence.Persistence,
+	search search.Search,
+) gql.ResolverRoot {
 	return &Resolver{
-		search: search,
+		persistence: persistence,
+		search:      search,
 	}
 }

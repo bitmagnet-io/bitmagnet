@@ -17,6 +17,12 @@ input TorrentSourceFacetInput {
   filter: [String!]
 }
 
+input TorrentTagFacetInput {
+  aggregate: Boolean
+  logic: FacetLogic
+  filter: [String!]
+}
+
 input TorrentFileTypeFacetInput {
   aggregate: Boolean
   logic: FacetLogic
@@ -52,6 +58,7 @@ input VideoSourceFacetInput {
 input TorrentContentFacetsInput {
   contentType: ContentTypeFacetInput
   torrentSource: TorrentSourceFacetInput
+  torrentTag: TorrentTagFacetInput
   torrentFileType: TorrentFileTypeFacetInput
   language: LanguageFacetInput
   genre: GenreFacetInput
@@ -67,6 +74,12 @@ type ContentTypeAgg {
 }
 
 type TorrentSourceAgg {
+  value: String!
+  label: String!
+  count: Int!
+}
+
+type TorrentTagAgg {
   value: String!
   label: String!
   count: Int!
@@ -111,6 +124,7 @@ type VideoSourceAgg {
 type TorrentContentAggregations {
   contentType: [ContentTypeAgg!]
   torrentSource: [TorrentSourceAgg!]
+  torrentTag: [TorrentTagAgg!]
   torrentFileType: [TorrentFileTypeAgg!]
   language: [LanguageAgg!]
   genre: [GenreAgg!]
@@ -119,19 +133,8 @@ type TorrentContentAggregations {
   videoSource: [VideoSourceAgg!]
 }
 
-type TorrentContentResult {
+type TorrentContentSearchResult {
   totalCount: Int!
   items: [TorrentContent!]!
   aggregations: TorrentContentAggregations!
-}
-
-type SearchQuery {
-  torrentContent(
-    query: SearchQueryInput
-    facets: TorrentContentFacetsInput
-  ): TorrentContentResult!
-}
-
-extend type Query {
-  search: SearchQuery!
 }

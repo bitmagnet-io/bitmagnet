@@ -113,16 +113,13 @@
           <td
             mat-cell
             *matCellDef="let i"
-            (click)="
-              expandedItem = expandedItem === i.id ? null : i.id;
-              $event.stopPropagation()
-            "
+            (click)="expandedItem.toggle(i.id); $event.stopPropagation()"
           >
             <button mat-icon-button aria-label="expand row">
-              <mat-icon *ngIf="expandedItem !== i.id"
+              <mat-icon *ngIf="expandedItem.id !== i.id"
                 >keyboard_arrow_down</mat-icon
               >
-              <mat-icon *ngIf="expandedItem === i.id"
+              <mat-icon *ngIf="expandedItem.id === i.id"
                 >keyboard_arrow_up</mat-icon
               >
             </button>
@@ -136,6 +133,12 @@
             >
             <span class="title">{{ item(i).title }}</span>
             <mat-chip-set>
+              <mat-chip
+                *ngFor="let tagName of item(i).torrent.tagNames"
+                class="chip-primary"
+              >
+                {{ tagName }}
+              </mat-chip>
               <mat-chip *ngIf="item(i).languages; let languages">
                 <ng-container *ngFor="let l of languages; index as j">
                   {{ j > 0 ? ", " : "" }}{{ l.name }}
@@ -198,9 +201,11 @@
             <div
               [class]="
                 'item-detail' +
-                (expandedItem === i.id ? ' expanded' : ' collapsed')
+                (expandedItem.id === i.id ? ' expanded' : ' collapsed')
               "
-              [@detailExpand]="expandedItem === i.id ? 'expanded' : 'collapsed'"
+              [@detailExpand]="
+                expandedItem.id === i.id ? 'expanded' : 'collapsed'
+              "
             >
               <img
                 *ngIf="
@@ -299,6 +304,77 @@
                   </tbody>
                 </table>
               </div>
+
+              <mat-divider style="clear: both"></mat-divider>
+
+              <mat-tab-group
+                animationDuration="0"
+                [selectedIndex]="expandedItem.selectedTabIndex"
+                (focusChange)="
+                  expandedItem.selectTab($event.index == 2 ? 0 : $event.index)
+                "
+                [mat-stretch-tabs]="false"
+              >
+                <mat-tab [aria-labelledby]="'hidden'"></mat-tab>
+                <mat-tab>
+                  <ng-template mat-tab-label>
+                    <mat-icon>sell</mat-icon>
+                    Edit tags
+                  </ng-template>
+
+                  <mat-form-field class="form-edit-tags">
+                    <mat-chip-grid #chipGrid aria-label="Enter tags">
+                      <mat-chip-row
+                        *ngFor="
+                          let tagName of item(i).torrent.tagNames;
+                          let j = index
+                        "
+                        [editable]="true"
+                        (edited)="expandedItem.renameTag(tagName, $event.value)"
+                        (removed)="expandedItem.deleteTag(tagName)"
+                        [aria-description]="'press enter to edit'"
+                      >
+                        {{ tagName }}
+                        <button
+                          matChipRemove
+                          [attr.aria-label]="'remove ' + tagName"
+                        >
+                          <mat-icon>cancel</mat-icon>
+                        </button>
+                      </mat-chip-row>
+                    </mat-chip-grid>
+                    <input
+                      placeholder="New tag..."
+                      [formControl]="expandedItem.newTagCtrl"
+                      [matAutocomplete]="auto"
+                      [matChipInputFor]="chipGrid"
+                      [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                      (matChipInputTokenEnd)="
+                        $event.value && expandedItem.addTag($event.value)
+                      "
+                      tagNameInput
+                    />
+                    <mat-autocomplete
+                      #auto="matAutocomplete"
+                      (optionSelected)="
+                        expandedItem.addTag($event.option.viewValue)
+                      "
+                    >
+                      <mat-option
+                        *ngFor="let tagName of expandedItem.suggestedTags"
+                        [value]="tagName"
+                        >{{ tagName }}</mat-option
+                      >
+                    </mat-autocomplete>
+                  </mat-form-field>
+                </mat-tab>
+
+                <mat-tab *ngIf="expandedItem.selectedTabIndex > 0">
+                  <ng-template mat-tab-label>
+                    <mat-icon style="margin-right: 0">close</mat-icon>
+                  </ng-template>
+                </mat-tab>
+              </mat-tab-group>
             </div>
           </td>
         </ng-container>
@@ -315,7 +391,7 @@
       <mat-paginator
         (page)="handlePageEvent($event)"
         [pageIndex]="pageIndex"
-        [length]="totalCount"
+        [length]="result.totalCount"
         [pageSize]="pageSize"
         [pageSizeOptions]="[10, 25, 50, 100]"
         [showFirstLastButtons]="true"

@@ -2,7 +2,9 @@ package model
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/regex"
+	"github.com/facette/natsort"
 	"gorm.io/gorm"
+	"sort"
 )
 
 func (t *Torrent) BeforeCreate(tx *gorm.DB) error {
@@ -124,4 +126,15 @@ func (t Torrent) HasFileType(fts ...FileType) NullBool {
 		}
 	}
 	return NewNullBool(false)
+}
+
+func (t Torrent) TagNames() []string {
+	tagNames := make([]string, 0, len(t.Tags))
+	for _, tag := range t.Tags {
+		tagNames = append(tagNames, tag.Name)
+	}
+	sort.Slice(tagNames, func(i, j int) bool {
+		return natsort.Compare(tagNames[i], tagNames[j])
+	})
+	return tagNames
 }
