@@ -26,5 +26,9 @@ func (l gooseLogger) Println(v ...interface{}) {
 }
 
 func (l gooseLogger) Printf(format string, v ...interface{}) {
-	l.l.Debugf(strings.TrimSpace(format), v...)
+	fn := l.l.Debugf
+	if strings.HasPrefix(format, "goose: successfully migrated") {
+		fn = l.l.Infof
+	}
+	fn(strings.TrimSpace(format), v...)
 }
