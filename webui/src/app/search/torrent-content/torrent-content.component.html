@@ -95,6 +95,16 @@
             </mat-option>
           </mat-select>
         </mat-form-field>
+        <div class="button-refresh">
+          <button
+            mat-mini-fab
+            title="Refresh results"
+            color="primary"
+            (click)="loadResult(false)"
+          >
+            <mat-icon>sync</mat-icon>
+          </button>
+        </div>
       </div>
       <div class="progress-bar-container" style="height: 10px">
         <mat-progress-bar
