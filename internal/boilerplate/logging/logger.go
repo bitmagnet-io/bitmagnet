@@ -1,30 +1,66 @@
 package logging
 
 import (
+	"context"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"os"
 )
 
 type Params struct {
 	fx.In
-	Config zap.Config
+	Config Config
 }
 
 type Result struct {
 	fx.Out
-	Logger *zap.Logger
-	Sugar  *zap.SugaredLogger
+	Logger  *zap.Logger
+	Sugar   *zap.SugaredLogger
+	AppHook fx.Hook `group:"app_hooks"`
 }
 
-func New(params Params) (Result, error) {
-	logger, err := params.Config.Build()
-	if err != nil {
-		return Result{}, err
+func New(params Params) Result {
+	var appHook fx.Hook
+	var encoder zapcore.Encoder
+	if params.Config.Json {
+		encoder = zapcore.NewJSONEncoder(jsonEncoderConfig)
+	} else {
+		encoder = zapcore.NewConsoleEncoder(consoleEncoderConfig)
 	}
-	sugar := logger.Sugar()
-
+	writeSyncer := zapcore.AddSync(os.Stdout)
+	opts := []zap.Option{
+		zap.AddStacktrace(zapcore.ErrorLevel),
+		zap.AddCaller(),
+	}
+	if params.Config.Development {
+		opts = append(opts, zap.Development())
+	}
+	core := zapcore.NewCore(
+		encoder,
+		writeSyncer,
+		levelToZapLevel(params.Config.Level),
+	)
+	if params.Config.FileRotator.Enabled {
+		fWriteSyncer := NewFileRotator(params.Config.FileRotator)
+		core = zapcore.NewTee(
+			core,
+			zapcore.NewCore(
+				zapcore.NewJSONEncoder(jsonEncoderConfig),
+				fWriteSyncer,
+				levelToZapLevel(params.Config.FileRotator.Level),
+			),
+		)
+		appHook = fx.Hook{
+			OnStop: func(context.Context) error {
+				return fWriteSyncer.Sync()
+			},
+		}
+	}
+	l := zap.New(core, opts...)
 	return Result{
-		Logger: logger,
-		Sugar:  sugar,
-	}, nil
+		Logger:  l,
+		Sugar:   l.Sugar(),
+		AppHook: appHook,
+	}
 }

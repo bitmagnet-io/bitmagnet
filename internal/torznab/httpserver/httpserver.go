@@ -33,8 +33,8 @@ type builder struct {
 	client torznab.Client
 }
 
-func (b builder) Priority() int {
-	return 0
+func (builder) Key() string {
+	return "torznab"
 }
 
 func (b builder) Apply(e *gin.Engine) error {

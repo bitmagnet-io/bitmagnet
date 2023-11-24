@@ -3,90 +3,129 @@ package persistence
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"gorm.io/gorm/clause"
+	"strings"
 )
 
 type TorrentPersistence interface {
-	GetTorrent(ctx context.Context, infoHash model.Hash20) (torrent model.Torrent, err error)
-	GetTorrents(ctx context.Context, infoHashes ...model.Hash20) (torrents []model.Torrent, missingInfoHashes []model.Hash20, err error)
-	PutTorrent(ctx context.Context, torrent model.Torrent) error
-	TorrentExists(ctx context.Context, infoHash model.Hash20) (bool, error)
-	// GetPersistedInfoHashes returns the subset of provided hashes that are persisted in the database.
-	GetPersistedInfoHashes(ctx context.Context, infoHashesToCheck []model.Hash20) ([]model.Hash20, error)
+	PutTorrentTags(ctx context.Context, infoHashes []protocol.ID, tagNames []string) error
+	SetTorrentTags(ctx context.Context, infoHashes []protocol.ID, tagNames []string) error
+	DeleteTorrentTags(ctx context.Context, infoHashes []protocol.ID, tagNames []string) error
 }
 
-func (p *persistence) GetTorrent(ctx context.Context, infoHash model.Hash20) (t model.Torrent, _ error) {
-	torrents, _, err := p.GetTorrents(ctx, infoHash)
-	if err != nil {
-		return t, err
+func (p *persistence) PutTorrentTags(ctx context.Context, infoHashes []protocol.ID, tagNames []string) error {
+	if len(infoHashes) == 0 || len(tagNames) == 0 {
+		return nil
 	}
-	if len(torrents) == 0 {
-		return t, ErrRecordNotFound
+	tagMap := make(map[string]struct{}, len(tagNames))
+	for _, tagName := range tagNames {
+		if validateErr := model.ValidateTagName(tagName); validateErr != nil {
+			return validateErr
+		}
+		tagMap[tagName] = struct{}{}
 	}
-	return torrents[0], nil
-}
-
-func (p *persistence) GetTorrents(ctx context.Context, infoHashes ...model.Hash20) ([]model.Torrent, []model.Hash20, error) {
+	hashMap := make(map[protocol.ID]struct{}, len(infoHashes))
 	valuers := make([]driver.Valuer, 0, len(infoHashes))
+	torrentTags := make([]*model.TorrentTag, 0, len(infoHashes)*len(tagMap))
 	for _, infoHash := range infoHashes {
-		valuers = append(valuers, infoHash)
-	}
-	rawTorrents, findErr := p.q.WithContext(ctx).Torrent.Where(p.q.Torrent.InfoHash.In(valuers...)).Preload(
-		p.q.Torrent.Files.RelationField.Order(
-			p.q.TorrentFile.Index,
-		),
-		p.q.Torrent.Sources.RelationField,
-		p.q.Torrent.Contents.RelationField.Order(
-			p.q.TorrentContent.ContentType.IsNotNull(),
-			p.q.TorrentContent.ContentID.IsNotNull(),
-		),
-	).Find()
-	if findErr != nil {
-		return nil, nil, findErr
-	}
-	torrents := make([]model.Torrent, 0, len(rawTorrents))
-	missingInfoHashes := make([]model.Hash20, 0, len(infoHashes)-len(rawTorrents))
-	foundInfoHashes := make(map[model.Hash20]struct{}, len(rawTorrents))
-nextInfoHash:
-	for _, h := range infoHashes {
-		for _, t := range rawTorrents {
-			if t.InfoHash == h {
-				if _, ok := foundInfoHashes[h]; ok {
-					continue nextInfoHash
-				}
-				foundInfoHashes[h] = struct{}{}
-				torrents = append(torrents, *t)
-				continue nextInfoHash
+		if _, ok := hashMap[infoHash]; !ok {
+			hashMap[infoHash] = struct{}{}
+			valuers = append(valuers, infoHash)
+			for tagName := range tagMap {
+				torrentTags = append(torrentTags, &model.TorrentTag{
+					InfoHash: infoHash,
+					Name:     tagName,
+				})
 			}
 		}
-		missingInfoHashes = append(missingInfoHashes, h)
 	}
-	return torrents, missingInfoHashes, nil
+	return p.q.Transaction(func(tx *dao.Query) error {
+		var existingHashes []protocol.ID
+		if existingErr := tx.Torrent.WithContext(ctx).Where(
+			tx.Torrent.InfoHash.In(valuers...),
+		).Pluck(tx.Torrent.InfoHash, &existingHashes); existingErr != nil {
+			return existingErr
+		}
+		var missingHashes []string
+		for _, infoHash := range infoHashes {
+			found := false
+			for _, existingHash := range existingHashes {
+				if infoHash == existingHash {
+					found = true
+					break
+				}
+			}
+			if !found {
+				missingHashes = append(missingHashes, infoHash.String())
+			}
+		}
+		if len(missingHashes) > 0 {
+			return errors.New("missing torrents: " + strings.Join(missingHashes, ", "))
+		}
+		return tx.TorrentTag.WithContext(ctx).Clauses(clause.OnConflict{
+			DoNothing: true,
+		}).CreateInBatches(torrentTags, 100)
+	})
 }
 
-func (p *persistence) PutTorrent(ctx context.Context, torrent model.Torrent) error {
-	return p.q.WithContext(ctx).Torrent.Clauses(clause.OnConflict{
-		UpdateAll: true,
-	}).Create(&torrent)
+func (p *persistence) SetTorrentTags(ctx context.Context, infoHashes []protocol.ID, tagNames []string) error {
+	if len(infoHashes) == 0 {
+		return nil
+	}
+	tagMap := make(map[string]struct{}, len(tagNames))
+	for _, tagName := range tagNames {
+		if validateErr := model.ValidateTagName(tagName); validateErr != nil {
+			return validateErr
+		}
+		tagMap[tagName] = struct{}{}
+	}
+	hashMap := make(map[protocol.ID]struct{}, len(infoHashes))
+	valuers := make([]driver.Valuer, 0, len(infoHashes))
+	torrentTags := make([]*model.TorrentTag, 0, len(infoHashes)*len(tagMap))
+	for _, infoHash := range infoHashes {
+		if _, ok := hashMap[infoHash]; !ok {
+			hashMap[infoHash] = struct{}{}
+			valuers = append(valuers, infoHash)
+			for tagName := range tagMap {
+				torrentTags = append(torrentTags, &model.TorrentTag{
+					InfoHash: infoHash,
+					Name:     tagName,
+				})
+			}
+		}
+	}
+	return p.q.Transaction(func(tx *dao.Query) error {
+		if _, deleteErr := tx.TorrentTag.WithContext(ctx).Where(
+			tx.TorrentTag.InfoHash.In(valuers...),
+			tx.TorrentTag.Name.NotIn(tagNames...),
+		).Delete(); deleteErr != nil {
+			return deleteErr
+		}
+		return tx.TorrentTag.WithContext(ctx).Clauses(clause.OnConflict{
+			DoNothing: true,
+		}).CreateInBatches(torrentTags, 100)
+	})
 }
 
-func (p *persistence) TorrentExists(ctx context.Context, infoHash model.Hash20) (bool, error) {
-	count, err := p.q.WithContext(ctx).Torrent.Where(p.q.Torrent.InfoHash.Eq(infoHash)).Count()
-	if err != nil {
-		return false, err
+func (p *persistence) DeleteTorrentTags(ctx context.Context, infoHashes []protocol.ID, tagNames []string) error {
+	if len(infoHashes) == 0 && len(tagNames) == 0 {
+		return nil
 	}
-	return count > 0, nil
-}
-
-func (p *persistence) GetPersistedInfoHashes(ctx context.Context, infoHashesToCheck []model.Hash20) ([]model.Hash20, error) {
-	valuers := make([]driver.Valuer, 0, len(infoHashesToCheck))
-	for _, infoHash := range infoHashesToCheck {
-		valuers = append(valuers, infoHash)
+	q := p.q.TorrentTag.WithContext(ctx)
+	if len(infoHashes) > 0 {
+		valuers := make([]driver.Valuer, 0, len(infoHashes))
+		for _, infoHash := range infoHashes {
+			valuers = append(valuers, infoHash)
+		}
+		q = q.Where(p.q.TorrentTag.InfoHash.In(valuers...))
 	}
-	var persistedInfoHashes []model.Hash20
-	if err := p.q.WithContext(ctx).Torrent.Where(p.q.Torrent.InfoHash.In(valuers...)).Pluck(p.q.Torrent.InfoHash, &persistedInfoHashes); err != nil {
-		return nil, err
+	if len(tagNames) > 0 {
+		q = q.Where(p.q.TorrentTag.Name.In(tagNames...))
 	}
-	return persistedInfoHashes, nil
+	_, err := q.Delete()
+	return err
 }

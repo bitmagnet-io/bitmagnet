@@ -28,7 +28,7 @@ func New(p Params) (r Result, err error) {
 		ZapLogger: p.Logger,
 		Config: gorm2.Config{
 			LogLevel:      gormlogger.Info,
-			SlowThreshold: time.Second,
+			SlowThreshold: time.Second * 3,
 		},
 	})
 	if loggerErr != nil {

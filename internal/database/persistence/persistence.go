@@ -3,12 +3,10 @@ package persistence
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"go.uber.org/fx"
-	"gorm.io/gorm"
 )
 
 type Persistence interface {
 	TorrentPersistence
-	ContentPersistence
 }
 
 type persistence struct {
@@ -32,5 +30,3 @@ func New(params Params) (Result, error) {
 		},
 	}, nil
 }
-
-var ErrRecordNotFound = gorm.ErrRecordNotFound

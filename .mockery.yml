@@ -1,0 +1,12 @@
+with-expecter: True
+dir: "{{.InterfaceDirRelative}}/mocks"
+mockname: "{{.InterfaceName}}"
+outpkg: "{{.PackageName}}_mocks"
+filename: "{{.InterfaceName}}.go"
+packages:
+  github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable:
+    interfaces:
+      Table:
+  github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/responder:
+    interfaces:
+      Limiter:

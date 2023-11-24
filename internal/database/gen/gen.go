@@ -41,7 +41,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		},
 	})
 
-	infoHashType := gen.FieldType("info_hash", "Hash20")
+	infoHashType := gen.FieldType("info_hash", "protocol.ID")
 	infoHashReadOnly := readAndCreateField("info_hash")
 	createdAtReadOnly := readAndCreateField("created_at")
 
@@ -58,6 +58,14 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		infoHashReadOnly,
 		gen.FieldType("size", "uint64"),
 		gen.FieldType("index", "uint32"),
+		gen.FieldGORMTag("index", func(tag field.GormTag) field.GormTag {
+			tag.Set("<-", "create")
+			return tag
+		}),
+		gen.FieldGORMTag("path", func(tag field.GormTag) field.GormTag {
+			tag.Set("<-", "create")
+			return tag
+		}),
 		gen.FieldGenType("extension", "String"),
 		gen.FieldGORMTag("extension", func(tag field.GormTag) field.GormTag {
 			tag.Set("<-", "false")
@@ -82,6 +90,17 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 				},
 			},
 		),
+		createdAtReadOnly,
+	)
+	torrentTags := g.GenerateModel(
+		"torrent_tags",
+		infoHashType,
+		infoHashReadOnly,
+		gen.FieldGenType("name", "String"),
+		gen.FieldGORMTag("name", func(tag field.GormTag) field.GormTag {
+			tag.Set("<-", "create")
+			return tag
+		}),
 		createdAtReadOnly,
 	)
 	torrents := g.GenerateModel(
@@ -114,6 +133,17 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 			field.HasMany,
 			"Files",
 			torrentFiles,
+			&field.RelateConfig{
+				RelateSlice: true,
+				GORMTag: field.GormTag{
+					"foreignKey": []string{"InfoHash"},
+				},
+			},
+		),
+		gen.FieldRelate(
+			field.HasMany,
+			"Tags",
+			torrentTags,
 			&field.RelateConfig{
 				RelateSlice: true,
 				GORMTag: field.GormTag{
@@ -306,6 +336,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		torrentSources,
 		torrentFiles,
 		torrentsTorrentSources,
+		torrentTags,
 		torrents,
 		metadataSources,
 		torrentContent,

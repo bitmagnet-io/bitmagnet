@@ -61,6 +61,12 @@ func newTorrent(db *gorm.DB, opts ...gen.DOOption) torrent {
 		RelationField: field.NewRelation("Files", "model.TorrentFile"),
 	}
 
+	_torrent.Tags = torrentHasManyTags{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Tags", "model.TorrentTag"),
+	}
+
 	_torrent.fillFieldMap()
 
 	return _torrent
@@ -86,6 +92,8 @@ type torrent struct {
 	Sources torrentHasManySources
 
 	Files torrentHasManyFiles
+
+	Tags torrentHasManyTags
 
 	fieldMap map[string]field.Expr
 }
@@ -129,7 +137,7 @@ func (t *torrent) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (t *torrent) fillFieldMap() {
-	t.fieldMap = make(map[string]field.Expr, 14)
+	t.fieldMap = make(map[string]field.Expr, 15)
 	t.fieldMap["info_hash"] = t.InfoHash
 	t.fieldMap["name"] = t.Name
 	t.fieldMap["size"] = t.Size
@@ -368,6 +376,77 @@ func (a torrentHasManyFilesTx) Clear() error {
 }
 
 func (a torrentHasManyFilesTx) Count() int64 {
+	return a.tx.Count()
+}
+
+type torrentHasManyTags struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a torrentHasManyTags) Where(conds ...field.Expr) *torrentHasManyTags {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a torrentHasManyTags) WithContext(ctx context.Context) *torrentHasManyTags {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a torrentHasManyTags) Session(session *gorm.Session) *torrentHasManyTags {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a torrentHasManyTags) Model(m *model.Torrent) *torrentHasManyTagsTx {
+	return &torrentHasManyTagsTx{a.db.Model(m).Association(a.Name())}
+}
+
+type torrentHasManyTagsTx struct{ tx *gorm.Association }
+
+func (a torrentHasManyTagsTx) Find() (result []*model.TorrentTag, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a torrentHasManyTagsTx) Append(values ...*model.TorrentTag) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a torrentHasManyTagsTx) Replace(values ...*model.TorrentTag) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a torrentHasManyTagsTx) Delete(values ...*model.TorrentTag) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a torrentHasManyTagsTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a torrentHasManyTagsTx) Count() int64 {
 	return a.tx.Count()
 }
 

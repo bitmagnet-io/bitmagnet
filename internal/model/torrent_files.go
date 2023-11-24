@@ -1,9 +1,18 @@
 package model
 
 import (
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"regexp"
 	"strings"
 )
+
+func (f *TorrentFile) BeforeCreate(tx *gorm.DB) (err error) {
+	tx.Statement.AddClause(clause.OnConflict{
+		DoNothing: true,
+	})
+	return nil
+}
 
 var fileExtensionRegex = regexp.MustCompile(`[^/.]\.([a-z0-9]+)$`)
 

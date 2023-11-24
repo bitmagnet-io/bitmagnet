@@ -1,8 +1,9 @@
 package logging
 
 import (
-	"go.uber.org/zap"
+	"github.com/adrg/xdg"
 	"go.uber.org/zap/zapcore"
+	"path"
 	"strings"
 	"time"
 )
@@ -11,54 +12,35 @@ type Config struct {
 	Level       string
 	Development bool
 	Json        bool
+	FileRotator FileRotatorConfig
 }
 
-func NewDefault() Config {
+type FileRotatorConfig struct {
+	Enabled    bool
+	Level      string
+	Path       string
+	BaseName   string
+	MaxAge     time.Duration
+	MaxSize    int
+	MaxBackups int
+	BufferSize int
+}
+
+func NewDefaultConfig() Config {
 	return Config{
 		Level:       "info",
 		Development: false,
 		Json:        false,
-	}
-}
-
-func NewZapConfig(c Config) zap.Config {
-	var zc zap.Config
-	if c.Development {
-		zc = NewDevelopmentConfig()
-	} else {
-		zc = NewProductionConfig()
-	}
-	if c.Level != "" {
-		zc.Level = zap.NewAtomicLevelAt(levelToZapLevel(c.Level))
-	}
-	if c.Json {
-		zc.Encoding = encodingJSON
-		zc.EncoderConfig = jsonEncoderConfig
-	} else {
-		zc.Encoding = encodingConsole
-		zc.EncoderConfig = consoleEncoderConfig
-	}
-	return zc
-}
-
-func NewDevelopmentConfig() zap.Config {
-	return zap.Config{
-		Level:            zap.NewAtomicLevelAt(zap.DebugLevel),
-		Development:      true,
-		Encoding:         encodingConsole,
-		EncoderConfig:    consoleEncoderConfig,
-		OutputPaths:      outputStderr,
-		ErrorOutputPaths: outputStderr,
-	}
-}
-
-func NewProductionConfig() zap.Config {
-	return zap.Config{
-		Level:            zap.NewAtomicLevelAt(zap.InfoLevel),
-		Encoding:         encodingJSON,
-		EncoderConfig:    jsonEncoderConfig,
-		OutputPaths:      outputStderr,
-		ErrorOutputPaths: outputStderr,
+		FileRotator: FileRotatorConfig{
+			Enabled:    false,
+			Level:      "debug",
+			Path:       path.Join(xdg.DataHome, "bitmagnet", "logs"),
+			BaseName:   "bitmagnet",
+			MaxAge:     time.Minute * 60,
+			MaxSize:    1_000_000 * 100,
+			BufferSize: 1_000,
+			MaxBackups: 5,
+		},
 	}
 }
 
@@ -77,9 +59,6 @@ const (
 	levelCritical  = "CRITICAL"
 	levelAlert     = "ALERT"
 	levelEmergency = "EMERGENCY"
-
-	encodingConsole = "console"
-	encodingJSON    = "json"
 )
 
 var jsonEncoderConfig = zapcore.EncoderConfig{
@@ -162,5 +141,3 @@ func timeEncoder() zapcore.TimeEncoder {
 		enc.AppendString(t.Format(time.RFC3339Nano))
 	}
 }
-
-var outputStderr = []string{"stderr"}

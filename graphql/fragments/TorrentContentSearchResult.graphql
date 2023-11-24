@@ -1,0 +1,55 @@
+#import "./TorrentContent"
+
+fragment TorrentContentSearchResult on TorrentContentSearchResult {
+  totalCount
+  items {
+    ...TorrentContent
+  }
+  aggregations {
+    contentType {
+      value
+      label
+      count
+    }
+    torrentSource {
+      value
+      label
+      count
+    }
+    torrentTag {
+      value
+      label
+      count
+    }
+    torrentFileType {
+      value
+      label
+      count
+    }
+    language {
+      value
+      label
+      count
+    }
+    genre {
+      value
+      label
+      count
+    }
+    releaseYear {
+      value
+      label
+      count
+    }
+    videoResolution {
+      value
+      label
+      count
+    }
+    videoSource {
+      value
+      label
+      count
+    }
+  }
+}

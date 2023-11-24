@@ -102,6 +102,22 @@ func QueryString(str string) Option {
 	}
 }
 
+func Select(columns ...clause.Expr) Option {
+	return func(ctx OptionBuilder) (OptionBuilder, error) {
+		return ctx.Select(columns...), nil
+	}
+}
+
+func SelectAll() Option {
+	return Select(clause.Expr{SQL: "*"})
+}
+
+func Group(columns ...clause.Column) Option {
+	return func(ctx OptionBuilder) (OptionBuilder, error) {
+		return ctx.Group(columns...), nil
+	}
+}
+
 func Limit(n uint) Option {
 	return func(ctx OptionBuilder) (OptionBuilder, error) {
 		return ctx.Limit(n), nil

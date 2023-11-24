@@ -1,0 +1,6 @@
+issues:
+  exclude-rules:
+    # For some reason this picks up a lot of false positives for methods on generic types:
+    - path: 'internal/protocol/dht/ktable/(.+)\.go'
+      linters:
+        - unused

@@ -1,0 +1,42 @@
+apiVersion: 1
+datasources:
+  - name: Loki
+    type: loki
+    access: proxy
+    orgId: 1
+    url: http://loki:3100
+    basicAuth: false
+    version: 1
+    editable: false
+  - name: Pyroscope
+    type: phlare
+    basicAuth: false
+    editable: false
+    access: proxy
+    uid: phlare
+    url: http://pyroscope:4040
+    version: 1
+    jsonData:
+      minStep: "15s"
+      backendType: "pyroscope"
+  - name: Postgres
+    type: postgres
+    url: postgres:5432
+    user: postgres
+    editable: false
+    secureJsonData:
+      password: postgres
+    jsonData:
+      database: bitmagnet
+      sslmode: "disable" # disable/require/verify-ca/verify-full
+      maxOpenConns: 100 # Grafana v5.4+
+      maxIdleConns: 100 # Grafana v5.4+
+      maxIdleConnsAuto: true # Grafana v9.5.1+
+      connMaxLifetime: 14400 # Grafana v5.4+
+      postgresVersion: 1000 # 903=9.3, 904=9.4, 905=9.5, 906=9.6, 1000=10
+      timescaledb: false
+  - name: Prometheus
+    type: prometheus
+    url: http://prometheus:9090
+    access: proxy
+    editable: false

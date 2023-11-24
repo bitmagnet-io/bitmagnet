@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: bitmagnet
+    static_configs:
+      - targets: ["bitmagnet:3333"]
+  - job_name: postgres
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

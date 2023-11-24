@@ -1,0 +1,29 @@
+type Query {
+  torrent: TorrentQuery!
+  torrentContent: TorrentContentQuery!
+}
+
+type TorrentQuery {
+  suggestTags(query: SuggestTagsQueryInput): TorrentSuggestTagsResult!
+}
+
+input SuggestTagsQueryInput {
+  prefix: String
+  exclusions: [String!]
+}
+
+type TorrentSuggestTagsResult {
+  suggestions: [SuggestedTag!]!
+}
+
+type SuggestedTag {
+  name: String!
+  count: Int!
+}
+
+type TorrentContentQuery {
+  search(
+    query: SearchQueryInput
+    facets: TorrentContentFacetsInput
+  ): TorrentContentSearchResult!
+}

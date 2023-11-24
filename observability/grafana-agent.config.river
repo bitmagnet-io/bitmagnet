@@ -1,0 +1,85 @@
+pyroscope.write "default" {
+  endpoint {
+    url = "http://pyroscope:4040"
+  }
+}
+
+pyroscope.scrape "default_settings" {
+  targets    = [ { "__address__" = "bitmagnet:3333", "service_name" = "bitmagnet" } ]
+  forward_to = [pyroscope.write.default.receiver]
+  job_name = "bitmagnet"
+  profiling_config {
+    profile.goroutine {
+      enabled = true
+      path = "/debug/pprof/goroutine"
+      delta = false
+    }
+    profile.process_cpu {
+      enabled = true
+      path = "/debug/pprof/profile"
+      delta = true
+    }
+    profile.godeltaprof_memory {
+      enabled = true
+      path = "/debug/pprof/delta_heap"
+    }
+    profile.memory {
+      enabled = true
+      path = "/debug/pprof/heap"
+      delta = false
+    }
+    profile.godeltaprof_mutex {
+      enabled = true
+      path = "/debug/pprof/delta_mutex"
+    }
+    profile.mutex {
+      enabled = true
+      path = "/debug/pprof/mutex"
+      delta = false
+    }
+    profile.godeltaprof_block {
+      enabled = true
+      path = "/debug/pprof/delta_block"
+    }
+    profile.block {
+      enabled = true
+      path = "/debug/pprof/block"
+      delta = false
+    }
+  }
+}
+
+local.file_match "bitmagnet" {
+	path_targets = [{
+		__address__ = "localhost",
+		__path__    = "/var/log/bitmagnet/*.log",
+		job         = "bitmagnet",
+	}]
+}
+
+loki.process "bitmagnet" {
+	forward_to = [loki.write.default.receiver]
+
+	stage.json {
+		expressions = {
+			time = "timestamp",
+		}
+	}
+
+	stage.timestamp {
+		source = "time"
+		format = "2006-01-02T15:04:05.999999999Z07:00"
+	}
+}
+
+loki.source.file "bitmagnet" {
+	targets    = local.file_match.bitmagnet.targets
+	forward_to = [loki.process.bitmagnet.receiver]
+}
+
+loki.write "default" {
+	endpoint {
+		url = "http://loki:3100/loki/api/v1/push"
+	}
+	external_labels = {}
+}

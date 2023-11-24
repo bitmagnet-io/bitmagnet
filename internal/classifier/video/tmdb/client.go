@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpclient/httplogger"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpclient/httpratelimiter"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/persistence"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/cyruzin/golang-tmdb"
 	"go.uber.org/fx"
@@ -15,10 +14,9 @@ import (
 
 type Params struct {
 	fx.In
-	Config      Config
-	Logger      *zap.SugaredLogger
-	Search      search.Search
-	Persistence persistence.Persistence
+	Config Config
+	Logger *zap.SugaredLogger
+	Search search.Search
 }
 
 type Result struct {
@@ -42,6 +40,10 @@ func New(p Params) (r Result, err error) {
 		logger.Warnln("you are using the default TMDB api key; TMDB requests will be limited to 1 per second; to remove this warning please configure a personal TMDB api key")
 	}
 	httpClient := http.Client{
+		// need to set a non-zero value as the underlying client unfortunately sets 10 seconds as the default if none is provided;
+		// this does not work well with the rate limiter; a 30 second timeout fixes this assuming a concurrency of 10 on the queue
+		// (and a maximum of 2 TMDB requests per classification)
+		Timeout: time.Second * 30,
 		Transport: httpratelimiter.NewDecorator(
 			rateLimit,
 			rateLimitBurst,
@@ -57,7 +59,6 @@ func New(p Params) (r Result, err error) {
 	}
 	r.Client = &client{
 		c: c,
-		p: p.Persistence,
 		s: p.Search,
 	}
 	r.TmdbClient = c
@@ -67,7 +68,6 @@ func New(p Params) (r Result, err error) {
 type client struct {
 	c *tmdb.Client
 	s search.Search
-	p persistence.Persistence
 }
 
 const SourceTmdb = "tmdb"

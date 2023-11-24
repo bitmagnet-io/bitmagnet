@@ -1,6 +1,14 @@
 import { AfterContentInit, AfterViewInit, Component } from "@angular/core";
 import { PageEvent } from "@angular/material/paginator";
-import { interval, startWith, Subscription, tap } from "rxjs";
+import {
+  BehaviorSubject,
+  catchError,
+  EMPTY,
+  interval,
+  startWith,
+  Subscription,
+  tap,
+} from "rxjs";
 import { FormControl } from "@angular/forms";
 import {
   animate,
@@ -9,17 +17,12 @@ import {
   transition,
   trigger,
 } from "@angular/animations";
-import { MatSnackBar } from "@angular/material/snack-bar";
+import { COMMA, ENTER } from "@angular/cdk/keycodes";
 import * as generated from "../../graphql/generated";
-import { TorrentContentService } from "./torrent-content.service";
+import { GraphQLService } from "../../graphql/graphql.service";
+import { AppErrorsService } from "../../app-errors.service";
 import { TorrentContentDataSource } from "./torrent-content.datasource";
 import { Facet } from "./facet";
-
-type ContentTypeInfo = {
-  singular: string;
-  plural: string;
-  icon: string;
-};
 
 @Component({
   selector: "app-torrent-content",
@@ -39,15 +42,21 @@ type ContentTypeInfo = {
 export class TorrentContentComponent
   implements AfterContentInit, AfterViewInit
 {
-  dataSource: TorrentContentDataSource;
+  dataSource: TorrentContentDataSource = new TorrentContentDataSource(
+    this.graphQLService,
+    this.errorsService,
+  );
   displayedColumns = ["summary", "size", "peers", "magnet"];
   queryString = new FormControl("");
 
   pageIndex = 0;
   pageSize = 10;
 
-  aggregations: generated.TorrentContentResult["aggregations"] = {};
-  totalCount = 0;
+  result: generated.TorrentContentSearchResult = {
+    items: [],
+    aggregations: {},
+    totalCount: 0,
+  };
   loading = true;
 
   contentTypes: Record<generated.ContentType | "null", ContentTypeInfo> = {
@@ -103,9 +112,8 @@ export class TorrentContentComponent
     undefined,
   );
 
-  expandedItem: string | null = null;
-
   torrentSourceFacet: Facet<string, false>;
+  torrentTagFacet: Facet<string, false>;
   torrentFileTypeFacet: Facet<generated.FileType, false>;
   languageFacet: Facet<generated.Language, false>;
   genreFacet: Facet<string, false>;
@@ -118,41 +126,27 @@ export class TorrentContentComponent
   autoRefreshIntervals = [0, 10, 30];
   autoRefreshSubscription: Subscription | undefined;
 
+  readonly separatorKeysCodes = [ENTER, COMMA] as const;
+
   constructor(
-    private torrentContentService: TorrentContentService,
-    private errorSnackBar: MatSnackBar,
+    private graphQLService: GraphQLService,
+    private errorsService: AppErrorsService,
   ) {
-    this.dataSource = new TorrentContentDataSource(this.torrentContentService);
-    this.dataSource.error.subscribe((error: Error | undefined) => {
-      if (error) {
-        this.errorSnackBar.open(
-          `Error fetching results: ${error.message}`,
-          "Dismiss",
-          {
-            panelClass: ["snack-bar-error"],
-          },
-        );
-      } else {
-        this.errorSnackBar.dismiss();
-      }
+    this.dataSource.result.subscribe((result) => {
+      this.result = result;
     });
-    this.dataSource.items.subscribe((items) => {
-      if (this.expandedItem && !items.some((i) => i.id === this.expandedItem)) {
-        this.expandedItem = null;
-      }
-    });
-    this.dataSource.aggregations.subscribe((aggregations) => {
-      this.aggregations = aggregations;
-    });
-    this.dataSource.totalCount.subscribe(
-      (totalCount) => (this.totalCount = totalCount),
-    );
     this.dataSource.loading.subscribe((loading) => (this.loading = loading));
     this.torrentSourceFacet = new Facet<string, false>(
       "Torrent Source",
       "mediation",
       null,
       this.dataSource.torrentSourceAggs,
+    );
+    this.torrentTagFacet = new Facet<string, false>(
+      "Torrent Tag",
+      "sell",
+      null,
+      this.dataSource.torrentTagAggs,
     );
     this.torrentFileTypeFacet = new Facet<generated.FileType, false>(
       "File Type",
@@ -163,7 +157,7 @@ export class TorrentContentComponent
     this.languageFacet = new Facet<generated.Language, false>(
       "Language",
       "translate",
-      ["movie", "tv_show"],
+      null,
       this.dataSource.languageAggs,
     );
     this.genreFacet = new Facet<string, false>(
@@ -175,17 +169,18 @@ export class TorrentContentComponent
     this.videoResolutionFacet = new Facet<generated.VideoResolution>(
       "Video Resolution",
       "screenshot_monitor",
-      ["movie", "tv_show"],
+      ["movie", "tv_show", "xxx"],
       this.dataSource.videoResolutionAggs,
     );
     this.videoSourceFacet = new Facet<generated.VideoSource>(
       "Video Source",
       "album",
-      ["movie", "tv_show"],
+      ["movie", "tv_show", "xxx"],
       this.dataSource.videoSourceAggs,
     );
     this.facets = [
       this.torrentSourceFacet,
+      this.torrentTagFacet,
       this.torrentFileTypeFacet,
       this.languageFacet,
       this.videoResolutionFacet,
@@ -240,6 +235,7 @@ export class TorrentContentComponent
           })(),
         },
         torrentSource: this.torrentSourceFacet.facetParams(),
+        torrentTag: this.torrentTagFacet.facetParams(),
         torrentFileType: this.torrentFileTypeFacet.facetParams(),
         language: this.languageFacet.facetParams(),
         genre: this.genreFacet.facetParams(),
@@ -267,7 +263,7 @@ export class TorrentContentComponent
   }
 
   contentTypeAgg(v: unknown) {
-    const ct = this.aggregations.contentType;
+    const ct = this.result.aggregations.contentType;
     if (ct) {
       return ct.find((a) => (a.value ?? "null") === v);
     }
@@ -293,4 +289,132 @@ export class TorrentContentComponent
       .map((a) => a.name);
     return collections?.length ? collections.sort() : undefined;
   }
+
+  expandedItem = new (class {
+    private itemSubject = new BehaviorSubject<
+      generated.TorrentContent | undefined
+    >(undefined);
+    newTagCtrl = new FormControl<string>("");
+    private editedTagsSubject = new BehaviorSubject<string[] | undefined>(
+      undefined,
+    );
+    public readonly suggestedTags = Array<string>();
+    public selectedTabIndex = 0;
+
+    constructor(private ds: TorrentContentComponent) {
+      ds.dataSource.result.subscribe((result) => {
+        const item = this.itemSubject.getValue();
+        if (!item) {
+          return;
+        }
+        const nextItem = result.items.find((i) => i.id === item.id);
+        this.itemSubject.next(nextItem);
+      });
+      this.newTagCtrl.valueChanges.subscribe((value) => {
+        return ds.graphQLService
+          .torrentSuggestTags({
+            query: {
+              prefix: value,
+              exclusions: this.itemSubject.getValue()?.torrent.tagNames,
+            },
+          })
+          .pipe(
+            tap((result) => {
+              this.suggestedTags.splice(
+                0,
+                this.suggestedTags.length,
+                ...result.suggestions.map((t) => t.name),
+              );
+            }),
+          )
+          .subscribe();
+      });
+    }
+
+    get id(): string | undefined {
+      return this.itemSubject.getValue()?.id;
+    }
+
+    toggle(id?: string): void {
+      if (id === this.id) {
+        id = undefined;
+      }
+      const nextItem = this.ds.result.items.find((i) => i.id === id);
+      const current = this.itemSubject.getValue();
+      if (current?.id !== id) {
+        this.itemSubject.next(nextItem);
+        this.editedTagsSubject.next(undefined);
+        this.newTagCtrl.reset();
+        this.selectedTabIndex = 0;
+      }
+    }
+
+    selectTab(index: number): void {
+      this.selectedTabIndex = index;
+    }
+
+    addTag(tagName: string) {
+      this.editTags((tags) => [...tags, tagName]);
+      this.saveTags();
+    }
+
+    renameTag(oldTagName: string, newTagName: string) {
+      this.editTags((tags) =>
+        tags.map((t) => (t === oldTagName ? newTagName : t)),
+      );
+      this.saveTags();
+    }
+
+    deleteTag(tagName: string) {
+      this.editTags((tags) => tags.filter((t) => t !== tagName));
+      this.saveTags();
+    }
+
+    private editTags(fn: (tagNames: string[]) => string[]) {
+      const item = this.itemSubject.getValue();
+      if (!item) {
+        return;
+      }
+      const editedTags =
+        this.editedTagsSubject.getValue() ?? item.torrent.tagNames;
+      this.editedTagsSubject.next(fn(editedTags));
+      this.newTagCtrl.reset();
+    }
+
+    saveTags(): void {
+      const expanded = this.itemSubject.getValue();
+      if (!expanded) {
+        return;
+      }
+      const editedTags = this.editedTagsSubject.getValue();
+      if (!editedTags) {
+        return;
+      }
+      this.ds.graphQLService
+        .torrentSetTags({
+          infoHashes: [expanded.infoHash],
+          tagNames: editedTags ?? [],
+        })
+        .pipe(
+          catchError((err: Error) => {
+            this.ds.errorsService.addError(`Error saving tags: ${err.message}`);
+            this.editedTagsSubject.next(undefined);
+            return EMPTY;
+          }),
+        )
+        .pipe(
+          tap(() => {
+            this.editedTagsSubject.next(undefined);
+            this.ds.dataSource.refreshResult();
+          }),
+        )
+        .subscribe();
+    }
+  })(this);
 }
+
+type ContentTypeInfo = {
+  singular: string;
+  plural: string;
+  icon: string;
+};

@@ -4,60 +4,37 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier/resolver"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/persistence"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
-	"go.uber.org/fx"
-	"go.uber.org/zap"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
-type Params struct {
-	fx.In
-	Persistence persistence.Persistence
-	Resolver    resolver.RootResolver
-	Logger      *zap.SugaredLogger
-}
-
-type Result struct {
-	fx.Out
-	Classifier Classifier
-}
-
 type Classifier interface {
-	Classify(ctx context.Context, infoHashes ...model.Hash20) error
-}
-
-func New(p Params) (Result, error) {
-	return Result{
-		Classifier: classifier{
-			p.Persistence,
-			p.Resolver,
-			p.Logger,
-		},
-	}, nil
+	Classify(ctx context.Context, infoHashes ...protocol.ID) error
 }
 
 type classifier struct {
-	p persistence.Persistence
-	r resolver.RootResolver
-	l *zap.SugaredLogger
+	search   search.Search
+	resolver Resolver
+	dao      *dao.Query
 }
 
 type MissingHashesError struct {
-	InfoHashes []model.Hash20
+	InfoHashes []protocol.ID
 }
 
 func (e MissingHashesError) Error() string {
 	return fmt.Sprintf("missing %d info hashes", len(e.InfoHashes))
 }
 
-func (c classifier) Classify(ctx context.Context, infoHashes ...model.Hash20) error {
-	torrents, missingHashes, findErr := c.p.GetTorrents(ctx, infoHashes...)
-	if findErr != nil {
-		return findErr
+func (c classifier) Classify(ctx context.Context, infoHashes ...protocol.ID) error {
+	searchResult, searchErr := c.search.TorrentsWithMissingInfoHashes(ctx, infoHashes)
+	if searchErr != nil {
+		return searchErr
 	}
-	resolved := make([]model.TorrentContent, 0, len(torrents))
-	for _, torrent := range torrents {
+	resolved := make([]model.TorrentContent, 0, len(searchResult.Torrents))
+	for _, torrent := range searchResult.Torrents {
 		var torrentContent model.TorrentContent
 		if len(torrent.Contents) > 0 {
 			torrentContent = torrent.Contents[0]
@@ -67,13 +44,13 @@ func (c classifier) Classify(ctx context.Context, infoHashes ...model.Hash20) er
 			torrentContent.Torrent.Contents = nil
 		} else {
 			torrentContent = model.TorrentContent{
-				InfoHash: infoHashes[0],
+				InfoHash: torrent.InfoHash,
 				Torrent:  torrent,
 			}
 		}
-		r, resolveErr := c.r.Resolve(ctx, torrentContent)
+		r, resolveErr := c.resolver.Resolve(ctx, torrentContent)
 		if resolveErr != nil {
-			if errors.Is(resolveErr, resolver.ErrNoMatch) {
+			if errors.Is(resolveErr, ErrNoMatch) {
 				continue
 			}
 			return resolveErr
@@ -81,12 +58,12 @@ func (c classifier) Classify(ctx context.Context, infoHashes ...model.Hash20) er
 		r.Torrent = model.Torrent{}
 		resolved = append(resolved, r)
 	}
-	if resolveErr := c.r.Persist(ctx, resolved...); resolveErr != nil {
+	if resolveErr := c.Persist(ctx, resolved...); resolveErr != nil {
 		return resolveErr
 	}
-	if len(missingHashes) > 0 {
+	if len(searchResult.MissingInfoHashes) > 0 {
 		return MissingHashesError{
-			InfoHashes: missingHashes,
+			InfoHashes: searchResult.MissingInfoHashes,
 		}
 	}
 	return nil

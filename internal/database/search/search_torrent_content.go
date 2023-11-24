@@ -24,7 +24,7 @@ func (s search) TorrentContent(ctx context.Context, options ...query.Option) (To
 	return query.GenericQuery[TorrentContentResultItem](
 		ctx,
 		s.q,
-		query.Options(options...),
+		query.Options(append([]query.Option{query.SelectAll()}, options...)...),
 		model.TableNameTorrentContent,
 		func(ctx context.Context, q *dao.Query) query.SubQuery {
 			return query.GenericSubQuery[dao.ITorrentContentDo]{

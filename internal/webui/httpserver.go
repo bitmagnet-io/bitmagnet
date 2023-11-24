@@ -34,8 +34,8 @@ type builder struct {
 	logger *zap.SugaredLogger
 }
 
-func (b *builder) Priority() int {
-	return 100
+func (b *builder) Key() string {
+	return "webui"
 }
 
 func (b *builder) Apply(e *gin.Engine) error {

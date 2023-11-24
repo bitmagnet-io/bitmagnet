@@ -2,8 +2,8 @@ package bloom
 
 import (
 	"encoding/binary"
-	"github.com/anacrolix/dht/v2/krpc"
-	bloom "github.com/bits-and-blooms/bloom/v3"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
+	"github.com/bits-and-blooms/bloom/v3"
 )
 
 type Filter = bloom.BloomFilter
@@ -15,11 +15,9 @@ const (
 	K        = 2
 )
 
-func New() Filter {
-	return *bloom.New(M, K)
-}
+var NewWithEstimates = bloom.NewWithEstimates
 
-func FromScrape(f krpc.ScrapeBloomFilter) Filter {
+func FromScrape(f dht.ScrapeBloomFilter) Filter {
 	return *bloom.FromWithM(convertBytes(f), M, K)
 }
 

@@ -1,30 +1,33 @@
 import { CollectionViewer, DataSource } from "@angular/cdk/collections";
 import { BehaviorSubject, catchError, EMPTY, map, Observable } from "rxjs";
 import * as generated from "../../graphql/generated";
-import { TorrentContentService } from "./torrent-content.service";
+import { GraphQLService } from "../../graphql/graphql.service";
+import { AppErrorsService } from "../../app-errors.service";
 import { GenreAgg, VideoResolutionAgg, VideoSourceAgg } from "./facet";
 
 export class TorrentContentDataSource
   implements DataSource<generated.TorrentContent>
 {
-  private resultSubject = new BehaviorSubject<generated.TorrentContentResult>({
-    items: [],
-    totalCount: 0,
-    aggregations: {},
-  });
+  private resultSubject =
+    new BehaviorSubject<generated.TorrentContentSearchResult>({
+      items: [],
+      totalCount: 0,
+      aggregations: {},
+    });
+  private inputSubject =
+    new BehaviorSubject<generated.TorrentContentSearchQueryVariables>({});
   private loadingSubject = new BehaviorSubject(false);
-  private errorSubject = new BehaviorSubject<Error | undefined>(undefined);
   private lastRequestTimeSubject = new BehaviorSubject<number>(0);
 
   public result = this.resultSubject.asObservable();
   public items = this.result.pipe(map((result) => result.items));
-  public totalCount = this.result.pipe(map((result) => result.totalCount));
   public aggregations = this.result.pipe(map((result) => result.aggregations));
   public loading = this.loadingSubject.asObservable();
-  public error = this.errorSubject.asObservable();
 
   public torrentSourceAggs: Observable<generated.TorrentSourceAgg[]> =
     this.aggregations.pipe(map((aggs) => aggs.torrentSource ?? []));
+  public torrentTagAggs: Observable<generated.TorrentTagAgg[]> =
+    this.aggregations.pipe(map((aggs) => aggs.torrentTag ?? []));
   public torrentFileTypeAggs: Observable<generated.TorrentFileTypeAgg[]> =
     this.aggregations.pipe(map((aggs) => aggs.torrentFileType ?? []));
   public languageAggs: Observable<generated.LanguageAgg[]> =
@@ -40,29 +43,29 @@ export class TorrentContentDataSource
     map((aggs) => (aggs.videoSource ?? []) as VideoSourceAgg[]),
   );
 
-  constructor(private torrentContentService: TorrentContentService) {}
+  constructor(
+    private graphQLService: GraphQLService,
+    private errorsService: AppErrorsService,
+  ) {}
 
-  connect(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _: CollectionViewer,
-  ): Observable<generated.TorrentContent[]> {
+  connect({}: CollectionViewer): Observable<generated.TorrentContent[]> {
     return this.items;
   }
 
   disconnect(): void {
     this.resultSubject.complete();
     this.loadingSubject.complete();
-    this.errorSubject.complete();
   }
 
   loadResult(input: generated.TorrentContentSearchQueryVariables): void {
     const requestTime = Date.now();
     this.loadingSubject.next(true);
-    this.torrentContentService
-      .search(input)
+    this.inputSubject.next(input);
+    this.graphQLService
+      .torrentContentSearch(input)
       .pipe(
         catchError((err: Error) => {
-          this.errorSubject.next(err);
+          this.errorsService.addError(`Error loading results: ${err.message}`);
           this.loadingSubject.next(false);
           return EMPTY;
         }),
@@ -71,10 +74,21 @@ export class TorrentContentDataSource
         const lastRequestTime = this.lastRequestTimeSubject.getValue();
         if (requestTime > lastRequestTime) {
           this.lastRequestTimeSubject.next(requestTime);
-          this.errorSubject.next(undefined);
           this.resultSubject.next(result);
           this.loadingSubject.next(false);
         }
       });
+  }
+
+  refreshResult(): void {
+    const input = this.inputSubject.getValue();
+    const uncachedInput = {
+      ...input,
+      query: {
+        ...input.query,
+        cached: false,
+      },
+    };
+    return this.loadResult(uncachedInput);
   }
 }
