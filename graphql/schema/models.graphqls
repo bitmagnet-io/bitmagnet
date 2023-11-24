@@ -13,6 +13,7 @@ type Torrent {
   seeders: Int
   leechers: Int
   tagNames: [String!]!
+  magnetUri: String!
   createdAt: DateTime!
   updatedAt: DateTime!
 }

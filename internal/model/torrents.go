@@ -4,7 +4,9 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/regex"
 	"github.com/facette/natsort"
 	"gorm.io/gorm"
+	"net/url"
 	"sort"
+	"strconv"
 )
 
 func (t *Torrent) BeforeCreate(tx *gorm.DB) error {
@@ -49,8 +51,10 @@ func (t Torrent) Leechers() NullUint {
 	return leechers
 }
 
-func (t Torrent) Magnet() string {
-	return "magnet:?xt=urn:btih:" + t.InfoHash.String()
+func (t Torrent) MagnetUri() string {
+	return "magnet:?xt=urn:btih:" + t.InfoHash.String() +
+		"&dn=" + url.QueryEscape(t.Name) +
+		"&xl=" + strconv.FormatUint(t.Size, 10)
 }
 
 // HasFilesInfo returns true if we know about the files in this torrent.

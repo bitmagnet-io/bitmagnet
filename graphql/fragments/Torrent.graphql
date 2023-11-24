@@ -17,6 +17,7 @@ fragment Torrent on Torrent {
   seeders
   leechers
   tagNames
+  magnetUri
   createdAt
   updatedAt
 }

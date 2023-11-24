@@ -169,6 +169,7 @@ type ComplexityRoot struct {
 		HasFilesInfo func(childComplexity int) int
 		InfoHash     func(childComplexity int) int
 		Leechers     func(childComplexity int) int
+		MagnetUri    func(childComplexity int) int
 		Name         func(childComplexity int) int
 		Private      func(childComplexity int) int
 		Seeders      func(childComplexity int) int
@@ -801,6 +802,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Torrent.Leechers(childComplexity), true
+
+	case "Torrent.magnetUri":
+		if e.complexity.Torrent.MagnetUri == nil {
+			break
+		}
+
+		return e.complexity.Torrent.MagnetUri(childComplexity), true
 
 	case "Torrent.name":
 		if e.complexity.Torrent.Name == nil {
@@ -1616,6 +1624,7 @@ enum VideoSource {
   seeders: Int
   leechers: Int
   tagNames: [String!]!
+  magnetUri: String!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -5530,6 +5539,50 @@ func (ec *executionContext) fieldContext_Torrent_tagNames(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Torrent_magnetUri(ctx context.Context, field graphql.CollectedField, obj *model.Torrent) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Torrent_magnetUri(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MagnetUri(), nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Torrent_magnetUri(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Torrent",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Torrent_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Torrent) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Torrent_createdAt(ctx, field)
 	if err != nil {
@@ -5773,6 +5826,8 @@ func (ec *executionContext) fieldContext_TorrentContent_torrent(ctx context.Cont
 				return ec.fieldContext_Torrent_leechers(ctx, field)
 			case "tagNames":
 				return ec.fieldContext_Torrent_tagNames(ctx, field)
+			case "magnetUri":
+				return ec.fieldContext_Torrent_magnetUri(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Torrent_createdAt(ctx, field)
 			case "updatedAt":
@@ -12031,6 +12086,11 @@ func (ec *executionContext) _Torrent(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = ec._Torrent_leechers(ctx, field, obj)
 		case "tagNames":
 			out.Values[i] = ec._Torrent_tagNames(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "magnetUri":
+			out.Values[i] = ec._Torrent_magnetUri(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
