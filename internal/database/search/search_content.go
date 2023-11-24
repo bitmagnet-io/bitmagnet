@@ -24,7 +24,7 @@ func (s search) Content(ctx context.Context, options ...query.Option) (result Co
 	return query.GenericQuery[ContentResultItem](
 		ctx,
 		s.q,
-		query.Options(options...),
+		query.Options(append([]query.Option{query.SelectAll()}, options...)...),
 		model.TableNameContent,
 		func(ctx context.Context, q *dao.Query) query.SubQuery {
 			return query.GenericSubQuery[dao.IContentDo]{

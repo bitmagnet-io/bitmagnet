@@ -1,9 +1,12 @@
+import * as path from "path";
 import type { CodegenConfig } from "@graphql-codegen/cli";
-import * as path from "path"
 
 const config: CodegenConfig = {
   schema: path.resolve(__dirname, "../../../../graphql/schema/**/*.graphqls"),
-  documents: path.resolve(__dirname, "../../../../graphql/{fragments,mutations,queries}/*.graphql"),
+  documents: path.resolve(
+    __dirname,
+    "../../../../graphql/{fragments,mutations,queries}/*.graphql",
+  ),
   generates: {
     "./src/app/graphql/generated/index.ts": {
       plugins: [
@@ -25,7 +28,7 @@ const config: CodegenConfig = {
           Date: "string",
           DateTime: "string",
           Hash20: "string",
-          Void: "null",
+          Void: "void",
           Year: "number",
         },
       },

@@ -18,10 +18,14 @@ import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { ClipboardModule } from "@angular/cdk/clipboard";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { MatRadioModule } from "@angular/material/radio";
+import { MatAutocompleteModule } from "@angular/material/autocomplete";
+import { MatTabsModule } from "@angular/material/tabs";
+import { MatDividerModule } from "@angular/material/divider";
 import { TorrentContentComponent } from "./torrent-content/torrent-content.component";
+import { TagNameInputDirective } from "./tag-name-input.directive";
 
 @NgModule({
-  declarations: [TorrentContentComponent],
+  declarations: [TorrentContentComponent, TagNameInputDirective],
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -42,6 +46,9 @@ import { TorrentContentComponent } from "./torrent-content/torrent-content.compo
     MatChipsModule,
     MatSnackBarModule,
     MatRadioModule,
+    MatAutocompleteModule,
+    MatTabsModule,
+    MatDividerModule,
   ],
   exports: [TorrentContentComponent],
 })

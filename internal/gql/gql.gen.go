@@ -15,6 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
@@ -139,6 +140,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		Torrent        func(childComplexity int) int
 		TorrentContent func(childComplexity int) int
 	}
 
@@ -151,6 +153,11 @@ type ComplexityRoot struct {
 	Season struct {
 		Episodes func(childComplexity int) int
 		Season   func(childComplexity int) int
+	}
+
+	SuggestedTag struct {
+		Count func(childComplexity int) int
+		Name  func(childComplexity int) int
 	}
 
 	Torrent struct {
@@ -240,6 +247,10 @@ type ComplexityRoot struct {
 		SetTags    func(childComplexity int, infoHashes []protocol.ID, tagNames []string) int
 	}
 
+	TorrentQuery struct {
+		SuggestTags func(childComplexity int, query *gen.SuggestTagsQueryInput) int
+	}
+
 	TorrentSource struct {
 		ImportID func(childComplexity int) int
 		Key      func(childComplexity int) int
@@ -252,6 +263,10 @@ type ComplexityRoot struct {
 		Count func(childComplexity int) int
 		Label func(childComplexity int) int
 		Value func(childComplexity int) int
+	}
+
+	TorrentSuggestTagsResult struct {
+		Suggestions func(childComplexity int) int
 	}
 
 	TorrentTagAgg struct {
@@ -280,6 +295,7 @@ type MutationResolver interface {
 	Torrent(ctx context.Context) (gqlmodel.TorrentMutation, error)
 }
 type QueryResolver interface {
+	Torrent(ctx context.Context) (gqlmodel.TorrentQuery, error)
 	TorrentContent(ctx context.Context) (gqlmodel.TorrentContentQuery, error)
 }
 type TorrentResolver interface {
@@ -667,6 +683,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.Torrent(childComplexity), true
 
+	case "Query.torrent":
+		if e.complexity.Query.Torrent == nil {
+			break
+		}
+
+		return e.complexity.Query.Torrent(childComplexity), true
+
 	case "Query.torrentContent":
 		if e.complexity.Query.TorrentContent == nil {
 			break
@@ -708,6 +731,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Season.Season(childComplexity), true
+
+	case "SuggestedTag.count":
+		if e.complexity.SuggestedTag.Count == nil {
+			break
+		}
+
+		return e.complexity.SuggestedTag.Count(childComplexity), true
+
+	case "SuggestedTag.name":
+		if e.complexity.SuggestedTag.Name == nil {
+			break
+		}
+
+		return e.complexity.SuggestedTag.Name(childComplexity), true
 
 	case "Torrent.createdAt":
 		if e.complexity.Torrent.CreatedAt == nil {
@@ -1170,6 +1207,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TorrentMutation.SetTags(childComplexity, args["infoHashes"].([]protocol.ID), args["tagNames"].([]string)), true
 
+	case "TorrentQuery.suggestTags":
+		if e.complexity.TorrentQuery.SuggestTags == nil {
+			break
+		}
+
+		args, err := ec.field_TorrentQuery_suggestTags_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.TorrentQuery.SuggestTags(childComplexity, args["query"].(*gen.SuggestTagsQueryInput)), true
+
 	case "TorrentSource.importId":
 		if e.complexity.TorrentSource.ImportID == nil {
 			break
@@ -1225,6 +1274,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.TorrentSourceAgg.Value(childComplexity), true
+
+	case "TorrentSuggestTagsResult.suggestions":
+		if e.complexity.TorrentSuggestTagsResult.Suggestions == nil {
+			break
+		}
+
+		return e.complexity.TorrentSuggestTagsResult.Suggestions(childComplexity), true
 
 	case "TorrentTagAgg.count":
 		if e.complexity.TorrentTagAgg.Count == nil {
@@ -1302,6 +1358,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputLanguageFacetInput,
 		ec.unmarshalInputReleaseYearFacetInput,
 		ec.unmarshalInputSearchQueryInput,
+		ec.unmarshalInputSuggestTagsQueryInput,
 		ec.unmarshalInputTorrentContentFacetsInput,
 		ec.unmarshalInputTorrentFileTypeFacetInput,
 		ec.unmarshalInputTorrentSourceFacetInput,
@@ -1683,7 +1740,26 @@ type TorrentMutation {
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/query.graphqls", Input: `type Query {
+  torrent: TorrentQuery!
   torrentContent: TorrentContentQuery!
+}
+
+type TorrentQuery {
+  suggestTags(query: SuggestTagsQueryInput): TorrentSuggestTagsResult!
+}
+
+input SuggestTagsQueryInput {
+  prefix: String
+  exclusions: [String!]
+}
+
+type TorrentSuggestTagsResult {
+  suggestions: [SuggestedTag!]!
+}
+
+type SuggestedTag {
+  name: String!
+  count: Int!
 }
 
 type TorrentContentQuery {
@@ -1955,6 +2031,21 @@ func (ec *executionContext) field_TorrentMutation_setTags_args(ctx context.Conte
 		}
 	}
 	args["tagNames"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_TorrentQuery_suggestTags_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *gen.SuggestTagsQueryInput
+	if tmp, ok := rawArgs["query"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("query"))
+		arg0, err = ec.unmarshalOSuggestTagsQueryInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐSuggestTagsQueryInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["query"] = arg0
 	return args, nil
 }
 
@@ -4287,6 +4378,54 @@ func (ec *executionContext) fieldContext_Mutation_torrent(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_torrent(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_torrent(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Torrent(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(gqlmodel.TorrentQuery)
+	fc.Result = res
+	return ec.marshalNTorrentQuery2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐTorrentQuery(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_torrent(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "suggestTags":
+				return ec.fieldContext_TorrentQuery_suggestTags(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TorrentQuery", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_torrentContent(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_torrentContent(ctx, field)
 	if err != nil {
@@ -4668,6 +4807,94 @@ func (ec *executionContext) _Season_episodes(ctx context.Context, field graphql.
 func (ec *executionContext) fieldContext_Season_episodes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Season",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SuggestedTag_name(ctx context.Context, field graphql.CollectedField, obj *search.SuggestedTag) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SuggestedTag_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SuggestedTag_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SuggestedTag",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SuggestedTag_count(ctx context.Context, field graphql.CollectedField, obj *search.SuggestedTag) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SuggestedTag_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Count, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SuggestedTag_count(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SuggestedTag",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -7649,6 +7876,65 @@ func (ec *executionContext) fieldContext_TorrentMutation_deleteTags(ctx context.
 	return fc, nil
 }
 
+func (ec *executionContext) _TorrentQuery_suggestTags(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.TorrentQuery) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TorrentQuery_suggestTags(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SuggestTags(ctx, fc.Args["query"].(*gen.SuggestTagsQueryInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(search.TorrentSuggestTagsResult)
+	fc.Result = res
+	return ec.marshalNTorrentSuggestTagsResult2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋsearchᚐTorrentSuggestTagsResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TorrentQuery_suggestTags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TorrentQuery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "suggestions":
+				return ec.fieldContext_TorrentSuggestTagsResult_suggestions(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TorrentSuggestTagsResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_TorrentQuery_suggestTags_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _TorrentSource_key(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.TorrentSource) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_TorrentSource_key(ctx, field)
 	if err != nil {
@@ -7987,6 +8273,56 @@ func (ec *executionContext) fieldContext_TorrentSourceAgg_count(ctx context.Cont
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TorrentSuggestTagsResult_suggestions(ctx context.Context, field graphql.CollectedField, obj *search.TorrentSuggestTagsResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TorrentSuggestTagsResult_suggestions(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Suggestions, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]search.SuggestedTag)
+	fc.Result = res
+	return ec.marshalNSuggestedTag2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋsearchᚐSuggestedTagᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TorrentSuggestTagsResult_suggestions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TorrentSuggestTagsResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "name":
+				return ec.fieldContext_SuggestedTag_name(ctx, field)
+			case "count":
+				return ec.fieldContext_SuggestedTag_count(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SuggestedTag", field.Name)
 		},
 	}
 	return fc, nil
@@ -10381,6 +10717,44 @@ func (ec *executionContext) unmarshalInputSearchQueryInput(ctx context.Context, 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputSuggestTagsQueryInput(ctx context.Context, obj interface{}) (gen.SuggestTagsQueryInput, error) {
+	var it gen.SuggestTagsQueryInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"prefix", "exclusions"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "prefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("prefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Prefix = graphql.OmittableOf(data)
+		case "exclusions":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("exclusions"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Exclusions = graphql.OmittableOf(data)
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputTorrentContentFacetsInput(ctx context.Context, obj interface{}) (gen.TorrentContentFacetsInput, error) {
 	var it gen.TorrentContentFacetsInput
 	asMap := map[string]interface{}{}
@@ -11363,6 +11737,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
+		case "torrent":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_torrent(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "torrentContent":
 			field := field
 
@@ -11480,6 +11876,50 @@ func (ec *executionContext) _Season(ctx context.Context, sel ast.SelectionSet, o
 			}
 		case "episodes":
 			out.Values[i] = ec._Season_episodes(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var suggestedTagImplementors = []string{"SuggestedTag"}
+
+func (ec *executionContext) _SuggestedTag(ctx context.Context, sel ast.SelectionSet, obj *search.SuggestedTag) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, suggestedTagImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SuggestedTag")
+		case "name":
+			out.Values[i] = ec._SuggestedTag_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "count":
+			out.Values[i] = ec._SuggestedTag_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12140,6 +12580,76 @@ func (ec *executionContext) _TorrentMutation(ctx context.Context, sel ast.Select
 	return out
 }
 
+var torrentQueryImplementors = []string{"TorrentQuery"}
+
+func (ec *executionContext) _TorrentQuery(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.TorrentQuery) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, torrentQueryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TorrentQuery")
+		case "suggestTags":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TorrentQuery_suggestTags(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var torrentSourceImplementors = []string{"TorrentSource"}
 
 func (ec *executionContext) _TorrentSource(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.TorrentSource) graphql.Marshaler {
@@ -12213,6 +12723,45 @@ func (ec *executionContext) _TorrentSourceAgg(ctx context.Context, sel ast.Selec
 			}
 		case "count":
 			out.Values[i] = ec._TorrentSourceAgg_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var torrentSuggestTagsResultImplementors = []string{"TorrentSuggestTagsResult"}
+
+func (ec *executionContext) _TorrentSuggestTagsResult(ctx context.Context, sel ast.SelectionSet, obj *search.TorrentSuggestTagsResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, torrentSuggestTagsResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TorrentSuggestTagsResult")
+		case "suggestions":
+			out.Values[i] = ec._TorrentSuggestTagsResult_suggestions(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -13164,6 +13713,54 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	return ret
 }
 
+func (ec *executionContext) marshalNSuggestedTag2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋsearchᚐSuggestedTag(ctx context.Context, sel ast.SelectionSet, v search.SuggestedTag) graphql.Marshaler {
+	return ec._SuggestedTag(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSuggestedTag2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋsearchᚐSuggestedTagᚄ(ctx context.Context, sel ast.SelectionSet, v []search.SuggestedTag) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNSuggestedTag2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋsearchᚐSuggestedTag(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) marshalNTorrent2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐTorrent(ctx context.Context, sel ast.SelectionSet, v model.Torrent) graphql.Marshaler {
 	return ec._Torrent(ctx, sel, &v)
 }
@@ -13240,6 +13837,10 @@ func (ec *executionContext) marshalNTorrentMutation2githubᚗcomᚋbitmagnetᚑi
 	return ec._TorrentMutation(ctx, sel, &v)
 }
 
+func (ec *executionContext) marshalNTorrentQuery2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐTorrentQuery(ctx context.Context, sel ast.SelectionSet, v gqlmodel.TorrentQuery) graphql.Marshaler {
+	return ec._TorrentQuery(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNTorrentSource2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐTorrentSource(ctx context.Context, sel ast.SelectionSet, v gqlmodel.TorrentSource) graphql.Marshaler {
 	return ec._TorrentSource(ctx, sel, &v)
 }
@@ -13290,6 +13891,10 @@ func (ec *executionContext) marshalNTorrentSource2ᚕgithubᚗcomᚋbitmagnetᚑ
 
 func (ec *executionContext) marshalNTorrentSourceAgg2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentSourceAgg(ctx context.Context, sel ast.SelectionSet, v gen.TorrentSourceAgg) graphql.Marshaler {
 	return ec._TorrentSourceAgg(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTorrentSuggestTagsResult2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋsearchᚐTorrentSuggestTagsResult(ctx context.Context, sel ast.SelectionSet, v search.TorrentSuggestTagsResult) graphql.Marshaler {
+	return ec._TorrentSuggestTagsResult(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNTorrentTagAgg2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentTagAgg(ctx context.Context, sel ast.SelectionSet, v gen.TorrentTagAgg) graphql.Marshaler {
@@ -14316,6 +14921,14 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	}
 	res := graphql.MarshalString(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOSuggestTagsQueryInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐSuggestTagsQueryInput(ctx context.Context, v interface{}) (*gen.SuggestTagsQueryInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputSuggestTagsQueryInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOTorrentContentFacetsInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentFacetsInput(ctx context.Context, v interface{}) (*gen.TorrentContentFacetsInput, error) {

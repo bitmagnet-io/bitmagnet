@@ -12,6 +12,7 @@ import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
 import { GraphQLModule } from "./graphql/graphql.module";
 import { SearchModule } from "./search/search.module";
+import { AppErrorsService } from "./app-errors.service";
 
 @NgModule({
   declarations: [AppComponent],
@@ -28,7 +29,7 @@ import { SearchModule } from "./search/search.module";
     MatIconModule,
     MatMenuModule,
   ],
-  providers: [],
+  providers: [AppErrorsService],
   bootstrap: [AppComponent],
 })
 export class AppModule {

@@ -1,6 +1,14 @@
 import { AfterContentInit, AfterViewInit, Component } from "@angular/core";
 import { PageEvent } from "@angular/material/paginator";
-import {BehaviorSubject, catchError, EMPTY, interval, startWith, Subscription, tap} from "rxjs";
+import {
+  BehaviorSubject,
+  catchError,
+  EMPTY,
+  interval,
+  startWith,
+  Subscription,
+  tap,
+} from "rxjs";
 import { FormControl } from "@angular/forms";
 import {
   animate,
@@ -9,19 +17,12 @@ import {
   transition,
   trigger,
 } from "@angular/animations";
-import { MatSnackBar } from "@angular/material/snack-bar";
+import { COMMA, ENTER } from "@angular/cdk/keycodes";
 import * as generated from "../../graphql/generated";
 import { GraphQLService } from "../../graphql/graphql.service";
+import { AppErrorsService } from "../../app-errors.service";
 import { TorrentContentDataSource } from "./torrent-content.datasource";
 import { Facet } from "./facet";
-
-import {COMMA, ENTER} from '@angular/cdk/keycodes';
-
-type ContentTypeInfo = {
-  singular: string;
-  plural: string;
-  icon: string;
-};
 
 @Component({
   selector: "app-torrent-content",
@@ -41,7 +42,10 @@ type ContentTypeInfo = {
 export class TorrentContentComponent
   implements AfterContentInit, AfterViewInit
 {
-  dataSource: TorrentContentDataSource =  new TorrentContentDataSource(this.graphQLService);
+  dataSource: TorrentContentDataSource = new TorrentContentDataSource(
+    this.graphQLService,
+    this.errorsService,
+  );
   displayedColumns = ["summary", "size", "peers", "magnet"];
   queryString = new FormControl("");
 
@@ -52,7 +56,7 @@ export class TorrentContentComponent
     items: [],
     aggregations: {},
     totalCount: 0,
-  }
+  };
   loading = true;
 
   contentTypes: Record<generated.ContentType | "null", ContentTypeInfo> = {
@@ -126,24 +130,11 @@ export class TorrentContentComponent
 
   constructor(
     private graphQLService: GraphQLService,
-    private errorSnackBar: MatSnackBar,
+    private errorsService: AppErrorsService,
   ) {
-    this.dataSource.error.subscribe((error: Error | undefined) => {
-      if (error) {
-        this.errorSnackBar.open(
-          `Error fetching results: ${error.message}`,
-          "Dismiss",
-          {
-            panelClass: ["snack-bar-error"],
-          },
-        );
-      } else {
-        this.errorSnackBar.dismiss();
-      }
-    });
     this.dataSource.result.subscribe((result) => {
       this.result = result;
-    })
+    });
     this.dataSource.loading.subscribe((loading) => (this.loading = loading));
     this.torrentSourceFacet = new Facet<string, false>(
       "Torrent Source",
@@ -299,58 +290,67 @@ export class TorrentContentComponent
     return collections?.length ? collections.sort() : undefined;
   }
 
-  expandItem(id?: string) {
-    this.dataSource.expandedItem.select(id);
-  }
-
-  get expandedItemId(): string | undefined {
-    return this.dataSource.expandedItem.id;
-  }
-
-  addTag(tagName: string) {
-    this.dataSource.expandedItem.addTag(tagName);
-  }
-
-  renameTag(oldTagName: string, newTagName: string) {
-    this.dataSource.expandedItem.renameTag(oldTagName, newTagName);
-  }
-
-  deleteTag(tagName: string) {
-    this.dataSource.expandedItem.deleteTag(tagName);
-  }
-
-  expandedItem = new class {
-
+  expandedItem = new (class {
     private itemSubject = new BehaviorSubject<
       generated.TorrentContent | undefined
     >(undefined);
+    newTagCtrl = new FormControl<string>("");
     private editedTagsSubject = new BehaviorSubject<string[] | undefined>(
       undefined,
     );
+    public readonly suggestedTags = Array<string>();
+    public selectedTabIndex = 0;
 
     constructor(private ds: TorrentContentComponent) {
       ds.dataSource.result.subscribe((result) => {
         const item = this.itemSubject.getValue();
         if (!item) {
-          return
+          return;
         }
         const nextItem = result.items.find((i) => i.id === item.id);
         this.itemSubject.next(nextItem);
-      })
+      });
+      this.newTagCtrl.valueChanges.subscribe((value) => {
+        return ds.graphQLService
+          .torrentSuggestTags({
+            query: {
+              prefix: value,
+              exclusions: this.itemSubject.getValue()?.torrent.tagNames,
+            },
+          })
+          .pipe(
+            tap((result) => {
+              this.suggestedTags.splice(
+                0,
+                this.suggestedTags.length,
+                ...result.suggestions.map((t) => t.name),
+              );
+            }),
+          )
+          .subscribe();
+      });
     }
 
     get id(): string | undefined {
       return this.itemSubject.getValue()?.id;
     }
 
-    select(id?: string): void {
-      const nextItem = this.ds.result
-        .items.find((i) => i.id === id);
+    toggle(id?: string): void {
+      if (id === this.id) {
+        id = undefined;
+      }
+      const nextItem = this.ds.result.items.find((i) => i.id === id);
       const current = this.itemSubject.getValue();
       if (current?.id !== id) {
         this.itemSubject.next(nextItem);
         this.editedTagsSubject.next(undefined);
+        this.newTagCtrl.reset();
+        this.selectedTabIndex = 0;
       }
+    }
+
+    selectTab(index: number): void {
+      this.selectedTabIndex = index;
     }
 
     addTag(tagName: string) {
@@ -362,7 +362,7 @@ export class TorrentContentComponent
       this.editTags((tags) =>
         tags.map((t) => (t === oldTagName ? newTagName : t)),
       );
-      this.saveTags()
+      this.saveTags();
     }
 
     deleteTag(tagName: string) {
@@ -378,6 +378,7 @@ export class TorrentContentComponent
       const editedTags =
         this.editedTagsSubject.getValue() ?? item.torrent.tagNames;
       this.editedTagsSubject.next(fn(editedTags));
+      this.newTagCtrl.reset();
     }
 
     saveTags(): void {
@@ -396,7 +397,8 @@ export class TorrentContentComponent
         })
         .pipe(
           catchError((err: Error) => {
-            // this.ds.errorSubject.next(err);
+            this.ds.errorsService.addError(`Error saving tags: ${err.message}`);
+            this.editedTagsSubject.next(undefined);
             return EMPTY;
           }),
         )
@@ -405,7 +407,14 @@ export class TorrentContentComponent
             this.editedTagsSubject.next(undefined);
             this.ds.dataSource.refreshResult();
           }),
-        ).subscribe();
+        )
+        .subscribe();
     }
-  }(this)
+  })(this);
 }
+
+type ContentTypeInfo = {
+  singular: string;
+  plural: string;
+  icon: string;
+};

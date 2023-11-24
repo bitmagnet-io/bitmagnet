@@ -1,4 +1,4 @@
-mutation TorrentSetTags($infoHashes:[Hash20!]!, $tagNames:[String!]!) {
+mutation TorrentSetTags($infoHashes: [Hash20!]!, $tagNames: [String!]!) {
   torrent {
     setTags(infoHashes: $infoHashes, tagNames: $tagNames)
   }

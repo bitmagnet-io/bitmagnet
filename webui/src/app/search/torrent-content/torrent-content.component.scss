@@ -146,6 +146,15 @@ tr.expanded-detail-row {
     text-decoration: underline;
     text-decoration-style: dotted;
   }
+  ::ng-deep .mdc-tab__text-label {
+    mat-icon {
+      margin-right: 10px;
+    }
+  }
+}
+
+::ng-deep div[aria-labelledby="hidden"] {
+  display: none;
 }
 
 .results {
@@ -153,12 +162,14 @@ tr.expanded-detail-row {
 }
 
 .form-edit-tags {
-  width: 800px;
+  width: 100%;
 }
 
 .mat-mdc-standard-chip:not(.mdc-evolution-chip--disabled).chip-primary {
   background-color: mat.get-color-from-palette($primary-palette, 100);
-  .mat-mdc-standard-chip:not(.mdc-evolution-chip--disabled).mdc-evolution-chip__text-label {
+  .mat-mdc-standard-chip:not(
+      .mdc-evolution-chip--disabled
+    ).mdc-evolution-chip__text-label {
     color: #fff;
   }
 }

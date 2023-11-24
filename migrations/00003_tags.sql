@@ -10,6 +10,7 @@ create table torrent_tags
   primary key (info_hash, name)
 );
 create index on torrent_tags (name);
+create index on torrent_tags using gist (name gist_trgm_ops);
 
 -- +goose StatementEnd
 

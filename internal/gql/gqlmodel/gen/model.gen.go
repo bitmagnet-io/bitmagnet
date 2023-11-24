@@ -52,6 +52,11 @@ type ReleaseYearFacetInput struct {
 	Filter    graphql.Omittable[[]*model.Year] `json:"filter,omitempty"`
 }
 
+type SuggestTagsQueryInput struct {
+	Prefix     graphql.Omittable[*string]  `json:"prefix,omitempty"`
+	Exclusions graphql.Omittable[[]string] `json:"exclusions,omitempty"`
+}
+
 type TorrentContentAggregations struct {
 	ContentType     []ContentTypeAgg     `json:"contentType,omitempty"`
 	TorrentSource   []TorrentSourceAgg   `json:"torrentSource,omitempty"`

@@ -12,6 +12,47 @@ import (
 	"sort"
 )
 
+func facet[T comparable](
+	aggregate graphql.Omittable[*bool],
+	logic graphql.Omittable[*model.FacetLogic],
+	filter graphql.Omittable[[]*T],
+	fn func(...q.FacetOption) q.Facet,
+) q.Facet {
+	var facetOptions []q.FacetOption
+	if agg, aggOk := aggregate.ValueOK(); aggOk && *agg {
+		facetOptions = append(facetOptions, q.FacetIsAggregated())
+	}
+	if l, logicOk := logic.ValueOK(); logicOk {
+		facetOptions = append(facetOptions, q.FacetUsesLogic(*l))
+	}
+	if flt, filterOk := filter.ValueOK(); filterOk {
+		f := make(q.FacetFilter, len(flt))
+		for _, v := range flt {
+			if v == nil {
+				f["null"] = struct{}{}
+			} else {
+				vv := *v
+				f[toString(vv)] = struct{}{}
+			}
+		}
+		facetOptions = append(facetOptions, q.FacetHasFilter(f))
+	}
+	return fn(facetOptions...)
+}
+
+func toString(v any) string {
+	if pStr, ok := v.(*string); ok {
+		return *pStr
+	}
+	if str, ok := v.(string); ok {
+		return str
+	}
+	if stringer, ok := v.(fmt.Stringer); ok {
+		return stringer.String()
+	}
+	return fmt.Sprintf("%v", v)
+}
+
 func torrentContentTypeFacet(input gen.ContentTypeFacetInput) q.Facet {
 	return facet(input.Aggregate, graphql.Omittable[*model.FacetLogic]{}, input.Filter, search.TorrentContentTypeFacet)
 }
@@ -93,45 +134,31 @@ func videoSourceFacet(input gen.VideoSourceFacetInput) q.Facet {
 	return facet(input.Aggregate, graphql.Omittable[*model.FacetLogic]{}, input.Filter, search.VideoSourceFacet)
 }
 
-func facet[T comparable](
-	aggregate graphql.Omittable[*bool],
-	logic graphql.Omittable[*model.FacetLogic],
-	filter graphql.Omittable[[]*T],
-	fn func(...q.FacetOption) q.Facet,
-) q.Facet {
-	var facetOptions []q.FacetOption
-	if agg, aggOk := aggregate.ValueOK(); aggOk && *agg {
-		facetOptions = append(facetOptions, q.FacetIsAggregated())
-	}
-	if l, logicOk := logic.ValueOK(); logicOk {
-		facetOptions = append(facetOptions, q.FacetUsesLogic(*l))
-	}
-	if flt, filterOk := filter.ValueOK(); filterOk {
-		f := make(q.FacetFilter, len(flt))
-		for _, v := range flt {
-			if v == nil {
-				f["null"] = struct{}{}
-			} else {
-				vv := *v
-				f[toString(vv)] = struct{}{}
+func aggs[T any, Agg comparable](
+	items q.AggregationItems,
+	parse func(string) (T, error),
+	newAgg func(value *T, label string, count uint) Agg,
+) ([]Agg, error) {
+	r := make([]Agg, 0, len(items))
+	labelMap := make(map[Agg]string, len(items))
+	for key, item := range items {
+		if key != "null" {
+			v, err := parse(key)
+			if err != nil {
+				return nil, fmt.Errorf("error parsing aggregation item: %w", err)
 			}
+			agg := newAgg(&v, item.Label, item.Count)
+			r = append(r, agg)
+			labelMap[agg] = item.Label
 		}
-		facetOptions = append(facetOptions, q.FacetHasFilter(f))
 	}
-	return fn(facetOptions...)
-}
-
-func toString(v any) string {
-	if pStr, ok := v.(*string); ok {
-		return *pStr
+	sort.Slice(r, func(i, j int) bool {
+		return natsort.Compare(labelMap[r[i]], labelMap[r[j]])
+	})
+	if null, nullOk := items["null"]; nullOk {
+		r = append(r, newAgg(nil, null.Label, null.Count))
 	}
-	if str, ok := v.(string); ok {
-		return str
-	}
-	if stringer, ok := v.(fmt.Stringer); ok {
-		return stringer.String()
-	}
-	return fmt.Sprintf("%v", v)
+	return r, nil
 }
 
 func contentTypeAggs(items q.AggregationItems) ([]gen.ContentTypeAgg, error) {
@@ -192,31 +219,4 @@ func videoSourceAggs(items q.AggregationItems) ([]gen.VideoSourceAgg, error) {
 	return aggs(items, model.ParseVideoSource, func(value *model.VideoSource, label string, count uint) gen.VideoSourceAgg {
 		return gen.VideoSourceAgg{Value: value, Label: label, Count: int(count)}
 	})
-}
-
-func aggs[T any, Agg comparable](
-	items q.AggregationItems,
-	parse func(string) (T, error),
-	newAgg func(value *T, label string, count uint) Agg,
-) ([]Agg, error) {
-	r := make([]Agg, 0, len(items))
-	labelMap := make(map[Agg]string, len(items))
-	for key, item := range items {
-		if key != "null" {
-			v, err := parse(key)
-			if err != nil {
-				return nil, fmt.Errorf("error parsing aggregation item: %w", err)
-			}
-			agg := newAgg(&v, item.Label, item.Count)
-			r = append(r, agg)
-			labelMap[agg] = item.Label
-		}
-	}
-	sort.Slice(r, func(i, j int) bool {
-		return natsort.Compare(labelMap[r[i]], labelMap[r[j]])
-	})
-	if null, nullOk := items["null"]; nullOk {
-		r = append(r, newAgg(nil, null.Label, null.Count))
-	}
-	return r, nil
 }

@@ -11,6 +11,13 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 )
 
+// Torrent is the resolver for the torrent field.
+func (r *queryResolver) Torrent(ctx context.Context) (gqlmodel.TorrentQuery, error) {
+	return gqlmodel.TorrentQuery{
+		TorrentSearch: r.search,
+	}, nil
+}
+
 // TorrentContent is the resolver for the torrentContent field.
 func (r *queryResolver) TorrentContent(ctx context.Context) (gqlmodel.TorrentContentQuery, error) {
 	return gqlmodel.TorrentContentQuery{
