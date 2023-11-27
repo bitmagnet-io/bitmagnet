@@ -136,16 +136,6 @@ tr.expanded-detail-row {
     margin: 10px;
     border: 1px solid currentColor;
   }
-  .torrent-files {
-    max-height: 300px;
-    overflow: scroll;
-    table {
-      margin-bottom: 10px;
-    }
-    td {
-      padding-right: 20px;
-    }
-  }
   .info-hash {
     padding-left: 5px;
     cursor: crosshair;
@@ -177,5 +167,17 @@ tr.expanded-detail-row {
       .mdc-evolution-chip--disabled
     ).mdc-evolution-chip__text-label {
     color: #fff;
+  }
+}
+
+.torrent-files {
+  padding-top: 10px;
+  max-height: 800px;
+  overflow: scroll;
+  table {
+    margin-bottom: 10px;
+  }
+  td {
+    padding-right: 20px;
   }
 }

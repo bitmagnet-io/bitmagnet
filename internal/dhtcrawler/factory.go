@@ -2,6 +2,8 @@ package dhtcrawler
 
 import (
 	"context"
+	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
+	"github.com/bitmagnet-io/bitmagnet/internal/bloom"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/worker"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/asynq/message"
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
@@ -13,7 +15,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/banning"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainforequester"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/publisher"
-	"github.com/bits-and-blooms/bloom/v3"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -29,6 +30,7 @@ type Params struct {
 	BanningChecker      banning.Checker `name:"metainfo_banning_checker"`
 	Search              search.Search
 	Dao                 *dao.Query
+	BlockingManager     blocking.Manager
 	ClassifierPublisher publisher.Publisher[message.ClassifyTorrentPayload]
 	DiscoveredNodes     concurrency.BatchingChannel[ktable.Node] `name:"dht_discovered_nodes"`
 	Logger              *zap.SugaredLogger
@@ -81,12 +83,13 @@ func New(params Params) Result {
 		dao:                 params.Dao,
 		classifierPublisher: params.ClassifierPublisher,
 		ignoreHashes: &ignoreHashes{
-			bloom: *bloom.NewWithEstimates(1000000, 0.0001),
+			bloom: &bloom.NewDefaultStableBloomFilter().StableBloomFilter,
 		},
-		soughtNodeID:   &concurrency.AtomicValue[protocol.ID]{},
-		stopped:        make(chan struct{}),
-		persistedTotal: persistedTotal,
-		logger:         params.Logger.Named("dht_crawler"),
+		blockingManager: params.BlockingManager,
+		soughtNodeID:    &concurrency.AtomicValue[protocol.ID]{},
+		stopped:         make(chan struct{}),
+		persistedTotal:  persistedTotal,
+		logger:          params.Logger.Named("dht_crawler"),
 	}
 	c.soughtNodeID.Set(protocol.RandomNodeID())
 	return Result{

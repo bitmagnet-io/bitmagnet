@@ -9,6 +9,20 @@ import (
 	"strconv"
 )
 
+func (t *Torrent) AfterFind(tx *gorm.DB) error {
+	if t.Files != nil {
+		sort.Slice(t.Files, func(i, j int) bool {
+			return t.Files[i].Path < t.Files[j].Path
+		})
+	}
+	if t.Tags != nil {
+		sort.Slice(t.Tags, func(i, j int) bool {
+			return natsort.Compare(t.Tags[i].Name, t.Tags[j].Name)
+		})
+	}
+	return nil
+}
+
 func (t *Torrent) BeforeCreate(tx *gorm.DB) error {
 	if len(t.Contents) == 0 {
 		t.Contents = []TorrentContent{
@@ -137,8 +151,5 @@ func (t Torrent) TagNames() []string {
 	for _, tag := range t.Tags {
 		tagNames = append(tagNames, tag.Name)
 	}
-	sort.Slice(tagNames, func(i, j int) bool {
-		return natsort.Compare(tagNames[i], tagNames[j])
-	})
 	return tagNames
 }

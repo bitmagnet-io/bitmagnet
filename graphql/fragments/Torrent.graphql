@@ -5,8 +5,10 @@ fragment Torrent on Torrent {
   name
   size
   private
+  filesStatus
   hasFilesInfo
   singleFile
+  fileType
   files {
     ...TorrentFile
   }

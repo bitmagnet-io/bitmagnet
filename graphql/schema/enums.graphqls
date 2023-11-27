@@ -24,6 +24,13 @@ enum FileType {
   video
 }
 
+enum FilesStatus {
+  no_info
+  single
+  multi
+  over_threshold
+}
+
 enum Language {
   ar
   bs

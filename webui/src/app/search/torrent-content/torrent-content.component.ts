@@ -290,6 +290,25 @@ export class TorrentContentComponent
     return collections?.length ? collections.sort() : undefined;
   }
 
+  deleteTorrents(infoHashes: string[]) {
+    this.graphQLService
+      .torrentDelete({ infoHashes })
+      .pipe(
+        catchError((err: Error) => {
+          this.errorsService.addError(
+            `Error deleting torrents: ${err.message}`,
+          );
+          return EMPTY;
+        }),
+      )
+      .pipe(
+        tap(() => {
+          this.dataSource.refreshResult();
+        }),
+      )
+      .subscribe();
+  }
+
   expandedItem = new (class {
     private itemSubject = new BehaviorSubject<
       generated.TorrentContent | undefined
@@ -409,6 +428,14 @@ export class TorrentContentComponent
           }),
         )
         .subscribe();
+    }
+
+    delete() {
+      const expanded = this.itemSubject.getValue();
+      if (!expanded) {
+        return;
+      }
+      this.ds.deleteTorrents([expanded.infoHash]);
     }
   })(this);
 }

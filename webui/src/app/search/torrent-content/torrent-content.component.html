@@ -287,52 +287,82 @@
                 </ng-container>
               </p>
 
-              <div *ngIf="item(i).torrent.files?.length" class="torrent-files">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>File</th>
-                      <th>Type</th>
-                      <th>Size</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let f of item(i).torrent.files">
-                      <td class="table-torrent-files-td-file">{{ f.path }}</td>
-                      <td>
-                        {{
-                          f.fileType
-                            ? f.fileType.charAt(0).toUpperCase() +
-                              f.fileType.slice(1)
-                            : "Unknown"
-                        }}
-                      </td>
-                      <td class="table-torrent-files-td-size">
-                        {{ f.size | filesize }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
               <mat-divider style="clear: both"></mat-divider>
 
               <mat-tab-group
                 animationDuration="0"
                 [selectedIndex]="expandedItem.selectedTabIndex"
                 (focusChange)="
-                  expandedItem.selectTab($event.index == 2 ? 0 : $event.index)
+                  expandedItem.selectTab($event.index == 4 ? 0 : $event.index)
                 "
                 [mat-stretch-tabs]="false"
               >
                 <mat-tab [aria-labelledby]="'hidden'"></mat-tab>
+
+                <mat-tab>
+                  <ng-template mat-tab-label>
+                    <mat-icon>file_present</mat-icon>
+                    Files
+                  </ng-template>
+
+                  <div class="torrent-files">
+                    <p *ngIf="item(i).torrent.filesStatus === 'no_info'">
+                      No file information available.
+                    </p>
+                    <p *ngIf="item(i).torrent.filesStatus === 'over_threshold'">
+                      Files information was not saved as the number of files is
+                      over the configured threshold.
+                    </p>
+                    <p *ngIf="item(i).torrent.filesStatus === 'single'">
+                      <strong>Single file:</strong> {{ item(i).torrent.name
+                      }}<br />
+                      <span *ngIf="item(i).torrent.fileType; let ft"
+                        ><strong>File type: </strong>
+                        {{ ft.charAt(0).toUpperCase() + ft.slice(1) }}<br
+                      /></span>
+                      <strong>File size:</strong>
+                      {{ item(i).torrent.size | filesize }}
+                    </p>
+                    <table *ngIf="item(i).torrent.files?.length">
+                      <thead>
+                        <tr>
+                          <th>Path</th>
+                          <th>Type</th>
+                          <th>Size</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let f of item(i).torrent.files">
+                          <td class="table-torrent-files-td-file">
+                            {{ f.path }}
+                          </td>
+                          <td>
+                            {{
+                              f.fileType
+                                ? f.fileType.charAt(0).toUpperCase() +
+                                  f.fileType.slice(1)
+                                : "Unknown"
+                            }}
+                          </td>
+                          <td class="table-torrent-files-td-size">
+                            {{ f.size | filesize }}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </mat-tab>
+
                 <mat-tab>
                   <ng-template mat-tab-label>
                     <mat-icon>sell</mat-icon>
                     Edit tags
                   </ng-template>
 
-                  <mat-form-field class="form-edit-tags">
+                  <mat-form-field
+                    class="form-edit-tags"
+                    *ngIf="expandedItem.id === i.id"
+                  >
                     <mat-chip-grid #chipGrid aria-label="Enter tags">
                       <mat-chip-row
                         *ngFor="
@@ -377,6 +407,29 @@
                       >
                     </mat-autocomplete>
                   </mat-form-field>
+                </mat-tab>
+
+                <mat-tab>
+                  <ng-template mat-tab-label>
+                    <mat-icon>delete_forever</mat-icon>
+                    Delete
+                  </ng-template>
+
+                  <p style="margin-top: 10px">
+                    <strong
+                      >Are you sure you want to delete this torrent?</strong
+                    >
+                    <br />This action cannot be undone.
+                  </p>
+                  <p>
+                    <button
+                      mat-raised-button
+                      color="warn"
+                      (click)="expandedItem.delete()"
+                    >
+                      <mat-icon>delete_forever</mat-icon>Delete
+                    </button>
+                  </p>
                 </mat-tab>
 
                 <mat-tab *ngIf="expandedItem.selectedTabIndex > 0">

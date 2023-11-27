@@ -6,6 +6,7 @@ type Torrent {
   hasFilesInfo: Boolean!
   singleFile: Boolean
   extension: String
+  filesStatus: FilesStatus!
   fileType: FileType
   fileTypes: [FileType!]
   files: [TorrentFile!]

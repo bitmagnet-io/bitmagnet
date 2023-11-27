@@ -44,7 +44,8 @@ func (c *crawler) doRequestMetaInfo(
 			continue
 		}
 		if banErr := c.banningChecker.Check(res.Info); banErr != nil {
-			c.logger.Debugf("banning torrent '%s': %s", res.Info.BestName(), banErr)
+			c.logger.Warnf("banning torrent '%s': %s", res.Info.BestName(), banErr)
+			_ = c.blockingManager.Block(ctx, []protocol.ID{hash})
 			return metainforequester.Response{}, banErr
 		}
 		return res, nil

@@ -34,8 +34,7 @@ func (c *crawler) runSampleInfoHashes(ctx context.Context) {
 		}
 		var discoveredHashes []nodeHasPeersForHash
 		for _, s := range res.Samples {
-			toa := c.ignoreHashes.testOrAdd(s)
-			if !toa {
+			if !c.ignoreHashes.testAndAdd(s) {
 				discoveredHashes = append(discoveredHashes, nodeHasPeersForHash{
 					infoHash: s,
 					node:     n.Addr(),

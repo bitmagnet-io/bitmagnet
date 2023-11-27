@@ -17,19 +17,25 @@ func (r *mutationResolver) Torrent(ctx context.Context) (gqlmodel.TorrentMutatio
 	return gqlmodel.TorrentMutation{}, nil
 }
 
+// Delete is the resolver for the delete field.
+func (r *torrentMutationResolver) Delete(ctx context.Context, obj *gqlmodel.TorrentMutation, infoHashes []protocol.ID) (*string, error) {
+	_, err := r.dao.DeleteAndBlockTorrents(ctx, infoHashes)
+	return nil, err
+}
+
 // PutTags is the resolver for the putTags field.
 func (r *torrentMutationResolver) PutTags(ctx context.Context, obj *gqlmodel.TorrentMutation, infoHashes []protocol.ID, tagNames []string) (*string, error) {
-	return nil, r.persistence.PutTorrentTags(ctx, infoHashes, tagNames)
+	return nil, r.dao.TorrentTag.Put(ctx, infoHashes, tagNames)
 }
 
 // SetTags is the resolver for the setTags field.
 func (r *torrentMutationResolver) SetTags(ctx context.Context, obj *gqlmodel.TorrentMutation, infoHashes []protocol.ID, tagNames []string) (*string, error) {
-	return nil, r.persistence.SetTorrentTags(ctx, infoHashes, tagNames)
+	return nil, r.dao.TorrentTag.Set(ctx, infoHashes, tagNames)
 }
 
 // DeleteTags is the resolver for the deleteTags field.
 func (r *torrentMutationResolver) DeleteTags(ctx context.Context, obj *gqlmodel.TorrentMutation, infoHashes []protocol.ID, tagNames []string) (*string, error) {
-	return nil, r.persistence.DeleteTorrentTags(ctx, infoHashes, tagNames)
+	return nil, r.dao.TorrentTag.Delete(ctx, infoHashes, tagNames)
 }
 
 // Mutation returns gql.MutationResolver implementation.
