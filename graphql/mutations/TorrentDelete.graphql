@@ -1,0 +1,5 @@
+mutation TorrentDelete($infoHashes: [Hash20!]!) {
+  torrent {
+    delete(infoHashes: $infoHashes)
+  }
+}

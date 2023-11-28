@@ -21,9 +21,30 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case reqs := <-c.infoHashTriage.Out():
-			hashes := make([]driver.Valuer, 0, len(reqs))
+			allHashes := make([]protocol.ID, 0, len(reqs))
+			reqMap := make(map[protocol.ID]nodeHasPeersForHash, len(reqs))
 			for _, r := range reqs {
-				hashes = append(hashes, r.infoHash)
+				if _, ok := reqMap[r.infoHash]; ok {
+					c.logger.Warnf("duplicate infohash triage: %s", r.infoHash)
+					continue
+				}
+				allHashes = append(allHashes, r.infoHash)
+				reqMap[r.infoHash] = r
+			}
+			filteredHashes, filterErr := c.blockingManager.Filter(ctx, allHashes)
+			if filterErr != nil {
+				c.logger.Errorf("failed to filter infohashes: %s", filterErr.Error())
+				break
+			}
+			c.logger.Warnf("filteredHashes: %d / %d", len(allHashes), len(filteredHashes))
+			if len(filteredHashes) == 0 {
+				break
+			}
+			filteredHashMap := make(map[protocol.ID]struct{}, len(filteredHashes))
+			valuers := make([]driver.Valuer, 0, len(filteredHashes))
+			for _, h := range filteredHashes {
+				filteredHashMap[h] = struct{}{}
+				valuers = append(valuers, h)
 			}
 			var result []*triageResult
 			if queryErr := c.dao.Torrent.WithContext(ctx).Select(
@@ -37,7 +58,7 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 				c.dao.Torrent.InfoHash.EqCol(c.dao.TorrentsTorrentSource.InfoHash),
 				c.dao.TorrentsTorrentSource.Source.Eq("dht"),
 			).Where(
-				c.dao.Torrent.InfoHash.In(hashes...),
+				c.dao.Torrent.InfoHash.In(valuers...),
 			).UnderlyingDB().Find(&result).Error; queryErr != nil {
 				c.logger.Errorf("failed to search existing torrents: %s", queryErr.Error())
 				break
@@ -46,7 +67,8 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 			for _, t := range result {
 				foundTorrents[t.InfoHash] = *t
 			}
-			for _, r := range reqs {
+			for h := range filteredHashMap {
+				r := reqMap[h]
 				if t, ok := foundTorrents[r.infoHash]; !ok || t.FilesStatus == model.FilesStatusNoInfo {
 					select {
 					case <-ctx.Done():

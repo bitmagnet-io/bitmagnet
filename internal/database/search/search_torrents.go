@@ -35,9 +35,9 @@ func (s search) Torrents(ctx context.Context, options ...query.Option) (Torrents
 func TorrentDefaultPreload() query.Option {
 	return query.Preload(func(q *dao.Query) []field.RelationField {
 		return []field.RelationField{
-			q.Torrent.Sources.RelationField.Order(q.TorrentsTorrentSource.CreatedAt),
+			q.Torrent.Sources.RelationField,
 			q.Torrent.Sources.TorrentSource.RelationField,
-			q.Torrent.Files.RelationField.Order(q.TorrentFile.Index),
+			q.Torrent.Files.RelationField,
 			q.Torrent.Tags.RelationField,
 		}
 	})

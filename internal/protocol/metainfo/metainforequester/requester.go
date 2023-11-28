@@ -1,20 +1,20 @@
 package metainforequester
 
 import (
-  "bytes"
-  "context"
-  "encoding/binary"
-  "errors"
-  "fmt"
-  "github.com/anacrolix/torrent/bencode"
-  "github.com/anacrolix/torrent/peer_protocol"
-  "github.com/bitmagnet-io/bitmagnet/internal/protocol"
-  "github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
-  "io"
-  "math"
-  "net"
-  "net/netip"
-  "time"
+	"bytes"
+	"context"
+	"encoding/binary"
+	"errors"
+	"fmt"
+	"github.com/anacrolix/torrent/bencode"
+	"github.com/anacrolix/torrent/peer_protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
+	"io"
+	"math"
+	"net"
+	"net/netip"
+	"time"
 )
 
 type Requester interface {
@@ -83,9 +83,7 @@ func (r requester) Request(ctx context.Context, infoHash protocol.ID, addr netip
 		return Response{}, connErr
 	}
 	defer func() {
-		if closeErr := conn.Close(); closeErr != nil {
-			fmt.Printf("failed to close connection (req): %s\n", closeErr.Error())
-		}
+		_ = conn.Close()
 	}()
 	hsInfo, btHandshakeErr := btHandshake(conn, infoHash, r.clientID)
 	if btHandshakeErr != nil {
@@ -120,9 +118,7 @@ func (r requester) connect(ctx context.Context, addr netip.AddrPort) (conn *net.
 	}
 	tcpConn := c.(*net.TCPConn)
 	closeConn := func() {
-		if closeErr := tcpConn.Close(); closeErr != nil {
-			fmt.Printf("failed to close connection: %s\n", closeErr.Error())
-		}
+		_ = tcpConn.Close()
 	}
 	// If sec == 0, operating system discards any unsent or unacknowledged data [after Close() has been called].
 	if setLingerErr := tcpConn.SetLinger(0); setLingerErr != nil {

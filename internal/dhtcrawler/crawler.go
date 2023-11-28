@@ -2,6 +2,7 @@ package dhtcrawler
 
 import (
 	"context"
+	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
 	"github.com/bitmagnet-io/bitmagnet/internal/bloom"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/asynq/message"
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
@@ -14,6 +15,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainforequester"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/publisher"
 	"github.com/prometheus/client_golang/prometheus"
+	boom "github.com/tylertreat/BoomFilters"
 	"go.uber.org/zap"
 	"net/netip"
 	"sync"
@@ -46,8 +48,9 @@ type crawler struct {
 	classifierPublisher          publisher.Publisher[message.ClassifyTorrentPayload]
 	// ignoreHashes is a thread-safe bloom filter that the crawler keeps in memory, containing every hash it has already encountered.
 	// This avoids multiple attempts to crawl the same hash, and takes a lot of load off the database query that checks if a hash
-	// has already been indexed. It is cleared every 6 hours.
-	ignoreHashes *ignoreHashes
+	// has already been indexed.
+	ignoreHashes    *ignoreHashes
+	blockingManager blocking.Manager
 	// soughtNodeID is a random node ID used as the target for find_node and sample_infohashes requests.
 	// It is rotated every 10 seconds.
 	soughtNodeID   *concurrency.AtomicValue[protocol.ID]
@@ -82,7 +85,6 @@ func (c *crawler) start() {
 	go c.runPersistTorrents(ctx)
 	go c.runPersistSources(ctx)
 	go c.getOldNodes(ctx)
-	go c.rotateIgnoreHashes(ctx)
 	<-c.stopped
 }
 
@@ -109,30 +111,13 @@ type infoHashWithScrape struct {
 
 type ignoreHashes struct {
 	mutex sync.Mutex
-	bloom bloom.Filter
+	bloom *boom.StableBloomFilter
 }
 
-func (i *ignoreHashes) testOrAdd(id protocol.ID) bool {
+func (i *ignoreHashes) testAndAdd(id protocol.ID) bool {
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
-	return i.bloom.TestOrAdd(id[:])
-}
-
-func (i *ignoreHashes) clearAll() {
-	i.mutex.Lock()
-	defer i.mutex.Unlock()
-	i.bloom.ClearAll()
-}
-
-func (c *crawler) rotateIgnoreHashes(ctx context.Context) {
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-time.After(6 * time.Hour):
-			c.ignoreHashes.clearAll()
-		}
-	}
+	return i.bloom.TestAndAdd(id[:])
 }
 
 func (c *crawler) rotateSoughtNodeId(ctx context.Context) {

@@ -3,6 +3,7 @@ package appfx
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/app/cmd/searchcmd"
 	"github.com/bitmagnet-io/bitmagnet/internal/app/cmd/torrentcmd"
+	"github.com/bitmagnet-io/bitmagnet/internal/blocking/blockingfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/app/boilerplateappfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpserver/httpserverfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classifierfx"
@@ -25,6 +26,7 @@ import (
 func New() fx.Option {
 	return fx.Module(
 		"app",
+		blockingfx.New(),
 		boilerplateappfx.New(),
 		classifierfx.New(),
 		dhtcrawlerfx.New(),

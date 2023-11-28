@@ -20,7 +20,13 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 			return
 		case is := <-c.persistTorrents.Out():
 			ts := make([]*model.Torrent, 0, len(is))
+			hashMap := make(map[protocol.ID]infoHashWithMetaInfo, len(is))
 			for _, i := range is {
+				if _, ok := hashMap[i.infoHash]; ok {
+					c.logger.Warnf("duplicate infohash: %s", i.infoHash)
+					continue
+				}
+				hashMap[i.infoHash] = i
 				if t, err := createTorrentModel(i.infoHash, i.metaInfo, c.savePieces, c.saveFilesThreshold); err != nil {
 					c.logger.Errorf("error creating torrent model: %s", err.Error())
 				} else {
@@ -49,7 +55,7 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 				}); classifyErr != nil {
 					c.logger.Errorf("error publishing classify message: %s", classifyErr.Error())
 				}
-				for _, i := range is {
+				for _, i := range hashMap {
 					select {
 					case <-ctx.Done():
 						return
@@ -121,7 +127,13 @@ func (c *crawler) runPersistSources(ctx context.Context) {
 			return
 		case scrapes := <-c.persistSources.Out():
 			srcs := make([]*model.TorrentsTorrentSource, 0, len(scrapes))
+			hashSet := make(map[protocol.ID]struct{}, len(scrapes))
 			for _, s := range scrapes {
+				if _, ok := hashSet[s.infoHash]; ok {
+					c.logger.Warnf("duplicate infohash scrape: %s", s.infoHash)
+					continue
+				}
+				hashSet[s.infoHash] = struct{}{}
 				if src, err := createTorrentSourceModel(s); err != nil {
 					c.logger.Errorf("error creating torrent source model: %s", err.Error())
 				} else {

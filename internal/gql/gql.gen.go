@@ -166,6 +166,7 @@ type ComplexityRoot struct {
 		FileType     func(childComplexity int) int
 		FileTypes    func(childComplexity int) int
 		Files        func(childComplexity int) int
+		FilesStatus  func(childComplexity int) int
 		HasFilesInfo func(childComplexity int) int
 		InfoHash     func(childComplexity int) int
 		Leechers     func(childComplexity int) int
@@ -243,6 +244,7 @@ type ComplexityRoot struct {
 	}
 
 	TorrentMutation struct {
+		Delete     func(childComplexity int, infoHashes []protocol.ID) int
 		DeleteTags func(childComplexity int, infoHashes []protocol.ID, tagNames []string) int
 		PutTags    func(childComplexity int, infoHashes []protocol.ID, tagNames []string) int
 		SetTags    func(childComplexity int, infoHashes []protocol.ID, tagNames []string) int
@@ -303,6 +305,7 @@ type TorrentResolver interface {
 	Sources(ctx context.Context, obj *model.Torrent) ([]gqlmodel.TorrentSource, error)
 }
 type TorrentMutationResolver interface {
+	Delete(ctx context.Context, obj *gqlmodel.TorrentMutation, infoHashes []protocol.ID) (*string, error)
 	PutTags(ctx context.Context, obj *gqlmodel.TorrentMutation, infoHashes []protocol.ID, tagNames []string) (*string, error)
 	SetTags(ctx context.Context, obj *gqlmodel.TorrentMutation, infoHashes []protocol.ID, tagNames []string) (*string, error)
 	DeleteTags(ctx context.Context, obj *gqlmodel.TorrentMutation, infoHashes []protocol.ID, tagNames []string) (*string, error)
@@ -782,6 +785,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Torrent.Files(childComplexity), true
 
+	case "Torrent.filesStatus":
+		if e.complexity.Torrent.FilesStatus == nil {
+			break
+		}
+
+		return e.complexity.Torrent.FilesStatus(childComplexity), true
+
 	case "Torrent.hasFilesInfo":
 		if e.complexity.Torrent.HasFilesInfo == nil {
 			break
@@ -1179,6 +1189,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TorrentFileTypeAgg.Value(childComplexity), true
 
+	case "TorrentMutation.delete":
+		if e.complexity.TorrentMutation.Delete == nil {
+			break
+		}
+
+		args, err := ec.field_TorrentMutation_delete_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.TorrentMutation.Delete(childComplexity, args["infoHashes"].([]protocol.ID)), true
+
 	case "TorrentMutation.deleteTags":
 		if e.complexity.TorrentMutation.DeleteTags == nil {
 			break
@@ -1496,6 +1518,13 @@ enum FileType {
   video
 }
 
+enum FilesStatus {
+  no_info
+  single
+  multi
+  over_threshold
+}
+
 enum Language {
   ar
   bs
@@ -1617,6 +1646,7 @@ enum VideoSource {
   hasFilesInfo: Boolean!
   singleFile: Boolean
   extension: String
+  filesStatus: FilesStatus!
   fileType: FileType
   fileTypes: [FileType!]
   files: [TorrentFile!]
@@ -1743,6 +1773,7 @@ type ContentCollection {
 }
 
 type TorrentMutation {
+  delete(infoHashes: [Hash20!]!): Void
   putTags(infoHashes: [Hash20!]!, tagNames: [String!]!): Void
   setTags(infoHashes: [Hash20!]!, tagNames: [String!]!): Void
   deleteTags(infoHashes: [Hash20!], tagNames: [String!]): Void
@@ -1992,6 +2023,21 @@ func (ec *executionContext) field_TorrentMutation_deleteTags_args(ctx context.Co
 		}
 	}
 	args["tagNames"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_TorrentMutation_delete_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []protocol.ID
+	if tmp, ok := rawArgs["infoHashes"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("infoHashes"))
+		arg0, err = ec.unmarshalNHash202ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋprotocolᚐIDᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["infoHashes"] = arg0
 	return args, nil
 }
 
@@ -4374,6 +4420,8 @@ func (ec *executionContext) fieldContext_Mutation_torrent(ctx context.Context, f
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
+			case "delete":
+				return ec.fieldContext_TorrentMutation_delete(ctx, field)
 			case "putTags":
 				return ec.fieldContext_TorrentMutation_putTags(ctx, field)
 			case "setTags":
@@ -5216,6 +5264,50 @@ func (ec *executionContext) fieldContext_Torrent_extension(ctx context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _Torrent_filesStatus(ctx context.Context, field graphql.CollectedField, obj *model.Torrent) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Torrent_filesStatus(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FilesStatus, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.FilesStatus)
+	fc.Result = res
+	return ec.marshalNFilesStatus2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐFilesStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Torrent_filesStatus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Torrent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type FilesStatus does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Torrent_fileType(ctx context.Context, field graphql.CollectedField, obj *model.Torrent) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Torrent_fileType(ctx, field)
 	if err != nil {
@@ -5812,6 +5904,8 @@ func (ec *executionContext) fieldContext_TorrentContent_torrent(ctx context.Cont
 				return ec.fieldContext_Torrent_singleFile(ctx, field)
 			case "extension":
 				return ec.fieldContext_Torrent_extension(ctx, field)
+			case "filesStatus":
+				return ec.fieldContext_Torrent_filesStatus(ctx, field)
 			case "fileType":
 				return ec.fieldContext_Torrent_fileType(ctx, field)
 			case "fileTypes":
@@ -7771,6 +7865,58 @@ func (ec *executionContext) fieldContext_TorrentFileTypeAgg_count(ctx context.Co
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TorrentMutation_delete(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.TorrentMutation) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TorrentMutation_delete(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.TorrentMutation().Delete(rctx, obj, fc.Args["infoHashes"].([]protocol.ID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOVoid2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TorrentMutation_delete(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TorrentMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Void does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_TorrentMutation_delete_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -12038,6 +12184,11 @@ func (ec *executionContext) _Torrent(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = ec._Torrent_singleFile(ctx, field, obj)
 		case "extension":
 			out.Values[i] = ec._Torrent_extension(ctx, field, obj)
+		case "filesStatus":
+			out.Values[i] = ec._Torrent_filesStatus(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "fileType":
 			out.Values[i] = ec._Torrent_fileType(ctx, field, obj)
 		case "fileTypes":
@@ -12518,6 +12669,39 @@ func (ec *executionContext) _TorrentMutation(ctx context.Context, sel ast.Select
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("TorrentMutation")
+		case "delete":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TorrentMutation_delete(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "putTags":
 			field := field
 
@@ -13516,6 +13700,22 @@ func (ec *executionContext) unmarshalNFileType2githubᚗcomᚋbitmagnetᚑioᚋb
 }
 
 func (ec *executionContext) marshalNFileType2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐFileType(ctx context.Context, sel ast.SelectionSet, v model.FileType) graphql.Marshaler {
+	res := graphql.MarshalString(string(v))
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNFilesStatus2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐFilesStatus(ctx context.Context, v interface{}) (model.FilesStatus, error) {
+	tmp, err := graphql.UnmarshalString(v)
+	res := model.FilesStatus(tmp)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFilesStatus2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐFilesStatus(ctx context.Context, sel ast.SelectionSet, v model.FilesStatus) graphql.Marshaler {
 	res := graphql.MarshalString(string(v))
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {

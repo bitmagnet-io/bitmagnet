@@ -3,6 +3,7 @@ type Mutation {
 }
 
 type TorrentMutation {
+  delete(infoHashes: [Hash20!]!): Void
   putTags(infoHashes: [Hash20!]!, tagNames: [String!]!): Void
   setTags(infoHashes: [Hash20!]!, tagNames: [String!]!): Void
   deleteTags(infoHashes: [Hash20!], tagNames: [String!]): Void

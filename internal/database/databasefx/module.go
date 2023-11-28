@@ -6,7 +6,6 @@ import (
   "github.com/bitmagnet-io/bitmagnet/internal/database/cache"
   "github.com/bitmagnet-io/bitmagnet/internal/database/dao"
   "github.com/bitmagnet-io/bitmagnet/internal/database/healthcheck"
-  "github.com/bitmagnet-io/bitmagnet/internal/database/persistence"
   "github.com/bitmagnet-io/bitmagnet/internal/database/postgres"
   "github.com/bitmagnet-io/bitmagnet/internal/database/search"
   "go.uber.org/fx"
@@ -23,7 +22,6 @@ func New() fx.Option {
       dao.New,
       database.New,
       healthcheck.New,
-      persistence.New,
       postgres.New,
       search.New,
     ),
