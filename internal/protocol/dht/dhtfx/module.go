@@ -18,7 +18,7 @@ func New() fx.Option {
 			fx.Annotated{
 				Name: "dht_node_id",
 				Target: func() protocol.ID {
-					return protocol.RandomNodeID()
+					return protocol.RandomNodeIDWithClientSuffix()
 				},
 			},
 			client.New,
