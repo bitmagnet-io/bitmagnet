@@ -434,9 +434,7 @@ export class TorrentContentComponent
       generated.TorrentContent | undefined
     >(undefined);
     newTagCtrl = new FormControl<string>("");
-    private editedTagsSubject = new BehaviorSubject<string[] | undefined>(
-      undefined,
-    );
+    private editedTags = Array<string>();
     public readonly suggestedTags = Array<string>();
     public selectedTabIndex = 0;
 
@@ -447,6 +445,7 @@ export class TorrentContentComponent
           return;
         }
         const nextItem = result.items.find((i) => i.id === item.id);
+        this.editedTags = nextItem?.torrent.tagNames ?? [];
         this.itemSubject.next(nextItem);
       });
       this.newTagCtrl.valueChanges.subscribe((value) => {
@@ -482,7 +481,7 @@ export class TorrentContentComponent
       const current = this.itemSubject.getValue();
       if (current?.id !== id) {
         this.itemSubject.next(nextItem);
-        this.editedTagsSubject.next(undefined);
+        this.editedTags = nextItem?.torrent.tagNames ?? [];
         this.newTagCtrl.reset();
         this.selectedTabIndex = 0;
       }
@@ -514,9 +513,7 @@ export class TorrentContentComponent
       if (!item) {
         return;
       }
-      const editedTags =
-        this.editedTagsSubject.getValue() ?? item.torrent.tagNames;
-      this.editedTagsSubject.next(fn(editedTags));
+      this.editedTags = fn(this.editedTags);
       this.newTagCtrl.reset();
     }
 
@@ -525,25 +522,20 @@ export class TorrentContentComponent
       if (!expanded) {
         return;
       }
-      const editedTags = this.editedTagsSubject.getValue();
-      if (!editedTags) {
-        return;
-      }
       this.ds.graphQLService
         .torrentSetTags({
           infoHashes: [expanded.infoHash],
-          tagNames: editedTags ?? [],
+          tagNames: this.editedTags,
         })
         .pipe(
           catchError((err: Error) => {
             this.ds.errorsService.addError(`Error saving tags: ${err.message}`);
-            this.editedTagsSubject.next(undefined);
             return EMPTY;
           }),
         )
         .pipe(
           tap(() => {
-            this.editedTagsSubject.next(undefined);
+            this.editedTags = [];
             this.ds.dataSource.refreshResult();
           }),
         )
