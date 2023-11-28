@@ -1,6 +1,19 @@
 package bloom
 
 //
+// This is a very basic benchmark for false positive/negative rates of the stable bloom filter;
+// leaving it in placs as it's handy to have.
+//
+// stable_test.go:23: 25000091
+// stable_test.go:39: fn 17355
+// stable_test.go:47: fp 8865
+//
+// This output demonstrates:
+// - The stable bloom filter can be encoded to 25MB
+// - The false negative rate averages 1.7437% for the last million deleted torrents
+// - At a stable state the false positive rate is 0.09023%
+//
+//
 //import (
 //	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 //	"testing"
@@ -20,7 +33,6 @@ package bloom
 //		hashes[id] = struct{}{}
 //		bf.Add(id[:])
 //	}
-//	t.Log("added")
 //	fn := 0
 //	for h := range hashes {
 //		if !bf.Test(h[:]) {
@@ -35,17 +47,5 @@ package bloom
 //			fps[id] = struct{}{}
 //		}
 //	}
-//	for i := 0; i < 10_000_000; i++ {
-//		id := protocol.RandomNodeID()
-//		bf.Add(id[:])
-//	}
 //	t.Log("fp", len(fps))
-//	unFp := 0
-//	for h := range fps {
-//		if !bf.Test(h[:]) {
-//			unFp++
-//		}
-//	}
-//	t.Log("unFp", unFp)
-//	t.Log("sp", bf.StablePoint())
 //}
