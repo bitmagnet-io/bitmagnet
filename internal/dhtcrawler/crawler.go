@@ -60,8 +60,6 @@ type crawler struct {
 }
 
 func (c *crawler) start() {
-	enc, _ := c.ignoreHashes.bloom.GobEncode()
-	println(len(enc))
 	// wait for the server to be ready
 	select {
 	case <-c.stopped:

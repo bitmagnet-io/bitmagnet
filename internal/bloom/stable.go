@@ -3,7 +3,6 @@ package bloom
 import (
 	"database/sql/driver"
 	"errors"
-	"fmt"
 	boom "github.com/tylertreat/BoomFilters"
 )
 
@@ -20,7 +19,6 @@ func NewDefaultStableBloomFilter() *StableBloomFilter {
 }
 
 func (s *StableBloomFilter) Scan(value interface{}) error {
-	fmt.Printf("scan")
 	bytes, ok := value.([]byte)
 	if !ok {
 		return errors.New("invalid type for StableBloomFilter")
@@ -34,7 +32,6 @@ func (s *StableBloomFilter) Scan(value interface{}) error {
 }
 
 func (s StableBloomFilter) Value() (driver.Value, error) {
-	println("value")
 	if s.Cells() == 0 {
 		return nil, nil
 	}
