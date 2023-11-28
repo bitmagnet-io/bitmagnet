@@ -15,7 +15,9 @@
             *ngFor="let t of contentTypeEntries"
             [value]="t.type"
           >
-            <mat-icon>{{ t.icon }}</mat-icon>
+            <mat-icon
+              [fontSet]="t.iconFontSet ?? 'material-icons'"
+            >{{ t.icon }}</mat-icon>
             {{ t.plural }}
             <small>({{ contentTypeAgg(t.type)?.count ?? 0 | number }})</small>
           </mat-radio-button>
@@ -106,6 +108,142 @@
           </button>
         </div>
       </div>
+
+      <mat-divider></mat-divider>
+
+      <mat-tab-group
+        animationDuration="0"
+        class="tab-group-bulk-actions"
+        [selectedIndex]="selectedTabIndex"
+        (focusChange)="
+                  selectTab($event.index == 3 ? 0 : $event.index)
+                "
+        [mat-stretch-tabs]="false"
+      >
+        <mat-tab [aria-labelledby]="'hidden'" class="bulk-tab-placeholder"></mat-tab>
+
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>label_outline</mat-icon>
+            Edit tags
+          </ng-template>
+
+          <mat-card>
+          <mat-form-field
+            class="form-edit-tags"
+          >
+            <mat-chip-grid #chipGrid aria-label="Enter tags">
+              <mat-chip-row
+                *ngFor="
+                          let tagName of editedTags;
+                          let j = index
+                        "
+                [editable]="true"
+                (edited)="renameTag(tagName, $event.value)"
+                (removed)="deleteTag(tagName)"
+                [aria-description]="'press enter to edit'"
+              >
+                {{ tagName }}
+                <button
+                  matChipRemove
+                  [attr.aria-label]="'remove ' + tagName"
+                >
+                  <mat-icon>cancel</mat-icon>
+                </button>
+              </mat-chip-row>
+            </mat-chip-grid>
+            <input
+              placeholder="Tag..."
+              [formControl]="newTagCtrl"
+              [matAutocomplete]="auto"
+              [matChipInputFor]="chipGrid"
+              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+              (matChipInputTokenEnd)="
+                        $event.value && addTag($event.value)
+                      "
+              [value]="newTagCtrl.value"
+              tagNameInput
+            />
+            <mat-autocomplete
+              #auto="matAutocomplete"
+              (optionSelected)="
+                        addTag($event.option.viewValue)
+                      "
+            >
+              <mat-option
+                *ngFor="let tagName of suggestedTags"
+                [value]="tagName"
+              >{{ tagName }}</mat-option
+              >
+            </mat-autocomplete>
+          </mat-form-field>
+          <mat-card-actions>
+            <button
+              mat-button
+              color="primary"
+              [disabled]="!selectedItems.hasValue()"
+              (click)="setTags()"
+              title="Replace tags of the selected torrents"
+            >
+              Set tags
+            </button>
+            <button
+              mat-button
+              color="primary"
+              [disabled]="!selectedItems.hasValue() || (!editedTags.length && !newTagCtrl.value)"
+              (click)="putTags()"
+              title="Add tags to the selected torrents"
+            >
+              Put tags
+            </button>
+            <button
+              mat-button
+              color="primary"
+              [disabled]="!selectedItems.hasValue() || (!editedTags.length &&!newTagCtrl.value)"
+              (click)="deleteTags()"
+              title="Remove tags from the selected torrents"
+            >
+              Delete tags
+            </button>
+          </mat-card-actions>
+          </mat-card>
+        </mat-tab>
+
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>delete_forever</mat-icon>
+            Delete
+          </ng-template>
+
+          <mat-card>
+            <mat-card-content>
+              <p><strong
+            >Are you sure you want to delete the selected torrents?</strong
+            >
+              <br />This action cannot be undone.</p>
+            </mat-card-content>
+            <mat-card-actions>
+              <button
+                mat-button
+                color="warn"
+                [disabled]="!selectedItems.hasValue()"
+                (click)="deleteTorrents(selectedInfoHashes())"
+              >
+                <mat-icon>delete_forever</mat-icon>Delete
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        </mat-tab>
+
+        <mat-tab *ngIf="selectedTabIndex > 0">
+          <ng-template mat-tab-label>
+            <mat-icon style="margin-right: 0">close</mat-icon>
+          </ng-template>
+        </mat-tab>
+      </mat-tab-group>
+
+      <mat-divider></mat-divider>
+
       <div class="progress-bar-container" style="height: 10px">
         <mat-progress-bar
           mode="indeterminate"
@@ -118,6 +256,25 @@
         multiTemplateDataRows
         class="table-results"
       >
+
+        <!-- Checkbox Column -->
+        <ng-container matColumnDef="select">
+          <th mat-header-cell *matHeaderCellDef>
+            <mat-checkbox (change)="toggleAllRows()"
+                          [checked]="selectedItems.hasValue() && isAllSelected()"
+                          [indeterminate]="selectedItems.hasValue() && !isAllSelected()"
+                          [aria-label]="checkboxLabel()">
+            </mat-checkbox>
+          </th>
+          <td mat-cell *matCellDef="let row">
+            <mat-checkbox (click)="$event.stopPropagation()"
+                          (change)="$event ? selectedItems.toggle(row) : null"
+                          [checked]="selectedItems.isSelected(row)"
+                          [aria-label]="checkboxLabel(row)">
+            </mat-checkbox>
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="summary">
           <th mat-header-cell *matHeaderCellDef>Summary</th>
           <td
@@ -125,18 +282,11 @@
             *matCellDef="let i"
             (click)="expandedItem.toggle(i.id); $event.stopPropagation()"
           >
-            <button mat-icon-button aria-label="expand row">
-              <mat-icon *ngIf="expandedItem.id !== i.id"
-                >keyboard_arrow_down</mat-icon
-              >
-              <mat-icon *ngIf="expandedItem.id === i.id"
-                >keyboard_arrow_up</mat-icon
-              >
-            </button>
             <mat-icon
               [attr.title]="
                 contentTypeInfo(item(i).contentType)?.singular ?? 'Unknown'
               "
+              [fontSet]="contentTypeInfo(item(i).contentType)?.iconFontSet ?? 'material-icons'"
               >{{
                 contentTypeInfo(item(i).contentType)?.icon ?? "question_mark"
               }}</mat-icon
@@ -209,10 +359,7 @@
             [attr.colspan]="displayedColumns.length"
           >
             <div
-              [class]="
-                'item-detail' +
-                (expandedItem.id === i.id ? ' expanded' : ' collapsed')
-              "
+              class="item-detail"
               [@detailExpand]="
                 expandedItem.id === i.id ? 'expanded' : 'collapsed'
               "
@@ -305,7 +452,9 @@
                     Files
                   </ng-template>
 
-                  <div class="torrent-files">
+                  <mat-card
+                    *ngIf="expandedItem.id === i.id"
+                    class="torrent-files">
                     <p *ngIf="item(i).torrent.filesStatus === 'no_info'">
                       No file information available.
                     </p>
@@ -350,18 +499,21 @@
                         </tr>
                       </tbody>
                     </table>
-                  </div>
+                  </mat-card>
                 </mat-tab>
 
                 <mat-tab>
                   <ng-template mat-tab-label>
-                    <mat-icon>sell</mat-icon>
+                    <mat-icon>label_outline</mat-icon>
                     Edit tags
                   </ng-template>
 
+                  <mat-card
+                    *ngIf="expandedItem.id === i.id"
+                  >
+
                   <mat-form-field
                     class="form-edit-tags"
-                    *ngIf="expandedItem.id === i.id"
                   >
                     <mat-chip-grid #chipGrid aria-label="Enter tags">
                       <mat-chip-row
@@ -407,6 +559,7 @@
                       >
                     </mat-autocomplete>
                   </mat-form-field>
+                  </mat-card>
                 </mat-tab>
 
                 <mat-tab>
@@ -415,21 +568,26 @@
                     Delete
                   </ng-template>
 
-                  <p style="margin-top: 10px">
-                    <strong
+                  <mat-card
+                    *ngIf="expandedItem.id === i.id"
+                  >
+
+                  <mat-card-content style="margin-top: 10px">
+                    <p><strong
                       >Are you sure you want to delete this torrent?</strong
                     >
-                    <br />This action cannot be undone.
-                  </p>
-                  <p>
+                    <br />This action cannot be undone.</p>
+                  </mat-card-content>
+                  <mat-card-actions>
                     <button
-                      mat-raised-button
+                      mat-button
                       color="warn"
                       (click)="expandedItem.delete()"
                     >
                       <mat-icon>delete_forever</mat-icon>Delete
                     </button>
-                  </p>
+                  </mat-card-actions>
+                  </mat-card>
                 </mat-tab>
 
                 <mat-tab *ngIf="expandedItem.selectedTabIndex > 0">
@@ -443,7 +601,10 @@
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let _; columns: displayedColumns"></tr>
+        <tr
+          mat-row
+          *matRowDef="let i; columns: displayedColumns"
+          [class]="'summary-row ' + (i.id === expandedItem.id ? 'expanded' : 'collapsed')"></tr>
         <tr
           mat-row
           *matRowDef="let _; columns: ['expandedDetail']"
@@ -456,7 +617,7 @@
         [pageIndex]="pageIndex"
         [length]="result.totalCount"
         [pageSize]="pageSize"
-        [pageSizeOptions]="[10, 25, 50, 100]"
+        [pageSizeOptions]="[10, 25, 50, 100, 250]"
         [showFirstLastButtons]="true"
         aria-label="Select page"
       >

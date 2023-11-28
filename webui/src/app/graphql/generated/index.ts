@@ -558,6 +558,14 @@ export type TorrentDeleteTagsMutationVariables = Exact<{
 
 export type TorrentDeleteTagsMutation = { __typename?: 'Mutation', torrent: { __typename?: 'TorrentMutation', deleteTags?: void | null } };
 
+export type TorrentPutTagsMutationVariables = Exact<{
+  infoHashes: Array<Scalars['Hash20']['input']> | Scalars['Hash20']['input'];
+  tagNames: Array<Scalars['String']['input']> | Scalars['String']['input'];
+}>;
+
+
+export type TorrentPutTagsMutation = { __typename?: 'Mutation', torrent: { __typename?: 'TorrentMutation', putTags?: void | null } };
+
 export type TorrentSetTagsMutationVariables = Exact<{
   infoHashes: Array<Scalars['Hash20']['input']> | Scalars['Hash20']['input'];
   tagNames: Array<Scalars['String']['input']> | Scalars['String']['input'];
@@ -792,6 +800,24 @@ export const TorrentDeleteTagsDocument = gql`
   })
   export class TorrentDeleteTagsGQL extends Apollo.Mutation<TorrentDeleteTagsMutation, TorrentDeleteTagsMutationVariables> {
     override document = TorrentDeleteTagsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const TorrentPutTagsDocument = gql`
+    mutation TorrentPutTags($infoHashes: [Hash20!]!, $tagNames: [String!]!) {
+  torrent {
+    putTags(infoHashes: $infoHashes, tagNames: $tagNames)
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class TorrentPutTagsGQL extends Apollo.Mutation<TorrentPutTagsMutation, TorrentPutTagsMutationVariables> {
+    override document = TorrentPutTagsDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

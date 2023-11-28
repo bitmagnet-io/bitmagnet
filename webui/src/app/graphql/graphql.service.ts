@@ -37,6 +37,21 @@ export class GraphQLService {
       .pipe(map(() => void 0));
   }
 
+  torrentPutTags(
+    input: generated.TorrentPutTagsMutationVariables,
+  ): Observable<void> {
+    return this.apollo
+      .mutate<
+        generated.TorrentPutTagsMutation,
+        generated.TorrentPutTagsMutationVariables
+      >({
+        mutation: generated.TorrentPutTagsDocument,
+        variables: input,
+        fetchPolicy,
+      })
+      .pipe(map(() => void 0));
+  }
+
   torrentSetTags(
     input: generated.TorrentSetTagsMutationVariables,
   ): Observable<void> {
@@ -46,6 +61,21 @@ export class GraphQLService {
         generated.TorrentSetTagsMutationVariables
       >({
         mutation: generated.TorrentSetTagsDocument,
+        variables: input,
+        fetchPolicy,
+      })
+      .pipe(map(() => void 0));
+  }
+
+  torrentDeleteTags(
+    input: generated.TorrentDeleteTagsMutationVariables,
+  ): Observable<void> {
+    return this.apollo
+      .mutate<
+        generated.TorrentDeleteTagsMutation,
+        generated.TorrentDeleteTagsMutationVariables
+      >({
+        mutation: generated.TorrentDeleteTagsDocument,
         variables: input,
         fetchPolicy,
       })

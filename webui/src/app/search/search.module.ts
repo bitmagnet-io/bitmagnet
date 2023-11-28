@@ -21,6 +21,7 @@ import { MatRadioModule } from "@angular/material/radio";
 import { MatAutocompleteModule } from "@angular/material/autocomplete";
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatDividerModule } from "@angular/material/divider";
+import { MatCardModule } from "@angular/material/card";
 import { TorrentContentComponent } from "./torrent-content/torrent-content.component";
 import { TagNameInputDirective } from "./tag-name-input.directive";
 
@@ -49,6 +50,7 @@ import { TagNameInputDirective } from "./tag-name-input.directive";
     MatAutocompleteModule,
     MatTabsModule,
     MatDividerModule,
+    MatCardModule,
   ],
   exports: [TorrentContentComponent],
 })

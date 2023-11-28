@@ -18,6 +18,7 @@ import {
   trigger,
 } from "@angular/animations";
 import { COMMA, ENTER } from "@angular/cdk/keycodes";
+import { SelectionModel } from "@angular/cdk/collections";
 import * as generated from "../../graphql/generated";
 import { GraphQLService } from "../../graphql/graphql.service";
 import { AppErrorsService } from "../../app-errors.service";
@@ -46,7 +47,7 @@ export class TorrentContentComponent
     this.graphQLService,
     this.errorsService,
   );
-  displayedColumns = ["summary", "size", "peers", "magnet"];
+  displayedColumns = ["select", "summary", "size", "peers", "magnet"];
   queryString = new FormControl("");
 
   pageIndex = 0;
@@ -59,54 +60,10 @@ export class TorrentContentComponent
   };
   loading = true;
 
-  contentTypes: Record<generated.ContentType | "null", ContentTypeInfo> = {
-    movie: {
-      singular: "Movie",
-      plural: "Movies",
-      icon: "movie",
-    },
-    tv_show: {
-      singular: "TV Show",
-      plural: "TV Shows",
-      icon: "live_tv",
-    },
-    music: {
-      singular: "Music",
-      plural: "Music",
-      icon: "music_note",
-    },
-    book: {
-      singular: "Book",
-      plural: "Books",
-      icon: "auto_stories",
-    },
-    software: {
-      singular: "Software",
-      plural: "Software",
-      icon: "desktop_windows",
-    },
-    game: {
-      singular: "Game",
-      plural: "Games",
-      icon: "sports_esports",
-    },
-    xxx: {
-      singular: "XXX",
-      plural: "XXX",
-      icon: "18_up_rating",
-    },
-    null: {
-      singular: "Unknown",
-      plural: "Unknown",
-      icon: "question_mark",
-    },
-  };
-  contentTypeEntries = Object.entries(this.contentTypes).map(
-    ([type, info]) => ({
-      type: type as generated.ContentType,
-      ...info,
-    }),
-  );
+  contentTypeEntries = Object.entries(contentTypes).map(([type, info]) => ({
+    type: type as generated.ContentType,
+    ...info,
+  }));
 
   contentType = new FormControl<generated.ContentType | "null" | undefined>(
     undefined,
@@ -128,12 +85,24 @@ export class TorrentContentComponent
 
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
 
+  selectedItems = new SelectionModel<generated.TorrentContent>(true, []);
+  selectedTabIndex = 0;
+
+  newTagCtrl = new FormControl<string>("");
+  editedTags = Array<string>();
+  suggestedTags = Array<string>();
+
   constructor(
     private graphQLService: GraphQLService,
     private errorsService: AppErrorsService,
   ) {
     this.dataSource.result.subscribe((result) => {
       this.result = result;
+      this.selectedItems.setSelection(
+        ...result.items.filter(({ id }) =>
+          this.selectedItems.selected.some(({ id: itemId }) => itemId === id),
+        ),
+      );
     });
     this.dataSource.loading.subscribe((loading) => (this.loading = loading));
     this.torrentSourceFacet = new Facet<string, false>(
@@ -144,7 +113,7 @@ export class TorrentContentComponent
     );
     this.torrentTagFacet = new Facet<string, false>(
       "Torrent Tag",
-      "sell",
+      "label_outline",
       null,
       this.dataSource.torrentTagAggs,
     );
@@ -212,6 +181,10 @@ export class TorrentContentComponent
       this.pageIndex = 0;
       this.loadResult();
     });
+    this.newTagCtrl.valueChanges.subscribe(() => {
+      this.updateSuggestedTags();
+    });
+    this.updateSuggestedTags();
   }
 
   loadResult(cached = true) {
@@ -259,7 +232,7 @@ export class TorrentContentComponent
   }
 
   contentTypeInfo(type?: generated.ContentType | "null" | null) {
-    return type ? this.contentTypes[type] : undefined;
+    return type ? contentTypes[type] : undefined;
   }
 
   contentTypeAgg(v: unknown) {
@@ -288,6 +261,153 @@ export class TorrentContentComponent
       ?.filter((a) => a.type === type)
       .map((a) => a.name);
     return collections?.length ? collections.sort() : undefined;
+  }
+
+  /** Whether the number of selected elements matches the total number of rows. */
+  isAllSelected() {
+    return this.result.items.every((i) => this.selectedItems.isSelected(i));
+  }
+
+  /** Selects all rows if they are not all selected; otherwise clear selection. */
+  toggleAllRows() {
+    if (this.isAllSelected()) {
+      this.selectedItems.clear();
+      return;
+    }
+    this.selectedItems.select(...this.result.items);
+  }
+
+  /** The label for the checkbox on the passed row */
+  checkboxLabel(row?: generated.TorrentContent): string {
+    if (!row) {
+      return `${this.isAllSelected() ? "deselect" : "select"} all`;
+    }
+    return `${this.selectedItems.isSelected(row) ? "deselect" : "select"} ${
+      row.torrent.name
+    }`;
+  }
+
+  selectTab(index: number): void {
+    this.selectedTabIndex = index;
+  }
+
+  addTag(tagName: string) {
+    if (!this.editedTags.includes(tagName)) {
+      this.editedTags.push(tagName);
+    }
+    this.newTagCtrl.reset();
+    this.updateSuggestedTags();
+  }
+
+  deleteTag(tagName: string) {
+    this.editedTags = this.editedTags.filter((t) => t !== tagName);
+    this.updateSuggestedTags();
+  }
+
+  renameTag(fromTagName: string, toTagName: string) {
+    this.editedTags = this.editedTags.map((t) =>
+      t === fromTagName ? toTagName : t,
+    );
+    this.updateSuggestedTags();
+  }
+
+  putTags() {
+    const infoHashes = this.selectedItems.selected.map((i) => i.infoHash);
+    if (!infoHashes.length) {
+      return;
+    }
+    this.newTagCtrl.value && this.addTag(this.newTagCtrl.value);
+    return this.graphQLService
+      .torrentPutTags({
+        infoHashes,
+        tagNames: this.editedTags,
+      })
+      .pipe(
+        catchError((err: Error) => {
+          this.errorsService.addError(`Error putting tags: ${err.message}`);
+          return EMPTY;
+        }),
+      )
+      .pipe(
+        tap(() => {
+          this.dataSource.refreshResult();
+        }),
+      )
+      .subscribe();
+  }
+
+  setTags() {
+    const infoHashes = this.selectedItems.selected.map((i) => i.infoHash);
+    if (!infoHashes.length) {
+      return;
+    }
+    this.newTagCtrl.value && this.addTag(this.newTagCtrl.value);
+    return this.graphQLService
+      .torrentSetTags({
+        infoHashes,
+        tagNames: this.editedTags,
+      })
+      .pipe(
+        catchError((err: Error) => {
+          this.errorsService.addError(`Error setting tags: ${err.message}`);
+          return EMPTY;
+        }),
+      )
+      .pipe(
+        tap(() => {
+          this.dataSource.refreshResult();
+        }),
+      )
+      .subscribe();
+  }
+
+  deleteTags() {
+    const infoHashes = this.selectedItems.selected.map((i) => i.infoHash);
+    if (!infoHashes.length) {
+      return;
+    }
+    this.newTagCtrl.value && this.addTag(this.newTagCtrl.value);
+    return this.graphQLService
+      .torrentDeleteTags({
+        infoHashes,
+        tagNames: this.editedTags,
+      })
+      .pipe(
+        catchError((err: Error) => {
+          this.errorsService.addError(`Error deleting tags: ${err.message}`);
+          return EMPTY;
+        }),
+      )
+      .pipe(
+        tap(() => {
+          this.dataSource.refreshResult();
+        }),
+      )
+      .subscribe();
+  }
+
+  private updateSuggestedTags() {
+    return this.graphQLService
+      .torrentSuggestTags({
+        query: {
+          prefix: this.newTagCtrl.value,
+          exclusions: this.editedTags,
+        },
+      })
+      .pipe(
+        tap((result) => {
+          this.suggestedTags.splice(
+            0,
+            this.suggestedTags.length,
+            ...result.suggestions.map((t) => t.name),
+          );
+        }),
+      )
+      .subscribe();
+  }
+
+  selectedInfoHashes(): string[] {
+    return this.selectedItems.selected.map((i) => i.infoHash);
   }
 
   deleteTorrents(infoHashes: string[]) {
@@ -444,4 +564,55 @@ type ContentTypeInfo = {
   singular: string;
   plural: string;
   icon: string;
+  iconFontSet?: string;
+};
+
+const iconFontSetOutlined = "material-icons-outlined";
+
+const contentTypes: Record<generated.ContentType | "null", ContentTypeInfo> = {
+  movie: {
+    singular: "Movie",
+    plural: "Movies",
+    icon: "movie",
+    iconFontSet: iconFontSetOutlined,
+  },
+  tv_show: {
+    singular: "TV Show",
+    plural: "TV Shows",
+    icon: "live_tv",
+  },
+  music: {
+    singular: "Music",
+    plural: "Music",
+    icon: "music_note",
+    iconFontSet: iconFontSetOutlined,
+  },
+  book: {
+    singular: "Book",
+    plural: "Books",
+    icon: "auto_stories",
+    iconFontSet: iconFontSetOutlined,
+  },
+  software: {
+    singular: "Software",
+    plural: "Software",
+    icon: "desktop_windows",
+  },
+  game: {
+    singular: "Game",
+    plural: "Games",
+    icon: "sports_esports",
+    iconFontSet: iconFontSetOutlined,
+  },
+  xxx: {
+    singular: "XXX",
+    plural: "XXX",
+    icon: "18_up_rating_outline",
+    iconFontSet: iconFontSetOutlined,
+  },
+  null: {
+    singular: "Unknown",
+    plural: "Unknown",
+    icon: "question_mark",
+  },
 };

@@ -90,24 +90,78 @@
   }
 }
 
+.mat-column-select {
+  padding-right: 10px;
+  width: 30px;
+}
+
+.mat-column-summary {
+  padding-left: 0;
+  button {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+th.mat-column-summary {
+  padding-left: 10px;
+}
+
 td.mat-column-summary {
+  vertical-align: middle;
   cursor: pointer;
+  .title {
+    display: inline-block;
+    line-height: 30px;
+    word-wrap: break-word;
+    max-width: 900px;
+  }
   .mat-icon {
+    display: inline-block;
     position: relative;
     top: 5px;
     margin-right: 10px;
   }
   mat-chip-set {
     display: inline-block;
-    margin-left: 20px;
+    margin-left: 30px;
     position: relative;
     top: -2px;
+    margin-bottom: 4px;
+    mat-chip {
+      margin: 0 10px 0 0;
+    }
   }
 }
 
-.mat-mdc-row {
-  &:hover .mat-mdc-cell {
-    background-color: whitesmoke;
+tr.expanded-detail-row {
+  height: 0;
+}
+
+tr.mat-mdc-row.expanded {
+  td.mat-column-summary {
+    mat-icon {
+      color: mat.get-color-from-palette($accent-palette, 500);
+    }
+  }
+  td {
+    border-bottom: 0;
+  }
+  + .expanded-detail-row {
+    > td {
+      padding-bottom: 10px;
+    }
+  }
+}
+
+.mat-mdc-row.summary-row {
+  &:hover {
+    .mat-mdc-cell {
+      background-color: whitesmoke;
+    }
+    + tr.expanded-detail-row {
+      background-color: whitesmoke;
+    }
   }
 }
 
@@ -117,10 +171,6 @@ td.mat-column-summary {
     position: relative;
     top: 5px;
   }
-}
-
-tr.expanded-detail-row {
-  height: 0;
 }
 
 .item-detail {
@@ -142,10 +192,11 @@ tr.expanded-detail-row {
     text-decoration: underline;
     text-decoration-style: dotted;
   }
-  ::ng-deep .mdc-tab__text-label {
-    mat-icon {
-      margin-right: 10px;
-    }
+}
+
+::ng-deep .mdc-tab__text-label {
+  mat-icon {
+    margin-right: 10px;
   }
 }
 
@@ -176,8 +227,37 @@ tr.expanded-detail-row {
   overflow: scroll;
   table {
     margin-bottom: 10px;
+    width: 800px;
   }
   td {
     padding-right: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  tr:hover td {
+    background-color: whitesmoke;
+  }
+}
+
+//::ng-deep .tab-group-bulk-actions {
+//  .mat-mdc-tab-body-active {
+//    overflow: clip;
+//    .mat-mdc-tab-body-content {
+//      padding: 20px 30px 0 30px;
+//    }
+//  }
+//  #mat-tab-content-0-0 .mat-mdc-tab-body-content {
+//    display: none;
+//  }
+//}
+
+.button-row {
+  .mat-mdc-button-base {
+    margin: 8px 8px 8px 0;
+  }
+}
+
+.form-edit-tags {
+  ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+    display: none;
   }
 }
