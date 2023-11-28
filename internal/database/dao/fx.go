@@ -17,6 +17,5 @@ type Result struct {
 
 func New(p Params) (r Result, err error) {
 	r.Dao = Use(p.GormDb)
-	//SetDefault(p.GormDb)
 	return
 }
