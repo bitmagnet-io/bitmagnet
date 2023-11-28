@@ -15,7 +15,7 @@
             *ngFor="let t of contentTypeEntries"
             [value]="t.type"
           >
-            <mat-icon [fontSet]="t.iconFontSet ?? 'material-icons'">{{
+            <mat-icon>{{
               t.icon
             }}</mat-icon>
             {{ t.plural }}
@@ -286,10 +286,6 @@
             <mat-icon
               [attr.title]="
                 contentTypeInfo(item(i).contentType)?.singular ?? 'Unknown'
-              "
-              [fontSet]="
-                contentTypeInfo(item(i).contentType)?.iconFontSet ??
-                'material-icons'
               "
               >{{
                 contentTypeInfo(item(i).contentType)?.icon ?? "question_mark"

@@ -564,17 +564,13 @@ type ContentTypeInfo = {
   singular: string;
   plural: string;
   icon: string;
-  iconFontSet?: string;
 };
-
-const iconFontSetOutlined = "material-icons-outlined";
 
 const contentTypes: Record<generated.ContentType | "null", ContentTypeInfo> = {
   movie: {
     singular: "Movie",
     plural: "Movies",
     icon: "movie",
-    iconFontSet: iconFontSetOutlined,
   },
   tv_show: {
     singular: "TV Show",
@@ -585,13 +581,11 @@ const contentTypes: Record<generated.ContentType | "null", ContentTypeInfo> = {
     singular: "Music",
     plural: "Music",
     icon: "music_note",
-    iconFontSet: iconFontSetOutlined,
   },
   book: {
     singular: "Book",
     plural: "Books",
     icon: "auto_stories",
-    iconFontSet: iconFontSetOutlined,
   },
   software: {
     singular: "Software",
@@ -602,13 +596,11 @@ const contentTypes: Record<generated.ContentType | "null", ContentTypeInfo> = {
     singular: "Game",
     plural: "Games",
     icon: "sports_esports",
-    iconFontSet: iconFontSetOutlined,
   },
   xxx: {
     singular: "XXX",
     plural: "XXX",
     icon: "18_up_rating_outline",
-    iconFontSet: iconFontSetOutlined,
   },
   null: {
     singular: "Unknown",
