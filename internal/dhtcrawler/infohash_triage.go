@@ -25,7 +25,6 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 			reqMap := make(map[protocol.ID]nodeHasPeersForHash, len(reqs))
 			for _, r := range reqs {
 				if _, ok := reqMap[r.infoHash]; ok {
-					c.logger.Warnf("duplicate infohash triage: %s", r.infoHash)
 					continue
 				}
 				allHashes = append(allHashes, r.infoHash)
@@ -36,7 +35,6 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 				c.logger.Errorf("failed to filter infohashes: %s", filterErr.Error())
 				break
 			}
-			c.logger.Warnf("filteredHashes: %d / %d", len(allHashes), len(filteredHashes))
 			if len(filteredHashes) == 0 {
 				break
 			}

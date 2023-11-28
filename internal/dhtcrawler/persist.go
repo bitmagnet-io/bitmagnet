@@ -23,7 +23,6 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 			hashMap := make(map[protocol.ID]infoHashWithMetaInfo, len(is))
 			for _, i := range is {
 				if _, ok := hashMap[i.infoHash]; ok {
-					c.logger.Warnf("duplicate infohash: %s", i.infoHash)
 					continue
 				}
 				hashMap[i.infoHash] = i
@@ -130,7 +129,6 @@ func (c *crawler) runPersistSources(ctx context.Context) {
 			hashSet := make(map[protocol.ID]struct{}, len(scrapes))
 			for _, s := range scrapes {
 				if _, ok := hashSet[s.infoHash]; ok {
-					c.logger.Warnf("duplicate infohash scrape: %s", s.infoHash)
 					continue
 				}
 				hashSet[s.infoHash] = struct{}{}

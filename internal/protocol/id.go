@@ -12,8 +12,35 @@ import (
 	"strings"
 )
 
+// There are 2 main conventions for encodeing client and client version information into the client ID,
+// Azureus-style and Shadow's-style.
+//
+// Azureus-style uses the following encoding: '-', two characters for client id, four ascii digits for version
+// number, '-', followed by random numbers.
+//
+// For example: '-AZ2060-'...
+//
+// https://wiki.theory.org/BitTorrentSpecification#peer_id
+//
+// We encode the version number as:
+// - First two digits for the major version number
+// - Last two digits for the minor version number
+// - Patch version number is not encoded.
+const idClientPart = "-BM0001-"
+
 func RandomNodeID() (id ID) {
 	_, _ = crand.Read(id[:])
+	return
+}
+
+// RandomNodeIDWithClientSuffix generates a node ID for the DHT client.
+// We use a random byte string with the client ID encoded at the end, to allow identifying other bitmagnet instances in the wild.
+// A suffix is used instead of a prefix, which would be incompatible with DHT, where ID prefixes are used for computing the distance metric).
+func RandomNodeIDWithClientSuffix() (id ID) {
+	_, _ = crand.Read(id[:])
+	for i := 0; i < len(idClientPart); i++ {
+		id[20-len(idClientPart)+i] = idClientPart[i]
+	}
 	return
 }
 
@@ -167,26 +194,10 @@ func (id *MutableID) SetBit(i int, v bool) {
 	}
 }
 
-const peerIDPrefix = "-BM0001-"
-
 func RandomPeerID() ID {
-	// There are 2 main conventions for encodeing client and client version information into the client ID,
-	// Azureus-style and Shadow's-style.
-	//
-	// Azureus-style uses the following encoding: '-', two characters for client id, four ascii digits for version
-	// number, '-', followed by random numbers.
-	//
-	// For example: '-AZ2060-'...
-	//
-	// https://wiki.theory.org/BitTorrentSpecification#peer_id
-	//
-	// We encode the version number as:
-	// - First two digits for the major version number
-	// - Last two digits for the minor version number
-	// - Patch version number is not encoded.
 	clientID := RandomNodeID()
 	i := 0
-	for _, c := range peerIDPrefix {
+	for _, c := range idClientPart {
 		clientID[i] = byte(c)
 		i++
 	}
