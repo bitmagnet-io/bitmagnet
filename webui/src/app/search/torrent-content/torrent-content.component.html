@@ -9,7 +9,7 @@
       <section>
         <mat-radio-group [formControl]="contentType">
           <mat-radio-button>
-            <mat-icon>emergency</mat-icon>All
+            <mat-icon fontSet="material-icons">emergency</mat-icon>All
           </mat-radio-button>
           <mat-radio-button
             *ngFor="let t of contentTypeEntries"
@@ -63,6 +63,7 @@
     <div class="results">
       <div class="search-form">
         <mat-icon
+          fontSet="material-icons"
           [class]="'toggle-drawer ' + (drawer.opened ? 'opened' : 'closed')"
           (click)="drawer.toggle()"
           >{{
@@ -125,7 +126,7 @@
 
         <mat-tab>
           <ng-template mat-tab-label>
-            <mat-icon>label_outline</mat-icon>
+            <mat-icon>sell</mat-icon>
             Edit tags
           </ng-template>
 
@@ -165,9 +166,9 @@
                 >
               </mat-autocomplete>
             </mat-form-field>
-            <mat-card-actions>
+            <mat-card-actions class="button-row">
               <button
-                mat-button
+                mat-stroked-button
                 color="primary"
                 [disabled]="!selectedItems.hasValue()"
                 (click)="setTags()"
@@ -176,7 +177,7 @@
                 Set tags
               </button>
               <button
-                mat-button
+                mat-stroked-button
                 color="primary"
                 [disabled]="
                   !selectedItems.hasValue() ||
@@ -188,7 +189,7 @@
                 Put tags
               </button>
               <button
-                mat-button
+                mat-stroked-button
                 color="primary"
                 [disabled]="
                   !selectedItems.hasValue() ||
@@ -219,9 +220,9 @@
                 <br />This action cannot be undone.
               </p>
             </mat-card-content>
-            <mat-card-actions>
+            <mat-card-actions class="button-row">
               <button
-                mat-button
+                mat-stroked-button
                 color="warn"
                 [disabled]="!selectedItems.hasValue()"
                 (click)="deleteTorrents(selectedInfoHashes())"
@@ -508,7 +509,7 @@
 
                 <mat-tab>
                   <ng-template mat-tab-label>
-                    <mat-icon>label_outline</mat-icon>
+                    <mat-icon>sell</mat-icon>
                     Edit tags
                   </ng-template>
 
@@ -578,9 +579,9 @@
                         <br />This action cannot be undone.
                       </p>
                     </mat-card-content>
-                    <mat-card-actions>
+                    <mat-card-actions class="button-row">
                       <button
-                        mat-button
+                        mat-stroked-button
                         color="warn"
                         (click)="expandedItem.delete()"
                       >

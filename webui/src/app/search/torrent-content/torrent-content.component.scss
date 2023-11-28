@@ -238,21 +238,9 @@ tr.mat-mdc-row.expanded {
   }
 }
 
-//::ng-deep .tab-group-bulk-actions {
-//  .mat-mdc-tab-body-active {
-//    overflow: clip;
-//    .mat-mdc-tab-body-content {
-//      padding: 20px 30px 0 30px;
-//    }
-//  }
-//  #mat-tab-content-0-0 .mat-mdc-tab-body-content {
-//    display: none;
-//  }
-//}
-
 .button-row {
   .mat-mdc-button-base {
-    margin: 8px 8px 8px 0;
+    margin-left: 8px;
   }
 }
 

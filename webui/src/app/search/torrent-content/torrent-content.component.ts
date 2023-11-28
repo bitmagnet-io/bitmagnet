@@ -113,7 +113,7 @@ export class TorrentContentComponent
     );
     this.torrentTagFacet = new Facet<string, false>(
       "Torrent Tag",
-      "label_outline",
+      "sell",
       null,
       this.dataSource.torrentTagAggs,
     );
