@@ -3,7 +3,6 @@ package dhtcrawler
 import (
 	"context"
 	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
-	"github.com/bitmagnet-io/bitmagnet/internal/bloom"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/worker"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/asynq/message"
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
@@ -16,6 +15,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainforequester"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/publisher"
 	"github.com/prometheus/client_golang/prometheus"
+	boom "github.com/tylertreat/BoomFilters"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"time"
@@ -83,7 +83,7 @@ func New(params Params) Result {
 		dao:                 params.Dao,
 		classifierPublisher: params.ClassifierPublisher,
 		ignoreHashes: &ignoreHashes{
-			bloom: &bloom.NewDefaultStableBloomFilter().StableBloomFilter,
+			bloom: boom.NewStableBloomFilter(10_000_000, 2, 0.001),
 		},
 		blockingManager: params.BlockingManager,
 		soughtNodeID:    &concurrency.AtomicValue[protocol.ID]{},
