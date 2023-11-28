@@ -23,10 +23,9 @@ import { MatTabsModule } from "@angular/material/tabs";
 import { MatDividerModule } from "@angular/material/divider";
 import { MatCardModule } from "@angular/material/card";
 import { TorrentContentComponent } from "./torrent-content/torrent-content.component";
-import { TagNameInputDirective } from "./tag-name-input.directive";
 
 @NgModule({
-  declarations: [TorrentContentComponent, TagNameInputDirective],
+  declarations: [TorrentContentComponent],
   imports: [
     CommonModule,
     ReactiveFormsModule,

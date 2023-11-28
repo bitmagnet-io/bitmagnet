@@ -181,7 +181,11 @@ export class TorrentContentComponent
       this.pageIndex = 0;
       this.loadResult();
     });
-    this.newTagCtrl.valueChanges.subscribe(() => {
+    this.newTagCtrl.valueChanges.subscribe((value) => {
+      value &&
+        this.newTagCtrl.setValue(normalizeTagInput(value), {
+          emitEvent: false,
+        });
       this.updateSuggestedTags();
     });
     this.updateSuggestedTags();
@@ -449,6 +453,10 @@ export class TorrentContentComponent
         this.itemSubject.next(nextItem);
       });
       this.newTagCtrl.valueChanges.subscribe((value) => {
+        if (value) {
+          value = normalizeTagInput(value);
+          this.newTagCtrl.setValue(value, { emitEvent: false });
+        }
         return ds.graphQLService
           .torrentSuggestTags({
             query: {
@@ -608,3 +616,10 @@ const contentTypes: Record<generated.ContentType | "null", ContentTypeInfo> = {
     icon: "question_mark",
   },
 };
+
+const normalizeTagInput = (value: string): string =>
+  value
+    .toLowerCase()
+    .replaceAll(/[^a-z0-9\-]/g, "-")
+    .replace(/^-+/, "")
+    .replaceAll(/-+/g, "-");
