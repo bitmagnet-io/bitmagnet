@@ -15,9 +15,7 @@
             *ngFor="let t of contentTypeEntries"
             [value]="t.type"
           >
-            <mat-icon>{{
-              t.icon
-            }}</mat-icon>
+            <mat-icon>{{ t.icon }}</mat-icon>
             {{ t.plural }}
             <small>({{ contentTypeAgg(t.type)?.count ?? 0 | number }})</small>
           </mat-radio-button>
