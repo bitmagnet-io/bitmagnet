@@ -45,15 +45,25 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 			} else {
 				c.persistedTotal.With(prometheus.Labels{"entity": "Torrent"}).Add(float64(len(ts)))
 				c.logger.Debugw("persisted torrents", "count", len(ts))
-				hashesToClassify := make([]protocol.ID, 0, len(ts))
+				hashesToClassify := make([]protocol.ID, 0, classifyBatchSize)
+				flushClassify := func() {
+					if len(hashesToClassify) == 0 {
+						return
+					}
+					if _, classifyErr := c.classifierPublisher.Publish(ctx, message.ClassifyTorrentPayload{
+						InfoHashes: hashesToClassify,
+					}); classifyErr != nil {
+						c.logger.Errorf("error publishing classify message: %s", classifyErr.Error())
+					}
+				}
 				for _, t := range ts {
 					hashesToClassify = append(hashesToClassify, t.InfoHash)
+					if len(hashesToClassify) == classifyBatchSize {
+						flushClassify()
+						hashesToClassify = make([]protocol.ID, 0, classifyBatchSize)
+					}
 				}
-				if _, classifyErr := c.classifierPublisher.Publish(ctx, message.ClassifyTorrentPayload{
-					InfoHashes: hashesToClassify,
-				}); classifyErr != nil {
-					c.logger.Errorf("error publishing classify message: %s", classifyErr.Error())
-				}
+				flushClassify()
 				for _, i := range hashMap {
 					select {
 					case <-ctx.Done():
@@ -116,6 +126,8 @@ func createTorrentModel(
 		},
 	}, nil
 }
+
+const classifyBatchSize = 200
 
 // runPersistSources waits on the persistSources channel for scraped torrents, and persists sources
 // (which includes discovery date, seeders and leechers) to the database in batches.
