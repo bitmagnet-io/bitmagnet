@@ -77,6 +77,10 @@ In order of precedence, configuration values will be read from:
 {: .warning }
 Environment variables can be used to configure simple scalar types (strings, numbers, booleans) and slice types (arrays). For more complex configuration types such as maps you'll have to use YAML configuration. **bitmagnet** will exit with an error if it's unable to parse a provided configuration value.
 
+## VPN configuration
+
+It's recommended that you run **bitmagnet** behind a VPN. If you're using Docker then [gluetun](https://github.com/qdm12/gluetun-wiki){:target="\_blank"} is a good solution for this, although the networking settings can be tricky. The [example docker-compose file](https://github.com/bitmagnet-io/bitmagnet/blob/main/docker-compose.yml){:target="\_blank"} demonstrates this.
+
 ## Obtaining a TMDB API Key
 
 {: .highlight }
