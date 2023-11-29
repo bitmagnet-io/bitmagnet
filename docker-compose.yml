@@ -16,6 +16,7 @@ services:
       - POSTGRES_HOST=postgres
       - POSTGRES_PASSWORD=postgres
       - REDIS_ADDR=redis:6379
+      # - TMDB_API_KEY=your_api_key
     network_mode: service:gluetun
     depends_on:
       postgres:
