@@ -1384,6 +1384,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputContentTypeFacetInput,
+		ec.unmarshalInputFacetAggregationInput,
 		ec.unmarshalInputGenreFacetInput,
 		ec.unmarshalInputLanguageFacetInput,
 		ec.unmarshalInputReleaseYearFacetInput,
@@ -1823,52 +1824,59 @@ scalar Year
   cached: Boolean
 }
 
+input FacetAggregationInput {
+  filtered: Boolean
+  totalCount: Boolean
+  limit: Int
+  prefix: String
+}
+
 input ContentTypeFacetInput {
-  aggregate: Boolean
+  aggregate: FacetAggregationInput
   filter: [ContentType]
 }
 
 input TorrentSourceFacetInput {
-  aggregate: Boolean
+  aggregate: FacetAggregationInput
   logic: FacetLogic
   filter: [String!]
 }
 
 input TorrentTagFacetInput {
-  aggregate: Boolean
+  aggregate: FacetAggregationInput
   logic: FacetLogic
   filter: [String!]
 }
 
 input TorrentFileTypeFacetInput {
-  aggregate: Boolean
+  aggregate: FacetAggregationInput
   logic: FacetLogic
   filter: [FileType!]
 }
 
 input LanguageFacetInput {
-  aggregate: Boolean
+  aggregate: FacetAggregationInput
   filter: [Language!]
 }
 
 input GenreFacetInput {
-  aggregate: Boolean
+  aggregate: FacetAggregationInput
   logic: FacetLogic
   filter: [String!]
 }
 
 input ReleaseYearFacetInput {
-  aggregate: Boolean
+  aggregate: FacetAggregationInput
   filter: [Year]
 }
 
 input VideoResolutionFacetInput {
-  aggregate: Boolean
+  aggregate: FacetAggregationInput
   filter: [VideoResolution]
 }
 
 input VideoSourceFacetInput {
-  aggregate: Boolean
+  aggregate: FacetAggregationInput
   filter: [VideoSource]
 }
 
@@ -10710,7 +10718,7 @@ func (ec *executionContext) unmarshalInputContentTypeFacetInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			data, err := ec.unmarshalOFacetAggregationInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐFacetAggregationConfig(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10724,6 +10732,62 @@ func (ec *executionContext) unmarshalInputContentTypeFacetInput(ctx context.Cont
 				return it, err
 			}
 			it.Filter = graphql.OmittableOf(data)
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputFacetAggregationInput(ctx context.Context, obj interface{}) (query.FacetAggregationConfig, error) {
+	var it query.FacetAggregationConfig
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"filtered", "totalCount", "limit", "prefix"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "filtered":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filtered"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Filtered = data
+		case "totalCount":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("totalCount"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TotalCount = data
+		case "limit":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+			data, err := ec.unmarshalOInt2uint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Limit = data
+		case "prefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("prefix"))
+			data, err := ec.unmarshalOString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Prefix = data
 		}
 	}
 
@@ -10748,7 +10812,7 @@ func (ec *executionContext) unmarshalInputGenreFacetInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			data, err := ec.unmarshalOFacetAggregationInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐFacetAggregationConfig(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10795,7 +10859,7 @@ func (ec *executionContext) unmarshalInputLanguageFacetInput(ctx context.Context
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			data, err := ec.unmarshalOFacetAggregationInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐFacetAggregationConfig(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10833,7 +10897,7 @@ func (ec *executionContext) unmarshalInputReleaseYearFacetInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			data, err := ec.unmarshalOFacetAggregationInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐFacetAggregationConfig(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11075,7 +11139,7 @@ func (ec *executionContext) unmarshalInputTorrentFileTypeFacetInput(ctx context.
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			data, err := ec.unmarshalOFacetAggregationInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐFacetAggregationConfig(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11122,7 +11186,7 @@ func (ec *executionContext) unmarshalInputTorrentSourceFacetInput(ctx context.Co
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			data, err := ec.unmarshalOFacetAggregationInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐFacetAggregationConfig(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11169,7 +11233,7 @@ func (ec *executionContext) unmarshalInputTorrentTagFacetInput(ctx context.Conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			data, err := ec.unmarshalOFacetAggregationInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐFacetAggregationConfig(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11216,7 +11280,7 @@ func (ec *executionContext) unmarshalInputVideoResolutionFacetInput(ctx context.
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			data, err := ec.unmarshalOFacetAggregationInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐFacetAggregationConfig(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11254,7 +11318,7 @@ func (ec *executionContext) unmarshalInputVideoSourceFacetInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			data, err := ec.unmarshalOFacetAggregationInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐFacetAggregationConfig(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -14625,6 +14689,14 @@ func (ec *executionContext) marshalOEpisodes2ᚖgithubᚗcomᚋbitmagnetᚑioᚋ
 	return ec._Episodes(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalOFacetAggregationInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐFacetAggregationConfig(ctx context.Context, v interface{}) (*query.FacetAggregationConfig, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputFacetAggregationInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOFacetLogic2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐFacetLogic(ctx context.Context, v interface{}) (*model.FacetLogic, error) {
 	if v == nil {
 		return nil, nil
@@ -14840,6 +14912,16 @@ func (ec *executionContext) unmarshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmag
 
 func (ec *executionContext) marshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullUint16(ctx context.Context, sel ast.SelectionSet, v model.NullUint16) graphql.Marshaler {
 	return v
+}
+
+func (ec *executionContext) unmarshalOInt2uint(ctx context.Context, v interface{}) (uint, error) {
+	res, err := graphql.UnmarshalUint(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2uint(ctx context.Context, sel ast.SelectionSet, v uint) graphql.Marshaler {
+	res := graphql.MarshalUint(v)
+	return res
 }
 
 func (ec *executionContext) unmarshalOInt2ᚕintᚄ(ctx context.Context, v interface{}) ([]int, error) {
@@ -15127,6 +15209,16 @@ func (ec *executionContext) unmarshalOString2githubᚗcomᚋbitmagnetᚑioᚋbit
 
 func (ec *executionContext) marshalOString2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullString(ctx context.Context, sel ast.SelectionSet, v model.NullString) graphql.Marshaler {
 	return v
+}
+
+func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	res := graphql.MarshalString(v)
+	return res
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {

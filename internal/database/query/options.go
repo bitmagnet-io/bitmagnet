@@ -17,7 +17,6 @@ type Option = func(ctx OptionBuilder) (OptionBuilder, error)
 func DefaultOption() Option {
 	return Options(
 		Limit(10),
-		WithTotalCount(true),
 	)
 }
 

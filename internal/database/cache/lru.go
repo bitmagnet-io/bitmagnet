@@ -53,11 +53,13 @@ type inMemoryCacher struct {
 func (c *inMemoryCacher) Get(ctx context.Context, key string) *caches.Query {
 	m := cacheModeFromContext(ctx)
 	if m == ModeNoCache || m == ModeWarm {
+		c.logger.Warnw("cache disabled", "key", key)
 		c.lru.Remove(key)
 		return nil
 	}
 	val, ok := c.lru.Get(key)
 	if !ok {
+		c.logger.Warnw("cache miss", "key", key)
 		return nil
 	}
 	c.logger.Debugw("cache hit", "key", key)

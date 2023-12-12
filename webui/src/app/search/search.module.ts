@@ -2,7 +2,10 @@ import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule } from "@angular/forms";
 import { MatTableModule } from "@angular/material/table";
-import { MatPaginatorModule } from "@angular/material/paginator";
+import {
+  MatPaginatorIntl,
+  MatPaginatorModule,
+} from "@angular/material/paginator";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
@@ -23,6 +26,7 @@ import { MatTabsModule } from "@angular/material/tabs";
 import { MatDividerModule } from "@angular/material/divider";
 import { MatCardModule } from "@angular/material/card";
 import { TorrentContentComponent } from "./torrent-content/torrent-content.component";
+import { MatPaginatorIntlCustom } from "./mat-paginator-intl";
 
 @NgModule({
   declarations: [TorrentContentComponent],
@@ -52,5 +56,6 @@ import { TorrentContentComponent } from "./torrent-content/torrent-content.compo
     MatCardModule,
   ],
   exports: [TorrentContentComponent],
+  providers: [{ provide: MatPaginatorIntl, useClass: MatPaginatorIntlCustom }],
 })
 export class SearchModule {}

@@ -6,52 +6,59 @@ input SearchQueryInput {
   cached: Boolean
 }
 
+input FacetAggregationInput {
+  filtered: Boolean
+  totalCount: Boolean
+  limit: Int
+  prefix: String
+}
+
 input ContentTypeFacetInput {
-  aggregate: Boolean
+  aggregate: FacetAggregationInput
   filter: [ContentType]
 }
 
 input TorrentSourceFacetInput {
-  aggregate: Boolean
+  aggregate: FacetAggregationInput
   logic: FacetLogic
   filter: [String!]
 }
 
 input TorrentTagFacetInput {
-  aggregate: Boolean
+  aggregate: FacetAggregationInput
   logic: FacetLogic
   filter: [String!]
 }
 
 input TorrentFileTypeFacetInput {
-  aggregate: Boolean
+  aggregate: FacetAggregationInput
   logic: FacetLogic
   filter: [FileType!]
 }
 
 input LanguageFacetInput {
-  aggregate: Boolean
+  aggregate: FacetAggregationInput
   filter: [Language!]
 }
 
 input GenreFacetInput {
-  aggregate: Boolean
+  aggregate: FacetAggregationInput
   logic: FacetLogic
   filter: [String!]
 }
 
 input ReleaseYearFacetInput {
-  aggregate: Boolean
+  aggregate: FacetAggregationInput
   filter: [Year]
 }
 
 input VideoResolutionFacetInput {
-  aggregate: Boolean
+  aggregate: FacetAggregationInput
   filter: [VideoResolution]
 }
 
 input VideoSourceFacetInput {
-  aggregate: Boolean
+  aggregate: FacetAggregationInput
   filter: [VideoSource]
 }
 

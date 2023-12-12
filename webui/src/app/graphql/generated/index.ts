@@ -86,7 +86,7 @@ export type ContentTypeAgg = {
 };
 
 export type ContentTypeFacetInput = {
-  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
+  aggregate?: InputMaybe<FacetAggregationInput>;
   filter?: InputMaybe<Array<InputMaybe<ContentType>>>;
 };
 
@@ -100,6 +100,13 @@ export type ExternalLink = {
   __typename?: 'ExternalLink';
   metadataSource: MetadataSource;
   url: Scalars['String']['output'];
+};
+
+export type FacetAggregationInput = {
+  filtered?: InputMaybe<Scalars['Boolean']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  prefix?: InputMaybe<Scalars['String']['input']>;
+  totalCount?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type FacetLogic =
@@ -130,7 +137,7 @@ export type GenreAgg = {
 };
 
 export type GenreFacetInput = {
-  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
+  aggregate?: InputMaybe<FacetAggregationInput>;
   filter?: InputMaybe<Array<Scalars['String']['input']>>;
   logic?: InputMaybe<FacetLogic>;
 };
@@ -207,7 +214,7 @@ export type LanguageAgg = {
 };
 
 export type LanguageFacetInput = {
-  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
+  aggregate?: InputMaybe<FacetAggregationInput>;
   filter?: InputMaybe<Array<Language>>;
 };
 
@@ -242,7 +249,7 @@ export type ReleaseYearAgg = {
 };
 
 export type ReleaseYearFacetInput = {
-  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
+  aggregate?: InputMaybe<FacetAggregationInput>;
   filter?: InputMaybe<Array<InputMaybe<Scalars['Year']['input']>>>;
 };
 
@@ -380,7 +387,7 @@ export type TorrentFileTypeAgg = {
 };
 
 export type TorrentFileTypeFacetInput = {
-  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
+  aggregate?: InputMaybe<FacetAggregationInput>;
   filter?: InputMaybe<Array<FileType>>;
   logic?: InputMaybe<FacetLogic>;
 };
@@ -443,7 +450,7 @@ export type TorrentSourceAgg = {
 };
 
 export type TorrentSourceFacetInput = {
-  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
+  aggregate?: InputMaybe<FacetAggregationInput>;
   filter?: InputMaybe<Array<Scalars['String']['input']>>;
   logic?: InputMaybe<FacetLogic>;
 };
@@ -461,7 +468,7 @@ export type TorrentTagAgg = {
 };
 
 export type TorrentTagFacetInput = {
-  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
+  aggregate?: InputMaybe<FacetAggregationInput>;
   filter?: InputMaybe<Array<Scalars['String']['input']>>;
   logic?: InputMaybe<FacetLogic>;
 };
@@ -506,7 +513,7 @@ export type VideoResolutionAgg = {
 };
 
 export type VideoResolutionFacetInput = {
-  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
+  aggregate?: InputMaybe<FacetAggregationInput>;
   filter?: InputMaybe<Array<InputMaybe<VideoResolution>>>;
 };
 
@@ -529,7 +536,7 @@ export type VideoSourceAgg = {
 };
 
 export type VideoSourceFacetInput = {
-  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
+  aggregate?: InputMaybe<FacetAggregationInput>;
   filter?: InputMaybe<Array<InputMaybe<VideoSource>>>;
 };
 

@@ -4,6 +4,7 @@ package gen
 
 import (
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
 
@@ -14,8 +15,8 @@ type ContentTypeAgg struct {
 }
 
 type ContentTypeFacetInput struct {
-	Aggregate graphql.Omittable[*bool]                `json:"aggregate,omitempty"`
-	Filter    graphql.Omittable[[]*model.ContentType] `json:"filter,omitempty"`
+	Aggregate graphql.Omittable[*query.FacetAggregationConfig] `json:"aggregate,omitempty"`
+	Filter    graphql.Omittable[[]*model.ContentType]          `json:"filter,omitempty"`
 }
 
 type GenreAgg struct {
@@ -25,9 +26,9 @@ type GenreAgg struct {
 }
 
 type GenreFacetInput struct {
-	Aggregate graphql.Omittable[*bool]             `json:"aggregate,omitempty"`
-	Logic     graphql.Omittable[*model.FacetLogic] `json:"logic,omitempty"`
-	Filter    graphql.Omittable[[]string]          `json:"filter,omitempty"`
+	Aggregate graphql.Omittable[*query.FacetAggregationConfig] `json:"aggregate,omitempty"`
+	Logic     graphql.Omittable[*model.FacetLogic]             `json:"logic,omitempty"`
+	Filter    graphql.Omittable[[]string]                      `json:"filter,omitempty"`
 }
 
 type LanguageAgg struct {
@@ -37,8 +38,8 @@ type LanguageAgg struct {
 }
 
 type LanguageFacetInput struct {
-	Aggregate graphql.Omittable[*bool]            `json:"aggregate,omitempty"`
-	Filter    graphql.Omittable[[]model.Language] `json:"filter,omitempty"`
+	Aggregate graphql.Omittable[*query.FacetAggregationConfig] `json:"aggregate,omitempty"`
+	Filter    graphql.Omittable[[]model.Language]              `json:"filter,omitempty"`
 }
 
 type ReleaseYearAgg struct {
@@ -48,8 +49,8 @@ type ReleaseYearAgg struct {
 }
 
 type ReleaseYearFacetInput struct {
-	Aggregate graphql.Omittable[*bool]         `json:"aggregate,omitempty"`
-	Filter    graphql.Omittable[[]*model.Year] `json:"filter,omitempty"`
+	Aggregate graphql.Omittable[*query.FacetAggregationConfig] `json:"aggregate,omitempty"`
+	Filter    graphql.Omittable[[]*model.Year]                 `json:"filter,omitempty"`
 }
 
 type SuggestTagsQueryInput struct {
@@ -88,9 +89,9 @@ type TorrentFileTypeAgg struct {
 }
 
 type TorrentFileTypeFacetInput struct {
-	Aggregate graphql.Omittable[*bool]             `json:"aggregate,omitempty"`
-	Logic     graphql.Omittable[*model.FacetLogic] `json:"logic,omitempty"`
-	Filter    graphql.Omittable[[]model.FileType]  `json:"filter,omitempty"`
+	Aggregate graphql.Omittable[*query.FacetAggregationConfig] `json:"aggregate,omitempty"`
+	Logic     graphql.Omittable[*model.FacetLogic]             `json:"logic,omitempty"`
+	Filter    graphql.Omittable[[]model.FileType]              `json:"filter,omitempty"`
 }
 
 type TorrentSourceAgg struct {
@@ -100,9 +101,9 @@ type TorrentSourceAgg struct {
 }
 
 type TorrentSourceFacetInput struct {
-	Aggregate graphql.Omittable[*bool]             `json:"aggregate,omitempty"`
-	Logic     graphql.Omittable[*model.FacetLogic] `json:"logic,omitempty"`
-	Filter    graphql.Omittable[[]string]          `json:"filter,omitempty"`
+	Aggregate graphql.Omittable[*query.FacetAggregationConfig] `json:"aggregate,omitempty"`
+	Logic     graphql.Omittable[*model.FacetLogic]             `json:"logic,omitempty"`
+	Filter    graphql.Omittable[[]string]                      `json:"filter,omitempty"`
 }
 
 type TorrentTagAgg struct {
@@ -112,9 +113,9 @@ type TorrentTagAgg struct {
 }
 
 type TorrentTagFacetInput struct {
-	Aggregate graphql.Omittable[*bool]             `json:"aggregate,omitempty"`
-	Logic     graphql.Omittable[*model.FacetLogic] `json:"logic,omitempty"`
-	Filter    graphql.Omittable[[]string]          `json:"filter,omitempty"`
+	Aggregate graphql.Omittable[*query.FacetAggregationConfig] `json:"aggregate,omitempty"`
+	Logic     graphql.Omittable[*model.FacetLogic]             `json:"logic,omitempty"`
+	Filter    graphql.Omittable[[]string]                      `json:"filter,omitempty"`
 }
 
 type VideoResolutionAgg struct {
@@ -124,8 +125,8 @@ type VideoResolutionAgg struct {
 }
 
 type VideoResolutionFacetInput struct {
-	Aggregate graphql.Omittable[*bool]                    `json:"aggregate,omitempty"`
-	Filter    graphql.Omittable[[]*model.VideoResolution] `json:"filter,omitempty"`
+	Aggregate graphql.Omittable[*query.FacetAggregationConfig] `json:"aggregate,omitempty"`
+	Filter    graphql.Omittable[[]*model.VideoResolution]      `json:"filter,omitempty"`
 }
 
 type VideoSourceAgg struct {
@@ -135,6 +136,6 @@ type VideoSourceAgg struct {
 }
 
 type VideoSourceFacetInput struct {
-	Aggregate graphql.Omittable[*bool]                `json:"aggregate,omitempty"`
-	Filter    graphql.Omittable[[]*model.VideoSource] `json:"filter,omitempty"`
+	Aggregate graphql.Omittable[*query.FacetAggregationConfig] `json:"aggregate,omitempty"`
+	Filter    graphql.Omittable[[]*model.VideoSource]          `json:"filter,omitempty"`
 }

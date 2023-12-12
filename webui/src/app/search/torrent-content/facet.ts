@@ -56,7 +56,9 @@ export class Facet<T = unknown, _allowNull extends boolean = true> {
   facetParams() {
     return this.active
       ? {
-          aggregate: true,
+          aggregate: {
+            limit: 10,
+          },
           filter: this.selected.size ? [...this.selected] : undefined,
         }
       : undefined;

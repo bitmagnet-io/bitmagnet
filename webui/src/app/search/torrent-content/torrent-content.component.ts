@@ -53,11 +53,10 @@ export class TorrentContentComponent
   pageIndex = 0;
   pageSize = 10;
 
-  result: generated.TorrentContentSearchResult = {
-    items: [],
-    aggregations: {},
-    totalCount: 0,
-  };
+  items = Array<generated.TorrentContent>();
+  aggregations: generated.TorrentContentAggregations = {};
+  hasNextPage = false;
+  overallTotalCount = 0;
   loading = true;
 
   contentTypeEntries = Object.entries(contentTypes).map(([type, info]) => ({
@@ -96,14 +95,23 @@ export class TorrentContentComponent
     private graphQLService: GraphQLService,
     private errorsService: AppErrorsService,
   ) {
-    this.dataSource.result.subscribe((result) => {
-      this.result = result;
+    this.dataSource.items.subscribe((items) => {
+      this.items = items;
       this.selectedItems.setSelection(
-        ...result.items.filter(({ id }) =>
+        ...items.filter(({ id }) =>
           this.selectedItems.selected.some(({ id: itemId }) => itemId === id),
         ),
       );
     });
+    this.dataSource.aggregations.subscribe((aggregations) => {
+      this.aggregations = aggregations;
+    });
+    this.dataSource.hasNextPage.subscribe((hasNextPage) => {
+      this.hasNextPage = hasNextPage;
+    });
+    this.dataSource.overallTotalCount.subscribe(
+      (totalCount) => (this.overallTotalCount = totalCount),
+    );
     this.dataSource.loading.subscribe((loading) => (this.loading = loading));
     this.torrentSourceFacet = new Facet<string, false>(
       "Torrent Source",
@@ -191,7 +199,26 @@ export class TorrentContentComponent
     this.updateSuggestedTags();
   }
 
+  get totalCountBestGuess(): number {
+    if (!this.hasNextPage) {
+      return this.pageIndex * this.pageSize + this.items.length;
+    }
+    const contentType = this.contentType.value;
+    if (contentType === undefined) {
+      return this.overallTotalCount;
+    }
+    return this.contentTypeAgg(contentType)?.count ?? this.overallTotalCount;
+  }
+
+  get isDeepFiltered(): boolean {
+    return (
+      !!this.queryString.value ||
+      this.facets.some((f) => f.isActive() && !f.isEmpty())
+    );
+  }
+
   loadResult(cached = true) {
+    const isDeepFiltered = this.isDeepFiltered;
     this.dataSource.loadResult({
       query: {
         queryString:
@@ -199,10 +226,14 @@ export class TorrentContentComponent
         limit: this.pageSize,
         offset: this.pageIndex * this.pageSize,
         cached,
+        totalCount: !isDeepFiltered,
       },
       facets: {
         contentType: {
-          aggregate: true,
+          aggregate: {
+            totalCount: true,
+            limit: 10,
+          },
           filter: (() => {
             const value = this.contentType.value;
             if (value == null) {
@@ -240,7 +271,7 @@ export class TorrentContentComponent
   }
 
   contentTypeAgg(v: unknown) {
-    const ct = this.result.aggregations.contentType;
+    const ct = this.aggregations.contentType;
     if (ct) {
       return ct.find((a) => (a.value ?? "null") === v);
     }
@@ -269,7 +300,7 @@ export class TorrentContentComponent
 
   /** Whether the number of selected elements matches the total number of rows. */
   isAllSelected() {
-    return this.result.items.every((i) => this.selectedItems.isSelected(i));
+    return this.items.every((i) => this.selectedItems.isSelected(i));
   }
 
   /** Selects all rows if they are not all selected; otherwise clear selection. */
@@ -278,7 +309,7 @@ export class TorrentContentComponent
       this.selectedItems.clear();
       return;
     }
-    this.selectedItems.select(...this.result.items);
+    this.selectedItems.select(...this.items);
   }
 
   /** The label for the checkbox on the passed row */
@@ -485,7 +516,7 @@ export class TorrentContentComponent
       if (id === this.id) {
         id = undefined;
       }
-      const nextItem = this.ds.result.items.find((i) => i.id === id);
+      const nextItem = this.ds.items.find((i) => i.id === id);
       const current = this.itemSubject.getValue();
       if (current?.id !== id) {
         this.itemSubject.next(nextItem);

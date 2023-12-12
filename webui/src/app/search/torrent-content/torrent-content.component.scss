@@ -249,3 +249,7 @@ tr.mat-mdc-row.expanded {
     display: none;
   }
 }
+
+::ng-deep .mat-mdc-paginator-navigation-last {
+  display: none;
+}

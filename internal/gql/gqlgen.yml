@@ -158,3 +158,6 @@ models:
   SuggestedTag:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/database/search.SuggestedTag
+  FacetAggregationInput:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/database/query.FacetAggregationConfig

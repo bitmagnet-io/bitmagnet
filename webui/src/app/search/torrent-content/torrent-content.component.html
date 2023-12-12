@@ -10,6 +10,10 @@
         <mat-radio-group [formControl]="contentType">
           <mat-radio-button>
             <mat-icon fontSet="material-icons">emergency</mat-icon>All
+            <small
+              >{{ isDeepFiltered ? "≤" : ""
+              }}{{ overallTotalCount | number }}</small
+            >
           </mat-radio-button>
           <mat-radio-button
             *ngFor="let t of contentTypeEntries"
@@ -17,7 +21,10 @@
           >
             <mat-icon>{{ t.icon }}</mat-icon>
             {{ t.plural }}
-            <small>({{ contentTypeAgg(t.type)?.count ?? 0 | number }})</small>
+            <small
+              >{{ isDeepFiltered ? "≤" : ""
+              }}{{ contentTypeAgg(t.type)?.count ?? 0 | number }}</small
+            >
           </mat-radio-button>
         </mat-radio-group>
       </section>
@@ -48,7 +55,8 @@
             "
             [style.display]="'block'"
           >
-            {{ r.label }} <small>({{ r.count | number }})</small>
+            {{ r.label }}
+            <small>{{ isDeepFiltered ? "≤" : "" }}{{ r.count | number }}</small>
           </mat-checkbox>
           <span *ngIf="!loading && !facet.aggregations?.length" class="empty"
             >No aggregation results</span
@@ -614,7 +622,7 @@
       <mat-paginator
         (page)="handlePageEvent($event)"
         [pageIndex]="pageIndex"
-        [length]="result.totalCount"
+        [length]="totalCountBestGuess"
         [pageSize]="pageSize"
         [pageSizeOptions]="[10, 25, 50, 100, 250]"
         [showFirstLastButtons]="true"

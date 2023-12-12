@@ -16,7 +16,7 @@ type FacetConfig interface {
 	Label() string
 	Logic() model.FacetLogic
 	Filter() FacetFilter
-	IsAggregated() bool
+	AggregationConfig() FacetAggregationConfig
 	AggregationOption(b OptionBuilder) (OptionBuilder, error)
 }
 
@@ -24,6 +24,13 @@ type Facet interface {
 	FacetConfig
 	Aggregate(ctx FacetContext) (AggregationItems, error)
 	Criteria() []Criteria
+}
+
+type FacetAggregationConfig struct {
+	Filtered   bool
+	TotalCount bool
+	Limit      uint
+	Prefix     string
 }
 
 type FacetFilter map[string]struct{}
@@ -43,7 +50,7 @@ type facetConfig struct {
 	label              string
 	logic              model.FacetLogic
 	filter             FacetFilter
-	aggregate          bool
+	aggregationConfig  FacetAggregationConfig
 	aggregationOptions []Option
 }
 
@@ -75,12 +82,14 @@ type Aggregations = maps.StringMap[AggregationGroup]
 type FacetContext interface {
 	DbContext
 	Context() context.Context
+	AggregationConfig() FacetAggregationConfig
 	NewAggregationQuery(options ...Option) (SubQuery, error)
 }
 
 type facetContext struct {
 	optionBuilder OptionBuilder
 	ctx           context.Context
+	aggConfig     FacetAggregationConfig
 }
 
 func (ctx facetContext) Query() *dao.Query {
@@ -100,6 +109,9 @@ func (ctx facetContext) Context() context.Context {
 }
 
 func (ctx facetContext) NewAggregationQuery(options ...Option) (SubQuery, error) {
+	if !ctx.aggConfig.Filtered {
+		options = append([]Option{clearScope()}, options...)
+	}
 	subCtx, subErr := Options(options...)(ctx.optionBuilder)
 	if subErr != nil {
 		return nil, subErr
@@ -110,6 +122,10 @@ func (ctx facetContext) NewAggregationQuery(options ...Option) (SubQuery, error)
 		return nil, applyErr
 	}
 	return sq, nil
+}
+
+func (ctx facetContext) AggregationConfig() FacetAggregationConfig {
+	return ctx.aggConfig
 }
 
 func FacetHasKey(key string) FacetOption {
@@ -141,16 +157,16 @@ func FacetUsesOrLogic() FacetOption {
 	return FacetUsesLogic(model.FacetLogicOr)
 }
 
-func FacetIsAggregated() FacetOption {
+func FacetHasFilter(filter FacetFilter) FacetOption {
 	return func(c facetConfig) facetConfig {
-		c.aggregate = true
+		c.filter = filter
 		return c
 	}
 }
 
-func FacetHasFilter(filter FacetFilter) FacetOption {
+func FacetHasAggregationConfig(ac FacetAggregationConfig) FacetOption {
 	return func(c facetConfig) facetConfig {
-		c.filter = filter
+		c.aggregationConfig = ac
 		return c
 	}
 }
@@ -174,8 +190,8 @@ func (c facetConfig) Logic() model.FacetLogic {
 	return c.logic
 }
 
-func (c facetConfig) IsAggregated() bool {
-	return c.aggregate
+func (c facetConfig) AggregationConfig() FacetAggregationConfig {
+	return c.aggregationConfig
 }
 
 func (c facetConfig) AggregationOption(b OptionBuilder) (OptionBuilder, error) {
@@ -218,9 +234,10 @@ func (b optionBuilder) calculateAggregations(ctx context.Context) (Aggregations,
 	for _, facet := range b.facets {
 		go (func(facet Facet) {
 			defer wg.Done()
-			if !facet.IsAggregated() {
-				return
-			}
+			cfg := facet.AggregationConfig()
+			//if cfg.Limit == 0 {
+			//	return
+			//}
 			aggBuilder, aggBuilderErr := Options(facet.AggregationOption, withCurrentFacet(facet.Key()))(b)
 			if aggBuilderErr != nil {
 				errs = append(errs, fmt.Errorf("failed to create aggregation option for key '%s': %w", facet.Key(), aggBuilderErr))
@@ -229,6 +246,7 @@ func (b optionBuilder) calculateAggregations(ctx context.Context) (Aggregations,
 			aggCtx := facetContext{
 				optionBuilder: aggBuilder,
 				ctx:           ctx,
+				aggConfig:     cfg,
 			}
 			aggregation, aggregateErr := facet.Aggregate(aggCtx)
 			mtx.Lock()

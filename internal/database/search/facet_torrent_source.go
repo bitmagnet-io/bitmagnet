@@ -37,6 +37,13 @@ func (f torrentSourceFacet) Aggregate(ctx query.FacetContext) (query.Aggregation
 		query.Join(func(daoQ *dao.Query) []query.TableJoin {
 			return []query.TableJoin{
 				{
+					Table: daoQ.Torrent,
+					On: []field.Expr{
+						daoQ.Torrent.InfoHash.EqCol(daoQ.TorrentsTorrentSource.InfoHash),
+					},
+					Type: query.TableJoinTypeInner,
+				},
+				{
 					Table: daoQ.TorrentContent,
 					On: []field.Expr{
 						daoQ.TorrentContent.InfoHash.EqCol(daoQ.TorrentsTorrentSource.InfoHash),
