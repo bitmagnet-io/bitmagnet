@@ -11,7 +11,7 @@
           <mat-radio-button>
             <mat-icon fontSet="material-icons">emergency</mat-icon>All
             <small
-              >{{ isDeepFiltered ? "≤" : ""
+              >{{ isDeepFiltered ? "≤ " : ""
               }}{{ overallTotalCount | number }}</small
             >
           </mat-radio-button>
@@ -22,7 +22,7 @@
             <mat-icon>{{ t.icon }}</mat-icon>
             {{ t.plural }}
             <small
-              >{{ isDeepFiltered ? "≤" : ""
+              >{{ isDeepFiltered ? "≤ " : ""
               }}{{ contentTypeAgg(t.type)?.count ?? 0 | number }}</small
             >
           </mat-radio-button>
@@ -56,7 +56,7 @@
             [style.display]="'block'"
           >
             {{ r.label }}
-            <small>{{ isDeepFiltered ? "≤" : "" }}{{ r.count | number }}</small>
+            <small>{{ isDeepFiltered ? "≤ " : "" }}{{ r.count | number }}</small>
           </mat-checkbox>
           <span *ngIf="!loading && !facet.aggregations?.length" class="empty"
             >No aggregation results</span
@@ -622,7 +622,7 @@
       <mat-paginator
         (page)="handlePageEvent($event)"
         [pageIndex]="pageIndex"
-        [length]="totalCountBestGuess"
+        [length]="maxTotalCount"
         [pageSize]="pageSize"
         [pageSizeOptions]="[10, 25, 50, 100, 250]"
         [showFirstLastButtons]="true"

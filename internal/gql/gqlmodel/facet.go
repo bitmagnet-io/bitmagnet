@@ -13,14 +13,14 @@ import (
 )
 
 func facet[T comparable](
-	aggregate graphql.Omittable[*q.FacetAggregationConfig],
+	aggregate graphql.Omittable[*bool],
 	logic graphql.Omittable[*model.FacetLogic],
 	filter graphql.Omittable[[]*T],
 	fn func(...q.FacetOption) q.Facet,
 ) q.Facet {
 	var facetOptions []q.FacetOption
-	if agg, aggOk := aggregate.ValueOK(); aggOk {
-		facetOptions = append(facetOptions, q.FacetHasAggregationConfig(*agg))
+	if agg, aggOk := aggregate.ValueOK(); aggOk && *agg {
+		facetOptions = append(facetOptions, q.FacetIsAggregated())
 	}
 	if l, logicOk := logic.ValueOK(); logicOk {
 		facetOptions = append(facetOptions, q.FacetUsesLogic(*l))

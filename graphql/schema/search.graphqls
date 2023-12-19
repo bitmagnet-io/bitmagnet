@@ -3,62 +3,57 @@ input SearchQueryInput {
   limit: Int
   offset: Int
   totalCount: Boolean
+  """hasNextPage if true, the search result will include the hasNextPage field, indicating if there are more results to fetch"""
+  hasNextPage: Boolean
   cached: Boolean
 }
 
-input FacetAggregationInput {
-  filtered: Boolean
-  totalCount: Boolean
-  limit: Int
-  prefix: String
-}
-
 input ContentTypeFacetInput {
-  aggregate: FacetAggregationInput
+  aggregate: Boolean
   filter: [ContentType]
 }
 
 input TorrentSourceFacetInput {
-  aggregate: FacetAggregationInput
+  aggregate: Boolean
   logic: FacetLogic
   filter: [String!]
 }
 
 input TorrentTagFacetInput {
-  aggregate: FacetAggregationInput
+  aggregate: Boolean
   logic: FacetLogic
   filter: [String!]
 }
 
 input TorrentFileTypeFacetInput {
-  aggregate: FacetAggregationInput
+  aggregate: Boolean
   logic: FacetLogic
   filter: [FileType!]
 }
 
 input LanguageFacetInput {
-  aggregate: FacetAggregationInput
+  aggregate: Boolean
   filter: [Language!]
 }
 
 input GenreFacetInput {
-  aggregate: FacetAggregationInput
+  aggregate: Boolean
   logic: FacetLogic
   filter: [String!]
 }
 
 input ReleaseYearFacetInput {
-  aggregate: FacetAggregationInput
+  aggregate: Boolean
   filter: [Year]
 }
 
 input VideoResolutionFacetInput {
-  aggregate: FacetAggregationInput
+  aggregate: Boolean
   filter: [VideoResolution]
 }
 
 input VideoSourceFacetInput {
-  aggregate: FacetAggregationInput
+  aggregate: Boolean
   filter: [VideoSource]
 }
 
@@ -142,6 +137,8 @@ type TorrentContentAggregations {
 
 type TorrentContentSearchResult {
   totalCount: Int!
+  """hasNextPage is true if there are more results to fetch"""
+  hasNextPage: Boolean
   items: [TorrentContent!]!
   aggregations: TorrentContentAggregations!
 }

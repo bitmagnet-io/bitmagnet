@@ -222,6 +222,7 @@ type ComplexityRoot struct {
 
 	TorrentContentSearchResult struct {
 		Aggregations func(childComplexity int) int
+		HasNextPage  func(childComplexity int) int
 		Items        func(childComplexity int) int
 		TotalCount   func(childComplexity int) int
 	}
@@ -1098,6 +1099,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TorrentContentSearchResult.Aggregations(childComplexity), true
 
+	case "TorrentContentSearchResult.hasNextPage":
+		if e.complexity.TorrentContentSearchResult.HasNextPage == nil {
+			break
+		}
+
+		return e.complexity.TorrentContentSearchResult.HasNextPage(childComplexity), true
+
 	case "TorrentContentSearchResult.items":
 		if e.complexity.TorrentContentSearchResult.Items == nil {
 			break
@@ -1384,7 +1392,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputContentTypeFacetInput,
-		ec.unmarshalInputFacetAggregationInput,
 		ec.unmarshalInputGenreFacetInput,
 		ec.unmarshalInputLanguageFacetInput,
 		ec.unmarshalInputReleaseYearFacetInput,
@@ -1821,62 +1828,57 @@ scalar Year
   limit: Int
   offset: Int
   totalCount: Boolean
+  """hasNextPage if true, the search result will include the hasNextPage field, indicating if there are more results to fetch"""
+  hasNextPage: Boolean
   cached: Boolean
 }
 
-input FacetAggregationInput {
-  filtered: Boolean
-  totalCount: Boolean
-  limit: Int
-  prefix: String
-}
-
 input ContentTypeFacetInput {
-  aggregate: FacetAggregationInput
+  aggregate: Boolean
   filter: [ContentType]
 }
 
 input TorrentSourceFacetInput {
-  aggregate: FacetAggregationInput
+  aggregate: Boolean
   logic: FacetLogic
   filter: [String!]
 }
 
 input TorrentTagFacetInput {
-  aggregate: FacetAggregationInput
+  aggregate: Boolean
   logic: FacetLogic
   filter: [String!]
 }
 
 input TorrentFileTypeFacetInput {
-  aggregate: FacetAggregationInput
+  aggregate: Boolean
   logic: FacetLogic
   filter: [FileType!]
 }
 
 input LanguageFacetInput {
-  aggregate: FacetAggregationInput
+  aggregate: Boolean
   filter: [Language!]
 }
 
 input GenreFacetInput {
-  aggregate: FacetAggregationInput
+  aggregate: Boolean
   logic: FacetLogic
   filter: [String!]
 }
 
 input ReleaseYearFacetInput {
-  aggregate: FacetAggregationInput
+  aggregate: Boolean
   filter: [Year]
 }
 
 input VideoResolutionFacetInput {
-  aggregate: FacetAggregationInput
+  aggregate: Boolean
   filter: [VideoResolution]
 }
 
 input VideoSourceFacetInput {
-  aggregate: FacetAggregationInput
+  aggregate: Boolean
   filter: [VideoSource]
 }
 
@@ -1960,6 +1962,8 @@ type TorrentContentAggregations {
 
 type TorrentContentSearchResult {
   totalCount: Int!
+  """hasNextPage is true if there are more results to fetch"""
+  hasNextPage: Boolean
   items: [TorrentContent!]!
   aggregations: TorrentContentAggregations!
 }
@@ -7183,6 +7187,8 @@ func (ec *executionContext) fieldContext_TorrentContentQuery_search(ctx context.
 			switch field.Name {
 			case "totalCount":
 				return ec.fieldContext_TorrentContentSearchResult_totalCount(ctx, field)
+			case "hasNextPage":
+				return ec.fieldContext_TorrentContentSearchResult_hasNextPage(ctx, field)
 			case "items":
 				return ec.fieldContext_TorrentContentSearchResult_items(ctx, field)
 			case "aggregations":
@@ -7244,6 +7250,47 @@ func (ec *executionContext) fieldContext_TorrentContentSearchResult_totalCount(c
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TorrentContentSearchResult_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.TorrentContentSearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TorrentContentSearchResult_hasNextPage(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HasNextPage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalOBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TorrentContentSearchResult_hasNextPage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TorrentContentSearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -10718,7 +10765,7 @@ func (ec *executionContext) unmarshalInputContentTypeFacetInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
-			data, err := ec.unmarshalOFacetAggregationInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐFacetAggregationConfig(ctx, v)
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10732,62 +10779,6 @@ func (ec *executionContext) unmarshalInputContentTypeFacetInput(ctx context.Cont
 				return it, err
 			}
 			it.Filter = graphql.OmittableOf(data)
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputFacetAggregationInput(ctx context.Context, obj interface{}) (query.FacetAggregationConfig, error) {
-	var it query.FacetAggregationConfig
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"filtered", "totalCount", "limit", "prefix"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "filtered":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filtered"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Filtered = data
-		case "totalCount":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("totalCount"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TotalCount = data
-		case "limit":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
-			data, err := ec.unmarshalOInt2uint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Limit = data
-		case "prefix":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("prefix"))
-			data, err := ec.unmarshalOString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Prefix = data
 		}
 	}
 
@@ -10812,7 +10803,7 @@ func (ec *executionContext) unmarshalInputGenreFacetInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
-			data, err := ec.unmarshalOFacetAggregationInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐFacetAggregationConfig(ctx, v)
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10859,7 +10850,7 @@ func (ec *executionContext) unmarshalInputLanguageFacetInput(ctx context.Context
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
-			data, err := ec.unmarshalOFacetAggregationInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐFacetAggregationConfig(ctx, v)
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10897,7 +10888,7 @@ func (ec *executionContext) unmarshalInputReleaseYearFacetInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
-			data, err := ec.unmarshalOFacetAggregationInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐFacetAggregationConfig(ctx, v)
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10924,7 +10915,7 @@ func (ec *executionContext) unmarshalInputSearchQueryInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"queryString", "limit", "offset", "totalCount", "cached"}
+	fieldsInOrder := [...]string{"queryString", "limit", "offset", "totalCount", "hasNextPage", "cached"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -10967,6 +10958,15 @@ func (ec *executionContext) unmarshalInputSearchQueryInput(ctx context.Context, 
 				return it, err
 			}
 			it.TotalCount = data
+		case "hasNextPage":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasNextPage"))
+			data, err := ec.unmarshalOBoolean2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullBool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasNextPage = data
 		case "cached":
 			var err error
 
@@ -11139,7 +11139,7 @@ func (ec *executionContext) unmarshalInputTorrentFileTypeFacetInput(ctx context.
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
-			data, err := ec.unmarshalOFacetAggregationInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐFacetAggregationConfig(ctx, v)
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11186,7 +11186,7 @@ func (ec *executionContext) unmarshalInputTorrentSourceFacetInput(ctx context.Co
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
-			data, err := ec.unmarshalOFacetAggregationInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐFacetAggregationConfig(ctx, v)
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11233,7 +11233,7 @@ func (ec *executionContext) unmarshalInputTorrentTagFacetInput(ctx context.Conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
-			data, err := ec.unmarshalOFacetAggregationInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐFacetAggregationConfig(ctx, v)
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11280,7 +11280,7 @@ func (ec *executionContext) unmarshalInputVideoResolutionFacetInput(ctx context.
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
-			data, err := ec.unmarshalOFacetAggregationInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐFacetAggregationConfig(ctx, v)
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11318,7 +11318,7 @@ func (ec *executionContext) unmarshalInputVideoSourceFacetInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
-			data, err := ec.unmarshalOFacetAggregationInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐFacetAggregationConfig(ctx, v)
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12572,6 +12572,8 @@ func (ec *executionContext) _TorrentContentSearchResult(ctx context.Context, sel
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "hasNextPage":
+			out.Values[i] = ec._TorrentContentSearchResult_hasNextPage(ctx, field, obj)
 		case "items":
 			out.Values[i] = ec._TorrentContentSearchResult_items(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -14689,14 +14691,6 @@ func (ec *executionContext) marshalOEpisodes2ᚖgithubᚗcomᚋbitmagnetᚑioᚋ
 	return ec._Episodes(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOFacetAggregationInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐFacetAggregationConfig(ctx context.Context, v interface{}) (*query.FacetAggregationConfig, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputFacetAggregationInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalOFacetLogic2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐFacetLogic(ctx context.Context, v interface{}) (*model.FacetLogic, error) {
 	if v == nil {
 		return nil, nil
@@ -14912,16 +14906,6 @@ func (ec *executionContext) unmarshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmag
 
 func (ec *executionContext) marshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullUint16(ctx context.Context, sel ast.SelectionSet, v model.NullUint16) graphql.Marshaler {
 	return v
-}
-
-func (ec *executionContext) unmarshalOInt2uint(ctx context.Context, v interface{}) (uint, error) {
-	res, err := graphql.UnmarshalUint(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOInt2uint(ctx context.Context, sel ast.SelectionSet, v uint) graphql.Marshaler {
-	res := graphql.MarshalUint(v)
-	return res
 }
 
 func (ec *executionContext) unmarshalOInt2ᚕintᚄ(ctx context.Context, v interface{}) ([]int, error) {
@@ -15209,16 +15193,6 @@ func (ec *executionContext) unmarshalOString2githubᚗcomᚋbitmagnetᚑioᚋbit
 
 func (ec *executionContext) marshalOString2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullString(ctx context.Context, sel ast.SelectionSet, v model.NullString) graphql.Marshaler {
 	return v
-}
-
-func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalString(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalString(v)
-	return res
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {

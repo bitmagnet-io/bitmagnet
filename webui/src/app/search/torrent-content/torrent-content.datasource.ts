@@ -22,19 +22,12 @@ export class TorrentContentDataSource
   private lastRequestTimeSubject = new BehaviorSubject<number>(0);
 
   public result = this.resultSubject.asObservable();
-  public items = this.result.pipe(
-    map((result) =>
-      result.items.slice(0, this.inputSubject.getValue().query?.limit ?? 0),
-    ),
-  );
+  public items = this.result.pipe(map((result) => result.items));
   public aggregations = this.result.pipe(map((result) => result.aggregations));
   public loading = this.loadingSubject.asObservable();
 
   public hasNextPage = this.result.pipe(
-    map(
-      (result) =>
-        result.items.length > (this.inputSubject.getValue().query?.limit ?? 0),
-    ),
+    map((result) => result.hasNextPage ?? false),
   );
 
   public overallTotalCount = this.aggregations.pipe(
@@ -142,7 +135,6 @@ const splitQuery = (
     query: {
       query: {
         ...input.query,
-        limit: (input.query?.limit ?? 0) + 1,
         totalCount: false,
       },
       facets: Object.fromEntries(
@@ -155,6 +147,7 @@ const splitQuery = (
     merge: (prev, next) => ({
       ...prev,
       items: next.items,
+      hasNextPage: next.hasNextPage,
     }),
   },
   {
@@ -164,6 +157,7 @@ const splitQuery = (
         limit: 0,
         queryString: undefined,
         totalCount: false,
+        hasNextPage: false,
       },
       facets: Object.fromEntries(
         Object.entries(input.facets ?? {}).map(([key, f]) => [
@@ -180,6 +174,7 @@ const splitQuery = (
     merge: (prev, next) => ({
       ...next,
       items: prev.items,
+      hasNextPage: prev.hasNextPage,
     }),
   },
 ];

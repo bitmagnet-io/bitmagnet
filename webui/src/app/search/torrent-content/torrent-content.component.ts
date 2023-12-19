@@ -199,7 +199,11 @@ export class TorrentContentComponent
     this.updateSuggestedTags();
   }
 
-  get totalCountBestGuess(): number {
+  /**
+   * When filtering and searching we don't always know the exact total count.
+   * maxTotalCount returns the maximum possible number of items there might be based on the available information.
+   */
+  get maxTotalCount(): number {
     if (!this.hasNextPage) {
       return this.pageIndex * this.pageSize + this.items.length;
     }
@@ -227,13 +231,11 @@ export class TorrentContentComponent
         offset: this.pageIndex * this.pageSize,
         cached,
         totalCount: !isDeepFiltered,
+        hasNextPage: true,
       },
       facets: {
         contentType: {
-          aggregate: {
-            totalCount: true,
-            limit: 10,
-          },
+          aggregate: true,
           filter: (() => {
             const value = this.contentType.value;
             if (value == null) {

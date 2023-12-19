@@ -52,6 +52,14 @@
   }
 }
 
+::ng-deep {
+  mat-checkbox, mat-radio-button {
+    label small {
+      margin-left: 8px;
+    }
+  }
+}
+
 .mat-expansion-panel-header {
   .mat-icon {
     overflow: visible;
