@@ -25,10 +25,10 @@ type Result struct {
 
 func New(params Params) Result {
 	w := warmer{
-		stopped: make(chan struct{}),
-		ticker:  time.NewTicker(params.Config.Interval),
-		search:  params.Search,
-		logger:  params.Logger.Named("search_warmer"),
+		stopped:  make(chan struct{}),
+		interval: params.Config.Interval,
+		search:   params.Search,
+		logger:   params.Logger.Named("search_warmer"),
 	}
 	return Result{
 		AppHook: fx.Hook{
@@ -45,23 +45,34 @@ func New(params Params) Result {
 }
 
 type warmer struct {
-	stopped chan struct{}
-	ticker  *time.Ticker
-	search  search.Search
-	logger  *zap.SugaredLogger
+	stopped  chan struct{}
+	interval time.Duration
+	search   search.Search
+	logger   *zap.SugaredLogger
 }
 
 func (w warmer) start() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	ticker := time.NewTicker(w.interval)
 	go func() {
 		for {
-			w.warm(ctx)
+			warmed := make(chan struct{})
+			go func() {
+				w.warm(ctx)
+				close(warmed)
+			}()
+			// wait for warming to complete
 			select {
 			case <-ctx.Done():
 				return
-			case <-w.ticker.C:
-				continue
+			case <-warmed:
+			}
+			// then wait for the next tick
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
 			}
 		}
 	}()
