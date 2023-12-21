@@ -3,7 +3,7 @@
     <mat-label>Items per page</mat-label>
     <mat-select
       [value]="pageSize"
-      (valueChange)="pageSize = $event; emitChange()"
+      (valueChange)="pageSize = $event; pageIndex = 0; emitChange()"
     >
       <mat-option *ngFor="let size of pageSizes" [value]="size">
         {{ size }}
