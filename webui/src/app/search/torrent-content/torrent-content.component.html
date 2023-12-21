@@ -92,12 +92,12 @@
             "
           />
           <button
-            *ngIf="search.hasQueryString"
+            *ngIf="queryString.value"
             matSuffix
             mat-icon-button
             aria-label="Clear"
             (click)="
-              search.setQueryString(''); search.firstPage(); search.loadResult()
+              queryString.reset(); search.setQueryString(''); search.firstPage(); search.loadResult()
             "
           >
             <mat-icon>close</mat-icon>
