@@ -224,56 +224,13 @@ export class TorrentContentSearchEngine
             ? [contentType]
             : undefined,
       },
-      torrentSource: this.torrentSourceFacet.isActive()
-        ? {
-            aggregate,
-            filter: aggregate
-              ? undefined
-              : this.torrentSourceFacet.filterValues(),
-          }
-        : undefined,
-      torrentTag: this.torrentTagFacet.isActive()
-        ? {
-            aggregate,
-            filter: aggregate ? undefined : this.torrentTagFacet.filterValues(),
-          }
-        : undefined,
-      torrentFileType: this.torrentFileTypeFacet.isActive()
-        ? {
-            aggregate,
-            filter: aggregate
-              ? undefined
-              : this.torrentFileTypeFacet.filterValues(),
-          }
-        : undefined,
-      language: this.languageFacet.isActive()
-        ? {
-            aggregate,
-            filter: aggregate ? undefined : this.languageFacet.filterValues(),
-          }
-        : undefined,
-      genre: this.genreFacet.isActive()
-        ? {
-            aggregate,
-            filter: aggregate ? undefined : this.genreFacet.filterValues(),
-          }
-        : undefined,
-      videoResolution: this.videoResolutionFacet.isActive()
-        ? {
-            aggregate,
-            filter: aggregate
-              ? undefined
-              : this.videoResolutionFacet.filterValues(),
-          }
-        : undefined,
-      videoSource: this.videoSourceFacet.isActive()
-        ? {
-            aggregate,
-            filter: aggregate
-              ? undefined
-              : this.videoSourceFacet.filterValues(),
-          }
-        : undefined,
+      torrentSource: facetInput(this.torrentSourceFacet, aggregate),
+      torrentTag: facetInput(this.torrentTagFacet, aggregate),
+      torrentFileType: facetInput(this.torrentFileTypeFacet, aggregate),
+      language: facetInput(this.languageFacet, aggregate),
+      genre: facetInput(this.genreFacet, aggregate),
+      videoResolution: facetInput(this.videoResolutionFacet, aggregate),
+      videoSource: facetInput(this.videoSourceFacet, aggregate),
     };
   }
 
@@ -369,3 +326,15 @@ const contentTypes: Record<generated.ContentType | "null", ContentTypeInfo> = {
     icon: "question_mark",
   },
 };
+
+function facetInput<T = unknown, _allowNull extends boolean = true>(
+  facet: Facet<T, _allowNull>,
+  aggregate: boolean,
+) {
+  return facet.isActive()
+    ? {
+        aggregate,
+        filter: aggregate ? undefined : facet.filterValues(),
+      }
+    : undefined;
+}

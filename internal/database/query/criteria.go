@@ -48,12 +48,6 @@ func Not(criteria ...Criteria) Criteria {
 	}
 }
 
-func clearScope() Option {
-	return func(b OptionBuilder) (OptionBuilder, error) {
-		return b.clearScope(), nil
-	}
-}
-
 type RawCriteria struct {
 	Query interface{}
 	Args  []interface{}

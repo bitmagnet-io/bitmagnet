@@ -206,7 +206,6 @@ type OptionBuilder interface {
 	Join(...TableJoin) OptionBuilder
 	RequireJoin(...string) OptionBuilder
 	Scope(...Scope) OptionBuilder
-	clearScope() OptionBuilder
 	Select(...clause.Expr) OptionBuilder
 	OrderBy(...clause.OrderByColumn) OptionBuilder
 	Limit(uint) OptionBuilder
@@ -237,19 +236,18 @@ type optionBuilder struct {
 	joins         map[string]TableJoin
 	requiredJoins maps.InsertMap[string, struct{}]
 	scopes        []Scope
-	//gormScopes    []GormScope
-	selections   []clause.Expr
-	groupBy      []clause.Column
-	orderBy      []clause.OrderByColumn
-	limit        model.NullUint
-	nextPage     bool
-	offset       uint
-	facets       []Facet
-	currentFacet string
-	preloads     []field.RelationField
-	totalCount   bool
-	callbacks    []Callback
-	contextFn    func(context.Context) context.Context
+	selections    []clause.Expr
+	groupBy       []clause.Column
+	orderBy       []clause.OrderByColumn
+	limit         model.NullUint
+	nextPage      bool
+	offset        uint
+	facets        []Facet
+	currentFacet  string
+	preloads      []field.RelationField
+	totalCount    bool
+	callbacks     []Callback
+	contextFn     func(context.Context) context.Context
 }
 
 type RawJoin struct {
@@ -301,11 +299,6 @@ func (b optionBuilder) RequireJoin(names ...string) OptionBuilder {
 
 func (b optionBuilder) Scope(scopes ...Scope) OptionBuilder {
 	b.scopes = append(b.scopes, scopes...)
-	return b
-}
-
-func (b optionBuilder) clearScope() OptionBuilder {
-	b.scopes = nil
 	return b
 }
 

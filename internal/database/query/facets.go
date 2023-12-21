@@ -141,16 +141,16 @@ func FacetUsesOrLogic() FacetOption {
 	return FacetUsesLogic(model.FacetLogicOr)
 }
 
-func FacetHasFilter(filter FacetFilter) FacetOption {
+func FacetIsAggregated() FacetOption {
 	return func(c facetConfig) facetConfig {
-		c.filter = filter
+		c.aggregate = true
 		return c
 	}
 }
 
-func FacetIsAggregated() FacetOption {
+func FacetHasFilter(filter FacetFilter) FacetOption {
 	return func(c facetConfig) facetConfig {
-		c.aggregate = true
+		c.filter = filter
 		return c
 	}
 }

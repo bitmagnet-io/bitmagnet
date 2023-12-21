@@ -49,7 +49,6 @@ export class TorrentContentComponent
   queryString = new FormControl("");
 
   items = Array<generated.TorrentContent>();
-  // aggregations: generated.TorrentContentAggregations = {};
 
   contentType = new FormControl<generated.ContentType | "null" | undefined>(
     undefined,
@@ -80,9 +79,6 @@ export class TorrentContentComponent
         ),
       );
     });
-    // this.search.aggregations.subscribe((aggregations) => {
-    //   this.aggregations = aggregations;
-    // });
   }
 
   ngAfterContentInit() {

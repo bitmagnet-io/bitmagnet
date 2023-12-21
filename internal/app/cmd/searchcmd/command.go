@@ -81,7 +81,7 @@ func New(p Params) (Result, error) {
 									"tmdb:10751": {},
 									"tmdb:14":    {},
 								}),
-								//query.FacetIsAggregated(),
+								query.FacetIsAggregated(),
 							),
 						),
 						query.OrderByQueryStringRank(),
