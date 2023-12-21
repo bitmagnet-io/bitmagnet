@@ -221,8 +221,8 @@ export class TorrentContentSearchEngine
           contentType === "null"
             ? [null]
             : contentType
-            ? [contentType]
-            : undefined,
+              ? [contentType]
+              : undefined,
       },
       torrentSource: facetInput(this.torrentSourceFacet, aggregate),
       torrentTag: facetInput(this.torrentTagFacet, aggregate),
