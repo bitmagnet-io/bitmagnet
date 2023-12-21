@@ -97,7 +97,10 @@
             mat-icon-button
             aria-label="Clear"
             (click)="
-              queryString.reset(); search.setQueryString(''); search.firstPage(); search.loadResult()
+              queryString.reset();
+              search.setQueryString('');
+              search.firstPage();
+              search.loadResult()
             "
           >
             <mat-icon>close</mat-icon>
