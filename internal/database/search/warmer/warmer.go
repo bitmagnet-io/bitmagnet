@@ -96,10 +96,9 @@ func (w warmer) warm(ctx context.Context) {
 
 var warmers = maps.NewInsertMap[string, query.Option]()
 
-var facets = maps.NewInsertMap[string, func(options ...query.FacetOption) query.Facet]()
-
 func init() {
 
+	facets := maps.NewInsertMap[string, func(options ...query.FacetOption) query.Facet]()
 	facets.Set(search.TorrentContentTypeFacetKey, search.TorrentContentTypeFacet)
 	facets.Set(search.ContentGenreFacetKey, search.TorrentContentGenreFacet)
 	facets.Set(search.LanguageFacetKey, search.TorrentContentLanguageFacet)
@@ -112,11 +111,13 @@ func init() {
 	facets.Set(search.TorrentSourceFacetKey, search.TorrentSourceFacet)
 	facets.Set(search.TorrentTagFacetKey, search.TorrentTagsFacet)
 
+	// All the top-level facets should be warmed:
 	for _, f := range facets.Entries() {
 		warmers.Set("aggs:"+f.Key, query.WithFacet(
 			f.Value(query.FacetIsAggregated()),
 		))
 	}
+	// All the top-level facets within each content type should be warmed:
 	for _, ct := range model.ContentTypeValues() {
 		for _, f := range facets.Entries()[1:] {
 			warmers.Set("aggs:"+ct.String()+"/"+f.Key, query.Options(query.WithFacet(
