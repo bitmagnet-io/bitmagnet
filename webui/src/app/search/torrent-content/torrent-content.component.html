@@ -56,9 +56,13 @@
             [style.display]="'block'"
           >
             {{ r.label }}
-            <small>{{ isDeepFiltered ? "≤ " : "" }}{{ r.count | number }}</small>
+            <small
+              >{{ isDeepFiltered ? "≤ " : "" }}{{ r.count | number }}</small
+            >
           </mat-checkbox>
-          <span *ngIf="!(search.loading$ | async) && !facet.aggregations?.length" class="empty"
+          <span
+            *ngIf="!(search.loading$ | async) && !facet.aggregations?.length"
+            class="empty"
             >No aggregation results</span
           >
         </section>
@@ -81,14 +85,20 @@
             matInput
             placeholder="Search"
             [formControl]="queryString"
-            (keyup.enter)="search.setQueryString(queryString.value ?? ''); search.firstPage(); search.loadResult()"
+            (keyup.enter)="
+              search.setQueryString(queryString.value ?? '');
+              search.firstPage();
+              search.loadResult()
+            "
           />
           <button
             *ngIf="search.hasQueryString"
             matSuffix
             mat-icon-button
             aria-label="Clear"
-            (click)="search.setQueryString(''); search.firstPage(); search.loadResult()"
+            (click)="
+              search.setQueryString(''); search.firstPage(); search.loadResult()
+            "
           >
             <mat-icon>close</mat-icon>
           </button>
@@ -257,7 +267,7 @@
       <table
         mat-table
         [dataSource]="search"
-        [multiTemplateDataRows]='true'
+        [multiTemplateDataRows]="true"
         class="table-results"
       >
         <!-- Checkbox Column -->
