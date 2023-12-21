@@ -103,6 +103,7 @@ func TorrentSourcesFromTorrent(t model.Torrent) []TorrentSource {
 
 type TorrentContentSearchResult struct {
 	TotalCount   uint
+	HasNextPage  bool
 	Items        []TorrentContent
 	Aggregations gen.TorrentContentAggregations
 }
@@ -163,6 +164,7 @@ func transformTorrentContentSearchResult(result q.GenericResult[search.TorrentCo
 	}
 	return TorrentContentSearchResult{
 		TotalCount:   result.TotalCount,
+		HasNextPage:  result.HasNextPage,
 		Items:        items,
 		Aggregations: aggs,
 	}, nil

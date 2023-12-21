@@ -171,6 +171,12 @@ func WithTotalCount(bl bool) Option {
 	}
 }
 
+func WithHasNextPage(bl bool) Option {
+	return func(ctx OptionBuilder) (OptionBuilder, error) {
+		return ctx.WithHasNextPage(bl), nil
+	}
+}
+
 func Context(fn func(ctx context.Context) context.Context) Option {
 	return func(b OptionBuilder) (OptionBuilder, error) {
 		return b.Context(fn), nil

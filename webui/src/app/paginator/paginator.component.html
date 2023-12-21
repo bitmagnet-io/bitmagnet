@@ -1,0 +1,42 @@
+<div class="paginator">
+  <mat-form-field class="field-items-per-page">
+    <mat-label>Items per page</mat-label>
+    <mat-select
+      [value]="pageSize"
+      (valueChange)="pageSize = $event; emitChange()"
+    >
+      <mat-option
+        *ngFor="let size of pageSizes"
+        [value]="size"
+      >
+        {{ size }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <p class="paginator-description">
+    {{ firstItemIndex | number }} - {{ lastItemIndex | number }}{{ hasTotalLength ? ' of ' + (totalLessThanOrEqual ? '≤ ' : '') + (totalLength | number) : '' }}
+  </p>
+  <div class="paginator-navigation">
+  <button mat-icon-button
+          [disabled]="!hasPreviousPage"
+          (click)="pageIndex = 0; emitChange()"
+          matTooltip="First page"
+  >
+    <mat-icon>first_page</mat-icon>
+  </button>
+  <button mat-icon-button
+    [disabled]="!hasPreviousPage"
+    (click)="pageIndex = pageIndex- 1; emitChange()"
+    matTooltip="Previous page"
+  >
+    <mat-icon>navigate_before</mat-icon>
+  </button>
+  <button mat-icon-button
+          [disabled]="!hasNextPage"
+          (click)="pageIndex = pageIndex+ 1; emitChange()"
+          matTooltip="Next page"
+  >
+    <mat-icon>navigate_next</mat-icon>
+  </button>
+  </div>
+</div>

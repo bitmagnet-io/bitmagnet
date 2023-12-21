@@ -2,10 +2,6 @@ import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { ReactiveFormsModule } from "@angular/forms";
 import { MatTableModule } from "@angular/material/table";
-import {
-  MatPaginatorIntl,
-  MatPaginatorModule,
-} from "@angular/material/paginator";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
@@ -25,37 +21,36 @@ import { MatAutocompleteModule } from "@angular/material/autocomplete";
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatDividerModule } from "@angular/material/divider";
 import { MatCardModule } from "@angular/material/card";
+import { PaginatorModule } from "../paginator/paginator.module";
 import { TorrentContentComponent } from "./torrent-content/torrent-content.component";
-import { MatPaginatorIntlCustom } from "./mat-paginator-intl";
 
 @NgModule({
   declarations: [TorrentContentComponent],
   imports: [
-    CommonModule,
-    ReactiveFormsModule,
     BrowserAnimationsModule,
     ClipboardModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatProgressBarModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatIconModule,
+    CommonModule,
+    MatAutocompleteModule,
     MatButtonModule,
-    NgxFilesizeModule,
-    MatSidenavModule,
-    MatSelectModule,
-    MatExpansionModule,
+    MatCardModule,
     MatCheckboxModule,
     MatChipsModule,
-    MatSnackBarModule,
-    MatRadioModule,
-    MatAutocompleteModule,
-    MatTabsModule,
     MatDividerModule,
-    MatCardModule,
+    MatExpansionModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatProgressBarModule,
+    MatRadioModule,
+    MatSelectModule,
+    MatSidenavModule,
+    MatSnackBarModule,
+    MatTableModule,
+    MatTabsModule,
+    NgxFilesizeModule,
+    PaginatorModule,
+    ReactiveFormsModule,
   ],
   exports: [TorrentContentComponent],
-  providers: [{ provide: MatPaginatorIntl, useClass: MatPaginatorIntlCustom }],
 })
 export class SearchModule {}

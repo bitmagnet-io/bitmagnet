@@ -12,24 +12,24 @@
             <mat-icon fontSet="material-icons">emergency</mat-icon>All
             <small
               >{{ isDeepFiltered ? "≤ " : ""
-              }}{{ overallTotalCount | number }}</small
+              }}{{ search.overallTotalCount$ | async | number }}</small
             >
           </mat-radio-button>
           <mat-radio-button
-            *ngFor="let t of contentTypeEntries"
-            [value]="t.type"
+            *ngFor="let t of search.contentTypes | keyvalue: originalOrder"
+            [value]="t.key"
           >
-            <mat-icon>{{ t.icon }}</mat-icon>
-            {{ t.plural }}
+            <mat-icon>{{ t.value.icon }}</mat-icon>
+            {{ t.value.plural }}
             <small
               >{{ isDeepFiltered ? "≤ " : ""
-              }}{{ contentTypeAgg(t.type)?.count ?? 0 | number }}</small
+              }}{{ search.contentTypeCount(t.key) | async | number }}</small
             >
           </mat-radio-button>
         </mat-radio-group>
       </section>
     </mat-expansion-panel>
-    <ng-container *ngFor="let facet of facets">
+    <ng-container *ngFor="let facet of search.facets">
       <mat-expansion-panel
         *ngIf="facet.isRelevant(contentType.value)"
         [expanded]="facet.isActive()"
@@ -58,7 +58,7 @@
             {{ r.label }}
             <small>{{ isDeepFiltered ? "≤ " : "" }}{{ r.count | number }}</small>
           </mat-checkbox>
-          <span *ngIf="!loading && !facet.aggregations?.length" class="empty"
+          <span *ngIf="!(search.loading$ | async) && !facet.aggregations?.length" class="empty"
             >No aggregation results</span
           >
         </section>
@@ -81,14 +81,14 @@
             matInput
             placeholder="Search"
             [formControl]="queryString"
-            (keyup.enter)="pageIndex = 0; loadResult()"
+            (keyup.enter)="search.setQueryString(queryString.value ?? ''); search.firstPage(); search.loadResult()"
           />
           <button
-            *ngIf="queryString.value"
+            *ngIf="search.hasQueryString"
             matSuffix
             mat-icon-button
             aria-label="Clear"
-            (click)="queryString.reset(); pageIndex = 0; loadResult()"
+            (click)="search.setQueryString(''); search.firstPage(); search.loadResult()"
           >
             <mat-icon>close</mat-icon>
           </button>
@@ -251,13 +251,13 @@
       <div class="progress-bar-container" style="height: 10px">
         <mat-progress-bar
           mode="indeterminate"
-          *ngIf="loading"
+          *ngIf="search.loading$ | async"
         ></mat-progress-bar>
       </div>
       <table
         mat-table
-        [dataSource]="dataSource"
-        multiTemplateDataRows
+        [dataSource]="search"
+        [multiTemplateDataRows]='true'
         class="table-results"
       >
         <!-- Checkbox Column -->
@@ -291,10 +291,10 @@
           >
             <mat-icon
               [attr.title]="
-                contentTypeInfo(item(i).contentType)?.singular ?? 'Unknown'
+                search.contentTypeInfo(i.contentType)?.singular ?? 'Unknown'
               "
               >{{
-                contentTypeInfo(item(i).contentType)?.icon ?? "question_mark"
+                search.contentTypeInfo(i.contentType)?.icon ?? "question_mark"
               }}</mat-icon
             >
             <span class="title">{{ item(i).title }}</span>
@@ -619,16 +619,14 @@
         ></tr>
       </table>
       <span class="spacer"></span>
-      <mat-paginator
-        (page)="handlePageEvent($event)"
-        [pageIndex]="pageIndex"
-        [length]="maxTotalCount"
-        [pageSize]="pageSize"
-        [pageSizeOptions]="[10, 25, 50, 100, 250]"
-        [showFirstLastButtons]="true"
-        aria-label="Select page"
-      >
-      </mat-paginator>
+      <app-paginator
+        (page)="search.handlePageEvent($event)"
+        [pageIndex]="search.pageIndex$ | async"
+        [pageSize]="search.pageSize$ | async"
+        [pageLength]="search.pageLength$ | async"
+        [totalLength]="search.maxTotalCount$ | async"
+        [totalLessThanOrEqual]="search.isDeepFiltered"
+      />
     </div>
   </mat-drawer-content>
 </mat-drawer-container>

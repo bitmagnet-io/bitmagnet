@@ -17,6 +17,7 @@ func New() fx.Option {
 		"database",
 		configfx.NewConfigModule[postgres.Config]("postgres", postgres.NewDefaultConfig()),
 		configfx.NewConfigModule[cache.Config]("gorm_cache", cache.NewDefaultConfig()),
+		configfx.NewConfigModule[warmer.Config]("search_warmer", warmer.NewDefaultConfig()),
 		fx.Provide(
 			cache.NewInMemoryCacher,
 			cache.NewPlugin,

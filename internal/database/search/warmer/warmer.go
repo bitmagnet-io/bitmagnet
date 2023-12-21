@@ -2,7 +2,6 @@ package warmer
 
 import (
 	"context"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/cache"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
@@ -14,6 +13,7 @@ import (
 
 type Params struct {
 	fx.In
+	Config Config
 	Search search.Search
 	Logger *zap.SugaredLogger
 }
@@ -24,44 +24,62 @@ type Result struct {
 }
 
 func New(params Params) Result {
-	logger := params.Logger.Named("search_cache_warmer")
-	stopped := make(chan struct{})
+	w := warmer{
+		stopped: make(chan struct{}),
+		ticker:  time.NewTicker(params.Config.Interval),
+		search:  params.Search,
+		logger:  params.Logger.Named("search_warmer"),
+	}
 	return Result{
 		AppHook: fx.Hook{
 			OnStart: func(context.Context) error {
-				go func() {
-					ctx, cancel := context.WithCancel(context.Background())
-					ticker := time.NewTicker(time.Second)
-					for {
-						select {
-						case <-stopped:
-							cancel()
-							return
-						case <-ticker.C:
-							for _, w := range warmers.Entries() {
-								logger.Infow("warming", "warmer", w.Key)
-								if _, err := params.Search.TorrentContent(
-									ctx,
-									query.Limit(0),
-									search.TorrentContentCoreJoins(),
-									w.Value,
-									query.CacheMode(cache.ModeWarm),
-								); err != nil {
-									logger.Errorw("error warming", "warmer", w.Key, "error", err)
-								}
-							}
-							ticker.Reset(10 * time.Minute)
-							continue
-						}
-					}
-				}()
+				go w.start()
 				return nil
 			},
 			OnStop: func(ctx context.Context) error {
-				close(stopped)
+				close(w.stopped)
 				return nil
 			},
 		},
+	}
+}
+
+type warmer struct {
+	stopped chan struct{}
+	ticker  *time.Ticker
+	search  search.Search
+	logger  *zap.SugaredLogger
+}
+
+func (w warmer) start() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() {
+		for {
+			w.warm(ctx)
+			select {
+			case <-ctx.Done():
+				return
+			case <-w.ticker.C:
+				continue
+			}
+		}
+	}()
+	<-w.stopped
+}
+
+func (w warmer) warm(ctx context.Context) {
+	for _, e := range warmers.Entries() {
+		w.logger.Debugw("warming", "warmer", e.Key)
+		if _, err := w.search.TorrentContent(
+			ctx,
+			query.Limit(0),
+			search.TorrentContentCoreJoins(),
+			e.Value,
+			query.CacheWarm(),
+		); err != nil {
+			w.logger.Errorw("error warming", "warmer", e.Key, "error", err)
+		}
 	}
 }
 
@@ -85,9 +103,7 @@ func init() {
 
 	for _, f := range facets.Entries() {
 		warmers.Set("aggs:"+f.Key, query.WithFacet(
-			f.Value(query.FacetHasAggregationConfig(query.FacetAggregationConfig{
-				TotalCount: true,
-			})),
+			f.Value(query.FacetIsAggregated()),
 		))
 	}
 	for _, ct := range model.ContentTypeValues() {
@@ -95,10 +111,7 @@ func init() {
 			warmers.Set("aggs:"+ct.String()+"/"+f.Key, query.Options(query.WithFacet(
 				search.TorrentContentTypeFacet(query.FacetHasFilter(query.FacetFilter{
 					ct.String(): struct{}{},
-				}))), query.WithFacet(f.Value(query.FacetHasAggregationConfig(query.FacetAggregationConfig{
-				Filtered:   true,
-				TotalCount: true,
-			})))))
+				}))), query.WithFacet(f.Value(query.FacetIsAggregated()))))
 		}
 	}
 }

@@ -258,6 +258,8 @@ tr.mat-mdc-row.expanded {
   }
 }
 
-::ng-deep .mat-mdc-paginator-navigation-last {
-  display: none;
+app-paginator {
+  float: right;
+  margin-top: 10px;
+  margin-bottom: 20px;
 }
