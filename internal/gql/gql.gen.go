@@ -1828,7 +1828,9 @@ scalar Year
   limit: Int
   offset: Int
   totalCount: Boolean
-  """hasNextPage if true, the search result will include the hasNextPage field, indicating if there are more results to fetch"""
+  """
+  hasNextPage if true, the search result will include the hasNextPage field, indicating if there are more results to fetch
+  """
   hasNextPage: Boolean
   cached: Boolean
 }
@@ -1962,7 +1964,9 @@ type TorrentContentAggregations {
 
 type TorrentContentSearchResult {
   totalCount: Int!
-  """hasNextPage is true if there are more results to fetch"""
+  """
+  hasNextPage is true if there are more results to fetch
+  """
   hasNextPage: Boolean
   items: [TorrentContent!]!
   aggregations: TorrentContentAggregations!
