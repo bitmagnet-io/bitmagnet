@@ -268,7 +268,9 @@ export class TorrentContentSearchEngine
   contentTypeCount(type: string): Observable<number> {
     return this.aggregations$.pipe(
       map(
-        (aggs) => aggs.contentType?.find((a) => a.value === type)?.count ?? 0,
+        (aggs) =>
+          aggs.contentType?.find((a) => (a.value ?? "null") === type)?.count ??
+          0,
       ),
     );
   }
