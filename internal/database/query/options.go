@@ -17,7 +17,6 @@ type Option = func(ctx OptionBuilder) (OptionBuilder, error)
 func DefaultOption() Option {
 	return Options(
 		Limit(10),
-		WithTotalCount(true),
 	)
 }
 
@@ -169,6 +168,12 @@ func Preload(fn func(query *dao.Query) []field.RelationField) Option {
 func WithTotalCount(bl bool) Option {
 	return func(ctx OptionBuilder) (OptionBuilder, error) {
 		return ctx.WithTotalCount(bl), nil
+	}
+}
+
+func WithHasNextPage(bl bool) Option {
+	return func(ctx OptionBuilder) (OptionBuilder, error) {
+		return ctx.WithHasNextPage(bl), nil
 	}
 }
 

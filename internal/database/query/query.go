@@ -21,6 +21,7 @@ type ResultItem struct {
 
 type GenericResult[T interface{}] struct {
 	TotalCount   uint
+	HasNextPage  bool
 	Items        []T
 	Aggregations Aggregations
 }
@@ -89,17 +90,25 @@ func GenericQuery[T interface{}](
 			addErr(postErr)
 			return
 		}
-		if !builder.hasZeroLimit() {
+		if !builder.hasZeroLimit() || builder.needsNextPage() {
 			var items []T
 			if txErr := sq.UnderlyingDB().Find(&items).Error; txErr != nil {
 				addErr(txErr)
 				return
 			}
-			if cbErr := builder.applyCallbacks(ctx, items); cbErr != nil {
-				addErr(cbErr)
-				return
+			// copy items slice to avoid modifying cached results
+			copiedItems := append([]T{}, items...)
+			if builder.hasNextPage(len(copiedItems)) {
+				r.HasNextPage = true
+				copiedItems = copiedItems[:len(copiedItems)-1]
 			}
-			r.Items = items
+			if len(copiedItems) > 0 {
+				if cbErr := builder.applyCallbacks(ctx, copiedItems); cbErr != nil {
+					addErr(cbErr)
+					return
+				}
+			}
+			r.Items = copiedItems
 		}
 	})()
 	go (func() {
@@ -197,7 +206,6 @@ type OptionBuilder interface {
 	Join(...TableJoin) OptionBuilder
 	RequireJoin(...string) OptionBuilder
 	Scope(...Scope) OptionBuilder
-	GormScope(...GormScope) OptionBuilder
 	Select(...clause.Expr) OptionBuilder
 	OrderBy(...clause.OrderByColumn) OptionBuilder
 	Limit(uint) OptionBuilder
@@ -213,9 +221,12 @@ type OptionBuilder interface {
 	createFacetsFilterCriteria() (Criteria, error)
 	calculateAggregations(context.Context) (Aggregations, error)
 	WithTotalCount(bool) OptionBuilder
+	WithHasNextPage(bool) OptionBuilder
 	withTotalCount() bool
 	applyCallbacks(context.Context, any) error
 	hasZeroLimit() bool
+	needsNextPage() bool
+	hasNextPage(nItems int) bool
 	withCurrentFacet(string) OptionBuilder
 	createContext(context.Context) context.Context
 }
@@ -225,11 +236,11 @@ type optionBuilder struct {
 	joins         map[string]TableJoin
 	requiredJoins maps.InsertMap[string, struct{}]
 	scopes        []Scope
-	gormScopes    []GormScope
 	selections    []clause.Expr
 	groupBy       []clause.Column
 	orderBy       []clause.OrderByColumn
 	limit         model.NullUint
+	nextPage      bool
 	offset        uint
 	facets        []Facet
 	currentFacet  string
@@ -291,11 +302,6 @@ func (b optionBuilder) Scope(scopes ...Scope) OptionBuilder {
 	return b
 }
 
-func (b optionBuilder) GormScope(scopes ...GormScope) OptionBuilder {
-	b.gormScopes = append(b.gormScopes, scopes...)
-	return b
-}
-
 func (b optionBuilder) Select(selections ...clause.Expr) OptionBuilder {
 	b.selections = append(b.selections, selections...)
 	return b
@@ -352,12 +358,31 @@ func (b optionBuilder) WithTotalCount(bl bool) OptionBuilder {
 	return b
 }
 
+func (b optionBuilder) WithHasNextPage(bl bool) OptionBuilder {
+	b.nextPage = bl
+	return b
+}
+
 func (b optionBuilder) withTotalCount() bool {
 	return b.totalCount
 }
 
 func (b optionBuilder) hasZeroLimit() bool {
 	return b.limit.Valid && b.limit.Uint == 0
+}
+
+func (b optionBuilder) needsNextPage() bool {
+	return b.limit.Valid && b.nextPage
+}
+
+func (b optionBuilder) hasNextPage(nItems int) bool {
+	if !b.nextPage {
+		return false
+	}
+	if !b.limit.Valid {
+		return false
+	}
+	return nItems > int(b.limit.Uint)
 }
 
 func (b optionBuilder) withCurrentFacet(facet string) OptionBuilder {
@@ -388,7 +413,6 @@ func (b optionBuilder) applySelect(sq SubQuery) error {
 }
 
 func (b optionBuilder) applyPre(sq SubQuery) error {
-	sq.Scopes(b.gormScopes...)
 	for _, s := range b.scopes {
 		if err := s(sq); err != nil {
 			return err
@@ -469,7 +493,11 @@ func (b optionBuilder) applyPost(sq SubQuery) error {
 		})
 	}
 	if b.limit.Valid {
-		sq.UnderlyingDB().Limit(int(b.limit.Uint))
+		limit := int(b.limit.Uint)
+		if b.nextPage {
+			limit++
+		}
+		sq.UnderlyingDB().Limit(limit)
 	}
 	sq.UnderlyingDB().Offset(int(b.offset))
 	for _, p := range b.preloads {

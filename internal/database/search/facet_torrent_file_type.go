@@ -145,9 +145,7 @@ func (f torrentFileTypeFacet) Criteria() []query.Criteria {
 	return []query.Criteria{query.GenCriteria(func(ctx query.DbContext) (query.Criteria, error) {
 		filter := f.Filter().Values()
 		if len(filter) == 0 {
-			return query.RawCriteria{
-				Query: "1=1",
-			}, nil
+			return query.AndCriteria{}, nil
 		}
 		fileTypes := make([]model.FileType, 0, len(filter))
 		for _, v := range filter {

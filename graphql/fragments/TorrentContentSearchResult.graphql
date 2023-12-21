@@ -1,10 +1,11 @@
 #import "./TorrentContent"
 
 fragment TorrentContentSearchResult on TorrentContentSearchResult {
-  totalCount
   items {
     ...TorrentContent
   }
+  totalCount
+  hasNextPage
   aggregations {
     contentType {
       value

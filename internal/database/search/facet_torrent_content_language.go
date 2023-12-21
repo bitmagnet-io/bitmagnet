@@ -67,10 +67,7 @@ func (f torrentContentLanguageFacet) Criteria() []query.Criteria {
 				langs = append(langs, lang.Language)
 			}
 			if len(langs) == 0 {
-				// todo get rid of these
-				return query.RawCriteria{
-					Query: "1=1",
-				}, nil
+				return query.AndCriteria{}, nil
 			}
 			array := "array["
 			for i, lang := range langs {

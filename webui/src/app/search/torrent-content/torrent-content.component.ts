@@ -1,14 +1,5 @@
 import { AfterContentInit, AfterViewInit, Component } from "@angular/core";
-import { PageEvent } from "@angular/material/paginator";
-import {
-  BehaviorSubject,
-  catchError,
-  EMPTY,
-  interval,
-  startWith,
-  Subscription,
-  tap,
-} from "rxjs";
+import { BehaviorSubject, catchError, EMPTY, tap } from "rxjs";
 import { FormControl } from "@angular/forms";
 import {
   animate,
@@ -22,8 +13,7 @@ import { SelectionModel } from "@angular/cdk/collections";
 import * as generated from "../../graphql/generated";
 import { GraphQLService } from "../../graphql/graphql.service";
 import { AppErrorsService } from "../../app-errors.service";
-import { TorrentContentDataSource } from "./torrent-content.datasource";
-import { Facet } from "./facet";
+import { TorrentContentSearchEngine } from "./torrent-content-search.engine";
 
 @Component({
   selector: "app-torrent-content",
@@ -43,45 +33,18 @@ import { Facet } from "./facet";
 export class TorrentContentComponent
   implements AfterContentInit, AfterViewInit
 {
-  dataSource: TorrentContentDataSource = new TorrentContentDataSource(
+  search: TorrentContentSearchEngine = new TorrentContentSearchEngine(
     this.graphQLService,
     this.errorsService,
   );
   displayedColumns = ["select", "summary", "size", "peers", "magnet"];
   queryString = new FormControl("");
 
-  pageIndex = 0;
-  pageSize = 10;
-
-  result: generated.TorrentContentSearchResult = {
-    items: [],
-    aggregations: {},
-    totalCount: 0,
-  };
-  loading = true;
-
-  contentTypeEntries = Object.entries(contentTypes).map(([type, info]) => ({
-    type: type as generated.ContentType,
-    ...info,
-  }));
+  items = Array<generated.TorrentContent>();
 
   contentType = new FormControl<generated.ContentType | "null" | undefined>(
     undefined,
   );
-
-  torrentSourceFacet: Facet<string, false>;
-  torrentTagFacet: Facet<string, false>;
-  torrentFileTypeFacet: Facet<generated.FileType, false>;
-  languageFacet: Facet<generated.Language, false>;
-  genreFacet: Facet<string, false>;
-  videoResolutionFacet: Facet<generated.VideoResolution>;
-  videoSourceFacet: Facet<generated.VideoSource>;
-
-  facets: Facet<unknown, boolean>[];
-
-  autoRefresh = new FormControl<number>(0);
-  autoRefreshIntervals = [0, 10, 30];
-  autoRefreshSubscription: Subscription | undefined;
 
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
 
@@ -96,66 +59,14 @@ export class TorrentContentComponent
     private graphQLService: GraphQLService,
     private errorsService: AppErrorsService,
   ) {
-    this.dataSource.result.subscribe((result) => {
-      this.result = result;
+    this.search.items$.subscribe((items) => {
+      this.items = items;
       this.selectedItems.setSelection(
-        ...result.items.filter(({ id }) =>
+        ...items.filter(({ id }) =>
           this.selectedItems.selected.some(({ id: itemId }) => itemId === id),
         ),
       );
     });
-    this.dataSource.loading.subscribe((loading) => (this.loading = loading));
-    this.torrentSourceFacet = new Facet<string, false>(
-      "Torrent Source",
-      "mediation",
-      null,
-      this.dataSource.torrentSourceAggs,
-    );
-    this.torrentTagFacet = new Facet<string, false>(
-      "Torrent Tag",
-      "sell",
-      null,
-      this.dataSource.torrentTagAggs,
-    );
-    this.torrentFileTypeFacet = new Facet<generated.FileType, false>(
-      "File Type",
-      "file_present",
-      null,
-      this.dataSource.torrentFileTypeAggs,
-    );
-    this.languageFacet = new Facet<generated.Language, false>(
-      "Language",
-      "translate",
-      null,
-      this.dataSource.languageAggs,
-    );
-    this.genreFacet = new Facet<string, false>(
-      "Genre",
-      "theater_comedy",
-      ["movie", "tv_show"],
-      this.dataSource.genreAggs,
-    );
-    this.videoResolutionFacet = new Facet<generated.VideoResolution>(
-      "Video Resolution",
-      "screenshot_monitor",
-      ["movie", "tv_show", "xxx"],
-      this.dataSource.videoResolutionAggs,
-    );
-    this.videoSourceFacet = new Facet<generated.VideoSource>(
-      "Video Source",
-      "album",
-      ["movie", "tv_show", "xxx"],
-      this.dataSource.videoSourceAggs,
-    );
-    this.facets = [
-      this.torrentSourceFacet,
-      this.torrentTagFacet,
-      this.torrentFileTypeFacet,
-      this.languageFacet,
-      this.videoResolutionFacet,
-      this.videoSourceFacet,
-      this.genreFacet,
-    ];
   }
 
   ngAfterContentInit() {
@@ -163,23 +74,8 @@ export class TorrentContentComponent
   }
 
   ngAfterViewInit() {
-    this.autoRefresh.valueChanges.subscribe((n) => {
-      if (this.autoRefreshSubscription) {
-        this.autoRefreshSubscription.unsubscribe();
-      }
-      if (n) {
-        this.autoRefreshSubscription = interval(n * 1000)
-          .pipe(
-            startWith(0),
-            tap(() => this.loadResult(false)),
-          )
-          .subscribe();
-      }
-    });
     this.contentType.valueChanges.subscribe((value) => {
-      this.facets.forEach((f) => f.isRelevant(value) || f.deactivateAndReset());
-      this.pageIndex = 0;
-      this.loadResult();
+      this.search.selectContentType(value);
     });
     this.newTagCtrl.valueChanges.subscribe((value) => {
       value &&
@@ -191,41 +87,12 @@ export class TorrentContentComponent
     this.updateSuggestedTags();
   }
 
-  loadResult(cached = true) {
-    this.dataSource.loadResult({
-      query: {
-        queryString:
-          this.queryString.value === "" ? null : this.queryString.value,
-        limit: this.pageSize,
-        offset: this.pageIndex * this.pageSize,
-        cached,
-      },
-      facets: {
-        contentType: {
-          aggregate: true,
-          filter: (() => {
-            const value = this.contentType.value;
-            if (value == null) {
-              return undefined;
-            }
-            return value === "null" ? [null] : [value];
-          })(),
-        },
-        torrentSource: this.torrentSourceFacet.facetParams(),
-        torrentTag: this.torrentTagFacet.facetParams(),
-        torrentFileType: this.torrentFileTypeFacet.facetParams(),
-        language: this.languageFacet.facetParams(),
-        genre: this.genreFacet.facetParams(),
-        videoResolution: this.videoResolutionFacet.facetParams(),
-        videoSource: this.videoSourceFacet.facetParams(),
-      },
-    });
+  get isDeepFiltered(): boolean {
+    return this.search.isDeepFiltered;
   }
 
-  handlePageEvent(event: PageEvent) {
-    this.pageIndex = event.pageIndex;
-    this.pageSize = event.pageSize;
-    this.loadResult();
+  loadResult(cached = true) {
+    this.search.loadResult(cached);
   }
 
   /**
@@ -235,16 +102,8 @@ export class TorrentContentComponent
     return item;
   }
 
-  contentTypeInfo(type?: generated.ContentType | "null" | null) {
-    return type ? contentTypes[type] : undefined;
-  }
-
-  contentTypeAgg(v: unknown) {
-    const ct = this.result.aggregations.contentType;
-    if (ct) {
-      return ct.find((a) => (a.value ?? "null") === v);
-    }
-    return undefined;
+  originalOrder(): number {
+    return 0;
   }
 
   getAttribute(
@@ -269,7 +128,7 @@ export class TorrentContentComponent
 
   /** Whether the number of selected elements matches the total number of rows. */
   isAllSelected() {
-    return this.result.items.every((i) => this.selectedItems.isSelected(i));
+    return this.items.every((i) => this.selectedItems.isSelected(i));
   }
 
   /** Selects all rows if they are not all selected; otherwise clear selection. */
@@ -278,7 +137,7 @@ export class TorrentContentComponent
       this.selectedItems.clear();
       return;
     }
-    this.selectedItems.select(...this.result.items);
+    this.selectedItems.select(...this.items);
   }
 
   /** The label for the checkbox on the passed row */
@@ -334,7 +193,7 @@ export class TorrentContentComponent
       )
       .pipe(
         tap(() => {
-          this.dataSource.refreshResult();
+          this.search.loadResult(false);
         }),
       )
       .subscribe();
@@ -359,7 +218,7 @@ export class TorrentContentComponent
       )
       .pipe(
         tap(() => {
-          this.dataSource.refreshResult();
+          this.search.loadResult(false);
         }),
       )
       .subscribe();
@@ -384,7 +243,7 @@ export class TorrentContentComponent
       )
       .pipe(
         tap(() => {
-          this.dataSource.refreshResult();
+          this.search.loadResult(false);
         }),
       )
       .subscribe();
@@ -427,7 +286,7 @@ export class TorrentContentComponent
       )
       .pipe(
         tap(() => {
-          this.dataSource.refreshResult();
+          this.search.loadResult(false);
         }),
       )
       .subscribe();
@@ -443,12 +302,12 @@ export class TorrentContentComponent
     public selectedTabIndex = 0;
 
     constructor(private ds: TorrentContentComponent) {
-      ds.dataSource.result.subscribe((result) => {
+      ds.search.items$.subscribe((items) => {
         const item = this.itemSubject.getValue();
         if (!item) {
           return;
         }
-        const nextItem = result.items.find((i) => i.id === item.id);
+        const nextItem = items.find((i) => i.id === item.id);
         this.editedTags = nextItem?.torrent.tagNames ?? [];
         this.itemSubject.next(nextItem);
       });
@@ -485,7 +344,7 @@ export class TorrentContentComponent
       if (id === this.id) {
         id = undefined;
       }
-      const nextItem = this.ds.result.items.find((i) => i.id === id);
+      const nextItem = this.ds.items.find((i) => i.id === id);
       const current = this.itemSubject.getValue();
       if (current?.id !== id) {
         this.itemSubject.next(nextItem);
@@ -544,7 +403,7 @@ export class TorrentContentComponent
         .pipe(
           tap(() => {
             this.editedTags = [];
-            this.ds.dataSource.refreshResult();
+            this.ds.search.loadResult(false);
           }),
         )
         .subscribe();
@@ -559,55 +418,6 @@ export class TorrentContentComponent
     }
   })(this);
 }
-
-type ContentTypeInfo = {
-  singular: string;
-  plural: string;
-  icon: string;
-};
-
-const contentTypes: Record<generated.ContentType | "null", ContentTypeInfo> = {
-  movie: {
-    singular: "Movie",
-    plural: "Movies",
-    icon: "movie",
-  },
-  tv_show: {
-    singular: "TV Show",
-    plural: "TV Shows",
-    icon: "live_tv",
-  },
-  music: {
-    singular: "Music",
-    plural: "Music",
-    icon: "music_note",
-  },
-  book: {
-    singular: "Book",
-    plural: "Books",
-    icon: "auto_stories",
-  },
-  software: {
-    singular: "Software",
-    plural: "Software",
-    icon: "desktop_windows",
-  },
-  game: {
-    singular: "Game",
-    plural: "Games",
-    icon: "sports_esports",
-  },
-  xxx: {
-    singular: "XXX",
-    plural: "XXX",
-    icon: "18_up_rating_outline",
-  },
-  null: {
-    singular: "Unknown",
-    plural: "Unknown",
-    icon: "question_mark",
-  },
-};
 
 const normalizeTagInput = (value: string): string =>
   value

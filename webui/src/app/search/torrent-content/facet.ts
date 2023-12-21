@@ -53,13 +53,8 @@ export class Facet<T = unknown, _allowNull extends boolean = true> {
     return this.selected.size === 0;
   }
 
-  facetParams() {
-    return this.active
-      ? {
-          aggregate: true,
-          filter: this.selected.size ? [...this.selected] : undefined,
-        }
-      : undefined;
+  filterValues(): Array<FacetValue<T, _allowNull>> | undefined {
+    return this.selected.size ? [...this.selected] : undefined;
   }
 
   isSelected(value: FacetValue<T, _allowNull> | undefined): boolean {

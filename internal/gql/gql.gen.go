@@ -222,6 +222,7 @@ type ComplexityRoot struct {
 
 	TorrentContentSearchResult struct {
 		Aggregations func(childComplexity int) int
+		HasNextPage  func(childComplexity int) int
 		Items        func(childComplexity int) int
 		TotalCount   func(childComplexity int) int
 	}
@@ -1098,6 +1099,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TorrentContentSearchResult.Aggregations(childComplexity), true
 
+	case "TorrentContentSearchResult.hasNextPage":
+		if e.complexity.TorrentContentSearchResult.HasNextPage == nil {
+			break
+		}
+
+		return e.complexity.TorrentContentSearchResult.HasNextPage(childComplexity), true
+
 	case "TorrentContentSearchResult.items":
 		if e.complexity.TorrentContentSearchResult.Items == nil {
 			break
@@ -1820,6 +1828,10 @@ scalar Year
   limit: Int
   offset: Int
   totalCount: Boolean
+  """
+  hasNextPage if true, the search result will include the hasNextPage field, indicating if there are more results to fetch
+  """
+  hasNextPage: Boolean
   cached: Boolean
 }
 
@@ -1952,6 +1964,10 @@ type TorrentContentAggregations {
 
 type TorrentContentSearchResult {
   totalCount: Int!
+  """
+  hasNextPage is true if there are more results to fetch
+  """
+  hasNextPage: Boolean
   items: [TorrentContent!]!
   aggregations: TorrentContentAggregations!
 }
@@ -7175,6 +7191,8 @@ func (ec *executionContext) fieldContext_TorrentContentQuery_search(ctx context.
 			switch field.Name {
 			case "totalCount":
 				return ec.fieldContext_TorrentContentSearchResult_totalCount(ctx, field)
+			case "hasNextPage":
+				return ec.fieldContext_TorrentContentSearchResult_hasNextPage(ctx, field)
 			case "items":
 				return ec.fieldContext_TorrentContentSearchResult_items(ctx, field)
 			case "aggregations":
@@ -7236,6 +7254,47 @@ func (ec *executionContext) fieldContext_TorrentContentSearchResult_totalCount(c
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TorrentContentSearchResult_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.TorrentContentSearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TorrentContentSearchResult_hasNextPage(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HasNextPage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalOBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TorrentContentSearchResult_hasNextPage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TorrentContentSearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -10860,7 +10919,7 @@ func (ec *executionContext) unmarshalInputSearchQueryInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"queryString", "limit", "offset", "totalCount", "cached"}
+	fieldsInOrder := [...]string{"queryString", "limit", "offset", "totalCount", "hasNextPage", "cached"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -10903,6 +10962,15 @@ func (ec *executionContext) unmarshalInputSearchQueryInput(ctx context.Context, 
 				return it, err
 			}
 			it.TotalCount = data
+		case "hasNextPage":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasNextPage"))
+			data, err := ec.unmarshalOBoolean2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullBool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasNextPage = data
 		case "cached":
 			var err error
 
@@ -12508,6 +12576,8 @@ func (ec *executionContext) _TorrentContentSearchResult(ctx context.Context, sel
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "hasNextPage":
+			out.Values[i] = ec._TorrentContentSearchResult_hasNextPage(ctx, field, obj)
 		case "items":
 			out.Values[i] = ec._TorrentContentSearchResult_items(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
