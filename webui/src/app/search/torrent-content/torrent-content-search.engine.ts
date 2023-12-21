@@ -159,7 +159,6 @@ export class TorrentContentSearchEngine
     const aggs = this.graphQLService
       .torrentContentSearch({
         query: {
-          queryString,
           limit: 0,
           cached: true,
         },
@@ -192,7 +191,7 @@ export class TorrentContentSearchEngine
         a.aggregations.contentType
           ?.map((c) => c.count)
           .reduce((a, b) => a + b, 0) ?? 0;
-      let maxTotalCount = 0;
+      let maxTotalCount: number;
       if (!i.hasNextPage) {
         maxTotalCount = offset + i.items.length;
       } else if (contentType === undefined) {
