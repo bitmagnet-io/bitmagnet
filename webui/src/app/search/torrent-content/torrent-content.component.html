@@ -103,17 +103,6 @@
             <mat-icon>close</mat-icon>
           </button>
         </mat-form-field>
-        <mat-form-field class="field-auto-refresh">
-          <mat-label>Auto-refresh</mat-label>
-          <mat-select [formControl]="autoRefresh" (valueChange)="loadResult()">
-            <mat-option
-              *ngFor="let interval of autoRefreshIntervals"
-              [value]="interval"
-            >
-              {{ interval === 0 ? "Off" : interval + "s" }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
         <div class="button-refresh">
           <button
             mat-mini-fab

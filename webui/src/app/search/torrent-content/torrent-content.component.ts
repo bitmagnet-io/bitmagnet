@@ -1,13 +1,5 @@
 import { AfterContentInit, AfterViewInit, Component } from "@angular/core";
-import {
-  BehaviorSubject,
-  catchError,
-  EMPTY,
-  interval,
-  startWith,
-  Subscription,
-  tap,
-} from "rxjs";
+import { BehaviorSubject, catchError, EMPTY, tap } from "rxjs";
 import { FormControl } from "@angular/forms";
 import {
   animate,
@@ -54,10 +46,6 @@ export class TorrentContentComponent
     undefined,
   );
 
-  autoRefresh = new FormControl<number>(0);
-  autoRefreshIntervals = [0, 10, 30];
-  autoRefreshSubscription: Subscription | undefined;
-
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
 
   selectedItems = new SelectionModel<generated.TorrentContent>(true, []);
@@ -86,19 +74,6 @@ export class TorrentContentComponent
   }
 
   ngAfterViewInit() {
-    this.autoRefresh.valueChanges.subscribe((n) => {
-      if (this.autoRefreshSubscription) {
-        this.autoRefreshSubscription.unsubscribe();
-      }
-      if (n) {
-        this.autoRefreshSubscription = interval(n * 1000)
-          .pipe(
-            startWith(0),
-            tap(() => this.loadResult(false)),
-          )
-          .subscribe();
-      }
-    });
     this.contentType.valueChanges.subscribe((value) => {
       this.search.selectContentType(value);
     });
