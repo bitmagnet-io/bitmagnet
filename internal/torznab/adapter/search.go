@@ -12,7 +12,7 @@ import (
 )
 
 func (a adapter) Search(ctx context.Context, req torznab.SearchRequest) (torznab.SearchResult, error) {
-	options := []query.Option{search.TorrentContentDefaultOption()}
+	options := []query.Option{search.TorrentContentDefaultOption(), query.WithTotalCount(true)}
 	if reqOptions, reqErr := a.searchRequestOptions(req); reqErr != nil {
 		return torznab.SearchResult{}, reqErr
 	} else {
