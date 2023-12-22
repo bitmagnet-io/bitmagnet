@@ -14,5 +14,4 @@ nav_order: 2
 - `/import` - Import API for adding new content to the library (see [the importing tutorial](/tutorials/importing.html))
 - `/metrics` - Prometheus metrics (see [the observability guide](/internals-development/observability-telemetry.html))
 - `/debug/pprof/*` - Go pprof profiling endpoints (see [the observability guide](/internals-development/observability-telemetry.html))
-- `/asynqmon` - [Web UI for the Asynq task queue](https://github.com/hibiken/asynqmon){:target="\_blank"}
 - `/status` - Health check/status endpoint
