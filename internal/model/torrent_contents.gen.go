@@ -32,11 +32,11 @@ type TorrentContent struct {
 	Video3d         NullVideo3d            `gorm:"column:video_3d" json:"video3D"`
 	VideoModifier   NullVideoModifier      `gorm:"column:video_modifier" json:"videoModifier"`
 	ReleaseGroup    NullString             `gorm:"column:release_group" json:"releaseGroup"`
-	SearchString    string                 `gorm:"column:search_string;not null" json:"searchString"`
 	CreatedAt       time.Time              `gorm:"column:created_at;not null;<-:create" json:"createdAt"`
-	UpdatedAt       time.Time              `gorm:"column:updated_at;not null" json:"updatedAt"`
-	Torrent         Torrent                `gorm:"foreignKey:InfoHash" json:"torrent"`
-	Content         Content                `json:"content"`
+	UpdatedAt time.Time `gorm:"column:updated_at;not null" json:"updatedAt"`
+	TsvParts  Tsvector  `gorm:"column:tsv_parts;serializer:json" json:"tsvParts"`
+	Torrent   Torrent   `gorm:"foreignKey:InfoHash;references:InfoHash" json:"torrent"`
+	Content         Content                `gorm:"foreignKey:ContentType,ContentSource,ContentID;references:Type,Source,ID" json:"content"`
 }
 
 // TableName TorrentContent's table name

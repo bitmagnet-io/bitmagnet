@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/regex"
 	"github.com/facette/natsort"
 	"gorm.io/gorm"
 	"net/url"
@@ -25,13 +24,15 @@ func (t *Torrent) AfterFind(tx *gorm.DB) error {
 
 func (t *Torrent) BeforeCreate(tx *gorm.DB) error {
 	if len(t.Contents) == 0 {
-		t.Contents = []TorrentContent{
-			{
-				InfoHash:     t.InfoHash,
-				Title:        t.Name,
-				SearchString: regex.NormalizeString(t.Name),
-			},
+		tc := &TorrentContent{
+			InfoHash: t.InfoHash,
+			Torrent:  *t,
 		}
+		if err := tc.UpdateFields(); err != nil {
+			return err
+		}
+		tc.Torrent = Torrent{}
+		t.Contents = []TorrentContent{*tc}
 	}
 	return nil
 }

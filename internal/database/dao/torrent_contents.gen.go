@@ -31,7 +31,7 @@ func newTorrentContent(db *gorm.DB, opts ...gen.DOOption) torrentContent {
 	_torrentContent.InfoHash = field.NewField(tableName, "info_hash")
 	_torrentContent.ContentType = field.NewField(tableName, "content_type")
 	_torrentContent.ContentSource = field.NewField(tableName, "content_source")
-	_torrentContent.ContentID = field.NewField(tableName, "content_id")
+	_torrentContent.ContentID = field.NewString(tableName, "content_id")
 	_torrentContent.Title = field.NewString(tableName, "title")
 	_torrentContent.ReleaseDate = field.NewTime(tableName, "release_date")
 	_torrentContent.ReleaseYear = field.NewField(tableName, "release_year")
@@ -44,9 +44,9 @@ func newTorrentContent(db *gorm.DB, opts ...gen.DOOption) torrentContent {
 	_torrentContent.Video3d = field.NewField(tableName, "video_3d")
 	_torrentContent.VideoModifier = field.NewField(tableName, "video_modifier")
 	_torrentContent.ReleaseGroup = field.NewField(tableName, "release_group")
-	_torrentContent.SearchString = field.NewString(tableName, "search_string")
 	_torrentContent.CreatedAt = field.NewTime(tableName, "created_at")
 	_torrentContent.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_torrentContent.TsvParts = field.NewField(tableName, "tsv_parts")
 	_torrentContent.Torrent = torrentContentBelongsToTorrent{
 		db: db.Session(&gorm.Session{}),
 
@@ -131,7 +131,7 @@ type torrentContent struct {
 	InfoHash        field.Field
 	ContentType     field.Field
 	ContentSource   field.Field
-	ContentID       field.Field
+	ContentID       field.String
 	Title           field.String
 	ReleaseDate     field.Time
 	ReleaseYear     field.Field
@@ -144,9 +144,9 @@ type torrentContent struct {
 	Video3d         field.Field
 	VideoModifier   field.Field
 	ReleaseGroup    field.Field
-	SearchString    field.String
 	CreatedAt       field.Time
 	UpdatedAt       field.Time
+	TsvParts        field.Field
 	Torrent         torrentContentBelongsToTorrent
 
 	Content torrentContentBelongsToContent
@@ -170,7 +170,7 @@ func (t *torrentContent) updateTableName(table string) *torrentContent {
 	t.InfoHash = field.NewField(table, "info_hash")
 	t.ContentType = field.NewField(table, "content_type")
 	t.ContentSource = field.NewField(table, "content_source")
-	t.ContentID = field.NewField(table, "content_id")
+	t.ContentID = field.NewString(table, "content_id")
 	t.Title = field.NewString(table, "title")
 	t.ReleaseDate = field.NewTime(table, "release_date")
 	t.ReleaseYear = field.NewField(table, "release_year")
@@ -183,9 +183,9 @@ func (t *torrentContent) updateTableName(table string) *torrentContent {
 	t.Video3d = field.NewField(table, "video_3d")
 	t.VideoModifier = field.NewField(table, "video_modifier")
 	t.ReleaseGroup = field.NewField(table, "release_group")
-	t.SearchString = field.NewString(table, "search_string")
 	t.CreatedAt = field.NewTime(table, "created_at")
 	t.UpdatedAt = field.NewTime(table, "updated_at")
+	t.TsvParts = field.NewField(table, "tsv_parts")
 
 	t.fillFieldMap()
 
@@ -220,9 +220,9 @@ func (t *torrentContent) fillFieldMap() {
 	t.fieldMap["video_3d"] = t.Video3d
 	t.fieldMap["video_modifier"] = t.VideoModifier
 	t.fieldMap["release_group"] = t.ReleaseGroup
-	t.fieldMap["search_string"] = t.SearchString
 	t.fieldMap["created_at"] = t.CreatedAt
 	t.fieldMap["updated_at"] = t.UpdatedAt
+	t.fieldMap["tsv_parts"] = t.TsvParts
 
 }
 

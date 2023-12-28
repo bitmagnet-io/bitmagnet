@@ -24,23 +24,23 @@ type Result struct {
 }
 
 func New(params Params) Result {
-	w := warmer{
-		stopped:  make(chan struct{}),
-		interval: params.Config.Interval,
-		search:   params.Search,
-		logger:   params.Logger.Named("search_warmer"),
-	}
+	//w := warmer{
+	//	stopped:  make(chan struct{}),
+	//	interval: params.Config.Interval,
+	//	search:   params.Search,
+	//	logger:   params.Logger.Named("search_warmer"),
+	//}
 	return Result{
-		AppHook: fx.Hook{
-			OnStart: func(context.Context) error {
-				go w.start()
-				return nil
-			},
-			OnStop: func(ctx context.Context) error {
-				close(w.stopped)
-				return nil
-			},
-		},
+		//AppHook: fx.Hook{
+		//	OnStart: func(context.Context) error {
+		//		go w.start()
+		//		return nil
+		//	},
+		//	OnStop: func(ctx context.Context) error {
+		//		close(w.stopped)
+		//		return nil
+		//	},
+		//},
 	}
 }
 

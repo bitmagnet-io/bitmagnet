@@ -5,7 +5,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/cache"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
-	"github.com/bitmagnet-io/bitmagnet/internal/regex"
 	"gorm.io/gen/field"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
@@ -73,14 +72,23 @@ func RequireJoin(names ...string) Option {
 }
 
 func QueryString(str string) Option {
-	tokens := regex.SearchStringToNormalizedTokens(str)
+	query := fts.AppQueryToTsquery(str)
 	return func(ctx OptionBuilder) (OptionBuilder, error) {
-		if len(tokens) == 0 {
+		if len(query) == 0 {
 			return ctx.Select(clause.Expr{
 				SQL: "0 AS " + queryStringRankField,
 			}), nil
 		}
-		c, err := queryStringCriteriaFromTokens(str, tokens).Raw(ctx)
+		c, err := GenCriteria(func(ctx DbContext) (Criteria, error) {
+			return DbCriteria{
+				Sql: strings.Join([]string{
+					ctx.TableName() + ".tsv @@ ?::tsquery",
+				}, " OR "),
+				Args: []interface{}{
+					query,
+				},
+			}, nil
+		}).Raw(ctx)
 		if err != nil {
 			return ctx, err
 		}
@@ -88,13 +96,9 @@ func QueryString(str string) Option {
 			dao.UnderlyingDB().Where(c.Query, c.Args...)
 			return nil
 		}).RequireJoin(ctx.TableName()).Select(clause.Expr{
-			SQL: "GREATEST(" + strings.Join([]string{
-				"ts_rank_cd(" + ctx.TableName() + ".tsv, websearch_to_tsquery('simple', ?))",
-				"ts_rank_cd(" + ctx.TableName() + ".tsv, plainto_tsquery('simple', ?))",
-			}, ", ") + ") AS " + queryStringRankField,
+			SQL: "ts_rank_cd(" + ctx.TableName() + ".tsv, ?::tsquery) AS " + queryStringRankField,
 			Vars: []interface{}{
-				strings.Join(tokens, " "),
-				strings.Join(tokens, " "),
+				query,
 			},
 		})
 		return ctx, nil
