@@ -253,7 +253,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		gen.FieldType("vote_count", "NullUint"),
 		gen.FieldType("runtime", "NullUint16"),
 		gen.FieldType("adult", "NullBool"),
-		gen.FieldIgnore("tsv"),
+		gen.FieldType("tsv", "fts.Tsvector"),
 		createdAtReadOnly,
 	)
 	contentCollectionContent := g.GenerateModelAs(
@@ -335,12 +335,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		gen.FieldType("video_codec", "NullVideoCodec"),
 		gen.FieldType("video_3d", "NullVideo3d"),
 		gen.FieldType("video_modifier", "NullVideoModifier"),
-		gen.FieldType("tsv_parts", "TsvParts"),
-		gen.FieldGORMTag("tsv_parts", func(tag field.GormTag) field.GormTag {
-			tag.Set("serializer", "json")
-			return tag
-		}),
-		gen.FieldIgnore("tsv"),
+		gen.FieldType("tsv", "fts.Tsvector"),
 		createdAtReadOnly,
 	)
 	bloomFilters := g.GenerateModel(

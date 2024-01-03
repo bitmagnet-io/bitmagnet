@@ -46,7 +46,7 @@ func newTorrentContent(db *gorm.DB, opts ...gen.DOOption) torrentContent {
 	_torrentContent.ReleaseGroup = field.NewField(tableName, "release_group")
 	_torrentContent.CreatedAt = field.NewTime(tableName, "created_at")
 	_torrentContent.UpdatedAt = field.NewTime(tableName, "updated_at")
-	_torrentContent.TsvParts = field.NewField(tableName, "tsv_parts")
+	_torrentContent.Tsv = field.NewField(tableName, "tsv")
 	_torrentContent.Torrent = torrentContentBelongsToTorrent{
 		db: db.Session(&gorm.Session{}),
 
@@ -146,7 +146,7 @@ type torrentContent struct {
 	ReleaseGroup    field.Field
 	CreatedAt       field.Time
 	UpdatedAt       field.Time
-	TsvParts        field.Field
+	Tsv             field.Field
 	Torrent         torrentContentBelongsToTorrent
 
 	Content torrentContentBelongsToContent
@@ -185,7 +185,7 @@ func (t *torrentContent) updateTableName(table string) *torrentContent {
 	t.ReleaseGroup = field.NewField(table, "release_group")
 	t.CreatedAt = field.NewTime(table, "created_at")
 	t.UpdatedAt = field.NewTime(table, "updated_at")
-	t.TsvParts = field.NewField(table, "tsv_parts")
+	t.Tsv = field.NewField(table, "tsv")
 
 	t.fillFieldMap()
 
@@ -222,7 +222,7 @@ func (t *torrentContent) fillFieldMap() {
 	t.fieldMap["release_group"] = t.ReleaseGroup
 	t.fieldMap["created_at"] = t.CreatedAt
 	t.fieldMap["updated_at"] = t.UpdatedAt
-	t.fieldMap["tsv_parts"] = t.TsvParts
+	t.fieldMap["tsv"] = t.Tsv
 
 }
 

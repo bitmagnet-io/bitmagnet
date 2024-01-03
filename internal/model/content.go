@@ -1,6 +1,8 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"github.com/bitmagnet-io/bitmagnet/internal/database/fts"
+)
 
 type ContentRef struct {
 	Type   ContentType
@@ -73,13 +75,36 @@ func getExternalLinkUrl(contentType ContentType, source, id string) NullString {
 	return NullString{}
 }
 
-func (c *Content) BeforeSave(tx *gorm.DB) error {
-	c.SearchString = c.Title + " " + c.ReleaseDate.YearString()
+func (c *Content) UpdateTsv() {
+	tsv := fts.Tsvector{}
+	tsv.AddText(c.Title, fts.TsvectorWeightA)
 	if c.OriginalTitle.Valid && c.Title != c.OriginalTitle.String {
-		c.SearchString += " " + c.OriginalTitle.String
+		tsv.AddText(c.OriginalTitle.String, fts.TsvectorWeightA)
 	}
-	for _, collection := range c.Collections {
-		c.SearchString += " " + collection.Name
+	if !c.ReleaseYear.IsNil() {
+		tsv.AddText(c.ReleaseYear.String(), fts.TsvectorWeightB)
 	}
-	return nil
+	for _, c := range c.Collections {
+		if c.Type == "genre" {
+			tsv.AddText(c.Name, fts.TsvectorWeightD)
+		}
+	}
+	for _, a := range c.Attributes {
+		if a.Key == "id" {
+			tsv.AddText(a.Value, fts.TsvectorWeightD)
+		}
+	}
+	c.Tsv = tsv
 }
+
+//
+//func (c *Content) BeforeSave(tx *gorm.DB) error {
+//	c.SearchString = c.Title + " " + c.ReleaseDate.YearString()
+//	if c.OriginalTitle.Valid && c.Title != c.OriginalTitle.String {
+//		c.SearchString += " " + c.OriginalTitle.String
+//	}
+//	for _, collection := range c.Collections {
+//		c.SearchString += " " + collection.Name
+//	}
+//	return nil
+//}

@@ -7,6 +7,7 @@ package model
 import (
 	"time"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/database/fts"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
@@ -33,9 +34,9 @@ type TorrentContent struct {
 	VideoModifier   NullVideoModifier      `gorm:"column:video_modifier" json:"videoModifier"`
 	ReleaseGroup    NullString             `gorm:"column:release_group" json:"releaseGroup"`
 	CreatedAt       time.Time              `gorm:"column:created_at;not null;<-:create" json:"createdAt"`
-	UpdatedAt time.Time `gorm:"column:updated_at;not null" json:"updatedAt"`
-	TsvParts  Tsvector  `gorm:"column:tsv_parts;serializer:json" json:"tsvParts"`
-	Torrent   Torrent   `gorm:"foreignKey:InfoHash;references:InfoHash" json:"torrent"`
+	UpdatedAt       time.Time              `gorm:"column:updated_at;not null" json:"updatedAt"`
+	Tsv             fts.Tsvector           `gorm:"column:tsv" json:"tsv"`
+	Torrent         Torrent                `gorm:"foreignKey:InfoHash;references:InfoHash" json:"torrent"`
 	Content         Content                `gorm:"foreignKey:ContentType,ContentSource,ContentID;references:Type,Source,ID" json:"content"`
 }
 

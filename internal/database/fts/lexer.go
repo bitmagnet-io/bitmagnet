@@ -78,11 +78,8 @@ func (l *lexer) readInt() (int, bool) {
 }
 
 func (l *lexer) readChar(r1 rune) bool {
-	r2, ok := l.readIf(isChar(r1))
-	if !ok {
-		return false
-	}
-	return r2 == r1
+	_, ok := l.readIf(isChar(r1))
+	return ok
 }
 
 func (l *lexer) backup() {
@@ -97,23 +94,15 @@ func (l *lexer) readQuotedString(quoteChar rune) (string, error) {
 		return "", errors.New("missing opening quote")
 	}
 	var str string
-	escaped := false
 	for {
 		ch, ok := l.read()
 		if !ok {
 			return str, errors.New("unexpected EOF")
 		}
-		if !escaped {
-			if ch == '\\' {
-				escaped = true
-				continue
-			}
-			if ch == quoteChar {
-				break
-			}
+		if ch == quoteChar && !l.readChar(quoteChar) {
+			break
 		}
 		str = str + string(ch)
-		escaped = false
 	}
 	return str, nil
 }
@@ -128,6 +117,6 @@ func isChar(r1 rune) func(rune) bool {
 	}
 }
 
-func isWordChar(r rune) bool {
+func IsWordChar(r rune) bool {
 	return unicode.IsLetter(r) || unicode.IsDigit(r)
 }

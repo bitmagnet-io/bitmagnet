@@ -18,6 +18,11 @@ type TorrentContentResult = query.GenericResult[TorrentContentResultItem]
 
 type TorrentContentSearch interface {
 	TorrentContent(ctx context.Context, options ...query.Option) (TorrentContentResult, error)
+	TorrentContentBatch(
+		ctx context.Context,
+		fn func(tx *dao.Query, r []TorrentContentResultItem) error,
+		options ...query.Option,
+	) error
 }
 
 func (s search) TorrentContent(ctx context.Context, options ...query.Option) (TorrentContentResult, error) {
@@ -31,6 +36,25 @@ func (s search) TorrentContent(ctx context.Context, options ...query.Option) (To
 				SubQuery: q.TorrentContent.WithContext(ctx).ReadDB(),
 			}
 		},
+	)
+}
+
+func (s search) TorrentContentBatch(
+	ctx context.Context,
+	fn func(tx *dao.Query, r []TorrentContentResultItem) error,
+	options ...query.Option,
+) error {
+	return query.GenericBatch[TorrentContentResultItem](
+		ctx,
+		s.q,
+		query.Options(append([]query.Option{query.SelectAll()}, options...)...),
+		model.TableNameTorrentContent,
+		func(ctx context.Context, q *dao.Query) query.SubQuery {
+			return query.GenericSubQuery[dao.ITorrentContentDo]{
+				SubQuery: q.TorrentContent.WithContext(ctx).WriteDB(),
+			}
+		},
+		fn,
 	)
 }
 

@@ -7,27 +7,31 @@ import (
 
 func TestParseTsvector(t *testing.T) {
 	tests := []struct {
-		name  string
-		input string
-		want  Tsvector
+		name    string
+		input   string
+		wantTsv Tsvector
+		wantStr string
 	}{
 		{
 			name:  "happy path",
-			input: "'a':1A 'bb':2b 'cc ccc':3C 'dD\\'Dd\\'':4D",
-			want: Tsvector{
-				"a": map[TsvectorLabel]struct{}{
-					{1, 'A'}: {},
+			input: " 'a':1A bb:2b 'cc ccc':3C  'dD''Dd''':4D e a bb:5 ",
+			wantTsv: Tsvector{
+				"a": {
+					1: 'A',
 				},
-				"bb": map[TsvectorLabel]struct{}{
-					{2, 'B'}: {},
+				"bb": {
+					2: 'B',
+					5: 'D',
 				},
-				"cc ccc": map[TsvectorLabel]struct{}{
-					{3, 'C'}: {},
+				"cc ccc": {
+					3: 'C',
 				},
-				"dD'Dd'": map[TsvectorLabel]struct{}{
-					{4, 'D'}: {},
+				"dD'Dd'": {
+					4: 'D',
 				},
+				"e": {},
 			},
+			wantStr: "'a':1A 'bb':2B,5 'cc ccc':3C 'dD''Dd''':4 'e'",
 		},
 	}
 	for _, test := range tests {
@@ -36,7 +40,8 @@ func TestParseTsvector(t *testing.T) {
 			if err != nil {
 				t.Errorf("ParseTsvector(%q) = %v", test.input, err)
 			} else {
-				assert.Equal(t, test.want, got)
+				assert.Equal(t, test.wantTsv, got)
+				assert.Equal(t, test.wantStr, got.String())
 			}
 		})
 	}

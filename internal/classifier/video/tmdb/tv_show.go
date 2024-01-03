@@ -38,6 +38,8 @@ func (c *client) searchTvShowLocal(ctx context.Context, p SearchTvShowParams) (t
 		query.QueryString(p.Name),
 		query.OrderByQueryStringRank(),
 		query.Limit(5),
+		search.ContentDefaultPreload(),
+		search.ContentDefaultHydrate(),
 	}
 	if !p.FirstAirDateYear.IsNil() {
 		options = append(options, query.Where(search.ContentReleaseDateCriteria(model.NewDateRangeFromYear(p.FirstAirDateYear))))

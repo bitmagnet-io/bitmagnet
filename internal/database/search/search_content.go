@@ -18,6 +18,11 @@ type ContentResult = query.GenericResult[ContentResultItem]
 
 type ContentSearch interface {
 	Content(ctx context.Context, options ...query.Option) (result ContentResult, err error)
+	ContentBatch(
+		ctx context.Context,
+		fn func(tx *dao.Query, r []ContentResultItem) error,
+		options ...query.Option,
+	) error
 }
 
 func (s search) Content(ctx context.Context, options ...query.Option) (result ContentResult, err error) {
@@ -34,10 +39,30 @@ func (s search) Content(ctx context.Context, options ...query.Option) (result Co
 	)
 }
 
+func (s search) ContentBatch(
+	ctx context.Context,
+	fn func(tx *dao.Query, r []ContentResultItem) error,
+	options ...query.Option,
+) error {
+	return query.GenericBatch[ContentResultItem](
+		ctx,
+		s.q,
+		query.Options(append([]query.Option{query.SelectAll()}, options...)...),
+		model.TableNameContent,
+		func(ctx context.Context, q *dao.Query) query.SubQuery {
+			return query.GenericSubQuery[dao.IContentDo]{
+				SubQuery: q.Content.WithContext(ctx).WriteDB(),
+			}
+		},
+		fn,
+	)
+}
+
 func ContentDefaultOption() query.Option {
 	return query.Options(
 		query.DefaultOption(),
 		ContentCoreJoins(),
+		ContentDefaultPreload(),
 		ContentDefaultHydrate(),
 	)
 }
@@ -81,6 +106,16 @@ func ContentCoreJoins() query.Option {
 					maps.MapEntry[string, struct{}]{Key: q.Content.TableName()},
 				),
 			},
+		}
+	})
+}
+
+func ContentDefaultPreload() query.Option {
+	return query.Preload(func(query *dao.Query) []field.RelationField {
+		return []field.RelationField{
+			query.Content.MetadataSource.RelationField,
+			query.Content.Attributes.RelationField,
+			query.Content.Attributes.MetadataSource.RelationField,
 		}
 	})
 }

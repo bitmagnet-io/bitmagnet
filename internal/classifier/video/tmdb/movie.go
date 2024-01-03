@@ -38,6 +38,8 @@ func (c *client) searchMovieLocal(ctx context.Context, p SearchMovieParams) (mov
 		query.QueryString(p.Title),
 		query.OrderByQueryStringRank(),
 		query.Limit(5),
+		search.ContentDefaultPreload(),
+		search.ContentDefaultHydrate(),
 	}
 	if !p.Year.IsNil() {
 		options = append(options, query.Where(search.ContentReleaseDateCriteria(model.NewDateRangeFromYear(p.Year))))

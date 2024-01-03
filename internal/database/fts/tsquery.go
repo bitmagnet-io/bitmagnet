@@ -30,6 +30,7 @@ const (
 	TokenOperator    Token = "OPERATOR"
 	TokenNegation    Token = "NEGATION"
 	TokenPhrase      Token = "PHRASE"
+	TokenWildcard    Token = "WILDCARD"
 )
 
 type TokenValue struct {
@@ -42,7 +43,7 @@ type TokenValue struct {
 type Operator string
 
 const (
-	OperatorAnd        Operator = "&"
+	OperatorAnd        Operator = "+"
 	OperatorOr         Operator = "|"
 	OperatorFollowedBy Operator = "."
 )
@@ -69,12 +70,15 @@ func (l *queryLexer) readQueryToken() (TokenValue, bool) {
 			return TokenValue{l.pos, 1, TokenOperator, string(OperatorFollowedBy)}, true
 		}
 		if l.readChar('!') {
-			return TokenValue{l.pos, 1, TokenNegation, "!"}, true
+			return TokenValue{l.pos, 1, TokenNegation, "-"}, true
+		}
+		if l.readChar('*') {
+			return TokenValue{l.pos, 1, TokenWildcard, "*"}, true
 		}
 		if quoted, _ := l.readQuotedString('"'); quoted != "" {
 			return TokenValue{start, l.pos - start, TokenQuoted, quoted}, true
 		}
-		if phrase := l.readWhile(isWordChar); phrase != "" {
+		if phrase := l.readWhile(IsWordChar); phrase != "" {
 			return TokenValue{start, l.pos - start, TokenPhrase, phrase}, true
 		}
 		l.read()
@@ -94,18 +98,24 @@ outer:
 			}
 			token := tokens[i]
 			addExpr := func(expr string) {
-				if len(parts) > 0 && operator == "" {
-					parts = append(parts, string(OperatorAnd))
-				}
-				if operator != "" {
-					strOp := string(operator)
-					if operator == OperatorFollowedBy {
-						strOp = "<->"
+				switch operator {
+				case OperatorAnd:
+					parts = append(parts, "&")
+				case OperatorOr:
+					parts = append(parts, "|")
+				case OperatorFollowedBy:
+					parts = append(parts, "<->")
+				default:
+					if len(parts) > 0 {
+						parts = append(parts, "&")
 					}
-					parts = append(parts, strOp)
 				}
 				if negated {
 					parts = append(parts, "!")
+				}
+				if len(tokens) > i+1 && tokens[i+1].Token == TokenWildcard {
+					expr += ":*"
+					i++
 				}
 				parts = append(parts, expr)
 				operator = ""
@@ -120,7 +130,7 @@ outer:
 				tokenized := TokenizeFlat(token.Value)
 				var quotedWords []string
 				for _, word := range tokenized {
-					quotedWords = append(quotedWords, quoteLexeme(word))
+					quotedWords = append(quotedWords, quoteLexeme(word, false))
 				}
 				if len(quotedWords) > 0 {
 					addExpr(strings.Join(quotedWords, " <-> "))
@@ -131,7 +141,7 @@ outer:
 				for _, phrase := range tokenized {
 					var quotedWords []string
 					for _, word := range phrase {
-						quotedWords = append(quotedWords, quoteLexeme(word))
+						quotedWords = append(quotedWords, quoteLexeme(word, false))
 					}
 					if len(quotedWords) > 0 {
 						phrases = append(phrases, strings.Join(quotedWords, " <-> "))

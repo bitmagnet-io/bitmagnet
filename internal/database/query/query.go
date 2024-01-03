@@ -224,6 +224,7 @@ type OptionBuilder interface {
 	WithHasNextPage(bool) OptionBuilder
 	withTotalCount() bool
 	applyCallbacks(context.Context, any) error
+	applyCallbacksCtx(context.Context, callbackContext, any) error
 	hasZeroLimit() bool
 	needsNextPage() bool
 	hasNextPage(nItems int) bool
@@ -507,14 +508,26 @@ func (b optionBuilder) applyPost(sq SubQuery) error {
 }
 
 func (b optionBuilder) applyCallbacks(ctx context.Context, results any) error {
-	cbCtx := callbackContext{
+	return doApplyCallbacks(ctx, callbackContext{
 		dbContext: b.dbContext,
 		Mutex:     &sync.Mutex{},
+	}, results, b.callbacks...)
+}
+
+func (b optionBuilder) applyCallbacksCtx(ctx context.Context, cbCtx callbackContext, results any) error {
+	for _, cb := range b.callbacks {
+		if err := cb(ctx, cbCtx, results); err != nil {
+			return err
+		}
 	}
+	return nil
+}
+
+func doApplyCallbacks(ctx context.Context, cbCtx callbackContext, results any, callbacks ...Callback) error {
 	var errs []error
 	wg := sync.WaitGroup{}
-	wg.Add(len(b.callbacks))
-	for _, cb := range b.callbacks {
+	wg.Add(len(callbacks))
+	for _, cb := range callbacks {
 		go (func(cb Callback) {
 			defer wg.Done()
 			if err := cb(ctx, cbCtx, results); err != nil {

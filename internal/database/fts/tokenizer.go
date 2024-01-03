@@ -48,7 +48,8 @@ func (l *tokenizerLexer) readPhrase() []string {
 			breakWord()
 			return phrase
 		}
-		if ch, ok := l.readIf(isWordChar); ok {
+		if ch, ok := l.readIf(IsWordChar); ok {
+			ch = unicode.ToLower(ch)
 			if ch < unicode.MaxASCII {
 				appendStr(string(ch))
 			} else {
