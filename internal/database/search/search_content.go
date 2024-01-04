@@ -18,11 +18,6 @@ type ContentResult = query.GenericResult[ContentResultItem]
 
 type ContentSearch interface {
 	Content(ctx context.Context, options ...query.Option) (result ContentResult, err error)
-	ContentBatch(
-		ctx context.Context,
-		fn func(tx *dao.Query, r []ContentResultItem) error,
-		options ...query.Option,
-	) error
 }
 
 func (s search) Content(ctx context.Context, options ...query.Option) (result ContentResult, err error) {
@@ -36,25 +31,6 @@ func (s search) Content(ctx context.Context, options ...query.Option) (result Co
 				SubQuery: q.Content.WithContext(ctx).ReadDB(),
 			}
 		},
-	)
-}
-
-func (s search) ContentBatch(
-	ctx context.Context,
-	fn func(tx *dao.Query, r []ContentResultItem) error,
-	options ...query.Option,
-) error {
-	return query.GenericBatch[ContentResultItem](
-		ctx,
-		s.q,
-		query.Options(append([]query.Option{query.SelectAll()}, options...)...),
-		model.TableNameContent,
-		func(ctx context.Context, q *dao.Query) query.SubQuery {
-			return query.GenericSubQuery[dao.IContentDo]{
-				SubQuery: q.Content.WithContext(ctx).WriteDB(),
-			}
-		},
-		fn,
 	)
 }
 
