@@ -26,12 +26,12 @@ package bloom
 //	t.Log(len(bytes))
 //	for i := 0; i < 10_000_000; i++ {
 //		id := protocol.RandomNodeID()
-//		bf.AddText(id[:])
+//		bf.Add(id[:])
 //	}
 //	for i := 0; i < 1_000_000; i++ {
 //		id := protocol.RandomNodeID()
 //		hashes[id] = struct{}{}
-//		bf.AddText(id[:])
+//		bf.Add(id[:])
 //	}
 //	fn := 0
 //	for h := range hashes {

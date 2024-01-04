@@ -96,15 +96,3 @@ func (c *Content) UpdateTsv() {
 	}
 	c.Tsv = tsv
 }
-
-//
-//func (c *Content) BeforeSave(tx *gorm.DB) error {
-//	c.SearchString = c.Title + " " + c.ReleaseDate.YearString()
-//	if c.OriginalTitle.Valid && c.Title != c.OriginalTitle.String {
-//		c.SearchString += " " + c.OriginalTitle.String
-//	}
-//	for _, collection := range c.Collections {
-//		c.SearchString += " " + collection.Name
-//	}
-//	return nil
-//}

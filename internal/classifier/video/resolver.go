@@ -3,7 +3,6 @@ package video
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/video/tmdb"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
@@ -56,7 +55,6 @@ func (r videoResolver) Resolve(ctx context.Context, content model.TorrentContent
 
 func (r videoResolver) resolveMovie(ctx context.Context, content model.TorrentContent) (model.TorrentContent, error) {
 	externalIds := content.ExternalIds.OrderedEntries()
-	println("MOVIE")
 	if len(externalIds) > 0 {
 		for _, id := range externalIds {
 			if movie, err := r.tmdbClient.GetMovieByExternalId(ctx, id.Key, id.Value); err == nil {
@@ -64,14 +62,12 @@ func (r videoResolver) resolveMovie(ctx context.Context, content model.TorrentCo
 				if err := content.UpdateFields(); err != nil {
 					return model.TorrentContent{}, err
 				}
-				fmt.Printf("movie: %v\n", movie)
 				return content, nil
 			} else if !errors.Is(err, tmdb.ErrNotFound) {
 				return model.TorrentContent{}, err
 			}
 		}
 	} else if !content.ReleaseYear.IsNil() {
-		println("MOVIE2")
 		if movie, err := r.tmdbClient.SearchMovie(ctx, tmdb.SearchMovieParams{
 			Title:                content.Title,
 			Year:                 content.ReleaseYear,
@@ -82,10 +78,8 @@ func (r videoResolver) resolveMovie(ctx context.Context, content model.TorrentCo
 			if err := content.UpdateFields(); err != nil {
 				return model.TorrentContent{}, err
 			}
-			fmt.Printf("movie: %#v\n", content)
 			return content, nil
 		} else if !errors.Is(err, tmdb.ErrNotFound) {
-			fmt.Printf("movieerr: %v\n", err)
 			return model.TorrentContent{}, err
 		}
 	}
