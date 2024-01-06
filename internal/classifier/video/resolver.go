@@ -33,32 +33,30 @@ func (r videoResolver) Resolve(ctx context.Context, content model.TorrentContent
 	return model.TorrentContent{}, classifier.ErrNoMatch
 }
 
-func (r videoResolver) resolveMovie(ctx context.Context, content model.TorrentContent) (model.TorrentContent, error) {
-	externalIds := content.ExternalIds.OrderedEntries()
+func (r videoResolver) resolveMovie(ctx context.Context, tc model.TorrentContent) (model.TorrentContent, error) {
+	externalIds := tc.ExternalIds.OrderedEntries()
 	if len(externalIds) > 0 {
 		for _, id := range externalIds {
 			if movie, err := r.tmdbClient.GetMovieByExternalId(ctx, id.Key, id.Value); err == nil {
-				content.Content = movie
-				if err := content.UpdateFields(); err != nil {
+				if err := tc.SetContent(movie); err != nil {
 					return model.TorrentContent{}, err
 				}
-				return content, nil
+				return tc, nil
 			} else if !errors.Is(err, tmdb.ErrNotFound) {
 				return model.TorrentContent{}, err
 			}
 		}
-	} else if !content.ReleaseYear.IsNil() {
+	} else if !tc.ReleaseYear.IsNil() {
 		if movie, err := r.tmdbClient.SearchMovie(ctx, tmdb.SearchMovieParams{
-			Title:                content.Title,
-			Year:                 content.ReleaseYear,
+			Title:                tc.Title,
+			Year:                 tc.ReleaseYear,
 			IncludeAdult:         true,
 			LevenshteinThreshold: 5,
 		}); err == nil {
-			content.Content = movie
-			if err := content.UpdateFields(); err != nil {
+			if err := tc.SetContent(movie); err != nil {
 				return model.TorrentContent{}, err
 			}
-			return content, nil
+			return tc, nil
 		} else if !errors.Is(err, tmdb.ErrNotFound) {
 			return model.TorrentContent{}, err
 		}
@@ -66,32 +64,30 @@ func (r videoResolver) resolveMovie(ctx context.Context, content model.TorrentCo
 	return model.TorrentContent{}, classifier.ErrNoMatch
 }
 
-func (r videoResolver) resolveTvShow(ctx context.Context, content model.TorrentContent) (model.TorrentContent, error) {
-	externalIds := content.ExternalIds.OrderedEntries()
+func (r videoResolver) resolveTvShow(ctx context.Context, tc model.TorrentContent) (model.TorrentContent, error) {
+	externalIds := tc.ExternalIds.OrderedEntries()
 	if len(externalIds) > 0 {
 		for _, id := range externalIds {
 			if tvShow, err := r.tmdbClient.GetTvShowByExternalId(ctx, id.Key, id.Value); err == nil {
-				content.Content = tvShow
-				if err := content.UpdateFields(); err != nil {
+				if err := tc.SetContent(tvShow); err != nil {
 					return model.TorrentContent{}, err
 				}
-				return content, nil
+				return tc, nil
 			} else if !errors.Is(err, tmdb.ErrNotFound) {
 				return model.TorrentContent{}, err
 			}
 		}
 	} else {
 		if tvShow, err := r.tmdbClient.SearchTvShow(ctx, tmdb.SearchTvShowParams{
-			Name:                 content.Title,
-			FirstAirDateYear:     content.ReleaseYear,
+			Name:                 tc.Title,
+			FirstAirDateYear:     tc.ReleaseYear,
 			IncludeAdult:         true,
 			LevenshteinThreshold: 5,
 		}); err == nil {
-			content.Content = tvShow
-			if err := content.UpdateFields(); err != nil {
+			if err := tc.SetContent(tvShow); err != nil {
 				return model.TorrentContent{}, err
 			}
-			return content, nil
+			return tc, nil
 		} else if !errors.Is(err, tmdb.ErrNotFound) {
 			return model.TorrentContent{}, err
 		}

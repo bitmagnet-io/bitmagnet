@@ -18,6 +18,14 @@ func (tc TorrentContent) EntityReference() Maybe[ContentRef] {
 	return Maybe[ContentRef]{}
 }
 
+func (tc *TorrentContent) SetContent(c Content) error {
+	tc.Content = c
+	tc.ContentType = NewNullContentType(c.Type)
+	tc.ContentSource = NewNullString(c.Source)
+	tc.ContentID = NewNullString(c.ID)
+	return tc.UpdateFields()
+}
+
 func (tc *TorrentContent) UpdateFields() error {
 	// check we've got access to all the associated records needed:
 	if tc.ContentID.Valid && tc.EntityReference().Val != tc.Content.Ref() {
