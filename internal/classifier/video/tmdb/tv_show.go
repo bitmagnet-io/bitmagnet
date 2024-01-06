@@ -3,6 +3,7 @@ package tmdb
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
@@ -35,7 +36,7 @@ func (c *client) SearchTvShow(ctx context.Context, p SearchTvShowParams) (tvShow
 func (c *client) searchTvShowLocal(ctx context.Context, p SearchTvShowParams) (tvShow model.Content, err error) {
 	options := []query.Option{
 		query.Where(search.ContentTypeCriteria(model.ContentTypeTvShow)),
-		query.QueryString(p.Name),
+		query.QueryString(fmt.Sprintf("\"%s\"", p.Name)),
 		query.OrderByQueryStringRank(),
 		query.Limit(5),
 		search.ContentDefaultPreload(),
