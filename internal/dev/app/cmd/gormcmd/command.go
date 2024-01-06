@@ -1,6 +1,7 @@
 package gormcmd
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/gen"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/fx"
@@ -9,7 +10,7 @@ import (
 
 type Params struct {
 	fx.In
-	DB *gorm.DB
+	DB lazy.Lazy[*gorm.DB]
 }
 
 type Result struct {
@@ -24,7 +25,11 @@ func New(p Params) (r Result, err error) {
 			{
 				Name: "gen",
 				Action: func(ctx *cli.Context) error {
-					g := gen.BuildGenerator(p.DB)
+					db, err := p.DB.Get()
+					if err != nil {
+						return err
+					}
+					g := gen.BuildGenerator(db)
 					g.Execute()
 					return nil
 				},

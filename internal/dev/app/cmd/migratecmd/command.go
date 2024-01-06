@@ -1,6 +1,7 @@
 package migratecmd
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/migrations"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/fx"
@@ -8,7 +9,7 @@ import (
 
 type Params struct {
 	fx.In
-	Migrator migrations.Migrator
+	Migrator lazy.Lazy[migrations.Migrator]
 }
 
 type Result struct {
@@ -29,11 +30,15 @@ func New(p Params) (r Result, err error) {
 					},
 				},
 				Action: func(ctx *cli.Context) error {
+					m, err := p.Migrator.Get()
+					if err != nil {
+						return err
+					}
 					version := ctx.Int64("version")
 					if version == 0 {
-						return p.Migrator.Up(ctx.Context)
+						return m.Up(ctx.Context)
 					} else {
-						return p.Migrator.UpTo(ctx.Context, version)
+						return m.UpTo(ctx.Context, version)
 					}
 				},
 			},
@@ -46,11 +51,15 @@ func New(p Params) (r Result, err error) {
 					},
 				},
 				Action: func(ctx *cli.Context) error {
+					m, err := p.Migrator.Get()
+					if err != nil {
+						return err
+					}
 					version := ctx.Int64("version")
 					if version == 0 {
-						return p.Migrator.Down(ctx.Context)
+						return m.Down(ctx.Context)
 					} else {
-						return p.Migrator.DownTo(ctx.Context, version)
+						return m.DownTo(ctx.Context, version)
 					}
 				},
 			},
