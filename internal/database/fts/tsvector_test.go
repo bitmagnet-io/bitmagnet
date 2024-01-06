@@ -7,13 +7,11 @@ import (
 
 func TestParseTsvector(t *testing.T) {
 	tests := []struct {
-		name    string
 		input   string
 		wantTsv Tsvector
 		wantStr string
 	}{
 		{
-			name:  "happy path",
 			input: " 'a':1A bb:2b 'cc ccc':3C  'dD''Dd''':4D e a bb:5 ",
 			wantTsv: Tsvector{
 				"a": {
@@ -35,7 +33,7 @@ func TestParseTsvector(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+		t.Run(test.input, func(t *testing.T) {
 			got, err := ParseTsvector(test.input)
 			if err != nil {
 				t.Errorf("ParseTsvector(%q) = %v", test.input, err)
