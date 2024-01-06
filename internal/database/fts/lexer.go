@@ -20,15 +20,6 @@ type lexer struct {
 	reader *bufio.Reader
 }
 
-func (l *lexer) isEof() bool {
-	_, ok := l.read()
-	if !ok {
-		return true
-	}
-	l.backup()
-	return false
-}
-
 func (l *lexer) read() (rune, bool) {
 	r, _, err := l.reader.ReadRune()
 	if err != nil {
@@ -39,6 +30,22 @@ func (l *lexer) read() (rune, bool) {
 	}
 	l.pos++
 	return r, true
+}
+
+func (l *lexer) backup() {
+	if err := l.reader.UnreadRune(); err != nil {
+		panic(err)
+	}
+	l.pos--
+}
+
+func (l *lexer) isEof() bool {
+	_, ok := l.read()
+	if !ok {
+		return true
+	}
+	l.backup()
+	return false
 }
 
 func (l *lexer) readIf(fn func(rune) bool) (rune, bool) {
@@ -80,13 +87,6 @@ func (l *lexer) readInt() (int, bool) {
 func (l *lexer) readChar(r1 rune) bool {
 	_, ok := l.readIf(isChar(r1))
 	return ok
-}
-
-func (l *lexer) backup() {
-	if err := l.reader.UnreadRune(); err != nil {
-		panic(err)
-	}
-	l.pos--
 }
 
 func (l *lexer) readQuotedString(quoteChar rune) (string, error) {
