@@ -8,29 +8,9 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/video/tmdb"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/regex"
-	"go.uber.org/fx"
 	"strconv"
 	"strings"
 )
-
-type Params struct {
-	fx.In
-	TmdbClient tmdb.Client
-}
-
-type Result struct {
-	fx.Out
-	Resolver classifier.SubResolver `group:"content_resolvers"`
-}
-
-func New(p Params) Result {
-	return Result{
-		Resolver: videoResolver{
-			config:     classifier.SubResolverConfig{Key: "video", Priority: 1},
-			tmdbClient: p.TmdbClient,
-		},
-	}
-}
 
 type videoResolver struct {
 	config     classifier.SubResolverConfig

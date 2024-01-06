@@ -2,16 +2,17 @@ package healthcheck
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/hellofresh/health-go/v5"
 	"go.uber.org/fx"
-	"gorm.io/gorm"
 	"time"
 )
 
 type Params struct {
 	fx.In
-	GormDb *gorm.DB
+	DB lazy.Lazy[*sql.DB]
 }
 
 type Result struct {
@@ -25,7 +26,7 @@ func New(p Params) Result {
 			Name:    "postgres",
 			Timeout: time.Second * 5,
 			Check: func(ctx context.Context) error {
-				db, dbErr := p.GormDb.DB()
+				db, dbErr := p.DB.Get()
 				if dbErr != nil {
 					return fmt.Errorf("failed to get database connection: %w", dbErr)
 				}

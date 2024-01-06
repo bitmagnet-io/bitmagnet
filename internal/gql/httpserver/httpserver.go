@@ -5,6 +5,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpserver"
+	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -12,7 +13,7 @@ import (
 
 type Params struct {
 	fx.In
-	Schema graphql.ExecutableSchema
+	Schema lazy.Lazy[graphql.ExecutableSchema]
 	Logger *zap.SugaredLogger
 }
 
@@ -22,23 +23,15 @@ type Result struct {
 }
 
 func New(p Params) Result {
-	gql := handler.NewDefaultServer(p.Schema)
-	pg := playground.Handler("GraphQL playground", "/graphql")
 	return Result{
 		Option: &builder{
-			gqlHandler: func(c *gin.Context) {
-				gql.ServeHTTP(c.Writer, c.Request)
-			},
-			playgroundHandler: func(c *gin.Context) {
-				pg.ServeHTTP(c.Writer, c.Request)
-			},
+			schema: p.Schema,
 		},
 	}
 }
 
 type builder struct {
-	gqlHandler        gin.HandlerFunc
-	playgroundHandler gin.HandlerFunc
+	schema lazy.Lazy[graphql.ExecutableSchema]
 }
 
 func (builder) Key() string {
@@ -46,7 +39,17 @@ func (builder) Key() string {
 }
 
 func (b builder) Apply(e *gin.Engine) error {
-	e.POST("/graphql", b.gqlHandler)
-	e.GET("/graphql", b.playgroundHandler)
+	schema, err := b.schema.Get()
+	if err != nil {
+		return err
+	}
+	gql := handler.NewDefaultServer(schema)
+	e.POST("/graphql", func(c *gin.Context) {
+		gql.ServeHTTP(c.Writer, c.Request)
+	})
+	pg := playground.Handler("GraphQL playground", "/graphql")
+	e.GET("/graphql", func(c *gin.Context) {
+		pg.ServeHTTP(c.Writer, c.Request)
+	})
 	return nil
 }

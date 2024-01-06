@@ -12,8 +12,12 @@ type queryLimiter struct {
 	queryLimiter concurrency.KeyedLimiter
 }
 
-func (s queryLimiter) Ready() <-chan struct{} {
-	return s.server.Ready()
+func (s queryLimiter) start() error {
+	return s.server.start()
+}
+
+func (s queryLimiter) stop() error {
+	return s.server.stop()
 }
 
 func (s queryLimiter) Query(ctx context.Context, addr netip.AddrPort, q string, args dht.MsgArgs) (r dht.RecvMsg, err error) {

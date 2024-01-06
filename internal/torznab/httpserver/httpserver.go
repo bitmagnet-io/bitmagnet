@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpserver"
+	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab"
 	"github.com/gin-gonic/gin"
@@ -13,7 +14,7 @@ import (
 
 type Params struct {
 	fx.In
-	Client torznab.Client
+	Client lazy.Lazy[torznab.Client]
 }
 
 type Result struct {
@@ -30,7 +31,7 @@ func New(p Params) Result {
 }
 
 type builder struct {
-	client torznab.Client
+	client lazy.Lazy[torznab.Client]
 }
 
 func (builder) Key() string {
@@ -38,6 +39,10 @@ func (builder) Key() string {
 }
 
 func (b builder) Apply(e *gin.Engine) error {
+	client, err := b.client.Get()
+	if err != nil {
+		return err
+	}
 	e.GET("/torznab/*any", func(c *gin.Context) {
 		writeInternalError := func(err error) {
 			_ = c.AbortWithError(500, err)
@@ -70,7 +75,7 @@ func (b builder) Apply(e *gin.Engine) error {
 			return
 		}
 		if tp == torznab.FunctionCaps {
-			caps, capsErr := b.client.Caps(c)
+			caps, capsErr := client.Caps(c)
 			if capsErr != nil {
 				writeErr(fmt.Errorf("failed to execute caps: %w", capsErr))
 				return
@@ -99,7 +104,7 @@ func (b builder) Apply(e *gin.Engine) error {
 			offset.Valid = true
 			offset.Uint = uint(intOffset)
 		}
-		result, searchErr := b.client.Search(c, torznab.SearchRequest{
+		result, searchErr := client.Search(c, torznab.SearchRequest{
 			Query:  c.Query(torznab.ParamQuery),
 			Type:   tp,
 			Cats:   cats,

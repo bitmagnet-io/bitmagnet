@@ -24,53 +24,53 @@ type Params struct {
 
 type Result struct {
 	fx.Out
-	Gin    *gin.Engine
-	Server *http.Server
 	Worker worker.Worker `group:"workers"`
 }
 
-func New(p Params) (r Result, err error) {
-	gin.SetMode(p.Config.GinMode)
-	g := gin.New()
-	g.Use(ginzap.Ginzap(p.Logger.Named("gin"), time.RFC3339, true), gin.Recovery())
-	options, optionsErr := resolveOptions(p.Config.Options, p.Options)
-	if optionsErr != nil {
-		err = optionsErr
-		return
-	}
-	for _, o := range options {
-		if buildErr := o.Apply(g); buildErr != nil {
-			err = buildErr
-			return
-		}
-	}
-	s := &http.Server{
-		Addr:    p.Config.LocalAddress,
-		Handler: g.Handler(),
-	}
-	r.Worker = worker.NewWorker(
-		"http_server",
-		fx.Hook{
-			OnStart: func(ctx context.Context) error {
-				ln, listenErr := net.Listen("tcp", s.Addr)
-				if listenErr != nil {
-					return listenErr
-				}
-				go (func() {
-					serveErr := s.Serve(ln)
-					if !errors.Is(serveErr, http.ErrServerClosed) {
-						panic(serveErr)
+func New(p Params) Result {
+	var s *http.Server
+	return Result{
+		Worker: worker.NewWorker(
+			"http_server",
+			fx.Hook{
+				OnStart: func(ctx context.Context) error {
+					gin.SetMode(p.Config.GinMode)
+					g := gin.New()
+					g.Use(ginzap.Ginzap(p.Logger.Named("gin"), time.RFC3339, true), gin.Recovery())
+					options, optionsErr := resolveOptions(p.Config.Options, p.Options)
+					if optionsErr != nil {
+						return optionsErr
 					}
-				})()
-				return nil
+					for _, o := range options {
+						if buildErr := o.Apply(g); buildErr != nil {
+							return buildErr
+						}
+					}
+					s = &http.Server{
+						Addr:    p.Config.LocalAddress,
+						Handler: g.Handler(),
+					}
+					ln, listenErr := net.Listen("tcp", s.Addr)
+					if listenErr != nil {
+						return listenErr
+					}
+					go (func() {
+						serveErr := s.Serve(ln)
+						if !errors.Is(serveErr, http.ErrServerClosed) {
+							panic(serveErr)
+						}
+					})()
+					return nil
+				},
+				OnStop: func(ctx context.Context) error {
+					if s == nil {
+						return nil
+					}
+					return s.Shutdown(ctx)
+				},
 			},
-			OnStop: func(ctx context.Context) error {
-				return s.Shutdown(ctx)
-			},
-		},
-	)
-	r.Gin = g
-	return
+		),
+	}
 }
 
 func resolveOptions(param []string, options []Option) ([]Option, error) {

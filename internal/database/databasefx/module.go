@@ -26,7 +26,6 @@ func New() fx.Option {
 			healthcheck.New,
 			postgres.New,
 			search.New,
-			warmer.New,
 		),
 		fx.Decorate(
 			cache.NewDecorator,

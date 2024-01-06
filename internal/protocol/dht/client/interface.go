@@ -8,7 +8,6 @@ import (
 )
 
 type Client interface {
-	Ready() <-chan struct{}
 	Ping(ctx context.Context, addr netip.AddrPort) (PingResult, error)
 	FindNode(ctx context.Context, addr netip.AddrPort, target protocol.ID) (FindNodeResult, error)
 	GetPeers(ctx context.Context, addr netip.AddrPort, infoHash protocol.ID) (GetPeersResult, error)

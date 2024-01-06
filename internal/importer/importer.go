@@ -9,36 +9,13 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/publisher"
-	"go.uber.org/fx"
 	"gorm.io/gorm/clause"
 	"sync"
 	"time"
 )
 
-type Params struct {
-	fx.In
-	Dao               *dao.Query
-	ClassifyPublisher publisher.Publisher[message.ClassifyTorrentPayload]
-}
-
-type Result struct {
-	fx.Out
-	Importer Importer
-}
-
 type Importer interface {
 	New(ctx context.Context, info Info) ActiveImport
-}
-
-func New(p Params) (Result, error) {
-	return Result{
-		Importer: importer{
-			dao:               p.Dao,
-			classifyPublisher: p.ClassifyPublisher,
-			bufferSize:        100,
-			maxWaitTime:       500 * time.Millisecond,
-		},
-	}, nil
 }
 
 type Item struct {

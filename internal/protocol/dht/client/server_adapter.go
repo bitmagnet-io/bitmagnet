@@ -14,10 +14,6 @@ type serverAdapter struct {
 	server server.Server
 }
 
-func (a serverAdapter) Ready() <-chan struct{} {
-	return a.server.Ready()
-}
-
 func (a serverAdapter) Ping(ctx context.Context, addr netip.AddrPort) (PingResult, error) {
 	res, err := a.server.Query(ctx, addr, dht.QPing, dht.MsgArgs{ID: a.nodeID})
 	if err != nil {

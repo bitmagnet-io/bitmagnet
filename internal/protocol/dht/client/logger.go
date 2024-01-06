@@ -14,10 +14,6 @@ type clientLogger struct {
 	logger *zap.SugaredLogger
 }
 
-func (l clientLogger) Ready() <-chan struct{} {
-	return l.client.Ready()
-}
-
 func (l clientLogger) Ping(ctx context.Context, addr netip.AddrPort) (PingResult, error) {
 	start := time.Now()
 	res, err := l.client.Ping(ctx, addr)

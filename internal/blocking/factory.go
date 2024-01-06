@@ -2,6 +2,7 @@ package blocking
 
 import (
 	"context"
+	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"go.uber.org/fx"
@@ -10,27 +11,35 @@ import (
 
 type Params struct {
 	fx.In
-	Dao *dao.Query
+	Dao lazy.Lazy[*dao.Query]
 }
 
 type Result struct {
 	fx.Out
-	Manager Manager
+	Manager lazy.Lazy[Manager]
 	AppHook fx.Hook `group:"app_hooks"`
 }
 
 func New(params Params) Result {
-	m := &manager{
-		dao:           params.Dao,
-		buffer:        make(map[protocol.ID]struct{}, 1000),
-		maxBufferSize: 1000,
-		maxFlushWait:  time.Minute * 5,
-	}
+	lazyManager := lazy.New[Manager](func() (Manager, error) {
+		d, err := params.Dao.Get()
+		if err != nil {
+			return nil, err
+		}
+		return &manager{
+			dao:           d,
+			buffer:        make(map[protocol.ID]struct{}, 1000),
+			maxBufferSize: 1000,
+			maxFlushWait:  time.Minute * 5,
+		}, nil
+	})
 	return Result{
-		Manager: m,
+		Manager: lazyManager,
 		AppHook: fx.Hook{
 			OnStop: func(ctx context.Context) error {
-				return m.Flush(ctx)
+				return lazyManager.IfInitialized(func(m Manager) error {
+					return m.Flush(ctx)
+				})
 			},
 		},
 	}
