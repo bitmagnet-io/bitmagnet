@@ -26,7 +26,8 @@ type Result struct {
 
 func New(p Params) (Result, error) {
 	return Result{Command: &cli.Command{
-		Name: "reindex",
+		Name:  "reindex",
+		Usage: "Reindex all records for full text search",
 		Action: func(ctx *cli.Context) error {
 			println("reindexing...")
 			d, err := p.Dao.Get()
