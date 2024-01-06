@@ -8,8 +8,7 @@ import (
 	"time"
 )
 
-type prometheusCollectorResolver struct {
-	resolver     Resolver
+type prometheusCollector struct {
 	duration     *prometheus.HistogramVec
 	successTotal *prometheus.CounterVec
 	noMatchTotal prometheus.Counter
@@ -22,9 +21,8 @@ const subsystem = "classifier"
 const labelContentType = "content_type"
 const labelContentSource = "content_source"
 
-func newPrometheusCollectorResolver(resolver Resolver) prometheusCollectorResolver {
-	return prometheusCollectorResolver{
-		resolver: resolver,
+func newPrometheusCollector() prometheusCollector {
+	return prometheusCollector{
 		duration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 			Namespace: namespace,
 			Subsystem: subsystem,
@@ -51,6 +49,11 @@ func newPrometheusCollectorResolver(resolver Resolver) prometheusCollectorResolv
 			Help:      "A counter of failed classifications.",
 		}),
 	}
+}
+
+type prometheusCollectorResolver struct {
+	prometheusCollector
+	resolver Resolver
 }
 
 func (r prometheusCollectorResolver) Resolve(ctx context.Context, content model.TorrentContent) (model.TorrentContent, error) {

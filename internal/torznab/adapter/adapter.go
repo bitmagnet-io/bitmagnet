@@ -1,6 +1,7 @@
 package adapter
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab"
 	"go.uber.org/fx"
@@ -8,22 +9,28 @@ import (
 
 type Params struct {
 	fx.In
-	Search search.Search
+	Search lazy.Lazy[search.Search]
 }
 
 type Result struct {
 	fx.Out
-	Client torznab.Client
+	Client lazy.Lazy[torznab.Client]
 }
 
 func New(p Params) Result {
 	return Result{
-		Client: adapter{
-			title:        "bitmagnet",
-			maxLimit:     100,
-			defaultLimit: 100,
-			search:       p.Search,
-		},
+		Client: lazy.New[torznab.Client](func() (torznab.Client, error) {
+			s, err := p.Search.Get()
+			if err != nil {
+				return nil, err
+			}
+			return adapter{
+				title:        "bitmagnet",
+				maxLimit:     100,
+				defaultLimit: 100,
+				search:       s,
+			}, nil
+		}),
 	}
 }
 

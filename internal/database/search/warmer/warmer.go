@@ -6,43 +6,9 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
-	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"time"
 )
-
-type Params struct {
-	fx.In
-	Config Config
-	Search search.Search
-	Logger *zap.SugaredLogger
-}
-
-type Result struct {
-	fx.Out
-	AppHook fx.Hook `group:"app_hooks"`
-}
-
-func New(params Params) Result {
-	//w := warmer{
-	//	stopped:  make(chan struct{}),
-	//	interval: params.Config.Interval,
-	//	search:   params.Search,
-	//	logger:   params.Logger.Named("search_warmer"),
-	//}
-	return Result{
-		//AppHook: fx.Hook{
-		//	OnStart: func(context.Context) error {
-		//		go w.start()
-		//		return nil
-		//	},
-		//	OnStop: func(ctx context.Context) error {
-		//		close(w.stopped)
-		//		return nil
-		//	},
-		//},
-	}
-}
 
 type warmer struct {
 	stopped  chan struct{}

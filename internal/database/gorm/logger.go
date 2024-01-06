@@ -27,14 +27,14 @@ type Result struct {
 	GormLogger gormlogger.Interface
 }
 
-func New(p Params) (Result, error) {
+func New(p Params) Result {
 	return Result{
 		GormLogger: &customLogger{
 			logLevel:      p.Config.LogLevel,
 			slowThreshold: p.Config.SlowThreshold,
 			zap:           p.ZapLogger.Named("gorm"),
 		},
-	}, nil
+	}
 }
 
 type customLogger struct {

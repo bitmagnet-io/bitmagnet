@@ -2,6 +2,7 @@ package consumer
 
 import (
 	"context"
+	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/asynq/message"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/consumer"
@@ -10,23 +11,29 @@ import (
 
 type Params struct {
 	fx.In
-	Classifier classifier.Classifier
+	Classifier lazy.Lazy[classifier.Classifier]
 }
 
 type Result struct {
 	fx.Out
-	Consumer consumer.Consumer `group:"queue_consumers"`
+	Consumer lazy.Lazy[consumer.Consumer] `group:"queue_consumers"`
 }
 
-func New(p Params) (Result, error) {
+func New(p Params) Result {
 	return Result{
-		Consumer: consumer.New[message.ClassifyTorrentPayload](
-			message.ClassifyTorrentTypename,
-			cns{
-				p.Classifier,
-			},
-		),
-	}, nil
+		Consumer: lazy.New(func() (consumer.Consumer, error) {
+			cl, err := p.Classifier.Get()
+			if err != nil {
+				return nil, err
+			}
+			return consumer.New[message.ClassifyTorrentPayload](
+				message.ClassifyTorrentTypename,
+				cns{
+					cl,
+				},
+			), nil
+		}),
+	}
 }
 
 type cns struct {

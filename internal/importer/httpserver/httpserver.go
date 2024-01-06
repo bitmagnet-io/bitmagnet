@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpserver"
+	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/importer"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
@@ -15,7 +16,7 @@ import (
 
 type Params struct {
 	fx.In
-	Importer importer.Importer
+	Importer lazy.Lazy[importer.Importer]
 	Logger   *zap.SugaredLogger
 }
 
@@ -24,21 +25,45 @@ type Result struct {
 	Option httpserver.Option `group:"http_server_options"`
 }
 
-func New(p Params) (r Result, err error) {
-	r.Option = &builder{p.handler}
-	return
+func New(p Params) Result {
+	return Result{
+		Option: &builder{
+			importer: p.Importer,
+			logger:   p.Logger.Named("importer"),
+		},
+	}
 }
 
 const ImportIdHeader = "x-import-id"
 
-func (p Params) handler(ctx *gin.Context) {
+type builder struct {
+	importer lazy.Lazy[importer.Importer]
+	logger   *zap.SugaredLogger
+}
+
+func (builder) Key() string {
+	return "import"
+}
+
+func (b builder) Apply(e *gin.Engine) error {
+	i, err := b.importer.Get()
+	if err != nil {
+		return err
+	}
+	e.POST("/import", func(ctx *gin.Context) {
+		b.handle(ctx, i)
+	})
+	return nil
+}
+
+func (b builder) handle(ctx *gin.Context, i importer.Importer) {
 	s := bufio.NewScanner(ctx.Request.Body)
 	s.Split(bufio.ScanRunes)
 	importId := ctx.Request.Header.Get(ImportIdHeader)
 	if importId == "" {
 		importId = strconv.FormatUint(uint64(time.Now().Unix()), 10)
 	}
-	i := p.Importer.New(ctx, importer.Info{
+	ai := i.New(ctx, importer.Info{
 		ID: importId,
 	})
 	var currentLine []rune
@@ -49,13 +74,13 @@ func (p Params) handler(ctx *gin.Context) {
 	addItem := func() error {
 		item := importer.Item{}
 		if err := json.Unmarshal([]byte(string(currentLine)), &item); err != nil {
-			p.Logger.Errorw("error adding item", "error", err)
+			b.logger.Errorw("error adding item", "error", err)
 			ctx.Status(400)
 			_, _ = ctx.Writer.WriteString(err.Error())
 			return err
 		}
-		if err := i.Import(item); err != nil {
-			p.Logger.Errorw("error importing item", "error", err)
+		if err := ai.Import(item); err != nil {
+			b.logger.Errorw("error importing item", "error", err)
 			ctx.Status(400)
 			_, _ = ctx.Writer.WriteString(err.Error())
 			return err
@@ -86,26 +111,13 @@ func (p Params) handler(ctx *gin.Context) {
 			return
 		}
 	}
-	i.Drain()
-	if err := i.Close(); err != nil {
-		p.Logger.Errorw("error closing import", "error", err)
+	ai.Drain()
+	if err := ai.Close(); err != nil {
+		b.logger.Errorw("error closing import", "error", err)
 		ctx.Status(400)
 		_, _ = ctx.Writer.WriteString(err.Error())
 		return
 	}
 	ctx.Status(200)
 	writeCount()
-}
-
-type builder struct {
-	handler gin.HandlerFunc
-}
-
-func (builder) Key() string {
-	return "import"
-}
-
-func (b builder) Apply(e *gin.Engine) error {
-	e.POST("/import", b.handler)
-	return nil
 }

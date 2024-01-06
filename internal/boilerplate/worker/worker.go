@@ -21,7 +21,7 @@ type RegistryResult struct {
 	Registry Registry
 }
 
-func NewRegistry(p RegistryParams) (RegistryResult, error) {
+func NewRegistry(p RegistryParams) RegistryResult {
 	r := &registry{
 		mutex:   &sync.RWMutex{},
 		workers: make(map[string]Worker),
@@ -30,7 +30,7 @@ func NewRegistry(p RegistryParams) (RegistryResult, error) {
 	for _, w := range p.Workers {
 		r.workers[w.Key()] = w
 	}
-	return RegistryResult{Registry: r}, nil
+	return RegistryResult{Registry: r}
 }
 
 type Registry interface {
@@ -41,16 +41,20 @@ type Registry interface {
 	DisableAll()
 	Start(ctx context.Context) error
 	Stop(ctx context.Context) error
+	Decorate(name string, fn Decorator) error
 }
 
 type Worker interface {
 	Key() string
 	Enabled() bool
 	Started() bool
+	Decorate(Decorator) Worker
 	_hook() fx.Hook
 	setEnabled(enabled bool)
 	setStarted(started bool)
 }
+
+type Decorator func(fx.Hook) fx.Hook
 
 type worker struct {
 	key     string
@@ -76,6 +80,16 @@ func (w *worker) Enabled() bool {
 
 func (w *worker) Started() bool {
 	return w.started
+}
+
+func (w *worker) Decorate(fn Decorator) Worker {
+	return &worker{
+		key: w.key,
+		hook: fn(fx.Hook{
+			OnStart: w.hook.OnStart,
+			OnStop:  w.hook.OnStop,
+		}),
+	}
 }
 
 func (w *worker) _hook() fx.Hook {
@@ -194,4 +208,14 @@ func (r *registry) Stop(ctx context.Context) error {
 		}
 	}
 	return nil
+}
+
+func (r *registry) Decorate(name string, fn Decorator) error {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+	if w, ok := r.workers[name]; ok {
+		r.workers[name] = w.Decorate(fn)
+		return nil
+	}
+	return fmt.Errorf("worker %s not found", name)
 }

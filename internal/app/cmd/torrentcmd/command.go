@@ -1,6 +1,7 @@
 package torrentcmd
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainforequester"
@@ -13,7 +14,7 @@ import (
 type Params struct {
 	fx.In
 	MetaInfoRequester metainforequester.Requester
-	Classifier        classifier.Classifier
+	Classifier        lazy.Lazy[classifier.Classifier]
 	Logger            *zap.SugaredLogger
 }
 
@@ -34,11 +35,15 @@ func New(p Params) (Result, error) {
 					},
 				},
 				Action: func(ctx *cli.Context) error {
+					c, err := p.Classifier.Get()
+					if err != nil {
+						return err
+					}
 					infoHash, err := protocol.ParseID(ctx.String("infoHash"))
 					if err != nil {
 						return err
 					}
-					return p.Classifier.Classify(ctx.Context, infoHash)
+					return c.Classify(ctx.Context, infoHash)
 				},
 			},
 			{

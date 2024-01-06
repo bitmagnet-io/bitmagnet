@@ -3,22 +3,41 @@ package migrations
 import (
 	"context"
 	"database/sql"
+	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	migrationssql "github.com/bitmagnet-io/bitmagnet/migrations"
 	goose "github.com/pressly/goose/v3"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type Params struct {
 	fx.In
-	DB     *sql.DB
+	DB     lazy.Lazy[*gorm.DB]
 	Logger *zap.SugaredLogger
 }
 
-func New(p Params) Migrator {
-	initGoose(p.Logger)
-	return &migrator{
-		db: p.DB,
+type Result struct {
+	fx.Out
+	Migrator lazy.Lazy[Migrator]
+}
+
+func New(p Params) Result {
+	return Result{
+		Migrator: lazy.New(func() (Migrator, error) {
+			g, err := p.DB.Get()
+			if err != nil {
+				return nil, err
+			}
+			db, err := g.DB()
+			if err != nil {
+				return nil, err
+			}
+			initGoose(p.Logger)
+			return &migrator{
+				db: db,
+			}, nil
+		}),
 	}
 }
 
