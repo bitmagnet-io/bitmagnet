@@ -1,6 +1,7 @@
 package reindexcmd
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/fts"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
@@ -14,7 +15,7 @@ import (
 
 type Params struct {
 	fx.In
-	Dao    *dao.Query
+	Dao    lazy.Lazy[*dao.Query]
 	Logger *zap.SugaredLogger
 }
 
@@ -28,14 +29,18 @@ func New(p Params) (Result, error) {
 		Name: "reindex",
 		Action: func(ctx *cli.Context) error {
 			println("reindexing...")
+			d, err := p.Dao.Get()
+			if err != nil {
+				return err
+			}
 			contentCount := int64(0)
 			torrentContentCount := int64(0)
-			if result, err := p.Dao.Content.WithContext(ctx.Context).Count(); err != nil {
+			if result, err := d.Content.WithContext(ctx.Context).Count(); err != nil {
 				return err
 			} else {
 				contentCount = result
 			}
-			if result, err := p.Dao.TorrentContent.WithContext(ctx.Context).Count(); err != nil {
+			if result, err := d.TorrentContent.WithContext(ctx.Context).Count(); err != nil {
 				return err
 			} else {
 				torrentContentCount = result
@@ -44,9 +49,9 @@ func New(p Params) (Result, error) {
 			batchSize := 1000
 			tsvs := make(map[model.ContentRef]fts.Tsvector)
 			var contentResult []*model.Content
-			if err := p.Dao.Content.WithContext(ctx.Context).Preload(
-				p.Dao.Content.Attributes.RelationField,
-				p.Dao.Content.Collections.RelationField,
+			if err := d.Content.WithContext(ctx.Context).Preload(
+				d.Content.Attributes.RelationField,
+				d.Content.Collections.RelationField,
 			).FindInBatches(&contentResult, batchSize, func(tx gen.Dao, _ int) error {
 				for _, c := range contentResult {
 					c.UpdateTsv()
@@ -70,9 +75,9 @@ func New(p Params) (Result, error) {
 			_ = contentBar.Finish()
 			torrentContentBar := progressbar.Default(torrentContentCount, "[2/2] reindexing torrent content")
 			var torrentContentResult []*model.TorrentContent
-			if err := p.Dao.TorrentContent.WithContext(ctx.Context).Preload(
-				p.Dao.TorrentContent.Torrent.RelationField,
-				p.Dao.TorrentContent.Torrent.Files.RelationField,
+			if err := d.TorrentContent.WithContext(ctx.Context).Preload(
+				d.TorrentContent.Torrent.RelationField,
+				d.TorrentContent.Torrent.Files.RelationField,
 			).FindInBatches(&torrentContentResult, batchSize, func(tx gen.Dao, _ int) error {
 				for _, tc := range torrentContentResult {
 					ref := tc.EntityReference()
