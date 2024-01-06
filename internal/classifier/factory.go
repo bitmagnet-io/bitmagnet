@@ -7,6 +7,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+	"sort"
 )
 
 type Params struct {
@@ -38,9 +39,21 @@ func New(p Params) Result {
 			if err != nil {
 				return classifier{}, err
 			}
+			subResolvers := make([]SubResolver, 0, len(p.SubResolvers))
+			for _, subResolver := range p.SubResolvers {
+				r, err := subResolver.Get()
+				if err != nil {
+					return classifier{}, err
+				}
+				subResolvers = append(subResolvers, r)
+			}
+			sort.Slice(subResolvers, func(i, j int) bool {
+				return subResolvers[i].Config().Priority < subResolvers[j].Config().Priority
+			})
 			return classifier{
 				resolver: prometheusCollectorResolver{
 					prometheusCollector: collector,
+					resolver:            resolver{subResolvers, p.Logger},
 				},
 				dao:    d,
 				search: s,

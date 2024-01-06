@@ -9,7 +9,6 @@ import (
 )
 
 type prometheusCollector struct {
-	resolver     Resolver
 	duration     *prometheus.HistogramVec
 	successTotal *prometheus.CounterVec
 	noMatchTotal prometheus.Counter
