@@ -4,6 +4,7 @@ import "sync"
 
 type Lazy[T any] interface {
 	Get() (T, error)
+	// IfInitialized calls the given function if the value has been initialized (useful for shutdown logic)
 	IfInitialized(func(T) error) error
 }
 
