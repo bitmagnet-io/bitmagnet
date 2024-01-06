@@ -54,25 +54,25 @@ type prometheusServerWrapper struct {
 	server Server
 }
 
-func (l prometheusServerWrapper) start() error {
-	return l.server.start()
+func (s prometheusServerWrapper) start() error {
+	return s.server.start()
 }
 
-func (l prometheusServerWrapper) stop() error {
-	return l.server.stop()
+func (s prometheusServerWrapper) stop() {
+	s.server.stop()
 }
 
-func (l prometheusServerWrapper) Query(ctx context.Context, addr netip.AddrPort, q string, args dht.MsgArgs) (dht.RecvMsg, error) {
+func (s prometheusServerWrapper) Query(ctx context.Context, addr netip.AddrPort, q string, args dht.MsgArgs) (dht.RecvMsg, error) {
 	labels := prometheus.Labels{labelQuery: q}
-	l.queryConcurrency.With(labels).Inc()
+	s.queryConcurrency.With(labels).Inc()
 	start := time.Now()
-	res, err := l.server.Query(ctx, addr, q, args)
-	l.queryConcurrency.With(labels).Dec()
+	res, err := s.server.Query(ctx, addr, q, args)
+	s.queryConcurrency.With(labels).Dec()
 	if err == nil {
-		l.queryDuration.With(labels).Observe(time.Since(start).Seconds())
-		l.querySuccessTotal.With(labels).Inc()
+		s.queryDuration.With(labels).Observe(time.Since(start).Seconds())
+		s.querySuccessTotal.With(labels).Inc()
 	} else {
-		l.queryErrorTotal.With(labels).Inc()
+		s.queryErrorTotal.With(labels).Inc()
 	}
 	return res, err
 }

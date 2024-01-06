@@ -42,6 +42,7 @@ func New(p Params) Result {
 			server: prometheusServerWrapper{
 				prometheusCollector: collector,
 				server: &server{
+					stopped:          make(chan struct{}),
 					localAddr:        netip.AddrPortFrom(netip.IPv4Unspecified(), p.Config.Port),
 					socket:           NewSocket(),
 					queries:          make(map[string]chan dht.RecvMsg),
@@ -64,7 +65,8 @@ func New(p Params) Result {
 		AppHook: fx.Hook{
 			OnStop: func(context.Context) error {
 				return ls.IfInitialized(func(s Server) error {
-					return s.stop()
+					s.stop()
+					return nil
 				})
 			},
 		},
