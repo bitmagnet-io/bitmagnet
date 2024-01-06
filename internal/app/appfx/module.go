@@ -1,7 +1,6 @@
 package appfx
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/app/cmd/searchcmd"
 	"github.com/bitmagnet-io/bitmagnet/internal/app/cmd/torrentcmd"
 	"github.com/bitmagnet-io/bitmagnet/internal/blocking/blockingfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/app/boilerplateappfx"
@@ -9,6 +8,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classifierfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/databasefx"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/migrations"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/search/warmer"
 	"github.com/bitmagnet-io/bitmagnet/internal/dhtcrawler/dhtcrawlerfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/importer/importerfx"
@@ -43,10 +43,12 @@ func New() fx.Option {
 		versionfx.New(),
 		// cli commands:
 		fx.Provide(
-			searchcmd.New,
 			torrentcmd.New,
 		),
 		fx.Provide(webui.New),
 		fx.Decorate(migrations.NewDecorator),
+		fx.Decorate(
+			warmer.NewDecorator,
+		),
 	)
 }

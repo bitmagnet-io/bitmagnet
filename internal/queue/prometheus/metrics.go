@@ -1,6 +1,7 @@
 package prometheus
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/redis"
 	"github.com/hibiken/asynq"
 	"github.com/hibiken/asynq/x/metrics"
@@ -10,7 +11,7 @@ import (
 
 type Params struct {
 	fx.In
-	Redis *redis.Client
+	Redis lazy.Lazy[*redis.Client]
 }
 
 type Result struct {

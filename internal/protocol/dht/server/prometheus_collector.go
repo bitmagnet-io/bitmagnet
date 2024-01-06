@@ -9,7 +9,6 @@ import (
 )
 
 type prometheusCollector struct {
-	server            Server
 	queryDuration     *prometheus.HistogramVec
 	querySuccessTotal *prometheus.CounterVec
 	queryErrorTotal   *prometheus.CounterVec
@@ -20,9 +19,8 @@ const labelQuery = "query"
 
 var labelNames = []string{labelQuery}
 
-func newPrometheusCollector(server Server) prometheusCollector {
+func newPrometheusCollector() prometheusCollector {
 	return prometheusCollector{
-		server: server,
 		queryDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 			Namespace: namespace,
 			Subsystem: subsystem,
@@ -51,11 +49,20 @@ func newPrometheusCollector(server Server) prometheusCollector {
 	}
 }
 
-func (l prometheusCollector) Ready() <-chan struct{} {
-	return l.server.Ready()
+type prometheusServerWrapper struct {
+	prometheusCollector
+	server Server
 }
 
-func (l prometheusCollector) Query(ctx context.Context, addr netip.AddrPort, q string, args dht.MsgArgs) (dht.RecvMsg, error) {
+func (l prometheusServerWrapper) start() error {
+	return l.server.start()
+}
+
+func (l prometheusServerWrapper) stop() error {
+	return l.server.stop()
+}
+
+func (l prometheusServerWrapper) Query(ctx context.Context, addr netip.AddrPort, q string, args dht.MsgArgs) (dht.RecvMsg, error) {
 	labels := prometheus.Labels{labelQuery: q}
 	l.queryConcurrency.With(labels).Inc()
 	start := time.Now()

@@ -1,6 +1,7 @@
 package publisher
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/asynq/message"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/producer"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/publisher"
@@ -10,17 +11,23 @@ import (
 
 type Params struct {
 	fx.In
-	Client   *asynq.Client
+	Client   lazy.Lazy[*asynq.Client]
 	Producer producer.Producer[message.ClassifyTorrentPayload]
 }
 
 type Result struct {
 	fx.Out
-	Publisher publisher.Publisher[message.ClassifyTorrentPayload]
+	Publisher lazy.Lazy[publisher.Publisher[message.ClassifyTorrentPayload]]
 }
 
 func New(p Params) Result {
 	return Result{
-		Publisher: publisher.New[message.ClassifyTorrentPayload](p.Client, p.Producer),
+		Publisher: lazy.New(func() (publisher.Publisher[message.ClassifyTorrentPayload], error) {
+			client, err := p.Client.Get()
+			if err != nil {
+				return nil, err
+			}
+			return publisher.New[message.ClassifyTorrentPayload](client, p.Producer), nil
+		}),
 	}
 }

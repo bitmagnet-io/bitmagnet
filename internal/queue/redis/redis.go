@@ -1,15 +1,20 @@
 package redis
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	r "github.com/redis/go-redis/v9"
 )
 
 type Client = r.Client
 
 type Wrapper struct {
-	Redis *r.Client
+	Redis lazy.Lazy[*r.Client]
 }
 
 func (w Wrapper) MakeRedisClient() interface{} {
-	return w.Redis
+	redis, err := w.Redis.Get()
+	if err != nil {
+		return err
+	}
+	return redis
 }

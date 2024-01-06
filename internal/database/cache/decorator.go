@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	caches "github.com/mgdigital/gorm-cache/v2"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
@@ -9,18 +10,25 @@ import (
 type DecoratorParams struct {
 	fx.In
 	Plugin *caches.Caches
-	DB     *gorm.DB
+	DB     lazy.Lazy[*gorm.DB]
 }
 
 type DecoratorResult struct {
 	fx.Out
-	DB *gorm.DB
+	DB lazy.Lazy[*gorm.DB]
 }
 
-func NewDecorator(p DecoratorParams) (DecoratorResult, error) {
-	db := p.DB
-	if err := db.Use(p.Plugin); err != nil {
-		return DecoratorResult{}, err
+func NewDecorator(p DecoratorParams) DecoratorResult {
+	return DecoratorResult{
+		DB: lazy.New(func() (*gorm.DB, error) {
+			db, err := p.DB.Get()
+			if err != nil {
+				return nil, err
+			}
+			if err := db.Use(p.Plugin); err != nil {
+				return nil, err
+			}
+			return db, nil
+		}),
 	}
-	return DecoratorResult{DB: db}, nil
 }

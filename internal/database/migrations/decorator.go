@@ -2,43 +2,38 @@ package migrations
 
 import (
 	"context"
+	"database/sql"
+	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type DecoratorParams struct {
 	fx.In
-	DB     *gorm.DB
+	DB     lazy.Lazy[*sql.DB]
 	Logger *zap.SugaredLogger
 }
 
 type DecoratorResult struct {
 	fx.Out
-	DB *gorm.DB
+	DB lazy.Lazy[*sql.DB]
 }
 
-func NewDecorator(p DecoratorParams) (result DecoratorResult, err error) {
-	result.DB = p.DB
-	sqlDb, dbErr := p.DB.DB()
-	if dbErr != nil {
-		err = dbErr
-		return
+func NewDecorator(p DecoratorParams) DecoratorResult {
+	return DecoratorResult{
+		DB: lazy.New(func() (*sql.DB, error) {
+			db, err := p.DB.Get()
+			if err != nil {
+				return nil, err
+			}
+			m := New(Params{
+				DB:     db,
+				Logger: p.Logger,
+			})
+			if migrateErr := m.Up(context.TODO()); migrateErr != nil {
+				return nil, migrateErr
+			}
+			return db, nil
+		}),
 	}
-	// avoid failing here on a non-connectable database
-	pingErr := sqlDb.Ping()
-	if pingErr != nil {
-		p.Logger.Errorf("failed to ping database: %v", pingErr)
-		return
-	}
-	m := New(Params{
-		DB:     sqlDb,
-		Logger: p.Logger,
-	})
-	migrateErr := m.Up(context.TODO())
-	if migrateErr != nil {
-		err = migrateErr
-		return
-	}
-	return
 }

@@ -1,24 +1,25 @@
 package classifier
 
 import (
-  "github.com/bitmagnet-io/bitmagnet/internal/database/dao"
-  "github.com/bitmagnet-io/bitmagnet/internal/database/search"
-  "github.com/prometheus/client_golang/prometheus"
-  "go.uber.org/fx"
-  "go.uber.org/zap"
+	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
+	"github.com/prometheus/client_golang/prometheus"
+	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 type Params struct {
 	fx.In
-	Search       search.Search
-	SubResolvers []SubResolver `group:"content_resolvers"`
-	Dao          *dao.Query
+	Search       lazy.Lazy[search.Search]
+	SubResolvers []lazy.Lazy[SubResolver] `group:"content_resolvers"`
+	Dao          lazy.Lazy[*dao.Query]
 	Logger       *zap.SugaredLogger
 }
 
 type Result struct {
 	fx.Out
-	Classifier   Classifier
+	Classifier   lazy.Lazy[Classifier]
 	Duration     prometheus.Collector `group:"prometheus_collectors"`
 	SuccessTotal prometheus.Collector `group:"prometheus_collectors"`
 	NoMatchTotal prometheus.Collector `group:"prometheus_collectors"`
@@ -26,16 +27,25 @@ type Result struct {
 }
 
 func New(p Params) Result {
-	collector := newPrometheusCollectorResolver(resolver{
-		subResolvers: p.SubResolvers,
-		logger:       p.Logger.Named("content_classifier"),
-	})
+	collector := newPrometheusCollector()
 	return Result{
-		Classifier: classifier{
-			resolver: collector,
-			dao:      p.Dao,
-			search:   p.Search,
-		},
+		Classifier: lazy.New(func() (Classifier, error) {
+			s, err := p.Search.Get()
+			if err != nil {
+				return classifier{}, err
+			}
+			d, err := p.Dao.Get()
+			if err != nil {
+				return classifier{}, err
+			}
+			return classifier{
+				resolver: prometheusCollectorResolver{
+					prometheusCollector: collector,
+				},
+				dao:    d,
+				search: s,
+			}, nil
+		}),
 		Duration:     collector.duration,
 		SuccessTotal: collector.successTotal,
 		NoMatchTotal: collector.noMatchTotal,

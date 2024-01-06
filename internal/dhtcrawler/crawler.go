@@ -60,13 +60,6 @@ type crawler struct {
 }
 
 func (c *crawler) start() {
-	// wait for the server to be ready
-	select {
-	case <-c.stopped:
-		return
-	case <-c.client.Ready():
-		break
-	}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	// start the various pipeline workers

@@ -14,14 +14,16 @@ import (
 )
 
 type Server interface {
-	Ready() <-chan struct{}
+	start() error
+	stop() error
 	Query(ctx context.Context, addr netip.AddrPort, q string, args dht.MsgArgs) (dht.RecvMsg, error)
 }
 
 type server struct {
-	mutex            sync.Mutex
-	ready            chan struct{}
-	stopped          chan struct{}
+	mutex sync.Mutex
+	//started bool
+	//ready            chan struct{}
+	//stopped          chan struct{}
 	localAddr        netip.AddrPort
 	socket           Socket
 	queryTimeout     time.Duration
@@ -32,16 +34,26 @@ type server struct {
 	logger           *zap.SugaredLogger
 }
 
-func (s *server) Ready() <-chan struct{} {
-	return s.ready
-}
+//
+//func (s *server) Ready() <-chan struct{} {
+//	go func() {
+//    _ = s.start()
+//  }()
+//	return s.ready
+//}
 
-func (s *server) start() {
+func (s *server) start() error {
+	if err := s.socket.Open(s.localAddr); err != nil {
+		return fmt.Errorf("could not open socket: %w", err)
+	}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	go s.read(ctx)
-	close(s.ready)
-	<-s.stopped
+	return nil
+}
+
+func (s *server) stop() error {
+	return s.socket.Close()
 }
 
 func (s *server) read(ctx context.Context) {
