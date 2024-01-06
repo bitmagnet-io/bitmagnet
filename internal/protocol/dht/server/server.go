@@ -20,10 +20,7 @@ type Server interface {
 }
 
 type server struct {
-	mutex sync.Mutex
-	//started bool
-	//ready            chan struct{}
-	//stopped          chan struct{}
+	mutex            sync.Mutex
 	localAddr        netip.AddrPort
 	socket           Socket
 	queryTimeout     time.Duration
@@ -33,14 +30,6 @@ type server struct {
 	idIssuer         IdIssuer
 	logger           *zap.SugaredLogger
 }
-
-//
-//func (s *server) Ready() <-chan struct{} {
-//	go func() {
-//    _ = s.start()
-//  }()
-//	return s.ready
-//}
 
 func (s *server) start() error {
 	if err := s.socket.Open(s.localAddr); err != nil {
