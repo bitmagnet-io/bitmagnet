@@ -8,11 +8,12 @@ import (
 	goose "github.com/pressly/goose/v3"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type Params struct {
 	fx.In
-	DB     lazy.Lazy[*sql.DB]
+	DB     lazy.Lazy[*gorm.DB]
 	Logger *zap.SugaredLogger
 }
 
@@ -24,7 +25,11 @@ type Result struct {
 func New(p Params) Result {
 	return Result{
 		Migrator: lazy.New(func() (Migrator, error) {
-			db, err := p.DB.Get()
+			g, err := p.DB.Get()
+			if err != nil {
+				return nil, err
+			}
+			db, err := g.DB()
 			if err != nil {
 				return nil, err
 			}
