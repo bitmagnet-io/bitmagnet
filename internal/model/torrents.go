@@ -157,6 +157,8 @@ func (t Torrent) TagNames() []string {
 	return tagNames
 }
 
+// fileSearchStrings returns a list of strings extracted from file paths, for inclusion in the text search vector.
+// To reduce duplication, common prefixes and suffixes are deduplicated.
 func (t Torrent) fileSearchStrings() []string {
 	firstPass := make([]string, 0, len(t.Files))
 	var prevPath string
