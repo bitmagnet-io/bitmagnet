@@ -10,6 +10,6 @@ type Config struct {
 func NewDefaultConfig() Config {
 	return Config{
 		Enabled:  true,
-		Interval: 10 * time.Minute,
+		Interval: 50 * time.Minute,
 	}
 }

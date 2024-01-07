@@ -13,7 +13,7 @@ func NewDefaultConfig() Config {
 	return Config{
 		CacheEnabled: true,
 		EaserEnabled: true,
-		Ttl:          time.Minute * 20,
+		Ttl:          time.Minute * 60,
 		MaxKeys:      1000,
 	}
 }
