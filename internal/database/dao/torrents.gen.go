@@ -33,7 +33,6 @@ func newTorrent(db *gorm.DB, opts ...gen.DOOption) torrent {
 	_torrent.Private = field.NewBool(tableName, "private")
 	_torrent.PieceLength = field.NewField(tableName, "piece_length")
 	_torrent.Pieces = field.NewBytes(tableName, "pieces")
-	_torrent.SearchString = field.NewString(tableName, "search_string")
 	_torrent.CreatedAt = field.NewTime(tableName, "created_at")
 	_torrent.UpdatedAt = field.NewTime(tableName, "updated_at")
 	_torrent.FilesStatus = field.NewField(tableName, "files_status")
@@ -75,19 +74,18 @@ func newTorrent(db *gorm.DB, opts ...gen.DOOption) torrent {
 type torrent struct {
 	torrentDo
 
-	ALL          field.Asterisk
-	InfoHash     field.Field
-	Name         field.String
-	Size         field.Uint64
-	Private      field.Bool
-	PieceLength  field.Field
-	Pieces       field.Bytes
-	SearchString field.String
-	CreatedAt    field.Time
-	UpdatedAt    field.Time
-	FilesStatus  field.Field
-	Extension    field.String
-	Contents     torrentHasManyContents
+	ALL         field.Asterisk
+	InfoHash    field.Field
+	Name        field.String
+	Size        field.Uint64
+	Private     field.Bool
+	PieceLength field.Field
+	Pieces      field.Bytes
+	CreatedAt   field.Time
+	UpdatedAt   field.Time
+	FilesStatus field.Field
+	Extension   field.String
+	Contents    torrentHasManyContents
 
 	Sources torrentHasManySources
 
@@ -116,7 +114,6 @@ func (t *torrent) updateTableName(table string) *torrent {
 	t.Private = field.NewBool(table, "private")
 	t.PieceLength = field.NewField(table, "piece_length")
 	t.Pieces = field.NewBytes(table, "pieces")
-	t.SearchString = field.NewString(table, "search_string")
 	t.CreatedAt = field.NewTime(table, "created_at")
 	t.UpdatedAt = field.NewTime(table, "updated_at")
 	t.FilesStatus = field.NewField(table, "files_status")
@@ -137,14 +134,13 @@ func (t *torrent) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (t *torrent) fillFieldMap() {
-	t.fieldMap = make(map[string]field.Expr, 15)
+	t.fieldMap = make(map[string]field.Expr, 14)
 	t.fieldMap["info_hash"] = t.InfoHash
 	t.fieldMap["name"] = t.Name
 	t.fieldMap["size"] = t.Size
 	t.fieldMap["private"] = t.Private
 	t.fieldMap["piece_length"] = t.PieceLength
 	t.fieldMap["pieces"] = t.Pieces
-	t.fieldMap["search_string"] = t.SearchString
 	t.fieldMap["created_at"] = t.CreatedAt
 	t.fieldMap["updated_at"] = t.UpdatedAt
 	t.fieldMap["files_status"] = t.FilesStatus

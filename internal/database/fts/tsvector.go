@@ -1,0 +1,236 @@
+package fts
+
+import (
+	"context"
+	"database/sql/driver"
+	"errors"
+	"fmt"
+	"github.com/bitmagnet-io/bitmagnet/internal/maps"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+	"regexp"
+	"sort"
+	"strings"
+	"unicode"
+)
+
+type TsvectorWeight rune
+
+const (
+	TsvectorWeightA TsvectorWeight = 'A'
+	TsvectorWeightB TsvectorWeight = 'B'
+	TsvectorWeightC TsvectorWeight = 'C'
+	TsvectorWeightD TsvectorWeight = 'D'
+)
+
+type TsvectorLabel struct {
+	Position int
+	Weight   TsvectorWeight
+}
+
+type Tsvector map[string]map[int]TsvectorWeight
+
+func (v Tsvector) Copy() Tsvector {
+	c := Tsvector{}
+	for lexeme, labels := range v {
+		c[lexeme] = make(map[int]TsvectorWeight)
+		for pos, weight := range labels {
+			c[lexeme][pos] = weight
+		}
+	}
+	return c
+}
+
+func (v Tsvector) String() string {
+	var entries []maps.MapEntry[string, []TsvectorLabel]
+	for lexeme, labelsMap := range v {
+		n := len(labelsMap)
+		if n == 0 {
+			n = 1
+		}
+		labels := make([]TsvectorLabel, 0, n)
+		if len(labelsMap) == 0 {
+			labels = append(labels, TsvectorLabel{0, TsvectorWeightD})
+		} else {
+			for pos, weight := range labelsMap {
+				labels = append(labels, TsvectorLabel{pos, weight})
+			}
+			sort.Slice(labels, func(i, j int) bool {
+				return labels[i].Position < labels[j].Position
+			})
+		}
+		entries = append(entries, maps.MapEntry[string, []TsvectorLabel]{
+			Key:   lexeme,
+			Value: labels,
+		})
+	}
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].Key < entries[j].Key
+	})
+	var parts []string
+	for _, entry := range entries {
+		var labels []string
+		for _, l := range entry.Value {
+			if l.Position == 0 {
+				continue
+			}
+			label := fmt.Sprintf("%d", l.Position)
+			if l.Weight != TsvectorWeightD {
+				label += string(l.Weight)
+			}
+			labels = append(labels, label)
+		}
+		part := quoteLexeme(entry.Key, true)
+		if len(labels) > 0 {
+			part = fmt.Sprintf("%s:%s", part, strings.Join(labels, ","))
+		}
+		parts = append(parts, part)
+	}
+	return strings.Join(parts, " ")
+}
+
+func ParseTsvector(str string) (Tsvector, error) {
+	l := tsvectorLexer{newLexer(strings.TrimSpace(str))}
+	tsv := Tsvector{}
+	for {
+		if l.isEof() {
+			break
+		}
+		word, posWeights, err := l.readTsvPart()
+		if err != nil {
+			return nil, fmt.Errorf("error at position %d: %w", l.pos, err)
+		}
+		if _, ok := tsv[word]; !ok {
+			tsv[word] = make(map[int]TsvectorWeight)
+		}
+		for _, posWeight := range posWeights {
+			tsv[word][posWeight.Position] = posWeight.Weight
+		}
+	}
+	return tsv, nil
+}
+
+type tsvectorLexer struct {
+	lexer
+}
+
+func (l *tsvectorLexer) readTsvPart() (string, []TsvectorLabel, error) {
+	lexeme, err := l.readLexeme()
+	if err != nil {
+		return "", nil, err
+	}
+	if !l.readChar(':') {
+		spaces := l.readWhile(isChar(' '))
+		if !l.isEof() && len(spaces) == 0 {
+			return "", nil, errors.New("unexpected character")
+		}
+		return lexeme, []TsvectorLabel{}, nil
+	}
+	labels, err := l.readLabels()
+	if err != nil {
+		return "", nil, err
+	}
+	return lexeme, labels, nil
+}
+
+func (l *tsvectorLexer) readLexeme() (string, error) {
+	if unquoted := l.readWhile(IsWordChar); unquoted != "" {
+		return unquoted, nil
+	}
+	word, err := l.readQuotedString('\'')
+	if err != nil {
+		return "", err
+	}
+	if word == "" {
+		return "", errors.New("empty quoted string")
+	}
+	return word, nil
+}
+
+func (l *tsvectorLexer) readLabels() ([]TsvectorLabel, error) {
+	pos, ok := l.readInt()
+	if !ok {
+		return nil, errors.New("missing position")
+	}
+	pw := TsvectorLabel{
+		Position: pos,
+		Weight:   TsvectorWeightD,
+	}
+	if w, ok := l.readIf(isWeight); ok {
+		pw.Weight = TsvectorWeight(unicode.ToUpper(w))
+	}
+	pws := []TsvectorLabel{pw}
+	if l.readChar(',') {
+		if rest, err := l.readLabels(); err != nil {
+			return nil, err
+		} else {
+			pws = append(pws, rest...)
+		}
+	} else if !l.isEof() && l.readWhile(isChar(' ')) == "" {
+		return nil, errors.New("unexpected character")
+	}
+	return pws, nil
+}
+
+func isWeight(r rune) bool {
+	r = unicode.ToUpper(r)
+	return r == 'A' || r == 'B' || r == 'C' || r == 'D'
+}
+
+func (v Tsvector) AddText(text string, weight TsvectorWeight) {
+	nextPos := 1
+	for _, pls := range v {
+		for pos := range pls {
+			if pos >= nextPos {
+				nextPos = pos + 1
+			}
+		}
+	}
+	for _, lexeme := range TokenizeFlat(text) {
+		if _, ok := v[lexeme]; !ok {
+			v[lexeme] = make(map[int]TsvectorWeight)
+		}
+		v[lexeme][nextPos] = weight
+		nextPos++
+	}
+}
+
+var nonWordChar = regexp.MustCompile(`\W`)
+
+func quoteLexeme(str string, force bool) string {
+	if force || nonWordChar.MatchString(str) {
+		str = "'" + strings.Replace(str, "'", "''", -1) + "'"
+	}
+	return str
+}
+
+func (v *Tsvector) Scan(val interface{}) error {
+	if val == nil {
+		return nil
+	}
+	str, ok := val.(string)
+	if !ok {
+		return errors.New("invalid type")
+	}
+	parsed, err := ParseTsvector(str)
+	if err != nil {
+		return err
+	}
+	*v = parsed
+	return nil
+}
+
+func (Tsvector) Value() (driver.Value, error) {
+	return nil, errors.New("cannot get value")
+}
+
+func (Tsvector) GormDataType() string {
+	return "tsvector"
+}
+
+func (v Tsvector) GormValue(context.Context, *gorm.DB) clause.Expr {
+	return clause.Expr{
+		SQL:  "?::tsvector",
+		Vars: []interface{}{v.String()},
+	}
+}

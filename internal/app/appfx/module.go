@@ -1,6 +1,7 @@
 package appfx
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/app/cmd/reindexcmd"
 	"github.com/bitmagnet-io/bitmagnet/internal/app/cmd/torrentcmd"
 	"github.com/bitmagnet-io/bitmagnet/internal/blocking/blockingfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/app/boilerplateappfx"
@@ -43,6 +44,7 @@ func New() fx.Option {
 		versionfx.New(),
 		// cli commands:
 		fx.Provide(
+			reindexcmd.New,
 			torrentcmd.New,
 		),
 		fx.Provide(webui.New),

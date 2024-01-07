@@ -38,6 +38,7 @@ func ContentDefaultOption() query.Option {
 	return query.Options(
 		query.DefaultOption(),
 		ContentCoreJoins(),
+		ContentDefaultPreload(),
 		ContentDefaultHydrate(),
 	)
 }
@@ -81,6 +82,16 @@ func ContentCoreJoins() query.Option {
 					maps.MapEntry[string, struct{}]{Key: q.Content.TableName()},
 				),
 			},
+		}
+	})
+}
+
+func ContentDefaultPreload() query.Option {
+	return query.Preload(func(query *dao.Query) []field.RelationField {
+		return []field.RelationField{
+			query.Content.MetadataSource.RelationField,
+			query.Content.Attributes.RelationField,
+			query.Content.Attributes.MetadataSource.RelationField,
 		}
 	})
 }

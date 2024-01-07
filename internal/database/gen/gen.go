@@ -253,7 +253,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		gen.FieldType("vote_count", "NullUint"),
 		gen.FieldType("runtime", "NullUint16"),
 		gen.FieldType("adult", "NullBool"),
-		gen.FieldIgnore("tsv"),
+		gen.FieldType("tsv", "fts.Tsvector"),
 		createdAtReadOnly,
 	)
 	contentCollectionContent := g.GenerateModelAs(
@@ -287,6 +287,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 			&field.RelateConfig{
 				GORMTag: field.GormTag{
 					"foreignKey": {"InfoHash"},
+					"references": {"InfoHash"},
 				},
 			},
 		),
@@ -294,7 +295,12 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 			field.BelongsTo,
 			"Content",
 			content,
-			&field.RelateConfig{},
+			&field.RelateConfig{
+				GORMTag: field.GormTag{
+					"foreignKey": []string{"ContentType,ContentSource,ContentID"},
+					"references": []string{"Type,Source,ID"},
+				},
+			},
 		),
 		gen.FieldGORMTag("id", func(tag field.GormTag) field.GormTag {
 			tag.Set("<-", "false")
@@ -305,6 +311,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		gen.FieldType("content_type", "NullContentType"),
 		gen.FieldType("content_source", "NullString"),
 		gen.FieldType("content_id", "NullString"),
+		gen.FieldGenType("content_id", "String"),
 		gen.FieldType("release_date", "Date"),
 		gen.FieldGenType("release_date", "Time"),
 		gen.FieldType("release_year", "Year"),
@@ -328,7 +335,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		gen.FieldType("video_codec", "NullVideoCodec"),
 		gen.FieldType("video_3d", "NullVideo3d"),
 		gen.FieldType("video_modifier", "NullVideoModifier"),
-		gen.FieldIgnore("tsv"),
+		gen.FieldType("tsv", "fts.Tsvector"),
 		createdAtReadOnly,
 	)
 	bloomFilters := g.GenerateModel(

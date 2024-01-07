@@ -3,6 +3,7 @@ package tmdb
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
@@ -35,9 +36,11 @@ func (c *client) SearchMovie(ctx context.Context, p SearchMovieParams) (movie mo
 func (c *client) searchMovieLocal(ctx context.Context, p SearchMovieParams) (movie model.Content, err error) {
 	options := []query.Option{
 		query.Where(search.ContentTypeCriteria(model.ContentTypeMovie)),
-		query.QueryString(p.Title),
+		query.QueryString(fmt.Sprintf("\"%s\"", p.Title)),
 		query.OrderByQueryStringRank(),
 		query.Limit(5),
+		search.ContentDefaultPreload(),
+		search.ContentDefaultHydrate(),
 	}
 	if !p.Year.IsNil() {
 		options = append(options, query.Where(search.ContentReleaseDateCriteria(model.NewDateRangeFromYear(p.Year))))

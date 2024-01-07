@@ -6,6 +6,8 @@ package model
 
 import (
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/database/fts"
 )
 
 const TableNameContent = "content"
@@ -26,9 +28,9 @@ type Content struct {
 	Popularity       NullFloat32         `gorm:"column:popularity" json:"popularity"`
 	VoteAverage      NullFloat32         `gorm:"column:vote_average" json:"voteAverage"`
 	VoteCount        NullUint            `gorm:"column:vote_count" json:"voteCount"`
-	SearchString     string              `gorm:"column:search_string;not null" json:"searchString"`
 	CreatedAt        time.Time           `gorm:"column:created_at;not null;<-:create" json:"createdAt"`
 	UpdatedAt        time.Time           `gorm:"column:updated_at;not null" json:"updatedAt"`
+	Tsv              fts.Tsvector        `gorm:"column:tsv" json:"tsv"`
 	Collections      []ContentCollection `gorm:"many2many:content_collections_content" json:"collections"`
 	Attributes       []ContentAttribute  `json:"attributes"`
 	MetadataSource   MetadataSource      `gorm:"foreignKey:Source" json:"metadata_source"`

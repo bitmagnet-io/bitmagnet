@@ -1,12 +1,13 @@
 package model
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/regex"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/fts"
 	"github.com/facette/natsort"
 	"gorm.io/gorm"
 	"net/url"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 func (t *Torrent) AfterFind(tx *gorm.DB) error {
@@ -25,13 +26,15 @@ func (t *Torrent) AfterFind(tx *gorm.DB) error {
 
 func (t *Torrent) BeforeCreate(tx *gorm.DB) error {
 	if len(t.Contents) == 0 {
-		t.Contents = []TorrentContent{
-			{
-				InfoHash:     t.InfoHash,
-				Title:        t.Name,
-				SearchString: regex.NormalizeString(t.Name),
-			},
+		tc := &TorrentContent{
+			InfoHash: t.InfoHash,
+			Torrent:  *t,
 		}
+		if err := tc.UpdateFields(); err != nil {
+			return err
+		}
+		tc.Torrent = Torrent{}
+		t.Contents = []TorrentContent{*tc}
 	}
 	return nil
 }
@@ -152,4 +155,55 @@ func (t Torrent) TagNames() []string {
 		tagNames = append(tagNames, tag.Name)
 	}
 	return tagNames
+}
+
+// fileSearchStrings returns a list of strings extracted from file paths, for inclusion in the text search vector.
+// To reduce duplication, common prefixes and suffixes are deduplicated.
+func (t Torrent) fileSearchStrings() []string {
+	firstPass := make([]string, 0, len(t.Files))
+	var prevPath string
+	for _, f := range t.Files {
+		i := 0
+		for {
+			if i >= len(f.Path) || i >= len(prevPath) || prevPath[i] != f.Path[i] {
+				break
+			}
+			i++
+		}
+		for {
+			if i == 0 || !fts.IsWordChar(rune(f.Path[i])) {
+				break
+			}
+			i--
+		}
+		firstPass = append(firstPass, f.Path[i:])
+		prevPath = f.Path
+	}
+	searchStrings := make([]string, 0, len(firstPass))
+	for i := range firstPass {
+		longestSuffixLength := 0
+		for j := 0; j < i; j++ {
+			l := 0
+			for {
+				if l >= len(firstPass[i]) || l >= len(firstPass[j]) || firstPass[i][len(firstPass[i])-l-1] != firstPass[j][len(firstPass[j])-l-1] {
+					break
+				}
+				l++
+			}
+			if l > longestSuffixLength {
+				longestSuffixLength = l
+			}
+		}
+		for {
+			if longestSuffixLength == 0 || !fts.IsWordChar(rune(firstPass[i][len(firstPass[i])-longestSuffixLength])) {
+				break
+			}
+			longestSuffixLength--
+		}
+		str := strings.TrimSpace(firstPass[i][:len(firstPass[i])-longestSuffixLength])
+		if str != "" {
+			searchStrings = append(searchStrings, str)
+		}
+	}
+	return searchStrings
 }

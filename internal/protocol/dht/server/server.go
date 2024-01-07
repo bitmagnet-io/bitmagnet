@@ -15,11 +15,12 @@ import (
 
 type Server interface {
 	start() error
-	stop() error
+	stop()
 	Query(ctx context.Context, addr netip.AddrPort, q string, args dht.MsgArgs) (dht.RecvMsg, error)
 }
 
 type server struct {
+	stopped          chan struct{}
 	mutex            sync.Mutex
 	localAddr        netip.AddrPort
 	socket           Socket
@@ -35,14 +36,18 @@ func (s *server) start() error {
 	if err := s.socket.Open(s.localAddr); err != nil {
 		return fmt.Errorf("could not open socket: %w", err)
 	}
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	go s.read(ctx)
+	go func() {
+		ctx, cancel := context.WithCancel(context.Background())
+		go s.read(ctx)
+		<-s.stopped
+		cancel()
+		_ = s.socket.Close()
+	}()
 	return nil
 }
 
-func (s *server) stop() error {
-	return s.socket.Close()
+func (s *server) stop() {
+	close(s.stopped)
 }
 
 func (s *server) read(ctx context.Context) {

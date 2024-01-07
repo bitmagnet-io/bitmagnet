@@ -41,9 +41,9 @@ func newContent(db *gorm.DB, opts ...gen.DOOption) content {
 	_content.Popularity = field.NewField(tableName, "popularity")
 	_content.VoteAverage = field.NewField(tableName, "vote_average")
 	_content.VoteCount = field.NewField(tableName, "vote_count")
-	_content.SearchString = field.NewString(tableName, "search_string")
 	_content.CreatedAt = field.NewTime(tableName, "created_at")
 	_content.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_content.Tsv = field.NewField(tableName, "tsv")
 	_content.Collections = contentManyToManyCollections{
 		db: db.Session(&gorm.Session{}),
 
@@ -95,9 +95,9 @@ type content struct {
 	Popularity       field.Field
 	VoteAverage      field.Field
 	VoteCount        field.Field
-	SearchString     field.String
 	CreatedAt        field.Time
 	UpdatedAt        field.Time
+	Tsv              field.Field
 	Collections      contentManyToManyCollections
 
 	Attributes contentHasManyAttributes
@@ -133,9 +133,9 @@ func (c *content) updateTableName(table string) *content {
 	c.Popularity = field.NewField(table, "popularity")
 	c.VoteAverage = field.NewField(table, "vote_average")
 	c.VoteCount = field.NewField(table, "vote_count")
-	c.SearchString = field.NewString(table, "search_string")
 	c.CreatedAt = field.NewTime(table, "created_at")
 	c.UpdatedAt = field.NewTime(table, "updated_at")
+	c.Tsv = field.NewField(table, "tsv")
 
 	c.fillFieldMap()
 
@@ -167,9 +167,9 @@ func (c *content) fillFieldMap() {
 	c.fieldMap["popularity"] = c.Popularity
 	c.fieldMap["vote_average"] = c.VoteAverage
 	c.fieldMap["vote_count"] = c.VoteCount
-	c.fieldMap["search_string"] = c.SearchString
 	c.fieldMap["created_at"] = c.CreatedAt
 	c.fieldMap["updated_at"] = c.UpdatedAt
+	c.fieldMap["tsv"] = c.Tsv
 
 }
 

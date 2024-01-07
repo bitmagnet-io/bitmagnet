@@ -2,10 +2,8 @@ package search
 
 import (
 	"context"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
-	"gorm.io/gen/field"
 )
 
 func HydrateTorrentContentContent() query.Option {
@@ -25,13 +23,7 @@ func (h torrentContentContentHydrator) GetSubs(ctx context.Context, dbCtx query.
 	contentResult, contentErr := search{dbCtx.Query()}.Content(
 		ctx,
 		query.Where(ContentCanonicalIdentifierCriteria(ids...)),
-		query.Preload(func(query *dao.Query) []field.RelationField {
-			return []field.RelationField{
-				query.Content.MetadataSource.RelationField,
-				query.Content.Attributes.RelationField,
-				query.Content.Attributes.MetadataSource.RelationField,
-			}
-		}),
+		ContentDefaultPreload(),
 		ContentDefaultHydrate(),
 	)
 	if contentErr != nil {

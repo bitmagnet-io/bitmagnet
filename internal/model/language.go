@@ -116,8 +116,10 @@ func (l *Languages) Scan(value interface{}) error {
 
 func (l Languages) Value() (driver.Value, error) {
 	values := make([]string, 0, len(l))
-	for _, lang := range l.Slice() {
-		values = append(values, lang.String())
+	if l != nil {
+		for _, lang := range l.Slice() {
+			values = append(values, lang.String())
+		}
 	}
 	return values, nil
 }
