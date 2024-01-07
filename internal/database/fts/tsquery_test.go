@@ -15,7 +15,7 @@ func TestAppQueryToTsquery(t *testing.T) {
 		{"1 word", "foo", "foo"},
 		{"2 words", "foo Bar", "foo & bar"},
 		{"3 words", "foo bar baz", "foo & bar & baz"},
-		{"quotes, operators & parens", "\"make me a \" . (sandwich | panini) !cheese", "make <-> me <-> a <-> (sandwich | panini) & ! cheese"},
+		{"quotes, operators, parens, wildcards", "\"make me a \" . (sandwich | panini) !cheese mayo*", "make <-> me <-> a <-> (sandwich | panini) & ! cheese & mayo:*"},
 		{"unmatched quotes", "\"make me a sandwich", "make <-> me <-> a <-> sandwich"},
 		{"unmatched parens", "\"make me a \" . (sandwich | panini", "make <-> me <-> a <-> (sandwich | panini)"},
 		{"Ukrainian", "зроби мені бутерброд", "zrobi & meni & buterbrod"},
