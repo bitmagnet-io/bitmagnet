@@ -28,12 +28,19 @@ func New(p Params) (Result, error) {
 	return Result{Command: &cli.Command{
 		Name:  "reindex",
 		Usage: "Reindex all records for full text search",
+		Flags: []cli.Flag{
+			&cli.IntFlag{
+				Name:  "batchSize",
+				Value: 1000,
+			},
+		},
 		Action: func(ctx *cli.Context) error {
 			println("reindexing...")
 			d, err := p.Dao.Get()
 			if err != nil {
 				return err
 			}
+			batchSize := ctx.Int("batchSize")
 			contentCount := int64(0)
 			torrentContentCount := int64(0)
 			if result, err := d.Content.WithContext(ctx.Context).Count(); err != nil {
@@ -47,7 +54,6 @@ func New(p Params) (Result, error) {
 				torrentContentCount = result
 			}
 			contentBar := progressbar.Default(contentCount, "[1/2] reindexing content")
-			batchSize := 1000
 			tsvs := make(map[model.ContentRef]fts.Tsvector)
 			var contentResult []*model.Content
 			if err := d.Content.WithContext(ctx.Context).Preload(
