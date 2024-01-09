@@ -47,7 +47,7 @@ require (
 	golang.org/x/time v0.4.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/postgres v1.5.4
-	gorm.io/gen v0.3.23
+	gorm.io/gen v0.3.24
 	gorm.io/gorm v1.25.5
 	gorm.io/plugin/dbresolver v1.4.7
 )
