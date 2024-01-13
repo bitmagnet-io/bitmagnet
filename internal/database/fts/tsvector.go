@@ -199,7 +199,7 @@ var nonWordChar = regexp.MustCompile(`\W`)
 
 func quoteLexeme(str string, force bool) string {
 	if force || nonWordChar.MatchString(str) {
-		str = "'" + strings.Replace(str, "'", "''", -1) + "'"
+		str = "'" + strings.ReplaceAll(str, "'", "''") + "'"
 	}
 	return str
 }

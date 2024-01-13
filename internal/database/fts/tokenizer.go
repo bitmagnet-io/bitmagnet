@@ -64,7 +64,11 @@ func (l *tokenizerLexer) readPhrase() []string {
 				if tb, ok := table.Tables[section]; ok {
 					if len(tb) > int(position) {
 						subst := tb[position]
-						appendStr(strings.TrimSpace(subst))
+						// replace some problematic characters
+						subst = strings.ReplaceAll(subst, "'", "_sq_")
+						subst = strings.ReplaceAll(subst, "\\", "_bs_")
+						subst = strings.TrimSpace(subst)
+						appendStr(subst)
 						if isNonBreakingLang || len(subst) == 0 || subst[len(subst)-1] == ' ' {
 							breakWord()
 						}
