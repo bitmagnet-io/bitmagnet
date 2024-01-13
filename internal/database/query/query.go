@@ -488,8 +488,19 @@ func applyJoins(sq SubQuery, joins ...TableJoin) {
 
 func (b optionBuilder) applyPost(sq SubQuery) error {
 	if len(b.orderBy) > 0 {
+		orderBy := make([]clause.OrderByColumn, 0, len(b.orderBy))
+		for _, ob := range b.orderBy {
+			if ob.Reorder {
+				orderBy = append([]clause.OrderByColumn{{
+					Column: ob.Column,
+					Desc:   ob.Desc,
+				}}, orderBy...)
+			} else {
+				orderBy = append(orderBy, ob)
+			}
+		}
 		sq.UnderlyingDB().Statement.AddClause(clause.OrderBy{
-			Columns: b.orderBy,
+			Columns: orderBy,
 		})
 	}
 	if b.limit.Valid {
