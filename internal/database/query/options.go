@@ -145,8 +145,9 @@ const queryStringRankField = "query_string_rank"
 func OrderByQueryStringRank() Option {
 	return func(ctx OptionBuilder) (OptionBuilder, error) {
 		return ctx.OrderBy(clause.OrderByColumn{
-			Column: clause.Column{Name: queryStringRankField},
-			Desc:   true,
+			Column:  clause.Column{Name: queryStringRankField},
+			Desc:    true,
+			Reorder: true,
 		}), nil
 	}
 }
