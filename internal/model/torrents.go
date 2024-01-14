@@ -162,10 +162,14 @@ func (t Torrent) TagNames() []string {
 func (t Torrent) fileSearchStrings() []string {
 	firstPass := make([]string, 0, len(t.Files))
 	var prevPath string
+outer:
 	for _, f := range t.Files {
 		i := 0
 		for {
-			if i >= len(f.Path) || i >= len(prevPath) || prevPath[i] != f.Path[i] {
+			if i >= len(f.Path) {
+				continue outer
+			}
+			if i >= len(prevPath) || prevPath[i] != f.Path[i] {
 				break
 			}
 			i++
