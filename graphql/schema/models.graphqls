@@ -47,8 +47,6 @@ type TorrentContent {
   contentId: String
   content: Content
   title: String!
-  releaseDate: Date
-  releaseYear: Year
   languages: [LanguageInfo!]
   episodes: Episodes
   videoResolution: VideoResolution

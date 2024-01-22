@@ -24,17 +24,17 @@ import (
 
 type Params struct {
 	fx.In
-	Config              Config
-	KTable              ktable.Table
-	Client              lazy.Lazy[client.Client]
-	MetainfoRequester   metainforequester.Requester
-	BanningChecker      banning.Checker `name:"metainfo_banning_checker"`
-	Search              lazy.Lazy[search.Search]
-	Dao                 lazy.Lazy[*dao.Query]
-	BlockingManager     lazy.Lazy[blocking.Manager]
-	ClassifierPublisher lazy.Lazy[publisher.Publisher[processor.MessageParams]]
-	DiscoveredNodes     concurrency.BatchingChannel[ktable.Node] `name:"dht_discovered_nodes"`
-	Logger              *zap.SugaredLogger
+	Config             Config
+	KTable             ktable.Table
+	Client             lazy.Lazy[client.Client]
+	MetainfoRequester  metainforequester.Requester
+	BanningChecker     banning.Checker `name:"metainfo_banning_checker"`
+	Search             lazy.Lazy[search.Search]
+	Dao                lazy.Lazy[*dao.Query]
+	BlockingManager    lazy.Lazy[blocking.Manager]
+	ProcessorPublisher lazy.Lazy[publisher.Publisher[processor.MessageParams]]
+	DiscoveredNodes    concurrency.BatchingChannel[ktable.Node] `name:"dht_discovered_nodes"`
+	Logger             *zap.SugaredLogger
 }
 
 type Result struct {
@@ -65,7 +65,7 @@ func New(params Params) Result {
 					if err != nil {
 						return err
 					}
-					classifierPublisher, err := params.ClassifierPublisher.Get()
+					classifierPublisher, err := params.ProcessorPublisher.Get()
 					if err != nil {
 						return err
 					}
@@ -100,11 +100,11 @@ func New(params Params) Result {
 							1000,
 							time.Minute,
 						),
-						saveFilesThreshold:  params.Config.SaveFilesThreshold,
-						savePieces:          params.Config.SavePieces,
-						rescrapeThreshold:   params.Config.RescrapeThreshold,
-						dao:                 query,
-						classifierPublisher: classifierPublisher,
+						saveFilesThreshold: params.Config.SaveFilesThreshold,
+						savePieces:         params.Config.SavePieces,
+						rescrapeThreshold:  params.Config.RescrapeThreshold,
+						dao:                query,
+						processorPublisher: classifierPublisher,
 						ignoreHashes: &ignoreHashes{
 							bloom: boom.NewStableBloomFilter(10_000_000, 2, 0.001),
 						},

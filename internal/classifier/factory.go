@@ -9,8 +9,6 @@ import (
 
 type Params struct {
 	fx.In
-	//Search       lazy.Lazy[search.Search]
-	//Dao          lazy.Lazy[*dao.Query]
 	SubResolvers []lazy.Lazy[SubClassifier] `group:"content_resolvers"`
 	Logger       *zap.SugaredLogger
 }

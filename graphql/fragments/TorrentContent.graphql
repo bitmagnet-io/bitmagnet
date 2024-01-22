@@ -28,8 +28,6 @@ fragment TorrentContent on TorrentContent {
   videoModifier
   videoResolution
   videoSource
-  releaseDate
-  releaseYear
   createdAt
   updatedAt
 }

@@ -50,7 +50,7 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 					if len(hashesToClassify) == 0 {
 						return
 					}
-					if _, classifyErr := c.classifierPublisher.Publish(ctx, processor.MessageParams{
+					if _, classifyErr := c.processorPublisher.Publish(ctx, processor.MessageParams{
 						InfoHashes: hashesToClassify,
 					}); classifyErr != nil {
 						c.logger.Errorf("error publishing classify message: %s", classifyErr.Error())
