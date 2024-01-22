@@ -35,7 +35,6 @@ func (c videoClassifier) Classify(ctx context.Context, t model.Torrent) (classif
 	if t.Hint.Title.Valid {
 		title = t.Hint.Title.String
 	}
-	attrs.ApplyHint(t.Hint)
 	cl := classifier.Classification{
 		ContentAttributes: attrs,
 	}
@@ -43,6 +42,10 @@ func (c videoClassifier) Classify(ctx context.Context, t model.Torrent) (classif
 		cl.Content = &content
 	} else if !errors.Is(err, classifier.ErrNoMatch) {
 		return classifier.Classification{}, err
+	}
+	cl.ApplyHint(t.Hint)
+	if cl.Content != nil {
+		cl.ContentType = model.NewNullContentType(cl.Content.Type)
 	}
 	return cl, nil
 }

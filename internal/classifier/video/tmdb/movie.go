@@ -10,6 +10,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	tmdb "github.com/cyruzin/golang-tmdb"
 	"strconv"
+	"strings"
 )
 
 type MovieClient interface {
@@ -150,6 +151,12 @@ func getExternalSource(source string, id string) (externalSource string, externa
 func (c *client) getMovieByTmbdId(ctx context.Context, id int) (movie model.Content, err error) {
 	d, getDetailsErr := c.c.GetMovieDetails(id, map[string]string{})
 	if getDetailsErr != nil {
+		// a hacky workaround for TMDB returning 404 for some (correct) movie IDs
+		// e.g. there's some issue with tt15168124 which points to 878564 when the correct ID is 888491
+		// (haven't added for TV shows as I haven't encountered any examples)
+		if strings.HasPrefix(getDetailsErr.Error(), "code: 34") {
+			getDetailsErr = classifier.ErrNoMatch
+		}
 		err = getDetailsErr
 		return
 	}
