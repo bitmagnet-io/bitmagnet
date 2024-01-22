@@ -293,7 +293,6 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		gen.FieldGenType("content_source", "String"),
 		gen.FieldType("content_id", "NullString"),
 		gen.FieldGenType("content_id", "String"),
-		gen.FieldType("release_year", "Year"),
 		gen.FieldType("languages", "Languages"),
 		gen.FieldGORMTag("languages", func(tag field.GormTag) field.GormTag {
 			tag.Set("serializer", "json")
@@ -343,8 +342,6 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 					},
 				),
 				gen.FieldType("content_type", "NullContentType"),
-				gen.FieldType("release_date", "Date"),
-				gen.FieldGenType("release_date", "Time"),
 			},
 			torrentContentBaseOptions...,
 		)...,
@@ -354,6 +351,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		append(
 			[]gen.ModelOpt{
 				gen.FieldType("content_type", "ContentType"),
+				gen.FieldType("release_year", "Year"),
 			},
 			torrentContentBaseOptions...,
 		)...,

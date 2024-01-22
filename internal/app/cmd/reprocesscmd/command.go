@@ -16,9 +16,9 @@ import (
 
 type Params struct {
 	fx.In
-	Dao                 lazy.Lazy[*dao.Query]
-	ClassifierPublisher lazy.Lazy[publisher.Publisher[processor.MessageParams]]
-	Logger              *zap.SugaredLogger
+	Dao                lazy.Lazy[*dao.Query]
+	ProcessorPublisher lazy.Lazy[publisher.Publisher[processor.MessageParams]]
+	Logger             *zap.SugaredLogger
 }
 
 type Result struct {
@@ -35,6 +35,10 @@ func New(p Params) (Result, error) {
 				Name:  "batchSize",
 				Value: 100,
 			},
+			&cli.BoolFlag{
+				Name:  "rematch",
+				Value: false,
+			},
 		},
 		Action: func(ctx *cli.Context) error {
 			println("queueing full reprocess...")
@@ -42,11 +46,12 @@ func New(p Params) (Result, error) {
 			if err != nil {
 				return err
 			}
-			p, err := p.ClassifierPublisher.Get()
+			p, err := p.ProcessorPublisher.Get()
 			if err != nil {
 				return err
 			}
 			batchSize := ctx.Int("batchSize")
+			rematch := ctx.Bool("rematch")
 			torrentCount := int64(0)
 			if result, err := d.Torrent.WithContext(ctx.Context).Count(); err != nil {
 				return err
@@ -61,6 +66,7 @@ func New(p Params) (Result, error) {
 					infoHashes = append(infoHashes, c.InfoHash)
 				}
 				if _, err := p.Publish(ctx.Context, processor.MessageParams{
+					Rematch:    rematch,
 					InfoHashes: infoHashes,
 				}); err != nil {
 					return err

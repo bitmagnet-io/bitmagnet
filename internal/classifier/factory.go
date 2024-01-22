@@ -9,33 +9,20 @@ import (
 
 type Params struct {
 	fx.In
-	SubResolvers []lazy.Lazy[SubClassifier] `group:"content_resolvers"`
-	Logger       *zap.SugaredLogger
+	SubClassifiers []lazy.Lazy[SubClassifier] `group:"content_classifiers"`
+	Logger         *zap.SugaredLogger
 }
 
 type Result struct {
 	fx.Out
 	Classifier lazy.Lazy[Classifier]
-	//Duration     prometheus.Collector `group:"prometheus_collectors"`
-	//SuccessTotal prometheus.Collector `group:"prometheus_collectors"`
-	//NoMatchTotal prometheus.Collector `group:"prometheus_collectors"`
-	//ErrorTotal   prometheus.Collector `group:"prometheus_collectors"`
 }
 
 func New(p Params) Result {
-	//collector := newPrometheusCollector()
 	return Result{
 		Classifier: lazy.New(func() (Classifier, error) {
-			//s, err := p.Search.Get()
-			//if err != nil {
-			//	return nil, err
-			//}
-			//d, err := p.Dao.Get()
-			//if err != nil {
-			//	return nil, err
-			//}
-			subClassifiers := make([]SubClassifier, 0, len(p.SubResolvers)+1)
-			for _, subResolver := range p.SubResolvers {
+			subClassifiers := make([]SubClassifier, 0, len(p.SubClassifiers)+1)
+			for _, subResolver := range p.SubClassifiers {
 				r, err := subResolver.Get()
 				if err != nil {
 					return nil, err
@@ -48,9 +35,5 @@ func New(p Params) Result {
 			})
 			return classifier{subClassifiers, p.Logger}, nil
 		}),
-		//Duration:     collector.duration,
-		//SuccessTotal: collector.successTotal,
-		//NoMatchTotal: collector.noMatchTotal,
-		//ErrorTotal:   collector.errorTotal,
 	}
 }
