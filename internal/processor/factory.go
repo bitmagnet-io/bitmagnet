@@ -7,6 +7,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+	"golang.org/x/sync/semaphore"
 )
 
 type Params struct {
@@ -38,9 +39,10 @@ func New(p Params) Result {
 				return nil, err
 			}
 			return processor{
-				classifier: c,
-				dao:        d,
-				search:     s,
+				classifier:       c,
+				dao:              d,
+				search:           s,
+				persistSemaphore: semaphore.NewWeighted(1),
 			}, nil
 		}),
 	}

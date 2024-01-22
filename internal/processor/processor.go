@@ -10,6 +10,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"golang.org/x/sync/semaphore"
 	"gorm.io/gen/field"
 )
 
@@ -18,9 +19,10 @@ type Processor interface {
 }
 
 type processor struct {
-	search     search.Search
-	classifier classifier.Classifier
-	dao        *dao.Query
+	search           search.Search
+	classifier       classifier.Classifier
+	dao              *dao.Query
+	persistSemaphore *semaphore.Weighted
 }
 
 type MissingHashesError struct {
