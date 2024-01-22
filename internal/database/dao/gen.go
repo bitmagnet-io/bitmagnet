@@ -26,6 +26,7 @@ var (
 	Torrent                  *torrent
 	TorrentContent           *torrentContent
 	TorrentFile              *torrentFile
+	TorrentHint              *torrentHint
 	TorrentSource            *torrentSource
 	TorrentTag               *torrentTag
 	TorrentsTorrentSource    *torrentsTorrentSource
@@ -42,6 +43,7 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	Torrent = &Q.Torrent
 	TorrentContent = &Q.TorrentContent
 	TorrentFile = &Q.TorrentFile
+	TorrentHint = &Q.TorrentHint
 	TorrentSource = &Q.TorrentSource
 	TorrentTag = &Q.TorrentTag
 	TorrentsTorrentSource = &Q.TorrentsTorrentSource
@@ -59,6 +61,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		Torrent:                  newTorrent(db, opts...),
 		TorrentContent:           newTorrentContent(db, opts...),
 		TorrentFile:              newTorrentFile(db, opts...),
+		TorrentHint:              newTorrentHint(db, opts...),
 		TorrentSource:            newTorrentSource(db, opts...),
 		TorrentTag:               newTorrentTag(db, opts...),
 		TorrentsTorrentSource:    newTorrentsTorrentSource(db, opts...),
@@ -77,6 +80,7 @@ type Query struct {
 	Torrent                  torrent
 	TorrentContent           torrentContent
 	TorrentFile              torrentFile
+	TorrentHint              torrentHint
 	TorrentSource            torrentSource
 	TorrentTag               torrentTag
 	TorrentsTorrentSource    torrentsTorrentSource
@@ -96,6 +100,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		Torrent:                  q.Torrent.clone(db),
 		TorrentContent:           q.TorrentContent.clone(db),
 		TorrentFile:              q.TorrentFile.clone(db),
+		TorrentHint:              q.TorrentHint.clone(db),
 		TorrentSource:            q.TorrentSource.clone(db),
 		TorrentTag:               q.TorrentTag.clone(db),
 		TorrentsTorrentSource:    q.TorrentsTorrentSource.clone(db),
@@ -122,6 +127,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		Torrent:                  q.Torrent.replaceDB(db),
 		TorrentContent:           q.TorrentContent.replaceDB(db),
 		TorrentFile:              q.TorrentFile.replaceDB(db),
+		TorrentHint:              q.TorrentHint.replaceDB(db),
 		TorrentSource:            q.TorrentSource.replaceDB(db),
 		TorrentTag:               q.TorrentTag.replaceDB(db),
 		TorrentsTorrentSource:    q.TorrentsTorrentSource.replaceDB(db),
@@ -138,6 +144,7 @@ type queryCtx struct {
 	Torrent                  ITorrentDo
 	TorrentContent           ITorrentContentDo
 	TorrentFile              ITorrentFileDo
+	TorrentHint              ITorrentHintDo
 	TorrentSource            ITorrentSourceDo
 	TorrentTag               ITorrentTagDo
 	TorrentsTorrentSource    ITorrentsTorrentSourceDo
@@ -154,6 +161,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		Torrent:                  q.Torrent.WithContext(ctx),
 		TorrentContent:           q.TorrentContent.WithContext(ctx),
 		TorrentFile:              q.TorrentFile.WithContext(ctx),
+		TorrentHint:              q.TorrentHint.WithContext(ctx),
 		TorrentSource:            q.TorrentSource.WithContext(ctx),
 		TorrentTag:               q.TorrentTag.WithContext(ctx),
 		TorrentsTorrentSource:    q.TorrentsTorrentSource.WithContext(ctx),

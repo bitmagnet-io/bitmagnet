@@ -1,13 +1,30 @@
 package model
 
 import (
-	"errors"
 	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/fts"
 	"strings"
 )
 
-func (tc TorrentContent) EntityReference() Maybe[ContentRef] {
+func (tc TorrentContent) Title() string {
+	if !tc.ContentID.Valid || tc.Content.Title == "" {
+		return tc.Torrent.Name
+	}
+	var titleParts []string
+	titleParts = append(titleParts, tc.Content.Title)
+	if tc.Content.OriginalTitle.Valid && tc.Content.Title != tc.Content.OriginalTitle.String {
+		titleParts = append(titleParts, fmt.Sprintf("/ %s", tc.Content.OriginalTitle.String))
+	}
+	if !tc.Content.ReleaseYear.IsNil() {
+		titleParts = append(titleParts, fmt.Sprintf("(%d)", tc.Content.ReleaseYear))
+	}
+	if len(tc.Episodes) > 0 {
+		titleParts = append(titleParts, tc.Episodes.String())
+	}
+	return strings.Join(titleParts, " ")
+}
+
+func (tc TorrentContent) ContentRef() Maybe[ContentRef] {
 	if tc.ContentID.Valid {
 		return MaybeValid(ContentRef{
 			Type:   tc.ContentType.ContentType,
@@ -16,50 +33,6 @@ func (tc TorrentContent) EntityReference() Maybe[ContentRef] {
 		})
 	}
 	return Maybe[ContentRef]{}
-}
-
-func (tc *TorrentContent) SetContent(c Content) error {
-	tc.Content = c
-	tc.ContentType = NewNullContentType(c.Type)
-	tc.ContentSource = NewNullString(c.Source)
-	tc.ContentID = NewNullString(c.ID)
-	return tc.UpdateFields()
-}
-
-func (tc *TorrentContent) UpdateFields() error {
-	// check we've got access to all the associated records needed:
-	if tc.ContentID.Valid && tc.EntityReference().Val != tc.Content.Ref() {
-		return errors.New("invalid Content record")
-	}
-	if tc.Torrent.InfoHash != tc.InfoHash {
-		return errors.New("missing Torrent record")
-	}
-	var titleParts []string
-	if !tc.ContentID.Valid {
-		titleParts = append(titleParts, tc.Torrent.Name)
-	} else {
-		titleParts = append(titleParts, tc.Content.Title)
-		tc.ContentType = NewNullContentType(tc.Content.Type)
-		tc.ContentSource = NewNullString(tc.Content.Source)
-		tc.ContentID = NewNullString(tc.Content.ID)
-		if tc.Content.OriginalTitle.Valid && tc.Content.Title != tc.Content.OriginalTitle.String {
-			titleParts = append(titleParts, fmt.Sprintf("/ %s", tc.Content.OriginalTitle.String))
-		}
-		tc.ReleaseDate = tc.Content.ReleaseDate
-		tc.ReleaseYear = tc.Content.ReleaseYear
-	}
-	if !tc.ReleaseYear.IsNil() {
-		titleParts = append(titleParts, fmt.Sprintf("(%d)", tc.ReleaseYear))
-	}
-	if len(tc.Languages) == 0 && tc.Content.OriginalLanguage.Valid {
-		tc.Languages = Languages{tc.Content.OriginalLanguage.Language: struct{}{}}
-	}
-	if len(tc.Episodes) > 0 {
-		titleParts = append(titleParts, tc.Episodes.String())
-	}
-	tc.Title = strings.Join(titleParts, " ")
-	tc.UpdateTsv()
-	return nil
 }
 
 func (tc *TorrentContent) UpdateTsv() {

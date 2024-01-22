@@ -95,7 +95,7 @@ type Languages map[Language]struct{}
 
 func (l *Languages) Scan(value interface{}) error {
 	if value == nil {
-		*l = make(Languages)
+		*l = nil
 		return nil
 	}
 	switch v := value.(type) {
@@ -108,18 +108,23 @@ func (l *Languages) Scan(value interface{}) error {
 				return errors.New("invalid language")
 			}
 		}
-		*l = languages
+		if len(languages) == 0 {
+			*l = nil
+		} else {
+			*l = languages
+		}
 		return nil
 	}
 	return errors.New("invalid type for Languages")
 }
 
 func (l Languages) Value() (driver.Value, error) {
+	if len(l) == 0 {
+		return nil, nil
+	}
 	values := make([]string, 0, len(l))
-	if l != nil {
-		for _, lang := range l.Slice() {
-			values = append(values, lang.String())
-		}
+	for _, lang := range l.Slice() {
+		values = append(values, lang.String())
 	}
 	return values, nil
 }
@@ -137,7 +142,11 @@ func (l *Languages) UnmarshalJSON(data []byte) error {
 			return errors.New("invalid language")
 		}
 	}
-	*l = languages
+	if len(languages) == 0 {
+		*l = nil
+	} else {
+		*l = languages
+	}
 	return nil
 }
 
@@ -174,7 +183,10 @@ func InferLanguages(input string) Languages {
 		}
 		input = input[match[1]:]
 	}
-	return languages
+	if len(languages) > 0 {
+		return languages
+	}
+	return nil
 }
 
 func (l *Language) Scan(value interface{}) error {

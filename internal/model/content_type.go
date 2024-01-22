@@ -8,6 +8,10 @@ func (c ContentType) Label() string {
 	return c.String()
 }
 
+func (c ContentType) IsNil() bool {
+	return c == ""
+}
+
 func (c ContentType) IsVideo() bool {
-	return c == ContentTypeMovie || c == ContentTypeTvShow
+	return c == ContentTypeMovie || c == ContentTypeTvShow || c == ContentTypeXxx
 }

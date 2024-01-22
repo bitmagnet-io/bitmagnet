@@ -69,6 +69,7 @@ tasks:
         --table=torrent_sources \
         --table=torrents \
         --table=torrent_files \
+        --table=torrent_hints \
         --table=torrent_contents \
         --table=torrents_torrent_sources \
         bitmagnet \

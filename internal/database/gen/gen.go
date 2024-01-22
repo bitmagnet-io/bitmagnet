@@ -9,13 +9,6 @@ import (
 	"runtime"
 )
 
-func readAndCreateField(columnName string) gen.ModelOpt {
-	return gen.FieldGORMTag(columnName, func(tag field.GormTag) field.GormTag {
-		tag.Set("<-", "create")
-		return tag
-	})
-}
-
 func BuildGenerator(db *gorm.DB) *gen.Generator {
 	_, filename, _, _ := runtime.Caller(0)
 	internal := path.Dir(path.Dir(path.Dir(filename)))
@@ -105,6 +98,19 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 	)
 	torrents := g.GenerateModel(
 		"torrents",
+		gen.FieldRelate(
+			field.HasOne,
+			"Hint",
+			g.GenerateModel(
+				"torrent_hints",
+				infoHashType,
+			),
+			&field.RelateConfig{
+				GORMTag: field.GormTag{
+					"foreignKey": []string{"InfoHash"},
+				},
+			},
+		),
 		gen.FieldRelate(
 			field.HasMany,
 			"Contents",
@@ -244,6 +250,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		readAndCreateField("source"),
 		readAndCreateField("id"),
 		gen.FieldType("type", "ContentType"),
+		gen.FieldGenType("type", "String"),
 		gen.FieldType("release_date", "Date"),
 		gen.FieldGenType("release_date", "Time"),
 		gen.FieldType("release_year", "Year"),
@@ -278,48 +285,15 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		),
 		gen.FieldType("content_type", "ContentType"),
 	)
-	torrentContent := g.GenerateModel(
-		"torrent_contents",
-		gen.FieldRelate(
-			field.BelongsTo,
-			"Torrent",
-			torrents,
-			&field.RelateConfig{
-				GORMTag: field.GormTag{
-					"foreignKey": {"InfoHash"},
-					"references": {"InfoHash"},
-				},
-			},
-		),
-		gen.FieldRelate(
-			field.BelongsTo,
-			"Content",
-			content,
-			&field.RelateConfig{
-				GORMTag: field.GormTag{
-					"foreignKey": []string{"ContentType,ContentSource,ContentID"},
-					"references": []string{"Type,Source,ID"},
-				},
-			},
-		),
-		gen.FieldGORMTag("id", func(tag field.GormTag) field.GormTag {
-			tag.Set("<-", "false")
-			return tag
-		}),
+	torrentContentBaseOptions := []gen.ModelOpt{
 		infoHashType,
 		infoHashReadOnly,
-		gen.FieldType("content_type", "NullContentType"),
+		gen.FieldGenType("content_type", "String"),
 		gen.FieldType("content_source", "NullString"),
+		gen.FieldGenType("content_source", "String"),
 		gen.FieldType("content_id", "NullString"),
 		gen.FieldGenType("content_id", "String"),
-		gen.FieldType("release_date", "Date"),
-		gen.FieldGenType("release_date", "Time"),
 		gen.FieldType("release_year", "Year"),
-		gen.FieldType("external_ids", "maps.StringMap[string]"),
-		gen.FieldGORMTag("external_ids", func(tag field.GormTag) field.GormTag {
-			tag.Set("serializer", "json")
-			return tag
-		}),
 		gen.FieldType("languages", "Languages"),
 		gen.FieldGORMTag("languages", func(tag field.GormTag) field.GormTag {
 			tag.Set("serializer", "json")
@@ -337,6 +311,52 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		gen.FieldType("video_modifier", "NullVideoModifier"),
 		gen.FieldType("tsv", "fts.Tsvector"),
 		createdAtReadOnly,
+	}
+	torrentContent := g.GenerateModel(
+		"torrent_contents",
+		append(
+			[]gen.ModelOpt{
+				gen.FieldGORMTag("id", func(tag field.GormTag) field.GormTag {
+					tag.Set("<-", "false")
+					return tag
+				}),
+				gen.FieldRelate(
+					field.BelongsTo,
+					"Torrent",
+					torrents,
+					&field.RelateConfig{
+						GORMTag: field.GormTag{
+							"foreignKey": {"InfoHash"},
+							"references": {"InfoHash"},
+						},
+					},
+				),
+				gen.FieldRelate(
+					field.BelongsTo,
+					"Content",
+					content,
+					&field.RelateConfig{
+						GORMTag: field.GormTag{
+							"foreignKey": []string{"ContentType,ContentSource,ContentID"},
+							"references": []string{"Type,Source,ID"},
+						},
+					},
+				),
+				gen.FieldType("content_type", "NullContentType"),
+				gen.FieldType("release_date", "Date"),
+				gen.FieldGenType("release_date", "Time"),
+			},
+			torrentContentBaseOptions...,
+		)...,
+	)
+	torrentHints := g.GenerateModel(
+		"torrent_hints",
+		append(
+			[]gen.ModelOpt{
+				gen.FieldType("content_type", "ContentType"),
+			},
+			torrentContentBaseOptions...,
+		)...,
 	)
 	bloomFilters := g.GenerateModel(
 		"bloom_filters",
@@ -353,6 +373,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		torrents,
 		metadataSources,
 		torrentContent,
+		torrentHints,
 		contentCollections,
 		content,
 		contentCollectionContent,
@@ -361,4 +382,11 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 	)
 
 	return g
+}
+
+func readAndCreateField(columnName string) gen.ModelOpt {
+	return gen.FieldGORMTag(columnName, func(tag field.GormTag) field.GormTag {
+		tag.Set("<-", "create")
+		return tag
+	})
 }

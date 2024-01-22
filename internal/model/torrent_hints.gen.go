@@ -7,19 +7,19 @@ package model
 import (
 	"time"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/database/fts"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
-const TableNameTorrentContent = "torrent_contents"
+const TableNameTorrentHint = "torrent_hints"
 
-// TorrentContent mapped from table <torrent_contents>
-type TorrentContent struct {
-	ID              string              `gorm:"column:id;primaryKey;<-:false" json:"id"`
-	InfoHash        protocol.ID         `gorm:"column:info_hash;not null;<-:create" json:"infoHash"`
-	ContentType     NullContentType     `gorm:"column:content_type" json:"contentType"`
+// TorrentHint mapped from table <torrent_hints>
+type TorrentHint struct {
+	InfoHash        protocol.ID         `gorm:"column:info_hash;primaryKey;<-:create" json:"infoHash"`
+	ContentType     ContentType         `gorm:"column:content_type;not null" json:"contentType"`
 	ContentSource   NullString          `gorm:"column:content_source" json:"contentSource"`
 	ContentID       NullString          `gorm:"column:content_id" json:"contentId"`
+	Title           NullString          `gorm:"column:title" json:"title"`
+	ReleaseYear     Year                `gorm:"column:release_year" json:"releaseYear"`
 	Languages       Languages           `gorm:"column:languages;serializer:json" json:"languages"`
 	Episodes        Episodes            `gorm:"column:episodes;serializer:json" json:"episodes"`
 	VideoResolution NullVideoResolution `gorm:"column:video_resolution" json:"videoResolution"`
@@ -30,12 +30,9 @@ type TorrentContent struct {
 	ReleaseGroup    NullString          `gorm:"column:release_group" json:"releaseGroup"`
 	CreatedAt       time.Time           `gorm:"column:created_at;not null;<-:create" json:"createdAt"`
 	UpdatedAt       time.Time           `gorm:"column:updated_at;not null" json:"updatedAt"`
-	Tsv             fts.Tsvector        `gorm:"column:tsv" json:"tsv"`
-	Torrent         Torrent             `gorm:"foreignKey:InfoHash;references:InfoHash" json:"torrent"`
-	Content         Content             `gorm:"foreignKey:ContentType,ContentSource,ContentID;references:Type,Source,ID" json:"content"`
 }
 
-// TableName TorrentContent's table name
-func (*TorrentContent) TableName() string {
-	return TableNameTorrentContent
+// TableName TorrentHint's table name
+func (*TorrentHint) TableName() string {
+	return TableNameTorrentHint
 }

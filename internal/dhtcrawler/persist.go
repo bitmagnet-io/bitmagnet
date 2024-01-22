@@ -2,8 +2,8 @@ package dhtcrawler
 
 import (
 	"context"
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier/asynq/message"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
 	"github.com/prometheus/client_golang/prometheus"
@@ -50,7 +50,7 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 					if len(hashesToClassify) == 0 {
 						return
 					}
-					if _, classifyErr := c.classifierPublisher.Publish(ctx, message.ClassifyTorrentPayload{
+					if _, classifyErr := c.classifierPublisher.Publish(ctx, processor.MessageParams{
 						InfoHashes: hashesToClassify,
 					}); classifyErr != nil {
 						c.logger.Errorf("error publishing classify message: %s", classifyErr.Error())

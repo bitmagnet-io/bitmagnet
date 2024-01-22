@@ -3,10 +3,9 @@ package importer
 import (
 	"context"
 	"errors"
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier/asynq/message"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
-	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/publisher"
 	"gorm.io/gorm/clause"
@@ -25,10 +24,10 @@ type Item struct {
 	Size            uint64
 	Private         bool
 	ContentType     model.NullContentType
-	Title           model.NullString
+	ContentSource   model.NullString
+	ContentID       model.NullString
 	ReleaseDate     model.Date
 	ReleaseYear     model.Year
-	ExternalIds     maps.StringMap[string]
 	Episodes        model.Episodes
 	VideoResolution model.NullVideoResolution
 	VideoSource     model.NullVideoSource
@@ -44,10 +43,10 @@ type Info struct {
 }
 
 type importer struct {
-	dao               *dao.Query
-	classifyPublisher publisher.Publisher[message.ClassifyTorrentPayload]
-	bufferSize        uint
-	maxWaitTime       time.Duration
+	dao                *dao.Query
+	processorPublisher publisher.Publisher[processor.MessageParams]
+	bufferSize         uint
+	maxWaitTime        time.Duration
 }
 
 var (
@@ -208,7 +207,7 @@ func (i *activeImport) persistItems(items ...Item) error {
 	}).CreateInBatches(torrents, 100); createTorrentsErr != nil {
 		return createTorrentsErr
 	}
-	_, publishErr := i.classifyPublisher.Publish(i.ctx, message.ClassifyTorrentPayload{
+	_, publishErr := i.processorPublisher.Publish(i.ctx, processor.MessageParams{
 		InfoHashes: infoHashes,
 	})
 	if publishErr != nil {
@@ -219,11 +218,7 @@ func (i *activeImport) persistItems(items ...Item) error {
 }
 
 func createTorrentModel(info Info, item Item) model.Torrent {
-	title := item.Name
-	if item.Title.Valid {
-		title = item.Title.String
-	}
-	return model.Torrent{
+	t := model.Torrent{
 		InfoHash:    item.InfoHash,
 		Name:        item.Name,
 		Size:        item.Size,
@@ -236,23 +231,24 @@ func createTorrentModel(info Info, item Item) model.Torrent {
 				PublishedAt: item.PublishedAt,
 			},
 		},
-		Contents: []model.TorrentContent{
-			{
-				ContentType:     item.ContentType,
-				Title:           title,
-				ReleaseDate:     item.ReleaseDate,
-				ReleaseYear:     item.ReleaseYear,
-				ExternalIds:     item.ExternalIds,
-				Episodes:        item.Episodes,
-				VideoResolution: item.VideoResolution,
-				VideoSource:     item.VideoSource,
-				VideoCodec:      item.VideoCodec,
-				Video3d:         item.Video3d,
-				VideoModifier:   item.VideoModifier,
-				ReleaseGroup:    item.ReleaseGroup,
-			},
-		},
 	}
+	if item.ContentType.Valid {
+		t.Hint = model.TorrentHint{
+			ContentType:     item.ContentType.ContentType,
+			ContentSource:   item.ContentSource,
+			ContentID:       item.ContentID,
+			Title:           model.NewNullString(item.Name),
+			ReleaseYear:     item.ReleaseYear,
+			Episodes:        item.Episodes,
+			VideoResolution: item.VideoResolution,
+			VideoSource:     item.VideoSource,
+			VideoCodec:      item.VideoCodec,
+			Video3d:         item.Video3d,
+			VideoModifier:   item.VideoModifier,
+			ReleaseGroup:    item.ReleaseGroup,
+		}
+	}
+	return t
 }
 
 func (i *activeImport) Import(items ...Item) error {

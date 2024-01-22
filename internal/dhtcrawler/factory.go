@@ -5,10 +5,10 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/worker"
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier/asynq/message"
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/client"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
@@ -32,7 +32,7 @@ type Params struct {
 	Search              lazy.Lazy[search.Search]
 	Dao                 lazy.Lazy[*dao.Query]
 	BlockingManager     lazy.Lazy[blocking.Manager]
-	ClassifierPublisher lazy.Lazy[publisher.Publisher[message.ClassifyTorrentPayload]]
+	ClassifierPublisher lazy.Lazy[publisher.Publisher[processor.MessageParams]]
 	DiscoveredNodes     concurrency.BatchingChannel[ktable.Node] `name:"dht_discovered_nodes"`
 	Logger              *zap.SugaredLogger
 }

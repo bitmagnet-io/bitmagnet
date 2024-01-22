@@ -3,15 +3,14 @@ package consumer
 import (
 	"context"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier/asynq/message"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/consumer"
 	"go.uber.org/fx"
 )
 
 type Params struct {
 	fx.In
-	Classifier lazy.Lazy[classifier.Classifier]
+	Processor lazy.Lazy[processor.Processor]
 }
 
 type Result struct {
@@ -22,14 +21,14 @@ type Result struct {
 func New(p Params) Result {
 	return Result{
 		Consumer: lazy.New(func() (consumer.Consumer, error) {
-			cl, err := p.Classifier.Get()
+			pr, err := p.Processor.Get()
 			if err != nil {
 				return nil, err
 			}
-			return consumer.New[message.ClassifyTorrentPayload](
-				message.ClassifyTorrentTypename,
+			return consumer.New[processor.MessageParams](
+				processor.MessageName,
 				cns{
-					cl,
+					pr,
 				},
 			), nil
 		}),
@@ -37,9 +36,9 @@ func New(p Params) Result {
 }
 
 type cns struct {
-	c classifier.Classifier
+	p processor.Processor
 }
 
-func (c cns) Handle(ctx context.Context, msg message.ClassifyTorrentPayload) error {
-	return c.c.Classify(ctx, msg.InfoHashes...)
+func (c cns) Handle(ctx context.Context, params processor.MessageParams) error {
+	return c.p.Process(ctx, params)
 }

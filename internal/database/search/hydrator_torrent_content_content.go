@@ -15,7 +15,7 @@ func HydrateTorrentContentContent() query.Option {
 type torrentContentContentHydrator struct{}
 
 func (h torrentContentContentHydrator) RootToSubID(root TorrentContentResultItem) (model.ContentRef, bool) {
-	ref := root.EntityReference()
+	ref := root.ContentRef()
 	return ref.Val, ref.Valid
 }
 

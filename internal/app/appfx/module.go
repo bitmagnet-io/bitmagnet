@@ -1,8 +1,7 @@
 package appfx
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/app/cmd/reclassifycmd"
-	"github.com/bitmagnet-io/bitmagnet/internal/app/cmd/reindexcmd"
+	"github.com/bitmagnet-io/bitmagnet/internal/app/cmd/reprocesscmd"
 	"github.com/bitmagnet-io/bitmagnet/internal/app/cmd/torrentcmd"
 	"github.com/bitmagnet-io/bitmagnet/internal/blocking/blockingfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/app/boilerplateappfx"
@@ -14,6 +13,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/dhtcrawler/dhtcrawlerfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/importer/importerfx"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor/processorfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/dhtfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainfofx"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/queuefx"
@@ -38,6 +38,7 @@ func New() fx.Option {
 		httpserverfx.New(),
 		importerfx.New(),
 		metainfofx.New(),
+		processorfx.New(),
 		queuefx.New(),
 		redisfx.New(),
 		telemetryfx.New(),
@@ -45,8 +46,7 @@ func New() fx.Option {
 		versionfx.New(),
 		// cli commands:
 		fx.Provide(
-			reclassifycmd.New,
-			reindexcmd.New,
+			reprocesscmd.New,
 			torrentcmd.New,
 		),
 		fx.Provide(webui.New),

@@ -37,6 +37,12 @@ func newTorrent(db *gorm.DB, opts ...gen.DOOption) torrent {
 	_torrent.UpdatedAt = field.NewTime(tableName, "updated_at")
 	_torrent.FilesStatus = field.NewField(tableName, "files_status")
 	_torrent.Extension = field.NewString(tableName, "extension")
+	_torrent.Hint = torrentHasOneHint{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Hint", "model.TorrentHint"),
+	}
+
 	_torrent.Contents = torrentHasManyContents{
 		db: db.Session(&gorm.Session{}),
 
@@ -85,7 +91,9 @@ type torrent struct {
 	UpdatedAt   field.Time
 	FilesStatus field.Field
 	Extension   field.String
-	Contents    torrentHasManyContents
+	Hint        torrentHasOneHint
+
+	Contents torrentHasManyContents
 
 	Sources torrentHasManySources
 
@@ -134,7 +142,7 @@ func (t *torrent) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (t *torrent) fillFieldMap() {
-	t.fieldMap = make(map[string]field.Expr, 14)
+	t.fieldMap = make(map[string]field.Expr, 15)
 	t.fieldMap["info_hash"] = t.InfoHash
 	t.fieldMap["name"] = t.Name
 	t.fieldMap["size"] = t.Size
@@ -156,6 +164,77 @@ func (t torrent) clone(db *gorm.DB) torrent {
 func (t torrent) replaceDB(db *gorm.DB) torrent {
 	t.torrentDo.ReplaceDB(db)
 	return t
+}
+
+type torrentHasOneHint struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a torrentHasOneHint) Where(conds ...field.Expr) *torrentHasOneHint {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a torrentHasOneHint) WithContext(ctx context.Context) *torrentHasOneHint {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a torrentHasOneHint) Session(session *gorm.Session) *torrentHasOneHint {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a torrentHasOneHint) Model(m *model.Torrent) *torrentHasOneHintTx {
+	return &torrentHasOneHintTx{a.db.Model(m).Association(a.Name())}
+}
+
+type torrentHasOneHintTx struct{ tx *gorm.Association }
+
+func (a torrentHasOneHintTx) Find() (result *model.TorrentHint, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a torrentHasOneHintTx) Append(values ...*model.TorrentHint) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a torrentHasOneHintTx) Replace(values ...*model.TorrentHint) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a torrentHasOneHintTx) Delete(values ...*model.TorrentHint) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a torrentHasOneHintTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a torrentHasOneHintTx) Count() int64 {
+	return a.tx.Count()
 }
 
 type torrentHasManyContents struct {

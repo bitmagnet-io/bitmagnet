@@ -8,14 +8,16 @@ import (
 )
 
 func ContentTypeCriteria(types ...model.ContentType) query.Criteria {
+	strTypes := make([]string, 0, len(types))
+	for _, contentType := range types {
+		strTypes = append(strTypes, contentType.String())
+	}
 	return query.DaoCriteria{
 		Conditions: func(ctx query.DbContext) ([]field.Expr, error) {
 			q := ctx.Query()
-			conditions := make([]field.Expr, 0, len(types))
-			for _, contentType := range types {
-				conditions = append(conditions, q.Content.Type.Eq(contentType))
-			}
-			return conditions, nil
+			return []field.Expr{
+				q.Content.Type.In(strTypes...),
+			}, nil
 		},
 		Joins: maps.NewInsertMap(
 			maps.MapEntry[string, struct{}]{Key: model.TableNameContent},

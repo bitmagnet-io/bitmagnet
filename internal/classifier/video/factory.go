@@ -14,18 +14,18 @@ type Params struct {
 
 type Result struct {
 	fx.Out
-	Resolver lazy.Lazy[classifier.SubResolver] `group:"content_resolvers"`
+	Resolver lazy.Lazy[classifier.SubClassifier] `group:"content_resolvers"`
 }
 
 func New(p Params) Result {
 	return Result{
-		Resolver: lazy.New(func() (classifier.SubResolver, error) {
+		Resolver: lazy.New(func() (classifier.SubClassifier, error) {
 			tmdbClient, err := p.TmdbClient.Get()
 			if err != nil {
 				return nil, err
 			}
-			return videoResolver{
-				config:     classifier.SubResolverConfig{Key: "video", Priority: 1},
+			return videoClassifier{
+				//config:     classifier.SubClassifierConfig{Key: "video", Priority: 1},
 				tmdbClient: tmdbClient,
 			}, nil
 		}),

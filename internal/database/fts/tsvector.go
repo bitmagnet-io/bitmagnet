@@ -186,6 +186,9 @@ func (v Tsvector) AddText(text string, weight TsvectorWeight) {
 			}
 		}
 	}
+	if nextPos > 1 {
+		nextPos++
+	}
 	for _, lexeme := range TokenizeFlat(text) {
 		if _, ok := v[lexeme]; !ok {
 			v[lexeme] = make(map[int]TsvectorWeight)
