@@ -26,6 +26,7 @@ type Item struct {
 	ContentType     model.NullContentType
 	ContentSource   model.NullString
 	ContentID       model.NullString
+	Title           model.NullString
 	ReleaseDate     model.Date
 	ReleaseYear     model.Year
 	Episodes        model.Episodes
@@ -237,7 +238,7 @@ func createTorrentModel(info Info, item Item) model.Torrent {
 			ContentType:     item.ContentType.ContentType,
 			ContentSource:   item.ContentSource,
 			ContentID:       item.ContentID,
-			Title:           model.NewNullString(item.Name),
+			Title:           item.Title,
 			ReleaseYear:     item.ReleaseYear,
 			Episodes:        item.Episodes,
 			VideoResolution: item.VideoResolution,

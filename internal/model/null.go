@@ -70,6 +70,24 @@ func (n NullString) Value() (driver.Value, error) {
 	return n.String, nil
 }
 
+func (n NullString) MarshalJSON() ([]byte, error) {
+	const nullStr = "null"
+	if n.Valid {
+		return json.Marshal(n.String)
+	}
+	return []byte(nullStr), nil
+}
+
+func (n *NullString) UnmarshalJSON(b []byte) error {
+	var x interface{}
+	err := json.Unmarshal(b, &x)
+	if err != nil {
+		return err
+	}
+	err = n.Scan(x)
+	return err
+}
+
 func (n *NullString) UnmarshalGQL(v interface{}) error {
 	if v == nil {
 		n.Valid = false
