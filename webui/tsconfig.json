@@ -20,12 +20,12 @@
     "useDefineForClassFields": false,
     "lib": ["ES2022", "dom", "esnext.asynciterable"],
     "allowSyntheticDefaultImports": true,
-    "strictPropertyInitialization": false
+    "strictPropertyInitialization": false,
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
-    "strictTemplates": true
-  }
+    "strictTemplates": true,
+  },
 }

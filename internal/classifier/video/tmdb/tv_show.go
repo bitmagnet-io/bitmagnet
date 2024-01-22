@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
@@ -26,7 +27,7 @@ type SearchTvShowParams struct {
 func (c *client) SearchTvShow(ctx context.Context, p SearchTvShowParams) (tvShow model.Content, err error) {
 	if localResult, localErr := c.searchTvShowLocal(ctx, p); localErr == nil {
 		return localResult, nil
-	} else if !errors.Is(localErr, ErrNotFound) {
+	} else if !errors.Is(localErr, classifier.ErrNoMatch) {
 		err = localErr
 		return
 	}
@@ -62,7 +63,7 @@ func (c *client) searchTvShowLocal(ctx context.Context, p SearchTvShowParams) (t
 			return item.Content, nil
 		}
 	}
-	err = ErrNotFound
+	err = classifier.ErrNoMatch
 	return
 }
 
@@ -87,16 +88,21 @@ func (c *client) searchTvShowTmdb(ctx context.Context, p SearchTvShowParams) (tv
 			return c.GetTvShowByExternalId(ctx, SourceTmdb, strconv.Itoa(int(item.ID)))
 		}
 	}
-	err = ErrNotFound
+	err = classifier.ErrNoMatch
 	return
 }
 
 func (c *client) GetTvShowByExternalId(ctx context.Context, source, id string) (tvShow model.Content, err error) {
-	searchResult, searchErr := c.s.Content(ctx, query.Where(search.ContentIdentifierCriteria(model.ContentRef{
-		Type:   model.ContentTypeTvShow,
-		Source: source,
-		ID:     id,
-	})), query.Limit(1))
+	searchResult, searchErr := c.s.Content(ctx,
+		query.Where(search.ContentIdentifierCriteria(model.ContentRef{
+			Type:   model.ContentTypeTvShow,
+			Source: source,
+			ID:     id,
+		})),
+		search.ContentDefaultPreload(),
+		search.ContentDefaultHydrate(),
+		query.Limit(1),
+	)
 	if searchErr != nil {
 		return model.Content{}, searchErr
 	}
@@ -124,7 +130,7 @@ func (c *client) GetTvShowByExternalId(ctx context.Context, source, id string) (
 		return
 	}
 	if len(byIdResult.TvResults) == 0 {
-		err = ErrNotFound
+		err = classifier.ErrNoMatch
 		return
 	}
 	return c.getTvShowByTmdbId(ctx, int(byIdResult.TvResults[0].ID))

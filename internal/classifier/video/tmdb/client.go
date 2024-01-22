@@ -19,6 +19,5 @@ type client struct {
 const SourceTmdb = "tmdb"
 
 var (
-	ErrNotFound      = errors.New("not found")
 	ErrUnknownSource = errors.New("unknown source")
 )

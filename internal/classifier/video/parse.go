@@ -10,12 +10,6 @@ import (
 	"strings"
 )
 
-type CoreInfo struct {
-	Title    string
-	Year     model.Year
-	Episodes model.Episodes
-}
-
 var titleTokens = []dialect.Token{
 	rex.Group.Define(
 		rex.Group.Composite(
@@ -153,39 +147,34 @@ func cleanTitle(title string) string {
 	return title
 }
 
-func parseTitleYear(input string) (CoreInfo, string, error) {
+func parseTitleYear(input string) (string, model.Year, string, error) {
 	if match := titleYearRegex.FindStringSubmatch(input); match != nil {
 		yearMatch, _ := strconv.ParseUint(match[2], 10, 16)
 		title := cleanTitle(match[1])
 		if title != "" {
-			return CoreInfo{
-				Title: title,
-				Year:  model.Year(yearMatch),
-			}, input[len(match[0]):], nil
+			return title, model.Year(yearMatch), input[len(match[0]):], nil
 		}
 	}
-	return CoreInfo{}, "", classifier.ErrNoMatch
+	return "", 0, "", classifier.ErrNoMatch
 }
 
-func parseTitle(input string) (CoreInfo, string, error) {
+func parseTitle(input string) (string, string, error) {
 	if match := titleRegex.FindStringSubmatch(input); match != nil {
 		title := cleanTitle(match[1])
 		if title != "" {
-			return CoreInfo{
-				Title: title,
-			}, input[len(match[0]):], nil
+			return title, input[len(match[0]):], nil
 		}
 	}
-	return CoreInfo{}, "", classifier.ErrNoMatch
+	return "", "", classifier.ErrNoMatch
 }
 
-func parseTitleYearEpisodes(input string) (CoreInfo, string, error) {
+func parseTitleYearEpisodes(input string) (string, model.Year, model.Episodes, string, error) {
 	if match := titleEpisodesRegex.FindStringSubmatch(input); match != nil {
 		title := match[1]
 		year := model.Year(0)
-		if i, _, err := parseTitleYear(title); err == nil {
-			title = i.Title
-			year = i.Year
+		if t, y, _, err := parseTitleYear(title); err == nil {
+			title = t
+			year = y
 		} else {
 			title = cleanTitle(title)
 		}
@@ -231,26 +220,51 @@ func parseTitleYearEpisodes(input string) (CoreInfo, string, error) {
 				episodes = episodes.AddEpisode(int(seasonStart), int(episodeStart))
 			}
 		}
-		return CoreInfo{
-			Title:    title,
-			Year:     year,
-			Episodes: episodes,
-		}, input[len(match[0]):], nil
+		return title, year, episodes, input[len(match[0]):], nil
 	}
-	return CoreInfo{}, "", classifier.ErrNoMatch
+	return "", 0, nil, "", classifier.ErrNoMatch
 }
 
-func ParseVideoCoreInfo(contentType model.NullContentType, input string) (CoreInfo, string, error) {
+func ParseTitleYearEpisodes(contentType model.NullContentType, input string) (string, model.Year, model.Episodes, string, error) {
 	if !contentType.Valid || contentType.ContentType == model.ContentTypeTvShow {
-		if info, rest, err := parseTitleYearEpisodes(input); err == nil {
-			return info, rest, nil
+		if title, year, episodes, rest, err := parseTitleYearEpisodes(input); err == nil {
+			return title, year, episodes, rest, nil
 		}
 	}
-	if info, rest, err := parseTitleYear(input); err == nil {
-		return info, rest, nil
+	if title, year, rest, err := parseTitleYear(input); err == nil {
+		return title, year, nil, rest, nil
 	}
-	if info, rest, err := parseTitle(input); err == nil {
-		return info, rest, nil
+	if title, rest, err := parseTitle(input); err == nil {
+		return title, 0, nil, rest, nil
 	}
-	return CoreInfo{}, "", classifier.ErrNoMatch
+	return "", 0, nil, "", classifier.ErrNoMatch
+}
+
+func ParseContent(hintCt model.NullContentType, input string) (model.ContentType, string, model.Year, classifier.ContentAttributes, error) {
+	title, year, episodes, rest, err := ParseTitleYearEpisodes(hintCt, input)
+	if err != nil {
+		return "", "", 0, classifier.ContentAttributes{}, err
+	}
+	var ct model.ContentType
+	if hintCt.Valid {
+		ct = hintCt.ContentType
+	} else if len(episodes) > 0 {
+		ct = model.ContentTypeTvShow
+	} else {
+		ct = model.ContentTypeMovie
+	}
+	if ct != model.ContentTypeTvShow {
+		episodes = nil
+	}
+	vc, rg := model.InferVideoCodecAndReleaseGroup(rest)
+	return ct, title, year, classifier.ContentAttributes{
+		Episodes:        episodes,
+		Languages:       model.InferLanguages(rest),
+		VideoResolution: model.InferVideoResolution(rest),
+		VideoSource:     model.InferVideoSource(rest),
+		VideoCodec:      vc,
+		Video3d:         model.InferVideo3d(rest),
+		VideoModifier:   model.InferVideoModifier(rest),
+		ReleaseGroup:    rg,
+	}, nil
 }

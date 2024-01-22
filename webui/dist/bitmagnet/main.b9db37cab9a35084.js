@@ -81,8 +81,6 @@
   videoModifier
   videoResolution
   videoSource
-  releaseDate
-  releaseYear
   createdAt
   updatedAt
 }

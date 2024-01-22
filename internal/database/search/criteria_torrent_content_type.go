@@ -8,14 +8,16 @@ import (
 )
 
 func TorrentContentTypeCriteria(types ...model.ContentType) query.Criteria {
+	strTypes := make([]string, 0, len(types))
+	for _, contentType := range types {
+		strTypes = append(strTypes, contentType.String())
+	}
 	return query.DaoCriteria{
 		Conditions: func(ctx query.DbContext) ([]field.Expr, error) {
 			q := ctx.Query()
-			conditions := make([]field.Expr, 0, len(types))
-			for _, contentType := range types {
-				conditions = append(conditions, q.TorrentContent.ContentType.Eq(contentType))
-			}
-			return conditions, nil
+			return []field.Expr{
+				q.TorrentContent.ContentType.In(strTypes...),
+			}, nil
 		},
 		Joins: maps.NewInsertMap(
 			maps.MapEntry[string, struct{}]{Key: model.TableNameTorrentContent},

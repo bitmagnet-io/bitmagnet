@@ -70,6 +70,24 @@ func (n NullString) Value() (driver.Value, error) {
 	return n.String, nil
 }
 
+func (n NullString) MarshalJSON() ([]byte, error) {
+	const nullStr = "null"
+	if n.Valid {
+		return json.Marshal(n.String)
+	}
+	return []byte(nullStr), nil
+}
+
+func (n *NullString) UnmarshalJSON(b []byte) error {
+	var x interface{}
+	err := json.Unmarshal(b, &x)
+	if err != nil {
+		return err
+	}
+	err = n.Scan(x)
+	return err
+}
+
 func (n *NullString) UnmarshalGQL(v interface{}) error {
 	if v == nil {
 		n.Valid = false
@@ -272,11 +290,11 @@ func NewNullUint16(n uint16) NullUint16 {
 }
 
 func (n *NullUint16) Scan(value interface{}) error {
-	v, ok := value.(uint16)
+	v, ok := value.(int64)
 	if !ok {
 		n.Valid = false
 	} else {
-		n.Uint16 = v
+		n.Uint16 = uint16(v)
 		n.Valid = true
 	}
 	return nil
@@ -286,7 +304,7 @@ func (n NullUint16) Value() (driver.Value, error) {
 	if !n.Valid {
 		return nil, nil
 	}
-	return n.Uint16, nil
+	return int64(n.Uint16), nil
 }
 
 func (n *NullUint16) UnmarshalGQL(v interface{}) error {

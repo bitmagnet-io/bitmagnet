@@ -32,16 +32,20 @@ func contentCanonicalIdentifierCriteria(contentMap contentMap) query.Criteria {
 		criteria := make([]query.Criteria, 0, len(contentMap))
 		for contentType, sourceMap := range contentMap {
 			for source, idMap := range sourceMap {
+				conds := make([]gen.Condition, 0, 3)
+				if !contentType.IsNil() {
+					conds = append(conds, q.Content.Type.Eq(contentType.String()))
+				}
 				ids := make([]string, 0, len(idMap))
 				for id := range idMap {
 					ids = append(ids, id)
 				}
+				conds = append(conds,
+					q.Content.Source.Eq(source),
+					q.Content.ID.In(ids...),
+				)
 				criteria = append(criteria, query.RawCriteria{
-					Query: q.Content.Where(
-						q.Content.Type.Eq(contentType),
-						q.Content.Source.Eq(source),
-						q.Content.ID.In(ids...),
-					).UnderlyingDB(),
+					Query: q.Content.Where(conds...).UnderlyingDB(),
 				})
 			}
 		}
@@ -56,20 +60,24 @@ func ContentIdentifierCriteria(refs ...model.ContentRef) query.Criteria {
 		criteria := []query.Criteria{contentCanonicalIdentifierCriteria(m)}
 		for contentType, sourceMap := range m {
 			for source, idMap := range sourceMap {
+				conds := make([]gen.Condition, 0, 6)
+				if !contentType.IsNil() {
+					conds = append(conds, q.ContentAttribute.ContentType.Eq(contentType))
+				}
 				ids := make([]string, 0, len(idMap))
 				for id := range idMap {
 					ids = append(ids, id)
 				}
+				conds = append(conds,
+					q.ContentAttribute.ContentType.EqCol(q.Content.Type),
+					q.ContentAttribute.ContentSource.EqCol(q.Content.Source),
+					q.ContentAttribute.ContentID.EqCol(q.Content.ID),
+					q.ContentAttribute.Source.Eq(source),
+					q.ContentAttribute.Value.In(ids...),
+				)
 				criteria = append(criteria, query.RawCriteria{
 					Query: gen.Exists(
-						q.ContentAttribute.Where(
-							q.ContentAttribute.ContentType.Eq(contentType),
-							q.ContentAttribute.ContentType.EqCol(q.Content.Type),
-							q.ContentAttribute.ContentSource.EqCol(q.Content.Source),
-							q.ContentAttribute.ContentID.EqCol(q.Content.ID),
-							q.ContentAttribute.Source.Eq(source),
-							q.ContentAttribute.Value.In(ids...),
-						),
+						q.ContentAttribute.Where(conds...),
 					),
 				})
 			}

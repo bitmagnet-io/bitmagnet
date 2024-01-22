@@ -201,10 +201,10 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 				AttrValue: strconv.Itoa(len(item.Torrent.Files)),
 			})
 		}
-		if !item.ReleaseYear.IsNil() {
+		if !item.Content.ReleaseYear.IsNil() {
 			attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 				AttrName:  torznab.AttrYear,
-				AttrValue: strconv.Itoa(int(item.ReleaseYear)),
+				AttrValue: strconv.Itoa(int(item.Content.ReleaseYear)),
 			})
 		}
 		if len(item.Episodes) > 0 {

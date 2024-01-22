@@ -191,9 +191,7 @@ type ComplexityRoot struct {
 		ID              func(childComplexity int) int
 		InfoHash        func(childComplexity int) int
 		Languages       func(childComplexity int) int
-		ReleaseDate     func(childComplexity int) int
 		ReleaseGroup    func(childComplexity int) int
-		ReleaseYear     func(childComplexity int) int
 		Title           func(childComplexity int) int
 		Torrent         func(childComplexity int) int
 		UpdatedAt       func(childComplexity int) int
@@ -940,26 +938,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TorrentContent.Languages(childComplexity), true
 
-	case "TorrentContent.releaseDate":
-		if e.complexity.TorrentContent.ReleaseDate == nil {
-			break
-		}
-
-		return e.complexity.TorrentContent.ReleaseDate(childComplexity), true
-
 	case "TorrentContent.releaseGroup":
 		if e.complexity.TorrentContent.ReleaseGroup == nil {
 			break
 		}
 
 		return e.complexity.TorrentContent.ReleaseGroup(childComplexity), true
-
-	case "TorrentContent.releaseYear":
-		if e.complexity.TorrentContent.ReleaseYear == nil {
-			break
-		}
-
-		return e.complexity.TorrentContent.ReleaseYear(childComplexity), true
 
 	case "TorrentContent.title":
 		if e.complexity.TorrentContent.Title == nil {
@@ -1695,8 +1679,6 @@ type TorrentContent {
   contentId: String
   content: Content
   title: String!
-  releaseDate: Date
-  releaseYear: Year
   languages: [LanguageInfo!]
   episodes: Episodes
   videoResolution: VideoResolution
@@ -6199,88 +6181,6 @@ func (ec *executionContext) fieldContext_TorrentContent_title(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _TorrentContent_releaseDate(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.TorrentContent) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TorrentContent_releaseDate(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ReleaseDate, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(model.Date)
-	fc.Result = res
-	return ec.marshalODate2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐDate(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_TorrentContent_releaseDate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "TorrentContent",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Date does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _TorrentContent_releaseYear(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.TorrentContent) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TorrentContent_releaseYear(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ReleaseYear, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(model.Year)
-	fc.Result = res
-	return ec.marshalOYear2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐYear(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_TorrentContent_releaseYear(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "TorrentContent",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Year does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _TorrentContent_languages(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.TorrentContent) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_TorrentContent_languages(ctx, field)
 	if err != nil {
@@ -7355,10 +7255,6 @@ func (ec *executionContext) fieldContext_TorrentContentSearchResult_items(ctx co
 				return ec.fieldContext_TorrentContent_content(ctx, field)
 			case "title":
 				return ec.fieldContext_TorrentContent_title(ctx, field)
-			case "releaseDate":
-				return ec.fieldContext_TorrentContent_releaseDate(ctx, field)
-			case "releaseYear":
-				return ec.fieldContext_TorrentContent_releaseYear(ctx, field)
 			case "languages":
 				return ec.fieldContext_TorrentContent_languages(ctx, field)
 			case "episodes":
@@ -12385,10 +12281,6 @@ func (ec *executionContext) _TorrentContent(ctx context.Context, sel ast.Selecti
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "releaseDate":
-			out.Values[i] = ec._TorrentContent_releaseDate(ctx, field, obj)
-		case "releaseYear":
-			out.Values[i] = ec._TorrentContent_releaseYear(ctx, field, obj)
 		case "languages":
 			out.Values[i] = ec._TorrentContent_languages(ctx, field, obj)
 		case "episodes":

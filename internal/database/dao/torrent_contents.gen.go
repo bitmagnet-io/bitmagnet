@@ -29,13 +29,9 @@ func newTorrentContent(db *gorm.DB, opts ...gen.DOOption) torrentContent {
 	_torrentContent.ALL = field.NewAsterisk(tableName)
 	_torrentContent.ID = field.NewString(tableName, "id")
 	_torrentContent.InfoHash = field.NewField(tableName, "info_hash")
-	_torrentContent.ContentType = field.NewField(tableName, "content_type")
-	_torrentContent.ContentSource = field.NewField(tableName, "content_source")
+	_torrentContent.ContentType = field.NewString(tableName, "content_type")
+	_torrentContent.ContentSource = field.NewString(tableName, "content_source")
 	_torrentContent.ContentID = field.NewString(tableName, "content_id")
-	_torrentContent.Title = field.NewString(tableName, "title")
-	_torrentContent.ReleaseDate = field.NewTime(tableName, "release_date")
-	_torrentContent.ReleaseYear = field.NewField(tableName, "release_year")
-	_torrentContent.ExternalIds = field.NewField(tableName, "external_ids")
 	_torrentContent.Languages = field.NewField(tableName, "languages")
 	_torrentContent.Episodes = field.NewField(tableName, "episodes")
 	_torrentContent.VideoResolution = field.NewField(tableName, "video_resolution")
@@ -51,6 +47,11 @@ func newTorrentContent(db *gorm.DB, opts ...gen.DOOption) torrentContent {
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("Torrent", "model.Torrent"),
+		Hint: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("Torrent.Hint", "model.TorrentHint"),
+		},
 		Contents: struct {
 			field.RelationField
 		}{
@@ -129,13 +130,9 @@ type torrentContent struct {
 	ALL             field.Asterisk
 	ID              field.String
 	InfoHash        field.Field
-	ContentType     field.Field
-	ContentSource   field.Field
+	ContentType     field.String
+	ContentSource   field.String
 	ContentID       field.String
-	Title           field.String
-	ReleaseDate     field.Time
-	ReleaseYear     field.Field
-	ExternalIds     field.Field
 	Languages       field.Field
 	Episodes        field.Field
 	VideoResolution field.Field
@@ -168,13 +165,9 @@ func (t *torrentContent) updateTableName(table string) *torrentContent {
 	t.ALL = field.NewAsterisk(table)
 	t.ID = field.NewString(table, "id")
 	t.InfoHash = field.NewField(table, "info_hash")
-	t.ContentType = field.NewField(table, "content_type")
-	t.ContentSource = field.NewField(table, "content_source")
+	t.ContentType = field.NewString(table, "content_type")
+	t.ContentSource = field.NewString(table, "content_source")
 	t.ContentID = field.NewString(table, "content_id")
-	t.Title = field.NewString(table, "title")
-	t.ReleaseDate = field.NewTime(table, "release_date")
-	t.ReleaseYear = field.NewField(table, "release_year")
-	t.ExternalIds = field.NewField(table, "external_ids")
 	t.Languages = field.NewField(table, "languages")
 	t.Episodes = field.NewField(table, "episodes")
 	t.VideoResolution = field.NewField(table, "video_resolution")
@@ -202,16 +195,12 @@ func (t *torrentContent) GetFieldByName(fieldName string) (field.OrderExpr, bool
 }
 
 func (t *torrentContent) fillFieldMap() {
-	t.fieldMap = make(map[string]field.Expr, 22)
+	t.fieldMap = make(map[string]field.Expr, 18)
 	t.fieldMap["id"] = t.ID
 	t.fieldMap["info_hash"] = t.InfoHash
 	t.fieldMap["content_type"] = t.ContentType
 	t.fieldMap["content_source"] = t.ContentSource
 	t.fieldMap["content_id"] = t.ContentID
-	t.fieldMap["title"] = t.Title
-	t.fieldMap["release_date"] = t.ReleaseDate
-	t.fieldMap["release_year"] = t.ReleaseYear
-	t.fieldMap["external_ids"] = t.ExternalIds
 	t.fieldMap["languages"] = t.Languages
 	t.fieldMap["episodes"] = t.Episodes
 	t.fieldMap["video_resolution"] = t.VideoResolution
@@ -241,6 +230,9 @@ type torrentContentBelongsToTorrent struct {
 
 	field.RelationField
 
+	Hint struct {
+		field.RelationField
+	}
 	Contents struct {
 		field.RelationField
 	}

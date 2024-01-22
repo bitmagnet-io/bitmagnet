@@ -27,7 +27,7 @@ func newContent(db *gorm.DB, opts ...gen.DOOption) content {
 
 	tableName := _content.contentDo.TableName()
 	_content.ALL = field.NewAsterisk(tableName)
-	_content.Type = field.NewField(tableName, "type")
+	_content.Type = field.NewString(tableName, "type")
 	_content.Source = field.NewString(tableName, "source")
 	_content.ID = field.NewString(tableName, "id")
 	_content.Title = field.NewString(tableName, "title")
@@ -81,7 +81,7 @@ type content struct {
 	contentDo
 
 	ALL              field.Asterisk
-	Type             field.Field
+	Type             field.String
 	Source           field.String
 	ID               field.String
 	Title            field.String
@@ -119,7 +119,7 @@ func (c content) As(alias string) *content {
 
 func (c *content) updateTableName(table string) *content {
 	c.ALL = field.NewAsterisk(table)
-	c.Type = field.NewField(table, "type")
+	c.Type = field.NewString(table, "type")
 	c.Source = field.NewString(table, "source")
 	c.ID = field.NewString(table, "id")
 	c.Title = field.NewString(table, "title")

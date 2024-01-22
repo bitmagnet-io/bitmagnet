@@ -21,8 +21,6 @@ type TorrentContent struct {
 	ContentSource   model.NullString
 	ContentID       model.NullString
 	Title           string
-	ReleaseDate     model.Date
-	ReleaseYear     model.Year
 	Languages       []model.Language `json:"omitempty"`
 	Episodes        *Episodes
 	VideoResolution model.NullVideoResolution
@@ -50,9 +48,7 @@ func NewTorrentContentFromResultItem(item search.TorrentContentResultItem) Torre
 		ContentType:     item.ContentType,
 		ContentSource:   item.ContentSource,
 		ContentID:       item.ContentID,
-		Title:           item.Title,
-		ReleaseDate:     item.ReleaseDate,
-		ReleaseYear:     item.ReleaseYear,
+		Title:           item.Title(),
 		VideoResolution: item.VideoResolution,
 		VideoSource:     item.VideoSource,
 		VideoCodec:      item.VideoCodec,

@@ -1,7 +1,10 @@
 package model
 
 import (
+	"context"
 	"fmt"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"io"
 )
 
@@ -26,6 +29,8 @@ func (y Year) IsNil() bool {
 
 func (y *Year) Scan(src interface{}) error {
 	switch src := src.(type) {
+	case nil:
+		*y = 0
 	case int:
 		*y = Year(src)
 	case int32:
@@ -54,7 +59,25 @@ func (y *Year) Scan(src interface{}) error {
 }
 
 func (y Year) Value() (interface{}, error) {
+	if y.IsNil() {
+		return nil, nil
+	}
 	return int(y), nil
+}
+
+func (Year) GormDataType() string {
+	return "int"
+}
+
+func (y Year) GormValue(context.Context, *gorm.DB) clause.Expr {
+	if y.IsNil() {
+		return clause.Expr{
+			SQL: "NULL",
+		}
+	}
+	return clause.Expr{
+		SQL: y.String(),
+	}
 }
 
 func (y Year) MarshalGQL(w io.Writer) {

@@ -2,7 +2,7 @@ package torrentcmd
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainforequester"
 	"github.com/urfave/cli/v2"
@@ -14,7 +14,7 @@ import (
 type Params struct {
 	fx.In
 	MetaInfoRequester metainforequester.Requester
-	Classifier        lazy.Lazy[classifier.Classifier]
+	Processor         lazy.Lazy[processor.Processor]
 	Logger            *zap.SugaredLogger
 }
 
@@ -28,22 +28,36 @@ func New(p Params) (Result, error) {
 		Name: "torrent",
 		Subcommands: []*cli.Command{
 			{
-				Name: "classify",
+				Name: "process",
 				Flags: []cli.Flag{
-					&cli.StringFlag{
+					&cli.StringSliceFlag{
 						Name: "infoHash",
+					},
+					&cli.BoolFlag{
+						Name:  "rematch",
+						Value: false,
 					},
 				},
 				Action: func(ctx *cli.Context) error {
-					c, err := p.Classifier.Get()
+					pr, err := p.Processor.Get()
 					if err != nil {
 						return err
 					}
-					infoHash, err := protocol.ParseID(ctx.String("infoHash"))
+					var infoHashes []protocol.ID
+					for _, infoHash := range ctx.StringSlice("infoHash") {
+						id, err := protocol.ParseID(infoHash)
+						if err != nil {
+							return err
+						}
+						infoHashes = append(infoHashes, id)
+					}
 					if err != nil {
 						return err
 					}
-					return c.Classify(ctx.Context, infoHash)
+					return pr.Process(ctx.Context, processor.MessageParams{
+						Rematch:    ctx.Bool("rematch"),
+						InfoHashes: infoHashes,
+					})
 				},
 			},
 			{

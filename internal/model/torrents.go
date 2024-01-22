@@ -24,21 +24,6 @@ func (t *Torrent) AfterFind(tx *gorm.DB) error {
 	return nil
 }
 
-func (t *Torrent) BeforeCreate(tx *gorm.DB) error {
-	if len(t.Contents) == 0 {
-		tc := &TorrentContent{
-			InfoHash: t.InfoHash,
-			Torrent:  *t,
-		}
-		if err := tc.UpdateFields(); err != nil {
-			return err
-		}
-		tc.Torrent = Torrent{}
-		t.Contents = []TorrentContent{*tc}
-	}
-	return nil
-}
-
 // Seeders returns the highest number of seeders from all sources
 // todo: Add up bloom filters
 func (t Torrent) Seeders() NullUint {

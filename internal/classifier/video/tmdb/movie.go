@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	tmdb "github.com/cyruzin/golang-tmdb"
 	"strconv"
+	"strings"
 )
 
 type MovieClient interface {
@@ -26,7 +28,7 @@ type SearchMovieParams struct {
 func (c *client) SearchMovie(ctx context.Context, p SearchMovieParams) (movie model.Content, err error) {
 	if localResult, localErr := c.searchMovieLocal(ctx, p); localErr == nil {
 		return localResult, nil
-	} else if !errors.Is(localErr, ErrNotFound) {
+	} else if !errors.Is(localErr, classifier.ErrNoMatch) {
 		err = localErr
 		return
 	}
@@ -35,7 +37,7 @@ func (c *client) SearchMovie(ctx context.Context, p SearchMovieParams) (movie mo
 
 func (c *client) searchMovieLocal(ctx context.Context, p SearchMovieParams) (movie model.Content, err error) {
 	options := []query.Option{
-		query.Where(search.ContentTypeCriteria(model.ContentTypeMovie)),
+		query.Where(search.ContentTypeCriteria(model.ContentTypeMovie, model.ContentTypeXxx)),
 		query.QueryString(fmt.Sprintf("\"%s\"", p.Title)),
 		query.OrderByQueryStringRank(),
 		query.Limit(5),
@@ -62,7 +64,7 @@ func (c *client) searchMovieLocal(ctx context.Context, p SearchMovieParams) (mov
 			return item.Content, nil
 		}
 	}
-	err = ErrNotFound
+	err = classifier.ErrNoMatch
 	return
 }
 
@@ -86,15 +88,20 @@ func (c *client) searchMovieTmdb(ctx context.Context, p SearchMovieParams) (mode
 			return c.GetMovieByExternalId(ctx, SourceTmdb, strconv.Itoa(int(item.ID)))
 		}
 	}
-	return model.Content{}, ErrNotFound
+	return model.Content{}, classifier.ErrNoMatch
 }
 
 func (c *client) GetMovieByExternalId(ctx context.Context, source, id string) (model.Content, error) {
-	searchResult, searchErr := c.s.Content(ctx, query.Where(search.ContentIdentifierCriteria(model.ContentRef{
-		Type:   model.ContentTypeMovie,
-		Source: source,
-		ID:     id,
-	})), query.Limit(1))
+	searchResult, searchErr := c.s.Content(ctx, query.Where(
+		search.ContentTypeCriteria(model.ContentTypeMovie, model.ContentTypeXxx),
+		search.ContentIdentifierCriteria(model.ContentRef{
+			Source: source,
+			ID:     id,
+		})),
+		search.ContentDefaultPreload(),
+		search.ContentDefaultHydrate(),
+		query.Limit(1),
+	)
 	if searchErr != nil {
 		return model.Content{}, searchErr
 	}
@@ -119,7 +126,7 @@ func (c *client) GetMovieByExternalId(ctx context.Context, source, id string) (m
 		return model.Content{}, byIdErr
 	}
 	if len(byIdResult.MovieResults) == 0 {
-		return model.Content{}, ErrNotFound
+		return model.Content{}, classifier.ErrNoMatch
 	}
 	return c.getMovieByTmbdId(ctx, int(byIdResult.MovieResults[0].ID))
 }
@@ -144,6 +151,12 @@ func getExternalSource(source string, id string) (externalSource string, externa
 func (c *client) getMovieByTmbdId(ctx context.Context, id int) (movie model.Content, err error) {
 	d, getDetailsErr := c.c.GetMovieDetails(id, map[string]string{})
 	if getDetailsErr != nil {
+		// a hacky workaround for TMDB returning 404 for some (correct) movie IDs
+		// e.g. there's some issue with tt15168124 which points to 878564 when the correct ID is 888491
+		// (haven't added for TV shows as I haven't encountered any examples)
+		if strings.HasPrefix(getDetailsErr.Error(), "code: 34") {
+			getDetailsErr = classifier.ErrNoMatch
+		}
 		err = getDetailsErr
 		return
 	}
