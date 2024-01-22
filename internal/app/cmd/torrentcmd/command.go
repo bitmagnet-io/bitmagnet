@@ -28,7 +28,7 @@ func New(p Params) (Result, error) {
 		Name: "torrent",
 		Subcommands: []*cli.Command{
 			{
-				Name: "classify",
+				Name: "process",
 				Flags: []cli.Flag{
 					&cli.StringSliceFlag{
 						Name: "infoHash",
