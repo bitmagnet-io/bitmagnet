@@ -26,8 +26,6 @@ func (c processor) Persist(ctx context.Context, torrentContents ...model.Torrent
 		if len(deleteHashes) > 0 {
 			if _, deleteErr := tx.TorrentContent.WithContext(ctx).Where(
 				c.dao.TorrentContent.InfoHash.In(deleteHashes...),
-				//).Scopes(func(d gen.Dao) gen.Dao {
-				//	return d.Where(c.dao.TorrentContent.ContentType.IsNull()).Or(c.dao.TorrentContent.ContentID.IsNull())
 			).Delete(); deleteErr != nil {
 				return deleteErr
 			}

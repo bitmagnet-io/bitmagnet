@@ -20,14 +20,9 @@ type Params struct {
 type Result struct {
 	fx.Out
 	Processor lazy.Lazy[Processor]
-	//Duration     prometheus.Collector `group:"prometheus_collectors"`
-	//SuccessTotal prometheus.Collector `group:"prometheus_collectors"`
-	//NoMatchTotal prometheus.Collector `group:"prometheus_collectors"`
-	//ErrorTotal   prometheus.Collector `group:"prometheus_collectors"`
 }
 
 func New(p Params) Result {
-	//collector := newPrometheusCollector()
 	return Result{
 		Processor: lazy.New(func() (Processor, error) {
 			s, err := p.Search.Get()
@@ -46,15 +41,7 @@ func New(p Params) Result {
 				classifier: c,
 				dao:        d,
 				search:     s,
-				//classifier: prometheusCollectorResolver{
-				//	prometheusCollector: collector,
-				//	resolver:            classifier{subResolvers, p.Logger},
-				//},
 			}, nil
 		}),
-		//Duration:     collector.duration,
-		//SuccessTotal: collector.successTotal,
-		//NoMatchTotal: collector.noMatchTotal,
-		//ErrorTotal:   collector.errorTotal,
 	}
 }
