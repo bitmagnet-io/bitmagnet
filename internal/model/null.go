@@ -290,11 +290,11 @@ func NewNullUint16(n uint16) NullUint16 {
 }
 
 func (n *NullUint16) Scan(value interface{}) error {
-	v, ok := value.(uint16)
+	v, ok := value.(int64)
 	if !ok {
 		n.Valid = false
 	} else {
-		n.Uint16 = v
+		n.Uint16 = uint16(v)
 		n.Valid = true
 	}
 	return nil
@@ -304,7 +304,7 @@ func (n NullUint16) Value() (driver.Value, error) {
 	if !n.Valid {
 		return nil, nil
 	}
-	return n.Uint16, nil
+	return int64(n.Uint16), nil
 }
 
 func (n *NullUint16) UnmarshalGQL(v interface{}) error {
