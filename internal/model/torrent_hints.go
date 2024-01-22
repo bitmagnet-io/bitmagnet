@@ -1,5 +1,17 @@
 package model
 
+import (
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+)
+
+func (f *TorrentHint) BeforeCreate(tx *gorm.DB) (err error) {
+	tx.Statement.AddClause(clause.OnConflict{
+		UpdateAll: true,
+	})
+	return nil
+}
+
 func (h TorrentHint) IsNil() bool {
 	return h.ContentType.IsNil()
 }
