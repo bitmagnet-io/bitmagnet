@@ -362,6 +362,10 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		gen.FieldType("bytes", "bloom.StableBloomFilter"),
 		createdAtReadOnly,
 	)
+	keyValues := g.GenerateModel(
+		"key_values",
+		createdAtReadOnly,
+	)
 
 	g.ApplyBasic(
 		torrentSources,
@@ -377,6 +381,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		contentCollectionContent,
 		contentAttributes,
 		bloomFilters,
+		keyValues,
 	)
 
 	return g
