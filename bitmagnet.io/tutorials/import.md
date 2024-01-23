@@ -1,11 +1,13 @@
 ---
-title: Importing
+title: Import
 parent: Tutorials
 layout: default
 nav_order: 2
+redirect_from:
+  - /tutorials/importing.html
 ---
 
-# Importing
+# Import
 
 {: .warning-title }
 
@@ -101,8 +103,8 @@ So far we've got the data looking almost like we need it. We now need to make a 
 
 ```sh
 sqlite3 -json -batch /path/to/your/rarbg_db.sqlite "$(cat rarbg-import.sql)" \
-  | jq -r --indent 0 '.[] | . * { source: "rarbg" } | . + if .imdb != null then { externalIds: { imdb: .imdb } } else {} end | del(.imdb) | del(..|nulls)' \
-  | curl --verbose -H "Content-Type: application/json" --data-binary @- http://localhost:3333/import
+  | jq -r --indent 0 '.[] | . * { source: "rarbg" } | . + if .imdb != null then { contentSource: "imdb", contentId: .imdb } else {} end | del(.imdb) | del(..|nulls)' \
+  | curl --verbose -H "Content-Type: application/json" -H "Connection: close" --data-binary @- http://localhost:3333/import
 ```
 
 So what's happening here?

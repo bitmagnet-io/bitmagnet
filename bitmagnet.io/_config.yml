@@ -27,3 +27,5 @@ nav_external_links:
   - title: bitmagnet on GitHub
     url: https://github.com/bitmagnet-io/bitmagnet
 favicon_ico: "/assets/images/favicon.png"
+plugins:
+  - jekyll-redirect-from
