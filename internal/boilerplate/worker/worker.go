@@ -12,8 +12,9 @@ import (
 type RegistryParams struct {
 	fx.In
 	fx.Shutdowner
-	Workers []Worker `group:"workers"`
-	Logger  *zap.SugaredLogger
+	Workers    []Worker    `group:"workers"`
+	Decorators []Decorator `group:"worker_decorators"`
+	Logger     *zap.SugaredLogger
 }
 
 type RegistryResult struct {
@@ -21,7 +22,7 @@ type RegistryResult struct {
 	Registry Registry
 }
 
-func NewRegistry(p RegistryParams) RegistryResult {
+func NewRegistry(p RegistryParams) (RegistryResult, error) {
 	r := &registry{
 		mutex:   &sync.RWMutex{},
 		workers: make(map[string]Worker),
@@ -30,7 +31,12 @@ func NewRegistry(p RegistryParams) RegistryResult {
 	for _, w := range p.Workers {
 		r.workers[w.Key()] = w
 	}
-	return RegistryResult{Registry: r}
+	for _, d := range p.Decorators {
+		if err := r.decorate(d.Key, d.Decorate); err != nil {
+			return RegistryResult{}, err
+		}
+	}
+	return RegistryResult{Registry: r}, nil
 }
 
 type Registry interface {
@@ -41,20 +47,25 @@ type Registry interface {
 	DisableAll()
 	Start(ctx context.Context) error
 	Stop(ctx context.Context) error
-	Decorate(name string, fn Decorator) error
+	decorate(name string, fn DecorateFunction) error
 }
 
 type Worker interface {
 	Key() string
 	Enabled() bool
 	Started() bool
-	Decorate(Decorator) Worker
 	_hook() fx.Hook
 	setEnabled(enabled bool)
 	setStarted(started bool)
+	decorate(DecorateFunction) Worker
 }
 
-type Decorator func(fx.Hook) fx.Hook
+type DecorateFunction func(fx.Hook) fx.Hook
+
+type Decorator struct {
+	Key      string
+	Decorate DecorateFunction
+}
 
 type worker struct {
 	key     string
@@ -82,7 +93,7 @@ func (w *worker) Started() bool {
 	return w.started
 }
 
-func (w *worker) Decorate(fn Decorator) Worker {
+func (w *worker) decorate(fn DecorateFunction) Worker {
 	return &worker{
 		key: w.key,
 		hook: fn(fx.Hook{
@@ -210,11 +221,11 @@ func (r *registry) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (r *registry) Decorate(name string, fn Decorator) error {
+func (r *registry) decorate(name string, fn DecorateFunction) error {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 	if w, ok := r.workers[name]; ok {
-		r.workers[name] = w.Decorate(fn)
+		r.workers[name] = w.decorate(fn)
 		return nil
 	}
 	return fmt.Errorf("worker %s not found", name)

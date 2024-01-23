@@ -22,6 +22,7 @@ var (
 	ContentAttribute         *contentAttribute
 	ContentCollection        *contentCollection
 	ContentCollectionContent *contentCollectionContent
+	KeyValue                 *keyValue
 	MetadataSource           *metadataSource
 	Torrent                  *torrent
 	TorrentContent           *torrentContent
@@ -39,6 +40,7 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	ContentAttribute = &Q.ContentAttribute
 	ContentCollection = &Q.ContentCollection
 	ContentCollectionContent = &Q.ContentCollectionContent
+	KeyValue = &Q.KeyValue
 	MetadataSource = &Q.MetadataSource
 	Torrent = &Q.Torrent
 	TorrentContent = &Q.TorrentContent
@@ -57,6 +59,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		ContentAttribute:         newContentAttribute(db, opts...),
 		ContentCollection:        newContentCollection(db, opts...),
 		ContentCollectionContent: newContentCollectionContent(db, opts...),
+		KeyValue:                 newKeyValue(db, opts...),
 		MetadataSource:           newMetadataSource(db, opts...),
 		Torrent:                  newTorrent(db, opts...),
 		TorrentContent:           newTorrentContent(db, opts...),
@@ -76,6 +79,7 @@ type Query struct {
 	ContentAttribute         contentAttribute
 	ContentCollection        contentCollection
 	ContentCollectionContent contentCollectionContent
+	KeyValue                 keyValue
 	MetadataSource           metadataSource
 	Torrent                  torrent
 	TorrentContent           torrentContent
@@ -96,6 +100,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		ContentAttribute:         q.ContentAttribute.clone(db),
 		ContentCollection:        q.ContentCollection.clone(db),
 		ContentCollectionContent: q.ContentCollectionContent.clone(db),
+		KeyValue:                 q.KeyValue.clone(db),
 		MetadataSource:           q.MetadataSource.clone(db),
 		Torrent:                  q.Torrent.clone(db),
 		TorrentContent:           q.TorrentContent.clone(db),
@@ -123,6 +128,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		ContentAttribute:         q.ContentAttribute.replaceDB(db),
 		ContentCollection:        q.ContentCollection.replaceDB(db),
 		ContentCollectionContent: q.ContentCollectionContent.replaceDB(db),
+		KeyValue:                 q.KeyValue.replaceDB(db),
 		MetadataSource:           q.MetadataSource.replaceDB(db),
 		Torrent:                  q.Torrent.replaceDB(db),
 		TorrentContent:           q.TorrentContent.replaceDB(db),
@@ -140,6 +146,7 @@ type queryCtx struct {
 	ContentAttribute         IContentAttributeDo
 	ContentCollection        IContentCollectionDo
 	ContentCollectionContent IContentCollectionContentDo
+	KeyValue                 IKeyValueDo
 	MetadataSource           IMetadataSourceDo
 	Torrent                  ITorrentDo
 	TorrentContent           ITorrentContentDo
@@ -157,6 +164,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		ContentAttribute:         q.ContentAttribute.WithContext(ctx),
 		ContentCollection:        q.ContentCollection.WithContext(ctx),
 		ContentCollectionContent: q.ContentCollectionContent.WithContext(ctx),
+		KeyValue:                 q.KeyValue.WithContext(ctx),
 		MetadataSource:           q.MetadataSource.WithContext(ctx),
 		Torrent:                  q.Torrent.WithContext(ctx),
 		TorrentContent:           q.TorrentContent.WithContext(ctx),
