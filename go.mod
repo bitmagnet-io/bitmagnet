@@ -21,7 +21,7 @@ require (
 	github.com/hedhyw/rex v0.6.0
 	github.com/hellofresh/health-go/v5 v5.5.2
 	github.com/hibiken/asynq v0.24.1
-	github.com/hibiken/asynq/x v0.0.0-20230908153724-6a7bf2ceff1e
+	github.com/hibiken/asynq/x v0.0.0-20231210174943-fdbf54eb0406
 	github.com/iancoleman/strcase v0.3.0
 	github.com/jedib0t/go-pretty/v6 v6.5.3
 	github.com/joho/godotenv v1.5.1
@@ -140,7 +140,7 @@ require (
 	github.com/sosodev/duration v1.2.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.10.0 // indirect
-	github.com/spf13/cast v1.5.1 // indirect
+	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/cobra v1.8.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.17.0 // indirect
