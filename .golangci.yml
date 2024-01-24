@@ -4,3 +4,7 @@ issues:
     - path: 'internal/protocol/dht/ktable/(.+)\.go'
       linters:
         - unused
+    # False positive: `Error: cannot infer T (internal/boilerplate/config/configfx/factory.go:9:22) (typecheck)`
+    - path: 'internal/boilerplate/config/configfx/factory.go'
+      linters:
+        - typecheck
