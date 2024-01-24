@@ -6,6 +6,11 @@ import (
 	"go.uber.org/fx"
 )
 
+// NewConfigModule
+//
+// Linter false positive: `Error: cannot infer T (internal/boilerplate/config/configfx/factory.go:9:22) (typecheck)`
+//
+//nolint:typecheck
 func NewConfigModule[T any](key string, defaultValue interface{}) fx.Option {
 	return fx.Module(
 		"config:"+key,
