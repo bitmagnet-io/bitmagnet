@@ -18,12 +18,13 @@ var videoResolutionAliases = map[string]VideoResolution{
 	"1080i":     VideoResolutionV1080p,
 	"1920x1080": VideoResolutionV1080p,
 	"3840x2160": VideoResolutionV2160p,
-	"8k":        VideoResolutionV4320p,
-	"4k":        VideoResolutionV2160p,
-	"uhd":       VideoResolutionV2160p,
 	"2k":        VideoResolutionV1440p,
-	"hd":        VideoResolutionV1080p,
+	"4k":        VideoResolutionV2160p,
+	"8k":        VideoResolutionV4320p,
 	"sd":        VideoResolutionV480p,
+	"hd":        VideoResolutionV720p,
+	"fhd":       VideoResolutionV1080p,
+	"uhd":       VideoResolutionV2160p,
 }
 
 func createVideoResolutionRegex() *regexp.Regexp {
