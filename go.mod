@@ -19,7 +19,7 @@ require (
 	github.com/grafana/pyroscope-go/godeltaprof v0.1.4
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/hedhyw/rex v0.6.0
-	github.com/hellofresh/health-go/v5 v5.5.0
+	github.com/hellofresh/health-go/v5 v5.5.2
 	github.com/hibiken/asynq v0.24.1
 	github.com/hibiken/asynq/x v0.0.0-20230908153724-6a7bf2ceff1e
 	github.com/iancoleman/strcase v0.3.0
@@ -96,7 +96,7 @@ require (
 	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
-	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
+	github.com/jackc/pgservicefile v0.0.0-20231201235250-de7065d80cb9 // indirect
 	github.com/jackc/pgx/v5 v5.5.1 // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jinzhu/copier v0.4.0 // indirect
@@ -148,8 +148,8 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
-	go.opentelemetry.io/otel v1.20.0 // indirect
-	go.opentelemetry.io/otel/trace v1.20.0 // indirect
+	go.opentelemetry.io/otel v1.21.0 // indirect
+	go.opentelemetry.io/otel/trace v1.21.0 // indirect
 	go.uber.org/dig v1.17.1 // indirect
 	go.uber.org/goleak v1.2.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
