@@ -3,7 +3,7 @@ module github.com/bitmagnet-io/bitmagnet
 go 1.21
 
 require (
-	github.com/99designs/gqlgen v0.17.40
+	github.com/99designs/gqlgen v0.17.43
 	github.com/abice/go-enum v0.5.8
 	github.com/adrg/xdg v0.4.0
 	github.com/agnivade/levenshtein v1.1.1
@@ -37,7 +37,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/tylertreat/BoomFilters v0.0.0-20210315201527-1a82519a3e43
 	github.com/urfave/cli/v2 v2.25.7
-	github.com/vektah/gqlparser/v2 v2.5.10
+	github.com/vektah/gqlparser/v2 v2.5.11
 	github.com/vektra/mockery/v2 v2.36.0
 	go.uber.org/fx v1.20.1
 	go.uber.org/zap v1.26.0

@@ -10662,8 +10662,6 @@ func (ec *executionContext) unmarshalInputContentTypeFacetInput(ctx context.Cont
 		}
 		switch k {
 		case "aggregate":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
@@ -10671,8 +10669,6 @@ func (ec *executionContext) unmarshalInputContentTypeFacetInput(ctx context.Cont
 			}
 			it.Aggregate = graphql.OmittableOf(data)
 		case "filter":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
 			data, err := ec.unmarshalOContentType2ᚕᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐContentType(ctx, v)
 			if err != nil {
@@ -10700,8 +10696,6 @@ func (ec *executionContext) unmarshalInputGenreFacetInput(ctx context.Context, o
 		}
 		switch k {
 		case "aggregate":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
@@ -10709,8 +10703,6 @@ func (ec *executionContext) unmarshalInputGenreFacetInput(ctx context.Context, o
 			}
 			it.Aggregate = graphql.OmittableOf(data)
 		case "logic":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("logic"))
 			data, err := ec.unmarshalOFacetLogic2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐFacetLogic(ctx, v)
 			if err != nil {
@@ -10718,8 +10710,6 @@ func (ec *executionContext) unmarshalInputGenreFacetInput(ctx context.Context, o
 			}
 			it.Logic = graphql.OmittableOf(data)
 		case "filter":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
 			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
@@ -10747,8 +10737,6 @@ func (ec *executionContext) unmarshalInputLanguageFacetInput(ctx context.Context
 		}
 		switch k {
 		case "aggregate":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
@@ -10756,8 +10744,6 @@ func (ec *executionContext) unmarshalInputLanguageFacetInput(ctx context.Context
 			}
 			it.Aggregate = graphql.OmittableOf(data)
 		case "filter":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
 			data, err := ec.unmarshalOLanguage2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐLanguageᚄ(ctx, v)
 			if err != nil {
@@ -10785,8 +10771,6 @@ func (ec *executionContext) unmarshalInputReleaseYearFacetInput(ctx context.Cont
 		}
 		switch k {
 		case "aggregate":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
@@ -10794,8 +10778,6 @@ func (ec *executionContext) unmarshalInputReleaseYearFacetInput(ctx context.Cont
 			}
 			it.Aggregate = graphql.OmittableOf(data)
 		case "filter":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
 			data, err := ec.unmarshalOYear2ᚕᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐYear(ctx, v)
 			if err != nil {
@@ -10823,8 +10805,6 @@ func (ec *executionContext) unmarshalInputSearchQueryInput(ctx context.Context, 
 		}
 		switch k {
 		case "queryString":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("queryString"))
 			data, err := ec.unmarshalOString2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullString(ctx, v)
 			if err != nil {
@@ -10832,8 +10812,6 @@ func (ec *executionContext) unmarshalInputSearchQueryInput(ctx context.Context, 
 			}
 			it.QueryString = data
 		case "limit":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
 			data, err := ec.unmarshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullUint(ctx, v)
 			if err != nil {
@@ -10841,8 +10819,6 @@ func (ec *executionContext) unmarshalInputSearchQueryInput(ctx context.Context, 
 			}
 			it.Limit = data
 		case "offset":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
 			data, err := ec.unmarshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullUint(ctx, v)
 			if err != nil {
@@ -10850,8 +10826,6 @@ func (ec *executionContext) unmarshalInputSearchQueryInput(ctx context.Context, 
 			}
 			it.Offset = data
 		case "totalCount":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("totalCount"))
 			data, err := ec.unmarshalOBoolean2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullBool(ctx, v)
 			if err != nil {
@@ -10859,8 +10833,6 @@ func (ec *executionContext) unmarshalInputSearchQueryInput(ctx context.Context, 
 			}
 			it.TotalCount = data
 		case "hasNextPage":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasNextPage"))
 			data, err := ec.unmarshalOBoolean2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullBool(ctx, v)
 			if err != nil {
@@ -10868,8 +10840,6 @@ func (ec *executionContext) unmarshalInputSearchQueryInput(ctx context.Context, 
 			}
 			it.HasNextPage = data
 		case "cached":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cached"))
 			data, err := ec.unmarshalOBoolean2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullBool(ctx, v)
 			if err != nil {
@@ -10897,8 +10867,6 @@ func (ec *executionContext) unmarshalInputSuggestTagsQueryInput(ctx context.Cont
 		}
 		switch k {
 		case "prefix":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("prefix"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -10906,8 +10874,6 @@ func (ec *executionContext) unmarshalInputSuggestTagsQueryInput(ctx context.Cont
 			}
 			it.Prefix = graphql.OmittableOf(data)
 		case "exclusions":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("exclusions"))
 			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
@@ -10935,8 +10901,6 @@ func (ec *executionContext) unmarshalInputTorrentContentFacetsInput(ctx context.
 		}
 		switch k {
 		case "contentType":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contentType"))
 			data, err := ec.unmarshalOContentTypeFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐContentTypeFacetInput(ctx, v)
 			if err != nil {
@@ -10944,8 +10908,6 @@ func (ec *executionContext) unmarshalInputTorrentContentFacetsInput(ctx context.
 			}
 			it.ContentType = graphql.OmittableOf(data)
 		case "torrentSource":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torrentSource"))
 			data, err := ec.unmarshalOTorrentSourceFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentSourceFacetInput(ctx, v)
 			if err != nil {
@@ -10953,8 +10915,6 @@ func (ec *executionContext) unmarshalInputTorrentContentFacetsInput(ctx context.
 			}
 			it.TorrentSource = graphql.OmittableOf(data)
 		case "torrentTag":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torrentTag"))
 			data, err := ec.unmarshalOTorrentTagFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentTagFacetInput(ctx, v)
 			if err != nil {
@@ -10962,8 +10922,6 @@ func (ec *executionContext) unmarshalInputTorrentContentFacetsInput(ctx context.
 			}
 			it.TorrentTag = graphql.OmittableOf(data)
 		case "torrentFileType":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torrentFileType"))
 			data, err := ec.unmarshalOTorrentFileTypeFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentFileTypeFacetInput(ctx, v)
 			if err != nil {
@@ -10971,8 +10929,6 @@ func (ec *executionContext) unmarshalInputTorrentContentFacetsInput(ctx context.
 			}
 			it.TorrentFileType = graphql.OmittableOf(data)
 		case "language":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("language"))
 			data, err := ec.unmarshalOLanguageFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐLanguageFacetInput(ctx, v)
 			if err != nil {
@@ -10980,8 +10936,6 @@ func (ec *executionContext) unmarshalInputTorrentContentFacetsInput(ctx context.
 			}
 			it.Language = graphql.OmittableOf(data)
 		case "genre":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("genre"))
 			data, err := ec.unmarshalOGenreFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐGenreFacetInput(ctx, v)
 			if err != nil {
@@ -10989,8 +10943,6 @@ func (ec *executionContext) unmarshalInputTorrentContentFacetsInput(ctx context.
 			}
 			it.Genre = graphql.OmittableOf(data)
 		case "releaseYear":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("releaseYear"))
 			data, err := ec.unmarshalOReleaseYearFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐReleaseYearFacetInput(ctx, v)
 			if err != nil {
@@ -10998,8 +10950,6 @@ func (ec *executionContext) unmarshalInputTorrentContentFacetsInput(ctx context.
 			}
 			it.ReleaseYear = graphql.OmittableOf(data)
 		case "videoResolution":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("videoResolution"))
 			data, err := ec.unmarshalOVideoResolutionFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐVideoResolutionFacetInput(ctx, v)
 			if err != nil {
@@ -11007,8 +10957,6 @@ func (ec *executionContext) unmarshalInputTorrentContentFacetsInput(ctx context.
 			}
 			it.VideoResolution = graphql.OmittableOf(data)
 		case "videoSource":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("videoSource"))
 			data, err := ec.unmarshalOVideoSourceFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐVideoSourceFacetInput(ctx, v)
 			if err != nil {
@@ -11036,8 +10984,6 @@ func (ec *executionContext) unmarshalInputTorrentFileTypeFacetInput(ctx context.
 		}
 		switch k {
 		case "aggregate":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
@@ -11045,8 +10991,6 @@ func (ec *executionContext) unmarshalInputTorrentFileTypeFacetInput(ctx context.
 			}
 			it.Aggregate = graphql.OmittableOf(data)
 		case "logic":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("logic"))
 			data, err := ec.unmarshalOFacetLogic2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐFacetLogic(ctx, v)
 			if err != nil {
@@ -11054,8 +10998,6 @@ func (ec *executionContext) unmarshalInputTorrentFileTypeFacetInput(ctx context.
 			}
 			it.Logic = graphql.OmittableOf(data)
 		case "filter":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
 			data, err := ec.unmarshalOFileType2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐFileTypeᚄ(ctx, v)
 			if err != nil {
@@ -11083,8 +11025,6 @@ func (ec *executionContext) unmarshalInputTorrentSourceFacetInput(ctx context.Co
 		}
 		switch k {
 		case "aggregate":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
@@ -11092,8 +11032,6 @@ func (ec *executionContext) unmarshalInputTorrentSourceFacetInput(ctx context.Co
 			}
 			it.Aggregate = graphql.OmittableOf(data)
 		case "logic":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("logic"))
 			data, err := ec.unmarshalOFacetLogic2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐFacetLogic(ctx, v)
 			if err != nil {
@@ -11101,8 +11039,6 @@ func (ec *executionContext) unmarshalInputTorrentSourceFacetInput(ctx context.Co
 			}
 			it.Logic = graphql.OmittableOf(data)
 		case "filter":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
 			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
@@ -11130,8 +11066,6 @@ func (ec *executionContext) unmarshalInputTorrentTagFacetInput(ctx context.Conte
 		}
 		switch k {
 		case "aggregate":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
@@ -11139,8 +11073,6 @@ func (ec *executionContext) unmarshalInputTorrentTagFacetInput(ctx context.Conte
 			}
 			it.Aggregate = graphql.OmittableOf(data)
 		case "logic":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("logic"))
 			data, err := ec.unmarshalOFacetLogic2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐFacetLogic(ctx, v)
 			if err != nil {
@@ -11148,8 +11080,6 @@ func (ec *executionContext) unmarshalInputTorrentTagFacetInput(ctx context.Conte
 			}
 			it.Logic = graphql.OmittableOf(data)
 		case "filter":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
 			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
@@ -11177,8 +11107,6 @@ func (ec *executionContext) unmarshalInputVideoResolutionFacetInput(ctx context.
 		}
 		switch k {
 		case "aggregate":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
@@ -11186,8 +11114,6 @@ func (ec *executionContext) unmarshalInputVideoResolutionFacetInput(ctx context.
 			}
 			it.Aggregate = graphql.OmittableOf(data)
 		case "filter":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
 			data, err := ec.unmarshalOVideoResolution2ᚕᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐVideoResolution(ctx, v)
 			if err != nil {
@@ -11215,8 +11141,6 @@ func (ec *executionContext) unmarshalInputVideoSourceFacetInput(ctx context.Cont
 		}
 		switch k {
 		case "aggregate":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
@@ -11224,8 +11148,6 @@ func (ec *executionContext) unmarshalInputVideoSourceFacetInput(ctx context.Cont
 			}
 			it.Aggregate = graphql.OmittableOf(data)
 		case "filter":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
 			data, err := ec.unmarshalOVideoSource2ᚕᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐVideoSource(ctx, v)
 			if err != nil {
