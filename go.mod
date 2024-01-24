@@ -15,7 +15,7 @@ require (
 	github.com/facette/natsort v0.0.0-20181210072756-2cd4dd1e2dcb
 	github.com/frankban/quicktest v1.14.6
 	github.com/gin-gonic/gin v1.9.1
-	github.com/go-playground/validator/v10 v10.16.0
+	github.com/go-playground/validator/v10 v10.17.0
 	github.com/grafana/pyroscope-go/godeltaprof v0.1.4
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/hedhyw/rex v0.6.0
