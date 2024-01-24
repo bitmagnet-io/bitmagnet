@@ -6,7 +6,7 @@ import (
 	"go.uber.org/fx"
 )
 
-func NewConfigModule[T interface{}](key string, defaultValue interface{}) fx.Option {
+func NewConfigModule[T any](key string, defaultValue interface{}) fx.Option {
 	return fx.Module(
 		"config:"+key,
 		fx.Provide(
