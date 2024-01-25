@@ -6,17 +6,17 @@ import (
 	"math"
 )
 
-type fallbackClassifier struct{}
+type FallbackClassifier struct{}
 
-func (c fallbackClassifier) Key() string {
+func (c FallbackClassifier) Key() string {
 	return "fallback"
 }
 
-func (c fallbackClassifier) Priority() int {
+func (c FallbackClassifier) Priority() int {
 	return math.MaxInt
 }
 
-func (c fallbackClassifier) Classify(_ context.Context, t model.Torrent) (Classification, error) {
+func (c FallbackClassifier) Classify(_ context.Context, t model.Torrent) (Classification, error) {
 	cl := Classification{}
 	cl.ApplyHint(t.Hint)
 	return cl, nil

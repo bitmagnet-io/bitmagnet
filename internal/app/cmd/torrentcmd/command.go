@@ -33,10 +33,6 @@ func New(p Params) (Result, error) {
 					&cli.StringSliceFlag{
 						Name: "infoHash",
 					},
-					&cli.BoolFlag{
-						Name:  "rematch",
-						Value: false,
-					},
 				},
 				Action: func(ctx *cli.Context) error {
 					pr, err := p.Processor.Get()
@@ -55,8 +51,8 @@ func New(p Params) (Result, error) {
 						return err
 					}
 					return pr.Process(ctx.Context, processor.MessageParams{
-						Rematch:    ctx.Bool("rematch"),
-						InfoHashes: infoHashes,
+						ClassifyMode: processor.ClassifyModeRematch,
+						InfoHashes:   infoHashes,
 					})
 				},
 			},
