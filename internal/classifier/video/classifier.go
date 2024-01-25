@@ -47,6 +47,9 @@ func (c videoClassifier) Classify(ctx context.Context, t model.Torrent) (classif
 	if cl.Content != nil {
 		cl.ContentType = model.NewNullContentType(cl.Content.Type)
 	}
+	if !cl.ContentType.Valid {
+		return classifier.Classification{}, classifier.ErrNoMatch
+	}
 	return cl, nil
 }
 

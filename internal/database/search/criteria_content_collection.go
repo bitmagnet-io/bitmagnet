@@ -40,6 +40,7 @@ func ContentCollectionCriteria(refs ...model.ContentCollectionRef) query.Criteri
 					),
 					Query: gen.Exists(
 						q.ContentCollectionContent.Where(
+							q.ContentCollectionContent.ContentType.EqCol(q.TorrentContent.ContentType),
 							q.ContentCollectionContent.ContentSource.EqCol(q.TorrentContent.ContentSource),
 							q.ContentCollectionContent.ContentID.EqCol(q.TorrentContent.ContentID),
 							q.ContentCollectionContent.ContentCollectionType.Eq(collectionType),

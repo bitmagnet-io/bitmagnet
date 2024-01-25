@@ -50,7 +50,7 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 	var errs []error
 	tcs := make([]model.TorrentContent, 0, len(searchResult.Torrents))
 	for _, torrent := range searchResult.Torrents {
-		if !params.Rematch && !torrent.Hint.ContentSource.Valid {
+		if params.ClassifyMode != ClassifyModeRematch && !torrent.Hint.ContentSource.Valid {
 			for _, tc := range torrent.Contents {
 				if tc.ContentType.Valid &&
 					tc.ContentSource.Valid &&
@@ -62,7 +62,11 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 				}
 			}
 		}
-		classification, classifyErr := c.classifier.Classify(ctx, torrent)
+		useClassifier := c.classifier
+		if params.ClassifyMode == ClassifyModeSkipUnmatched && torrent.Hint.IsNil() {
+			useClassifier = classifier.FallbackClassifier{}
+		}
+		classification, classifyErr := useClassifier.Classify(ctx, torrent)
 		if classifyErr != nil {
 			errs = append(errs, classifyErr)
 			continue

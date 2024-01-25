@@ -41,6 +41,12 @@ type LanguageFacetInput struct {
 	Filter    graphql.Omittable[[]model.Language] `json:"filter,omitempty"`
 }
 
+type Mutation struct {
+}
+
+type Query struct {
+}
+
 type ReleaseYearAgg struct {
 	Value *model.Year `json:"value,omitempty"`
 	Label string      `json:"label"`

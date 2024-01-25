@@ -96,7 +96,7 @@ func TestParse(t *testing.T) {
 				title:       "1776",
 				releaseYear: 1979,
 				attrs: classifier.ContentAttributes{
-					VideoResolution: model.NewNullVideoResolution(model.VideoResolutionV1080p),
+					VideoResolution: model.NewNullVideoResolution(model.VideoResolutionV720p),
 					VideoSource:     model.NewNullVideoSource(model.VideoSourceBluRay),
 					VideoCodec:      model.NewNullVideoCodec(model.VideoCodecX264),
 					ReleaseGroup: model.NullString{

@@ -87,7 +87,8 @@ func New(p Params) (Result, error) {
 										infoHashes = append(infoHashes, c.InfoHash)
 									}
 									if _, err := p.Publish(ctx, processor.MessageParams{
-										InfoHashes: infoHashes,
+										ClassifyMode: processor.ClassifyModeSkipUnmatched,
+										InfoHashes:   infoHashes,
 									}); err != nil {
 										return err
 									}
