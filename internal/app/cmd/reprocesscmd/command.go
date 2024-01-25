@@ -35,12 +35,26 @@ func New(p Params) (Result, error) {
 				Name:  "batchSize",
 				Value: 100,
 			},
-			&cli.BoolFlag{
-				Name:  "rematch",
-				Value: false,
+			&cli.StringFlag{
+				Name:  "classifyMode",
+				Value: "default",
+				Usage: "default (only attempt to match previously unmatched torrents);\n" +
+					"rematch (ignore any pre-existing classification and always classify from scratch);\n" +
+					"skip (skip classification for previously unmatched torrents that don't have any hint)",
 			},
 		},
 		Action: func(ctx *cli.Context) error {
+			var classifyMode processor.ClassifyMode
+			switch ctx.String("classifyMode") {
+			case "default":
+				classifyMode = processor.ClassifyModeDefault
+			case "rematch":
+				classifyMode = processor.ClassifyModeRematch
+			case "skip":
+				classifyMode = processor.ClassifyModeSkipUnmatched
+			default:
+				return cli.Exit("invalid classifyMode", 1)
+			}
 			println("queueing full reprocess...")
 			d, err := p.Dao.Get()
 			if err != nil {
@@ -51,7 +65,6 @@ func New(p Params) (Result, error) {
 				return err
 			}
 			batchSize := ctx.Int("batchSize")
-			rematch := ctx.Bool("rematch")
 			torrentCount := int64(0)
 			if result, err := d.Torrent.WithContext(ctx.Context).Count(); err != nil {
 				return err
@@ -66,8 +79,8 @@ func New(p Params) (Result, error) {
 					infoHashes = append(infoHashes, c.InfoHash)
 				}
 				if _, err := p.Publish(ctx.Context, processor.MessageParams{
-					Rematch:    rematch,
-					InfoHashes: infoHashes,
+					ClassifyMode: classifyMode,
+					InfoHashes:   infoHashes,
 				}); err != nil {
 					return err
 				}

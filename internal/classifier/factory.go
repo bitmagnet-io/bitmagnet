@@ -29,7 +29,7 @@ func New(p Params) Result {
 				}
 				subClassifiers = append(subClassifiers, r)
 			}
-			subClassifiers = append(subClassifiers, fallbackClassifier{})
+			subClassifiers = append(subClassifiers, FallbackClassifier{})
 			sort.Slice(subClassifiers, func(i, j int) bool {
 				return subClassifiers[i].Priority() < subClassifiers[j].Priority()
 			})
