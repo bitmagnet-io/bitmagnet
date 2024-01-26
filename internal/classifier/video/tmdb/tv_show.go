@@ -93,21 +93,39 @@ func (c *client) searchTvShowTmdb(ctx context.Context, p SearchTvShowParams) (tv
 }
 
 func (c *client) GetTvShowByExternalId(ctx context.Context, source, id string) (tvShow model.Content, err error) {
-	searchResult, searchErr := c.s.Content(ctx,
-		query.Where(search.ContentIdentifierCriteria(model.ContentRef{
-			Type:   model.ContentTypeTvShow,
-			Source: source,
-			ID:     id,
-		})),
+	options := []query.Option{
 		search.ContentDefaultPreload(),
 		search.ContentDefaultHydrate(),
 		query.Limit(1),
-	)
-	if searchErr != nil {
-		return model.Content{}, searchErr
 	}
-	if len(searchResult.Items) > 0 {
-		return searchResult.Items[0].Content, nil
+	if source == SourceTmdb {
+		canonicalResult, canonicalErr := c.s.Content(ctx,
+			append(options, query.Where(search.ContentCanonicalIdentifierCriteria(model.ContentRef{
+				Type:   model.ContentTypeTvShow,
+				Source: source,
+				ID:     id,
+			})))...,
+		)
+		if canonicalErr != nil {
+			return model.Content{}, canonicalErr
+		}
+		if len(canonicalResult.Items) > 0 {
+			return canonicalResult.Items[0].Content, nil
+		}
+	} else {
+		alternativeResult, alternativeErr := c.s.Content(ctx,
+			append(options, query.Where(search.ContentAlternativeIdentifierCriteria(model.ContentRef{
+				Type:   model.ContentTypeTvShow,
+				Source: source,
+				ID:     id,
+			})))...,
+		)
+		if alternativeErr != nil {
+			return model.Content{}, alternativeErr
+		}
+		if len(alternativeResult.Items) > 0 {
+			return alternativeResult.Items[0].Content, nil
+		}
 	}
 	if source == SourceTmdb {
 		intId, idErr := strconv.Atoi(id)

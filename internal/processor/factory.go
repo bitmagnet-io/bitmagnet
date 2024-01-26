@@ -42,6 +42,7 @@ func New(p Params) Result {
 				classifier:       c,
 				dao:              d,
 				search:           s,
+				processSemaphore: semaphore.NewWeighted(2),
 				persistSemaphore: semaphore.NewWeighted(1),
 			}, nil
 		}),

@@ -92,21 +92,44 @@ func (c *client) searchMovieTmdb(ctx context.Context, p SearchMovieParams) (mode
 }
 
 func (c *client) GetMovieByExternalId(ctx context.Context, source, id string) (model.Content, error) {
-	searchResult, searchErr := c.s.Content(ctx, query.Where(
-		search.ContentTypeCriteria(model.ContentTypeMovie, model.ContentTypeXxx),
-		search.ContentIdentifierCriteria(model.ContentRef{
-			Source: source,
-			ID:     id,
-		})),
+	options := []query.Option{
+		query.Where(
+			search.ContentTypeCriteria(model.ContentTypeMovie, model.ContentTypeXxx),
+		),
 		search.ContentDefaultPreload(),
 		search.ContentDefaultHydrate(),
 		query.Limit(1),
-	)
-	if searchErr != nil {
-		return model.Content{}, searchErr
 	}
-	if len(searchResult.Items) > 0 {
-		return searchResult.Items[0].Content, nil
+	if source == SourceTmdb {
+		canonicalResult, canonicalErr := c.s.Content(ctx,
+			append(options, query.Where(
+				search.ContentCanonicalIdentifierCriteria(model.ContentRef{
+					Source: source,
+					ID:     id,
+				}),
+			))...,
+		)
+		if canonicalErr != nil {
+			return model.Content{}, canonicalErr
+		}
+		if len(canonicalResult.Items) > 0 {
+			return canonicalResult.Items[0].Content, nil
+		}
+	} else {
+		alternativeResult, alternativeErr := c.s.Content(ctx,
+			append(options, query.Where(
+				search.ContentAlternativeIdentifierCriteria(model.ContentRef{
+					Source: source,
+					ID:     id,
+				}),
+			))...,
+		)
+		if alternativeErr != nil {
+			return model.Content{}, alternativeErr
+		}
+		if len(alternativeResult.Items) > 0 {
+			return alternativeResult.Items[0].Content, nil
+		}
 	}
 	if source == SourceTmdb {
 		intId, idErr := strconv.Atoi(id)
