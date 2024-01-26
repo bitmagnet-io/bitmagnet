@@ -53,12 +53,15 @@ func contentCanonicalIdentifierCriteria(contentMap contentMap) query.Criteria {
 	})
 }
 
-func ContentIdentifierCriteria(refs ...model.ContentRef) query.Criteria {
+func ContentAlternativeIdentifierCriteria(refs ...model.ContentRef) query.Criteria {
+	return contentAlternativeIdentifierCriteria(contentMapFromRefs(refs...))
+}
+
+func contentAlternativeIdentifierCriteria(contentMap contentMap) query.Criteria {
 	return query.GenCriteria(func(ctx query.DbContext) (query.Criteria, error) {
-		m := contentMapFromRefs(refs...)
 		q := ctx.Query()
-		criteria := []query.Criteria{contentCanonicalIdentifierCriteria(m)}
-		for contentType, sourceMap := range m {
+		criteria := make([]query.Criteria, 0, len(contentMap))
+		for contentType, sourceMap := range contentMap {
 			for source, idMap := range sourceMap {
 				conds := make([]gen.Condition, 0, 6)
 				if !contentType.IsNil() {
@@ -82,8 +85,16 @@ func ContentIdentifierCriteria(refs ...model.ContentRef) query.Criteria {
 				})
 			}
 		}
-		return query.OrCriteria{
-			Criteria: criteria,
-		}, nil
+		return query.Or(criteria...), nil
 	})
+}
+
+func ContentIdentifierCriteria(refs ...model.ContentRef) query.Criteria {
+	m := contentMapFromRefs(refs...)
+	return query.OrCriteria{
+		Criteria: []query.Criteria{
+			contentCanonicalIdentifierCriteria(m),
+			contentAlternativeIdentifierCriteria(m),
+		},
+	}
 }

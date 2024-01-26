@@ -41,7 +41,7 @@ func (c processor) Persist(ctx context.Context, torrentContents ...model.Torrent
 			if createContentErr := tx.Content.WithContext(ctx).Clauses(
 				clause.OnConflict{
 					UpdateAll: true,
-				}).CreateInBatches(contentsPtr, 100); createContentErr != nil {
+				}).CreateInBatches(contentsPtr, 20); createContentErr != nil {
 				return createContentErr
 			}
 		}
@@ -54,6 +54,6 @@ func (c processor) Persist(ctx context.Context, torrentContents ...model.Torrent
 			clause.OnConflict{
 				DoNothing: true,
 			},
-		).CreateInBatches(torrentContentsPtr, 100)
+		).CreateInBatches(torrentContentsPtr, 20)
 	})
 }
