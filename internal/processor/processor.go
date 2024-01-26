@@ -22,6 +22,7 @@ type processor struct {
 	search           search.Search
 	classifier       classifier.Classifier
 	dao              *dao.Query
+	processSemaphore *semaphore.Weighted
 	persistSemaphore *semaphore.Weighted
 }
 
@@ -34,12 +35,17 @@ func (e MissingHashesError) Error() string {
 }
 
 func (c processor) Process(ctx context.Context, params MessageParams) error {
+	if err := c.processSemaphore.Acquire(ctx, 1); err != nil {
+		return err
+	}
+	defer c.processSemaphore.Release(1)
 	searchResult, searchErr := c.search.TorrentsWithMissingInfoHashes(
 		ctx,
 		params.InfoHashes,
-		search.TorrentDefaultPreload(),
 		query.Preload(func(q *dao.Query) []field.RelationField {
 			return []field.RelationField{
+				q.Torrent.Files.RelationField,
+				q.Torrent.Hint.RelationField,
 				q.Torrent.Contents.RelationField,
 			}
 		}),
