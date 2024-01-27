@@ -1,6 +1,6 @@
 title: bitmagnet
 baseurl: ""
-url: "http://localhost:4001"
+url: "https://bitmagnet.io"
 markdown: kramdown
 theme: just-the-docs
 mermaid:
