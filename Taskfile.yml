@@ -72,6 +72,7 @@ tasks:
         --table=torrent_hints \
         --table=torrent_contents \
         --table=torrents_torrent_sources \
+        --table=key_values \
         bitmagnet \
         > export.sql
 
