@@ -46,6 +46,14 @@ func (c videoClassifier) Classify(ctx context.Context, t model.Torrent) (classif
 	cl.ApplyHint(t.Hint)
 	if cl.Content != nil {
 		cl.ContentType = model.NewNullContentType(cl.Content.Type)
+		if cl.Content.OriginalLanguage.Valid {
+			if len(cl.Languages) == 0 || cl.LanguageMulti {
+				if cl.Languages == nil {
+					cl.Languages = make(model.Languages)
+				}
+				cl.Languages[cl.Content.OriginalLanguage.Language] = struct{}{}
+			}
+		}
 	}
 	if !cl.ContentType.Valid {
 		return classifier.Classification{}, classifier.ErrNoMatch
