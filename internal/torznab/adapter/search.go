@@ -12,7 +12,7 @@ import (
 )
 
 func (a adapter) Search(ctx context.Context, req torznab.SearchRequest) (torznab.SearchResult, error) {
-	options := []query.Option{search.TorrentContentDefaultOption(), query.WithTotalCount(true)}
+	options := []query.Option{search.TorrentContentDefaultOption(), query.WithTotalCount(false)}
 	if reqOptions, reqErr := a.searchRequestOptions(req); reqErr != nil {
 		return torznab.SearchResult{}, reqErr
 	} else {
@@ -148,7 +148,12 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 		if item.ContentType.Valid {
 			category = item.ContentType.ContentType.Label()
 		}
-		date := item.Torrent.Sources[0].PublishedAt
+		date := item.CreatedAt
+		for _, s := range item.Torrent.Sources {
+			if !s.PublishedAt.IsZero() && (date.IsZero() || s.PublishedAt.Before(date)) {
+				date = s.PublishedAt
+			}
+		}
 		if date.IsZero() {
 			date = item.CreatedAt
 		}
@@ -264,7 +269,7 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 			Title: a.title,
 			Response: torznab.SearchResultResponse{
 				Offset: req.Offset.Uint,
-				Total:  res.TotalCount,
+				//Total:  res.TotalCount,
 			},
 			Items: entries,
 		},
