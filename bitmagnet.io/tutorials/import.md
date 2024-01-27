@@ -2,7 +2,7 @@
 title: Import
 parent: Tutorials
 layout: default
-nav_order: 2
+nav_order: 3
 redirect_from:
   - /tutorials/importing.html
 ---
