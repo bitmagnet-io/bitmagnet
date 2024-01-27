@@ -4,6 +4,7 @@ import "github.com/bitmagnet-io/bitmagnet/internal/model"
 
 type ContentAttributes struct {
 	Languages       model.Languages
+	LanguageMulti   bool
 	Episodes        model.Episodes
 	VideoResolution model.NullVideoResolution
 	VideoSource     model.NullVideoSource

@@ -108,6 +108,8 @@ var titleEpisodesRegex = rex.New(
 	rex.Group.NonCaptured(rex.Group.NonCaptured(titleTokens...), episodesTokens),
 ).MustCompile()
 
+var multiRegex = regex.NewRegexFromNames("multi")
+
 var separatorToken = rex.Chars.Runes(" ._")
 
 var titlePartRegex = rex.New(
@@ -260,6 +262,7 @@ func ParseContent(hintCt model.NullContentType, input string) (model.ContentType
 	return ct, title, year, classifier.ContentAttributes{
 		Episodes:        episodes,
 		Languages:       model.InferLanguages(rest),
+		LanguageMulti:   multiRegex.MatchString(rest),
 		VideoResolution: model.InferVideoResolution(rest),
 		VideoSource:     model.InferVideoSource(rest),
 		VideoCodec:      vc,
