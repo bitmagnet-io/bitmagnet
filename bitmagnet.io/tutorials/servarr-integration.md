@@ -2,7 +2,7 @@
 title: Servarr Integration
 parent: Tutorials
 layout: default
-nav_order: 1
+nav_order: 4
 ---
 
 # Servarr Integration
