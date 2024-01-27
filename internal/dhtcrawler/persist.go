@@ -40,7 +40,7 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 					string(c.dao.Torrent.PieceLength.ColumnName()),
 					string(c.dao.Torrent.Pieces.ColumnName()),
 				}),
-			}).CreateInBatches(ts, 100); persistErr != nil {
+			}).CreateInBatches(ts, 20); persistErr != nil {
 				c.logger.Errorf("error persisting torrents: %s", persistErr)
 			} else {
 				c.persistedTotal.With(prometheus.Labels{"entity": "Torrent"}).Add(float64(len(ts)))
@@ -152,7 +152,7 @@ func (c *crawler) runPersistSources(ctx context.Context) {
 			}
 			if persistErr := c.dao.WithContext(ctx).TorrentsTorrentSource.Clauses(clause.OnConflict{
 				UpdateAll: true,
-			}).CreateInBatches(srcs, 100); persistErr != nil {
+			}).CreateInBatches(srcs, 20); persistErr != nil {
 				c.logger.Errorf("error persisting torrent sources: %s", persistErr.Error())
 			} else {
 				c.persistedTotal.With(prometheus.Labels{"entity": "TorrentsTorrentSource"}).Add(float64(len(srcs)))
