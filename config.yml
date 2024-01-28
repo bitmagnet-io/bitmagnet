@@ -1,0 +1,80 @@
+postgres:
+    host: localhost
+    port: 5432
+    name: bitmagnet
+    user: bitmagnet
+    password:
+#    connection_timeout: 0
+    ssl_cert_path:
+    ssl_key_path:
+    ssl_mode:
+    ssl_root_cert_path:
+
+redis:
+    addr: localhost:6379
+    db: 0
+    username:
+    password:
+#    network: tcp
+#    pool_size: 10
+#    dial_timeout: 5s
+#    read_timeout: 3s
+#    write_timeout: 3s
+
+tmdb:
+    api_key:
+#    rate_limit: 50ms
+#    rate_limit_burst: 5
+
+dht_server:
+     port: 3334
+#     query_timeout: 4s
+
+#dht_crawler:
+#    save_files_threshold: 50
+#    save_pieces: false
+#    scaling_factor: 10
+#    rescrape_threshold: 720h
+#    reseed_bootstrap_nodes_interval: 1m
+
+search_warmer:
+    enabled: true
+#    interval: 50m
+
+http_server:
+    local_address: 127.0.0.1:3333
+    options:
+        - '*'
+#        - cors
+#        - pprof
+#        - graphql
+#        - import
+#        - prometheus
+#        - torznab
+#        - status
+#        - webui
+    cors:
+        debug: true
+        max_age: 0
+        allow_credentials: false
+        allow_private_network: false
+        allowed_origins:
+        allowed_methods:
+        allowed_headers:
+            - '*'
+        exposed_headers:
+        options_passthrough: false
+        options_success_status: 0
+
+log:
+    level: info
+    development: false
+    json: false
+    file_rotator:
+        enabled: false
+        level: info
+        path: /var/log/bitmagnet
+#        max_age: 1h
+#        max_size: 100000000
+#        max_backups: 5
+
