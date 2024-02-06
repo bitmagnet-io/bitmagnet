@@ -34,46 +34,12 @@ type yearFacet struct {
 	field string
 }
 
-func (r yearFacet) Aggregate(ctx query.FacetContext) (query.AggregationItems, error) {
-	var results []struct {
-		Year  string
-		Count uint
-	}
-	q, qErr := ctx.NewAggregationQuery()
-	if qErr != nil {
-		return nil, qErr
-	}
-	if txErr := q.UnderlyingDB().Select(
-		fmt.Sprintf("%s.%s as year", ctx.TableName(), r.field),
-		"count(*) as count",
-	).Group(
-		"year",
-	).Find(&results).Error; txErr != nil {
-		return nil, txErr
-	}
-	agg := make(query.AggregationItems, len(results))
-	for _, item := range results {
-		key := item.Year
-		label := item.Year
-		if key == "" {
-			key = "null"
-			label = "Unknown"
-		}
-		agg[key] = query.AggregationItem{
-			Label: label,
-			Count: item.Count,
-		}
-	}
-	return agg, nil
-}
-
-func (r yearFacet) Criteria() []query.Criteria {
+func (r yearFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 	return []query.Criteria{
 		query.GenCriteria(func(ctx query.DbContext) (query.Criteria, error) {
-			filter := r.Filter().Values()
 			years := make([]uint16, 0, len(filter))
 			hasNull := false
-			for _, v := range filter {
+			for _, v := range filter.Values() {
 				if v == "null" {
 					hasNull = true
 					continue
@@ -110,4 +76,8 @@ func yearCondition(target field.Field, years ...uint16) field.Expr {
 		valuers = append(valuers, model.NewNullUint16(year))
 	}
 	return target.In(valuers...)
+}
+
+func (yearFacet) Values(query.FacetContext) (map[string]string, error) {
+	return map[string]string{}, nil
 }

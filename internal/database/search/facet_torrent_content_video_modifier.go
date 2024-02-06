@@ -10,7 +10,7 @@ import (
 const VideoModifierFacetKey = "video_modifier"
 
 func VideoModifierFacet(options ...query.FacetOption) query.Facet {
-	return torrentContentAttributeFacet[model.VideoModifier]{
+	return videoModifierFacet{torrentContentAttributeFacet[model.VideoModifier]{
 		FacetConfig: query.NewFacetConfig(
 			append([]query.FacetOption{
 				query.FacetHasKey(VideoModifierFacetKey),
@@ -22,5 +22,18 @@ func VideoModifierFacet(options ...query.FacetOption) query.Facet {
 			return q.TorrentContent.VideoModifier
 		},
 		parse: model.ParseVideoModifier,
+	}}
+}
+
+type videoModifierFacet struct {
+	torrentContentAttributeFacet[model.VideoModifier]
+}
+
+func (f videoModifierFacet) Values(query.FacetContext) (map[string]string, error) {
+	vms := model.VideoModifierValues()
+	values := make(map[string]string, len(vms))
+	for _, vr := range vms {
+		values[vr.String()] = vr.Label()
 	}
+	return values, nil
 }

@@ -26,40 +26,20 @@ type torrentContentLanguageFacet struct {
 	query.FacetConfig
 }
 
-func (f torrentContentLanguageFacet) Aggregate(ctx query.FacetContext) (query.AggregationItems, error) {
-	var results []struct {
-		Language model.Language
-		Count    uint
+func (torrentContentLanguageFacet) Values(query.FacetContext) (map[string]string, error) {
+	languageValues := model.LanguageValues()
+	values := make(map[string]string, len(languageValues))
+	for _, l := range languageValues {
+		values[l.Id()] = l.Name()
 	}
-	q, qErr := ctx.NewAggregationQuery()
-	if qErr != nil {
-		return nil, qErr
-	}
-	tx := q.UnderlyingDB().Select(
-		"jsonb_array_elements(torrent_contents.languages) as language",
-		"count(*) as count",
-	).Group(
-		"language",
-	).Find(&results)
-	if tx.Error != nil {
-		return nil, fmt.Errorf("failed to aggregate languages: %w", tx.Error)
-	}
-	agg := make(query.AggregationItems, len(results))
-	for _, item := range results {
-		agg[item.Language.Id()] = query.AggregationItem{
-			Label: item.Language.Name(),
-			Count: item.Count,
-		}
-	}
-	return agg, nil
+	return values, nil
 }
 
-func (f torrentContentLanguageFacet) Criteria() []query.Criteria {
+func (f torrentContentLanguageFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 	return []query.Criteria{
 		query.GenCriteria(func(ctx query.DbContext) (query.Criteria, error) {
-			filter := f.Filter().Values()
 			langs := make([]model.Language, 0, len(filter))
-			for _, v := range filter {
+			for _, v := range filter.Values() {
 				lang := model.ParseLanguage(v)
 				if !lang.Valid {
 					return nil, errors.New("invalid language filter specified")

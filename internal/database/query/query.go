@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/estimate"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"gorm.io/gen"
@@ -20,10 +21,11 @@ type ResultItem struct {
 }
 
 type GenericResult[T interface{}] struct {
-	TotalCount   uint
-	HasNextPage  bool
-	Items        []T
-	Aggregations Aggregations
+	TotalCount           uint
+	TotalCountIsEstimate bool
+	HasNextPage          bool
+	Items                []T
+	Aggregations         Aggregations
 }
 
 type SubQueryFactory = func(context.Context, *dao.Query) SubQuery
@@ -72,10 +74,11 @@ func GenericQuery[T interface{}](
 				addErr(sqErr)
 				return
 			}
-			if tc, countErr := sq.Count(); countErr != nil {
+			if countResult, countErr := estimate.BudgetedCount(sq.UnderlyingDB(), builder.AggregationBudget()); countErr != nil {
 				addErr(countErr)
 			} else {
-				r.TotalCount = uint(tc)
+				r.TotalCount = uint(countResult.Count)
+				r.TotalCountIsEstimate = countResult.BudgetExceeded
 			}
 		}
 	})()
@@ -222,6 +225,8 @@ type OptionBuilder interface {
 	calculateAggregations(context.Context) (Aggregations, error)
 	WithTotalCount(bool) OptionBuilder
 	WithHasNextPage(bool) OptionBuilder
+	WithAggregationBudget(float64) OptionBuilder
+	AggregationBudget() float64
 	withTotalCount() bool
 	applyCallbacks(context.Context, any) error
 	hasZeroLimit() bool
@@ -233,21 +238,22 @@ type OptionBuilder interface {
 
 type optionBuilder struct {
 	dbContext
-	joins         map[string]TableJoin
-	requiredJoins maps.InsertMap[string, struct{}]
-	scopes        []Scope
-	selections    []clause.Expr
-	groupBy       []clause.Column
-	orderBy       []clause.OrderByColumn
-	limit         model.NullUint
-	nextPage      bool
-	offset        uint
-	facets        []Facet
-	currentFacet  string
-	preloads      []field.RelationField
-	totalCount    bool
-	callbacks     []Callback
-	contextFn     func(context.Context) context.Context
+	joins             map[string]TableJoin
+	requiredJoins     maps.InsertMap[string, struct{}]
+	scopes            []Scope
+	selections        []clause.Expr
+	groupBy           []clause.Column
+	orderBy           []clause.OrderByColumn
+	limit             model.NullUint
+	nextPage          bool
+	offset            uint
+	facets            []Facet
+	currentFacet      string
+	preloads          []field.RelationField
+	totalCount        bool
+	aggregationBudget float64
+	callbacks         []Callback
+	contextFn         func(context.Context) context.Context
 }
 
 type RawJoin struct {
@@ -383,6 +389,15 @@ func (b optionBuilder) hasNextPage(nItems int) bool {
 		return false
 	}
 	return nItems > int(b.limit.Uint)
+}
+
+func (b optionBuilder) WithAggregationBudget(budget float64) OptionBuilder {
+	b.aggregationBudget = budget
+	return b
+}
+
+func (b optionBuilder) AggregationBudget() float64 {
+	return b.aggregationBudget
 }
 
 func (b optionBuilder) withCurrentFacet(facet string) OptionBuilder {

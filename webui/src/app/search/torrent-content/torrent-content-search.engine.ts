@@ -1,5 +1,5 @@
 import { CollectionViewer, DataSource } from "@angular/cdk/collections";
-import { BehaviorSubject, catchError, EMPTY, map, Observable, zip } from "rxjs";
+import { BehaviorSubject, catchError, EMPTY, map, Observable } from "rxjs";
 import * as generated from "../../graphql/generated";
 import { GraphQLService } from "../../graphql/graphql.service";
 import { AppErrorsService } from "../../app-errors.service";
@@ -9,7 +9,18 @@ import { Facet, VideoResolutionAgg, VideoSourceAgg } from "./facet";
 const emptyResult: generated.TorrentContentSearchResult = {
   items: [],
   totalCount: 0,
+  totalCountIsEstimate: false,
   aggregations: {},
+};
+
+type BudgetedCount = {
+  count: number;
+  isEstimate: boolean;
+};
+
+const emptyBudgetedCount = {
+  count: 0,
+  isEstimate: false,
 };
 
 export class TorrentContentSearchEngine
@@ -42,6 +53,9 @@ export class TorrentContentSearchEngine
     map((result) => result.aggregations),
   );
   public loading$ = this.loadingSubject.asObservable();
+  public hasNextPage$ = this.itemsResultSubject.pipe(
+    map((result) => result.hasNextPage),
+  );
 
   private torrentSourceFacet = new Facet<string, false>(
     "Torrent Source",
@@ -100,11 +114,15 @@ export class TorrentContentSearchEngine
     this.genreFacet,
   ];
 
-  private overallTotalCountSubject = new BehaviorSubject<number>(0);
+  private overallTotalCountSubject = new BehaviorSubject<BudgetedCount>(
+    emptyBudgetedCount,
+  );
   public overallTotalCount$ = this.overallTotalCountSubject.asObservable();
 
-  private maxTotalCountSubject = new BehaviorSubject<number>(0);
-  public maxTotalCount$ = this.maxTotalCountSubject.asObservable();
+  private totalCountSubject = new BehaviorSubject<BudgetedCount>(
+    emptyBudgetedCount,
+  );
+  public totalCount$ = this.totalCountSubject.asObservable();
 
   public contentTypes = contentTypes;
 
@@ -136,7 +154,6 @@ export class TorrentContentSearchEngine
     const pageSize = this.pageSizeSubject.getValue();
     const queryString = this.queryStringSubject.getValue() || undefined;
     const offset = this.pageIndexSubject.getValue() * pageSize;
-    const contentType = this.contentTypeSubject.getValue();
     const items = this.graphQLService
       .torrentContentSearch({
         query: {
@@ -145,8 +162,9 @@ export class TorrentContentSearchEngine
           offset,
           hasNextPage: true,
           cached,
+          totalCount: true,
         },
-        facets: this.facetsInput(false),
+        facets: this.facetsInput(true),
       })
       .pipe(
         catchError((err: Error) => {
@@ -156,58 +174,28 @@ export class TorrentContentSearchEngine
           return EMPTY;
         }),
       );
-    const aggs = this.graphQLService
-      .torrentContentSearch({
-        query: {
-          limit: 0,
-          cached: true,
-        },
-        facets: this.facetsInput(true),
-      })
-      .pipe(
-        catchError((err: Error) => {
-          this.errorsService.addError(
-            `Error loading aggregation results: ${err.message}`,
-          );
-          return EMPTY;
-        }),
-      );
     items.subscribe((result) => {
       const lastRequestTime = this.lastRequestTimeSubject.getValue();
       if (requestTime >= lastRequestTime) {
         this.itemsResultSubject.next(result);
-      }
-    });
-    aggs.subscribe((result) => {
-      const lastRequestTime = this.lastRequestTimeSubject.getValue();
-      if (requestTime >= lastRequestTime) {
         this.aggsResultSubject.next(result);
+        this.loadingSubject.next(false);
+        this.lastRequestTimeSubject.next(requestTime);
+        this.pageLengthSubject.next(result.items.length);
+        this.totalCountSubject.next({
+          count: result.totalCount,
+          isEstimate: result.totalCountIsEstimate,
+        });
+        this.overallTotalCountSubject.next(
+          (result.aggregations.contentType ?? []).reduce(
+            (acc, next) => ({
+              count: acc.count + next.count,
+              isEstimate: acc.isEstimate || next.isEstimate,
+            }),
+            emptyBudgetedCount,
+          ),
+        );
       }
-    });
-    zip(items, aggs).subscribe(([i, a]) => {
-      this.loadingSubject.next(false);
-      this.lastRequestTimeSubject.next(requestTime);
-      const overallTotalCount =
-        a.aggregations.contentType
-          ?.map((c) => c.count)
-          .reduce((a, b) => a + b, 0) ?? 0;
-      let maxTotalCount: number;
-      if (!i.hasNextPage) {
-        maxTotalCount = offset + i.items.length;
-      } else if (contentType === undefined) {
-        maxTotalCount =
-          a.aggregations.contentType
-            ?.map((c) => c.count)
-            .reduce((a, b) => a + b, 0) ?? 0;
-      } else {
-        maxTotalCount =
-          a.aggregations.contentType?.find(
-            (a) => (a.value ?? "null") === (contentType ?? undefined),
-          )?.count ?? overallTotalCount;
-      }
-      this.pageLengthSubject.next(i.items.length);
-      this.maxTotalCountSubject.next(maxTotalCount);
-      this.overallTotalCountSubject.next(overallTotalCount);
     });
   }
 
@@ -231,13 +219,6 @@ export class TorrentContentSearchEngine
       videoResolution: facetInput(this.videoResolutionFacet, aggregate),
       videoSource: facetInput(this.videoSourceFacet, aggregate),
     };
-  }
-
-  get isDeepFiltered(): boolean {
-    return (
-      !!this.queryStringSubject.getValue() ||
-      this.facets.some((f) => f.isActive() && !f.isEmpty())
-    );
   }
 
   selectContentType(
@@ -264,13 +245,15 @@ export class TorrentContentSearchEngine
     this.loadResult();
   }
 
-  contentTypeCount(type: string): Observable<number> {
+  contentTypeCount(type: string): Observable<{
+    count: number;
+    isEstimate: boolean;
+  }> {
     return this.aggregations$.pipe(
-      map(
-        (aggs) =>
-          aggs.contentType?.find((a) => (a.value ?? "null") === type)?.count ??
-          0,
-      ),
+      map((aggs) => {
+        const agg = aggs.contentType?.find((a) => (a.value ?? "null") === type);
+        return agg ?? { count: 0, isEstimate: false };
+      }),
     );
   }
 
@@ -335,7 +318,7 @@ function facetInput<T = unknown, _allowNull extends boolean = true>(
   return facet.isActive()
     ? {
         aggregate,
-        filter: aggregate ? undefined : facet.filterValues(),
+        filter: facet.filterValues(),
       }
     : undefined;
 }

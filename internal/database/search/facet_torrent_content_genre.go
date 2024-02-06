@@ -8,7 +8,7 @@ import (
 const ContentGenreFacetKey = "content_genre"
 
 func TorrentContentGenreFacet(options ...query.FacetOption) query.Facet {
-	return contentCollectionFacet{
+	return torrentContentCollectionFacet{
 		FacetConfig: query.NewFacetConfig(
 			append([]query.FacetOption{
 				query.FacetHasKey(ContentGenreFacetKey),

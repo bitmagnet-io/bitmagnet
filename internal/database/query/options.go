@@ -17,6 +17,7 @@ type Option = func(ctx OptionBuilder) (OptionBuilder, error)
 func DefaultOption() Option {
 	return Options(
 		Limit(10),
+		WithAggregationBudget(10_000),
 	)
 }
 
@@ -180,6 +181,12 @@ func WithTotalCount(bl bool) Option {
 func WithHasNextPage(bl bool) Option {
 	return func(ctx OptionBuilder) (OptionBuilder, error) {
 		return ctx.WithHasNextPage(bl), nil
+	}
+}
+
+func WithAggregationBudget(budget float64) Option {
+	return func(ctx OptionBuilder) (OptionBuilder, error) {
+		return ctx.WithAggregationBudget(budget), nil
 	}
 }
 

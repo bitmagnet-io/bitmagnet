@@ -18,7 +18,8 @@ export class PaginatorComponent {
   @Input() pageSizes: number[] = [10, 20, 50, 100];
   @Input({ transform: numberAttribute }) pageLength = 0;
   @Input() totalLength: number | null = null;
-  @Input() totalLessThanOrEqual = false;
+  @Input() totalIsEstimate = false;
+  @Input() hasNextPage: boolean | null | undefined = null;
 
   @Output() page = new EventEmitter<PageEvent>();
 
@@ -36,10 +37,6 @@ export class PaginatorComponent {
 
   get hasPreviousPage() {
     return this.pageIndex > 0;
-  }
-
-  get hasNextPage() {
-    return this.firstItemIndex + this.pageSize <= this.totalLength!;
   }
 
   emitChange() {

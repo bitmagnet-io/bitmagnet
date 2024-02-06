@@ -28,7 +28,6 @@ func New() fx.Option {
 			migrations.New,
 			postgres.New,
 			search.New,
-			warmer.New,
 		),
 		fx.Decorate(
 			cache.NewDecorator,

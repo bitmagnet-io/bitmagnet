@@ -1,74 +1,34 @@
 package search
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
-	"gorm.io/gen/field"
 	"strings"
 )
 
-type contentCollectionFacet struct {
+type torrentContentCollectionFacet struct {
 	query.FacetConfig
 	collectionType string
 }
 
-func (r contentCollectionFacet) Aggregate(ctx query.FacetContext) (items query.AggregationItems, err error) {
-	var results []struct {
-		ConcatId string
-		Name     string
-		Count    uint
+func (f torrentContentCollectionFacet) Values(ctx query.FacetContext) (map[string]string, error) {
+	q := ctx.Query().ContentCollection
+	colls, err := ctx.Query().ContentCollection.WithContext(ctx.Context()).Where(
+		q.Type.Eq(f.collectionType),
+	).Find()
+	if err != nil {
+		return nil, err
 	}
-	sq, sqErr := ctx.NewAggregationQuery(
-		query.Table(model.TableNameContentCollectionContent),
-		query.Join(func(q *dao.Query) []query.TableJoin {
-			return []query.TableJoin{
-				{
-					Table: q.TorrentContent,
-					On: []field.Expr{
-						q.TorrentContent.ContentType.EqCol(q.ContentCollectionContent.ContentType),
-						q.TorrentContent.ContentSource.EqCol(q.ContentCollectionContent.ContentSource),
-						q.TorrentContent.ContentID.EqCol(q.ContentCollectionContent.ContentID),
-					},
-					Type: query.TableJoinTypeInner,
-				},
-			}
-		}),
-		query.RequireJoin(model.TableNameContentCollection),
-		query.Where(query.RawCriteria{
-			Query: "content_collections_content.content_collection_type = ?",
-			Args:  []interface{}{r.collectionType},
-		}),
-	)
-	if sqErr != nil {
-		err = sqErr
-		return
+	values := make(map[string]string, len(colls))
+	for _, coll := range colls {
+		values[coll.Source+":"+coll.ID] = coll.Name
 	}
-	tx := sq.UnderlyingDB().Select(
-		"(content_collections_content.content_collection_source || ':' ||content_collections_content.content_collection_id) as concat_id",
-		"MIN(content_collections.name) as name",
-		"count(distinct(content_collections_content.content_source, content_collections_content.content_id)) as count",
-	).Group(
-		"concat_id",
-	).Find(&results)
-	if tx.Error != nil {
-		err = tx.Error
-		return
-	}
-	agg := make(query.AggregationItems, len(results))
-	for _, item := range results {
-		agg[item.ConcatId] = query.AggregationItem{
-			Label: item.Name,
-			Count: item.Count,
-		}
-	}
-	return agg, nil
+	return values, nil
 }
 
-func (r contentCollectionFacet) Criteria() []query.Criteria {
+func (f torrentContentCollectionFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 	sourceMap := make(map[string]map[string]struct{})
-	filter := r.Filter().Values()
-	for _, value := range filter {
+	for _, value := range filter.Values() {
 		parts := strings.Split(value, ":")
 		if len(parts) != 2 {
 			continue
@@ -84,12 +44,12 @@ func (r contentCollectionFacet) Criteria() []query.Criteria {
 		refs := make([]model.ContentCollectionRef, 0, len(idMap))
 		for id := range idMap {
 			refs = append(refs, model.ContentCollectionRef{
-				Type:   r.collectionType,
+				Type:   f.collectionType,
 				Source: source,
 				ID:     id,
 			})
 		}
-		switch r.Logic() {
+		switch f.Logic() {
 		case model.FacetLogicOr:
 			criteria = append(criteria, ContentCollectionCriteria(refs...))
 		case model.FacetLogicAnd:

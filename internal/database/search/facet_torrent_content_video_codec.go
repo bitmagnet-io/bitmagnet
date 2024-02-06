@@ -10,7 +10,7 @@ import (
 const VideoCodecFacetKey = "video_codec"
 
 func VideoCodecFacet(options ...query.FacetOption) query.Facet {
-	return torrentContentAttributeFacet[model.VideoCodec]{
+	return videoCodecFacet{torrentContentAttributeFacet[model.VideoCodec]{
 		FacetConfig: query.NewFacetConfig(
 			append([]query.FacetOption{
 				query.FacetHasKey(VideoCodecFacetKey),
@@ -22,5 +22,18 @@ func VideoCodecFacet(options ...query.FacetOption) query.Facet {
 			return q.TorrentContent.VideoCodec
 		},
 		parse: model.ParseVideoCodec,
+	}}
+}
+
+type videoCodecFacet struct {
+	torrentContentAttributeFacet[model.VideoCodec]
+}
+
+func (f videoCodecFacet) Values(query.FacetContext) (map[string]string, error) {
+	vcs := model.VideoCodecValues()
+	values := make(map[string]string, len(vcs))
+	for _, vr := range vcs {
+		values[vr.String()] = vr.Label()
 	}
+	return values, nil
 }

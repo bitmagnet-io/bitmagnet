@@ -22,51 +22,17 @@ type attribute interface {
 	Label() string
 }
 
-func (f torrentContentAttributeFacet[T]) Aggregate(ctx query.FacetContext) (query.AggregationItems, error) {
-	var results []struct {
-		Value *T
-		Count uint
-	}
-	q, qErr := ctx.NewAggregationQuery()
-	if qErr != nil {
-		return nil, qErr
-	}
-	fld := f.field(ctx.Query())
-	if err := q.UnderlyingDB().Select(
-		ctx.TableName()+"."+string(fld.ColumnName())+" as value",
-		"count(*) as count",
-	).Group(
-		"value",
-	).Find(&results).Error; err != nil {
-		return nil, fmt.Errorf("failed to aggregate: %w", err)
-	}
-	agg := make(query.AggregationItems, len(results))
-	for _, item := range results {
-		var key, label string
-		if item.Value == nil {
-			key = "null"
-			label = "Unknown"
-		} else {
-			vV := *item.Value
-			key = vV.String()
-			label = vV.Label()
-		}
-		agg[key] = query.AggregationItem{
-			Label: label,
-			Count: item.Count,
-		}
-	}
-	return agg, nil
+func (torrentContentAttributeFacet[T]) Values(query.FacetContext) (map[string]string, error) {
+	return map[string]string{}, nil
 }
 
-func (f torrentContentAttributeFacet[T]) Criteria() []query.Criteria {
+func (f torrentContentAttributeFacet[T]) Criteria(filter query.FacetFilter) []query.Criteria {
 	return []query.Criteria{
 		query.GenCriteria(func(ctx query.DbContext) (query.Criteria, error) {
 			fld := f.field(ctx.Query())
-			filter := f.Filter().Values()
 			values := make([]driver.Valuer, 0, len(filter))
 			hasNull := false
-			for _, v := range filter {
+			for _, v := range filter.Values() {
 				if v == "null" {
 					hasNull = true
 					continue

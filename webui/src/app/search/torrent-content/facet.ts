@@ -5,6 +5,7 @@ export type Agg<T, _allowNull extends boolean> = {
   count: number;
   label: string;
   value: FacetValue<T, _allowNull>;
+  isEstimate: boolean;
 };
 
 export type GenreAgg = Agg<string, false>;

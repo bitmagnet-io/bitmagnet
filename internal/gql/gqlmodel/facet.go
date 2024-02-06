@@ -137,7 +137,7 @@ func videoSourceFacet(input gen.VideoSourceFacetInput) q.Facet {
 func aggs[T any, Agg comparable](
 	items q.AggregationItems,
 	parse func(string) (T, error),
-	newAgg func(value *T, label string, count uint) Agg,
+	newAgg func(value *T, label string, count uint, isEstimate bool) Agg,
 ) ([]Agg, error) {
 	r := make([]Agg, 0, len(items))
 	labelMap := make(map[Agg]string, len(items))
@@ -147,7 +147,7 @@ func aggs[T any, Agg comparable](
 			if err != nil {
 				return nil, fmt.Errorf("error parsing aggregation item: %w", err)
 			}
-			agg := newAgg(&v, item.Label, item.Count)
+			agg := newAgg(&v, item.Label, item.Count, item.IsEstimate)
 			r = append(r, agg)
 			labelMap[agg] = item.Label
 		}
@@ -156,32 +156,32 @@ func aggs[T any, Agg comparable](
 		return natsort.Compare(labelMap[r[i]], labelMap[r[j]])
 	})
 	if null, nullOk := items["null"]; nullOk {
-		r = append(r, newAgg(nil, null.Label, null.Count))
+		r = append(r, newAgg(nil, null.Label, null.Count, null.IsEstimate))
 	}
 	return r, nil
 }
 
 func contentTypeAggs(items q.AggregationItems) ([]gen.ContentTypeAgg, error) {
-	return aggs(items, model.ParseContentType, func(value *model.ContentType, label string, count uint) gen.ContentTypeAgg {
-		return gen.ContentTypeAgg{Value: value, Label: label, Count: int(count)}
+	return aggs(items, model.ParseContentType, func(value *model.ContentType, label string, count uint, isEstimate bool) gen.ContentTypeAgg {
+		return gen.ContentTypeAgg{Value: value, Label: label, Count: int(count), IsEstimate: isEstimate}
 	})
 }
 
 func torrentSourceAggs(items q.AggregationItems) ([]gen.TorrentSourceAgg, error) {
-	return aggs(items, func(s string) (string, error) { return s, nil }, func(value *string, label string, count uint) gen.TorrentSourceAgg {
-		return gen.TorrentSourceAgg{Value: *value, Label: label, Count: int(count)}
+	return aggs(items, func(s string) (string, error) { return s, nil }, func(value *string, label string, count uint, isEstimate bool) gen.TorrentSourceAgg {
+		return gen.TorrentSourceAgg{Value: *value, Label: label, Count: int(count), IsEstimate: isEstimate}
 	})
 }
 
 func torrentTagAggs(items q.AggregationItems) ([]gen.TorrentTagAgg, error) {
-	return aggs(items, func(s string) (string, error) { return s, nil }, func(value *string, label string, count uint) gen.TorrentTagAgg {
-		return gen.TorrentTagAgg{Value: *value, Label: label, Count: int(count)}
+	return aggs(items, func(s string) (string, error) { return s, nil }, func(value *string, label string, count uint, isEstimate bool) gen.TorrentTagAgg {
+		return gen.TorrentTagAgg{Value: *value, Label: label, Count: int(count), IsEstimate: isEstimate}
 	})
 }
 
 func torrentFileTypeAggs(items q.AggregationItems) ([]gen.TorrentFileTypeAgg, error) {
-	return aggs(items, model.ParseFileType, func(value *model.FileType, label string, count uint) gen.TorrentFileTypeAgg {
-		return gen.TorrentFileTypeAgg{Value: *value, Label: label, Count: int(count)}
+	return aggs(items, model.ParseFileType, func(value *model.FileType, label string, count uint, isEstimate bool) gen.TorrentFileTypeAgg {
+		return gen.TorrentFileTypeAgg{Value: *value, Label: label, Count: int(count), IsEstimate: isEstimate}
 	})
 }
 
@@ -192,31 +192,31 @@ func languageAggs(items q.AggregationItems) ([]gen.LanguageAgg, error) {
 			return "", errors.New("invalid language")
 		}
 		return lang.Language, nil
-	}, func(value *model.Language, label string, count uint) gen.LanguageAgg {
-		return gen.LanguageAgg{Value: *value, Label: label, Count: int(count)}
+	}, func(value *model.Language, label string, count uint, isEstimate bool) gen.LanguageAgg {
+		return gen.LanguageAgg{Value: *value, Label: label, Count: int(count), IsEstimate: isEstimate}
 	})
 }
 
 func genreAggs(items q.AggregationItems) ([]gen.GenreAgg, error) {
-	return aggs(items, func(s string) (string, error) { return s, nil }, func(value *string, label string, count uint) gen.GenreAgg {
-		return gen.GenreAgg{Value: *value, Label: label, Count: int(count)}
+	return aggs(items, func(s string) (string, error) { return s, nil }, func(value *string, label string, count uint, isEstimate bool) gen.GenreAgg {
+		return gen.GenreAgg{Value: *value, Label: label, Count: int(count), IsEstimate: isEstimate}
 	})
 }
 
 func releaseYearAggs(items q.AggregationItems) ([]gen.ReleaseYearAgg, error) {
-	return aggs(items, model.ParseYear, func(value *model.Year, label string, count uint) gen.ReleaseYearAgg {
-		return gen.ReleaseYearAgg{Value: value, Label: label, Count: int(count)}
+	return aggs(items, model.ParseYear, func(value *model.Year, label string, count uint, isEstimate bool) gen.ReleaseYearAgg {
+		return gen.ReleaseYearAgg{Value: value, Label: label, Count: int(count), IsEstimate: isEstimate}
 	})
 }
 
 func videoResolutionAggs(items q.AggregationItems) ([]gen.VideoResolutionAgg, error) {
-	return aggs(items, model.ParseVideoResolution, func(value *model.VideoResolution, label string, count uint) gen.VideoResolutionAgg {
-		return gen.VideoResolutionAgg{Value: value, Label: label, Count: int(count)}
+	return aggs(items, model.ParseVideoResolution, func(value *model.VideoResolution, label string, count uint, isEstimate bool) gen.VideoResolutionAgg {
+		return gen.VideoResolutionAgg{Value: value, Label: label, Count: int(count), IsEstimate: isEstimate}
 	})
 }
 
 func videoSourceAggs(items q.AggregationItems) ([]gen.VideoSourceAgg, error) {
-	return aggs(items, model.ParseVideoSource, func(value *model.VideoSource, label string, count uint) gen.VideoSourceAgg {
-		return gen.VideoSourceAgg{Value: value, Label: label, Count: int(count)}
+	return aggs(items, model.ParseVideoSource, func(value *model.VideoSource, label string, count uint, isEstimate bool) gen.VideoSourceAgg {
+		return gen.VideoSourceAgg{Value: value, Label: label, Count: int(count), IsEstimate: isEstimate}
 	})
 }

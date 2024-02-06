@@ -98,9 +98,10 @@ type ComplexityRoot struct {
 	}
 
 	ContentTypeAgg struct {
-		Count func(childComplexity int) int
-		Label func(childComplexity int) int
-		Value func(childComplexity int) int
+		Count      func(childComplexity int) int
+		IsEstimate func(childComplexity int) int
+		Label      func(childComplexity int) int
+		Value      func(childComplexity int) int
 	}
 
 	Episodes struct {
@@ -114,15 +115,17 @@ type ComplexityRoot struct {
 	}
 
 	GenreAgg struct {
-		Count func(childComplexity int) int
-		Label func(childComplexity int) int
-		Value func(childComplexity int) int
+		Count      func(childComplexity int) int
+		IsEstimate func(childComplexity int) int
+		Label      func(childComplexity int) int
+		Value      func(childComplexity int) int
 	}
 
 	LanguageAgg struct {
-		Count func(childComplexity int) int
-		Label func(childComplexity int) int
-		Value func(childComplexity int) int
+		Count      func(childComplexity int) int
+		IsEstimate func(childComplexity int) int
+		Label      func(childComplexity int) int
+		Value      func(childComplexity int) int
 	}
 
 	LanguageInfo struct {
@@ -145,9 +148,10 @@ type ComplexityRoot struct {
 	}
 
 	ReleaseYearAgg struct {
-		Count func(childComplexity int) int
-		Label func(childComplexity int) int
-		Value func(childComplexity int) int
+		Count      func(childComplexity int) int
+		IsEstimate func(childComplexity int) int
+		Label      func(childComplexity int) int
+		Value      func(childComplexity int) int
 	}
 
 	Season struct {
@@ -219,10 +223,11 @@ type ComplexityRoot struct {
 	}
 
 	TorrentContentSearchResult struct {
-		Aggregations func(childComplexity int) int
-		HasNextPage  func(childComplexity int) int
-		Items        func(childComplexity int) int
-		TotalCount   func(childComplexity int) int
+		Aggregations         func(childComplexity int) int
+		HasNextPage          func(childComplexity int) int
+		Items                func(childComplexity int) int
+		TotalCount           func(childComplexity int) int
+		TotalCountIsEstimate func(childComplexity int) int
 	}
 
 	TorrentFile struct {
@@ -237,9 +242,10 @@ type ComplexityRoot struct {
 	}
 
 	TorrentFileTypeAgg struct {
-		Count func(childComplexity int) int
-		Label func(childComplexity int) int
-		Value func(childComplexity int) int
+		Count      func(childComplexity int) int
+		IsEstimate func(childComplexity int) int
+		Label      func(childComplexity int) int
+		Value      func(childComplexity int) int
 	}
 
 	TorrentMutation struct {
@@ -262,9 +268,10 @@ type ComplexityRoot struct {
 	}
 
 	TorrentSourceAgg struct {
-		Count func(childComplexity int) int
-		Label func(childComplexity int) int
-		Value func(childComplexity int) int
+		Count      func(childComplexity int) int
+		IsEstimate func(childComplexity int) int
+		Label      func(childComplexity int) int
+		Value      func(childComplexity int) int
 	}
 
 	TorrentSuggestTagsResult struct {
@@ -272,21 +279,24 @@ type ComplexityRoot struct {
 	}
 
 	TorrentTagAgg struct {
-		Count func(childComplexity int) int
-		Label func(childComplexity int) int
-		Value func(childComplexity int) int
+		Count      func(childComplexity int) int
+		IsEstimate func(childComplexity int) int
+		Label      func(childComplexity int) int
+		Value      func(childComplexity int) int
 	}
 
 	VideoResolutionAgg struct {
-		Count func(childComplexity int) int
-		Label func(childComplexity int) int
-		Value func(childComplexity int) int
+		Count      func(childComplexity int) int
+		IsEstimate func(childComplexity int) int
+		Label      func(childComplexity int) int
+		Value      func(childComplexity int) int
 	}
 
 	VideoSourceAgg struct {
-		Count func(childComplexity int) int
-		Label func(childComplexity int) int
-		Value func(childComplexity int) int
+		Count      func(childComplexity int) int
+		IsEstimate func(childComplexity int) int
+		Label      func(childComplexity int) int
+		Value      func(childComplexity int) int
 	}
 }
 
@@ -567,6 +577,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ContentTypeAgg.Count(childComplexity), true
 
+	case "ContentTypeAgg.isEstimate":
+		if e.complexity.ContentTypeAgg.IsEstimate == nil {
+			break
+		}
+
+		return e.complexity.ContentTypeAgg.IsEstimate(childComplexity), true
+
 	case "ContentTypeAgg.label":
 		if e.complexity.ContentTypeAgg.Label == nil {
 			break
@@ -616,6 +633,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.GenreAgg.Count(childComplexity), true
 
+	case "GenreAgg.isEstimate":
+		if e.complexity.GenreAgg.IsEstimate == nil {
+			break
+		}
+
+		return e.complexity.GenreAgg.IsEstimate(childComplexity), true
+
 	case "GenreAgg.label":
 		if e.complexity.GenreAgg.Label == nil {
 			break
@@ -636,6 +660,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.LanguageAgg.Count(childComplexity), true
+
+	case "LanguageAgg.isEstimate":
+		if e.complexity.LanguageAgg.IsEstimate == nil {
+			break
+		}
+
+		return e.complexity.LanguageAgg.IsEstimate(childComplexity), true
 
 	case "LanguageAgg.label":
 		if e.complexity.LanguageAgg.Label == nil {
@@ -706,6 +737,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ReleaseYearAgg.Count(childComplexity), true
+
+	case "ReleaseYearAgg.isEstimate":
+		if e.complexity.ReleaseYearAgg.IsEstimate == nil {
+			break
+		}
+
+		return e.complexity.ReleaseYearAgg.IsEstimate(childComplexity), true
 
 	case "ReleaseYearAgg.label":
 		if e.complexity.ReleaseYearAgg.Label == nil {
@@ -1104,6 +1142,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TorrentContentSearchResult.TotalCount(childComplexity), true
 
+	case "TorrentContentSearchResult.totalCountIsEstimate":
+		if e.complexity.TorrentContentSearchResult.TotalCountIsEstimate == nil {
+			break
+		}
+
+		return e.complexity.TorrentContentSearchResult.TotalCountIsEstimate(childComplexity), true
+
 	case "TorrentFile.createdAt":
 		if e.complexity.TorrentFile.CreatedAt == nil {
 			break
@@ -1166,6 +1211,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.TorrentFileTypeAgg.Count(childComplexity), true
+
+	case "TorrentFileTypeAgg.isEstimate":
+		if e.complexity.TorrentFileTypeAgg.IsEstimate == nil {
+			break
+		}
+
+		return e.complexity.TorrentFileTypeAgg.IsEstimate(childComplexity), true
 
 	case "TorrentFileTypeAgg.label":
 		if e.complexity.TorrentFileTypeAgg.Label == nil {
@@ -1283,6 +1335,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TorrentSourceAgg.Count(childComplexity), true
 
+	case "TorrentSourceAgg.isEstimate":
+		if e.complexity.TorrentSourceAgg.IsEstimate == nil {
+			break
+		}
+
+		return e.complexity.TorrentSourceAgg.IsEstimate(childComplexity), true
+
 	case "TorrentSourceAgg.label":
 		if e.complexity.TorrentSourceAgg.Label == nil {
 			break
@@ -1311,6 +1370,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TorrentTagAgg.Count(childComplexity), true
 
+	case "TorrentTagAgg.isEstimate":
+		if e.complexity.TorrentTagAgg.IsEstimate == nil {
+			break
+		}
+
+		return e.complexity.TorrentTagAgg.IsEstimate(childComplexity), true
+
 	case "TorrentTagAgg.label":
 		if e.complexity.TorrentTagAgg.Label == nil {
 			break
@@ -1332,6 +1398,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.VideoResolutionAgg.Count(childComplexity), true
 
+	case "VideoResolutionAgg.isEstimate":
+		if e.complexity.VideoResolutionAgg.IsEstimate == nil {
+			break
+		}
+
+		return e.complexity.VideoResolutionAgg.IsEstimate(childComplexity), true
+
 	case "VideoResolutionAgg.label":
 		if e.complexity.VideoResolutionAgg.Label == nil {
 			break
@@ -1352,6 +1425,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.VideoSourceAgg.Count(childComplexity), true
+
+	case "VideoSourceAgg.isEstimate":
+		if e.complexity.VideoSourceAgg.IsEstimate == nil {
+			break
+		}
+
+		return e.complexity.VideoSourceAgg.IsEstimate(childComplexity), true
 
 	case "VideoSourceAgg.label":
 		if e.complexity.VideoSourceAgg.Label == nil {
@@ -1815,6 +1895,7 @@ scalar Year
   """
   hasNextPage: Boolean
   cached: Boolean
+  aggregationBudget: Float
 }
 
 input ContentTypeFacetInput {
@@ -1882,54 +1963,63 @@ type ContentTypeAgg {
   value: ContentType
   label: String!
   count: Int!
+  isEstimate: Boolean!
 }
 
 type TorrentSourceAgg {
   value: String!
   label: String!
   count: Int!
+  isEstimate: Boolean!
 }
 
 type TorrentTagAgg {
   value: String!
   label: String!
   count: Int!
+  isEstimate: Boolean!
 }
 
 type TorrentFileTypeAgg {
   value: FileType!
   label: String!
   count: Int!
+  isEstimate: Boolean!
 }
 
 type LanguageAgg {
   value: Language!
   label: String!
   count: Int!
+  isEstimate: Boolean!
 }
 
 type GenreAgg {
   value: String!
   label: String!
   count: Int!
+  isEstimate: Boolean!
 }
 
 type ReleaseYearAgg {
   value: Year
   label: String!
   count: Int!
+  isEstimate: Boolean!
 }
 
 type VideoResolutionAgg {
   value: VideoResolution
   label: String!
   count: Int!
+  isEstimate: Boolean!
 }
 
 type VideoSourceAgg {
   value: VideoSource
   label: String!
   count: Int!
+  isEstimate: Boolean!
 }
 
 type TorrentContentAggregations {
@@ -1946,6 +2036,7 @@ type TorrentContentAggregations {
 
 type TorrentContentSearchResult {
   totalCount: Int!
+  totalCountIsEstimate: Boolean!
   """
   hasNextPage is true if there are more results to fetch
   """
@@ -3751,6 +3842,50 @@ func (ec *executionContext) fieldContext_ContentTypeAgg_count(ctx context.Contex
 	return fc, nil
 }
 
+func (ec *executionContext) _ContentTypeAgg_isEstimate(ctx context.Context, field graphql.CollectedField, obj *gen.ContentTypeAgg) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ContentTypeAgg_isEstimate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsEstimate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ContentTypeAgg_isEstimate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ContentTypeAgg",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Episodes_label(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Episodes) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Episodes_label(ctx, field)
 	if err != nil {
@@ -4071,6 +4206,50 @@ func (ec *executionContext) fieldContext_GenreAgg_count(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _GenreAgg_isEstimate(ctx context.Context, field graphql.CollectedField, obj *gen.GenreAgg) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_GenreAgg_isEstimate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsEstimate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_GenreAgg_isEstimate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GenreAgg",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _LanguageAgg_value(ctx context.Context, field graphql.CollectedField, obj *gen.LanguageAgg) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_LanguageAgg_value(ctx, field)
 	if err != nil {
@@ -4198,6 +4377,50 @@ func (ec *executionContext) fieldContext_LanguageAgg_count(ctx context.Context, 
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LanguageAgg_isEstimate(ctx context.Context, field graphql.CollectedField, obj *gen.LanguageAgg) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LanguageAgg_isEstimate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsEstimate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LanguageAgg_isEstimate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LanguageAgg",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4782,6 +5005,50 @@ func (ec *executionContext) fieldContext_ReleaseYearAgg_count(ctx context.Contex
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ReleaseYearAgg_isEstimate(ctx context.Context, field graphql.CollectedField, obj *gen.ReleaseYearAgg) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ReleaseYearAgg_isEstimate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsEstimate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ReleaseYearAgg_isEstimate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ReleaseYearAgg",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6651,6 +6918,8 @@ func (ec *executionContext) fieldContext_TorrentContentAggregations_contentType(
 				return ec.fieldContext_ContentTypeAgg_label(ctx, field)
 			case "count":
 				return ec.fieldContext_ContentTypeAgg_count(ctx, field)
+			case "isEstimate":
+				return ec.fieldContext_ContentTypeAgg_isEstimate(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ContentTypeAgg", field.Name)
 		},
@@ -6700,6 +6969,8 @@ func (ec *executionContext) fieldContext_TorrentContentAggregations_torrentSourc
 				return ec.fieldContext_TorrentSourceAgg_label(ctx, field)
 			case "count":
 				return ec.fieldContext_TorrentSourceAgg_count(ctx, field)
+			case "isEstimate":
+				return ec.fieldContext_TorrentSourceAgg_isEstimate(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TorrentSourceAgg", field.Name)
 		},
@@ -6749,6 +7020,8 @@ func (ec *executionContext) fieldContext_TorrentContentAggregations_torrentTag(c
 				return ec.fieldContext_TorrentTagAgg_label(ctx, field)
 			case "count":
 				return ec.fieldContext_TorrentTagAgg_count(ctx, field)
+			case "isEstimate":
+				return ec.fieldContext_TorrentTagAgg_isEstimate(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TorrentTagAgg", field.Name)
 		},
@@ -6798,6 +7071,8 @@ func (ec *executionContext) fieldContext_TorrentContentAggregations_torrentFileT
 				return ec.fieldContext_TorrentFileTypeAgg_label(ctx, field)
 			case "count":
 				return ec.fieldContext_TorrentFileTypeAgg_count(ctx, field)
+			case "isEstimate":
+				return ec.fieldContext_TorrentFileTypeAgg_isEstimate(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TorrentFileTypeAgg", field.Name)
 		},
@@ -6847,6 +7122,8 @@ func (ec *executionContext) fieldContext_TorrentContentAggregations_language(ctx
 				return ec.fieldContext_LanguageAgg_label(ctx, field)
 			case "count":
 				return ec.fieldContext_LanguageAgg_count(ctx, field)
+			case "isEstimate":
+				return ec.fieldContext_LanguageAgg_isEstimate(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LanguageAgg", field.Name)
 		},
@@ -6896,6 +7173,8 @@ func (ec *executionContext) fieldContext_TorrentContentAggregations_genre(ctx co
 				return ec.fieldContext_GenreAgg_label(ctx, field)
 			case "count":
 				return ec.fieldContext_GenreAgg_count(ctx, field)
+			case "isEstimate":
+				return ec.fieldContext_GenreAgg_isEstimate(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type GenreAgg", field.Name)
 		},
@@ -6945,6 +7224,8 @@ func (ec *executionContext) fieldContext_TorrentContentAggregations_releaseYear(
 				return ec.fieldContext_ReleaseYearAgg_label(ctx, field)
 			case "count":
 				return ec.fieldContext_ReleaseYearAgg_count(ctx, field)
+			case "isEstimate":
+				return ec.fieldContext_ReleaseYearAgg_isEstimate(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ReleaseYearAgg", field.Name)
 		},
@@ -6994,6 +7275,8 @@ func (ec *executionContext) fieldContext_TorrentContentAggregations_videoResolut
 				return ec.fieldContext_VideoResolutionAgg_label(ctx, field)
 			case "count":
 				return ec.fieldContext_VideoResolutionAgg_count(ctx, field)
+			case "isEstimate":
+				return ec.fieldContext_VideoResolutionAgg_isEstimate(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type VideoResolutionAgg", field.Name)
 		},
@@ -7043,6 +7326,8 @@ func (ec *executionContext) fieldContext_TorrentContentAggregations_videoSource(
 				return ec.fieldContext_VideoSourceAgg_label(ctx, field)
 			case "count":
 				return ec.fieldContext_VideoSourceAgg_count(ctx, field)
+			case "isEstimate":
+				return ec.fieldContext_VideoSourceAgg_isEstimate(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type VideoSourceAgg", field.Name)
 		},
@@ -7091,6 +7376,8 @@ func (ec *executionContext) fieldContext_TorrentContentQuery_search(ctx context.
 			switch field.Name {
 			case "totalCount":
 				return ec.fieldContext_TorrentContentSearchResult_totalCount(ctx, field)
+			case "totalCountIsEstimate":
+				return ec.fieldContext_TorrentContentSearchResult_totalCountIsEstimate(ctx, field)
 			case "hasNextPage":
 				return ec.fieldContext_TorrentContentSearchResult_hasNextPage(ctx, field)
 			case "items":
@@ -7154,6 +7441,50 @@ func (ec *executionContext) fieldContext_TorrentContentSearchResult_totalCount(c
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TorrentContentSearchResult_totalCountIsEstimate(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.TorrentContentSearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TorrentContentSearchResult_totalCountIsEstimate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCountIsEstimate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TorrentContentSearchResult_totalCountIsEstimate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TorrentContentSearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -7824,6 +8155,50 @@ func (ec *executionContext) fieldContext_TorrentFileTypeAgg_count(ctx context.Co
 	return fc, nil
 }
 
+func (ec *executionContext) _TorrentFileTypeAgg_isEstimate(ctx context.Context, field graphql.CollectedField, obj *gen.TorrentFileTypeAgg) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TorrentFileTypeAgg_isEstimate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsEstimate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TorrentFileTypeAgg_isEstimate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TorrentFileTypeAgg",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _TorrentMutation_delete(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.TorrentMutation) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_TorrentMutation_delete(ctx, field)
 	if err != nil {
@@ -8434,6 +8809,50 @@ func (ec *executionContext) fieldContext_TorrentSourceAgg_count(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _TorrentSourceAgg_isEstimate(ctx context.Context, field graphql.CollectedField, obj *gen.TorrentSourceAgg) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TorrentSourceAgg_isEstimate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsEstimate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TorrentSourceAgg_isEstimate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TorrentSourceAgg",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _TorrentSuggestTagsResult_suggestions(ctx context.Context, field graphql.CollectedField, obj *search.TorrentSuggestTagsResult) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_TorrentSuggestTagsResult_suggestions(ctx, field)
 	if err != nil {
@@ -8616,6 +9035,50 @@ func (ec *executionContext) fieldContext_TorrentTagAgg_count(ctx context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _TorrentTagAgg_isEstimate(ctx context.Context, field graphql.CollectedField, obj *gen.TorrentTagAgg) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TorrentTagAgg_isEstimate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsEstimate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TorrentTagAgg_isEstimate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TorrentTagAgg",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _VideoResolutionAgg_value(ctx context.Context, field graphql.CollectedField, obj *gen.VideoResolutionAgg) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_VideoResolutionAgg_value(ctx, field)
 	if err != nil {
@@ -8745,6 +9208,50 @@ func (ec *executionContext) fieldContext_VideoResolutionAgg_count(ctx context.Co
 	return fc, nil
 }
 
+func (ec *executionContext) _VideoResolutionAgg_isEstimate(ctx context.Context, field graphql.CollectedField, obj *gen.VideoResolutionAgg) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_VideoResolutionAgg_isEstimate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsEstimate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_VideoResolutionAgg_isEstimate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "VideoResolutionAgg",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _VideoSourceAgg_value(ctx context.Context, field graphql.CollectedField, obj *gen.VideoSourceAgg) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_VideoSourceAgg_value(ctx, field)
 	if err != nil {
@@ -8869,6 +9376,50 @@ func (ec *executionContext) fieldContext_VideoSourceAgg_count(ctx context.Contex
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _VideoSourceAgg_isEstimate(ctx context.Context, field graphql.CollectedField, obj *gen.VideoSourceAgg) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_VideoSourceAgg_isEstimate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsEstimate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_VideoSourceAgg_isEstimate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "VideoSourceAgg",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -10797,7 +11348,7 @@ func (ec *executionContext) unmarshalInputSearchQueryInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"queryString", "limit", "offset", "totalCount", "hasNextPage", "cached"}
+	fieldsInOrder := [...]string{"queryString", "limit", "offset", "totalCount", "hasNextPage", "cached", "aggregationBudget"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -10846,6 +11397,13 @@ func (ec *executionContext) unmarshalInputSearchQueryInput(ctx context.Context, 
 				return it, err
 			}
 			it.Cached = data
+		case "aggregationBudget":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregationBudget"))
+			data, err := ec.unmarshalOFloat2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullFloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AggregationBudget = data
 		}
 	}
 
@@ -11459,6 +12017,11 @@ func (ec *executionContext) _ContentTypeAgg(ctx context.Context, sel ast.Selecti
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "isEstimate":
+			out.Values[i] = ec._ContentTypeAgg_isEstimate(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -11596,6 +12159,11 @@ func (ec *executionContext) _GenreAgg(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "isEstimate":
+			out.Values[i] = ec._GenreAgg_isEstimate(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -11642,6 +12210,11 @@ func (ec *executionContext) _LanguageAgg(ctx context.Context, sel ast.SelectionS
 			}
 		case "count":
 			out.Values[i] = ec._LanguageAgg_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "isEstimate":
+			out.Values[i] = ec._LanguageAgg_isEstimate(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -11919,6 +12492,11 @@ func (ec *executionContext) _ReleaseYearAgg(ctx context.Context, sel ast.Selecti
 			}
 		case "count":
 			out.Values[i] = ec._ReleaseYearAgg_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "isEstimate":
+			out.Values[i] = ec._ReleaseYearAgg_isEstimate(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -12390,6 +12968,11 @@ func (ec *executionContext) _TorrentContentSearchResult(ctx context.Context, sel
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "totalCountIsEstimate":
+			out.Values[i] = ec._TorrentContentSearchResult_totalCountIsEstimate(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "hasNextPage":
 			out.Values[i] = ec._TorrentContentSearchResult_hasNextPage(ctx, field, obj)
 		case "items":
@@ -12516,6 +13099,11 @@ func (ec *executionContext) _TorrentFileTypeAgg(ctx context.Context, sel ast.Sel
 			}
 		case "count":
 			out.Values[i] = ec._TorrentFileTypeAgg_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "isEstimate":
+			out.Values[i] = ec._TorrentFileTypeAgg_isEstimate(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -12854,6 +13442,11 @@ func (ec *executionContext) _TorrentSourceAgg(ctx context.Context, sel ast.Selec
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "isEstimate":
+			out.Values[i] = ec._TorrentSourceAgg_isEstimate(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12942,6 +13535,11 @@ func (ec *executionContext) _TorrentTagAgg(ctx context.Context, sel ast.Selectio
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "isEstimate":
+			out.Values[i] = ec._TorrentTagAgg_isEstimate(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12988,6 +13586,11 @@ func (ec *executionContext) _VideoResolutionAgg(ctx context.Context, sel ast.Sel
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "isEstimate":
+			out.Values[i] = ec._VideoResolutionAgg_isEstimate(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -13031,6 +13634,11 @@ func (ec *executionContext) _VideoSourceAgg(ctx context.Context, sel ast.Selecti
 			}
 		case "count":
 			out.Values[i] = ec._VideoSourceAgg_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "isEstimate":
+			out.Values[i] = ec._VideoSourceAgg_isEstimate(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -14610,6 +15218,16 @@ func (ec *executionContext) unmarshalOFloat2githubᚗcomᚋbitmagnetᚑioᚋbitm
 }
 
 func (ec *executionContext) marshalOFloat2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullFloat32(ctx context.Context, sel ast.SelectionSet, v model.NullFloat32) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalOFloat2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullFloat64(ctx context.Context, v interface{}) (model.NullFloat64, error) {
+	var res model.NullFloat64
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOFloat2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullFloat64(ctx context.Context, sel ast.SelectionSet, v model.NullFloat64) graphql.Marshaler {
 	return v
 }
 
