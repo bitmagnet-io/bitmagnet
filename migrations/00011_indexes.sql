@@ -7,7 +7,6 @@ drop index if exists torrent_contents_tsv_idx;
 
 create extension if not exists btree_gin;
 
-create index on torrent_contents using gin(content_type);
 create index on torrent_contents using gin(content_type, tsv);
 create index on torrent_contents using gin(content_type, languages);
 
@@ -16,7 +15,6 @@ create index on torrent_contents using gin(content_type, languages);
 -- +goose Down
 -- +goose StatementBegin
 
-drop index if exists torrent_contents_content_type_idx1;
 drop index if exists torrent_contents_content_type_tsv_idx;
 drop index if exists torrent_contents_content_type_languages_idx;
 
