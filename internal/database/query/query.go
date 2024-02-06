@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/estimate"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"gorm.io/gen"
@@ -74,7 +73,7 @@ func GenericQuery[T interface{}](
 				addErr(sqErr)
 				return
 			}
-			if countResult, countErr := estimate.BudgetedCount(sq.UnderlyingDB(), builder.AggregationBudget()); countErr != nil {
+			if countResult, countErr := dao.BudgetedCount(sq.UnderlyingDB(), builder.AggregationBudget()); countErr != nil {
 				addErr(countErr)
 			} else {
 				r.TotalCount = uint(countResult.Count)
