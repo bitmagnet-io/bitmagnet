@@ -32,7 +32,7 @@ func newContent(db *gorm.DB, opts ...gen.DOOption) content {
 	_content.ID = field.NewString(tableName, "id")
 	_content.Title = field.NewString(tableName, "title")
 	_content.ReleaseDate = field.NewTime(tableName, "release_date")
-	_content.ReleaseYear = field.NewField(tableName, "release_year")
+	_content.ReleaseYear = field.NewUint16(tableName, "release_year")
 	_content.Adult = field.NewField(tableName, "adult")
 	_content.OriginalLanguage = field.NewField(tableName, "original_language")
 	_content.OriginalTitle = field.NewField(tableName, "original_title")
@@ -86,7 +86,7 @@ type content struct {
 	ID               field.String
 	Title            field.String
 	ReleaseDate      field.Time
-	ReleaseYear      field.Field
+	ReleaseYear      field.Uint16
 	Adult            field.Field
 	OriginalLanguage field.Field
 	OriginalTitle    field.Field
@@ -124,7 +124,7 @@ func (c *content) updateTableName(table string) *content {
 	c.ID = field.NewString(table, "id")
 	c.Title = field.NewString(table, "title")
 	c.ReleaseDate = field.NewTime(table, "release_date")
-	c.ReleaseYear = field.NewField(table, "release_year")
+	c.ReleaseYear = field.NewUint16(table, "release_year")
 	c.Adult = field.NewField(table, "adult")
 	c.OriginalLanguage = field.NewField(table, "original_language")
 	c.OriginalTitle = field.NewField(table, "original_title")
