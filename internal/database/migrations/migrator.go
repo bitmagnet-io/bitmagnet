@@ -33,16 +33,18 @@ func New(p Params) Result {
 			if err != nil {
 				return nil, err
 			}
-			initGoose(p.Logger)
+			logger := p.Logger.Named("migrator")
+			initGoose(logger)
 			return &migrator{
-				db: db,
+				db:     db,
+				logger: logger,
 			}, nil
 		}),
 	}
 }
 
 func initGoose(logger *zap.SugaredLogger) {
-	goose.SetLogger(gooseLogger{logger.Named("migrator")})
+	goose.SetLogger(gooseLogger{logger})
 	goose.SetBaseFS(migrationssql.FS)
 	err := goose.SetDialect("postgres")
 	if err != nil {
@@ -58,10 +60,12 @@ type Migrator interface {
 }
 
 type migrator struct {
-	db *sql.DB
+	db     *sql.DB
+	logger *zap.SugaredLogger
 }
 
 func (m *migrator) Up(ctx context.Context) error {
+	m.logger.Info("checking and applying migrations...")
 	return goose.UpContext(ctx, m.db, ".")
 }
 
