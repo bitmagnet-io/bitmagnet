@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/estimate"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"sort"
@@ -280,7 +279,7 @@ func (b optionBuilder) calculateAggregations(ctx context.Context) (Aggregations,
 						addErr(fmt.Errorf("failed to apply pre for key '%s': %w", facet.Key(), preErr))
 						return
 					}
-					countResult, countErr := estimate.BudgetedCount(q.UnderlyingDB(), b.aggregationBudget)
+					countResult, countErr := dao.BudgetedCount(q.UnderlyingDB(), b.aggregationBudget)
 					if countErr != nil {
 						addErr(fmt.Errorf("failed to get count for key '%s': %w", facet.Key(), countErr))
 						return
