@@ -5,52 +5,62 @@ fragment TorrentContentSearchResult on TorrentContentSearchResult {
     ...TorrentContent
   }
   totalCount
+  totalCountIsEstimate
   hasNextPage
   aggregations {
     contentType {
       value
       label
       count
+      isEstimate
     }
     torrentSource {
       value
       label
       count
+      isEstimate
     }
     torrentTag {
       value
       label
       count
+      isEstimate
     }
     torrentFileType {
       value
       label
       count
+      isEstimate
     }
     language {
       value
       label
       count
+      isEstimate
     }
     genre {
       value
       label
       count
+      isEstimate
     }
     releaseYear {
       value
       label
       count
+      isEstimate
     }
     videoResolution {
       value
       label
       count
+      isEstimate
     }
     videoSource {
       value
       label
       count
+      isEstimate
     }
   }
 }

@@ -99,6 +99,7 @@ models:
     model:
       - github.com/99designs/gqlgen/graphql.Float
       - github.com/bitmagnet-io/bitmagnet/internal/model.NullFloat32
+      - github.com/bitmagnet-io/bitmagnet/internal/model.NullFloat64
   Boolean:
     model:
       - github.com/99designs/gqlgen/graphql.Boolean

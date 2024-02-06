@@ -245,6 +245,79 @@ func (n NullFloat32) MarshalGQL(w io.Writer) {
 	_, _ = fmt.Fprintf(w, "%f", n.Float32)
 }
 
+// NullFloat64 - nullable float64
+type NullFloat64 struct {
+	Float64 float64
+	Valid   bool // Valid is true if Float64 is not NULL
+}
+
+func NewNullFloat64(f float64) NullFloat64 {
+	return NullFloat64{
+		Float64: f,
+		Valid:   true,
+	}
+}
+
+func (n *NullFloat64) Scan(value interface{}) error {
+	v, ok := value.(float64)
+	if !ok {
+		n.Valid = false
+	} else {
+		n.Float64 = v
+		n.Valid = true
+	}
+	return nil
+}
+
+func (n NullFloat64) Value() (driver.Value, error) {
+	if !n.Valid {
+		return nil, nil
+	}
+	return n.Float64, nil
+}
+
+func (n *NullFloat64) UnmarshalGQL(v interface{}) error {
+	if v == nil {
+		n.Valid = false
+		return nil
+	}
+	switch v := v.(type) {
+	case int:
+		n.Float64 = float64(v)
+	case int32:
+		n.Float64 = float64(v)
+	case int64:
+		n.Float64 = float64(v)
+	case uint:
+		n.Float64 = float64(v)
+	case uint32:
+		n.Float64 = float64(v)
+	case uint64:
+		n.Float64 = float64(v)
+	case float32:
+		n.Float64 = float64(v)
+	case float64:
+		n.Float64 = v
+	case string:
+		_, err := fmt.Sscanf(v, "%f", &n.Float64)
+		if err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("wrong type")
+	}
+	n.Valid = true
+	return nil
+}
+
+func (n NullFloat64) MarshalGQL(w io.Writer) {
+	if !n.Valid {
+		_, _ = w.Write([]byte("null"))
+		return
+	}
+	_, _ = fmt.Fprintf(w, "%f", n.Float64)
+}
+
 // NullUint64 - nullable uint64
 type NullUint64 struct {
 	Uint64 uint64

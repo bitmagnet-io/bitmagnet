@@ -14,7 +14,7 @@ func video3dField(q *dao.Query) field.Field {
 }
 
 func Video3dFacet(options ...query.FacetOption) query.Facet {
-	return torrentContentAttributeFacet[model.Video3d]{
+	return video3dFacet{torrentContentAttributeFacet[model.Video3d]{
 		FacetConfig: query.NewFacetConfig(
 			append([]query.FacetOption{
 				query.FacetHasKey(Video3dFacetKey),
@@ -24,5 +24,18 @@ func Video3dFacet(options ...query.FacetOption) query.Facet {
 		),
 		field: video3dField,
 		parse: model.ParseVideo3d,
+	}}
+}
+
+type video3dFacet struct {
+	torrentContentAttributeFacet[model.Video3d]
+}
+
+func (f video3dFacet) Values(query.FacetContext) (map[string]string, error) {
+	v3ds := model.Video3dValues()
+	values := make(map[string]string, len(v3ds))
+	for _, vr := range v3ds {
+		values[vr.String()] = vr.Label()
 	}
+	return values, nil
 }

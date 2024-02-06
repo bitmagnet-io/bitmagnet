@@ -87,10 +87,6 @@ export class TorrentContentComponent
     this.updateSuggestedTags();
   }
 
-  get isDeepFiltered(): boolean {
-    return this.search.isDeepFiltered;
-  }
-
   loadResult(cached = true) {
     this.search.loadResult(cached);
   }

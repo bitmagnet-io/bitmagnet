@@ -9,7 +9,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/migrations"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/postgres"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/search/warmer"
 	"go.uber.org/fx"
 )
 
@@ -18,7 +17,6 @@ func New() fx.Option {
 		"database",
 		configfx.NewConfigModule[postgres.Config]("postgres", postgres.NewDefaultConfig()),
 		configfx.NewConfigModule[cache.Config]("gorm_cache", cache.NewDefaultConfig()),
-		configfx.NewConfigModule[warmer.Config]("search_warmer", warmer.NewDefaultConfig()),
 		fx.Provide(
 			cache.NewInMemoryCacher,
 			cache.NewPlugin,
@@ -28,7 +26,6 @@ func New() fx.Option {
 			migrations.New,
 			postgres.New,
 			search.New,
-			warmer.New,
 		),
 		fx.Decorate(
 			cache.NewDecorator,

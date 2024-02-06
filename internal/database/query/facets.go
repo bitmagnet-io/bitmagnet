@@ -22,8 +22,8 @@ type FacetConfig interface {
 
 type Facet interface {
 	FacetConfig
-	Aggregate(ctx FacetContext) (AggregationItems, error)
-	Criteria() []Criteria
+	Values(ctx FacetContext) (map[string]string, error)
+	Criteria(filter FacetFilter) []Criteria
 }
 
 type FacetFilter map[string]struct{}
@@ -36,6 +36,11 @@ func (f FacetFilter) Values() []string {
 	}
 	sort.Strings(values)
 	return values
+}
+
+func (f FacetFilter) HasKey(key string) bool {
+	_, ok := f[key]
+	return ok
 }
 
 type facetConfig struct {
@@ -58,8 +63,9 @@ func NewFacetConfig(options ...FacetOption) FacetConfig {
 }
 
 type AggregationItem struct {
-	Label string
-	Count uint
+	Label      string
+	Count      uint
+	IsEstimate bool
 }
 
 type AggregationItems = map[string]AggregationItem
@@ -189,7 +195,7 @@ func (c facetConfig) Filter() FacetFilter {
 func (b optionBuilder) createFacetsFilterCriteria() (c Criteria, err error) {
 	cs := make([]Criteria, 0, len(b.facets))
 	for _, facet := range b.facets {
-		cr := facet.Criteria()
+		cr := facet.Criteria(facet.Filter())
 		switch facet.Logic() {
 		case model.FacetLogicAnd:
 			cs = append(cs, AndCriteria{cr})
@@ -211,39 +217,90 @@ func withCurrentFacet(facetKey string) Option {
 
 func (b optionBuilder) calculateAggregations(ctx context.Context) (Aggregations, error) {
 	aggregations := make(Aggregations, len(b.facets))
-	wg := sync.WaitGroup{}
-	wg.Add(len(b.facets))
+	wgOuter := sync.WaitGroup{}
+	wgOuter.Add(len(b.facets))
 	mtx := sync.Mutex{}
 	var errs []error
+	addErr := func(err error) {
+		mtx.Lock()
+		defer mtx.Unlock()
+		errs = append(errs, err)
+	}
+	addAggregation := func(key string, aggregation AggregationGroup) {
+		mtx.Lock()
+		defer mtx.Unlock()
+		aggregations[key] = aggregation
+	}
 	for _, facet := range b.facets {
 		go (func(facet Facet) {
-			defer wg.Done()
+			defer wgOuter.Done()
 			if !facet.IsAggregated() {
 				return
 			}
-			aggBuilder, aggBuilderErr := Options(facet.AggregationOption, withCurrentFacet(facet.Key()))(b)
-			if aggBuilderErr != nil {
-				errs = append(errs, fmt.Errorf("failed to create aggregation option for key '%s': %w", facet.Key(), aggBuilderErr))
+			values, valuesErr := facet.Values(facetContext{
+				optionBuilder: b,
+				ctx:           ctx,
+			})
+			if valuesErr != nil {
+				addErr(fmt.Errorf("failed to get values for key '%s': %w", facet.Key(), valuesErr))
 				return
 			}
-			aggCtx := facetContext{
-				optionBuilder: aggBuilder,
-				ctx:           ctx,
+			filter := facet.Filter()
+			items := make(AggregationItems, len(values))
+			addItem := func(key string, item AggregationItem) {
+				mtx.Lock()
+				defer mtx.Unlock()
+				items[key] = item
 			}
-			aggregation, aggregateErr := facet.Aggregate(aggCtx)
-			mtx.Lock()
-			defer mtx.Unlock()
-			if aggregateErr != nil {
-				errs = append(errs, fmt.Errorf("failed to aggregate key '%s': %w", facet.Key(), aggregateErr))
-			} else {
-				aggregations[facet.Key()] = AggregationGroup{
-					Label: facet.Label(),
-					Logic: facet.Logic(),
-					Items: aggregation,
-				}
+			wgInner := sync.WaitGroup{}
+			wgInner.Add(len(values))
+			for key, label := range values {
+				go func(key, label string) {
+					defer wgInner.Done()
+					criterias := facet.Criteria(FacetFilter{key: struct{}{}})
+					var criteria Criteria
+					switch facet.Logic() {
+					case model.FacetLogicAnd:
+						criteria = AndCriteria{criterias}
+					case model.FacetLogicOr:
+						criteria = OrCriteria{criterias}
+					}
+					aggBuilder, aggBuilderErr := Options(
+						facet.AggregationOption,
+						withCurrentFacet(facet.Key()),
+						Where(criteria),
+					)(b)
+					if aggBuilderErr != nil {
+						addErr(fmt.Errorf("failed to create aggregation option for key '%s': %w", facet.Key(), aggBuilderErr))
+						return
+					}
+					q := aggBuilder.NewSubQuery(ctx)
+					if preErr := aggBuilder.applyPre(q); preErr != nil {
+						addErr(fmt.Errorf("failed to apply pre for key '%s': %w", facet.Key(), preErr))
+						return
+					}
+					countResult, countErr := dao.BudgetedCount(q.UnderlyingDB(), b.aggregationBudget)
+					if countErr != nil {
+						addErr(fmt.Errorf("failed to get count for key '%s': %w", facet.Key(), countErr))
+						return
+					}
+					if countResult.Count > 0 || countResult.BudgetExceeded || filter.HasKey(key) {
+						addItem(key, AggregationItem{
+							Label:      label,
+							Count:      uint(countResult.Count),
+							IsEstimate: countResult.BudgetExceeded,
+						})
+					}
+				}(key, label)
 			}
+			wgInner.Wait()
+			addAggregation(facet.Key(), AggregationGroup{
+				Label: facet.Label(),
+				Logic: facet.Logic(),
+				Items: items,
+			})
 		})(facet)
 	}
-	wg.Wait()
+	wgOuter.Wait()
 	return aggregations, errors.Join(errs...)
 }

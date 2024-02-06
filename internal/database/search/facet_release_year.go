@@ -1,9 +1,9 @@
 package search
 
 import (
-	"database/sql/driver"
 	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
+	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"gorm.io/gen/field"
 	"strconv"
@@ -34,46 +34,12 @@ type yearFacet struct {
 	field string
 }
 
-func (r yearFacet) Aggregate(ctx query.FacetContext) (query.AggregationItems, error) {
-	var results []struct {
-		Year  string
-		Count uint
-	}
-	q, qErr := ctx.NewAggregationQuery()
-	if qErr != nil {
-		return nil, qErr
-	}
-	if txErr := q.UnderlyingDB().Select(
-		fmt.Sprintf("%s.%s as year", ctx.TableName(), r.field),
-		"count(*) as count",
-	).Group(
-		"year",
-	).Find(&results).Error; txErr != nil {
-		return nil, txErr
-	}
-	agg := make(query.AggregationItems, len(results))
-	for _, item := range results {
-		key := item.Year
-		label := item.Year
-		if key == "" {
-			key = "null"
-			label = "Unknown"
-		}
-		agg[key] = query.AggregationItem{
-			Label: label,
-			Count: item.Count,
-		}
-	}
-	return agg, nil
-}
-
-func (r yearFacet) Criteria() []query.Criteria {
+func (r yearFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 	return []query.Criteria{
 		query.GenCriteria(func(ctx query.DbContext) (query.Criteria, error) {
-			filter := r.Filter().Values()
 			years := make([]uint16, 0, len(filter))
 			hasNull := false
-			for _, v := range filter {
+			for _, v := range filter.Values() {
 				if v == "null" {
 					hasNull = true
 					continue
@@ -88,15 +54,18 @@ func (r yearFacet) Criteria() []query.Criteria {
 				years = append(years, uint16(vInt))
 			}
 			yearField := ctx.Query().Content.ReleaseYear
+			joins := maps.NewInsertMap(maps.MapEntry[string, struct{}]{Key: model.TableNameContent})
 			var or []query.Criteria
 			if len(years) > 0 {
 				or = append(or, query.RawCriteria{
 					Query: ctx.Query().Content.UnderlyingDB().Where(yearCondition(yearField, years...).RawExpr()),
+					Joins: joins,
 				})
 			}
 			if hasNull {
 				or = append(or, query.RawCriteria{
 					Query: ctx.Query().Content.UnderlyingDB().Where(yearField.IsNull().RawExpr()),
+					Joins: joins,
 				})
 			}
 			return query.Or(or...), nil
@@ -104,10 +73,24 @@ func (r yearFacet) Criteria() []query.Criteria {
 	}
 }
 
-func yearCondition(target field.Field, years ...uint16) field.Expr {
-	valuers := make([]driver.Valuer, 0, len(years))
-	for _, year := range years {
-		valuers = append(valuers, model.NewNullUint16(year))
+func yearCondition(target field.Uint16, years ...uint16) field.Expr {
+	return target.In(years...)
+}
+
+func (yearFacet) Values(ctx query.FacetContext) (map[string]string, error) {
+	q := ctx.Query().Content
+	var years []model.Year
+	err := q.WithContext(ctx.Context()).Where(
+		q.ReleaseYear.Gte(1000),
+		q.ReleaseYear.Lte(9999),
+	).Distinct(q.ReleaseYear).Pluck(q.ReleaseYear, &years)
+	if err != nil {
+		return nil, err
 	}
-	return target.In(valuers...)
+	values := make(map[string]string, len(years)+1)
+	values["null"] = "Unknown"
+	for _, y := range years {
+		values[y.String()] = y.String()
+	}
+	return values, nil
 }

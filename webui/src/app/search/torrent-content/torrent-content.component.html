@@ -10,9 +10,9 @@
         <mat-radio-group [formControl]="contentType">
           <mat-radio-button>
             <mat-icon fontSet="material-icons">emergency</mat-icon>All
-            <small
-              >{{ isDeepFiltered ? "≤ " : ""
-              }}{{ search.overallTotalCount$ | async | number }}</small
+            <small *ngIf="search.overallTotalCount$ | async as count"
+              >{{ count.isEstimate ? "~" : ""
+              }}{{ count.count | number }}</small
             >
           </mat-radio-button>
           <mat-radio-button
@@ -21,9 +21,8 @@
           >
             <mat-icon>{{ t.value.icon }}</mat-icon>
             {{ t.value.plural }}
-            <small
-              >{{ isDeepFiltered ? "≤ " : ""
-              }}{{ search.contentTypeCount(t.key) | async | number }}</small
+            <small *ngIf="search.contentTypeCount(t.key) | async as agg"
+              >{{ agg.isEstimate ? "~" : "" }}{{ agg.count | number }}</small
             >
           </mat-radio-button>
         </mat-radio-group>
@@ -56,9 +55,7 @@
             [style.display]="'block'"
           >
             {{ r.label }}
-            <small
-              >{{ isDeepFiltered ? "≤ " : "" }}{{ r.count | number }}</small
-            >
+            <small>{{ r.isEstimate ? "~" : "" }}{{ r.count | number }}</small>
           </mat-checkbox>
           <span
             *ngIf="!(search.loading$ | async) && !facet.aggregations?.length"
@@ -622,12 +619,14 @@
       </table>
       <span class="spacer"></span>
       <app-paginator
+        *ngIf="search.totalCount$ | async as totalCount"
         (page)="search.handlePageEvent($event)"
         [pageIndex]="search.pageIndex$ | async"
         [pageSize]="search.pageSize$ | async"
         [pageLength]="search.pageLength$ | async"
-        [totalLength]="search.maxTotalCount$ | async"
-        [totalLessThanOrEqual]="search.isDeepFiltered"
+        [totalLength]="totalCount.count"
+        [totalIsEstimate]="totalCount.isEstimate"
+        [hasNextPage]="search.hasNextPage$ | async"
       />
     </div>
   </mat-drawer-content>

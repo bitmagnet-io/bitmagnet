@@ -98,10 +98,11 @@ func TorrentSourcesFromTorrent(t model.Torrent) []TorrentSource {
 }
 
 type TorrentContentSearchResult struct {
-	TotalCount   uint
-	HasNextPage  bool
-	Items        []TorrentContent
-	Aggregations gen.TorrentContentAggregations
+	TotalCount           uint
+	TotalCountIsEstimate bool
+	HasNextPage          bool
+	Items                []TorrentContent
+	Aggregations         gen.TorrentContentAggregations
 }
 
 func (t TorrentContentQuery) Search(ctx context.Context, query *q.SearchParams, facets *gen.TorrentContentFacetsInput) (TorrentContentSearchResult, error) {
@@ -159,10 +160,11 @@ func transformTorrentContentSearchResult(result q.GenericResult[search.TorrentCo
 		items = append(items, NewTorrentContentFromResultItem(item))
 	}
 	return TorrentContentSearchResult{
-		TotalCount:   result.TotalCount,
-		HasNextPage:  result.HasNextPage,
-		Items:        items,
-		Aggregations: aggs,
+		TotalCount:           result.TotalCount,
+		TotalCountIsEstimate: result.TotalCountIsEstimate,
+		HasNextPage:          result.HasNextPage,
+		Items:                items,
+		Aggregations:         aggs,
 	}, nil
 }
 

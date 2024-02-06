@@ -8,9 +8,10 @@ import (
 )
 
 type ContentTypeAgg struct {
-	Value *model.ContentType `json:"value,omitempty"`
-	Label string             `json:"label"`
-	Count int                `json:"count"`
+	Value      *model.ContentType `json:"value,omitempty"`
+	Label      string             `json:"label"`
+	Count      int                `json:"count"`
+	IsEstimate bool               `json:"isEstimate"`
 }
 
 type ContentTypeFacetInput struct {
@@ -19,9 +20,10 @@ type ContentTypeFacetInput struct {
 }
 
 type GenreAgg struct {
-	Value string `json:"value"`
-	Label string `json:"label"`
-	Count int    `json:"count"`
+	Value      string `json:"value"`
+	Label      string `json:"label"`
+	Count      int    `json:"count"`
+	IsEstimate bool   `json:"isEstimate"`
 }
 
 type GenreFacetInput struct {
@@ -31,9 +33,10 @@ type GenreFacetInput struct {
 }
 
 type LanguageAgg struct {
-	Value model.Language `json:"value"`
-	Label string         `json:"label"`
-	Count int            `json:"count"`
+	Value      model.Language `json:"value"`
+	Label      string         `json:"label"`
+	Count      int            `json:"count"`
+	IsEstimate bool           `json:"isEstimate"`
 }
 
 type LanguageFacetInput struct {
@@ -48,9 +51,10 @@ type Query struct {
 }
 
 type ReleaseYearAgg struct {
-	Value *model.Year `json:"value,omitempty"`
-	Label string      `json:"label"`
-	Count int         `json:"count"`
+	Value      *model.Year `json:"value,omitempty"`
+	Label      string      `json:"label"`
+	Count      int         `json:"count"`
+	IsEstimate bool        `json:"isEstimate"`
 }
 
 type ReleaseYearFacetInput struct {
@@ -88,9 +92,10 @@ type TorrentContentFacetsInput struct {
 }
 
 type TorrentFileTypeAgg struct {
-	Value model.FileType `json:"value"`
-	Label string         `json:"label"`
-	Count int            `json:"count"`
+	Value      model.FileType `json:"value"`
+	Label      string         `json:"label"`
+	Count      int            `json:"count"`
+	IsEstimate bool           `json:"isEstimate"`
 }
 
 type TorrentFileTypeFacetInput struct {
@@ -100,9 +105,10 @@ type TorrentFileTypeFacetInput struct {
 }
 
 type TorrentSourceAgg struct {
-	Value string `json:"value"`
-	Label string `json:"label"`
-	Count int    `json:"count"`
+	Value      string `json:"value"`
+	Label      string `json:"label"`
+	Count      int    `json:"count"`
+	IsEstimate bool   `json:"isEstimate"`
 }
 
 type TorrentSourceFacetInput struct {
@@ -112,9 +118,10 @@ type TorrentSourceFacetInput struct {
 }
 
 type TorrentTagAgg struct {
-	Value string `json:"value"`
-	Label string `json:"label"`
-	Count int    `json:"count"`
+	Value      string `json:"value"`
+	Label      string `json:"label"`
+	Count      int    `json:"count"`
+	IsEstimate bool   `json:"isEstimate"`
 }
 
 type TorrentTagFacetInput struct {
@@ -124,9 +131,10 @@ type TorrentTagFacetInput struct {
 }
 
 type VideoResolutionAgg struct {
-	Value *model.VideoResolution `json:"value,omitempty"`
-	Label string                 `json:"label"`
-	Count int                    `json:"count"`
+	Value      *model.VideoResolution `json:"value,omitempty"`
+	Label      string                 `json:"label"`
+	Count      int                    `json:"count"`
+	IsEstimate bool                   `json:"isEstimate"`
 }
 
 type VideoResolutionFacetInput struct {
@@ -135,9 +143,10 @@ type VideoResolutionFacetInput struct {
 }
 
 type VideoSourceAgg struct {
-	Value *model.VideoSource `json:"value,omitempty"`
-	Label string             `json:"label"`
-	Count int                `json:"count"`
+	Value      *model.VideoSource `json:"value,omitempty"`
+	Label      string             `json:"label"`
+	Count      int                `json:"count"`
+	IsEstimate bool               `json:"isEstimate"`
 }
 
 type VideoSourceFacetInput struct {

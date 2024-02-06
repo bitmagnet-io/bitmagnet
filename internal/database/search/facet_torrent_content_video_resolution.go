@@ -14,7 +14,7 @@ func videoResolutionField(q *dao.Query) field.Field {
 }
 
 func VideoResolutionFacet(options ...query.FacetOption) query.Facet {
-	return torrentContentAttributeFacet[model.VideoResolution]{
+	return videoResolutionFacet{torrentContentAttributeFacet[model.VideoResolution]{
 		FacetConfig: query.NewFacetConfig(
 			append([]query.FacetOption{
 				query.FacetHasKey(VideoResolutionFacetKey),
@@ -24,5 +24,18 @@ func VideoResolutionFacet(options ...query.FacetOption) query.Facet {
 		),
 		field: videoResolutionField,
 		parse: model.ParseVideoResolution,
+	}}
+}
+
+type videoResolutionFacet struct {
+	torrentContentAttributeFacet[model.VideoResolution]
+}
+
+func (f videoResolutionFacet) Values(query.FacetContext) (map[string]string, error) {
+	vrs := model.VideoResolutionValues()
+	values := make(map[string]string, len(vrs))
+	for _, vr := range vrs {
+		values[vr.String()] = vr.Label()
 	}
+	return values, nil
 }

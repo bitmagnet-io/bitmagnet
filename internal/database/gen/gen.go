@@ -254,6 +254,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		gen.FieldType("release_date", "Date"),
 		gen.FieldGenType("release_date", "Time"),
 		gen.FieldType("release_year", "Year"),
+		gen.FieldGenType("release_year", "Uint16"),
 		gen.FieldType("original_language", "NullLanguage"),
 		gen.FieldType("popularity", "NullFloat32"),
 		gen.FieldType("vote_average", "NullFloat32"),

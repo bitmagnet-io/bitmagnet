@@ -14,7 +14,7 @@
     {{ firstItemIndex | number }} - {{ lastItemIndex | number
     }}{{
       hasTotalLength
-        ? " of " + (totalLessThanOrEqual ? "≤ " : "") + (totalLength | number)
+        ? " of " + (totalIsEstimate ? "~" : "") + (totalLength | number)
         : ""
     }}
   </p>
