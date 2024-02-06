@@ -17,7 +17,7 @@ type Option = func(ctx OptionBuilder) (OptionBuilder, error)
 func DefaultOption() Option {
 	return Options(
 		Limit(10),
-		WithAggregationBudget(10_000),
+		WithAggregationBudget(5_000),
 	)
 }
 
