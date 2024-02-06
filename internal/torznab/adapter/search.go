@@ -124,7 +124,7 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 				ID:     imdbId,
 			})
 		}
-		options = append(options, query.Where(search.ContentIdentifierCriteria(refs...)))
+		options = append(options, query.Where(search.ContentAlternativeIdentifierCriteria(refs...)))
 	}
 	limit := a.defaultLimit
 	if r.Limit.Valid {
