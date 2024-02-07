@@ -94,6 +94,20 @@ func (b builder) Apply(e *gin.Engine) error {
 			imdbId.Valid = true
 			imdbId.String = qImdbId
 		}
+		season := model.NullInt{}
+		episode := model.NullInt{}
+		if qSeason := c.Query(torznab.ParamSeason); qSeason != "" {
+			if intSeason, err := strconv.Atoi(qSeason); err == nil {
+				season.Valid = true
+				season.Int = intSeason
+				if qEpisode := c.Query(torznab.ParamEpisode); qEpisode != "" {
+					if intEpisode, err := strconv.Atoi(qEpisode); err == nil {
+						episode.Valid = true
+						episode.Int = intEpisode
+					}
+				}
+			}
+		}
 		limit := model.NullUint{}
 		if intLimit, limitErr := strconv.Atoi(c.Query(torznab.ParamLimit)); limitErr == nil && intLimit > 0 {
 			limit.Valid = true
@@ -105,13 +119,14 @@ func (b builder) Apply(e *gin.Engine) error {
 			offset.Uint = uint(intOffset)
 		}
 		result, searchErr := client.Search(c, torznab.SearchRequest{
-			Query:  c.Query(torznab.ParamQuery),
-			Type:   tp,
-			Cats:   cats,
-			ImdbId: imdbId,
-			Limit:  limit,
-			Offset: offset,
-			// todo season, episode
+			Query:   c.Query(torznab.ParamQuery),
+			Type:    tp,
+			Cats:    cats,
+			ImdbId:  imdbId,
+			Season:  season,
+			Episode: episode,
+			Limit:   limit,
+			Offset:  offset,
 		})
 		if searchErr != nil {
 			writeErr(fmt.Errorf("failed to search: %w", searchErr))

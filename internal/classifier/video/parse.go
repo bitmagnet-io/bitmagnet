@@ -7,7 +7,6 @@ import (
 	"github.com/hedhyw/rex/pkg/dialect"
 	"github.com/hedhyw/rex/pkg/rex"
 	"strconv"
-	"strings"
 )
 
 var titleTokens = []dialect.Token{
@@ -52,60 +51,12 @@ var titleYearRegex = rex.New(
 	rex.Group.NonCaptured(rex.Group.NonCaptured(titleTokens...), rex.Group.NonCaptured(yearTokens...)),
 ).MustCompile()
 
-func rangeToken(runes string) dialect.Token {
-	return rex.Group.Define(
-		rex.Group.Define(rex.Chars.Digits().Repeat().Between(1, 2)),
-		rex.Group.Composite(
-			rex.Group.Define(
-				rex.Chars.Whitespace().Repeat().ZeroOrOne(),
-				rex.Chars.Single('-'),
-				rex.Chars.Whitespace().Repeat().ZeroOrOne(),
-				rex.Group.NonCaptured(
-					rex.Chars.Runes(runes).Repeat().ZeroOrOne(),
-					rex.Chars.Whitespace().Repeat().ZeroOrOne(),
-				).Repeat().ZeroOrOne(),
-				rex.Group.Define(rex.Chars.Digits().Repeat().Between(1, 2)),
-			).NonCaptured(),
-			rex.Group.Define(
-				rex.Chars.Whitespace().Repeat().ZeroOrOne(),
-				rex.Chars.Single(','),
-				rex.Chars.Whitespace().Repeat().ZeroOrOne(),
-				rex.Group.NonCaptured(
-					rex.Chars.Runes(runes).Repeat().ZeroOrOne(),
-					rex.Chars.Whitespace().Repeat().ZeroOrOne(),
-				).Repeat().ZeroOrOne(),
-				rex.Group.Define(rex.Chars.Digits().Repeat().Between(1, 2)),
-				rex.Chars.Whitespace().Repeat().ZeroOrOne(),
-			).NonCaptured().Repeat().OneOrMore(),
-		).NonCaptured().Repeat().ZeroOrOne(),
-	)
-}
-
-var seasonToken = rex.Group.Define(
-	rex.Group.Composite(
-		regex.RegexTokensFromNames("season", "s")...,
-	).NonCaptured(),
-	rex.Chars.Whitespace().Repeat().ZeroOrOne(),
-	rangeToken("sS"),
-	rex.Chars.Whitespace().Repeat().ZeroOrOne(),
-).NonCaptured()
-
-var episodeToken = rex.Group.Define(
-	rex.Group.Composite(
-		regex.RegexTokensFromNames("episode", "ep", "e")...,
-	).NonCaptured(),
-	rex.Chars.Whitespace().Repeat().ZeroOrOne(),
-	rangeToken("eE"),
-).NonCaptured()
-
-var episodesTokens = rex.Group.Define(
-	seasonToken,
-	episodeToken.Repeat().ZeroOrOne(),
-).NonCaptured()
-
 var titleEpisodesRegex = rex.New(
 	rex.Chars.Begin(),
-	rex.Group.NonCaptured(rex.Group.NonCaptured(titleTokens...), episodesTokens),
+	rex.Group.NonCaptured(
+		rex.Group.NonCaptured(titleTokens...),
+		model.EpisodesToken,
+	),
 ).MustCompile()
 
 var multiRegex = regex.NewRegexFromNames("multi")
@@ -180,48 +131,7 @@ func parseTitleYearEpisodes(input string) (string, model.Year, model.Episodes, s
 		} else {
 			title = cleanTitle(title)
 		}
-		episodes := model.Episodes{}
-		seasonStart, _ := strconv.ParseInt(match[3], 10, 16)
-		if match[6] == "" {
-			// no episodes
-			if match[4] != "" {
-				// a season range
-				seasonEnd, _ := strconv.ParseInt(match[4], 10, 16)
-				for i := seasonStart; i <= seasonEnd; i++ {
-					episodes = episodes.AddSeason(int(i))
-				}
-			} else if match[5] != "" {
-				// a list of seasons
-				includedSeasons := strings.Split(match[2], ",")
-				for _, season := range includedSeasons {
-					seasonIndex, _ := strconv.ParseInt(season, 10, 16)
-					episodes = episodes.AddSeason(int(seasonIndex))
-				}
-			} else {
-				// or just a single season
-				episodes = episodes.AddSeason(int(seasonStart))
-			}
-		} else {
-			// episodes
-			episodeStart, _ := strconv.ParseInt(match[7], 10, 16)
-			if match[8] != "" {
-				// an episode range
-				episodeEnd, _ := strconv.ParseInt(match[8], 10, 16)
-				for i := episodeStart; i <= episodeEnd; i++ {
-					episodes = episodes.AddEpisode(int(seasonStart), int(i))
-				}
-			} else if match[9] != "" {
-				// a list of episodes
-				includedEpisodes := strings.Split(match[6], ",")
-				for _, episode := range includedEpisodes {
-					episodeIndex, _ := strconv.ParseInt(episode, 10, 16)
-					episodes = episodes.AddEpisode(int(seasonStart), int(episodeIndex))
-				}
-			} else {
-				// a single episode
-				episodes = episodes.AddEpisode(int(seasonStart), int(episodeStart))
-			}
-		}
+		episodes := model.EpisodesMatchToEpisodes(match[2:])
 		return title, year, episodes, input[len(match[0]):], nil
 	}
 	return "", 0, nil, "", classifier.ErrNoMatch
