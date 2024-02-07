@@ -34,6 +34,15 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 		options = append(options, query.Where(search.ContentTypeCriteria(model.ContentTypeMovie)))
 	case torznab.FunctionTv:
 		options = append(options, query.Where(search.ContentTypeCriteria(model.ContentTypeTvShow)))
+		if r.Season.Valid {
+			episodes := make(model.Episodes)
+			if r.Episode.Valid {
+				episodes = episodes.AddEpisode(r.Season.Int, r.Episode.Int)
+			} else {
+				episodes = episodes.AddSeason(r.Season.Int)
+			}
+			options = append(options, query.Where(search.TorrentContentEpisodesCriteria(episodes)))
+		}
 	case torznab.FunctionMusic:
 		options = append(options, query.Where(search.ContentTypeCriteria(model.ContentTypeMusic)))
 	case torznab.FunctionBook:

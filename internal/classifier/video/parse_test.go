@@ -216,12 +216,80 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
+			inputString: "The.Series.name.S03,4,5,6.1080p.WEB.h264-GRP[eztv.re].mkv",
+			expectedOutput: output{
+				contentType: model.ContentTypeTvShow,
+				title:       "The Series name",
+				attrs: classifier.ContentAttributes{
+					Episodes:        make(model.Episodes).AddSeason(3).AddSeason(4).AddSeason(5).AddSeason(6),
+					VideoResolution: model.NewNullVideoResolution(model.VideoResolutionV1080p),
+					VideoSource:     model.NewNullVideoSource(model.VideoSourceWEBRip),
+					VideoCodec:      model.NewNullVideoCodec(model.VideoCodecH264),
+					ReleaseGroup: model.NullString{
+						String: "GRP",
+						Valid:  true,
+					},
+				},
+			},
+		},
+		{
 			inputString: "The.Series.name.S04E03-5.1080p.WEB.h264-GRP[eztv.re].mkv",
 			expectedOutput: output{
 				contentType: model.ContentTypeTvShow,
 				title:       "The Series name",
 				attrs: classifier.ContentAttributes{
 					Episodes:        make(model.Episodes).AddEpisode(4, 3).AddEpisode(4, 4).AddEpisode(4, 5),
+					VideoResolution: model.NewNullVideoResolution(model.VideoResolutionV1080p),
+					VideoSource:     model.NewNullVideoSource(model.VideoSourceWEBRip),
+					VideoCodec:      model.NewNullVideoCodec(model.VideoCodecH264),
+					ReleaseGroup: model.NullString{
+						String: "GRP",
+						Valid:  true,
+					},
+				},
+			},
+		},
+		{
+			inputString: "The.Series.name.S04E03,4,5.1080p.WEB.h264-GRP[eztv.re].mkv",
+			expectedOutput: output{
+				contentType: model.ContentTypeTvShow,
+				title:       "The Series name",
+				attrs: classifier.ContentAttributes{
+					Episodes:        make(model.Episodes).AddEpisode(4, 3).AddEpisode(4, 4).AddEpisode(4, 5),
+					VideoResolution: model.NewNullVideoResolution(model.VideoResolutionV1080p),
+					VideoSource:     model.NewNullVideoSource(model.VideoSourceWEBRip),
+					VideoCodec:      model.NewNullVideoCodec(model.VideoCodecH264),
+					ReleaseGroup: model.NullString{
+						String: "GRP",
+						Valid:  true,
+					},
+				},
+			},
+		},
+		{
+			inputString: "The.Series.name.1x02.1080p.WEB.h264-GRP[eztv.re].mkv",
+			expectedOutput: output{
+				contentType: model.ContentTypeTvShow,
+				title:       "The Series name",
+				attrs: classifier.ContentAttributes{
+					Episodes:        make(model.Episodes).AddEpisode(1, 2),
+					VideoResolution: model.NewNullVideoResolution(model.VideoResolutionV1080p),
+					VideoSource:     model.NewNullVideoSource(model.VideoSourceWEBRip),
+					VideoCodec:      model.NewNullVideoCodec(model.VideoCodecH264),
+					ReleaseGroup: model.NullString{
+						String: "GRP",
+						Valid:  true,
+					},
+				},
+			},
+		},
+		{
+			inputString: "The.Series.name.1x01-03.1080p.WEB.h264-GRP[eztv.re].mkv",
+			expectedOutput: output{
+				contentType: model.ContentTypeTvShow,
+				title:       "The Series name",
+				attrs: classifier.ContentAttributes{
+					Episodes:        make(model.Episodes).AddEpisode(1, 1).AddEpisode(1, 2).AddEpisode(1, 3),
 					VideoResolution: model.NewNullVideoResolution(model.VideoResolutionV1080p),
 					VideoSource:     model.NewNullVideoSource(model.VideoSourceWEBRip),
 					VideoCodec:      model.NewNullVideoCodec(model.VideoCodecH264),
