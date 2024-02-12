@@ -76,7 +76,7 @@ flowchart TB
     STEP_meta_info_success -->|No| STEP_remove_torrent_from_staging
     STEP_meta_info_success -->|Yes| STEP_torrent_to_staging
     POSTGRES[(Postgres Database)]
-    MESSAGE_QUEUE[(Redis Message Queue)]
+    MESSAGE_QUEUE[(Postgres Message Queue)]
     STEP_publish_classify_job -.->MESSAGE_QUEUE
     MESSAGE_QUEUE -.->STEP_classify_torrent(Classify torrent content)
     STEP_persist_torrent_content(Persist content metadata)

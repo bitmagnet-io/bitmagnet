@@ -1,20 +1,10 @@
 package queue
 
 import (
-	"errors"
 	"math"
 	"math/rand"
 	"time"
 )
-
-const (
-	JobStatusPending   = "pending"
-	JobStatusProcessed = "processed"
-	JobStatusRetry     = "retry"
-	JobStatusFailed    = "failed"
-)
-
-var ErrJobExceededDeadline = errors.New("the job did not complete before its deadline")
 
 // RandInt returns a random integer up to max
 func RandInt(max int) int {

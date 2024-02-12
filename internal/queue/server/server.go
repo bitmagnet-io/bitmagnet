@@ -197,11 +197,11 @@ func (h *serverHandler) handleJob(ctx context.Context, conds ...gen.Condition) (
 		jobId = job.ID
 		var jobErr error
 		if job.Deadline.Valid && job.Deadline.Time.Before(time.Now()) {
-			jobErr = queue.ErrJobExceededDeadline
+			jobErr = ErrJobExceededDeadline
 			h.logger.Debugw("job deadline is in the past, skipping", "job_id", job.ID)
 		} else {
 			// check if the job is being retried and increment retry count accordingly
-			if job.Status != queue.JobStatusPending {
+			if job.Status != model.QueueJobStatusPending {
 				job.Retries++
 			}
 			// execute the queue handler of this job
@@ -213,14 +213,14 @@ func (h *serverHandler) handleJob(ctx context.Context, conds ...gen.Condition) (
 		if jobErr != nil {
 			h.logger.Errorw("job failed", "error", jobErr)
 			if job.Retries < job.MaxRetries {
-				job.Status = queue.JobStatusRetry
+				job.Status = model.QueueJobStatusRetry
 				job.RunAfter = queue.CalculateBackoff(job.Retries)
 			} else {
-				job.Status = queue.JobStatusFailed
+				job.Status = model.QueueJobStatusFailed
 			}
 			job.Error = model.NewNullString(jobErr.Error())
 		} else {
-			job.Status = queue.JobStatusProcessed
+			job.Status = model.QueueJobStatusProcessed
 			processed = true
 		}
 		_, updateErr := tx.QueueJob.WithContext(ctx).Updates(job)
@@ -233,3 +233,5 @@ func (h *serverHandler) handleJob(ctx context.Context, conds ...gen.Condition) (
 	}
 	return
 }
+
+var ErrJobExceededDeadline = errors.New("the job did not complete before its deadline")

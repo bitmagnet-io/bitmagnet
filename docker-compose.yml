@@ -15,13 +15,10 @@ services:
       - LOG_FILE_ROTATOR_ENABLED=true
       - POSTGRES_HOST=postgres
       - POSTGRES_PASSWORD=postgres
-      - REDIS_ADDR=redis:6379
       # - TMDB_API_KEY=your_api_key
     network_mode: service:gluetun
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
         condition: service_healthy
     command:
       - worker
@@ -67,6 +64,7 @@ services:
         ipv4_address: 192.168.55.11
     ports:
       - "5432:5432"
+    shm_size: 1g
     restart: unless-stopped
     environment:
       - POSTGRES_PASSWORD=postgres
@@ -74,25 +72,6 @@ services:
       - PGUSER=postgres
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
-      interval: 10s
-      start_period: 20s
-
-  redis:
-    image: redis:7-alpine
-    container_name: bitmagnet-redis
-    volumes:
-      - ./data/redis:/data
-    ports:
-      - "6379:6379"
-    restart: unless-stopped
-    entrypoint:
-      - redis-server
-      - --save 60 1
-    networks:
-      bitmagnet:
-        ipv4_address: 192.168.55.12
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       start_period: 20s
 
