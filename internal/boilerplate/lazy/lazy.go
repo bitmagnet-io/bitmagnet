@@ -33,7 +33,7 @@ func (l *lazy[T]) Get() (T, error) {
 func (l *lazy[T]) IfInitialized(fn func(T) error) error {
 	l.mtx.Lock()
 	defer l.mtx.Unlock()
-	if l.done {
+	if l.done && l.err == nil {
 		return fn(l.v)
 	}
 	return nil

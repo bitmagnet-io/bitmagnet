@@ -6,12 +6,14 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"go.uber.org/fx"
+	"sync"
 	"time"
 )
 
 type Params struct {
 	fx.In
-	Dao lazy.Lazy[*dao.Query]
+	Dao         lazy.Lazy[*dao.Query]
+	PgxPoolWait *sync.WaitGroup `name:"pgx_pool_wait"`
 }
 
 type Result struct {
@@ -26,6 +28,7 @@ func New(params Params) Result {
 		if err != nil {
 			return nil, err
 		}
+		params.PgxPoolWait.Add(1)
 		return &manager{
 			dao:           d,
 			buffer:        make(map[protocol.ID]struct{}, 1000),
@@ -38,6 +41,7 @@ func New(params Params) Result {
 		AppHook: fx.Hook{
 			OnStop: func(ctx context.Context) error {
 				return lazyManager.IfInitialized(func(m Manager) error {
+					defer params.PgxPoolWait.Done()
 					return m.Flush(ctx)
 				})
 			},
