@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
@@ -23,4 +24,8 @@ const (
 type MessageParams struct {
 	ClassifyMode ClassifyMode
 	InfoHashes   []protocol.ID
+}
+
+func NewQueueJob(msg MessageParams) (model.QueueJob, error) {
+	return model.NewQueueJob(MessageName, msg, model.QueueJobMaxRetries(2))
 }

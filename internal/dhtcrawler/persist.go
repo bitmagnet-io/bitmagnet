@@ -2,6 +2,7 @@ package dhtcrawler
 
 import (
 	"context"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
@@ -21,6 +22,21 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 		case is := <-c.persistTorrents.Out():
 			ts := make([]*model.Torrent, 0, len(is))
 			hashMap := make(map[protocol.ID]infoHashWithMetaInfo, len(is))
+			hashesToClassify := make([]protocol.ID, 0, classifyBatchSize)
+			var jobs []*model.QueueJob
+			flushHashesToClassify := func() {
+				if len(hashesToClassify) > 0 {
+					job, err := processor.NewQueueJob(processor.MessageParams{
+						InfoHashes: hashesToClassify,
+					})
+					if err != nil {
+						c.logger.Errorf("error creating queue job: %s", err.Error())
+					} else {
+						jobs = append(jobs, &job)
+					}
+					hashesToClassify = hashesToClassify[:0]
+				}
+			}
 			for _, i := range is {
 				if _, ok := hashMap[i.infoHash]; ok {
 					continue
@@ -30,40 +46,34 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 					c.logger.Errorf("error creating torrent model: %s", err.Error())
 				} else {
 					ts = append(ts, &t)
+					hashesToClassify = append(hashesToClassify, i.infoHash)
+					if len(hashesToClassify) >= classifyBatchSize {
+						flushHashesToClassify()
+					}
 				}
 			}
-			if persistErr := c.dao.WithContext(ctx).Torrent.Clauses(clause.OnConflict{
-				Columns: []clause.Column{{Name: string(c.dao.Torrent.InfoHash.ColumnName())}},
-				DoUpdates: clause.AssignmentColumns([]string{
-					string(c.dao.Torrent.Name.ColumnName()),
-					string(c.dao.Torrent.FilesStatus.ColumnName()),
-					string(c.dao.Torrent.PieceLength.ColumnName()),
-					string(c.dao.Torrent.Pieces.ColumnName()),
-				}),
-			}).CreateInBatches(ts, 20); persistErr != nil {
+			flushHashesToClassify()
+			if persistErr := c.dao.Transaction(func(tx *dao.Query) error {
+				if err := tx.WithContext(ctx).Torrent.Clauses(clause.OnConflict{
+					Columns: []clause.Column{{Name: string(c.dao.Torrent.InfoHash.ColumnName())}},
+					DoUpdates: clause.AssignmentColumns([]string{
+						string(c.dao.Torrent.Name.ColumnName()),
+						string(c.dao.Torrent.FilesStatus.ColumnName()),
+						string(c.dao.Torrent.PieceLength.ColumnName()),
+						string(c.dao.Torrent.Pieces.ColumnName()),
+					}),
+				}).CreateInBatches(ts, 20); err != nil {
+					return err
+				}
+				if err := tx.WithContext(ctx).QueueJob.CreateInBatches(jobs, 10); err != nil {
+					return err
+				}
+				return nil
+			}); persistErr != nil {
 				c.logger.Errorf("error persisting torrents: %s", persistErr)
 			} else {
 				c.persistedTotal.With(prometheus.Labels{"entity": "Torrent"}).Add(float64(len(ts)))
 				c.logger.Debugw("persisted torrents", "count", len(ts))
-				hashesToClassify := make([]protocol.ID, 0, classifyBatchSize)
-				flushClassify := func() {
-					if len(hashesToClassify) == 0 {
-						return
-					}
-					if _, classifyErr := c.processorPublisher.Publish(ctx, processor.MessageParams{
-						InfoHashes: hashesToClassify,
-					}); classifyErr != nil {
-						c.logger.Errorf("error publishing classify message: %s", classifyErr.Error())
-					}
-				}
-				for _, t := range ts {
-					hashesToClassify = append(hashesToClassify, t.InfoHash)
-					if len(hashesToClassify) == classifyBatchSize {
-						flushClassify()
-						hashesToClassify = make([]protocol.ID, 0, classifyBatchSize)
-					}
-				}
-				flushClassify()
 				for _, i := range hashMap {
 					select {
 					case <-ctx.Done():
@@ -127,7 +137,7 @@ func createTorrentModel(
 	}, nil
 }
 
-const classifyBatchSize = 200
+const classifyBatchSize = 100
 
 // runPersistSources waits on the persistSources channel for scraped torrents, and persists sources
 // (which includes discovery date, seeders and leechers) to the database in batches.

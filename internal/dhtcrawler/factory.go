@@ -8,13 +8,11 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
-	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/client"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/banning"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainforequester"
-	"github.com/bitmagnet-io/bitmagnet/internal/queue/publisher"
 	"github.com/prometheus/client_golang/prometheus"
 	boom "github.com/tylertreat/BoomFilters"
 	"go.uber.org/fx"
@@ -24,17 +22,16 @@ import (
 
 type Params struct {
 	fx.In
-	Config             Config
-	KTable             ktable.Table
-	Client             lazy.Lazy[client.Client]
-	MetainfoRequester  metainforequester.Requester
-	BanningChecker     banning.Checker `name:"metainfo_banning_checker"`
-	Search             lazy.Lazy[search.Search]
-	Dao                lazy.Lazy[*dao.Query]
-	BlockingManager    lazy.Lazy[blocking.Manager]
-	ProcessorPublisher lazy.Lazy[publisher.Publisher[processor.MessageParams]]
-	DiscoveredNodes    concurrency.BatchingChannel[ktable.Node] `name:"dht_discovered_nodes"`
-	Logger             *zap.SugaredLogger
+	Config            Config
+	KTable            ktable.Table
+	Client            lazy.Lazy[client.Client]
+	MetainfoRequester metainforequester.Requester
+	BanningChecker    banning.Checker `name:"metainfo_banning_checker"`
+	Search            lazy.Lazy[search.Search]
+	Dao               lazy.Lazy[*dao.Query]
+	BlockingManager   lazy.Lazy[blocking.Manager]
+	DiscoveredNodes   concurrency.BatchingChannel[ktable.Node] `name:"dht_discovered_nodes"`
+	Logger            *zap.SugaredLogger
 }
 
 type Result struct {
@@ -62,10 +59,6 @@ func New(params Params) Result {
 						return err
 					}
 					query, err := params.Dao.Get()
-					if err != nil {
-						return err
-					}
-					classifierPublisher, err := params.ProcessorPublisher.Get()
 					if err != nil {
 						return err
 					}
@@ -104,7 +97,6 @@ func New(params Params) Result {
 						savePieces:         params.Config.SavePieces,
 						rescrapeThreshold:  params.Config.RescrapeThreshold,
 						dao:                query,
-						processorPublisher: classifierPublisher,
 						ignoreHashes: &ignoreHashes{
 							bloom: boom.NewStableBloomFilter(10_000_000, 2, 0.001),
 						},

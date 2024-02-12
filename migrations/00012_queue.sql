@@ -24,12 +24,12 @@ CREATE TABLE IF NOT EXISTS queue_jobs (
   created_at timestamp with time zone not null
 );
 
-CREATE INDEX IF NOT EXISTS queue_job_fetcher_idx ON queue_jobs (id, status, run_after);
-CREATE INDEX IF NOT EXISTS queue_jobs_fetcher_idx ON queue_jobs (queue, status, run_after);
-CREATE INDEX IF NOT EXISTS queue_jobs_fingerprint_idx ON queue_jobs (fingerprint, status);
+CREATE INDEX ON queue_jobs (queue, status);
+CREATE INDEX ON queue_jobs (id, queue, status, run_after);
+CREATE INDEX ON queue_jobs USING gin(queue, payload);
 
 --- This unique partial index prevents multiple unprocessed jobs with the same payload from being queued
-CREATE UNIQUE INDEX IF NOT EXISTS queue_jobs_fingerprint_unique_idx ON queue_jobs (fingerprint, status) WHERE NOT (status IN ('processed', 'failed'));
+CREATE UNIQUE INDEX ON queue_jobs (fingerprint, status) WHERE NOT (status IN ('processed', 'failed'));
 
 CREATE OR REPLACE FUNCTION queue_announce_job() RETURNS trigger AS $$
 DECLARE

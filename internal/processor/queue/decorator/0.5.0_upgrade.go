@@ -12,7 +12,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"github.com/bitmagnet-io/bitmagnet/internal/queue/publisher"
 	"github.com/schollz/progressbar/v3"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -22,9 +21,8 @@ import (
 
 type Params struct {
 	fx.In
-	Dao       lazy.Lazy[*dao.Query]
-	Publisher lazy.Lazy[publisher.Publisher[processor.MessageParams]]
-	Logger    *zap.SugaredLogger
+	Dao    lazy.Lazy[*dao.Query]
+	Logger *zap.SugaredLogger
 }
 
 type Result struct {
@@ -67,10 +65,6 @@ func New(p Params) (Result, error) {
 							logger.Debug("reprocess already enqueued, skipping")
 						} else {
 							logger.Info("enqueuing reprocess")
-							p, pubErr := p.Publisher.Get()
-							if pubErr != nil {
-								return pubErr
-							}
 							torrentCount := int64(0)
 							if result, err := d.Torrent.WithContext(ctx).Count(); err != nil {
 								return err
@@ -86,10 +80,14 @@ func New(p Params) (Result, error) {
 									for _, c := range torrentResult {
 										infoHashes = append(infoHashes, c.InfoHash)
 									}
-									if _, err := p.Publish(ctx, processor.MessageParams{
+									job, err := processor.NewQueueJob(processor.MessageParams{
 										ClassifyMode: processor.ClassifyModeSkipUnmatched,
 										InfoHashes:   infoHashes,
-									}); err != nil {
+									})
+									if err != nil {
+										return err
+									}
+									if err := tx.Create(&job); err != nil {
 										return err
 									}
 									_ = bar.Add(len(torrentResult))
@@ -97,6 +95,8 @@ func New(p Params) (Result, error) {
 								}); err != nil {
 									return err
 								}
+								return nil
+
 							}
 							logger.Info("enqueued reprocess")
 						}

@@ -7,7 +7,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"github.com/bitmagnet-io/bitmagnet/internal/queue/publisher"
 	"gorm.io/gorm/clause"
 	"sync"
 	"time"
@@ -44,10 +43,9 @@ type Info struct {
 }
 
 type importer struct {
-	dao                *dao.Query
-	processorPublisher publisher.Publisher[processor.MessageParams]
-	bufferSize         uint
-	maxWaitTime        time.Duration
+	dao         *dao.Query
+	bufferSize  uint
+	maxWaitTime time.Duration
 }
 
 var (
@@ -192,27 +190,35 @@ func (i *activeImport) persistItems(items ...Item) error {
 		torrents = append(torrents, &torrent)
 		infoHashes = append(infoHashes, item.InfoHash)
 	}
-	if len(sources) > 0 {
-		if createSourcesErr := i.dao.TorrentSource.WithContext(i.ctx).Clauses(clause.OnConflict{
-			DoNothing: true,
-		}).CreateInBatches(sources, 100); createSourcesErr != nil {
-			return createSourcesErr
-		}
-		for _, s := range sources {
-			i.importedSources[s.Key] = struct{}{}
-		}
-	}
-	if createTorrentsErr := i.dao.Torrent.WithContext(i.ctx).Clauses(clause.OnConflict{
-		// todo work out how to handle conflicts here
-		UpdateAll: true,
-	}).CreateInBatches(torrents, 100); createTorrentsErr != nil {
-		return createTorrentsErr
-	}
-	_, publishErr := i.processorPublisher.Publish(i.ctx, processor.MessageParams{
+	job, jobErr := processor.NewQueueJob(processor.MessageParams{
 		InfoHashes: infoHashes,
 	})
-	if publishErr != nil {
-		return publishErr
+	if jobErr != nil {
+		return jobErr
+	}
+	if txErr := i.dao.Transaction(func(tx *dao.Query) error {
+		if len(sources) > 0 {
+			if createSourcesErr := tx.TorrentSource.WithContext(i.ctx).Clauses(clause.OnConflict{
+				DoNothing: true,
+			}).CreateInBatches(sources, 100); createSourcesErr != nil {
+				return createSourcesErr
+			}
+			for _, s := range sources {
+				i.importedSources[s.Key] = struct{}{}
+			}
+		}
+		if createTorrentsErr := tx.Torrent.WithContext(i.ctx).Clauses(clause.OnConflict{
+			// todo work out how to handle conflicts here
+			UpdateAll: true,
+		}).CreateInBatches(torrents, 100); createTorrentsErr != nil {
+			return createTorrentsErr
+		}
+		if createJobErr := tx.QueueJob.Create(&job); createJobErr != nil {
+			return createJobErr
+		}
+		return nil
+	}); txErr != nil {
+		return txErr
 	}
 	i.importedHashes = append(i.importedHashes, infoHashes...)
 	return nil

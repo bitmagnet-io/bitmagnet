@@ -1,13 +1,11 @@
 package reprocesscmd
 
 import (
-	"errors"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"github.com/bitmagnet-io/bitmagnet/internal/queue/publisher"
 	"github.com/schollz/progressbar/v3"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/fx"
@@ -17,9 +15,8 @@ import (
 
 type Params struct {
 	fx.In
-	Dao                lazy.Lazy[*dao.Query]
-	ProcessorPublisher lazy.Lazy[publisher.Publisher[processor.MessageParams]]
-	Logger             *zap.SugaredLogger
+	Dao    lazy.Lazy[*dao.Query]
+	Logger *zap.SugaredLogger
 }
 
 type Result struct {
@@ -61,10 +58,6 @@ func New(p Params) (Result, error) {
 			if err != nil {
 				return err
 			}
-			p, err := p.ProcessorPublisher.Get()
-			if err != nil {
-				return err
-			}
 			batchSize := ctx.Int("batchSize")
 			torrentCount := int64(0)
 			if result, err := d.Torrent.WithContext(ctx.Context).Count(); err != nil {
@@ -74,23 +67,22 @@ func New(p Params) (Result, error) {
 			}
 			bar := progressbar.Default(torrentCount, "queuing torrents")
 			var torrentResult []*model.Torrent
-			n := 0
 			if err := d.Torrent.WithContext(ctx.Context).FindInBatches(&torrentResult, batchSize, func(tx gen.Dao, _ int) error {
 				infoHashes := make([]protocol.ID, 0, len(torrentResult))
 				for _, c := range torrentResult {
 					infoHashes = append(infoHashes, c.InfoHash)
 				}
-				if _, err := p.Publish(ctx.Context, processor.MessageParams{
+				job, err := processor.NewQueueJob(processor.MessageParams{
 					ClassifyMode: classifyMode,
 					InfoHashes:   infoHashes,
-				}); err != nil {
+				})
+				if err != nil {
+					return err
+				}
+				if err := tx.Create(&job); err != nil {
 					return err
 				}
 				_ = bar.Add(len(torrentResult))
-				n++
-				if n > 5 {
-					return errors.New("test")
-				}
 				return nil
 			}); err != nil {
 				return err

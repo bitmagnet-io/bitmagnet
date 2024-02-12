@@ -16,20 +16,16 @@ const (
 	DefaultHandlerTimeout = 30 * time.Second
 )
 
-var (
-	ErrNoHandlerForQueue = errors.New("no handler for queue")
-)
-
 // Func is a function that Handlers execute for every Job on a queue
 type Func func(ctx context.Context, job model.QueueJob) error
 
 // Handler handles jobs on a queue
 type Handler struct {
-	Handle        Func
-	Concurrency   int
-	JobTimeout    time.Duration
-	QueueCapacity int64
 	Queue         string
+	Concurrency   int
+	CheckInterval time.Duration
+	JobTimeout    time.Duration
+	Handle        Func
 }
 
 // Option is function that sets optional configuration for Handlers
@@ -59,27 +55,13 @@ func Concurrency(c int) Option {
 	}
 }
 
-// MaxQueueCapacity configures Handlers to enforce a maximum capacity on the queues that it handles
-// queues that have reached capacity cause Enqueue() to block until the queue is below capacity
-func MaxQueueCapacity(capacity int64) Option {
-	return func(h *Handler) {
-		h.QueueCapacity = capacity
-	}
-}
-
-// Queue configures the name of the queue that the handler runs on
-func Queue(queue string) Option {
-	return func(h *Handler) {
-		h.Queue = queue
-	}
-}
-
 // New creates new queue handlers for specific queues. This function is to be usued to create new Handlers for
 // non-periodic jobs (most jobs). Use [NewPeriodic] to initialize handlers for periodic jobs.
 func New(queue string, f Func, opts ...Option) (h Handler) {
 	h = Handler{
-		Handle: f,
-		Queue:  queue,
+		Handle:        f,
+		Queue:         queue,
+		CheckInterval: 30 * time.Second,
 	}
 
 	h.WithOptions(opts...)

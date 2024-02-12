@@ -1,7 +1,7 @@
 package queuefx
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/queue/backend/gorm"
+	"github.com/bitmagnet-io/bitmagnet/internal/queue/server"
 	"go.uber.org/fx"
 )
 
@@ -9,7 +9,7 @@ func New() fx.Option {
 	return fx.Module(
 		"queue",
 		fx.Provide(
-			gorm.New,
+			server.New,
 		),
 	)
 }
