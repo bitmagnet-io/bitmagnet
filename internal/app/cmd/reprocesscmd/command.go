@@ -1,6 +1,7 @@
 package reprocesscmd
 
 import (
+	"errors"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
@@ -73,6 +74,7 @@ func New(p Params) (Result, error) {
 			}
 			bar := progressbar.Default(torrentCount, "queuing torrents")
 			var torrentResult []*model.Torrent
+			n := 0
 			if err := d.Torrent.WithContext(ctx.Context).FindInBatches(&torrentResult, batchSize, func(tx gen.Dao, _ int) error {
 				infoHashes := make([]protocol.ID, 0, len(torrentResult))
 				for _, c := range torrentResult {
@@ -85,6 +87,10 @@ func New(p Params) (Result, error) {
 					return err
 				}
 				_ = bar.Add(len(torrentResult))
+				n++
+				if n > 5 {
+					return errors.New("test")
+				}
 				return nil
 			}); err != nil {
 				return err

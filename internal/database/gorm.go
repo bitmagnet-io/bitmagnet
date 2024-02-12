@@ -3,9 +3,10 @@ package database
 import (
 	"database/sql"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
-	gorm2 "github.com/bitmagnet-io/bitmagnet/internal/database/gorm"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/logger"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	gormlogger "gorm.io/gorm/logger"
 	"time"
@@ -13,44 +14,38 @@ import (
 
 type Params struct {
 	fx.In
-	Logger    *zap.SugaredLogger
-	Dialector gorm.Dialector
+	SqlDB  lazy.Lazy[*sql.DB]
+	Logger *zap.SugaredLogger
 }
 
 type Result struct {
 	fx.Out
 	GormDb lazy.Lazy[*gorm.DB]
-	SqlDb  lazy.Lazy[*sql.DB]
 }
 
 func New(p Params) Result {
-	gormDb := lazy.New(func() (*gorm.DB, error) {
-		gDb, dbErr := gorm.Open(p.Dialector, &gorm.Config{
-			Logger: gorm2.New(gorm2.Params{
-				ZapLogger: p.Logger,
-				Config: gorm2.Config{
-					LogLevel:      gormlogger.Info,
-					SlowThreshold: time.Second * 3,
-				},
-			}).GormLogger,
-		})
-		if dbErr != nil {
-			return nil, dbErr
-		}
-		return gDb, nil
-	})
 	return Result{
-		GormDb: gormDb,
-		SqlDb: lazy.New(func() (*sql.DB, error) {
-			gDb, gDbErr := gormDb.Get()
-			if gDbErr != nil {
-				return nil, gDbErr
+		GormDb: lazy.New(func() (*gorm.DB, error) {
+			sqlDB, err := p.SqlDB.Get()
+			if err != nil {
+				return nil, err
 			}
-			sqlDb, sqlDbErr := gDb.DB()
-			if sqlDbErr != nil {
-				return nil, sqlDbErr
+			dialector := postgres.New(postgres.Config{
+				Conn: sqlDB,
+			})
+			gDb, dbErr := gorm.Open(dialector, &gorm.Config{
+				Logger: logger.New(logger.Params{
+					ZapLogger: p.Logger,
+					Config: logger.Config{
+						LogLevel:      gormlogger.Info,
+						SlowThreshold: time.Second * 3,
+					},
+				}).GormLogger,
+			})
+			if dbErr != nil {
+				return nil, dbErr
 			}
-			return sqlDb, nil
+			return gDb, nil
 		}),
 	}
 }
