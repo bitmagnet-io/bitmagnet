@@ -22,7 +22,7 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 		case is := <-c.persistTorrents.Out():
 			ts := make([]*model.Torrent, 0, len(is))
 			hashMap := make(map[protocol.ID]infoHashWithMetaInfo, len(is))
-			hashesToClassify := make([]protocol.ID, 0, classifyBatchSize)
+			var hashesToClassify []protocol.ID
 			var jobs []*model.QueueJob
 			flushHashesToClassify := func() {
 				if len(hashesToClassify) > 0 {
@@ -34,9 +34,10 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 					} else {
 						jobs = append(jobs, &job)
 					}
-					hashesToClassify = hashesToClassify[:0]
 				}
+				hashesToClassify = make([]protocol.ID, 0, classifyBatchSize)
 			}
+			flushHashesToClassify()
 			for _, i := range is {
 				if _, ok := hashMap[i.infoHash]; ok {
 					continue
