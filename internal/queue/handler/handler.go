@@ -95,14 +95,14 @@ func Exec(ctx context.Context, handler Handler, job model.QueueJob) (err error) 
 				if ok && strings.Contains(file, "runtime/") {
 					// The panic came from the runtime, most likely due to incorrect
 					// map/slice usage. The parent frame should have the real trigger.
-					_, file, line, ok = runtime.Caller(2) //nolint: gomnd
+					_, file, line, ok = runtime.Caller(2)
 				}
 
 				// Include the file and line number info in the error, if runtime.Caller returned ok.
 				if ok {
-					errCh <- fmt.Errorf("panic [%s:%d]: %v", file, line, x) // nolint: goerr113
+					errCh <- fmt.Errorf("panic [%s:%d]: %v", file, line, x)
 				} else {
-					errCh <- fmt.Errorf("panic: %v", x) // nolint: goerr113
+					errCh <- fmt.Errorf("panic: %v", x)
 				}
 			}
 

@@ -8,7 +8,7 @@ import (
 
 // RandInt returns a random integer up to max
 func RandInt(max int) int {
-	r := rand.New(rand.NewSource(time.Now().UnixNano())) // nolint: gosec
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	return r.Intn(max)
 }
 
