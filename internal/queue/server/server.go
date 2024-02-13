@@ -165,9 +165,9 @@ func (h *serverHandler) start(ctx context.Context) {
 			checkTicker.Reset(h.CheckInterval)
 			go func() {
 				defer h.sem.Release(1)
-				jobId, _, _ := h.handleJob(ctx)
+				jobId, _, err := h.handleJob(ctx)
 				// if a job was found, we should check straight away for another job, otherwise we wait for the check interval
-				if jobId != "" {
+				if err == nil && jobId != "" {
 					checkTicker.Reset(1)
 				}
 			}()
