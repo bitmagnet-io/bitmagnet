@@ -29,7 +29,7 @@ CREATE INDEX ON queue_jobs (id, queue, status, run_after);
 CREATE INDEX ON queue_jobs USING gin(queue, payload);
 
 --- This unique partial index prevents multiple unprocessed jobs with the same payload from being queued
-CREATE UNIQUE INDEX ON queue_jobs (fingerprint, status) WHERE NOT (status IN ('processed', 'failed'));
+CREATE UNIQUE INDEX ON queue_jobs (fingerprint, status) WHERE status IN ('pending', 'retry');
 
 CREATE OR REPLACE FUNCTION queue_announce_job() RETURNS trigger AS $$
 DECLARE
