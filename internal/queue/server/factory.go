@@ -54,7 +54,7 @@ func New(p Params) Result {
 						pool:       pool,
 						handlers:   handlers,
 						gcInterval: time.Minute * 10,
-						logger:     p.Logger.WithOptions().Named("queue"),
+						logger:     p.Logger.Named("queue"),
 					}
 					return srv.Start(context.Background())
 				},
