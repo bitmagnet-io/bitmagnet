@@ -102,9 +102,9 @@ You can try running this query in your favourite database explorer, or using the
 So far we've got the data looking almost like we need it. We now need to make a few final tweaks before piping it into **bitmagnet**'s `/import` endpoint. You'll need to adapt the following command, before either pasting it into your terminal or running it as a bash script:
 
 ```sh
-sqlite3 -json -batch ../../torrent/rarbg/rarbg_db.sqlite "$(cat rarbg-import.sql)" \
+sqlite3 -json -batch /path/to/your/rarbg_db.sqlite "$(cat rarbg-import.sql)" \
   | jq -r --indent 0 '.[] | . * { source: "rarbg" } | . + if .imdb != null then { contentSource: "imdb", contentId: .imdb } else {} end | del(.imdb) | del(..|nulls)' \
-  | curl --verbose -H "Content-Type: application/json" -H "Connection: close" --data-binary @- http://mikes-mac-mini.local:3333/import
+  | curl --verbose -H "Content-Type: application/json" -H "Connection: close" --data-binary @- http://localhost:3333/import
 ```
 
 So what's happening here?
