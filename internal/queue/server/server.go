@@ -141,7 +141,6 @@ type serverHandler struct {
 	query        *dao.Query
 	listenerConn *pgx.Conn
 	listenerChan chan pgconn.Notification
-	jobChan      chan model.QueueJob
 	logger       *zap.SugaredLogger
 }
 
