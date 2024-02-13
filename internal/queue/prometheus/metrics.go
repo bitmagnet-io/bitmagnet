@@ -10,10 +10,10 @@ import (
 	"go.uber.org/zap"
 )
 
-// Namespace used in fully-qualified metrics names.
-const namespace = "bitmagnet"
+// namespace used in fully-qualified metrics names.
+const namespace = "bitmagnet_queue"
 
-// QueueMetricsCollector gathers queue metrics.
+// queueMetricsCollector gathers queue metrics.
 // It implements prometheus.Collector interface.
 type queueMetricsCollector struct {
 	query  lazy.Lazy[*dao.Query]
@@ -22,7 +22,7 @@ type queueMetricsCollector struct {
 
 var (
 	tasksQueuedDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "queued_jobs_total"),
+		prometheus.BuildFQName(namespace, "", "jobs_total"),
 		"Number of tasks enqueued; broken down by queue and status.",
 		[]string{"queue", "status"}, nil,
 	)
