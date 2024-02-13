@@ -102,9 +102,9 @@ You can try running this query in your favourite database explorer, or using the
 So far we've got the data looking almost like we need it. We now need to make a few final tweaks before piping it into **bitmagnet**'s `/import` endpoint. You'll need to adapt the following command, before either pasting it into your terminal or running it as a bash script:
 
 ```sh
-sqlite3 -json -batch /path/to/your/rarbg_db.sqlite "$(cat rarbg-import.sql)" \
+sqlite3 -json -batch ../../torrent/rarbg/rarbg_db.sqlite "$(cat rarbg-import.sql)" \
   | jq -r --indent 0 '.[] | . * { source: "rarbg" } | . + if .imdb != null then { contentSource: "imdb", contentId: .imdb } else {} end | del(.imdb) | del(..|nulls)' \
-  | curl --verbose -H "Content-Type: application/json" -H "Connection: close" --data-binary @- http://localhost:3333/import
+  | curl --verbose -H "Content-Type: application/json" -H "Connection: close" --data-binary @- http://mikes-mac-mini.local:3333/import
 ```
 
 So what's happening here?
@@ -112,7 +112,7 @@ So what's happening here?
 - First we are executing the SQL query we made above against the backup database; we tell SQLite to output the result as JSON. To test this bit in isolation you might try running just `sqlite3 -json -batch /path/to/your/rarbg_db.sqlite "$(cat rarbg-import.sql)"` (while testing you'll probably want to `limit` your results to say 10 or 100)
 - Next we need to make some tweaks to the JSON structure, so we'll pipe the result into [jq](https://jqlang.github.io/jq/){:target="\_blank"}. You can add the line beginning `| jq` to the previous part to test what we have so far. Here we will:
   - Add a `source` field with value `rarbg`: each torrent stored in **bitmagnet** is associated with one or more sources, this association allows filtering by source within the search facility, and can carry some source-specific information such as an import ID, and numbers of seeders and leechers (more docs needed here!)
-  - Add an `externalIds` object which **bitmagnet** expects, containing the IMDB ID, if it exists; this is not a required field, but if you know the external IMDB or TMDB ID of your content then it will give the classifier an easier job
+  - Add the `contentSource` and `contentId` fields which **bitmagnet** expects, containing the IMDB ID, if it exists; these are not a required field, but if you know the external IMDB or TMDB ID of your content then it will give the classifier an easier job
   - Delete the `imdb` field which won't be recognised by **bitmagnet**
   - Delete any `null` values to reduce the payload size
 - Next we'll pipe the final result to **bitmagnet**'s `/import` endpoint; you'll see feedback as the import progresses; watch out for any errors in the logs!
