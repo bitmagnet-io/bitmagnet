@@ -26,7 +26,6 @@ services:
     environment:
       - POSTGRES_HOST=postgres
       - POSTGRES_PASSWORD=postgres
-      - REDIS_ADDR=redis:6379
     #      - TMDB_API_KEY=your_api_key
     command:
       - worker
@@ -37,8 +36,6 @@ services:
       - --keys=dht_crawler
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
         condition: service_healthy
 
   postgres:
@@ -53,27 +50,11 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=bitmagnet
       - PGUSER=postgres
+    shm_size: 1g
     healthcheck:
       test:
         - CMD-SHELL
         - pg_isready
-      start_period: 20s
-      interval: 10s
-
-  redis:
-    image: redis:7-alpine
-    container_name: bitmagnet-redis
-    volumes:
-      - ./data/redis:/data
-    restart: unless-stopped
-    entrypoint:
-      - redis-server
-      - --save 60 1
-    healthcheck:
-      test:
-        - CMD
-        - redis-cli
-        - ping
       start_period: 20s
       interval: 10s
 ```
@@ -82,7 +63,7 @@ After running `docker compose up -d` you should be able to access the web interf
 
 ## go install
 
-You can also install **bitmagnet** natively with `go install github.com/bitmagnet-io/bitmagnet`. If you choose this method you will need to [configure]({% link setup/configuration.md %}) (at a minimum) Postgres and Redis instances for bitmagnet to connect to.
+You can also install **bitmagnet** natively with `go install github.com/bitmagnet-io/bitmagnet`. If you choose this method you will need to [configure]({% link setup/configuration.md %}) (at a minimum) a Postgres instance for bitmagnet to connect to.
 
 ## Running the CLI
 

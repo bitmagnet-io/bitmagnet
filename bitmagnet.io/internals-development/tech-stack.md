@@ -9,18 +9,13 @@ nav_order: 1
 
 ## Postgres
 
-Postgres is the primary data store, and powers the search engine. The search engine makes use of several Postgres-specific features and extensions; as such, supporting other storage engines is likely to be complicated and is not a priority at the moment.
-
-## Redis
-
-Redis is currently used only for the task queue, which currently only handles classification jobs (though other types of jobs and schedules that would make use of this are in the high-priority pipeline). The [asynq](https://github.com/hibiken/asynq){:target="\_blank"} library is used for this. I deliberated over adding Redis as a dependency but it was the most pragmatic solution; I wasn't able to find a mature off-the-shelf Postgres-backed solution that works well with GoLang. On the one hand if there was such a solution then I'd consider removing this dependency; on the other hand I can see Redis being useful for other features, such as improving support for distributing workers across multiple nodes, and potentially moving the DHT staging and routing tables to Redis.
+Postgres is the primary data store, and powers the search engine and message queue. These make use of several Postgres-specific features and extensions; as such, supporting other storage engines is likely to be complicated and is not a priority at the moment.
 
 ## GoLang Backend
 
 Some key libraries used include:
 
 - [anacrolix/torrent](github.com/anacrolix/torrent){:target="\_blank"} not heavily used right now, but contains many useful BitTorrent utilities and could drive future features such as in-place seeding
-- [asynq](https://github.com/hibiken/asynq){:target="\_blank"} for the task queue
 - [fx](https://uber-go.github.io/fx/){:target="\_blank"} for dependency injection and management of the application lifecycle
 - [gin](https://gin-gonic.com/){:target="\_blank"} for the HTTP server
 - [goose](https://pressly.github.io/goose/){:target="\_blank"} for database migrations

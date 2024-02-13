@@ -10,7 +10,6 @@ nav_order: 2
 **bitmagnet** exposes quite a few configuration options. You shouldn't have to worry about most of them, but they are available for tinkering. If you're using the [example docker-compose file]({% link setup/installation.md %}#docker) then things _should_ "just work". I'll only cover only some of the more important options here:
 
 - `postgres.host`, `postgres.name` `postgres.user` `postgres.password` (default: `localhost`, `bitmagnet`, `postgres`, _empty_): Set these values to configure connection to your Postgres database.
-- `redis.addr`, `redis.db`, `redis.username`, `redis.password` (default: `localhost:6379`, `0`, _empty_, _empty_): Configure access to your Redis instance.
 - `tmdb.api_key`: This is quite an important one, please [see below](#obtaining-a-tmdb-api-key) for more details.
 - `dht_crawler.save_files_threshold` (default: `50`): This parameter provides a compromise over disabling the saving of files altogether. Some torrents contain many thousands of files, which impacts performance and uses a lot of database disk space. This parameter will discard the files info when the number of files is greater than the threshold.
 - `dht_crawler.save_pieces` (default: `false`): If true, the DHT crawler will save the pieces bytes from the torrent metadata. The pieces take up quite a lot of space, and aren't currently very useful, but they may be used by future features.

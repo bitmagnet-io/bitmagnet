@@ -367,6 +367,46 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		"key_values",
 		createdAtReadOnly,
 	)
+	queueJobs := g.GenerateModel(
+		"queue_jobs",
+		gen.FieldGORMTag("id", func(tag field.GormTag) field.GormTag {
+			tag.Set("<-", "false")
+			return tag
+		}),
+		gen.FieldGORMTag("queue", func(tag field.GormTag) field.GormTag {
+			tag.Set("<-", "create")
+			return tag
+		}),
+		gen.FieldGORMTag("fingerprint", func(tag field.GormTag) field.GormTag {
+			tag.Set("<-", "create")
+			return tag
+		}),
+		gen.FieldGORMTag("payload", func(tag field.GormTag) field.GormTag {
+			tag.Set("<-", "create")
+			return tag
+		}),
+		gen.FieldType("status", "QueueJobStatus"),
+		gen.FieldGenType("status", "String"),
+		gen.FieldType("retries", "uint"),
+		gen.FieldType("max_retries", "uint"),
+		gen.FieldGORMTag("max_retries", func(tag field.GormTag) field.GormTag {
+			tag.Set("<-", "create")
+			return tag
+		}),
+		gen.FieldType("ran_at", "sql.NullTime"),
+		gen.FieldType("deadline", "sql.NullTime"),
+		gen.FieldGORMTag("deadline", func(tag field.GormTag) field.GormTag {
+			tag.Set("<-", "create")
+			return tag
+		}),
+		gen.FieldType("archival_duration", "Duration"),
+		gen.FieldGORMTag("archival_duration", func(tag field.GormTag) field.GormTag {
+			tag.Set("<-", "create")
+			tag.Remove("default")
+			return tag
+		}),
+		createdAtReadOnly,
+	)
 
 	g.ApplyBasic(
 		torrentSources,
@@ -383,6 +423,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		contentAttributes,
 		bloomFilters,
 		keyValues,
+		queueJobs,
 	)
 
 	return g

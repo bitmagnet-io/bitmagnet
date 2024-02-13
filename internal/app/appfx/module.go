@@ -16,7 +16,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/dhtfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainfofx"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/queuefx"
-	"github.com/bitmagnet-io/bitmagnet/internal/redis/redisfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/telemetry/telemetryfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab/torznabfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/version/versionfx"
@@ -39,7 +38,6 @@ func New() fx.Option {
 		metainfofx.New(),
 		processorfx.New(),
 		queuefx.New(),
-		redisfx.New(),
 		telemetryfx.New(),
 		torznabfx.New(),
 		versionfx.New(),
