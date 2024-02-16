@@ -31,8 +31,6 @@ func newTorrent(db *gorm.DB, opts ...gen.DOOption) torrent {
 	_torrent.Name = field.NewString(tableName, "name")
 	_torrent.Size = field.NewUint64(tableName, "size")
 	_torrent.Private = field.NewBool(tableName, "private")
-	_torrent.PieceLength = field.NewField(tableName, "piece_length")
-	_torrent.Pieces = field.NewBytes(tableName, "pieces")
 	_torrent.CreatedAt = field.NewTime(tableName, "created_at")
 	_torrent.UpdatedAt = field.NewTime(tableName, "updated_at")
 	_torrent.FilesStatus = field.NewField(tableName, "files_status")
@@ -66,6 +64,12 @@ func newTorrent(db *gorm.DB, opts ...gen.DOOption) torrent {
 		RelationField: field.NewRelation("Files", "model.TorrentFile"),
 	}
 
+	_torrent.Pieces = torrentHasOnePieces{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Pieces", "model.TorrentPieces"),
+	}
+
 	_torrent.Tags = torrentHasManyTags{
 		db: db.Session(&gorm.Session{}),
 
@@ -85,8 +89,6 @@ type torrent struct {
 	Name        field.String
 	Size        field.Uint64
 	Private     field.Bool
-	PieceLength field.Field
-	Pieces      field.Bytes
 	CreatedAt   field.Time
 	UpdatedAt   field.Time
 	FilesStatus field.Field
@@ -98,6 +100,8 @@ type torrent struct {
 	Sources torrentHasManySources
 
 	Files torrentHasManyFiles
+
+	Pieces torrentHasOnePieces
 
 	Tags torrentHasManyTags
 
@@ -120,8 +124,6 @@ func (t *torrent) updateTableName(table string) *torrent {
 	t.Name = field.NewString(table, "name")
 	t.Size = field.NewUint64(table, "size")
 	t.Private = field.NewBool(table, "private")
-	t.PieceLength = field.NewField(table, "piece_length")
-	t.Pieces = field.NewBytes(table, "pieces")
 	t.CreatedAt = field.NewTime(table, "created_at")
 	t.UpdatedAt = field.NewTime(table, "updated_at")
 	t.FilesStatus = field.NewField(table, "files_status")
@@ -142,13 +144,11 @@ func (t *torrent) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (t *torrent) fillFieldMap() {
-	t.fieldMap = make(map[string]field.Expr, 15)
+	t.fieldMap = make(map[string]field.Expr, 14)
 	t.fieldMap["info_hash"] = t.InfoHash
 	t.fieldMap["name"] = t.Name
 	t.fieldMap["size"] = t.Size
 	t.fieldMap["private"] = t.Private
-	t.fieldMap["piece_length"] = t.PieceLength
-	t.fieldMap["pieces"] = t.Pieces
 	t.fieldMap["created_at"] = t.CreatedAt
 	t.fieldMap["updated_at"] = t.UpdatedAt
 	t.fieldMap["files_status"] = t.FilesStatus
@@ -451,6 +451,77 @@ func (a torrentHasManyFilesTx) Clear() error {
 }
 
 func (a torrentHasManyFilesTx) Count() int64 {
+	return a.tx.Count()
+}
+
+type torrentHasOnePieces struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a torrentHasOnePieces) Where(conds ...field.Expr) *torrentHasOnePieces {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a torrentHasOnePieces) WithContext(ctx context.Context) *torrentHasOnePieces {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a torrentHasOnePieces) Session(session *gorm.Session) *torrentHasOnePieces {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a torrentHasOnePieces) Model(m *model.Torrent) *torrentHasOnePiecesTx {
+	return &torrentHasOnePiecesTx{a.db.Model(m).Association(a.Name())}
+}
+
+type torrentHasOnePiecesTx struct{ tx *gorm.Association }
+
+func (a torrentHasOnePiecesTx) Find() (result *model.TorrentPieces, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a torrentHasOnePiecesTx) Append(values ...*model.TorrentPieces) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a torrentHasOnePiecesTx) Replace(values ...*model.TorrentPieces) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a torrentHasOnePiecesTx) Delete(values ...*model.TorrentPieces) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a torrentHasOnePiecesTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a torrentHasOnePiecesTx) Count() int64 {
 	return a.tx.Count()
 }
 
