@@ -60,8 +60,6 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 					DoUpdates: clause.AssignmentColumns([]string{
 						string(c.dao.Torrent.Name.ColumnName()),
 						string(c.dao.Torrent.FilesStatus.ColumnName()),
-						string(c.dao.Torrent.PieceLength.ColumnName()),
-						string(c.dao.Torrent.Pieces.ColumnName()),
 					}),
 				}).CreateInBatches(ts, 20); err != nil {
 					return err
@@ -114,18 +112,19 @@ func createTorrentModel(
 	} else if len(files) > 0 {
 		filesStatus = model.FilesStatusMulti
 	}
-	var pieceLength model.NullUint64
-	var pieces []byte
+	var pieces model.TorrentPieces
 	if savePieces {
-		pieceLength = model.NewNullUint64(uint64(info.PieceLength))
-		pieces = info.Pieces
+		pieces = model.TorrentPieces{
+			InfoHash:    hash,
+			PieceLength: info.PieceLength,
+			Pieces:      info.Pieces,
+		}
 	}
 	return model.Torrent{
 		InfoHash:    hash,
 		Name:        name,
 		Size:        uint64(info.TotalLength()),
 		Private:     private,
-		PieceLength: pieceLength,
 		Pieces:      pieces,
 		Files:       files,
 		FilesStatus: filesStatus,

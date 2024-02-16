@@ -18,8 +18,6 @@ type Torrent struct {
 	Name        string                  `gorm:"column:name;not null" json:"name"`
 	Size        uint64                  `gorm:"column:size;not null" json:"size"`
 	Private     bool                    `gorm:"column:private;not null" json:"private"`
-	PieceLength NullUint64              `gorm:"column:piece_length" json:"pieceLength"`
-	Pieces      []byte                  `gorm:"column:pieces" json:"-"`
 	CreatedAt   time.Time               `gorm:"column:created_at;not null;<-:create" json:"createdAt"`
 	UpdatedAt   time.Time               `gorm:"column:updated_at;not null" json:"updatedAt"`
 	FilesStatus FilesStatus             `gorm:"column:files_status;not null" json:"filesStatus"`
@@ -28,6 +26,7 @@ type Torrent struct {
 	Contents    []TorrentContent        `gorm:"foreignKey:InfoHash" json:"contents"`
 	Sources     []TorrentsTorrentSource `gorm:"foreignKey:InfoHash" json:"sources"`
 	Files       []TorrentFile           `gorm:"foreignKey:InfoHash" json:"files"`
+	Pieces      TorrentPieces           `gorm:"foreignKey:InfoHash" json:"-"`
 	Tags        []TorrentTag            `gorm:"foreignKey:InfoHash" json:"tags"`
 }
 
