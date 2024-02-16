@@ -141,7 +141,6 @@ func (i *activeImport) run(ctx context.Context) {
 }
 
 func (i *activeImport) buffer(item Item) {
-	i.wg.Add(1)
 	defer i.wg.Done()
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
@@ -265,6 +264,7 @@ func (i *activeImport) Import(items ...Item) error {
 		return ErrImportClosed
 	}
 	for _, item := range items {
+		i.wg.Add(1)
 		i.itemChan <- item
 	}
 	return nil

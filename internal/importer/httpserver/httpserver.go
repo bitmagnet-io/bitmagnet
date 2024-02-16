@@ -96,7 +96,7 @@ func (b builder) handle(ctx *gin.Context, i importer.Importer) {
 	}
 	for s.Scan() {
 		for _, ch := range s.Text() {
-			if ch == '\n' {
+			if ch == '\n' && len(currentLine) > 0 {
 				if err := addItem(); err != nil {
 					return
 				}
@@ -120,4 +120,5 @@ func (b builder) handle(ctx *gin.Context, i importer.Importer) {
 	}
 	ctx.Status(200)
 	writeCount()
+	_, _ = ctx.Writer.WriteString("import complete\n")
 }
