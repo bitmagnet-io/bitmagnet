@@ -3,6 +3,7 @@ package banning
 import (
 	"errors"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -16,7 +17,7 @@ func (c utf8Checker) Check(info metainfo.Info) error {
 		checkUtf8Strings = append(checkUtf8Strings, file.DisplayPath(&info))
 	}
 	for _, str := range checkUtf8Strings {
-		if !utf8.ValidString(str) {
+		if !utf8.ValidString(str) || strings.Contains(str, "\x00") {
 			return errors.New("meta info contains an invalid utf8 string")
 		}
 	}
