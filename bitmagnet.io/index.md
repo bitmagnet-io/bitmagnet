@@ -33,9 +33,9 @@ This means that **bitmagnet** is not reliant on any external trackers or torrent
 ### Currently implemented features
 
 - [x] A DHT crawler and protocol implementation
-- [x] A generic BitTorrent indexer: **bitmagnet** can index torrents from any source, not only the DHT network - currently this is only possible via [the `/import` endpoint](/tutorials/importing.html); more user-friendly methods are in the pipeline, see high-priority features below
+- [x] A generic BitTorrent indexer: **bitmagnet** can index torrents from any source, not only the DHT network - currently this is only possible via [the `/import` endpoint](/tutorials/import.html); more user-friendly methods are in the pipeline, see high-priority features below
 - [x] A content classifier that can currently identify movie and television content, along with key related attributes such as language, resolution, source (BluRay, webrip etc.) and enriches this with data from [The Movie Database](https://www.themoviedb.org/)
-- [x] [An import facility for ingesting torrents from any source, for example the RARBG backup](/tutorials/importing.html)
+- [x] [An import facility for ingesting torrents from any source, for example the RARBG backup](/tutorials/import.html)
 - [x] A torrent search engine
 - [x] A GraphQL API: currently this provides a single search query; there is also an embedded GraphQL playground at `/graphql`
 - [x] A web user interface implemented in Angular: currently this is a simple single-page application providing a user interface for search queries via the GraphQL API
@@ -45,7 +45,6 @@ This means that **bitmagnet** is not reliant on any external trackers or torrent
 
 - [ ] Classifiers for other types of content; enrich current classifiers and weed out incorrect classifications.
 - [ ] Ordering of search results: the current alpha preview has no facility for specifying the ordering of results.
-- [ ] Search performance optimisations: search is currently fast enough to be usable; it becomes more sluggish once millions of torrents have been indexed - there are some low-hanging fruit in terms of optimisation that will be a near-term priority.
 - [ ] A monitoring API and WebUI dashboard showing things like crawler throughput, task queue, database size etc.
 - [ ] Authentication, API keys, access levels etc.
 - [ ] An admin API, and in general a more complete GraphQL API
