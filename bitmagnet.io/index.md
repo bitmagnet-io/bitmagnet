@@ -33,7 +33,7 @@ This means that **bitmagnet** is not reliant on any external trackers or torrent
 ### Currently implemented features
 
 - [x] A DHT crawler and protocol implementation
-- [x] A generic BitTorrent indexer: **bitmagnet** can index torrents from any source, not only the DHT network - currently this is only possible via [the `/import` endpoint](/tutorials/importing.html); more user-friendly methods are in the pipeline, see high-priority features below
+- [x] A generic BitTorrent indexer: **bitmagnet** can index torrents from any source, not only the DHT network - currently this is only possible via [the `/import` endpoint](/tutorials/import.html); more user-friendly methods are in the pipeline, see high-priority features below
 - [x] A content classifier that can currently identify movie and television content, along with key related attributes such as language, resolution, source (BluRay, webrip etc.) and enriches this with data from [The Movie Database](https://www.themoviedb.org/)
 - [x] [An import facility for ingesting torrents from any source, for example the RARBG backup](/tutorials/import.html)
 - [x] A torrent search engine
