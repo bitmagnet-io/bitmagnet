@@ -373,8 +373,10 @@
                 *ngIf="
                   getAttribute(item(i), 'poster_path', 'tmdb') as posterPath
                 "
-                [src]="'https://image.tmdb.org/t/p/w300/' + posterPath"
+                [ngSrc]="'https://image.tmdb.org/t/p/w300/' + posterPath"
                 class="poster"
+                width="300"
+                height="450"
               />
               <h2>{{ item(i).torrent.name }}</h2>
               <p>
