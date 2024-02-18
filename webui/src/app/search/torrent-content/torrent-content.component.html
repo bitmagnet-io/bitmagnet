@@ -50,25 +50,25 @@
               >
             </mat-expansion-panel-header>
             <section [class]="facet.isEmpty() ? 'empty' : 'active'">
-              @for (agg of facet.aggregations; track agg.value) {
-                <mat-checkbox
-                  [checked]="facet.isEmpty() || facet.isSelected(agg.value)"
-                  [color]="'accent'"
-                  (change)="
-                    $event.checked || facet.isEmpty()
-                      ? facet.select(agg.value)
-                      : facet.deselect(agg.value);
-                    loadResult()
-                  "
-                  [style.display]="'block'"
+              <!-- The new for control flow causes issues here! -->
+              <mat-checkbox
+                *ngFor="let agg of facet.aggregations"
+                [checked]="facet.isEmpty() || facet.isSelected(agg.value)"
+                [color]="'accent'"
+                (change)="
+                  $event.checked || facet.isEmpty()
+                    ? facet.select(agg.value)
+                    : facet.deselect(agg.value);
+                  loadResult()
+                "
+                [style.display]="'block'"
+              >
+                {{ agg.label }}
+                <small
+                  >{{ agg.isEstimate ? "~" : ""
+                  }}{{ agg.count | number }}</small
                 >
-                  {{ agg.label }}
-                  <small
-                    >{{ agg.isEstimate ? "~" : ""
-                    }}{{ agg.count | number }}</small
-                  >
-                </mat-checkbox>
-              }
+              </mat-checkbox>
               @if (!(search.loading$ | async) && !facet.aggregations.length) {
                 <span class="empty">No aggregation results</span>
               }
