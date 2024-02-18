@@ -50,7 +50,7 @@
               >
             </mat-expansion-panel-header>
             <section [class]="facet.isEmpty() ? 'empty' : 'active'">
-              <!-- The new for control flow causes issues here! -->
+              <!-- Using ngFor because the new for control flow causes issues with these checkboxes! -->
               <mat-checkbox
                 *ngFor="let agg of facet.aggregations"
                 [checked]="facet.isEmpty() || facet.isSelected(agg.value)"
