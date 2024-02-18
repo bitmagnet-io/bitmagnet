@@ -10,61 +10,73 @@
         <mat-radio-group [formControl]="contentType">
           <mat-radio-button>
             <mat-icon fontSet="material-icons">emergency</mat-icon>All
-            <small *ngIf="search.overallTotalCount$ | async as count"
-              >{{ count.isEstimate ? "~" : ""
-              }}{{ count.count | number }}</small
-            >
+            @if (search.overallTotalCount$ | async; as count) {
+              <small
+                >{{ count.isEstimate ? "~" : ""
+                }}{{ count.count | number }}</small
+              >
+            }
           </mat-radio-button>
-          <mat-radio-button
-            *ngFor="let t of search.contentTypes | keyvalue: originalOrder"
-            [value]="t.key"
-          >
-            <mat-icon>{{ t.value.icon }}</mat-icon>
-            {{ t.value.plural }}
-            <small *ngIf="search.contentTypeCount(t.key) | async as agg"
-              >{{ agg.isEstimate ? "~" : "" }}{{ agg.count | number }}</small
-            >
-          </mat-radio-button>
+          @for (
+            t of search.contentTypes | keyvalue: originalOrder;
+            track t.key
+          ) {
+            <mat-radio-button [value]="t.key">
+              <mat-icon>{{ t.value.icon }}</mat-icon>
+              {{ t.value.plural }}
+              @if (search.contentTypeCount(t.key) | async; as agg) {
+                <small
+                  >{{ agg.isEstimate ? "~" : ""
+                  }}{{ agg.count | number }}</small
+                >
+              }
+            </mat-radio-button>
+          }
         </mat-radio-group>
       </section>
     </mat-expansion-panel>
-    <ng-container *ngFor="let facet of search.facets">
-      <mat-expansion-panel
-        *ngIf="facet.isRelevant(contentType.value)"
-        [expanded]="facet.isActive()"
-        (opened)="facet.activate(); loadResult()"
-        (closed)="facet.deactivateAndReset(); loadResult()"
-      >
-        <mat-expansion-panel-header>
-          <mat-panel-title
-            ><mat-icon>{{ facet.icon }}</mat-icon>
-            {{ facet.name }}</mat-panel-title
+    @for (facet of search.facets; track facet.name) {
+      <ng-container>
+        @if (facet.isRelevant(contentType.value)) {
+          <mat-expansion-panel
+            [expanded]="facet.isActive()"
+            (opened)="facet.activate(); loadResult()"
+            (closed)="facet.deactivateAndReset(); loadResult()"
           >
-        </mat-expansion-panel-header>
-        <section [class]="facet.isEmpty() ? 'empty' : 'active'">
-          <mat-checkbox
-            *ngFor="let r of facet.aggregations"
-            [checked]="facet.isEmpty() || facet.isSelected(r.value)"
-            [color]="'accent'"
-            (change)="
-              $event.checked || facet.isEmpty()
-                ? facet.select(r.value)
-                : facet.deselect(r.value);
-              loadResult()
-            "
-            [style.display]="'block'"
-          >
-            {{ r.label }}
-            <small>{{ r.isEstimate ? "~" : "" }}{{ r.count | number }}</small>
-          </mat-checkbox>
-          <span
-            *ngIf="!(search.loading$ | async) && !facet.aggregations?.length"
-            class="empty"
-            >No aggregation results</span
-          >
-        </section>
-      </mat-expansion-panel>
-    </ng-container>
+            <mat-expansion-panel-header>
+              <mat-panel-title
+                ><mat-icon>{{ facet.icon }}</mat-icon>
+                {{ facet.name }}</mat-panel-title
+              >
+            </mat-expansion-panel-header>
+            <section [class]="facet.isEmpty() ? 'empty' : 'active'">
+              <!-- Using ngFor because the new for control flow causes issues with these checkboxes! -->
+              <mat-checkbox
+                *ngFor="let agg of facet.aggregations"
+                [checked]="facet.isEmpty() || facet.isSelected(agg.value)"
+                [color]="'accent'"
+                (change)="
+                  $event.checked || facet.isEmpty()
+                    ? facet.select(agg.value)
+                    : facet.deselect(agg.value);
+                  loadResult()
+                "
+                [style.display]="'block'"
+              >
+                {{ agg.label }}
+                <small
+                  >{{ agg.isEstimate ? "~" : ""
+                  }}{{ agg.count | number }}</small
+                >
+              </mat-checkbox>
+              @if (!(search.loading$ | async) && !facet.aggregations.length) {
+                <span class="empty">No aggregation results</span>
+              }
+            </section>
+          </mat-expansion-panel>
+        }
+      </ng-container>
+    }
   </mat-drawer>
   <mat-drawer-content [style.z-index]="100" [style.overflow]="'visible'">
     <div class="results">
@@ -88,20 +100,21 @@
               search.loadResult()
             "
           />
-          <button
-            *ngIf="queryString.value"
-            matSuffix
-            mat-icon-button
-            aria-label="Clear"
-            (click)="
-              queryString.reset();
-              search.setQueryString('');
-              search.firstPage();
-              search.loadResult()
-            "
-          >
-            <mat-icon>close</mat-icon>
-          </button>
+          @if (queryString.value) {
+            <button
+              matSuffix
+              mat-icon-button
+              aria-label="Clear"
+              (click)="
+                queryString.reset();
+                search.setQueryString('');
+                search.firstPage();
+                search.loadResult()
+              "
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          }
         </mat-form-field>
         <div class="button-refresh">
           <button
@@ -138,18 +151,22 @@
           <mat-card>
             <mat-form-field class="form-edit-tags">
               <mat-chip-grid #chipGrid aria-label="Enter tags">
-                <mat-chip-row
-                  *ngFor="let tagName of editedTags; let j = index"
-                  [editable]="true"
-                  (edited)="renameTag(tagName, $event.value)"
-                  (removed)="deleteTag(tagName)"
-                  [aria-description]="'press enter to edit'"
-                >
-                  {{ tagName }}
-                  <button matChipRemove [attr.aria-label]="'remove ' + tagName">
-                    <mat-icon>cancel</mat-icon>
-                  </button>
-                </mat-chip-row>
+                @for (tagName of editedTags; let j = $index; track tagName) {
+                  <mat-chip-row
+                    [editable]="true"
+                    (edited)="renameTag(tagName, $event.value)"
+                    (removed)="deleteTag(tagName)"
+                    [aria-description]="'press enter to edit'"
+                  >
+                    {{ tagName }}
+                    <button
+                      matChipRemove
+                      [attr.aria-label]="'remove ' + tagName"
+                    >
+                      <mat-icon>cancel</mat-icon>
+                    </button>
+                  </mat-chip-row>
+                }
               </mat-chip-grid>
               <input
                 placeholder="Tag..."
@@ -164,11 +181,9 @@
                 #auto="matAutocomplete"
                 (optionSelected)="addTag($event.option.viewValue)"
               >
-                <mat-option
-                  *ngFor="let tagName of suggestedTags"
-                  [value]="tagName"
-                  >{{ tagName }}</mat-option
-                >
+                @for (tagName of suggestedTags; track tagName) {
+                  <mat-option [value]="tagName">{{ tagName }}</mat-option>
+                }
               </mat-autocomplete>
             </mat-form-field>
             <mat-card-actions class="button-row">
@@ -237,21 +252,21 @@
             </mat-card-actions>
           </mat-card>
         </mat-tab>
-
-        <mat-tab *ngIf="selectedTabIndex > 0">
-          <ng-template mat-tab-label>
-            <mat-icon style="margin-right: 0">close</mat-icon>
-          </ng-template>
-        </mat-tab>
+        @if (selectedTabIndex > 0) {
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon style="margin-right: 0">close</mat-icon>
+            </ng-template>
+          </mat-tab>
+        }
       </mat-tab-group>
 
       <mat-divider></mat-divider>
 
       <div class="progress-bar-container" style="height: 10px">
-        <mat-progress-bar
-          mode="indeterminate"
-          *ngIf="search.loading$ | async"
-        ></mat-progress-bar>
+        @if (search.loading$ | async) {
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        }
       </div>
       <table
         mat-table
@@ -298,33 +313,35 @@
             >
             <span class="title">{{ item(i).title }}</span>
             <mat-chip-set>
-              <mat-chip
-                *ngFor="let tagName of item(i).torrent.tagNames"
-                class="chip-primary"
-              >
-                {{ tagName }}
-              </mat-chip>
-              <mat-chip *ngIf="item(i).languages; let languages">
-                <ng-container *ngFor="let l of languages; index as j">
-                  {{ j > 0 ? ", " : "" }}{{ l.name }}
-                </ng-container>
-              </mat-chip>
-              <mat-chip *ngIf="item(i).video3d?.slice(1) as video3d">{{
-                video3d
-              }}</mat-chip>
-              <mat-chip
-                *ngIf="item(i).videoResolution?.slice(1) as videoResolution"
-                >{{ videoResolution }}</mat-chip
-              >
-              <mat-chip *ngIf="item(i).videoSource as videoSource">{{
-                videoSource
-              }}</mat-chip>
-              <mat-chip *ngIf="item(i).videoCodec as videoCodec">{{
-                videoCodec
-              }}</mat-chip>
-              <mat-chip *ngIf="item(i).videoModifier as videoModifier">{{
-                videoModifier
-              }}</mat-chip>
+              @for (tagName of item(i).torrent.tagNames; track tagName) {
+                <mat-chip class="chip-primary">
+                  {{ tagName }}
+                </mat-chip>
+              }
+              @if (item(i).languages; as languages) {
+                <mat-chip>
+                  @for (l of languages; let j = $index; track l.id) {
+                    <ng-container>
+                      {{ j > 0 ? ", " : "" }}{{ l.name }}
+                    </ng-container>
+                  }
+                </mat-chip>
+              }
+              @if (item(i).video3d?.slice(1); as video3d) {
+                <mat-chip>{{ video3d }}</mat-chip>
+              }
+              @if (item(i).videoResolution?.slice(1); as videoResolution) {
+                <mat-chip>{{ videoResolution }}</mat-chip>
+              }
+              @if (item(i).videoSource; as videoSource) {
+                <mat-chip>{{ videoSource }}</mat-chip>
+              }
+              @if (item(i).videoCodec; as videoCodec) {
+                <mat-chip>{{ videoCodec }}</mat-chip>
+              }
+              @if (item(i).videoModifier; as videoModifier) {
+                <mat-chip>{{ videoModifier }}</mat-chip>
+              }
             </mat-chip-set>
           </td>
         </ng-container>
@@ -369,13 +386,17 @@
                 expandedItem.id === i.id ? 'expanded' : 'collapsed'
               "
             >
-              <img
-                *ngIf="
-                  getAttribute(item(i), 'poster_path', 'tmdb') as posterPath
-                "
-                [src]="'https://image.tmdb.org/t/p/w300/' + posterPath"
-                class="poster"
-              />
+              @if (
+                getAttribute(item(i), "poster_path", "tmdb");
+                as posterPath
+              ) {
+                <img
+                  [ngSrc]="'https://image.tmdb.org/t/p/w300/' + posterPath"
+                  class="poster"
+                  width="300"
+                  height="450"
+                />
+              }
               <h2>{{ item(i).torrent.name }}</h2>
               <p>
                 <strong>Info hash:</strong>
@@ -387,57 +408,79 @@
                 >
               </p>
               <p>
-                <strong>Source:</strong>&nbsp;<span
-                  *ngFor="let s of item(i).torrent.sources; index as j"
-                  >{{ (j > 0 ? ", " : "") + s.name }}</span
-                >
+                <strong>Source:</strong>&nbsp;
+                @for (
+                  s of item(i).torrent.sources;
+                  let j = $index;
+                  track s.key
+                ) {
+                  <span>{{ (j > 0 ? ", " : "") + s.name }}</span>
+                }
               </p>
-              <p *ngIf="item(i).content">
-                <strong>Title:</strong> {{ item(i).content?.title }}
-              </p>
-              <p *ngIf="item(i).languages?.length">
-                <strong>Language:</strong>&nbsp;<ng-container
-                  *ngFor="let l of item(i).languages; index as j"
-                >
+              @if (item(i).content) {
+                <p><strong>Title:</strong> {{ item(i).content?.title }}</p>
+              }
+              @if (item(i).languages?.length) {
+                <p>
+                  <strong>Language:</strong>&nbsp;
+                  @for (l of item(i).languages; let j = $index; track l.id) {
+                    {{
+                      (j > 0 ? ", " : "") +
+                        l.name +
+                        (l.id === item(i).content?.originalLanguage?.id
+                          ? " (original)"
+                          : "")
+                    }}
+                  }
+                </p>
+              }
+              @if (item(i).content?.releaseYear) {
+                <p>
+                  <strong>Original release date:</strong>
                   {{
-                    (j > 0 ? ", " : "") +
-                      l.name +
-                      (l.id === item(i).content?.originalLanguage?.id
-                        ? " (original)"
-                        : "")
+                    item(i).content?.releaseDate ?? item(i).content?.releaseYear
                   }}
+                </p>
+              }
+              @if (item(i).episodes) {
+                <p><strong>Episodes:</strong> {{ item(i).episodes!.label }}</p>
+              }
+              @if (item(i).content?.overview) {
+                <p>
+                  {{ item(i).content!.overview }}
+                </p>
+              }
+              @if (getCollections(i, "genre"); as genres) {
+                <ng-container>
+                  <p><strong>Genres:</strong> {{ genres.join(", ") }}</p>
                 </ng-container>
-              </p>
-              <p *ngIf="item(i).content?.releaseYear">
-                <strong>Original release date:</strong>
-                {{
-                  item(i).content?.releaseDate ?? item(i).content?.releaseYear
-                }}
-              </p>
-              <p *ngIf="item(i).episodes">
-                <strong>Episodes:</strong> {{ item(i).episodes!.label }}
-              </p>
-              <p *ngIf="item(i).content?.overview">
-                {{ item(i).content!.overview }}
-              </p>
-              <ng-container *ngIf="getCollections(i, 'genre'); let genres">
-                <p><strong>Genres:</strong> {{ genres.join(", ") }}</p>
-              </ng-container>
-              <p *ngIf="item(i).content?.voteAverage != null">
-                <strong>Rating:</strong> {{ item(i).content?.voteAverage }} / 10
-                <ng-container *ngIf="item(i).content?.voteCount != null"
-                  >({{ item(i).content?.voteCount }} votes)</ng-container
-                >
-              </p>
-              <p *ngIf="item(i).content?.externalLinks; let externalLinks">
-                <strong>External links:</strong>&nbsp;
-                <ng-container *ngFor="let l of externalLinks; index as j">
-                  {{ j > 0 ? ", " : ""
-                  }}<a [href]="l.url" target="_blank">{{
-                    l.metadataSource.name
-                  }}</a>
-                </ng-container>
-              </p>
+              }
+              @if (item(i).content?.voteAverage != null) {
+                <p>
+                  <strong>Rating:</strong> {{ item(i).content?.voteAverage }} /
+                  10
+                  @if (item(i).content?.voteCount != null) {
+                    <ng-container
+                      >({{ item(i).content?.voteCount }} votes)</ng-container
+                    >
+                  }
+                </p>
+              }
+              @if (item(i).content?.externalLinks; as externalLinks) {
+                <p>
+                  <strong>External links:</strong>&nbsp;
+                  @for (
+                    l of externalLinks;
+                    let j = $index;
+                    track l.metadataSource.key
+                  ) {
+                    {{ j > 0 ? ", " : ""
+                    }}<a [href]="l.url" target="_blank">{{
+                      l.metadataSource.name
+                    }}</a>
+                  }
+                </p>
+              }
 
               <mat-divider style="clear: both"></mat-divider>
 
@@ -456,56 +499,65 @@
                     <mat-icon>file_present</mat-icon>
                     Files
                   </ng-template>
-
-                  <mat-card
-                    *ngIf="expandedItem.id === i.id"
-                    class="torrent-files"
-                  >
-                    <p *ngIf="item(i).torrent.filesStatus === 'no_info'">
-                      No file information available.
-                    </p>
-                    <p *ngIf="item(i).torrent.filesStatus === 'over_threshold'">
-                      Files information was not saved as the number of files is
-                      over the configured threshold.
-                    </p>
-                    <p *ngIf="item(i).torrent.filesStatus === 'single'">
-                      <strong>Single file:</strong> {{ item(i).torrent.name
-                      }}<br />
-                      <span *ngIf="item(i).torrent.fileType; let ft"
-                        ><strong>File type: </strong>
-                        {{ ft.charAt(0).toUpperCase() + ft.slice(1) }}<br
-                      /></span>
-                      <strong>File size:</strong>
-                      {{ item(i).torrent.size | filesize }}
-                    </p>
-                    <table *ngIf="item(i).torrent.files?.length">
-                      <thead>
-                        <tr>
-                          <th>Path</th>
-                          <th>Type</th>
-                          <th>Size</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr *ngFor="let f of item(i).torrent.files">
-                          <td class="table-torrent-files-td-file">
-                            {{ f.path }}
-                          </td>
-                          <td>
-                            {{
-                              f.fileType
-                                ? f.fileType.charAt(0).toUpperCase() +
-                                  f.fileType.slice(1)
-                                : "Unknown"
-                            }}
-                          </td>
-                          <td class="table-torrent-files-td-size">
-                            {{ f.size | filesize }}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </mat-card>
+                  @if (expandedItem.id === i.id) {
+                    <mat-card class="torrent-files">
+                      @if (item(i).torrent.filesStatus === "no_info") {
+                        <p>No file information available.</p>
+                      }
+                      @if (item(i).torrent.filesStatus === "over_threshold") {
+                        <p>
+                          Files information was not saved as the number of files
+                          is over the configured threshold.
+                        </p>
+                      }
+                      @if (item(i).torrent.filesStatus === "single") {
+                        <p>
+                          <strong>Single file:</strong> {{ item(i).torrent.name
+                          }}<br />
+                          @if (item(i).torrent.fileType; as ft) {
+                            <span
+                              ><strong>File type: </strong>
+                              {{ ft!.charAt(0).toUpperCase() + ft!.slice(1)
+                              }}<br
+                            /></span>
+                          }
+                          <strong>File size:</strong>
+                          {{ item(i).torrent.size | filesize }}
+                        </p>
+                      }
+                      @if (item(i).torrent.files?.length) {
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>Path</th>
+                              <th>Type</th>
+                              <th>Size</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (f of item(i).torrent.files; track f.path) {
+                              <tr>
+                                <td class="table-torrent-files-td-file">
+                                  {{ f.path }}
+                                </td>
+                                <td>
+                                  {{
+                                    f.fileType
+                                      ? f.fileType.charAt(0).toUpperCase() +
+                                        f.fileType.slice(1)
+                                      : "Unknown"
+                                  }}
+                                </td>
+                                <td class="table-torrent-files-td-size">
+                                  {{ f.size | filesize }}
+                                </td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      }
+                    </mat-card>
+                  }
                 </mat-tab>
 
                 <mat-tab>
@@ -513,56 +565,62 @@
                     <mat-icon>sell</mat-icon>
                     Edit tags
                   </ng-template>
-
-                  <mat-card *ngIf="expandedItem.id === i.id">
-                    <mat-form-field class="form-edit-tags">
-                      <mat-chip-grid #chipGrid aria-label="Enter tags">
-                        <mat-chip-row
-                          *ngFor="
-                            let tagName of item(i).torrent.tagNames;
-                            let j = index
+                  @if (expandedItem.id === i.id) {
+                    <mat-card>
+                      <mat-form-field class="form-edit-tags">
+                        <mat-chip-grid #chipGrid aria-label="Enter tags">
+                          @for (
+                            tagName of item(i).torrent.tagNames;
+                            let j = $index;
+                            track tagName
+                          ) {
+                            <mat-chip-row
+                              [editable]="true"
+                              (edited)="
+                                expandedItem.renameTag(tagName, $event.value)
+                              "
+                              (removed)="expandedItem.deleteTag(tagName)"
+                              [aria-description]="'press enter to edit'"
+                            >
+                              {{ tagName }}
+                              <button
+                                matChipRemove
+                                [attr.aria-label]="'remove ' + tagName"
+                              >
+                                <mat-icon>cancel</mat-icon>
+                              </button>
+                            </mat-chip-row>
+                          }
+                        </mat-chip-grid>
+                        <input
+                          placeholder="New tag..."
+                          [formControl]="expandedItem.newTagCtrl"
+                          [matAutocomplete]="auto"
+                          [matChipInputFor]="chipGrid"
+                          [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                          (matChipInputTokenEnd)="
+                            $event.value && expandedItem.addTag($event.value)
                           "
-                          [editable]="true"
-                          (edited)="
-                            expandedItem.renameTag(tagName, $event.value)
+                          [value]="expandedItem.newTagCtrl.value"
+                        />
+                        <mat-autocomplete
+                          #auto="matAutocomplete"
+                          (optionSelected)="
+                            expandedItem.addTag($event.option.viewValue)
                           "
-                          (removed)="expandedItem.deleteTag(tagName)"
-                          [aria-description]="'press enter to edit'"
                         >
-                          {{ tagName }}
-                          <button
-                            matChipRemove
-                            [attr.aria-label]="'remove ' + tagName"
-                          >
-                            <mat-icon>cancel</mat-icon>
-                          </button>
-                        </mat-chip-row>
-                      </mat-chip-grid>
-                      <input
-                        placeholder="New tag..."
-                        [formControl]="expandedItem.newTagCtrl"
-                        [matAutocomplete]="auto"
-                        [matChipInputFor]="chipGrid"
-                        [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-                        (matChipInputTokenEnd)="
-                          $event.value && expandedItem.addTag($event.value)
-                        "
-                        [value]="expandedItem.newTagCtrl.value"
-                      />
-                      <mat-autocomplete
-                        #auto="matAutocomplete"
-                        (optionSelected)="
-                          expandedItem.addTag($event.option.viewValue)
-                        "
-                      >
-                        <mat-option
-                          *ngFor="let tagName of expandedItem.suggestedTags"
-                          [value]="tagName"
-                          >{{ tagName }}</mat-option
-                        >
-                      </mat-autocomplete>
-                    </mat-form-field>
-                  </mat-card>
+                          @for (
+                            tagName of expandedItem.suggestedTags;
+                            track tagName
+                          ) {
+                            <mat-option [value]="tagName">{{
+                              tagName
+                            }}</mat-option>
+                          }
+                        </mat-autocomplete>
+                      </mat-form-field>
+                    </mat-card>
+                  }
                 </mat-tab>
 
                 <mat-tab>
@@ -571,32 +629,36 @@
                     Delete
                   </ng-template>
 
-                  <mat-card *ngIf="expandedItem.id === i.id">
-                    <mat-card-content style="margin-top: 10px">
-                      <p>
-                        <strong
-                          >Are you sure you want to delete this torrent?</strong
+                  @if (expandedItem.id === i.id) {
+                    <mat-card>
+                      <mat-card-content style="margin-top: 10px">
+                        <p>
+                          <strong
+                            >Are you sure you want to delete this
+                            torrent?</strong
+                          >
+                          <br />This action cannot be undone.
+                        </p>
+                      </mat-card-content>
+                      <mat-card-actions class="button-row">
+                        <button
+                          mat-stroked-button
+                          color="warn"
+                          (click)="expandedItem.delete()"
                         >
-                        <br />This action cannot be undone.
-                      </p>
-                    </mat-card-content>
-                    <mat-card-actions class="button-row">
-                      <button
-                        mat-stroked-button
-                        color="warn"
-                        (click)="expandedItem.delete()"
-                      >
-                        <mat-icon>delete_forever</mat-icon>Delete
-                      </button>
-                    </mat-card-actions>
-                  </mat-card>
+                          <mat-icon>delete_forever</mat-icon>Delete
+                        </button>
+                      </mat-card-actions>
+                    </mat-card>
+                  }
                 </mat-tab>
-
-                <mat-tab *ngIf="expandedItem.selectedTabIndex > 0">
-                  <ng-template mat-tab-label>
-                    <mat-icon style="margin-right: 0">close</mat-icon>
-                  </ng-template>
-                </mat-tab>
+                @if (expandedItem.selectedTabIndex > 0) {
+                  <mat-tab>
+                    <ng-template mat-tab-label>
+                      <mat-icon style="margin-right: 0">close</mat-icon>
+                    </ng-template>
+                  </mat-tab>
+                }
               </mat-tab-group>
             </div>
           </td>
@@ -618,16 +680,17 @@
         ></tr>
       </table>
       <span class="spacer"></span>
-      <app-paginator
-        *ngIf="search.totalCount$ | async as totalCount"
-        (page)="search.handlePageEvent($event)"
-        [pageIndex]="search.pageIndex$ | async"
-        [pageSize]="search.pageSize$ | async"
-        [pageLength]="search.pageLength$ | async"
-        [totalLength]="totalCount.count"
-        [totalIsEstimate]="totalCount.isEstimate"
-        [hasNextPage]="search.hasNextPage$ | async"
-      />
+      @if (search.totalCount$ | async; as totalCount) {
+        <app-paginator
+          (page)="search.handlePageEvent($event)"
+          [pageIndex]="search.pageIndex$ | async"
+          [pageSize]="search.pageSize$ | async"
+          [pageLength]="search.pageLength$ | async"
+          [totalLength]="totalCount.count"
+          [totalIsEstimate]="totalCount.isEstimate"
+          [hasNextPage]="search.hasNextPage$ | async"
+        />
+      }
     </div>
   </mat-drawer-content>
 </mat-drawer-container>
