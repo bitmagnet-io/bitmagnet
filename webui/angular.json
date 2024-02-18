@@ -68,10 +68,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "bitmagnet:build:production"
+              "buildTarget": "bitmagnet:build:production"
             },
             "development": {
-              "browserTarget": "bitmagnet:build:development"
+              "buildTarget": "bitmagnet:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -79,7 +79,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "bitmagnet:build"
+            "buildTarget": "bitmagnet:build"
           }
         },
         "test": {
