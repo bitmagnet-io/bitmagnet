@@ -284,10 +284,15 @@ const contentTypes: Record<generated.ContentType | "null", ContentTypeInfo> = {
     plural: "Music",
     icon: "music_note",
   },
-  book: {
-    singular: "Book",
-    plural: "Books",
+  ebook: {
+    singular: "E-Book",
+    plural: "E-Books",
     icon: "auto_stories",
+  },
+  audiobook: {
+    singular: "Audiobook",
+    plural: "Audiobooks",
+    icon: "mic",
   },
   software: {
     singular: "Software",

@@ -16,13 +16,14 @@ import (
 )
 
 const (
-	ContentTypeMovie    ContentType = "movie"
-	ContentTypeTvShow   ContentType = "tv_show"
-	ContentTypeMusic    ContentType = "music"
-	ContentTypeGame     ContentType = "game"
-	ContentTypeSoftware ContentType = "software"
-	ContentTypeBook     ContentType = "book"
-	ContentTypeXxx      ContentType = "xxx"
+	ContentTypeMovie     ContentType = "movie"
+	ContentTypeTvShow    ContentType = "tv_show"
+	ContentTypeMusic     ContentType = "music"
+	ContentTypeEbook     ContentType = "ebook"
+	ContentTypeAudiobook ContentType = "audiobook"
+	ContentTypeGame      ContentType = "game"
+	ContentTypeSoftware  ContentType = "software"
+	ContentTypeXxx       ContentType = "xxx"
 )
 
 var ErrInvalidContentType = fmt.Errorf("not a valid ContentType, try [%s]", strings.Join(_ContentTypeNames, ", "))
@@ -31,9 +32,10 @@ var _ContentTypeNames = []string{
 	string(ContentTypeMovie),
 	string(ContentTypeTvShow),
 	string(ContentTypeMusic),
+	string(ContentTypeEbook),
+	string(ContentTypeAudiobook),
 	string(ContentTypeGame),
 	string(ContentTypeSoftware),
-	string(ContentTypeBook),
 	string(ContentTypeXxx),
 }
 
@@ -50,9 +52,10 @@ func ContentTypeValues() []ContentType {
 		ContentTypeMovie,
 		ContentTypeTvShow,
 		ContentTypeMusic,
+		ContentTypeEbook,
+		ContentTypeAudiobook,
 		ContentTypeGame,
 		ContentTypeSoftware,
-		ContentTypeBook,
 		ContentTypeXxx,
 	}
 }
@@ -70,13 +73,14 @@ func (x ContentType) IsValid() bool {
 }
 
 var _ContentTypeValue = map[string]ContentType{
-	"movie":    ContentTypeMovie,
-	"tv_show":  ContentTypeTvShow,
-	"music":    ContentTypeMusic,
-	"game":     ContentTypeGame,
-	"software": ContentTypeSoftware,
-	"book":     ContentTypeBook,
-	"xxx":      ContentTypeXxx,
+	"movie":     ContentTypeMovie,
+	"tv_show":   ContentTypeTvShow,
+	"music":     ContentTypeMusic,
+	"ebook":     ContentTypeEbook,
+	"audiobook": ContentTypeAudiobook,
+	"game":      ContentTypeGame,
+	"software":  ContentTypeSoftware,
+	"xxx":       ContentTypeXxx,
 }
 
 // ParseContentType attempts to convert a string to a ContentType.

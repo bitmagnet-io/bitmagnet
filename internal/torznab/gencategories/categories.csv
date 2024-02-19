@@ -18,7 +18,7 @@ id,name,supported
 3000,Audio,1
 3010,Audio/MP3,0
 3020,Audio/Video,0
-3030,Audio/Audiobook,0
+3030,Audio/Audiobook,1
 3040,Audio/Lossless,0
 4000,PC,1
 4010,PC/0day,0

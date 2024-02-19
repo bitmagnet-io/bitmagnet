@@ -70,7 +70,8 @@ export type ContentCollection = {
 };
 
 export type ContentType =
-  | 'book'
+  | 'audiobook'
+  | 'ebook'
   | 'game'
   | 'movie'
   | 'music'

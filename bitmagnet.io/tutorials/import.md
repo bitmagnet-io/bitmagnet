@@ -43,7 +43,7 @@ select
   size,
 -- map the RARBG category to a valid bitmagnet content type:
   case
-    when cat like 'ebooks%' then 'book'
+    when cat like 'ebooks%' then 'ebook'
     when cat like 'games%' then 'game'
     when cat like 'movies%' then 'movie'
     when cat like 'tv%' then 'tv_show'
@@ -84,6 +84,7 @@ select
     cat not like '%_720' and
     cat not like '%_SD' and
     cat not like 'software%' and
+    cat not like 'games%' and
 -- I won't judge you if you disable the following line;
 -- bear in mind there is a *lot* of this in the RARBG backup
     cat != 'xxx' and
