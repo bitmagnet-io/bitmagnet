@@ -44,7 +44,7 @@ select
 -- map the RARBG category to a valid bitmagnet content type:
   case
     when cat like 'ebooks%' then 'ebook'
-    when cat like 'games%' then 'game'
+    when cat like 'games%' then 'software'
     when cat like 'movies%' then 'movie'
     when cat like 'tv%' then 'tv_show'
     when cat like 'music%' then 'music'
