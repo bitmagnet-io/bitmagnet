@@ -1568,9 +1568,10 @@ var sources = []*ast.Source{
   movie
   tv_show
   music
+  ebook
+  audiobook
   game
   software
-  book
   xxx
 }
 

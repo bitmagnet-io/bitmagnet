@@ -46,7 +46,7 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 	case torznab.FunctionMusic:
 		options = append(options, query.Where(search.ContentTypeCriteria(model.ContentTypeMusic)))
 	case torznab.FunctionBook:
-		options = append(options, query.Where(search.ContentTypeCriteria(model.ContentTypeBook)))
+		options = append(options, query.Where(search.ContentTypeCriteria(model.ContentTypeEbook)))
 	default:
 		return nil, torznab.Error{
 			Code:        202,
@@ -103,7 +103,7 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 			}
 		} else if torznab.CategoryBooks.Has(cat) {
 			if r.Type != torznab.FunctionBook {
-				catCriteria = append(catCriteria, search.ContentTypeCriteria(model.ContentTypeBook))
+				catCriteria = append(catCriteria, search.ContentTypeCriteria(model.ContentTypeEbook))
 			}
 		}
 		if len(catCriteria) > 0 {
@@ -175,8 +175,10 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 				categoryId = torznab.CategoryTV.ID
 			case model.ContentTypeMusic:
 				categoryId = torznab.CategoryAudio.ID
-			case model.ContentTypeBook:
+			case model.ContentTypeEbook:
 				categoryId = torznab.CategoryBooks.ID
+			case model.ContentTypeAudiobook:
+				categoryId = torznab.CategoryAudioAudiobook.ID
 			case model.ContentTypeSoftware:
 				categoryId = torznab.CategoryPC.ID
 			case model.ContentTypeGame:

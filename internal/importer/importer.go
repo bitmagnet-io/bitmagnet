@@ -263,8 +263,8 @@ func (i *activeImport) Import(items ...Item) error {
 	if i.stopped {
 		return ErrImportClosed
 	}
+	i.wg.Add(len(items))
 	for _, item := range items {
-		i.wg.Add(1)
 		i.itemChan <- item
 	}
 	return nil

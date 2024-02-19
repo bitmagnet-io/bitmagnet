@@ -5,7 +5,7 @@ MIT
 MIT
 The MIT License
 
-Copyright (c) 2023 Google LLC.
+Copyright (c) 2024 Google LLC.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ MIT
 MIT
 The MIT License
 
-Copyright (c) 2023 Google LLC.
+Copyright (c) 2024 Google LLC.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -98,6 +98,8 @@ SOFTWARE.
 
 @apollo/client/errors
 
+@apollo/client/link/batch
+
 @apollo/client/link/core
 
 @apollo/client/link/http
@@ -108,7 +110,7 @@ SOFTWARE.
 
 @apollo/client/utilities/globals
 
-@wry/context
+@wry/caches
 MIT
 MIT License
 
@@ -132,6 +134,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+
+@wry/context
+MIT
 
 @wry/equality
 MIT
