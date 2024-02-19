@@ -21,16 +21,18 @@
             t of search.contentTypes | keyvalue: originalOrder;
             track t.key
           ) {
-            <mat-radio-button [value]="t.key">
-              <mat-icon>{{ t.value.icon }}</mat-icon>
-              {{ t.value.plural }}
-              @if (search.contentTypeCount(t.key) | async; as agg) {
-                <small
-                  >{{ agg.isEstimate ? "~" : ""
-                  }}{{ agg.count | number }}</small
-                >
-              }
-            </mat-radio-button>
+            @if (search.availableContentTypes.has(t.key)) {
+              <mat-radio-button [value]="t.key">
+                <mat-icon>{{ t.value.icon }}</mat-icon>
+                {{ t.value.plural }}
+                @if (search.contentTypeCount(t.key) | async; as agg) {
+                  <small
+                    >{{ agg.isEstimate ? "~" : ""
+                    }}{{ agg.count | number }}</small
+                  >
+                }
+              </mat-radio-button>
+            }
           }
         </mat-radio-group>
       </section>

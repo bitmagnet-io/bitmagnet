@@ -53,6 +53,16 @@ var categoriesMap = map[int]Category{
     ID: 3000,
     Name: "Audio",
     Subcat: []Subcategory{
+      {
+        ID: 3030,
+        Name: "Audio/Audiobook",
+      },
+    },
+  },
+  3030: {
+    ID: 3030,
+    Name: "Audio/Audiobook",
+    Subcat: []Subcategory{
     },
   },
   4000: {
@@ -138,22 +148,23 @@ var categoriesMap = map[int]Category{
 }
 
 var (
-  CategoryMovies    = categoriesMap[2000]
-  CategoryMoviesSD  = categoriesMap[2030]
-  CategoryMoviesHD  = categoriesMap[2040]
-  CategoryMoviesUHD = categoriesMap[2045]
-  CategoryMovies3D  = categoriesMap[2060]
-  CategoryAudio     = categoriesMap[3000]
-  CategoryPC        = categoriesMap[4000]
-  CategoryPCGames   = categoriesMap[4050]
-  CategoryTV        = categoriesMap[5000]
-  CategoryTVSD      = categoriesMap[5030]
-  CategoryTVHD      = categoriesMap[5040]
-  CategoryTVUHD     = categoriesMap[5045]
-  CategoryXXX       = categoriesMap[6000]
-  CategoryXXXOther  = categoriesMap[6070]
-  CategoryBooks     = categoriesMap[7000]
-  CategoryOther     = categoriesMap[8000]
+  CategoryMovies         = categoriesMap[2000]
+  CategoryMoviesSD       = categoriesMap[2030]
+  CategoryMoviesHD       = categoriesMap[2040]
+  CategoryMoviesUHD      = categoriesMap[2045]
+  CategoryMovies3D       = categoriesMap[2060]
+  CategoryAudio          = categoriesMap[3000]
+  CategoryAudioAudiobook = categoriesMap[3030]
+  CategoryPC             = categoriesMap[4000]
+  CategoryPCGames        = categoriesMap[4050]
+  CategoryTV             = categoriesMap[5000]
+  CategoryTVSD           = categoriesMap[5030]
+  CategoryTVHD           = categoriesMap[5040]
+  CategoryTVUHD          = categoriesMap[5045]
+  CategoryXXX            = categoriesMap[6000]
+  CategoryXXXOther       = categoriesMap[6070]
+  CategoryBooks          = categoriesMap[7000]
+  CategoryOther          = categoriesMap[8000]
 )
 
 var TopLevelCategories = []Category{
