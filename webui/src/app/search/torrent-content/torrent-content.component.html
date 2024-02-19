@@ -21,6 +21,7 @@
             t of search.contentTypes | keyvalue: originalOrder;
             track t.key
           ) {
+            @if (search.availableContentTypes.has(t.key)) {
             <mat-radio-button [value]="t.key">
               <mat-icon>{{ t.value.icon }}</mat-icon>
               {{ t.value.plural }}
@@ -31,6 +32,7 @@
                 >
               }
             </mat-radio-button>
+          }
           }
         </mat-radio-group>
       </section>

@@ -125,6 +125,7 @@ export class TorrentContentSearchEngine
   public totalCount$ = this.totalCountSubject.asObservable();
 
   public contentTypes = contentTypes;
+  public availableContentTypes = new Set<string>();
 
   constructor(
     private graphQLService: GraphQLService,
@@ -186,15 +187,19 @@ export class TorrentContentSearchEngine
           count: result.totalCount,
           isEstimate: result.totalCountIsEstimate,
         });
-        this.overallTotalCountSubject.next(
-          (result.aggregations.contentType ?? []).reduce(
-            (acc, next) => ({
-              count: acc.count + next.count,
-              isEstimate: acc.isEstimate || next.isEstimate,
-            }),
-            emptyBudgetedCount,
-          ),
-        );
+        let overallTotalCount = 0;
+        let overallIsEstimate = false;
+        for (const ct of result.aggregations.contentType ?? []) {
+          overallTotalCount += ct.count;
+          overallIsEstimate = overallIsEstimate || ct.isEstimate;
+          if (ct.value) {
+            this.availableContentTypes.add(ct.value);
+          }
+        }
+        this.overallTotalCountSubject.next({
+          count: overallTotalCount,
+          isEstimate: overallIsEstimate,
+        });
       }
     });
   }
