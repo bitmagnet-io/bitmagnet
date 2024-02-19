@@ -7,7 +7,8 @@ assignees: ""
 ---
 
 <!--
-Please do not open issues asking for general support with setting up the app and configuring Docker, as such requests are too time-consuming to handle. All the information you need to get up and running is in the Bitmagnet docs, the Docker docs, and on Google. If you'd like to suggest improvements or corrections to the docs, please open a PR. If you think you've found a bug, then please help us out by letting us know!
+Please do not open issues asking for general support with setting up the app and configuring Docker, as such requests are too time-consuming to handle. All the information you need to get up and running is in the Bitmagnet docs, the Docker docs, and on Google. If you're still stuck, someone on the Discord channel may be able to help: https://discord.gg/6mFNszX8qM
+If you'd like to suggest improvements or corrections to the docs, please open a PR. If you think you've found a bug, then please help us out by letting us know!
 Please do not paste logs or screenshots without first redacting any info hashes and content metadata.
 -->
 
