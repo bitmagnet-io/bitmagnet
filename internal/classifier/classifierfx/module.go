@@ -3,6 +3,7 @@ package classifierfx
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/extension"
+	"github.com/bitmagnet-io/bitmagnet/internal/classifier/keywords"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/video/videofx"
 	"go.uber.org/fx"
 )
@@ -13,6 +14,7 @@ func New() fx.Option {
 		fx.Provide(
 			classifier.New,
 			extension.New,
+			keywords.New,
 		),
 		videofx.New(),
 	)
