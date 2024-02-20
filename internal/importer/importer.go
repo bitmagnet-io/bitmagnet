@@ -174,6 +174,8 @@ func (i *activeImport) persistItems(items ...Item) error {
 	var sources []*model.TorrentSource
 	sourcesMap := make(map[string]struct{})
 	torrents := make([]*model.Torrent, 0, len(items))
+	torrentsTorrentSources := make([]*model.TorrentsTorrentSource, 0, len(items))
+	torrentHints := make([]*model.TorrentHint, 0, len(items))
 	infoHashes := make([]protocol.ID, 0, len(items))
 	for _, item := range items {
 		if _, ok1 := i.importedSources[item.Source]; !ok1 {
@@ -186,6 +188,16 @@ func (i *activeImport) persistItems(items ...Item) error {
 			}
 		}
 		torrent := createTorrentModel(i.info, item)
+		if !torrent.Hint.IsNil() {
+			hint := torrent.Hint
+			torrentHints = append(torrentHints, &hint)
+			torrent.Hint = model.TorrentHint{}
+		}
+		for _, s := range torrent.Sources {
+			src := s
+			torrentsTorrentSources = append(torrentsTorrentSources, &src)
+		}
+		torrent.Sources = nil
 		torrents = append(torrents, &torrent)
 		infoHashes = append(infoHashes, item.InfoHash)
 	}
@@ -207,10 +219,21 @@ func (i *activeImport) persistItems(items ...Item) error {
 			}
 		}
 		if createTorrentsErr := tx.Torrent.WithContext(i.ctx).Clauses(clause.OnConflict{
-			// todo work out how to handle conflicts here
-			UpdateAll: true,
+			DoNothing: true,
 		}).CreateInBatches(torrents, 100); createTorrentsErr != nil {
 			return createTorrentsErr
+		}
+		if len(torrentHints) > 0 {
+			if createTorrentHintsErr := tx.TorrentHint.WithContext(i.ctx).Clauses(clause.OnConflict{
+				UpdateAll: true,
+			}).CreateInBatches(torrentHints, 100); createTorrentHintsErr != nil {
+				return createTorrentHintsErr
+			}
+		}
+		if createTorrentsTorrentSourcesErr := tx.TorrentsTorrentSource.WithContext(i.ctx).Clauses(clause.OnConflict{
+			UpdateAll: true,
+		}).CreateInBatches(torrentsTorrentSources, 100); createTorrentsTorrentSourcesErr != nil {
+			return createTorrentsTorrentSourcesErr
 		}
 		if createJobErr := tx.QueueJob.Create(&job); createJobErr != nil {
 			return createJobErr
@@ -232,6 +255,7 @@ func createTorrentModel(info Info, item Item) model.Torrent {
 		FilesStatus: model.FilesStatusNoInfo,
 		Sources: []model.TorrentsTorrentSource{
 			{
+				InfoHash:    item.InfoHash,
 				Source:      item.Source,
 				ImportID:    model.NewNullString(info.ID),
 				PublishedAt: item.PublishedAt,
@@ -240,6 +264,7 @@ func createTorrentModel(info Info, item Item) model.Torrent {
 	}
 	if item.ContentType.Valid {
 		t.Hint = model.TorrentHint{
+			InfoHash:        item.InfoHash,
 			ContentType:     item.ContentType.ContentType,
 			ContentSource:   item.ContentSource,
 			ContentID:       item.ContentID,
