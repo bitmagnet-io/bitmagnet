@@ -3,7 +3,6 @@ package logging
 import (
 	"bufio"
 	"fmt"
-	"go.uber.org/zap/zapcore"
 	"os"
 	"path"
 	"strings"
@@ -11,9 +10,9 @@ import (
 	"time"
 )
 
-func NewFileRotator(
+func newFileRotator(
 	config FileRotatorConfig,
-) zapcore.WriteSyncer {
+) *fileRotator {
 	return &fileRotator{
 		path:       config.Path,
 		baseName:   config.BaseName,
@@ -25,21 +24,33 @@ func NewFileRotator(
 }
 
 type fileRotator struct {
-	lock       sync.Mutex
-	path       string
-	baseName   string
-	maxAge     time.Duration
-	maxSize    int
-	maxBackups int
-	bufferSize int
-	size       int
-	nextTime   time.Time
-	file       *fileRotatorFile
+	lock        sync.Mutex
+	path        string
+	pathCreated bool
+	baseName    string
+	maxAge      time.Duration
+	maxSize     int
+	maxBackups  int
+	bufferSize  int
+	size        int
+	nextTime    time.Time
+	file        *fileRotatorFile
+	closed      bool
 }
 
 func (r *fileRotator) Write(output []byte) (int, error) {
 	r.lock.Lock()
 	defer r.lock.Unlock()
+	if r.closed {
+		return len(output), nil
+	}
+	if !r.pathCreated {
+		err := os.MkdirAll(r.path, 0755)
+		if err != nil {
+			return 0, err
+		}
+		r.pathCreated = true
+	}
 	if err := r.checkRotate(len(output)); err != nil {
 		return 0, err
 	}
@@ -54,6 +65,16 @@ func (r *fileRotator) Write(output []byte) (int, error) {
 func (r *fileRotator) Sync() error {
 	r.lock.Lock()
 	defer r.lock.Unlock()
+	if r.file == nil {
+		return nil
+	}
+	return r.file.Close()
+}
+
+func (r *fileRotator) Close() error {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+	r.closed = true
 	if r.file == nil {
 		return nil
 	}
