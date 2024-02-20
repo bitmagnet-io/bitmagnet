@@ -8,7 +8,7 @@ nav_order: 2
 
 ## Does **bitmagnet** download or distribute any illegal or copyright-infringing content?
 
-No. **bitmagnet** does not download, store or distribute any content *at all*. It only downloads **metadata about** content. It may download **metadata about** illegal or copyright infringing content, and users should therefore exercise discretion in any magnet links they add to their BitTorrent client. **bitmagnet** attempts to detect and filter harmful content such as <abbr title="Child Sexual Abuse Material">CSAM</abbr> to avoid users having such undesirable metadata in their index.
+No. **bitmagnet** does not download, store or distribute any content _at all_. It only downloads **metadata about** content. It may download **metadata about** illegal or copyright infringing content, and users should therefore exercise discretion in any magnet links they add to their BitTorrent client. **bitmagnet** attempts to detect and filter harmful content such as <abbr title="Child Sexual Abuse Material">CSAM</abbr> to avoid users having such undesirable metadata in their index.
 
 ## Should I use a VPN with **bitmagnet**?
 
