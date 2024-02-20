@@ -192,9 +192,7 @@ export class TorrentContentSearchEngine
         for (const ct of result.aggregations.contentType ?? []) {
           overallTotalCount += ct.count;
           overallIsEstimate = overallIsEstimate || ct.isEstimate;
-          if (ct.value) {
-            this.availableContentTypes.add(ct.value);
-          }
+          this.availableContentTypes.add(ct.value ?? "null");
         }
         this.overallTotalCountSubject.next({
           count: overallTotalCount,
