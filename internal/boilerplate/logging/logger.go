@@ -42,7 +42,7 @@ func New(params Params) Result {
 		levelToZapLevel(params.Config.Level),
 	)
 	if params.Config.FileRotator.Enabled {
-		fWriteSyncer := NewFileRotator(params.Config.FileRotator)
+		fWriteSyncer := newFileRotator(params.Config.FileRotator)
 		core = zapcore.NewTee(
 			core,
 			zapcore.NewCore(
@@ -53,7 +53,7 @@ func New(params Params) Result {
 		)
 		appHook = fx.Hook{
 			OnStop: func(context.Context) error {
-				return fWriteSyncer.Sync()
+				return fWriteSyncer.Close()
 			},
 		}
 	}
