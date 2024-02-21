@@ -71,6 +71,7 @@ export type ContentCollection = {
 
 export type ContentType =
   | 'audiobook'
+  | 'comic'
   | 'ebook'
   | 'game'
   | 'movie'

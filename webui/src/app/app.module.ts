@@ -34,7 +34,10 @@ import { AppErrorsService } from "./app-errors.service";
 })
 export class AppModule {
   constructor(iconRegistry: MatIconRegistry, domSanitizer: DomSanitizer) {
-    iconRegistry.setDefaultFontSetClass("material-icons-outlined");
+    iconRegistry.setDefaultFontSetClass(
+      "material-icons-outlined",
+      "material-symbols-outlined",
+    );
     iconRegistry.addSvgIcon(
       "magnet",
       domSanitizer.bypassSecurityTrustResourceUrl("assets/magnet.svg"),
