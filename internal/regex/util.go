@@ -111,12 +111,16 @@ func NormalizeSearchString(input string) string {
 func RegexTokenFromName(name string) base.GroupToken {
 	var tokens []dialect.Token
 	for _, char := range name {
-		lcChar := strings.ToLower(string(char))
-		ucChar := strings.ToUpper(string(char))
-		if lcChar == ucChar {
-			tokens = append(tokens, rex.Chars.Single(char))
+		if char == ' ' {
+			tokens = append(tokens, AnyNonWordChar().Repeat().OneOrMore())
 		} else {
-			tokens = append(tokens, rex.Chars.Runes(ucChar+lcChar))
+			lcChar := strings.ToLower(string(char))
+			ucChar := strings.ToUpper(string(char))
+			if lcChar == ucChar {
+				tokens = append(tokens, rex.Chars.Single(char))
+			} else {
+				tokens = append(tokens, rex.Chars.Runes(ucChar+lcChar))
+			}
 		}
 	}
 	return rex.Group.NonCaptured(tokens...)

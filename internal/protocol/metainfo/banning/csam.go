@@ -18,6 +18,7 @@ var csamWords = []string{
 	"underage",
 	"hebefilia",
 	"opva",
+	"child porn",
 }
 
 var csamRegex = regex.NewRegexFromNames(csamWords...)
