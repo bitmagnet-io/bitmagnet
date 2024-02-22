@@ -20,7 +20,7 @@ func (c processor) Persist(ctx context.Context, torrentContents ...model.Torrent
 		tcCopy := tc
 		deleteHashes = append(deleteHashes, tcCopy.InfoHash)
 		tcCopy.Torrent = model.Torrent{}
-		if tcCopy.ContentID.Valid {
+		if tcCopy.ContentID.Valid && tcCopy.Content.CreatedAt.IsZero() {
 			contentRef := tcCopy.Content.Ref()
 			if _, ok := contentsMap[contentRef]; !ok {
 				contentsMap[contentRef] = struct{}{}
