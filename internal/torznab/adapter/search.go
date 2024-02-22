@@ -200,6 +200,14 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 		}
 		attrs := []torznab.SearchResultItemTorznabAttr{
 			{
+				AttrName:  torznab.AttrInfoHash,
+				AttrValue: item.Torrent.InfoHash.String(),
+			},
+			{
+				AttrName:  torznab.AttrMagnetUrl,
+				AttrValue: item.Torrent.MagnetUri(),
+			},
+			{
 				AttrName:  torznab.AttrCategory,
 				AttrValue: strconv.Itoa(categoryId),
 			},

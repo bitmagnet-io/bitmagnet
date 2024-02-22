@@ -1,6 +1,8 @@
 package torznab
 
 const (
+	AttrInfoHash  = "infohash"
+	AttrMagnetUrl = "magneturl"
 	// AttrCategory is the Category ID
 	AttrCategory    = "category"
 	AttrSize        = "size"
