@@ -46,7 +46,11 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 	case torznab.FunctionMusic:
 		options = append(options, query.Where(search.ContentTypeCriteria(model.ContentTypeMusic)))
 	case torznab.FunctionBook:
-		options = append(options, query.Where(search.ContentTypeCriteria(model.ContentTypeEbook)))
+		options = append(options, query.Where(search.ContentTypeCriteria(
+			model.ContentTypeEbook,
+			model.ContentTypeComic,
+			model.ContentTypeAudiobook,
+		)))
 	default:
 		return nil, torznab.Error{
 			Code:        202,
@@ -97,14 +101,22 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 			} else if torznab.CategoryTVUHD.ID == cat {
 				catCriteria = append(catCriteria, search.VideoResolutionCriteria(model.VideoResolutionV2160p))
 			}
+		} else if torznab.CategoryXXX.Has(cat) {
+			catCriteria = append(catCriteria, search.ContentTypeCriteria(model.ContentTypeXxx))
+		} else if torznab.CategoryPC.Has(cat) {
+			catCriteria = append(catCriteria, search.ContentTypeCriteria(model.ContentTypeSoftware, model.ContentTypeGame))
+		} else if torznab.CategoryAudioAudiobook.Has(cat) {
+			catCriteria = append(catCriteria, search.ContentTypeCriteria(model.ContentTypeAudiobook))
 		} else if torznab.CategoryAudio.Has(cat) {
-			if r.Type != torznab.FunctionMusic {
-				catCriteria = append(catCriteria, search.ContentTypeCriteria(model.ContentTypeMusic))
-			}
+			catCriteria = append(catCriteria, search.ContentTypeCriteria(model.ContentTypeMusic))
+		} else if torznab.CategoryBooksComics.Has(cat) {
+			catCriteria = append(catCriteria, search.ContentTypeCriteria(model.ContentTypeComic))
 		} else if torznab.CategoryBooks.Has(cat) {
-			if r.Type != torznab.FunctionBook {
-				catCriteria = append(catCriteria, search.ContentTypeCriteria(model.ContentTypeEbook))
-			}
+			options = append(options, query.Where(search.ContentTypeCriteria(
+				model.ContentTypeEbook,
+				model.ContentTypeComic,
+				model.ContentTypeAudiobook,
+			)))
 		}
 		if len(catCriteria) > 0 {
 			catsCriteria = append(catsCriteria, query.And(catCriteria...))
@@ -146,7 +158,6 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 	if r.Offset.Valid {
 		options = append(options, query.Offset(r.Offset.Uint))
 	}
-	// todo: Season and episodes
 	return options, nil
 }
 
@@ -177,6 +188,8 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 				categoryId = torznab.CategoryAudio.ID
 			case model.ContentTypeEbook:
 				categoryId = torznab.CategoryBooks.ID
+			case model.ContentTypeComic:
+				categoryId = torznab.CategoryBooksComics.ID
 			case model.ContentTypeAudiobook:
 				categoryId = torznab.CategoryAudioAudiobook.ID
 			case model.ContentTypeSoftware:

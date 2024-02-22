@@ -47,7 +47,7 @@ id,name,supported
 6070,XXX/Other,1
 7000,Books,1
 7010,Books/Mags,0
-7020,Books/EBook,0
-7030,Books/Comics,0
+7020,Books/EBook,1
+7030,Books/Comics,1
 8000,Other,1
 8010,Other/Misc,0
