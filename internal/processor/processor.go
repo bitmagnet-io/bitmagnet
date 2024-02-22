@@ -54,6 +54,7 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		return searchErr
 	}
 	var errs []error
+	var failedHashes []protocol.ID
 	tcs := make([]model.TorrentContent, 0, len(searchResult.Torrents))
 	for _, torrent := range searchResult.Torrents {
 		if params.ClassifyMode != ClassifyModeRematch && !torrent.Hint.ContentSource.Valid {
@@ -75,20 +76,31 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		classification, classifyErr := useClassifier.Classify(ctx, torrent)
 		if classifyErr != nil {
 			errs = append(errs, classifyErr)
+			failedHashes = append(failedHashes, torrent.InfoHash)
 			continue
 		}
 		torrentContent := newTorrentContent(torrent, classification)
 		tcs = append(tcs, torrentContent)
 	}
-	if resolveErr := c.Persist(ctx, tcs...); resolveErr != nil {
-		errs = append(errs, resolveErr)
-	}
-	if len(searchResult.MissingInfoHashes) > 0 {
-		errs = append(errs, MissingHashesError{
-			InfoHashes: searchResult.MissingInfoHashes,
+	if len(failedHashes) > 0 {
+		if len(tcs) == 0 {
+			return errors.Join(errs...)
+		}
+		republishJob, republishJobErr := NewQueueJob(MessageParams{
+			InfoHashes:   failedHashes,
+			ClassifyMode: params.ClassifyMode,
 		})
+		if republishJobErr != nil {
+			return errors.Join(append(errs, republishJobErr)...)
+		}
+		if err := c.dao.QueueJob.WithContext(ctx).Create(&republishJob); err != nil {
+			return errors.Join(append(errs, err)...)
+		}
 	}
-	return errors.Join(errs...)
+	if persistErr := c.Persist(ctx, tcs...); persistErr != nil {
+		return persistErr
+	}
+	return nil
 }
 
 func newTorrentContent(t model.Torrent, c classifier.Classification) model.TorrentContent {
