@@ -18,10 +18,8 @@ type client struct {
 	logger         *zap.SugaredLogger
 }
 
-const errorTemplate = "TMDB request failed: %s"
-
 func newError(msg string) error {
-	return fmt.Errorf(errorTemplate, msg)
+	return fmt.Errorf("TMDB request failed: %s", msg)
 }
 
 var ErrUnauthorized = newError("401 Unauthorized")
