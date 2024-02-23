@@ -78,7 +78,7 @@ func New(p Params) (Result, error) {
 			if err != nil {
 				return err
 			}
-			println("queueing full reprocess...")
+			println("queueing reprocess...")
 			var scopes []func(gen.Dao) gen.Dao
 			if len(contentTypes) > 0 || unknownContentType {
 				scopes = append(scopes, func(tx gen.Dao) gen.Dao {
