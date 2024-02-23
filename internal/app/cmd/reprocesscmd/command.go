@@ -45,7 +45,7 @@ func New(p Params) (Result, error) {
 				Name:  "classifyMode",
 				Value: "default",
 				Usage: "default (only attempt to match previously unmatched torrents);\n" +
-					"rematch (ignore any pre-existing classification and always classify from scratch);\n" +
+					"rematch (ignore any pre-existing match and always classify from scratch);\n" +
 					"skip (skip classification for previously unmatched torrents that don't have any hint)",
 			},
 		},

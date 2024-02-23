@@ -23,8 +23,6 @@ This tutorial will show you how to backup, restore and merge **bitmagnet** datab
 
 The following command will take a backup of the critical **bitmagnet** data and save it to a file named `export.sql`. (note this is not a full backup of the database which would include creation of tables, indexes etc.). By exporting with the `--data-only` flag the resulting file can be imported into a new or existing installation, after **bitmagnet** has run its migrations to set up the database and tables.
 
-It's advisable to stop any **bitmagnet** workers before taking a backup, to ensure that the database is in a consistent state.
-
 Please refer to [the `pg_dump` documentation](https://www.postgresql.org/docs/current/app-pgdump.html){:target="\_blank"} and ensure to specify the correct values (e.g. `host`, `username` and `password`) for the source database.
 
 ```sh
