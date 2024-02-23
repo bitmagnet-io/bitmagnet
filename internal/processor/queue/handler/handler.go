@@ -36,7 +36,7 @@ func New(p Params) Result {
 					return err
 				}
 				return pr.Process(ctx, *msg)
-			}, handler.JobTimeout(time.Second*60*5), handler.Concurrency(2)), nil
+			}, handler.JobTimeout(time.Second*60*10), handler.Concurrency(2)), nil
 		}),
 	}
 }
