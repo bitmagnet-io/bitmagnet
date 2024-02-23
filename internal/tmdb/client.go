@@ -25,6 +25,7 @@ func newError(msg string) error {
 }
 
 var ErrUnauthorized = newError("401 Unauthorized")
+var ErrNotFound = newError("404 Not Found")
 
 func (c client) ValidateApiKey(ctx context.Context) error {
 	return c.request(ctx, "/authentication", nil, nil)
@@ -132,6 +133,8 @@ func (c client) request(ctx context.Context, path string, queryParams map[string
 			if res.StatusCode() == 401 {
 				c.isUnauthorized.Set(true)
 				err = ErrUnauthorized
+			} else if res.StatusCode() == 404 {
+				err = ErrNotFound
 			} else {
 				err = newError(res.Status())
 			}

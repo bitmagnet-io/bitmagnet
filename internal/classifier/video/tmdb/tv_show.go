@@ -162,6 +162,9 @@ func (c *client) getTvShowByTmdbId(ctx context.Context, id int) (tvShow model.Co
 		AppendToResponse: []string{"external_ids"},
 	})
 	if getDetailsErr != nil {
+		if errors.Is(getDetailsErr, tmdb.ErrNotFound) {
+			getDetailsErr = classifier.ErrNoMatch
+		}
 		err = getDetailsErr
 		return
 	}

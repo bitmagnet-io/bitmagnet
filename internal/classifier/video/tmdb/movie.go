@@ -10,7 +10,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
 	"strconv"
-	"strings"
 )
 
 type MovieClient interface {
@@ -171,10 +170,7 @@ func (c *client) getMovieByTmbdId(ctx context.Context, id int) (movie model.Cont
 		ID: int64(id),
 	})
 	if getDetailsErr != nil {
-		// a hacky workaround for TMDB returning 404 for some (correct) movie IDs
-		// e.g. there's some issue with tt15168124 which points to 878564 when the correct ID is 888491
-		// (haven't added for TV shows as I haven't encountered any examples)
-		if strings.HasPrefix(getDetailsErr.Error(), "code: 34") {
+		if errors.Is(getDetailsErr, tmdb.ErrNotFound) {
 			getDetailsErr = classifier.ErrNoMatch
 		}
 		err = getDetailsErr
