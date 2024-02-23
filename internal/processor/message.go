@@ -26,6 +26,10 @@ type MessageParams struct {
 	InfoHashes   []protocol.ID
 }
 
-func NewQueueJob(msg MessageParams) (model.QueueJob, error) {
-	return model.NewQueueJob(MessageName, msg, model.QueueJobMaxRetries(2))
+func NewQueueJob(msg MessageParams, options ...model.QueueJobOption) (model.QueueJob, error) {
+	return model.NewQueueJob(
+		MessageName,
+		msg,
+		append([]model.QueueJobOption{model.QueueJobMaxRetries(2)}, options...)...,
+	)
 }

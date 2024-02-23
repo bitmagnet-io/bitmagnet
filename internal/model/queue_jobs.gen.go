@@ -26,6 +26,7 @@ type QueueJob struct {
 	Deadline         sql.NullTime   `gorm:"column:deadline;<-:create" json:"deadline"`
 	ArchivalDuration Duration       `gorm:"column:archival_duration;not null;<-:create" json:"archivalDuration"`
 	CreatedAt        time.Time      `gorm:"column:created_at;not null;<-:create" json:"createdAt"`
+	Priority         int            `gorm:"column:priority;not null" json:"priority"`
 }
 
 // TableName QueueJob's table name
