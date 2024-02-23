@@ -1,7 +1,7 @@
 ---
 title: FAQ
 layout: default
-nav_order: 2
+nav_order: 1
 ---
 
 # Frequently Asked Questions
@@ -13,6 +13,10 @@ No. **bitmagnet** does not download, store or distribute any content _at all_. I
 ## Should I use a VPN with **bitmagnet**?
 
 It is recommended to use a VPN: **bitmagnet** may download **metadata about** illegal and copyrighted content. It is possible that rudimentary law enforcement and anti-piracy tracking tools would incorrectly flag this activity, although we've never heard about anyone getting into trouble for using this or similar metadata crawlers. Setting up a VPN is simple and cheap, and it's better to be safe than sorry. We are not affiliated with any VPN providers, but if you're unsure which provider to choose, we can recommend [Mullvad](https://mullvad.net/){:target="\_blank"}.
+
+## Is **bitmagnet** intended to be used as a public service?
+
+No, it was designed to be self-hosted. The UI and API allow destructive actions, and no security or scalability review has taken place, so it's not advised. An API is exposed, that could in theory be used to build a public service, but it's not going to be the focus of this project to support that use case.
 
 ## What are the system requirements for **bitmagnet**?
 
@@ -52,3 +56,11 @@ The short answer is you can't. The only way to know for sure is to add an info h
 ## Can I ask **bitmagnet**'s DHT crawler to crawl specific hashes?
 
 No. The DHT crawler works by sampling random info hashes from the network, and was not designed to locate specific hashes - it only crawls what it finds by chance. You can use the import [the `/import` endpoint](/tutorials/import.html) to import specific torrents, and additional methods (separate from the DHT crawler) may be added in future.
+
+## I'm seeing a lot of torrents in the "Unknown" category, that are clearly of a particular content type - what's wrong?
+
+**bitmagnet** is in early development, and improving the classifier will be an ongoing effort. When new versions are released, you can follow the [reclassify turorial](/tutorials/reprocess-reclassify.html) to reclassify torrents.
+
+## Can I run multiple **bitmagnet** instances pointing to the same database?
+
+Yes you can, just point multiple instances to one database and it will work - *but* it will put more load on the database and cause the app to run slower. An alternative is to run multiple instances with multiple databases, and periodically [merge the databases](/tutorials/backup-restore-merge.html).
