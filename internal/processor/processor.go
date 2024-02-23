@@ -60,17 +60,22 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		failedHashes = append(failedHashes, searchResult.MissingInfoHashes...)
 	}
 	tcs := make([]model.TorrentContent, 0, len(searchResult.Torrents))
+	var deleteIds []string
 	for _, torrent := range searchResult.Torrents {
-		if params.ClassifyMode != ClassifyModeRematch && !torrent.Hint.ContentSource.Valid {
-			for _, tc := range torrent.Contents {
-				if tc.ContentType.Valid &&
-					tc.ContentSource.Valid &&
-					(torrent.Hint.IsNil() || torrent.Hint.ContentType == tc.ContentType.ContentType) {
-					torrent.Hint.ContentType = tc.ContentType.ContentType
-					torrent.Hint.ContentSource = tc.ContentSource
-					torrent.Hint.ContentID = tc.ContentID
-					break
-				}
+		thisDeleteIds := make(map[string]struct{}, len(torrent.Contents))
+		foundMatch := false
+		for _, tc := range torrent.Contents {
+			thisDeleteIds[tc.ID] = struct{}{}
+			if !foundMatch &&
+				!torrent.Hint.ContentSource.Valid &&
+				params.ClassifyMode != ClassifyModeRematch &&
+				tc.ContentType.Valid &&
+				tc.ContentSource.Valid &&
+				(torrent.Hint.IsNil() || torrent.Hint.ContentType == tc.ContentType.ContentType) {
+				torrent.Hint.ContentType = tc.ContentType.ContentType
+				torrent.Hint.ContentSource = tc.ContentSource
+				torrent.Hint.ContentID = tc.ContentID
+				foundMatch = true
 			}
 		}
 		useClassifier := c.classifier
@@ -84,6 +89,12 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 			continue
 		}
 		torrentContent := newTorrentContent(torrent, classification)
+		tcId := torrentContent.InferID()
+		for id := range thisDeleteIds {
+			if id != tcId {
+				deleteIds = append(deleteIds, id)
+			}
+		}
 		tcs = append(tcs, torrentContent)
 	}
 	if len(failedHashes) > 0 {
@@ -101,7 +112,10 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 			return errors.Join(append(errs, err)...)
 		}
 	}
-	if persistErr := c.Persist(ctx, tcs...); persistErr != nil {
+	if len(tcs) == 0 {
+		return nil
+	}
+	if persistErr := c.persist(ctx, tcs, deleteIds); persistErr != nil {
 		return persistErr
 	}
 	return nil

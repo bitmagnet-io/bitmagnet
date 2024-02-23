@@ -2,23 +2,17 @@ package processor
 
 import (
 	"context"
-	"database/sql/driver"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"gorm.io/gorm/clause"
 )
 
-func (c processor) Persist(ctx context.Context, torrentContents ...model.TorrentContent) error {
-	if len(torrentContents) == 0 {
-		return nil
-	}
+func (c processor) persist(ctx context.Context, torrentContents []model.TorrentContent, deleteIds []string) error {
 	contentsMap := make(map[model.ContentRef]struct{}, len(torrentContents))
 	contentsPtr := make([]*model.Content, 0, len(torrentContents))
 	torrentContentsPtr := make([]*model.TorrentContent, 0, len(torrentContents))
-	deleteHashes := make([]driver.Valuer, 0, len(torrentContents))
 	for _, tc := range torrentContents {
 		tcCopy := tc
-		deleteHashes = append(deleteHashes, tcCopy.InfoHash)
 		tcCopy.Torrent = model.Torrent{}
 		if tcCopy.ContentID.Valid && tcCopy.Content.CreatedAt.IsZero() {
 			contentRef := tcCopy.Content.Ref()
@@ -41,19 +35,21 @@ func (c processor) Persist(ctx context.Context, torrentContents ...model.Torrent
 			if createContentErr := tx.Content.WithContext(ctx).Clauses(
 				clause.OnConflict{
 					UpdateAll: true,
-				}).CreateInBatches(contentsPtr, 20); createContentErr != nil {
+				}).CreateInBatches(contentsPtr, 100); createContentErr != nil {
 				return createContentErr
 			}
 		}
-		if _, deleteErr := tx.TorrentContent.WithContext(ctx).Where(
-			c.dao.TorrentContent.InfoHash.In(deleteHashes...),
-		).Delete(); deleteErr != nil {
-			return deleteErr
+		if len(deleteIds) > 0 {
+			if _, deleteErr := tx.TorrentContent.WithContext(ctx).Where(
+				c.dao.TorrentContent.ID.In(deleteIds...),
+			).Delete(); deleteErr != nil {
+				return deleteErr
+			}
 		}
 		return tx.TorrentContent.WithContext(ctx).Clauses(
 			clause.OnConflict{
-				DoNothing: true,
+				UpdateAll: true,
 			},
-		).CreateInBatches(torrentContentsPtr, 20)
+		).CreateInBatches(torrentContentsPtr, 100)
 	})
 }
