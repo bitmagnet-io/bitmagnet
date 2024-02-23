@@ -169,6 +169,18 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
+			inputString: "【 example.com 】We Are the Movie!.2013.720p.H264.mkv",
+			expectedOutput: output{
+				contentType: model.ContentTypeMovie,
+				title:       "We Are the Movie!",
+				releaseYear: 2013,
+				attrs: classifier.ContentAttributes{
+					VideoResolution: model.NewNullVideoResolution(model.VideoResolutionV720p),
+					VideoCodec:      model.NewNullVideoCodec(model.VideoCodecH264),
+				},
+			},
+		},
+		{
 			inputString: "Маша и Медведь в кино-12 месяцев.2022.WEBRip.1080p_от New-Team.mkv",
 			expectedOutput: output{
 				contentType: model.ContentTypeMovie,
