@@ -137,6 +137,26 @@ var categoriesMap = map[int]Category{
     ID: 7000,
     Name: "Books",
     Subcat: []Subcategory{
+      {
+        ID: 7020,
+        Name: "Books/EBook",
+      },
+      {
+        ID: 7030,
+        Name: "Books/Comics",
+      },
+    },
+  },
+  7020: {
+    ID: 7020,
+    Name: "Books/EBook",
+    Subcat: []Subcategory{
+    },
+  },
+  7030: {
+    ID: 7030,
+    Name: "Books/Comics",
+    Subcat: []Subcategory{
     },
   },
   8000: {
@@ -164,6 +184,8 @@ var (
   CategoryXXX            = categoriesMap[6000]
   CategoryXXXOther       = categoriesMap[6070]
   CategoryBooks          = categoriesMap[7000]
+  CategoryBooksEBook     = categoriesMap[7020]
+  CategoryBooksComics    = categoriesMap[7030]
   CategoryOther          = categoriesMap[8000]
 )
 

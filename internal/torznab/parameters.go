@@ -5,6 +5,7 @@ const (
 	ParamQuery   = "q"
 	ParamCat     = "cat"
 	ParamImdbId  = "imdbid"
+	ParamTmdbId  = "tmdbid"
 	ParamSeason  = "season"
 	ParamEpisode = "ep"
 	ParamLimit   = "limit"
