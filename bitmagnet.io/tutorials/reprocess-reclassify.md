@@ -28,6 +28,6 @@ To reprocess all torrents in your index, simply run `bitmagnet reprocess`. If yo
 - `classifyMode`: This controls how already matched torrents are handled. A torrent is "matched" if it's associated with a specific piece of content from one of the API integrations (currently only TMDB). Making a lot of API calls can take a long time, so if items are already matched you might want to just do the other processing steps without re-matching them. The available modes are:
   - `default`: Only attempt to match previously unmatched torrents
   - `rematch`: Ignore any pre-existing match and always classify from scratch
-  - `skip`: Skip classification for previously unmatched torrents, unless they have a hint* attached to them.
+  - `skip`: Skip classification for previously unmatched torrents, unless they have a hint\* attached to them.
 
-*hints tell the classifier to use the hinted information instead of any classification results, which can save a lot of work for the classifier and help fix errors. Currently, the only way to add hints is by using [the `/import` endpoint](/tutorials/import.html).
+\*hints tell the classifier to use the hinted information instead of any classification results, which can save a lot of work for the classifier and help fix errors. Currently, the only way to add hints is by using [the `/import` endpoint](/tutorials/import.html).

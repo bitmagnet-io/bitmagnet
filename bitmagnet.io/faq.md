@@ -63,4 +63,4 @@ No. The DHT crawler works by sampling random info hashes from the network, and w
 
 ## Can I run multiple **bitmagnet** instances pointing to the same database?
 
-Yes you can, just point multiple instances to one database and it will work - *but* it will put more load on the database and cause the app to run slower. An alternative is to run multiple instances with multiple databases, and periodically [merge the databases](/tutorials/backup-restore-merge.html).
+Yes you can, just point multiple instances to one database and it will work - _but_ it will put more load on the database and cause the app to run slower. An alternative is to run multiple instances with multiple databases, and periodically [merge the databases](/tutorials/backup-restore-merge.html).
