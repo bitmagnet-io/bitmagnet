@@ -17,14 +17,19 @@ func (a adapter) Caps(context.Context) (torznab.Caps, error) {
 		},
 		Searching: torznab.CapsSearching{
 			Search: torznab.CapsSearch{
-				Available:       "yes",
-				SupportedParams: torznab.ParamQuery,
+				Available: "yes",
+				SupportedParams: strings.Join([]string{
+					torznab.ParamQuery,
+					torznab.ParamImdbId,
+					torznab.ParamTmdbId,
+				}, ","),
 			},
 			TvSearch: torznab.CapsSearch{
 				Available: "yes",
 				SupportedParams: strings.Join([]string{
 					torznab.ParamQuery,
 					torznab.ParamImdbId,
+					torznab.ParamTmdbId,
 					torznab.ParamSeason,
 					torznab.ParamEpisode,
 				}, ","),
@@ -34,6 +39,7 @@ func (a adapter) Caps(context.Context) (torznab.Caps, error) {
 				SupportedParams: strings.Join([]string{
 					torznab.ParamQuery,
 					torznab.ParamImdbId,
+					torznab.ParamTmdbId,
 				}, ","),
 			},
 			MusicSearch: torznab.CapsSearch{

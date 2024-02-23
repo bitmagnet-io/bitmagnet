@@ -3,7 +3,7 @@ package tmdb
 import (
 	"errors"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
-	"github.com/cyruzin/golang-tmdb"
+	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
 )
 
 type Client interface {
@@ -12,7 +12,7 @@ type Client interface {
 }
 
 type client struct {
-	c *tmdb.Client
+	c tmdb.Client
 	s search.Search
 }
 

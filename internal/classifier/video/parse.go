@@ -71,11 +71,18 @@ var titlePartRegex = rex.New(
 
 var trimTitleRegex = rex.New(
 	rex.Chars.Begin(),
-	rex.Group.NonCaptured(
-		rex.Chars.Single('['),
-		rex.Common.NotClass(rex.Chars.Single(']')).Repeat().OneOrMore(),
-		rex.Chars.Single(']'),
-	).Repeat().ZeroOrOne(),
+	rex.Group.Composite(
+		rex.Group.NonCaptured(
+			rex.Chars.Single('['),
+			rex.Common.NotClass(rex.Chars.Single(']')).Repeat().OneOrMore(),
+			rex.Chars.Single(']'),
+		),
+		rex.Group.NonCaptured(
+			rex.Chars.Single('【'),
+			rex.Common.NotClass(rex.Chars.Single('】')).Repeat().OneOrMore(),
+			rex.Chars.Single('】'),
+		),
+	).NonCaptured().Repeat().ZeroOrOne(),
 	regex.AnyNonWordChar().Repeat().ZeroOrMore(),
 	rex.Group.Define(
 		regex.WordToken(),

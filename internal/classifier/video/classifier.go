@@ -85,7 +85,7 @@ func (c videoClassifier) resolveContent(
 		}
 		return c.tmdbClient.SearchTvShow(ctx, tmdb.SearchTvShowParams{
 			Name:                 title,
-			FirstAirDateYear:     year,
+			Year:                 year,
 			IncludeAdult:         true,
 			LevenshteinThreshold: 5,
 		})
