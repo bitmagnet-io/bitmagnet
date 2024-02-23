@@ -31,7 +31,7 @@ func New(p Params) (Result, error) {
 		Flags: []cli.Flag{
 			&cli.IntFlag{
 				Name:  "batchSize",
-				Value: 100,
+				Value: 1000,
 			},
 			&cli.StringFlag{
 				Name:  "classifyMode",
