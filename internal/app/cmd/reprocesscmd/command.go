@@ -108,7 +108,7 @@ func New(p Params) (Result, error) {
 				job, err := processor.NewQueueJob(processor.MessageParams{
 					ClassifyMode: classifyMode,
 					InfoHashes:   infoHashes,
-				})
+				}, model.QueueJobPriority(10))
 				if err != nil {
 					return err
 				}

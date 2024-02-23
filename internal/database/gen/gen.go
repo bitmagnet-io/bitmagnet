@@ -404,6 +404,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		}),
 		gen.FieldType("status", "QueueJobStatus"),
 		gen.FieldGenType("status", "String"),
+		gen.FieldType("priority", "int"),
 		gen.FieldType("retries", "uint"),
 		gen.FieldType("max_retries", "uint"),
 		gen.FieldGORMTag("max_retries", func(tag field.GormTag) field.GormTag {
