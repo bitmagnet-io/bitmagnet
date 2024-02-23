@@ -15,7 +15,7 @@ Postgres is the primary data store, and powers the search engine and message que
 
 Some key libraries used include:
 
-- [anacrolix/torrent](github.com/anacrolix/torrent){:target="\_blank"} not heavily used right now, but contains many useful BitTorrent utilities and could drive future features such as in-place seeding
+- [anacrolix/torrent](https://github.com/anacrolix/torrent){:target="\_blank"} not heavily used right now, but contains many useful BitTorrent utilities and could drive future features such as in-place seeding
 - [fx](https://uber-go.github.io/fx/){:target="\_blank"} for dependency injection and management of the application lifecycle
 - [gin](https://gin-gonic.com/){:target="\_blank"} for the HTTP server
 - [goose](https://pressly.github.io/goose/){:target="\_blank"} for database migrations
