@@ -8,7 +8,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
-	tmdb "github.com/cyruzin/golang-tmdb"
+	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
 	"strconv"
 )
 
@@ -19,7 +19,7 @@ type TvShowClient interface {
 
 type SearchTvShowParams struct {
 	Name                 string
-	FirstAirDateYear     model.Year
+	Year                 model.Year
 	IncludeAdult         bool
 	LevenshteinThreshold uint
 }
@@ -43,8 +43,8 @@ func (c *client) searchTvShowLocal(ctx context.Context, p SearchTvShowParams) (t
 		search.ContentDefaultPreload(),
 		search.ContentDefaultHydrate(),
 	}
-	if !p.FirstAirDateYear.IsNil() {
-		options = append(options, query.Where(search.ContentReleaseDateCriteria(model.NewDateRangeFromYear(p.FirstAirDateYear))))
+	if !p.Year.IsNil() {
+		options = append(options, query.Where(search.ContentReleaseDateCriteria(model.NewDateRangeFromYear(p.Year))))
 	}
 	result, searchErr := c.s.Content(
 		ctx,
@@ -69,16 +69,17 @@ func (c *client) searchTvShowLocal(ctx context.Context, p SearchTvShowParams) (t
 
 func (c *client) searchTvShowTmdb(ctx context.Context, p SearchTvShowParams) (tvShow model.Content, err error) {
 	urlOptions := make(map[string]string)
-	if !p.FirstAirDateYear.IsNil() {
-		urlOptions["first_air_date_year"] = strconv.Itoa(int(p.FirstAirDateYear))
+	if !p.Year.IsNil() {
+		urlOptions["first_air_date_year"] = strconv.Itoa(int(p.Year))
 	}
 	if p.IncludeAdult {
 		urlOptions["include_adult"] = "true"
 	}
-	searchResult, searchErr := c.c.GetSearchTVShow(
-		p.Name,
-		urlOptions,
-	)
+	searchResult, searchErr := c.c.SearchTv(ctx, tmdb.SearchTvRequest{
+		Query:        p.Name,
+		Year:         p.Year,
+		IncludeAdult: p.IncludeAdult,
+	})
 	if searchErr != nil {
 		err = searchErr
 		return
@@ -140,8 +141,9 @@ func (c *client) GetTvShowByExternalId(ctx context.Context, source, id string) (
 		err = externalSourceErr
 		return
 	}
-	byIdResult, byIdErr := c.c.GetFindByID(externalId, map[string]string{
-		"external_source": externalSource,
+	byIdResult, byIdErr := c.c.FindByID(ctx, tmdb.FindByIDRequest{
+		ExternalSource: externalSource,
+		ExternalID:     externalId,
 	})
 	if byIdErr != nil {
 		err = byIdErr
@@ -155,17 +157,21 @@ func (c *client) GetTvShowByExternalId(ctx context.Context, source, id string) (
 }
 
 func (c *client) getTvShowByTmdbId(ctx context.Context, id int) (tvShow model.Content, err error) {
-	d, getDetailsErr := c.c.GetTVDetails(id, map[string]string{
-		"append_to_response": "external_ids",
+	d, getDetailsErr := c.c.TvDetails(ctx, tmdb.TvDetailsRequest{
+		SeriesID:         int64(id),
+		AppendToResponse: []string{"external_ids"},
 	})
 	if getDetailsErr != nil {
+		if errors.Is(getDetailsErr, tmdb.ErrNotFound) {
+			getDetailsErr = classifier.ErrNoMatch
+		}
 		err = getDetailsErr
 		return
 	}
-	return TvShowDetailsToTvShowModel(*d)
+	return TvShowDetailsToTvShowModel(d)
 }
 
-func TvShowDetailsToTvShowModel(details tmdb.TVDetails) (movie model.Content, err error) {
+func TvShowDetailsToTvShowModel(details tmdb.TvDetailsResponse) (movie model.Content, err error) {
 	firstAirDate := model.Date{}
 	if details.FirstAirDate != "" {
 		parsedDate, parseDateErr := model.NewDateFromIsoString(details.FirstAirDate)
@@ -185,18 +191,18 @@ func TvShowDetailsToTvShowModel(details tmdb.TVDetails) (movie model.Content, er
 		})
 	}
 	var attributes []model.ContentAttribute
-	if details.IMDbID != "" {
+	if details.ExternalIDs.IMDbID != "" {
 		attributes = append(attributes, model.ContentAttribute{
 			Source: "imdb",
 			Key:    "id",
-			Value:  details.IMDbID,
+			Value:  details.ExternalIDs.IMDbID,
 		})
 	}
-	if details.TVDBID != 0 {
+	if details.ExternalIDs.TVDBID != 0 {
 		attributes = append(attributes, model.ContentAttribute{
 			Source: "tvdb",
 			Key:    "id",
-			Value:  strconv.Itoa(int(details.TVDBID)),
+			Value:  strconv.Itoa(int(details.ExternalIDs.TVDBID)),
 		})
 	}
 	releaseYear := firstAirDate.Year
