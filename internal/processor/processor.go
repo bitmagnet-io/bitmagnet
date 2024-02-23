@@ -55,6 +55,10 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 	}
 	var errs []error
 	var failedHashes []protocol.ID
+	if len(failedHashes) > 0 {
+		errs = append(errs, MissingHashesError{InfoHashes: failedHashes})
+		failedHashes = append(failedHashes, searchResult.MissingInfoHashes...)
+	}
 	tcs := make([]model.TorrentContent, 0, len(searchResult.Torrents))
 	for _, torrent := range searchResult.Torrents {
 		if params.ClassifyMode != ClassifyModeRematch && !torrent.Hint.ContentSource.Valid {
