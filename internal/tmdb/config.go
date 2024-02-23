@@ -1,8 +1,6 @@
 package tmdb
 
-import (
-	"time"
-)
+import "time"
 
 type Config struct {
 	ApiKey         string

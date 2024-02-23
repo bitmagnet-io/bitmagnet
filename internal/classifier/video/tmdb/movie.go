@@ -8,9 +8,8 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
-	tmdb "github.com/cyruzin/golang-tmdb"
+	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
 	"strconv"
-	"strings"
 )
 
 type MovieClient interface {
@@ -69,17 +68,11 @@ func (c *client) searchMovieLocal(ctx context.Context, p SearchMovieParams) (mov
 }
 
 func (c *client) searchMovieTmdb(ctx context.Context, p SearchMovieParams) (model.Content, error) {
-	urlOptions := make(map[string]string)
-	if !p.Year.IsNil() {
-		urlOptions["year"] = strconv.Itoa(int(p.Year))
-	}
-	if p.IncludeAdult {
-		urlOptions["include_adult"] = "true"
-	}
-	searchResult, searchErr := c.c.GetSearchMovies(
-		p.Title,
-		urlOptions,
-	)
+	searchResult, searchErr := c.c.SearchMovie(ctx, tmdb.SearchMovieRequest{
+		Query:        p.Title,
+		IncludeAdult: p.IncludeAdult,
+		Year:         p.Year,
+	})
 	if searchErr != nil {
 		return model.Content{}, searchErr
 	}
@@ -142,8 +135,9 @@ func (c *client) GetMovieByExternalId(ctx context.Context, source, id string) (m
 	if externalSourceErr != nil {
 		return model.Content{}, externalSourceErr
 	}
-	byIdResult, byIdErr := c.c.GetFindByID(externalId, map[string]string{
-		"external_source": externalSource,
+	byIdResult, byIdErr := c.c.FindByID(ctx, tmdb.FindByIDRequest{
+		ExternalSource: externalSource,
+		ExternalID:     externalId,
 	})
 	if byIdErr != nil {
 		return model.Content{}, byIdErr
@@ -172,21 +166,20 @@ func getExternalSource(source string, id string) (externalSource string, externa
 }
 
 func (c *client) getMovieByTmbdId(ctx context.Context, id int) (movie model.Content, err error) {
-	d, getDetailsErr := c.c.GetMovieDetails(id, map[string]string{})
+	d, getDetailsErr := c.c.MovieDetails(ctx, tmdb.MovieDetailsRequest{
+		ID: int64(id),
+	})
 	if getDetailsErr != nil {
-		// a hacky workaround for TMDB returning 404 for some (correct) movie IDs
-		// e.g. there's some issue with tt15168124 which points to 878564 when the correct ID is 888491
-		// (haven't added for TV shows as I haven't encountered any examples)
-		if strings.HasPrefix(getDetailsErr.Error(), "code: 34") {
+		if errors.Is(getDetailsErr, tmdb.ErrNotFound) {
 			getDetailsErr = classifier.ErrNoMatch
 		}
 		err = getDetailsErr
 		return
 	}
-	return MovieDetailsToMovieModel(*d)
+	return MovieDetailsToMovieModel(d)
 }
 
-func MovieDetailsToMovieModel(details tmdb.MovieDetails) (movie model.Content, err error) {
+func MovieDetailsToMovieModel(details tmdb.MovieDetailsResponse) (movie model.Content, err error) {
 	releaseDate := model.Date{}
 	if details.ReleaseDate != "" {
 		parsedDate, parseDateErr := model.NewDateFromIsoString(details.ReleaseDate)
