@@ -130,22 +130,31 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 		if !strings.HasPrefix(imdbId, "tt") {
 			imdbId = "tt" + imdbId
 		}
-		var refs []model.ContentRef
+		var ct model.ContentType
 		if r.Type != torznab.FunctionTv {
-			refs = append(refs, model.ContentRef{
-				Type:   model.ContentTypeMovie,
-				Source: "imdb",
-				ID:     imdbId,
-			})
+			ct = model.ContentTypeMovie
+		} else if r.Type != torznab.FunctionMovie {
+			ct = model.ContentTypeTvShow
 		}
-		if r.Type != torznab.FunctionMovie {
-			refs = append(refs, model.ContentRef{
-				Type:   model.ContentTypeTvShow,
-				Source: "imdb",
-				ID:     imdbId,
-			})
+		options = append(options, query.Where(search.ContentAlternativeIdentifierCriteria(model.ContentRef{
+			Type:   ct,
+			Source: "imdb",
+			ID:     imdbId,
+		})))
+	}
+	if r.TmdbId.Valid {
+		tmdbId := r.TmdbId.String
+		var ct model.ContentType
+		if r.Type != torznab.FunctionTv {
+			ct = model.ContentTypeMovie
+		} else if r.Type != torznab.FunctionMovie {
+			ct = model.ContentTypeTvShow
 		}
-		options = append(options, query.Where(search.ContentAlternativeIdentifierCriteria(refs...)))
+		options = append(options, query.Where(search.ContentCanonicalIdentifierCriteria(model.ContentRef{
+			Type:   ct,
+			Source: "tmdb",
+			ID:     tmdbId,
+		})))
 	}
 	limit := a.defaultLimit
 	if r.Limit.Valid {

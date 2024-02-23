@@ -94,6 +94,11 @@ func (b builder) Apply(e *gin.Engine) error {
 			imdbId.Valid = true
 			imdbId.String = qImdbId
 		}
+		tmdbId := model.NullString{}
+		if qTmdbId := c.Query(torznab.ParamTmdbId); qTmdbId != "" {
+			tmdbId.Valid = true
+			tmdbId.String = qTmdbId
+		}
 		season := model.NullInt{}
 		episode := model.NullInt{}
 		if qSeason := c.Query(torznab.ParamSeason); qSeason != "" {
@@ -123,6 +128,7 @@ func (b builder) Apply(e *gin.Engine) error {
 			Type:    tp,
 			Cats:    cats,
 			ImdbId:  imdbId,
+			TmdbId:  tmdbId,
 			Season:  season,
 			Episode: episode,
 			Limit:   limit,
