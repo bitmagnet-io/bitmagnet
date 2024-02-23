@@ -1569,6 +1569,7 @@ var sources = []*ast.Source{
   tv_show
   music
   ebook
+  comic
   audiobook
   game
   software

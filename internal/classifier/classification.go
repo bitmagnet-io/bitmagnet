@@ -47,6 +47,14 @@ func (a *ContentAttributes) ApplyHint(h model.TorrentHint) {
 	}
 }
 
+func (a *ContentAttributes) InferVideoAttributes(input string) {
+	a.VideoResolution = model.InferVideoResolution(input)
+	a.VideoSource = model.InferVideoSource(input)
+	a.VideoCodec, a.ReleaseGroup = model.InferVideoCodecAndReleaseGroup(input)
+	a.Video3d = model.InferVideo3d(input)
+	a.VideoModifier = model.InferVideoModifier(input)
+}
+
 func (c *Classification) ApplyHint(h model.TorrentHint) {
 	c.ContentType = h.NullContentType()
 	c.ContentAttributes.ApplyHint(h)

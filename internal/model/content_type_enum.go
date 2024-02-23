@@ -20,6 +20,7 @@ const (
 	ContentTypeTvShow    ContentType = "tv_show"
 	ContentTypeMusic     ContentType = "music"
 	ContentTypeEbook     ContentType = "ebook"
+	ContentTypeComic     ContentType = "comic"
 	ContentTypeAudiobook ContentType = "audiobook"
 	ContentTypeGame      ContentType = "game"
 	ContentTypeSoftware  ContentType = "software"
@@ -33,6 +34,7 @@ var _ContentTypeNames = []string{
 	string(ContentTypeTvShow),
 	string(ContentTypeMusic),
 	string(ContentTypeEbook),
+	string(ContentTypeComic),
 	string(ContentTypeAudiobook),
 	string(ContentTypeGame),
 	string(ContentTypeSoftware),
@@ -53,6 +55,7 @@ func ContentTypeValues() []ContentType {
 		ContentTypeTvShow,
 		ContentTypeMusic,
 		ContentTypeEbook,
+		ContentTypeComic,
 		ContentTypeAudiobook,
 		ContentTypeGame,
 		ContentTypeSoftware,
@@ -77,6 +80,7 @@ var _ContentTypeValue = map[string]ContentType{
 	"tv_show":   ContentTypeTvShow,
 	"music":     ContentTypeMusic,
 	"ebook":     ContentTypeEbook,
+	"comic":     ContentTypeComic,
 	"audiobook": ContentTypeAudiobook,
 	"game":      ContentTypeGame,
 	"software":  ContentTypeSoftware,

@@ -4,22 +4,14 @@ import (
 	"context"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
-	"github.com/bitmagnet-io/bitmagnet/internal/regex"
 	"regexp"
 )
 
-func NewKeywordsClassifier(contentType model.ContentType, words []string, priority int) classifier.SubClassifier {
-	return keywordsClassifier{
-		contentType: contentType,
-		priority:    priority,
-		regex:       regex.NewRegexFromNames(words...),
-	}
-}
-
 type keywordsClassifier struct {
-	contentType model.ContentType
-	priority    int
-	regex       *regexp.Regexp
+	contentType       model.ContentType
+	priority          int
+	regex             *regexp.Regexp
+	requiredFileTypes []model.FileType
 }
 
 func (c keywordsClassifier) Key() string {
@@ -30,14 +22,25 @@ func (c keywordsClassifier) Priority() int {
 	return c.priority
 }
 
-func (c keywordsClassifier) Classify(_ context.Context, torrent model.Torrent) (classifier.Classification, error) {
-	if !c.regex.MatchString(torrent.Name) {
+func (c keywordsClassifier) Classify(_ context.Context, t model.Torrent) (classifier.Classification, error) {
+	if !t.Hint.IsNil() || !c.regex.MatchString(t.Name) {
 		return classifier.Classification{}, classifier.ErrNoMatch
 	}
-	return classifier.Classification{
+	if len(c.requiredFileTypes) > 0 {
+		hasRequiredFileTypes := t.HasFileType(c.requiredFileTypes...)
+		if hasRequiredFileTypes.Valid && !hasRequiredFileTypes.Bool {
+			return classifier.Classification{}, classifier.ErrNoMatch
+		}
+	}
+	cl := classifier.Classification{
 		ContentType: model.NullContentType{
 			Valid:       true,
 			ContentType: c.contentType,
 		},
-	}, nil
+	}
+	hasVideo := t.HasFileType(model.FileTypeVideo)
+	if hasVideo.Valid && hasVideo.Bool {
+		cl.InferVideoAttributes(t.Name)
+	}
+	return cl, nil
 }

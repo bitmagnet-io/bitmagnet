@@ -292,6 +292,11 @@ const contentTypes: Record<generated.ContentType | "null", ContentTypeInfo> = {
     plural: "E-Books",
     icon: "auto_stories",
   },
+  comic: {
+    singular: "Comic",
+    plural: "Comics",
+    icon: "comic_bubble",
+  },
   audiobook: {
     singular: "Audiobook",
     plural: "Audiobooks",
