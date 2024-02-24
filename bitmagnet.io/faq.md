@@ -30,7 +30,7 @@ If everything is working, **bitmagnet** should begin showing torrents in the web
 - Visit the metrics endpoint at `/metrics` and check the following metrics:
   - `bitmagnet_dht_crawler_persisted_total`: If you see a positive number for this, the DHT crawler is working and has found torrents.
   - If torrents are being persisted but you still don't see them in the UI, then check:`bitmagnet_queue_jobs_total{queue="process_torrent",status="processed"}`: If you see a positive number here, then the queue worker is running and processing jobs. If you see `status="failed"` or `status="retry"`, but no `status="processed"`, then something is wrong.
-  - If no torrents are being persisted, check: `bitmagnet_dht_responder_query_success_total` and `bitmagnet_dht_responder_query_error_total`. Having some DHT query errors is completely normal, but if you see no successful queries then something is wrong.
+  - If no torrents are being persisted, check: `bitmagnet_dht_server_query_success_total` and `bitmagnet_dht_server_query_error_total`. Having some DHT query errors is completely normal, but if you see no successful queries then something is wrong.
 - If the metrics confirm a problem, check the logs for errors.
 
 ## Why doesn't **bitmagnet** show me exactly how many torrents it has indexed?
