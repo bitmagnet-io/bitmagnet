@@ -70,7 +70,7 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 				if t, ok := foundTorrents[r.infoHash]; !ok ||
 					t.FilesStatus == model.FilesStatusNoInfo ||
 					(t.FilesStatus != model.FilesStatusSingle && !t.FilesCount.Valid) ||
-					(t.FilesStatus == model.FilesStatusOverThreshold && t.FilesCount.Uint < c.saveFilesThreshold) {
+					(t.FilesStatus == model.FilesStatusOverThreshold && t.FilesCount.Uint <= c.saveFilesThreshold) {
 					select {
 					case <-ctx.Done():
 						return
