@@ -27,7 +27,7 @@ func NewDefaultConfig() Config {
 		ScalingFactor:                10,
 		BootstrapNodes:               adht.DefaultGlobalBootstrapHostPorts,
 		ReseedBootstrapNodesInterval: time.Minute,
-		SaveFilesThreshold:           50,
+		SaveFilesThreshold:           100,
 		SavePieces:                   false,
 		RescrapeThreshold:            time.Hour * 24 * 30,
 	}

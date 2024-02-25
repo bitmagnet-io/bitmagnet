@@ -22,6 +22,7 @@ type Torrent struct {
 	UpdatedAt   time.Time               `gorm:"column:updated_at;not null" json:"updatedAt"`
 	FilesStatus FilesStatus             `gorm:"column:files_status;not null" json:"filesStatus"`
 	Extension   NullString              `gorm:"column:extension;<-:false" json:"extension"`
+	FilesCount  NullUint                `gorm:"column:files_count" json:"filesCount"`
 	Hint        TorrentHint             `gorm:"foreignKey:InfoHash" json:"hint"`
 	Contents    []TorrentContent        `gorm:"foreignKey:InfoHash" json:"contents"`
 	Sources     []TorrentsTorrentSource `gorm:"foreignKey:InfoHash" json:"sources"`

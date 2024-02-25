@@ -35,6 +35,7 @@ func newTorrent(db *gorm.DB, opts ...gen.DOOption) torrent {
 	_torrent.UpdatedAt = field.NewTime(tableName, "updated_at")
 	_torrent.FilesStatus = field.NewField(tableName, "files_status")
 	_torrent.Extension = field.NewString(tableName, "extension")
+	_torrent.FilesCount = field.NewField(tableName, "files_count")
 	_torrent.Hint = torrentHasOneHint{
 		db: db.Session(&gorm.Session{}),
 
@@ -93,6 +94,7 @@ type torrent struct {
 	UpdatedAt   field.Time
 	FilesStatus field.Field
 	Extension   field.String
+	FilesCount  field.Field
 	Hint        torrentHasOneHint
 
 	Contents torrentHasManyContents
@@ -128,6 +130,7 @@ func (t *torrent) updateTableName(table string) *torrent {
 	t.UpdatedAt = field.NewTime(table, "updated_at")
 	t.FilesStatus = field.NewField(table, "files_status")
 	t.Extension = field.NewString(table, "extension")
+	t.FilesCount = field.NewField(table, "files_count")
 
 	t.fillFieldMap()
 
@@ -144,7 +147,7 @@ func (t *torrent) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (t *torrent) fillFieldMap() {
-	t.fieldMap = make(map[string]field.Expr, 14)
+	t.fieldMap = make(map[string]field.Expr, 15)
 	t.fieldMap["info_hash"] = t.InfoHash
 	t.fieldMap["name"] = t.Name
 	t.fieldMap["size"] = t.Size
@@ -153,6 +156,7 @@ func (t *torrent) fillFieldMap() {
 	t.fieldMap["updated_at"] = t.UpdatedAt
 	t.fieldMap["files_status"] = t.FilesStatus
 	t.fieldMap["extension"] = t.Extension
+	t.fieldMap["files_count"] = t.FilesCount
 
 }
 

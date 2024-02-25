@@ -506,12 +506,6 @@
                       @if (item(i).torrent.filesStatus === "no_info") {
                         <p>No file information available.</p>
                       }
-                      @if (item(i).torrent.filesStatus === "over_threshold") {
-                        <p>
-                          Files information was not saved as the number of files
-                          is over the configured threshold.
-                        </p>
-                      }
                       @if (item(i).torrent.filesStatus === "single") {
                         <p>
                           <strong>Single file:</strong> {{ item(i).torrent.name
@@ -525,6 +519,23 @@
                           }
                           <strong>File size:</strong>
                           {{ item(i).torrent.size | filesize }}
+                        </p>
+                      }
+                      @if (item(i).torrent.filesStatus === "multi") {
+                        <p>
+                          {{ item(i).torrent.files?.length | number }} files.
+                        </p>
+                      }
+                      @if (item(i).torrent.filesStatus === "over_threshold") {
+                        <p>
+                          Showing
+                          {{ item(i).torrent.files?.length | number }} of
+                          {{
+                            item(i).torrent.filesCount == null
+                              ? "?"
+                              : (item(i).torrent.filesCount | number)
+                          }}
+                          files.
                         </p>
                       }
                       @if (item(i).torrent.files?.length) {
