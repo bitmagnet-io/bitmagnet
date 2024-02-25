@@ -1,4 +1,9 @@
-import { AfterContentInit, AfterViewInit, Component } from "@angular/core";
+import {
+  AfterContentInit,
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+} from "@angular/core";
 import { BehaviorSubject, catchError, EMPTY, tap } from "rxjs";
 import { FormControl } from "@angular/forms";
 import {
@@ -29,6 +34,7 @@ import { TorrentContentSearchEngine } from "./torrent-content-search.engine";
       ),
     ]),
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TorrentContentComponent
   implements AfterContentInit, AfterViewInit

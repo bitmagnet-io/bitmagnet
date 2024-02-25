@@ -21,6 +21,7 @@ import { MatAutocompleteModule } from "@angular/material/autocomplete";
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatDividerModule } from "@angular/material/divider";
 import { MatCardModule } from "@angular/material/card";
+import { MatTooltip } from "@angular/material/tooltip";
 import { PaginatorModule } from "../paginator/paginator.module";
 import { TorrentContentComponent } from "./torrent-content/torrent-content.component";
 
@@ -51,6 +52,7 @@ import { TorrentContentComponent } from "./torrent-content/torrent-content.compo
     PaginatorModule,
     ReactiveFormsModule,
     NgOptimizedImage,
+    MatTooltip,
   ],
   exports: [TorrentContentComponent],
 })
