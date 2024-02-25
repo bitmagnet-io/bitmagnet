@@ -121,7 +121,7 @@
         <div class="button-refresh">
           <button
             mat-mini-fab
-            title="Refresh results"
+            matTooltip="Refresh results"
             color="primary"
             (click)="loadResult(false)"
           >
@@ -195,7 +195,7 @@
                   color="primary"
                   [disabled]="!selectedItems.hasValue()"
                   (click)="setTags()"
-                  title="Replace tags of the selected torrents"
+                  matTooltip="Replace tags of the selected torrents"
                 >
                   Set tags
                 </button>
@@ -207,7 +207,7 @@
                     (!editedTags.length && !newTagCtrl.value)
                   "
                   (click)="putTags()"
-                  title="Add tags to the selected torrents"
+                  matTooltip="Add tags to the selected torrents"
                 >
                   Put tags
                 </button>
@@ -219,7 +219,7 @@
                     (!editedTags.length && !newTagCtrl.value)
                   "
                   (click)="deleteTags()"
-                  title="Remove tags from the selected torrents"
+                  matTooltip="Remove tags from the selected torrents"
                 >
                   Delete tags
                 </button>
@@ -361,7 +361,7 @@
 
         <ng-container matColumnDef="peers">
           <th mat-header-cell *matHeaderCellDef>
-            <abbr title="Seeders / Leechers">S / L</abbr>
+            <abbr matTooltip="Seeders / Leechers">S / L</abbr>
           </th>
           <td mat-cell *matCellDef="let i">
             {{ item(i).torrent.seeders ?? "?" }} /
@@ -398,6 +398,7 @@
               ) {
                 <img
                   [ngSrc]="'https://image.tmdb.org/t/p/w300/' + posterPath"
+                  alt="Poster"
                   class="poster"
                   width="300"
                   height="450"
@@ -408,7 +409,7 @@
                 <strong>Info hash:</strong>
                 <span
                   class="info-hash"
-                  title="Copy to clipboard"
+                  matTooltip="Copy to clipboard"
                   [cdkCopyToClipboard]="item(i).infoHash"
                   >{{ item(i).infoHash }}</span
                 >
