@@ -71,6 +71,14 @@ Worth noting, the PostgreSQL database is seamlessly configured and installed alo
 
 ![Bitmagnet Scale App](/assets/images/bitmagnet-scale-app.png)
 
+### Addons
+
+We offer a vpn addon by Gluetun; which is super easy to configure per app; just follow our guide [here](https://truecharts.org/manual/SCALE/guides/vpn-setup).
+
+Make sure to follow Gluetun's upstream docs for your vpn serivice; we recommend to setup gluetun by env variabes.
+
+![TrueCharts Gluetun Addon](/assets/images/truechart-gluetun-addon.png)
+
 ## go install
 
 You can also install **bitmagnet** natively with `go install github.com/bitmagnet-io/bitmagnet`. If you choose this method you will need to [configure]({% link setup/configuration.md %}) (at a minimum) a Postgres instance for bitmagnet to connect to.
