@@ -183,6 +183,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 			tag.Remove("default")
 			return tag
 		}),
+		gen.FieldType("files_count", "NullUint"),
 		gen.FieldGenType("extension", "String"),
 		gen.FieldGORMTag("extension", func(tag field.GormTag) field.GormTag {
 			tag.Set("<-", "false")
