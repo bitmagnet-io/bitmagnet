@@ -69,7 +69,7 @@ You can also install **bitmagnet** natively with `go install github.com/bitmagne
 
 Community members have developed the following packages; these are not maintained under the **bitmagnet** project:
 
-- [@davispuh](https://github.com/davispuh){:target="\_blank"} has published [an Arch package in the AUR repository](https://aur.archlinux.org/packages/bitmagnet-git){:target="\_blank"}.
+- [@davispuh](https://github.com/davispuh){:target="\_blank"} has published an Arch package, [`bitmagnet-git`](https://aur.archlinux.org/packages/bitmagnet-git){:target="\_blank"}, in the AUR repository.
 
 ## Running the CLI
 
