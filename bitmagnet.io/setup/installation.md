@@ -5,8 +5,6 @@ layout: default
 nav_order: 1
 ---
 
-# Installation
-
 ## Docker
 
 The quickest way to get up-and-running with **bitmagnet** is with [Docker Compose](https://docs.docker.com/compose/){:target="\_blank"}. The following `docker-compose.yml` is a minimal example. For a more full-featured example including VPN routing and observability services see the [docker compose configuration in the GitHub repository](https://github.com/bitmagnet-io/bitmagnet/blob/main/docker-compose.yml){:target="\_blank"}.
@@ -60,6 +58,16 @@ services:
 ```
 
 After running `docker compose up -d` you should be able to access the web interface at `http://localhost:3333`. The DHT crawler should have started and you should see items appear in the web UI within around a minute.
+
+## TrueNas Scale
+
+To effortlessly kickstart your journey with bitmagnet, integrate the [TrueCharts catalog](https://truecharts.org/manual/SCALE/guides/getting-started#adding-truecharts) and proceed with app installation on TrueNAS Scale.
+
+Optionally, you can configure the `TMDB API Key` by following the guidelines outlined [here](configuration.md#obtaining-a-tmdb-api-key).
+
+Worth noting, the PostgreSQL database is seamlessly configured and installed alongside the app. Just ensure to meticulously adhere to the getting started guide, installing all the recommended operators before initiating the app installation process.
+
+![Bitmagnet Scale App](/assets/images/bitmagnet-scale-app.png)
 
 ## go install
 
