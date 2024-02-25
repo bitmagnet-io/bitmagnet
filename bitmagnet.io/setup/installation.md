@@ -65,6 +65,13 @@ After running `docker compose up -d` you should be able to access the web interf
 
 You can also install **bitmagnet** natively with `go install github.com/bitmagnet-io/bitmagnet`. If you choose this method you will need to [configure]({% link setup/configuration.md %}) (at a minimum) a Postgres instance for bitmagnet to connect to.
 
+## Unofficial Packages and Installation Methods
+
+Community members have developed the following packages; these are not maintained under the **bitmagnet** project:
+
+- [@davispuh](https://github.com/davispuh){:target="\_blank"} has published [an Arch package in the AUR repository](https://aur.archlinux.org/packages/bitmagnet-git){:target="\_blank"}.
+- [TrueCharts](https://truecharts.org/){:target="\_blank"} have published [a TrueNAS SCALE chart](https://truecharts.org/charts/stable/bitmagnet/).
+
 ## Running the CLI
 
 The **bitmagnet** CLI is the entrypoint into the application. Take note of the command needed to run the CLI, depending on your installation method.
