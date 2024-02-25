@@ -48,6 +48,7 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 			if queryErr := c.dao.Torrent.WithContext(ctx).Select(
 				c.dao.Torrent.InfoHash,
 				c.dao.Torrent.FilesStatus,
+				c.dao.Torrent.FilesCount,
 				c.dao.TorrentsTorrentSource.Seeders,
 				c.dao.TorrentsTorrentSource.Leechers,
 				c.dao.TorrentsTorrentSource.UpdatedAt,
