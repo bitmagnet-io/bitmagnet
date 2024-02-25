@@ -65,6 +65,8 @@ To effortlessly kickstart your journey with bitmagnet, integrate the [TrueCharts
 
 Optionally, you can configure the `TMDB API Key` by following the guidelines outlined [here](configuration.md#obtaining-a-tmdb-api-key).
 
+![Bitmagnet Config Options](/assets/images/bitmagnent-scale-app-config.png)
+
 Worth noting, the PostgreSQL database is seamlessly configured and installed alongside the app. Just ensure to meticulously adhere to the getting started guide, installing all the recommended operators before initiating the app installation process.
 
 ![Bitmagnet Scale App](/assets/images/bitmagnet-scale-app.png)
