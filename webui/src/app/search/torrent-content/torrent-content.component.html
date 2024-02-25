@@ -150,80 +150,82 @@
             Edit tags
           </ng-template>
 
-          <mat-card>
-            <mat-form-field class="form-edit-tags">
-              <mat-chip-grid #chipGrid aria-label="Enter tags">
-                @for (tagName of editedTags; let j = $index; track tagName) {
-                  <mat-chip-row
-                    [editable]="true"
-                    (edited)="renameTag(tagName, $event.value)"
-                    (removed)="deleteTag(tagName)"
-                    [aria-description]="'press enter to edit'"
-                  >
-                    {{ tagName }}
-                    <button
-                      matChipRemove
-                      [attr.aria-label]="'remove ' + tagName"
+          <ng-template matTabContent>
+            <mat-card>
+              <mat-form-field class="form-edit-tags">
+                <mat-chip-grid #chipGrid aria-label="Enter tags">
+                  @for (tagName of editedTags; let j = $index; track tagName) {
+                    <mat-chip-row
+                      [editable]="true"
+                      (edited)="renameTag(tagName, $event.value)"
+                      (removed)="deleteTag(tagName)"
+                      [aria-description]="'press enter to edit'"
                     >
-                      <mat-icon>cancel</mat-icon>
-                    </button>
-                  </mat-chip-row>
-                }
-              </mat-chip-grid>
-              <input
-                placeholder="Tag..."
-                [formControl]="newTagCtrl"
-                [matAutocomplete]="auto"
-                [matChipInputFor]="chipGrid"
-                [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-                (matChipInputTokenEnd)="$event.value && addTag($event.value)"
-                [value]="newTagCtrl.value"
-              />
-              <mat-autocomplete
-                #auto="matAutocomplete"
-                (optionSelected)="addTag($event.option.viewValue)"
-              >
-                @for (tagName of suggestedTags; track tagName) {
-                  <mat-option [value]="tagName">{{ tagName }}</mat-option>
-                }
-              </mat-autocomplete>
-            </mat-form-field>
-            <mat-card-actions class="button-row">
-              <button
-                mat-stroked-button
-                color="primary"
-                [disabled]="!selectedItems.hasValue()"
-                (click)="setTags()"
-                title="Replace tags of the selected torrents"
-              >
-                Set tags
-              </button>
-              <button
-                mat-stroked-button
-                color="primary"
-                [disabled]="
-                  !selectedItems.hasValue() ||
-                  (!editedTags.length && !newTagCtrl.value)
-                "
-                (click)="putTags()"
-                title="Add tags to the selected torrents"
-              >
-                Put tags
-              </button>
-              <button
-                mat-stroked-button
-                color="primary"
-                [disabled]="
-                  !selectedItems.hasValue() ||
-                  (!editedTags.length && !newTagCtrl.value)
-                "
-                (click)="deleteTags()"
-                title="Remove tags from the selected torrents"
-              >
-                Delete tags
-              </button>
-            </mat-card-actions>
-          </mat-card>
+                      {{ tagName }}
+                      <button
+                        matChipRemove
+                        [attr.aria-label]="'remove ' + tagName"
+                      >
+                        <mat-icon>cancel</mat-icon>
+                      </button>
+                    </mat-chip-row>
+                  }
+                </mat-chip-grid>
+                <input
+                  placeholder="Tag..."
+                  [formControl]="newTagCtrl"
+                  [matAutocomplete]="auto"
+                  [matChipInputFor]="chipGrid"
+                  [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                  (matChipInputTokenEnd)="$event.value && addTag($event.value)"
+                  [value]="newTagCtrl.value"
+                />
+                <mat-autocomplete
+                  #auto="matAutocomplete"
+                  (optionSelected)="addTag($event.option.viewValue)"
+                >
+                  @for (tagName of suggestedTags; track tagName) {
+                    <mat-option [value]="tagName">{{ tagName }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+              <mat-card-actions class="button-row">
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  [disabled]="!selectedItems.hasValue()"
+                  (click)="setTags()"
+                  title="Replace tags of the selected torrents"
+                >
+                  Set tags
+                </button>
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  [disabled]="
+                    !selectedItems.hasValue() ||
+                    (!editedTags.length && !newTagCtrl.value)
+                  "
+                  (click)="putTags()"
+                  title="Add tags to the selected torrents"
+                >
+                  Put tags
+                </button>
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  [disabled]="
+                    !selectedItems.hasValue() ||
+                    (!editedTags.length && !newTagCtrl.value)
+                  "
+                  (click)="deleteTags()"
+                  title="Remove tags from the selected torrents"
+                >
+                  Delete tags
+                </button>
+              </mat-card-actions>
+            </mat-card>
+          </ng-template>
         </mat-tab>
 
         <mat-tab>
@@ -232,27 +234,29 @@
             Delete
           </ng-template>
 
-          <mat-card>
-            <mat-card-content>
-              <p>
-                <strong
-                  >Are you sure you want to delete the selected
-                  torrents?</strong
+          <ng-template matTabContent>
+            <mat-card>
+              <mat-card-content>
+                <p>
+                  <strong
+                    >Are you sure you want to delete the selected
+                    torrents?</strong
+                  >
+                  <br />This action cannot be undone.
+                </p>
+              </mat-card-content>
+              <mat-card-actions class="button-row">
+                <button
+                  mat-stroked-button
+                  color="warn"
+                  [disabled]="!selectedItems.hasValue()"
+                  (click)="deleteTorrents(selectedInfoHashes())"
                 >
-                <br />This action cannot be undone.
-              </p>
-            </mat-card-content>
-            <mat-card-actions class="button-row">
-              <button
-                mat-stroked-button
-                color="warn"
-                [disabled]="!selectedItems.hasValue()"
-                (click)="deleteTorrents(selectedInfoHashes())"
-              >
-                <mat-icon>delete_forever</mat-icon>Delete
-              </button>
-            </mat-card-actions>
-          </mat-card>
+                  <mat-icon>delete_forever</mat-icon>Delete
+                </button>
+              </mat-card-actions>
+            </mat-card>
+          </ng-template>
         </mat-tab>
         @if (selectedTabIndex > 0) {
           <mat-tab>
@@ -501,7 +505,8 @@
                     <mat-icon>file_present</mat-icon>
                     Files
                   </ng-template>
-                  @if (expandedItem.id === i.id) {
+
+                  <ng-template matTabContent>
                     <mat-card class="torrent-files">
                       @if (item(i).torrent.filesStatus === "no_info") {
                         <p>No file information available.</p>
@@ -570,7 +575,7 @@
                         </table>
                       }
                     </mat-card>
-                  }
+                  </ng-template>
                 </mat-tab>
 
                 <mat-tab>
@@ -578,7 +583,7 @@
                     <mat-icon>sell</mat-icon>
                     Edit tags
                   </ng-template>
-                  @if (expandedItem.id === i.id) {
+                  <ng-template matTabContent>
                     <mat-card>
                       <mat-form-field class="form-edit-tags">
                         <mat-chip-grid #chipGrid aria-label="Enter tags">
@@ -633,7 +638,7 @@
                         </mat-autocomplete>
                       </mat-form-field>
                     </mat-card>
-                  }
+                  </ng-template>
                 </mat-tab>
 
                 <mat-tab>
@@ -642,7 +647,7 @@
                     Delete
                   </ng-template>
 
-                  @if (expandedItem.id === i.id) {
+                  <ng-template matTabContent>
                     <mat-card>
                       <mat-card-content style="margin-top: 10px">
                         <p>
@@ -663,7 +668,7 @@
                         </button>
                       </mat-card-actions>
                     </mat-card>
-                  }
+                  </ng-template>
                 </mat-tab>
                 @if (expandedItem.selectedTabIndex > 0) {
                   <mat-tab>
