@@ -218,7 +218,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "${DS_LOKI}"
       },
       "gridPos": {
         "h": 8,
@@ -241,7 +241,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "${DS_LOKI}"
           },
           "editorMode": "code",
           "expr": "{job=\"bitmagnet\"} | json | severity = \"WARNING\" or severity = \"ERROR\"",
@@ -1422,7 +1422,7 @@
         },
         "hide": 0,
         "includeAll": false,
-        "label": "datasource",
+        "label": "Prometheus Datasource",
         "multi": false,
         "name": "DS_PROMETHEUS",
         "options": [],
@@ -1431,8 +1431,27 @@
         "regex": "",
         "skipUrlSync": false,
         "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "No data sources found",
+          "value": ""
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Loki Datasource",
+        "multi": false,
+        "name": "DS_LOKI",
+        "options": [],
+        "query": "loki",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
       }
-      ]
+    ]
   },
   "time": {
     "from": "now-6h",
@@ -1440,8 +1459,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "bitmagnet",
+  "title": "Bitmagnet",
   "uid": "c0abadd0-6633-40c4-a2fc-01408a8dfc4e",
-  "version": 1,
+  "version": 3,
   "weekStart": ""
 }
