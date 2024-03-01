@@ -1434,9 +1434,9 @@
       },
       {
         "current": {
-          "selected": true,
-          "text": "No data sources found",
-          "value": ""
+          "selected": false,
+          "text": "Loki",
+          "value": "loki"
         },
         "hide": 0,
         "includeAll": false,
