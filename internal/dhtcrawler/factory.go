@@ -96,6 +96,7 @@ func New(params Params) Result {
 						saveFilesThreshold: params.Config.SaveFilesThreshold,
 						savePieces:         params.Config.SavePieces,
 						rescrapeThreshold:  params.Config.RescrapeThreshold,
+						saveFailed:         params.Config.SaveFailed,
 						dao:                query,
 						ignoreHashes: &ignoreHashes{
 							bloom: boom.NewStableBloomFilter(10_000_000, 2, 0.001),

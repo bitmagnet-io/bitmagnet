@@ -72,6 +72,7 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 				return nil
 			}); persistErr != nil {
 				c.logger.Errorf("error persisting torrents: %s", persistErr)
+				c.saveTorrentsInfo(is);
 			} else {
 				c.persistedTotal.With(prometheus.Labels{"entity": "Torrent"}).Add(float64(len(ts)))
 				c.logger.Debugw("persisted torrents", "count", len(ts))

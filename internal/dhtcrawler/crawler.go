@@ -42,6 +42,7 @@ type crawler struct {
 	rescrapeThreshold            time.Duration
 	saveFilesThreshold           uint
 	savePieces                   bool
+	saveFailed                   bool
 	dao                          *dao.Query
 	// ignoreHashes is a thread-safe bloom filter that the crawler keeps in memory, containing every hash it has already encountered.
 	// This avoids multiple attempts to crawl the same hash, and takes a lot of load off the database query that checks if a hash

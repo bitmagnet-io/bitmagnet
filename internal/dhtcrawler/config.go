@@ -20,6 +20,9 @@ type Config struct {
 	SavePieces bool
 	// RescrapeThreshold is the amount of time that must pass before a torrent is rescraped to count seeders and leechers.
 	RescrapeThreshold time.Duration
+	// SaveFailed when true then torrents that fail to save to DB will be saved on disk
+	// useful to investigate failures
+	SaveFailed bool
 }
 
 func NewDefaultConfig() Config {
