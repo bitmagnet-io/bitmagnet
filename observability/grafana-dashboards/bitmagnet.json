@@ -77,7 +77,8 @@
               }
             ]
           },
-          "unit": "decbytes"
+          "unit": "decbytes",
+          "unitScale": true
         },
         "overrides": []
       },
@@ -109,7 +110,7 @@
           "editorMode": "code",
           "expr": "bitmagnet_process_resident_memory_bytes",
           "key": "Q-f7259626-8be6-4eaf-8b4a-d43f5f6650e8-0",
-          "legendFormat": "__auto",
+          "legendFormat": "Process Memory",
           "range": true,
           "refId": "A"
         }
@@ -172,7 +173,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -203,8 +205,8 @@
           },
           "editorMode": "code",
           "expr": "rate(bitmagnet_dht_crawler_persisted_total[$__rate_interval])*60",
-          "instant": true,
-          "legendFormat": "__auto",
+          "instant": false,
+          "legendFormat": "{{entity}}",
           "range": true,
           "refId": "A"
         }
@@ -304,7 +306,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -339,7 +342,7 @@
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "key": "Q-ed5d19ae-0667-4b4d-86f3-6bcd25acffad-0",
-          "legendFormat": "__auto",
+          "legendFormat": "{{query}}",
           "range": true,
           "refId": "A",
           "useBackend": false
@@ -403,7 +406,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -434,8 +438,8 @@
           },
           "editorMode": "code",
           "expr": "rate(bitmagnet_dht_server_query_error_total[$__rate_interval])",
-          "instant": true,
-          "legendFormat": "__auto",
+          "instant": false,
+          "legendFormat": "{{query}}",
           "range": true,
           "refId": "A"
         }
@@ -498,7 +502,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -528,9 +533,10 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
+          "exemplar": false,
           "expr": "histogram_quantile(0.5, bitmagnet_dht_server_query_duration_seconds_bucket)",
-          "instant": true,
-          "legendFormat": "__auto",
+          "instant": false,
+          "legendFormat": "{{query}}",
           "range": true,
           "refId": "A"
         }
@@ -593,7 +599,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -624,8 +631,8 @@
           },
           "editorMode": "code",
           "expr": "bitmagnet_dht_server_query_concurrency",
-          "instant": true,
-          "legendFormat": "__auto",
+          "instant": false,
+          "legendFormat": "{{query}}",
           "range": true,
           "refId": "A"
         }
@@ -688,7 +695,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -719,8 +727,8 @@
           },
           "editorMode": "code",
           "expr": "rate(bitmagnet_meta_info_requester_success_total[$__rate_interval])",
-          "instant": true,
-          "legendFormat": "__auto",
+          "instant": false,
+          "legendFormat": "Requests",
           "range": true,
           "refId": "A"
         }
@@ -783,7 +791,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -814,8 +823,8 @@
           },
           "editorMode": "code",
           "expr": "rate(bitmagnet_meta_info_requester_error_total[$__rate_interval])",
-          "instant": true,
-          "legendFormat": "__auto",
+          "instant": false,
+          "legendFormat": "Requests",
           "range": true,
           "refId": "A"
         }
@@ -878,7 +887,9 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "s",
+          "unitScale": true
         },
         "overrides": []
       },
@@ -909,8 +920,8 @@
           },
           "editorMode": "code",
           "expr": "histogram_quantile(0.5, bitmagnet_meta_info_requester_duration_seconds_bucket)",
-          "instant": true,
-          "legendFormat": "__auto",
+          "instant": false,
+          "legendFormat": "Latency",
           "range": true,
           "refId": "A"
         }
@@ -973,7 +984,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -1004,8 +1016,8 @@
           },
           "editorMode": "code",
           "expr": "bitmagnet_meta_info_requester_concurrency",
-          "instant": true,
-          "legendFormat": "__auto",
+          "instant": false,
+          "legendFormat": "{{__name__}}",
           "range": true,
           "refId": "A"
         }
@@ -1068,7 +1080,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -1099,7 +1112,7 @@
           },
           "editorMode": "code",
           "expr": "rate(bitmagnet_classifier_success_total[$__rate_interval])*60",
-          "instant": true,
+          "instant": false,
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -1163,7 +1176,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -1258,7 +1272,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -1289,8 +1304,8 @@
           },
           "editorMode": "code",
           "expr": "rate(bitmagnet_dht_responder_query_success_total[$__rate_interval])",
-          "instant": true,
-          "legendFormat": "__auto",
+          "instant": false,
+          "legendFormat": "{{query}}",
           "range": true,
           "refId": "A"
         }
@@ -1353,7 +1368,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -1384,8 +1400,8 @@
           },
           "editorMode": "code",
           "expr": "rate(bitmagnet_dht_responder_query_error_total[$__rate_interval])",
-          "instant": true,
-          "legendFormat": "__auto",
+          "instant": false,
+          "legendFormat": "{{query}}",
           "range": true,
           "refId": "A"
         }
@@ -1395,13 +1411,13 @@
     }
   ],
   "refresh": "10s",
-  "schemaVersion": 38,
+  "schemaVersion": 39,
   "tags": [],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-24h",
     "to": "now"
   },
   "timepicker": {},
