@@ -72,7 +72,7 @@ func (t Torrent) FileExtensions() []string {
 	switch t.FilesStatus {
 	case FilesStatusSingle:
 		exts := make([]string, 0, 1)
-		ext := fileExtensionFromPath(t.Name)
+		ext := FileExtensionFromPath(t.Name)
 		if ext.Valid {
 			exts = append(exts, ext.String)
 		}
@@ -81,7 +81,7 @@ func (t Torrent) FileExtensions() []string {
 		exts := make([]string, 0, len(t.Files))
 		extMap := make(map[string]struct{})
 		for _, file := range t.Files {
-			ext := fileExtensionFromPath(file.Path)
+			ext := FileExtensionFromPath(file.Path)
 			if ext.Valid {
 				if _, ok := extMap[ext.String]; !ok {
 					extMap[ext.String] = struct{}{}

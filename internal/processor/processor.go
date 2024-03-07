@@ -9,6 +9,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor/workflow"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"golang.org/x/sync/semaphore"
 	"gorm.io/gen/field"
@@ -19,8 +20,9 @@ type Processor interface {
 }
 
 type processor struct {
-	search           search.Search
-	classifier       classifier.Classifier
+	search   search.Search
+	workflow workflow.Workflow
+	//classifier       classifier.Classifier
 	dao              *dao.Query
 	processSemaphore *semaphore.Weighted
 	persistSemaphore *semaphore.Weighted
@@ -61,6 +63,7 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 	}
 	tcs := make([]model.TorrentContent, 0, len(searchResult.Torrents))
 	var deleteIds []string
+	var deleteInfoHashes []protocol.ID
 	for _, torrent := range searchResult.Torrents {
 		thisDeleteIds := make(map[string]struct{}, len(torrent.Contents))
 		foundMatch := false
@@ -78,14 +81,17 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 				foundMatch = true
 			}
 		}
-		useClassifier := c.classifier
-		if params.ClassifyMode == ClassifyModeSkipUnmatched && torrent.Hint.IsNil() {
-			useClassifier = classifier.FallbackClassifier{}
-		}
-		classification, classifyErr := useClassifier.Classify(ctx, torrent)
+		//if params.ClassifyMode == ClassifyModeSkipUnmatched && torrent.Hint.IsNil() {
+		//	useClassifier = classifier.FallbackClassifier{}
+		//}
+		classification, classifyErr := c.workflow.Run(ctx, torrent)
 		if classifyErr != nil {
-			errs = append(errs, classifyErr)
-			failedHashes = append(failedHashes, torrent.InfoHash)
+			if errors.Is(classifyErr, workflow.ErrDeleteTorrent) {
+				deleteInfoHashes = append(deleteInfoHashes, torrent.InfoHash)
+			} else {
+				errs = append(errs, classifyErr)
+				failedHashes = append(failedHashes, torrent.InfoHash)
+			}
 			continue
 		}
 		torrentContent := newTorrentContent(torrent, classification)
@@ -115,7 +121,11 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 	if len(tcs) == 0 {
 		return nil
 	}
-	if persistErr := c.persist(ctx, tcs, deleteIds); persistErr != nil {
+	if persistErr := c.persist(ctx, persistPayload{
+		torrentContents:  tcs,
+		deleteIds:        deleteIds,
+		deleteInfoHashes: deleteInfoHashes,
+	}); persistErr != nil {
 		return persistErr
 	}
 	return nil

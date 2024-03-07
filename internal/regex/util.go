@@ -131,7 +131,13 @@ func RegexTokensFromNames(names ...string) []dialect.Token {
 		return len(names[i]) > len(names[j])
 	})
 	var tokens []dialect.Token
+	usedNames := make(map[string]struct{}, len(names))
 	for _, name := range names {
+		lowerName := strings.ToLower(name)
+		if _, ok := usedNames[lowerName]; ok {
+			continue
+		}
+		usedNames[lowerName] = struct{}{}
 		tokens = append(tokens, RegexTokenFromName(name))
 	}
 	return tokens

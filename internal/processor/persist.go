@@ -2,16 +2,24 @@ package processor
 
 import (
 	"context"
+	"database/sql/driver"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"gorm.io/gorm/clause"
 )
 
-func (c processor) persist(ctx context.Context, torrentContents []model.TorrentContent, deleteIds []string) error {
-	contentsMap := make(map[model.ContentRef]struct{}, len(torrentContents))
-	contentsPtr := make([]*model.Content, 0, len(torrentContents))
-	torrentContentsPtr := make([]*model.TorrentContent, 0, len(torrentContents))
-	for _, tc := range torrentContents {
+type persistPayload struct {
+	torrentContents  []model.TorrentContent
+	deleteIds        []string
+	deleteInfoHashes []protocol.ID
+}
+
+func (c processor) persist(ctx context.Context, payload persistPayload) error {
+	contentsMap := make(map[model.ContentRef]struct{}, len(payload.torrentContents))
+	contentsPtr := make([]*model.Content, 0, len(payload.torrentContents))
+	torrentContentsPtr := make([]*model.TorrentContent, 0, len(payload.torrentContents))
+	for _, tc := range payload.torrentContents {
 		tcCopy := tc
 		tcCopy.Torrent = model.Torrent{}
 		if tcCopy.ContentID.Valid && tcCopy.Content.CreatedAt.IsZero() {
@@ -39,9 +47,20 @@ func (c processor) persist(ctx context.Context, torrentContents []model.TorrentC
 				return createContentErr
 			}
 		}
-		if len(deleteIds) > 0 {
+		if len(payload.deleteInfoHashes) > 0 {
+			valuers := make([]driver.Valuer, 0, len(payload.deleteInfoHashes))
+			for _, infoHash := range payload.deleteInfoHashes {
+				valuers = append(valuers, infoHash)
+			}
+			if _, deleteErr := tx.Torrent.WithContext(ctx).Where(
+				c.dao.Torrent.InfoHash.In(valuers...),
+			).Delete(); deleteErr != nil {
+				return deleteErr
+			}
+		}
+		if len(payload.deleteIds) > 0 {
 			if _, deleteErr := tx.TorrentContent.WithContext(ctx).Where(
-				c.dao.TorrentContent.ID.In(deleteIds...),
+				c.dao.TorrentContent.ID.In(payload.deleteIds...),
 			).Delete(); deleteErr != nil {
 				return deleteErr
 			}

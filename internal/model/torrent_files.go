@@ -16,7 +16,7 @@ func (f *TorrentFile) BeforeCreate(tx *gorm.DB) (err error) {
 
 var fileExtensionRegex = regexp.MustCompile(`[^/.]\.([a-z0-9]+)$`)
 
-func fileExtensionFromPath(path string) NullString {
+func FileExtensionFromPath(path string) NullString {
 	match := fileExtensionRegex.FindStringSubmatch(strings.ToLower(path))
 	if len(match) == 2 {
 		return NewNullString(match[1])
@@ -25,7 +25,7 @@ func fileExtensionFromPath(path string) NullString {
 }
 
 func fileTypeFromPath(path string) NullFileType {
-	extension := fileExtensionFromPath(path)
+	extension := FileExtensionFromPath(path)
 	if extension.Valid {
 		return FileTypeFromExtension(extension.String)
 	}

@@ -1,4 +1,4 @@
-package video
+package parsers
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
@@ -159,25 +159,34 @@ func ParseTitleYearEpisodes(contentType model.NullContentType, input string) (st
 	return "", 0, nil, "", classifier.ErrNoMatch
 }
 
-func ParseContent(hintCt model.NullContentType, input string) (classifier.ContentAttributes, error) {
+func ParseVideoContent(hintCt model.NullContentType, input string) (classifier.ContentAttributes, error) {
 	title, year, episodes, rest, err := ParseTitleYearEpisodes(hintCt, input)
 	if err != nil {
-		return classifier.ContentAttributes{}, err
+		if !hintCt.Valid {
+			return classifier.ContentAttributes{}, err
+		}
+		rest = input
 	}
 	var ct model.ContentType
 	if hintCt.Valid {
 		ct = hintCt.ContentType
 	} else if len(episodes) > 0 {
 		ct = model.ContentTypeTvShow
-	} else {
+	} else if !year.IsNil() {
 		ct = model.ContentTypeMovie
+	} else {
+		return classifier.ContentAttributes{}, classifier.ErrNoMatch
 	}
 	if ct != model.ContentTypeTvShow {
 		episodes = nil
+		if year.IsNil() {
+			title = ""
+			rest = input
+		}
 	}
 	attrs := classifier.ContentAttributes{
 		ContentType:   model.NewNullContentType(ct),
-		BaseTitle:     model.NewNullString(title),
+		BaseTitle:     model.NullString{Valid: title != "", String: title},
 		Year:          year,
 		Episodes:      episodes,
 		Languages:     model.InferLanguages(rest),

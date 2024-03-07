@@ -18,7 +18,7 @@ func (c extensionClassifier) Priority() int {
 }
 
 func (c extensionClassifier) Classify(_ context.Context, t model.Torrent) (classifier.Classification, error) {
-	if !t.Hint.IsNil() || t.FilesStatus == model.FilesStatusNoInfo || t.FilesStatus == model.FilesStatusOverThreshold {
+	if !t.Hint.IsNil() || t.FilesStatus == model.FilesStatusNoInfo {
 		return classifier.Classification{}, classifier.ErrNoMatch
 	}
 	if t.FilesStatus == model.FilesStatusSingle {
