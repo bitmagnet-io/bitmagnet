@@ -1,13 +1,14 @@
 package httpserver
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type prometheusBuilder struct {
-	registry *prometheus.Registry
+	registry lazy.Lazy[*prometheus.Registry]
 }
 
 func (prometheusBuilder) Key() string {
@@ -15,7 +16,11 @@ func (prometheusBuilder) Key() string {
 }
 
 func (b prometheusBuilder) Apply(e *gin.Engine) error {
-	h := promhttp.HandlerFor(b.registry, promhttp.HandlerOpts{
+	r, err := b.registry.Get()
+	if err == nil {
+		return err
+	}
+	h := promhttp.HandlerFor(r, promhttp.HandlerOpts{
 		EnableOpenMetrics: true,
 	})
 	e.Any("/metrics", func(c *gin.Context) {
