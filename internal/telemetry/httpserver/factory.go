@@ -2,13 +2,14 @@ package httpserver
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpserver"
+	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
 )
 
 type Params struct {
 	fx.In
-	PrometheusRegistry *prometheus.Registry
+	PrometheusRegistry lazy.Lazy[*prometheus.Registry]
 }
 
 type Result struct {
