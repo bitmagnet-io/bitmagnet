@@ -7,7 +7,7 @@ import { VersionComponent } from './version/version.component';
 @NgModule({
   declarations: [VersionComponent],
   imports: [
-    CommonModule
+    CommonModule,
   ],
   exports: [VersionComponent],
 })

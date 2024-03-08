@@ -27,6 +27,6 @@ export class VersionComponent implements OnInit {
   }
 
   parseVersionFromRsp(data: Status) {
-    this.version = data?.component?.version || 'N/A';
+    this.version = data?.component?.version || defaultVersionName;
   }
 }
