@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 	"strconv"
+	"strings"
 )
 
 type Params struct {
@@ -84,9 +85,11 @@ func (b builder) Apply(e *gin.Engine) error {
 			return
 		}
 		var cats []int
-		for _, cat := range c.QueryArray(torznab.ParamCat) {
-			if intCat, err := strconv.Atoi(cat); err == nil {
-				cats = append(cats, intCat)
+		for _, csvCat := range c.QueryArray(torznab.ParamCat) {
+			for _, cat := range strings.Split(csvCat, ",") {
+				if intCat, err := strconv.Atoi(cat); err == nil {
+					cats = append(cats, intCat)
+				}
 			}
 		}
 		imdbId := model.NullString{}
