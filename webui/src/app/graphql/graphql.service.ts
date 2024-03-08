@@ -5,7 +5,7 @@ import * as generated from "./generated";
 
 @Injectable()
 export class GraphQLService {
-  constructor(private readonly apollo: Apollo) {}
+  constructor(private readonly apollo: Apollo) { }
 
   torrentContentSearch(
     input: generated.TorrentContentSearchQueryVariables,
@@ -95,6 +95,18 @@ export class GraphQLService {
         fetchPolicy,
       })
       .pipe(map((r) => r.data.torrent.suggestTags));
+  }
+
+  systemStatusQeury(): Observable<generated.SystemStatusQueryFetchResult> {
+    return this.apollo.query<
+      generated.SystemStatusQueryQuery,
+      generated.SystemStatusQueryQueryVariables
+    >({
+      query: generated.SystemStatusQueryDocument,
+      variables: {},
+      fetchPolicy,
+    })
+      .pipe(map((r) => r.data.system.fetch));
   }
 }
 

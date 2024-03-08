@@ -143,6 +143,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		System         func(childComplexity int) int
 		Torrent        func(childComplexity int) int
 		TorrentContent func(childComplexity int) int
 	}
@@ -162,6 +163,14 @@ type ComplexityRoot struct {
 	SuggestedTag struct {
 		Count func(childComplexity int) int
 		Name  func(childComplexity int) int
+	}
+
+	SystemStatusQuery struct {
+		Fetch func(childComplexity int, query *string) int
+	}
+
+	SystemStatusQueryFetchResult struct {
+		Version func(childComplexity int) int
 	}
 
 	Torrent struct {
@@ -310,6 +319,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Torrent(ctx context.Context) (gqlmodel.TorrentQuery, error)
 	TorrentContent(ctx context.Context) (gqlmodel.TorrentContentQuery, error)
+	System(ctx context.Context) (gen.SystemStatusQuery, error)
 }
 type TorrentResolver interface {
 	Sources(ctx context.Context, obj *model.Torrent) ([]gqlmodel.TorrentSource, error)
@@ -718,6 +728,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.Torrent(childComplexity), true
 
+	case "Query.system":
+		if e.complexity.Query.System == nil {
+			break
+		}
+
+		return e.complexity.Query.System(childComplexity), true
+
 	case "Query.torrent":
 		if e.complexity.Query.Torrent == nil {
 			break
@@ -787,6 +804,25 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SuggestedTag.Name(childComplexity), true
+
+	case "SystemStatusQuery.fetch":
+		if e.complexity.SystemStatusQuery.Fetch == nil {
+			break
+		}
+
+		args, err := ec.field_SystemStatusQuery_fetch_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.SystemStatusQuery.Fetch(childComplexity, args["query"].(*string)), true
+
+	case "SystemStatusQueryFetchResult.version":
+		if e.complexity.SystemStatusQueryFetchResult.Version == nil {
+			break
+		}
+
+		return e.complexity.SystemStatusQueryFetchResult.Version(childComplexity), true
 
 	case "Torrent.createdAt":
 		if e.complexity.Torrent.CreatedAt == nil {
@@ -1863,6 +1899,7 @@ type TorrentMutation {
 	{Name: "../../graphql/schema/query.graphqls", Input: `type Query {
   torrent: TorrentQuery!
   torrentContent: TorrentContentQuery!
+  system: SystemStatusQuery!
 }
 
 type TorrentQuery {
@@ -1888,6 +1925,14 @@ type TorrentContentQuery {
     query: SearchQueryInput
     facets: TorrentContentFacetsInput
   ): TorrentContentSearchResult!
+}
+
+type SystemStatusQuery {
+  fetch(query: String): SystemStatusQueryFetchResult!
+}
+
+type SystemStatusQueryFetchResult {
+  version: String
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/scalars.graphqls", Input: `scalar Hash20
@@ -2075,6 +2120,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_SystemStatusQuery_fetch_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["query"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("query"))
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["query"] = arg0
 	return args, nil
 }
 
@@ -4763,6 +4823,54 @@ func (ec *executionContext) fieldContext_Query_torrentContent(ctx context.Contex
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_system(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_system(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().System(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(gen.SystemStatusQuery)
+	fc.Result = res
+	return ec.marshalNSystemStatusQuery2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐSystemStatusQuery(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_system(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "fetch":
+				return ec.fieldContext_SystemStatusQuery_fetch(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SystemStatusQuery", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query___type(ctx, field)
 	if err != nil {
@@ -5233,6 +5341,106 @@ func (ec *executionContext) fieldContext_SuggestedTag_count(ctx context.Context,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SystemStatusQuery_fetch(ctx context.Context, field graphql.CollectedField, obj *gen.SystemStatusQuery) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SystemStatusQuery_fetch(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Fetch, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(gen.SystemStatusQueryFetchResult)
+	fc.Result = res
+	return ec.marshalNSystemStatusQueryFetchResult2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐSystemStatusQueryFetchResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SystemStatusQuery_fetch(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SystemStatusQuery",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "version":
+				return ec.fieldContext_SystemStatusQueryFetchResult_version(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SystemStatusQueryFetchResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_SystemStatusQuery_fetch_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SystemStatusQueryFetchResult_version(ctx context.Context, field graphql.CollectedField, obj *gen.SystemStatusQueryFetchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SystemStatusQueryFetchResult_version(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Version, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SystemStatusQueryFetchResult_version(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SystemStatusQueryFetchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -12495,6 +12703,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "system":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_system(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -12639,6 +12869,81 @@ func (ec *executionContext) _SuggestedTag(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var systemStatusQueryImplementors = []string{"SystemStatusQuery"}
+
+func (ec *executionContext) _SystemStatusQuery(ctx context.Context, sel ast.SelectionSet, obj *gen.SystemStatusQuery) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, systemStatusQueryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SystemStatusQuery")
+		case "fetch":
+			out.Values[i] = ec._SystemStatusQuery_fetch(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var systemStatusQueryFetchResultImplementors = []string{"SystemStatusQueryFetchResult"}
+
+func (ec *executionContext) _SystemStatusQueryFetchResult(ctx context.Context, sel ast.SelectionSet, obj *gen.SystemStatusQueryFetchResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, systemStatusQueryFetchResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SystemStatusQueryFetchResult")
+		case "version":
+			out.Values[i] = ec._SystemStatusQueryFetchResult_version(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -14567,6 +14872,14 @@ func (ec *executionContext) marshalNSuggestedTag2ᚕgithubᚗcomᚋbitmagnetᚑi
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalNSystemStatusQuery2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐSystemStatusQuery(ctx context.Context, sel ast.SelectionSet, v gen.SystemStatusQuery) graphql.Marshaler {
+	return ec._SystemStatusQuery(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSystemStatusQueryFetchResult2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐSystemStatusQueryFetchResult(ctx context.Context, sel ast.SelectionSet, v gen.SystemStatusQueryFetchResult) graphql.Marshaler {
+	return ec._SystemStatusQueryFetchResult(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNTorrent2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐTorrent(ctx context.Context, sel ast.SelectionSet, v model.Torrent) graphql.Marshaler {

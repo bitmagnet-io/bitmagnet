@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { statusFetchEndpoint } from "../../../environments/environment";
-import { Status } from '../status.type';
+import * as generated from "../../graphql/generated";
+import { GraphQLService } from 'src/app/graphql/graphql.service';
 
 const defaultVersionName = 'N/A';
 
@@ -15,18 +14,20 @@ export class VersionComponent implements OnInit {
 
   version: string = defaultVersionName;
 
-  constructor(private http: HttpClient) { }
+  constructor(private graphQLService: GraphQLService) { }
 
   ngOnInit(): void {
-    this.http.get<Status>(statusFetchEndpoint).subscribe({
+
+    this.graphQLService.systemStatusQeury().subscribe({
       next: this.parseVersionFromRsp.bind(this),
       error: () => {
         this.version = defaultVersionName;
       },
     });
+
   }
 
-  parseVersionFromRsp(data: Status) {
-    this.version = data?.component?.version || defaultVersionName;
+  parseVersionFromRsp(data: generated.SystemStatusQueryFetchResult) {
+    this.version = data?.version || defaultVersionName;
   }
 }

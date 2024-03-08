@@ -1,0 +1,7 @@
+query SystemStatusQuery($query: String) {
+    system {
+        fetch {
+            version
+        }
+    }
+}

@@ -235,6 +235,7 @@ export type Mutation = {
 
 export type Query = {
   __typename?: 'Query';
+  system: SystemStatusQuery;
   torrent: TorrentQuery;
   torrentContent: TorrentContentQuery;
 };
@@ -278,6 +279,21 @@ export type SuggestedTag = {
   __typename?: 'SuggestedTag';
   count: Scalars['Int']['output'];
   name: Scalars['String']['output'];
+};
+
+export type SystemStatusQuery = {
+  __typename?: 'SystemStatusQuery';
+  fetch: SystemStatusQueryFetchResult;
+};
+
+
+export type SystemStatusQueryFetchArgs = {
+  query?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type SystemStatusQueryFetchResult = {
+  __typename?: 'SystemStatusQueryFetchResult';
+  version?: Maybe<Scalars['String']['output']>;
 };
 
 export type Torrent = {
@@ -590,6 +606,13 @@ export type TorrentSetTagsMutationVariables = Exact<{
 
 export type TorrentSetTagsMutation = { __typename?: 'Mutation', torrent: { __typename?: 'TorrentMutation', setTags?: void | null } };
 
+export type SystemStatusQueryQueryVariables = Exact<{
+  query?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type SystemStatusQueryQuery = { __typename?: 'Query', system: { __typename?: 'SystemStatusQuery', fetch: { __typename?: 'SystemStatusQueryFetchResult', version?: string | null } } };
+
 export type TorrentContentSearchQueryVariables = Exact<{
   query?: InputMaybe<SearchQueryInput>;
   facets?: InputMaybe<TorrentContentFacetsInput>;
@@ -862,6 +885,26 @@ export const TorrentSetTagsDocument = gql`
   })
   export class TorrentSetTagsGQL extends Apollo.Mutation<TorrentSetTagsMutation, TorrentSetTagsMutationVariables> {
     override document = TorrentSetTagsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const SystemStatusQueryDocument = gql`
+    query SystemStatusQuery($query: String) {
+  system {
+    fetch {
+      version
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class SystemStatusQueryGQL extends Apollo.Query<SystemStatusQueryQuery, SystemStatusQueryQueryVariables> {
+    override document = SystemStatusQueryDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
