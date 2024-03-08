@@ -66,15 +66,17 @@ func NewTorrent(t model.Torrent) *Torrent {
 		leechers = &l
 	}
 	return &Torrent{
-		InfoHash:       t.InfoHash.String(),
-		Name:           t.Name,
-		Size:           int64(t.Size),
-		Files:          files,
-		FilesCount:     filesCount,
-		FilesSize:      filesSize,
-		FileExtensions: t.FileExtensions(),
-		Seeders:        seeders,
-		Leechers:       leechers,
+		InfoHash:           t.InfoHash.String(),
+		Name:               t.Name,
+		Size:               int64(t.Size),
+		Files:              files,
+		FilesCount:         filesCount,
+		FilesSize:          filesSize,
+		FileExtensions:     t.FileExtensions(),
+		Seeders:            seeders,
+		Leechers:           leechers,
+		HasHint:            !t.Hint.IsNil(),
+		HasHintedContentId: !t.Hint.IsNil() && t.Hint.ContentSource.Valid,
 	}
 }
 
@@ -112,14 +114,15 @@ func NewClassification(c classifier.Classification) *Classification {
 		releaseGroup = &c.ReleaseGroup.String
 	}
 	return &Classification{
-		ContentType:     NewContentType(c.ContentType),
-		Year:            year,
-		Languages:       languages,
-		Episodes:        episodes,
-		VideoResolution: videoResolution,
-		VideoSource:     videoSource,
-		VideoCodec:      videoCodec,
-		ReleaseGroup:    releaseGroup,
+		ContentType:        NewContentType(c.ContentType),
+		HasAttachedContent: c.Content != nil,
+		Year:               year,
+		Languages:          languages,
+		Episodes:           episodes,
+		VideoResolution:    videoResolution,
+		VideoSource:        videoSource,
+		VideoCodec:         videoCodec,
+		ReleaseGroup:       releaseGroup,
 	}
 }
 

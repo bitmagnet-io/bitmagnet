@@ -53,8 +53,9 @@ actions:
               else_action: no_match
           # exit the find_match without failing:
           - noop
+  # next, if we know a content ID that isn't already attached, try to attach it from the local `content` table:
   - if_else:
-      condition: "result.contentType in [contentType.movie, contentType.tv_show, contentType.xxx]"
+      condition: "torrent.hasHintedContentId && !result.hasAttachedContent"
       if_action:
         find_match:
           - attach_local_content_by_id
