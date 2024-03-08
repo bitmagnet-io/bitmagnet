@@ -40,6 +40,9 @@ func (s *socket) Send(remoteAddr netip.AddrPort, data []byte) error {
 func (s *socket) Receive(data []byte) (int, netip.AddrPort, error) {
 	n, sAddr, recvErr := windows.Recvfrom(s.fd, data, 0)
 	if recvErr != nil {
+		if ignoreReadFromError(recvErr) {
+			return 0, netip.AddrPort{}, nil
+		}
 		return n, netip.AddrPort{}, recvErr
 	}
 	addr, addrErr := sockaddrToAddrPort(sAddr)
@@ -47,6 +50,24 @@ func (s *socket) Receive(data []byte) (int, netip.AddrPort, error) {
 		return n, netip.AddrPort{}, addrErr
 	}
 	return n, addr, nil
+}
+
+// see https://github.com/bitmagnet-io/bitmagnet/pull/203 and https://github.com/anacrolix/dht/issues/16
+func ignoreReadFromError(err error) bool {
+	var errno syscall.Errno
+	if errors.As(err, &errno) {
+		switch errno {
+		case
+			windows.WSAENETRESET,
+			windows.WSAECONNRESET,
+			windows.WSAECONNABORTED,
+			windows.WSAECONNREFUSED,
+			windows.WSAENETUNREACH,
+			windows.WSAETIMEDOUT:
+			return true
+		}
+	}
+	return false
 }
 
 func addrPortToSockaddr(addr netip.AddrPort) (windows.Sockaddr, error) {

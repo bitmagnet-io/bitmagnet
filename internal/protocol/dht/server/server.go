@@ -71,12 +71,8 @@ func (s *server) read(ctx context.Context) {
 
 		n, from, err := s.socket.Receive(buffer)
 		if err != nil {
-			// Socket is probably closed; if we're not shutting down, and it's not a WSA transient error, then panic
+			// Socket is probably closed; if we're not shutting down then panic
 			if ctx.Err() == nil {
-				// see https://github.com/bitmagnet-io/bitmagnet/pull/203 and https://github.com/anacrolix/dht/issues/16
-				if ignoreReadFromError(err) {
-					continue
-				}
 				panic(fmt.Errorf("socket read error: %w", err))
 			}
 			return
