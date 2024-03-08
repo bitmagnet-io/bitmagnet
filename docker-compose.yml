@@ -6,7 +6,6 @@ services:
     container_name: bitmagnet
     image: ghcr.io/bitmagnet-io/bitmagnet:latest
     volumes:
-      - ./:/app
       # Mount data folder (currently only used for logs when file rotation is enabled):
       - ./data/bitmagnet:/root/.local/share/bitmagnet
     restart: unless-stopped
@@ -41,15 +40,14 @@ services:
       # BitTorrent ports:
       - "3334:3334/tcp"
       - "3334:3334/udp"
-    env_file:
-      # .env file containing your personal gluetun/VPN account config and credentials:
+    environment:
+      # Put your personal gluetun/VPN account config and credentials here:
       # (See https://github.com/qdm12/gluetun-wiki/tree/main/setup/providers)
-      - .env.gluetun
+      - VPN_SERVICE_PROVIDER=your_vpn_provider
     restart: always
     # Host names must be manually mapped here for bitmagnet to resolve them:
     extra_hosts:
       - "postgres:192.168.55.11"
-      - "redis:192.168.55.12"
     networks:
       bitmagnet:
         ipv4_address: 192.168.55.10

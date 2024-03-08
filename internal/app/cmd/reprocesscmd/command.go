@@ -11,6 +11,7 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"gorm.io/gen"
+	"strings"
 )
 
 type Params struct {
@@ -31,13 +32,20 @@ func New(p Params) (Result, error) {
 		Flags: []cli.Flag{
 			&cli.IntFlag{
 				Name:  "batchSize",
-				Value: 100,
+				Value: 1000,
+			},
+			&cli.StringSliceFlag{
+				Name:    "contentType",
+				Aliases: []string{"contentTypes"},
+				Usage: "reprocess only torrents with the specified content type(s) (e.g. '" +
+					strings.Join(model.ContentTypeNames(), "', '") +
+					"', or 'null' for unknown)",
 			},
 			&cli.StringFlag{
 				Name:  "classifyMode",
 				Value: "default",
 				Usage: "default (only attempt to match previously unmatched torrents);\n" +
-					"rematch (ignore any pre-existing classification and always classify from scratch);\n" +
+					"rematch (ignore any pre-existing match and always classify from scratch);\n" +
 					"skip (skip classification for previously unmatched torrents that don't have any hint)",
 			},
 		},
@@ -53,21 +61,46 @@ func New(p Params) (Result, error) {
 			default:
 				return cli.Exit("invalid classifyMode", 1)
 			}
-			println("queueing full reprocess...")
+			var contentTypes []string
+			var unknownContentType bool
+			for _, contentType := range ctx.StringSlice("contentType") {
+				if contentType == "null" {
+					unknownContentType = true
+				} else {
+					ct, err := model.ParseContentType(contentType)
+					if err != nil {
+						return err
+					}
+					contentTypes = append(contentTypes, ct.String())
+				}
+			}
 			d, err := p.Dao.Get()
 			if err != nil {
 				return err
 			}
+			println("queueing reprocess...")
+			var scopes []func(gen.Dao) gen.Dao
+			if len(contentTypes) > 0 || unknownContentType {
+				scopes = append(scopes, func(tx gen.Dao) gen.Dao {
+					sq := d.TorrentContent.Where(
+						d.TorrentContent.InfoHash.EqCol(d.Torrent.InfoHash),
+					).Where(d.TorrentContent.ContentType.In(contentTypes...))
+					if unknownContentType {
+						sq = sq.Or(d.TorrentContent.ContentType.IsNull())
+					}
+					return tx.Where(gen.Exists(sq))
+				})
+			}
 			batchSize := ctx.Int("batchSize")
 			torrentCount := int64(0)
-			if result, err := d.Torrent.WithContext(ctx.Context).Count(); err != nil {
+			if result, err := d.Torrent.WithContext(ctx.Context).Scopes(scopes...).Count(); err != nil {
 				return err
 			} else {
 				torrentCount = result
 			}
 			bar := progressbar.Default(torrentCount, "queuing torrents")
 			var torrentResult []*model.Torrent
-			if err := d.Torrent.WithContext(ctx.Context).FindInBatches(&torrentResult, batchSize, func(tx gen.Dao, _ int) error {
+			if err := d.Torrent.WithContext(ctx.Context).Scopes(scopes...).FindInBatches(&torrentResult, batchSize, func(tx gen.Dao, _ int) error {
 				infoHashes := make([]protocol.ID, 0, len(torrentResult))
 				for _, c := range torrentResult {
 					infoHashes = append(infoHashes, c.InfoHash)
@@ -75,7 +108,7 @@ func New(p Params) (Result, error) {
 				job, err := processor.NewQueueJob(processor.MessageParams{
 					ClassifyMode: classifyMode,
 					InfoHashes:   infoHashes,
-				})
+				}, model.QueueJobPriority(10))
 				if err != nil {
 					return err
 				}

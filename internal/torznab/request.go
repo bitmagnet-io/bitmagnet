@@ -9,6 +9,7 @@ type SearchRequest struct {
 	Type     string
 	Cats     []int
 	ImdbId   model.NullString
+	TmdbId   model.NullString
 	Season   model.NullInt
 	Episode  model.NullInt
 	Attrs    []string

@@ -11,11 +11,11 @@ require (
 	github.com/anacrolix/missinggo/v2 v2.7.3
 	github.com/anacrolix/torrent v1.53.3
 	github.com/bits-and-blooms/bloom/v3 v3.6.0
-	github.com/cyruzin/golang-tmdb v1.5.7
 	github.com/facette/natsort v0.0.0-20181210072756-2cd4dd1e2dcb
 	github.com/frankban/quicktest v1.14.6
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-playground/validator/v10 v10.17.0
+	github.com/go-resty/resty/v2 v2.11.0
 	github.com/grafana/pyroscope-go/godeltaprof v0.1.7
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/hedhyw/rex v0.6.0

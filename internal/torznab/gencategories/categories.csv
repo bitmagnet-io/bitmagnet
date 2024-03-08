@@ -18,7 +18,7 @@ id,name,supported
 3000,Audio,1
 3010,Audio/MP3,0
 3020,Audio/Video,0
-3030,Audio/Audiobook,0
+3030,Audio/Audiobook,1
 3040,Audio/Lossless,0
 4000,PC,1
 4010,PC/0day,0
@@ -47,7 +47,7 @@ id,name,supported
 6070,XXX/Other,1
 7000,Books,1
 7010,Books/Mags,0
-7020,Books/EBook,0
-7030,Books/Comics,0
+7020,Books/EBook,1
+7030,Books/Comics,1
 8000,Other,1
 8010,Other/Misc,0

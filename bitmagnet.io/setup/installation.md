@@ -61,9 +61,24 @@ services:
 
 After running `docker compose up -d` you should be able to access the web interface at `http://localhost:3333`. The DHT crawler should have started and you should see items appear in the web UI within around a minute.
 
+To upgrade your installation you can run:
+
+```sh
+docker compose down bitmagnet
+docker pull ghcr.io/bitmagnet-io/bitmagnet:latest
+docker compose up -d bitmagnet
+```
+
 ## go install
 
 You can also install **bitmagnet** natively with `go install github.com/bitmagnet-io/bitmagnet`. If you choose this method you will need to [configure]({% link setup/configuration.md %}) (at a minimum) a Postgres instance for bitmagnet to connect to.
+
+## Unofficial Packages and Installation Methods
+
+Community members have developed the following packages; these are not maintained under the **bitmagnet** project:
+
+- [@davispuh](https://github.com/davispuh){:target="\_blank"} has published an Arch package, `bitmagnet-git`, [in the AUR repository](https://aur.archlinux.org/packages/bitmagnet-git){:target="\_blank"}.
+- Your package could be here!
 
 ## Running the CLI
 

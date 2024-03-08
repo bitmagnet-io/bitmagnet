@@ -40,3 +40,9 @@ func QueueJobMaxRetries(maxRetries uint) QueueJobOption {
 		j.MaxRetries = maxRetries
 	}
 }
+
+func QueueJobPriority(priority int) QueueJobOption {
+	return func(j *QueueJob) {
+		j.Priority = priority
+	}
+}

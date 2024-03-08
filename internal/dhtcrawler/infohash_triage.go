@@ -48,6 +48,7 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 			if queryErr := c.dao.Torrent.WithContext(ctx).Select(
 				c.dao.Torrent.InfoHash,
 				c.dao.Torrent.FilesStatus,
+				c.dao.Torrent.FilesCount,
 				c.dao.TorrentsTorrentSource.Seeders,
 				c.dao.TorrentsTorrentSource.Leechers,
 				c.dao.TorrentsTorrentSource.UpdatedAt,
@@ -67,7 +68,10 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 			}
 			for h := range filteredHashMap {
 				r := reqMap[h]
-				if t, ok := foundTorrents[r.infoHash]; !ok || t.FilesStatus == model.FilesStatusNoInfo {
+				if t, ok := foundTorrents[r.infoHash]; !ok ||
+					t.FilesStatus == model.FilesStatusNoInfo ||
+					(t.FilesStatus != model.FilesStatusSingle && !t.FilesCount.Valid) ||
+					(t.FilesStatus == model.FilesStatusOverThreshold && t.FilesCount.Uint <= c.saveFilesThreshold) {
 					select {
 					case <-ctx.Done():
 						return
@@ -90,7 +94,8 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 type triageResult struct {
 	InfoHash    protocol.ID
 	FilesStatus model.FilesStatus
-	Seeders     model.NullInt
-	Leechers    model.NullInt
+	FilesCount  model.NullUint
+	Seeders     model.NullUint
+	Leechers    model.NullUint
 	UpdatedAt   time.Time
 }

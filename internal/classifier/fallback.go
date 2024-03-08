@@ -19,5 +19,9 @@ func (c FallbackClassifier) Priority() int {
 func (c FallbackClassifier) Classify(_ context.Context, t model.Torrent) (Classification, error) {
 	cl := Classification{}
 	cl.ApplyHint(t.Hint)
+	hasVideo := t.HasFileType(model.FileTypeVideo)
+	if hasVideo.Valid && hasVideo.Bool {
+		cl.InferVideoAttributes(t.Name)
+	}
 	return cl, nil
 }

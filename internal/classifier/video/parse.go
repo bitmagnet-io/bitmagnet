@@ -59,7 +59,7 @@ var titleEpisodesRegex = rex.New(
 	),
 ).MustCompile()
 
-var multiRegex = regex.NewRegexFromNames("multi")
+var multiRegex = regex.NewRegexFromNames("multi", "dual")
 
 var separatorToken = rex.Chars.Runes(" ._")
 
@@ -71,11 +71,18 @@ var titlePartRegex = rex.New(
 
 var trimTitleRegex = rex.New(
 	rex.Chars.Begin(),
-	rex.Group.NonCaptured(
-		rex.Chars.Single('['),
-		rex.Common.NotClass(rex.Chars.Single(']')).Repeat().OneOrMore(),
-		rex.Chars.Single(']'),
-	).Repeat().ZeroOrOne(),
+	rex.Group.Composite(
+		rex.Group.NonCaptured(
+			rex.Chars.Single('['),
+			rex.Common.NotClass(rex.Chars.Single(']')).Repeat().OneOrMore(),
+			rex.Chars.Single(']'),
+		),
+		rex.Group.NonCaptured(
+			rex.Chars.Single('【'),
+			rex.Common.NotClass(rex.Chars.Single('】')).Repeat().OneOrMore(),
+			rex.Chars.Single('】'),
+		),
+	).NonCaptured().Repeat().ZeroOrOne(),
 	regex.AnyNonWordChar().Repeat().ZeroOrMore(),
 	rex.Group.Define(
 		regex.WordToken(),
@@ -168,16 +175,11 @@ func ParseContent(hintCt model.NullContentType, input string) (model.ContentType
 	if ct != model.ContentTypeTvShow {
 		episodes = nil
 	}
-	vc, rg := model.InferVideoCodecAndReleaseGroup(rest)
-	return ct, title, year, classifier.ContentAttributes{
-		Episodes:        episodes,
-		Languages:       model.InferLanguages(rest),
-		LanguageMulti:   multiRegex.MatchString(rest),
-		VideoResolution: model.InferVideoResolution(rest),
-		VideoSource:     model.InferVideoSource(rest),
-		VideoCodec:      vc,
-		Video3d:         model.InferVideo3d(rest),
-		VideoModifier:   model.InferVideoModifier(rest),
-		ReleaseGroup:    rg,
-	}, nil
+	attrs := classifier.ContentAttributes{
+		Episodes:      episodes,
+		Languages:     model.InferLanguages(rest),
+		LanguageMulti: multiRegex.MatchString(rest),
+	}
+	attrs.InferVideoAttributes(rest)
+	return ct, title, year, attrs, nil
 }

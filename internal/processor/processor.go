@@ -54,18 +54,28 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		return searchErr
 	}
 	var errs []error
+	var failedHashes []protocol.ID
+	if len(failedHashes) > 0 {
+		errs = append(errs, MissingHashesError{InfoHashes: failedHashes})
+		failedHashes = append(failedHashes, searchResult.MissingInfoHashes...)
+	}
 	tcs := make([]model.TorrentContent, 0, len(searchResult.Torrents))
+	var deleteIds []string
 	for _, torrent := range searchResult.Torrents {
-		if params.ClassifyMode != ClassifyModeRematch && !torrent.Hint.ContentSource.Valid {
-			for _, tc := range torrent.Contents {
-				if tc.ContentType.Valid &&
-					tc.ContentSource.Valid &&
-					(torrent.Hint.IsNil() || torrent.Hint.ContentType == tc.ContentType.ContentType) {
-					torrent.Hint.ContentType = tc.ContentType.ContentType
-					torrent.Hint.ContentSource = tc.ContentSource
-					torrent.Hint.ContentID = tc.ContentID
-					break
-				}
+		thisDeleteIds := make(map[string]struct{}, len(torrent.Contents))
+		foundMatch := false
+		for _, tc := range torrent.Contents {
+			thisDeleteIds[tc.ID] = struct{}{}
+			if !foundMatch &&
+				!torrent.Hint.ContentSource.Valid &&
+				params.ClassifyMode != ClassifyModeRematch &&
+				tc.ContentType.Valid &&
+				tc.ContentSource.Valid &&
+				(torrent.Hint.IsNil() || torrent.Hint.ContentType == tc.ContentType.ContentType) {
+				torrent.Hint.ContentType = tc.ContentType.ContentType
+				torrent.Hint.ContentSource = tc.ContentSource
+				torrent.Hint.ContentID = tc.ContentID
+				foundMatch = true
 			}
 		}
 		useClassifier := c.classifier
@@ -75,20 +85,40 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		classification, classifyErr := useClassifier.Classify(ctx, torrent)
 		if classifyErr != nil {
 			errs = append(errs, classifyErr)
+			failedHashes = append(failedHashes, torrent.InfoHash)
 			continue
 		}
 		torrentContent := newTorrentContent(torrent, classification)
+		tcId := torrentContent.InferID()
+		for id := range thisDeleteIds {
+			if id != tcId {
+				deleteIds = append(deleteIds, id)
+			}
+		}
 		tcs = append(tcs, torrentContent)
 	}
-	if resolveErr := c.Persist(ctx, tcs...); resolveErr != nil {
-		errs = append(errs, resolveErr)
-	}
-	if len(searchResult.MissingInfoHashes) > 0 {
-		errs = append(errs, MissingHashesError{
-			InfoHashes: searchResult.MissingInfoHashes,
+	if len(failedHashes) > 0 {
+		if len(tcs) == 0 {
+			return errors.Join(errs...)
+		}
+		republishJob, republishJobErr := NewQueueJob(MessageParams{
+			InfoHashes:   failedHashes,
+			ClassifyMode: params.ClassifyMode,
 		})
+		if republishJobErr != nil {
+			return errors.Join(append(errs, republishJobErr)...)
+		}
+		if err := c.dao.QueueJob.WithContext(ctx).Create(&republishJob); err != nil {
+			return errors.Join(append(errs, err)...)
+		}
 	}
-	return errors.Join(errs...)
+	if len(tcs) == 0 {
+		return nil
+	}
+	if persistErr := c.persist(ctx, tcs, deleteIds); persistErr != nil {
+		return persistErr
+	}
+	return nil
 }
 
 func newTorrentContent(t model.Torrent, c classifier.Classification) model.TorrentContent {

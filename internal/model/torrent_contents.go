@@ -6,6 +6,24 @@ import (
 	"strings"
 )
 
+func (tc TorrentContent) InferID() string {
+	parts := make([]string, 4)
+	parts[0] = tc.InfoHash.String()
+	if tc.ContentType.Valid {
+		parts[1] = tc.ContentType.ContentType.String()
+	} else {
+		parts[1] = "?"
+	}
+	if tc.ContentSource.Valid {
+		parts[2] = tc.ContentSource.String
+		parts[3] = tc.ContentID.String
+	} else {
+		parts[2] = "?"
+		parts[3] = "?"
+	}
+	return strings.Join(parts, ":")
+}
+
 func (tc TorrentContent) Title() string {
 	if !tc.ContentID.Valid || tc.Content.Title == "" {
 		return tc.Torrent.Name

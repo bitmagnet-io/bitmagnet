@@ -170,6 +170,7 @@ type ComplexityRoot struct {
 		FileType     func(childComplexity int) int
 		FileTypes    func(childComplexity int) int
 		Files        func(childComplexity int) int
+		FilesCount   func(childComplexity int) int
 		FilesStatus  func(childComplexity int) int
 		HasFilesInfo func(childComplexity int) int
 		InfoHash     func(childComplexity int) int
@@ -821,6 +822,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Torrent.Files(childComplexity), true
+
+	case "Torrent.filesCount":
+		if e.complexity.Torrent.FilesCount == nil {
+			break
+		}
+
+		return e.complexity.Torrent.FilesCount(childComplexity), true
 
 	case "Torrent.filesStatus":
 		if e.complexity.Torrent.FilesStatus == nil {
@@ -1568,9 +1576,11 @@ var sources = []*ast.Source{
   movie
   tv_show
   music
+  ebook
+  comic
+  audiobook
   game
   software
-  book
   xxx
 }
 
@@ -1719,6 +1729,7 @@ enum VideoSource {
   singleFile: Boolean
   extension: String
   filesStatus: FilesStatus!
+  filesCount: Int
   fileType: FileType
   fileTypes: [FileType!]
   files: [TorrentFile!]
@@ -5573,6 +5584,47 @@ func (ec *executionContext) fieldContext_Torrent_filesStatus(ctx context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _Torrent_filesCount(ctx context.Context, field graphql.CollectedField, obj *model.Torrent) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Torrent_filesCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FilesCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(model.NullUint)
+	fc.Result = res
+	return ec.marshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullUint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Torrent_filesCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Torrent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Torrent_fileType(ctx context.Context, field graphql.CollectedField, obj *model.Torrent) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Torrent_fileType(ctx, field)
 	if err != nil {
@@ -6171,6 +6223,8 @@ func (ec *executionContext) fieldContext_TorrentContent_torrent(ctx context.Cont
 				return ec.fieldContext_Torrent_extension(ctx, field)
 			case "filesStatus":
 				return ec.fieldContext_Torrent_filesStatus(ctx, field)
+			case "filesCount":
+				return ec.fieldContext_Torrent_filesCount(ctx, field)
 			case "fileType":
 				return ec.fieldContext_Torrent_fileType(ctx, field)
 			case "fileTypes":
@@ -12653,6 +12707,8 @@ func (ec *executionContext) _Torrent(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "filesCount":
+			out.Values[i] = ec._Torrent_filesCount(ctx, field, obj)
 		case "fileType":
 			out.Values[i] = ec._Torrent_fileType(ctx, field, obj)
 		case "fileTypes":

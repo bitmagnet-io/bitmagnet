@@ -183,6 +183,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 			tag.Remove("default")
 			return tag
 		}),
+		gen.FieldType("files_count", "NullUint"),
 		gen.FieldGenType("extension", "String"),
 		gen.FieldGORMTag("extension", func(tag field.GormTag) field.GormTag {
 			tag.Set("<-", "false")
@@ -404,6 +405,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		}),
 		gen.FieldType("status", "QueueJobStatus"),
 		gen.FieldGenType("status", "String"),
+		gen.FieldType("priority", "int"),
 		gen.FieldType("retries", "uint"),
 		gen.FieldType("max_retries", "uint"),
 		gen.FieldGORMTag("max_retries", func(tag field.GormTag) field.GormTag {

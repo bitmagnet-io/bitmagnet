@@ -2,9 +2,11 @@ enum ContentType {
   movie
   tv_show
   music
+  ebook
+  comic
+  audiobook
   game
   software
-  book
   xxx
 }
 

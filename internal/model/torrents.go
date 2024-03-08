@@ -61,11 +61,7 @@ func (t Torrent) MagnetUri() string {
 
 // HasFilesInfo returns true if we know about the files in this torrent.
 func (t Torrent) HasFilesInfo() bool {
-	return t.FilesStatus == FilesStatusSingle || t.FilesStatus == FilesStatusMulti
-}
-
-func (t Torrent) WantFilesInfo() bool {
-	return t.FilesStatus == FilesStatusNoInfo
+	return t.FilesStatus == FilesStatusSingle || t.FilesStatus == FilesStatusMulti || len(t.Files) > 0
 }
 
 func (t Torrent) SingleFile() bool {
@@ -81,7 +77,7 @@ func (t Torrent) FileExtensions() []string {
 			exts = append(exts, ext.String)
 		}
 		return exts
-	case FilesStatusMulti:
+	default:
 		exts := make([]string, 0, len(t.Files))
 		extMap := make(map[string]struct{})
 		for _, file := range t.Files {
@@ -95,7 +91,6 @@ func (t Torrent) FileExtensions() []string {
 		}
 		return exts
 	}
-	return nil
 }
 
 func (t Torrent) FileType() NullFileType {
@@ -121,9 +116,6 @@ func (t Torrent) FileTypes() []FileType {
 }
 
 func (t Torrent) HasFileType(fts ...FileType) NullBool {
-	if !t.HasFilesInfo() {
-		return NullBool{}
-	}
 	for _, thisFt := range t.FileTypes() {
 		for _, ft := range fts {
 			if ft == thisFt {

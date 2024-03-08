@@ -60,6 +60,8 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 					DoUpdates: clause.AssignmentColumns([]string{
 						string(c.dao.Torrent.Name.ColumnName()),
 						string(c.dao.Torrent.FilesStatus.ColumnName()),
+						string(c.dao.Torrent.FilesCount.ColumnName()),
+						string(c.dao.Torrent.UpdatedAt.ColumnName()),
 					}),
 				}).CreateInBatches(ts, 20); err != nil {
 					return err
@@ -97,20 +99,23 @@ func createTorrentModel(
 	if info.Private != nil {
 		private = *info.Private
 	}
+	var filesCount model.NullUint
+	filesStatus := model.FilesStatusSingle
+	if len(info.Files) > 0 {
+		filesStatus = model.FilesStatusMulti
+		filesCount = model.NewNullUint(uint(len(info.Files)))
+	}
 	var files []model.TorrentFile
 	for i, file := range info.Files {
+		if i >= int(saveFilesThreshold) {
+			filesStatus = model.FilesStatusOverThreshold
+			break
+		}
 		files = append(files, model.TorrentFile{
 			Index: uint32(i),
 			Path:  file.DisplayPath(&info),
 			Size:  uint64(file.Length),
 		})
-	}
-	filesStatus := model.FilesStatusSingle
-	if len(files) > int(saveFilesThreshold) {
-		filesStatus = model.FilesStatusOverThreshold
-		files = nil
-	} else if len(files) > 0 {
-		filesStatus = model.FilesStatusMulti
 	}
 	var pieces model.TorrentPieces
 	if savePieces {
@@ -128,6 +133,7 @@ func createTorrentModel(
 		Pieces:      pieces,
 		Files:       files,
 		FilesStatus: filesStatus,
+		FilesCount:  filesCount,
 		Sources: []model.TorrentsTorrentSource{
 			{
 				Source:   "dht",

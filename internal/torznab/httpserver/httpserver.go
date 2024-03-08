@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 	"strconv"
+	"strings"
 )
 
 type Params struct {
@@ -84,15 +85,22 @@ func (b builder) Apply(e *gin.Engine) error {
 			return
 		}
 		var cats []int
-		for _, cat := range c.QueryArray(torznab.ParamCat) {
-			if intCat, err := strconv.Atoi(cat); err == nil {
-				cats = append(cats, intCat)
+		for _, csvCat := range c.QueryArray(torznab.ParamCat) {
+			for _, cat := range strings.Split(csvCat, ",") {
+				if intCat, err := strconv.Atoi(cat); err == nil {
+					cats = append(cats, intCat)
+				}
 			}
 		}
 		imdbId := model.NullString{}
 		if qImdbId := c.Query(torznab.ParamImdbId); qImdbId != "" {
 			imdbId.Valid = true
 			imdbId.String = qImdbId
+		}
+		tmdbId := model.NullString{}
+		if qTmdbId := c.Query(torznab.ParamTmdbId); qTmdbId != "" {
+			tmdbId.Valid = true
+			tmdbId.String = qTmdbId
 		}
 		season := model.NullInt{}
 		episode := model.NullInt{}
@@ -123,6 +131,7 @@ func (b builder) Apply(e *gin.Engine) error {
 			Type:    tp,
 			Cats:    cats,
 			ImdbId:  imdbId,
+			TmdbId:  tmdbId,
 			Season:  season,
 			Episode: episode,
 			Limit:   limit,
