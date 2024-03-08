@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/netip"
+	"syscall"
 
 	"golang.org/x/sys/windows"
 )
