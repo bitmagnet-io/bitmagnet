@@ -1,4 +1,4 @@
-query SystemStatusQuery($query: String) {
+query SystemStatusQuery {
     system {
         fetch {
             version

@@ -103,7 +103,6 @@ export class GraphQLService {
       generated.SystemStatusQueryQueryVariables
     >({
       query: generated.SystemStatusQueryDocument,
-      variables: {},
       fetchPolicy,
     })
       .pipe(map((r) => r.data.system.fetch));

@@ -606,9 +606,7 @@ export type TorrentSetTagsMutationVariables = Exact<{
 
 export type TorrentSetTagsMutation = { __typename?: 'Mutation', torrent: { __typename?: 'TorrentMutation', setTags?: void | null } };
 
-export type SystemStatusQueryQueryVariables = Exact<{
-  query?: InputMaybe<Scalars['String']['input']>;
-}>;
+export type SystemStatusQueryQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type SystemStatusQueryQuery = { __typename?: 'Query', system: { __typename?: 'SystemStatusQuery', fetch: { __typename?: 'SystemStatusQueryFetchResult', version?: string | null } } };
@@ -891,7 +889,7 @@ export const TorrentSetTagsDocument = gql`
     }
   }
 export const SystemStatusQueryDocument = gql`
-    query SystemStatusQuery($query: String) {
+    query SystemStatusQuery {
   system {
     fetch {
       version
