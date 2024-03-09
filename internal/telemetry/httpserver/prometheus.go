@@ -17,7 +17,7 @@ func (prometheusBuilder) Key() string {
 
 func (b prometheusBuilder) Apply(e *gin.Engine) error {
 	r, err := b.registry.Get()
-	if err == nil {
+	if err != nil {
 		return err
 	}
 	h := promhttp.HandlerFor(r, promhttp.HandlerOpts{
