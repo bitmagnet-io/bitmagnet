@@ -1,5 +1,5 @@
 query SystemQuery {
   system {
-      version
+    version
   }
 }

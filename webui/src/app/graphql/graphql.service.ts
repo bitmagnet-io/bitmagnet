@@ -97,7 +97,7 @@ export class GraphQLService {
       .pipe(map((r) => r.data.torrent.suggestTags));
   }
 
-  systemStatusQeury(): Observable<generated.SystemQuery> {
+  systemQuery(): Observable<generated.SystemQuery> {
     return this.apollo
       .query<generated.SystemQueryQuery, generated.SystemQueryQueryVariables>({
         query: generated.SystemQueryDocument,

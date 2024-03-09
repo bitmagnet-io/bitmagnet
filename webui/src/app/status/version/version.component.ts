@@ -16,7 +16,7 @@ export class VersionComponent implements OnInit {
   constructor(private graphQLService: GraphQLService) {}
 
   ngOnInit(): void {
-    this.graphQLService.systemStatusQeury().subscribe({
+    this.graphQLService.systemQuery().subscribe({
       next: this.parseVersionFromRsp.bind(this),
       error: () => {
         this.version = defaultVersionName;
