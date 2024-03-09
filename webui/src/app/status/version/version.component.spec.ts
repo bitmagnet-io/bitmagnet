@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { VersionComponent } from "./version.component";
 import { StatusModule } from "../status.module";
+import { VersionComponent } from "./version.component";
 
 describe("VersionComponent", () => {
   let component: VersionComponent;
