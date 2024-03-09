@@ -1,7 +1,0 @@
-query SystemStatusQuery {
-    system {
-        fetch {
-            version
-        }
-    }
-}

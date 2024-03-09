@@ -1,23 +1,22 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { VersionComponent } from './version.component';
+import { VersionComponent } from "./version.component";
 
-describe('VersionComponent', () => {
+describe("VersionComponent", () => {
   let component: VersionComponent;
   let fixture: ComponentFixture<VersionComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [VersionComponent]
-    })
-    .compileComponents();
-    
+      imports: [VersionComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(VersionComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

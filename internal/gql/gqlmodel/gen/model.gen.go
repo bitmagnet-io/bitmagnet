@@ -67,12 +67,8 @@ type SuggestTagsQueryInput struct {
 	Exclusions graphql.Omittable[[]string] `json:"exclusions,omitempty"`
 }
 
-type SystemStatusQuery struct {
-	Fetch SystemStatusQueryFetchResult `json:"fetch"`
-}
-
-type SystemStatusQueryFetchResult struct {
-	Version *string `json:"version,omitempty"`
+type SystemQuery struct {
+	Version string `json:"version"`
 }
 
 type TorrentContentAggregations struct {

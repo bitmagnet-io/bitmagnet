@@ -1,14 +1,10 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { VersionComponent } from './version/version.component';
-
-
+import { NgModule } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { VersionComponent } from "./version/version.component";
 
 @NgModule({
   declarations: [VersionComponent],
-  imports: [
-    CommonModule,
-  ],
+  imports: [CommonModule],
   exports: [VersionComponent],
 })
-export class StatusModule { }
+export class StatusModule {}

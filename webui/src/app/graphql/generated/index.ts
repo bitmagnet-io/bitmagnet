@@ -235,7 +235,7 @@ export type Mutation = {
 
 export type Query = {
   __typename?: 'Query';
-  system: SystemStatusQuery;
+  system: SystemQuery;
   torrent: TorrentQuery;
   torrentContent: TorrentContentQuery;
 };
@@ -281,19 +281,9 @@ export type SuggestedTag = {
   name: Scalars['String']['output'];
 };
 
-export type SystemStatusQuery = {
-  __typename?: 'SystemStatusQuery';
-  fetch: SystemStatusQueryFetchResult;
-};
-
-
-export type SystemStatusQueryFetchArgs = {
-  query?: InputMaybe<Scalars['String']['input']>;
-};
-
-export type SystemStatusQueryFetchResult = {
-  __typename?: 'SystemStatusQueryFetchResult';
-  version?: Maybe<Scalars['String']['output']>;
+export type SystemQuery = {
+  __typename?: 'SystemQuery';
+  version: Scalars['String']['output'];
 };
 
 export type Torrent = {
@@ -606,10 +596,10 @@ export type TorrentSetTagsMutationVariables = Exact<{
 
 export type TorrentSetTagsMutation = { __typename?: 'Mutation', torrent: { __typename?: 'TorrentMutation', setTags?: void | null } };
 
-export type SystemStatusQueryQueryVariables = Exact<{ [key: string]: never; }>;
+export type SystemQueryQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type SystemStatusQueryQuery = { __typename?: 'Query', system: { __typename?: 'SystemStatusQuery', fetch: { __typename?: 'SystemStatusQueryFetchResult', version?: string | null } } };
+export type SystemQueryQuery = { __typename?: 'Query', system: { __typename?: 'SystemQuery', version: string } };
 
 export type TorrentContentSearchQueryVariables = Exact<{
   query?: InputMaybe<SearchQueryInput>;
@@ -888,12 +878,10 @@ export const TorrentSetTagsDocument = gql`
       super(apollo);
     }
   }
-export const SystemStatusQueryDocument = gql`
-    query SystemStatusQuery {
+export const SystemQueryDocument = gql`
+    query SystemQuery {
   system {
-    fetch {
-      version
-    }
+    version
   }
 }
     `;
@@ -901,8 +889,8 @@ export const SystemStatusQueryDocument = gql`
   @Injectable({
     providedIn: 'root'
   })
-  export class SystemStatusQueryGQL extends Apollo.Query<SystemStatusQueryQuery, SystemStatusQueryQueryVariables> {
-    override document = SystemStatusQueryDocument;
+  export class SystemQueryGQL extends Apollo.Query<SystemQueryQuery, SystemQueryQueryVariables> {
+    override document = SystemQueryDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

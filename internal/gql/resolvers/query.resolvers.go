@@ -28,11 +28,9 @@ func (r *queryResolver) TorrentContent(ctx context.Context) (gqlmodel.TorrentCon
 }
 
 // System is the resolver for the system field.
-func (r *queryResolver) System(ctx context.Context) (gen.SystemStatusQuery, error) {
-	return gen.SystemStatusQuery{
-		Fetch: gen.SystemStatusQueryFetchResult{
-			Version: &version.GitTag,
-		},
+func (r *queryResolver) System(ctx context.Context) (gen.SystemQuery, error) {
+	return gen.SystemQuery{
+		Version: version.GitTag,
 	}, nil
 }
 

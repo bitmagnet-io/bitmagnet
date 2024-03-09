@@ -1,7 +1,7 @@
 type Query {
   torrent: TorrentQuery!
   torrentContent: TorrentContentQuery!
-  system: SystemStatusQuery!
+  system: SystemQuery!
 }
 
 type TorrentQuery {
@@ -29,10 +29,6 @@ type TorrentContentQuery {
   ): TorrentContentSearchResult!
 }
 
-type SystemStatusQuery {
-  fetch(query: String): SystemStatusQueryFetchResult!
-}
-
-type SystemStatusQueryFetchResult {
-  version: String
+type SystemQuery {
+  version: String!
 }
