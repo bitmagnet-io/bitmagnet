@@ -108,20 +108,6 @@ type workflow struct {
 	action action
 }
 
-func (r workflow) Run(ctx context.Context, t model.Torrent) (classifier.Classification, error) {
-	cl := classifier.Classification{}
-	if !t.Hint.IsNil() {
-		cl.ApplyHint(t.Hint)
-	}
-	exCtx := executionContext{
-		Context:   ctx,
-		torrent:   t,
-		torrentPb: protobuf.NewTorrent(t),
-		result:    cl,
-	}
-	return r.action.run(exCtx)
-}
-
 func decodeTo[T any](ctx compilerContext, target *T) error {
 	decoder, decoderErr := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		Result: target,
