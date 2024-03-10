@@ -9,6 +9,8 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
+	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
+	"github.com/bitmagnet-io/bitmagnet/internal/version"
 )
 
 // Torrent is the resolver for the torrent field.
@@ -22,6 +24,13 @@ func (r *queryResolver) Torrent(ctx context.Context) (gqlmodel.TorrentQuery, err
 func (r *queryResolver) TorrentContent(ctx context.Context) (gqlmodel.TorrentContentQuery, error) {
 	return gqlmodel.TorrentContentQuery{
 		TorrentContentSearch: r.search,
+	}, nil
+}
+
+// System is the resolver for the system field.
+func (r *queryResolver) System(ctx context.Context) (gen.SystemQuery, error) {
+	return gen.SystemQuery{
+		Version: version.GitTag,
 	}, nil
 }
 
