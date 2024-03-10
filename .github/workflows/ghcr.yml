@@ -15,9 +15,12 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-          - linux/amd64
-          - linux/arm/v7
-          - linux/arm64
+          - name: linux/amd64
+            key: amd64
+          - name: linux/arm/v7
+            key: armv7
+          - name: linux/arm64
+            key: arm64
     steps:
       - name: "Checkout GitHub Action"
         uses: actions/checkout@main
@@ -45,7 +48,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          platforms: ${{ matrix.platform }}
+          platforms: ${{ matrix.platform.name }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
 
@@ -58,7 +61,7 @@ jobs:
       - name: Upload digest
         uses: actions/upload-artifact@v4
         with:
-          name: digests-${{ matrix.platform }}
+          name: digests-${{ matrix.platform.key }}
           path: /tmp/digests/*
           if-no-files-found: error
           retention-days: 1
