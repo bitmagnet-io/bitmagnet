@@ -31,9 +31,9 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 	case torznab.FunctionSearch:
 		break
 	case torznab.FunctionMovie:
-		options = append(options, query.Where(search.ContentTypeCriteria(model.ContentTypeMovie)))
+		options = append(options, query.Where(search.TorrentContentTypeCriteria(model.ContentTypeMovie)))
 	case torznab.FunctionTv:
-		options = append(options, query.Where(search.ContentTypeCriteria(model.ContentTypeTvShow)))
+		options = append(options, query.Where(search.TorrentContentTypeCriteria(model.ContentTypeTvShow)))
 		if r.Season.Valid {
 			episodes := make(model.Episodes)
 			if r.Episode.Valid {
@@ -44,9 +44,9 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 			options = append(options, query.Where(search.TorrentContentEpisodesCriteria(episodes)))
 		}
 	case torznab.FunctionMusic:
-		options = append(options, query.Where(search.ContentTypeCriteria(model.ContentTypeMusic)))
+		options = append(options, query.Where(search.TorrentContentTypeCriteria(model.ContentTypeMusic)))
 	case torznab.FunctionBook:
-		options = append(options, query.Where(search.ContentTypeCriteria(
+		options = append(options, query.Where(search.TorrentContentTypeCriteria(
 			model.ContentTypeEbook,
 			model.ContentTypeComic,
 			model.ContentTypeAudiobook,
@@ -65,7 +65,7 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 		var catCriteria []query.Criteria
 		if torznab.CategoryMovies.Has(cat) {
 			if r.Type != torznab.FunctionMovie {
-				catCriteria = append(catCriteria, search.ContentTypeCriteria(model.ContentTypeMovie))
+				catCriteria = append(catCriteria, search.TorrentContentTypeCriteria(model.ContentTypeMovie))
 			}
 			if torznab.CategoryMoviesSD.ID == cat {
 				catCriteria = append(catCriteria, search.VideoResolutionCriteria(model.VideoResolutionV480p))
@@ -87,7 +87,7 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 			}
 		} else if torznab.CategoryTV.Has(cat) {
 			if r.Type != torznab.FunctionTv {
-				catCriteria = append(catCriteria, search.ContentTypeCriteria(model.ContentTypeTvShow))
+				catCriteria = append(catCriteria, search.TorrentContentTypeCriteria(model.ContentTypeTvShow))
 			}
 			if torznab.CategoryTVSD.ID == cat {
 				catCriteria = append(catCriteria, search.VideoResolutionCriteria(model.VideoResolutionV480p))
@@ -102,17 +102,17 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 				catCriteria = append(catCriteria, search.VideoResolutionCriteria(model.VideoResolutionV2160p))
 			}
 		} else if torznab.CategoryXXX.Has(cat) {
-			catCriteria = append(catCriteria, search.ContentTypeCriteria(model.ContentTypeXxx))
+			catCriteria = append(catCriteria, search.TorrentContentTypeCriteria(model.ContentTypeXxx))
 		} else if torznab.CategoryPC.Has(cat) {
-			catCriteria = append(catCriteria, search.ContentTypeCriteria(model.ContentTypeSoftware, model.ContentTypeGame))
+			catCriteria = append(catCriteria, search.TorrentContentTypeCriteria(model.ContentTypeSoftware, model.ContentTypeGame))
 		} else if torznab.CategoryAudioAudiobook.Has(cat) {
-			catCriteria = append(catCriteria, search.ContentTypeCriteria(model.ContentTypeAudiobook))
+			catCriteria = append(catCriteria, search.TorrentContentTypeCriteria(model.ContentTypeAudiobook))
 		} else if torznab.CategoryAudio.Has(cat) {
-			catCriteria = append(catCriteria, search.ContentTypeCriteria(model.ContentTypeMusic))
+			catCriteria = append(catCriteria, search.TorrentContentTypeCriteria(model.ContentTypeMusic))
 		} else if torznab.CategoryBooksComics.Has(cat) {
-			catCriteria = append(catCriteria, search.ContentTypeCriteria(model.ContentTypeComic))
+			catCriteria = append(catCriteria, search.TorrentContentTypeCriteria(model.ContentTypeComic))
 		} else if torznab.CategoryBooks.Has(cat) {
-			options = append(options, query.Where(search.ContentTypeCriteria(
+			options = append(options, query.Where(search.TorrentContentTypeCriteria(
 				model.ContentTypeEbook,
 				model.ContentTypeComic,
 				model.ContentTypeAudiobook,
