@@ -235,6 +235,7 @@ export type Mutation = {
 
 export type Query = {
   __typename?: 'Query';
+  system: SystemQuery;
   torrent: TorrentQuery;
   torrentContent: TorrentContentQuery;
 };
@@ -278,6 +279,11 @@ export type SuggestedTag = {
   __typename?: 'SuggestedTag';
   count: Scalars['Int']['output'];
   name: Scalars['String']['output'];
+};
+
+export type SystemQuery = {
+  __typename?: 'SystemQuery';
+  version: Scalars['String']['output'];
 };
 
 export type Torrent = {
@@ -590,6 +596,11 @@ export type TorrentSetTagsMutationVariables = Exact<{
 
 export type TorrentSetTagsMutation = { __typename?: 'Mutation', torrent: { __typename?: 'TorrentMutation', setTags?: void | null } };
 
+export type SystemQueryQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type SystemQueryQuery = { __typename?: 'Query', system: { __typename?: 'SystemQuery', version: string } };
+
 export type TorrentContentSearchQueryVariables = Exact<{
   query?: InputMaybe<SearchQueryInput>;
   facets?: InputMaybe<TorrentContentFacetsInput>;
@@ -862,6 +873,24 @@ export const TorrentSetTagsDocument = gql`
   })
   export class TorrentSetTagsGQL extends Apollo.Mutation<TorrentSetTagsMutation, TorrentSetTagsMutationVariables> {
     override document = TorrentSetTagsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const SystemQueryDocument = gql`
+    query SystemQuery {
+  system {
+    version
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class SystemQueryGQL extends Apollo.Query<SystemQueryQuery, SystemQueryQueryVariables> {
+    override document = SystemQueryDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

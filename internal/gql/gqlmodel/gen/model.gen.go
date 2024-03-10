@@ -67,6 +67,10 @@ type SuggestTagsQueryInput struct {
 	Exclusions graphql.Omittable[[]string] `json:"exclusions,omitempty"`
 }
 
+type SystemQuery struct {
+	Version string `json:"version"`
+}
+
 type TorrentContentAggregations struct {
 	ContentType     []ContentTypeAgg     `json:"contentType,omitempty"`
 	TorrentSource   []TorrentSourceAgg   `json:"torrentSource,omitempty"`

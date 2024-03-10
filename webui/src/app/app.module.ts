@@ -13,6 +13,7 @@ import { AppComponent } from "./app.component";
 import { GraphQLModule } from "./graphql/graphql.module";
 import { SearchModule } from "./search/search.module";
 import { AppErrorsService } from "./app-errors.service";
+import { StatusModule } from "./status/status.module";
 
 @NgModule({
   declarations: [AppComponent],
@@ -28,6 +29,7 @@ import { AppErrorsService } from "./app-errors.service";
     MatMenuModule,
     MatToolbarModule,
     SearchModule,
+    StatusModule,
   ],
   providers: [AppErrorsService],
   bootstrap: [AppComponent],

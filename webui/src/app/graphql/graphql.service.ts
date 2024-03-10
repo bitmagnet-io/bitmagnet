@@ -96,6 +96,15 @@ export class GraphQLService {
       })
       .pipe(map((r) => r.data.torrent.suggestTags));
   }
+
+  systemQuery(): Observable<generated.SystemQuery> {
+    return this.apollo
+      .query<generated.SystemQueryQuery, generated.SystemQueryQueryVariables>({
+        query: generated.SystemQueryDocument,
+        fetchPolicy,
+      })
+      .pipe(map((r) => r.data.system));
+  }
 }
 
 const fetchPolicy = "no-cache" as const;

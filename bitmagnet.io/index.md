@@ -22,7 +22,7 @@ nav_order: -1
 
 The DHT crawler is **bitmagnet**'s killer feature that makes it unique. So what is it?
 
-You might be aware that you can enable DHT in your BitTorrent client, and that this allows you find peers who are announcing a torrent's hash to a Distributed Hash Table (DHT), rather than to a centralized tracker. DHT's lesser known feature is that it allows you to crawl the info hashes it knows about. This is how **bitmagnet**'s DHT crawler works works - it crawls the DHT network, requesting metadata about each info hash it discovers. It then further enriches this metadata by attempting to classify it and associate it with known pieces of content, such as movies and TV shows. It then allows you to search everything it has indexed.
+You might be aware that you can enable DHT in your BitTorrent client, and that this allows you find peers who are announcing a torrent's hash to a Distributed Hash Table (DHT), rather than to a centralized tracker. DHT's lesser known feature is that it allows you to crawl the info hashes it knows about. This is how **bitmagnet**'s DHT crawler works - it crawls the DHT network, requesting metadata about each info hash it discovers. It then further enriches this metadata by attempting to classify it and associate it with known pieces of content, such as movies and TV shows. It then allows you to search everything it has indexed.
 
 This means that **bitmagnet** is not reliant on any external trackers or torrent indexers. It's a self-contained, self-hosted torrent indexer, connected via DHT to a global network of peers and constantly discovering new content.
 
