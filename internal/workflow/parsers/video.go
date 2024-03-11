@@ -1,8 +1,8 @@
 package parsers
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/regex"
 	"github.com/hedhyw/rex/pkg/dialect"
 	"github.com/hedhyw/rex/pkg/rex"
@@ -115,7 +115,7 @@ func parseTitleYear(input string) (string, model.Year, string, error) {
 			return title, model.Year(yearMatch), input[len(match[0]):], nil
 		}
 	}
-	return "", 0, "", classifier.ErrNoMatch
+	return "", 0, "", classification.ErrNoMatch
 }
 
 func parseTitle(input string) (string, string, error) {
@@ -125,7 +125,7 @@ func parseTitle(input string) (string, string, error) {
 			return title, input[len(match[0]):], nil
 		}
 	}
-	return "", "", classifier.ErrNoMatch
+	return "", "", classification.ErrNoMatch
 }
 
 func parseTitleYearEpisodes(input string) (string, model.Year, model.Episodes, string, error) {
@@ -141,7 +141,7 @@ func parseTitleYearEpisodes(input string) (string, model.Year, model.Episodes, s
 		episodes := model.EpisodesMatchToEpisodes(match[2:])
 		return title, year, episodes, input[len(match[0]):], nil
 	}
-	return "", 0, nil, "", classifier.ErrNoMatch
+	return "", 0, nil, "", classification.ErrNoMatch
 }
 
 func ParseTitleYearEpisodes(contentType model.NullContentType, input string) (string, model.Year, model.Episodes, string, error) {
@@ -156,35 +156,33 @@ func ParseTitleYearEpisodes(contentType model.NullContentType, input string) (st
 	if title, rest, err := parseTitle(input); err == nil {
 		return title, 0, nil, rest, nil
 	}
-	return "", 0, nil, "", classifier.ErrNoMatch
+	return "", 0, nil, "", classification.ErrNoMatch
 }
 
-func ParseVideoContent(hintCt model.NullContentType, input string) (classifier.ContentAttributes, error) {
+func ParseVideoContent(hintCt model.NullContentType, input string) (classification.ContentAttributes, error) {
 	title, year, episodes, rest, err := ParseTitleYearEpisodes(hintCt, input)
 	if err != nil {
 		if !hintCt.Valid {
-			return classifier.ContentAttributes{}, err
+			return classification.ContentAttributes{}, err
 		}
 		rest = input
 	}
-	var ct model.ContentType
+	ct := model.NullContentType{}
 	if hintCt.Valid {
-		ct = hintCt.ContentType
+		ct = model.NullContentType{Valid: true, ContentType: hintCt.ContentType}
 	} else if len(episodes) > 0 {
-		ct = model.ContentTypeTvShow
-	} else if !year.IsNil() {
-		ct = model.ContentTypeMovie
-	} else {
-		return classifier.ContentAttributes{}, classifier.ErrNoMatch
+		ct = model.NullContentType{Valid: true, ContentType: model.ContentTypeTvShow}
+	} else if !year.IsNil() && !DateRegex.MatchString(input) { // todo: Don't check date regex from here!
+		ct = model.NullContentType{Valid: true, ContentType: model.ContentTypeMovie}
 	}
-	if ct != model.ContentTypeTvShow {
+	if ct.ContentType != model.ContentTypeTvShow {
 		episodes = nil
 		if year.IsNil() {
 			title = ""
 			rest = input
 		}
 	}
-	attrs := classifier.ContentAttributes{
+	attrs := classification.ContentAttributes{
 		ContentType:   model.NewNullContentType(ct),
 		BaseTitle:     model.NullString{Valid: title != "", String: title},
 		Year:          year,

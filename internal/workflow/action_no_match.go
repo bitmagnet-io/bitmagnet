@@ -1,8 +1,6 @@
 package workflow
 
-import (
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
-)
+import "github.com/bitmagnet-io/bitmagnet/internal/processor/classification"
 
 const noMatchName = "no_match"
 
@@ -20,8 +18,8 @@ func (noMatchAction) compileAction(ctx compilerContext) (action, error) {
 	}
 	path := ctx.path
 	return action{
-		run: func(ctx executionContext) (classifier.Classification, error) {
-			return ctx.result, runtimeError{cause: ErrNoMatch, path: path}
+		run: func(ctx executionContext) (classification.Result, error) {
+			return ctx.result, classification.RuntimeError{Cause: classification.ErrNoMatch, Path: path}
 		},
 	}, nil
 }

@@ -1,15 +1,28 @@
-package classifier
+package classification
 
 import "github.com/bitmagnet-io/bitmagnet/internal/model"
 
-type Classification struct {
+type Result struct {
 	ContentAttributes
 	Content *model.Content
 }
 
-func (c *Classification) ApplyHint(h model.TorrentHint) {
-	c.ContentType = h.NullContentType()
-	c.ContentAttributes.ApplyHint(h)
+func (r *Result) ApplyHint(h model.TorrentHint) {
+	r.ContentType = h.NullContentType()
+	r.ContentAttributes.ApplyHint(h)
+}
+
+func (r *Result) AttachContent(content *model.Content) {
+	r.Content = content
+	r.ContentAttributes.ContentType = model.NewNullContentType(content.Type)
+	if content.OriginalLanguage.Valid {
+		if len(r.Languages) == 0 || r.LanguageMulti {
+			if r.Languages == nil {
+				r.Languages = make(model.Languages)
+			}
+			r.Languages[content.OriginalLanguage.Language] = struct{}{}
+		}
+	}
 }
 
 type ContentAttributes struct {

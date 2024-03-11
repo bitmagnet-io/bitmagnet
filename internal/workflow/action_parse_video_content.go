@@ -1,8 +1,8 @@
 package workflow
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
-	"github.com/bitmagnet-io/bitmagnet/internal/processor/parsers"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor/classification"
+	"github.com/bitmagnet-io/bitmagnet/internal/workflow/parsers"
 )
 
 const parseVideoContentName = "parse_video_content"
@@ -20,7 +20,7 @@ func (parseVideoContentAction) compileAction(ctx compilerContext) (action, error
 		return action{}, ctx.error(err)
 	}
 	return action{
-		run: func(ctx executionContext) (classifier.Classification, error) {
+		run: func(ctx executionContext) (classification.Result, error) {
 			parsed, err := parsers.ParseVideoContent(ctx.result.ContentType, ctx.torrent.Name)
 			cl := ctx.result
 			if err == nil {

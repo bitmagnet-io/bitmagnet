@@ -3,7 +3,7 @@ package workflow
 import (
 	"errors"
 	"fmt"
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor/classification"
 )
 
 func actions(defs ...actionDefinition) option {
@@ -55,11 +55,11 @@ outer:
 	if len(errs) > 0 {
 		return action{}, errors.Join(errs...)
 	}
-	return action{func(ctx executionContext) (classifier.Classification, error) {
+	return action{func(ctx executionContext) (classification.Result, error) {
 		for _, a := range actions {
 			result, err := a.run(ctx)
 			if err != nil {
-				return classifier.Classification{}, err
+				return classification.Result{}, err
 			}
 			ctx = ctx.withResult(result)
 		}
@@ -68,5 +68,5 @@ outer:
 }
 
 type action struct {
-	run func(executionContext) (classifier.Classification, error)
+	run func(executionContext) (classification.Result, error)
 }

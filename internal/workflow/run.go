@@ -2,13 +2,13 @@ package workflow
 
 import (
 	"context"
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/protobuf"
 )
 
-func (r workflow) Run(ctx context.Context, t model.Torrent) (classifier.Classification, error) {
-	cl := classifier.Classification{}
+func (r workflow) Run(ctx context.Context, t model.Torrent) (classification.Result, error) {
+	cl := classification.Result{}
 	if !t.Hint.IsNil() {
 		cl.ApplyHint(t.Hint)
 	}
@@ -21,8 +21,8 @@ func (r workflow) Run(ctx context.Context, t model.Torrent) (classifier.Classifi
 				tc.ContentSource.String == t.Hint.ContentSource.String &&
 				tc.ContentID.String == t.Hint.ContentID.String &&
 				tc.Content.Source == tc.ContentSource.String {
-				c := tc.Content
-				cl.Content = &c
+				content := tc.Content
+				cl.AttachContent(&content)
 				break
 			}
 		}

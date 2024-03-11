@@ -1,6 +1,6 @@
 name: default
 actions:
-  # the first step is run only for torrents without a hinted content type:
+  # try to identify content type for torrents without a hinted content type:
   - if_else:
       condition: "result.contentType == contentType.unknown"
       if_action:
@@ -53,14 +53,20 @@ actions:
               else_action: no_match
           # exit the find_match without failing:
           - noop
-  # next, if we know a content ID that isn't already attached, try to attach it from the local `content` table:
+  # if we know a content ID that isn't already attached, try to attach it, either from the local `content` table or an API integration:
   - if_else:
-      condition: "torrent.hasHintedContentId && !result.hasAttachedContent"
+      condition:
+        and:
+          - "torrent.hasHintedContentId && !result.hasAttachedContent"
+          # we might as well save work by restricting this to content types that have an API integration:
+          - "result.contentType in [contentType.movie, contentType.tv_show, contentType.xxx]"
       if_action:
         find_match:
           - attach_local_content_by_id
+          - attach_tmdb_content_by_id
+          # exit the find_match without failing:
           - noop
-  # the next step covers video-based content types:
+  # parse video-related attributes for video torrents (including the base title, needed for the next step):
   - if_else:
       condition:
         or:
@@ -68,10 +74,18 @@ actions:
           - "torrent.files.map(f, f.fileType == fileType.video ? f.size : - f.size).sum() > 100*mb"
       if_action:
         find_match:
-          -
-            # parse video-related attributes from the torrent name;
-            # if the content type wasn't previously specified and the name format doesn't suggest a movie or TV show, a "no match" will be returned:
-            - parse_video_content
+          # parse video-related attributes from the torrent name;
+          # if the content type wasn't previously specified and the name format doesn't suggest a movie or TV show, a "no match" will be returned:
+          - parse_video_content
+          # exit the find_match without failing:
+          - noop
+  # if content isn't already attached, and a base title has been parsed, then search for the content, either from the local `content` table or an API integration:
+  - if_else:
+      condition: "!result.hasAttachedContent && result.hasBaseTitle"
+      if_action:
+        find_match:
+          - attach_local_content_by_search
+          - attach_tmdb_content_by_search
           # exit the find_match without failing:
           - noop
 #  - if_else:
@@ -122,10 +136,8 @@ extensions:
     - sh
 keywords:
   audiobook:
-    - audiobook
-    - audiobooks
-    - book
-    - books
+    - audiobooks?
+    - books?
     - abridged
     - unabridged
     - narrated
@@ -154,5 +166,21 @@ keywords:
     - rock
     - trance
   xxx:
-    - porn
+    - anal
+    - ass
+    - cocks?
+    - cum*
+    - dicks?
+    - erotic*
+    - "*fuck*"
+    - hardcore
+    - milf
+    - nubile*
+    - onlyfans
+    - "*porn*"
+    - pussy
+    - sex*
+    - slut
+    - tits?
+    - "*wank*"
     - xxx

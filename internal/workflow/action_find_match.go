@@ -2,7 +2,7 @@ package workflow
 
 import (
 	"errors"
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor/classification"
 )
 
 const findMatchName = "find_match"
@@ -37,24 +37,24 @@ func (findMatchAction) compileAction(ctx compilerContext) (action, error) {
 	}
 	path := ctx.path
 	return action{
-		func(ctx executionContext) (classifier.Classification, error) {
+		func(ctx executionContext) (classification.Result, error) {
 			for _, action := range actions {
 				result, err := action.run(ctx)
 				if err != nil {
-					if errors.Is(err, ErrNoMatch) {
+					if errors.Is(err, classification.ErrNoMatch) {
 						continue
 					}
-					return classifier.Classification{}, runtimeError{
-						cause: err,
-						path:  path,
+					return classification.Result{}, classification.RuntimeError{
+						Cause: err,
+						Path:  path,
 					}
 				} else {
 					return result, nil
 				}
 			}
-			return classifier.Classification{}, runtimeError{
-				cause: classifier.ErrNoMatch,
-				path:  path,
+			return classification.Result{}, classification.RuntimeError{
+				Cause: classification.ErrNoMatch,
+				Path:  path,
 			}
 		},
 	}, nil

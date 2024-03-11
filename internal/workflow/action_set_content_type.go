@@ -1,8 +1,8 @@
 package workflow
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor/classification"
 )
 
 const setContentTypeName = "set_content_type"
@@ -26,7 +26,7 @@ func (setContentTypeAction) compileAction(ctx compilerContext) (action, error) {
 		return action{}, ctx.error(err)
 	}
 	return action{
-		func(ctx executionContext) (classifier.Classification, error) {
+		func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result
 			cl.ContentType = contentType
 			return cl, nil

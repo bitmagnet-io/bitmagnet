@@ -110,16 +110,26 @@ func NormalizeSearchString(input string) string {
 
 func RegexTokenFromName(name string) base.GroupToken {
 	var tokens []dialect.Token
-	for _, char := range name {
+	for i := 0; i < len(name); i++ {
+		char := name[i]
 		if char == ' ' {
 			tokens = append(tokens, AnyNonWordChar().Repeat().OneOrMore())
+		} else if char == '*' {
+			tokens = append(tokens, AnyWordChar().Repeat().ZeroOrMore())
 		} else {
 			lcChar := strings.ToLower(string(char))
 			ucChar := strings.ToUpper(string(char))
+			var token base.ClassToken
 			if lcChar == ucChar {
-				tokens = append(tokens, rex.Chars.Single(char))
+				token = rex.Chars.Single(rune(char))
 			} else {
-				tokens = append(tokens, rex.Chars.Runes(ucChar+lcChar))
+				token = rex.Chars.Runes(ucChar + lcChar)
+			}
+			if i < len(name)-1 && name[i+1] == '?' {
+				tokens = append(tokens, token.Repeat().ZeroOrOne())
+				i++
+			} else {
+				tokens = append(tokens, token)
 			}
 		}
 	}

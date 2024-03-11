@@ -1,9 +1,11 @@
-package tmdb
+package workflow
 
 import (
 	"github.com/agnivade/levenshtein"
 	"github.com/bitmagnet-io/bitmagnet/internal/regex"
 )
+
+const levenshteinThreshold = 5
 
 func levenshteinCheck(target string, candidates []string, threshold uint) bool {
 	normTarget := regex.NormalizeString(target)

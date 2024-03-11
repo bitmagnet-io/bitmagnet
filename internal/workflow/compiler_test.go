@@ -51,7 +51,7 @@ func TestCompile(t *testing.T) {
 		}
 		type testData struct {
 			torrent     model.Torrent
-			expected    classifier.Classification
+			expected    Classification
 			expectedErr error
 		}
 		testCases := []testData{
@@ -65,7 +65,7 @@ func TestCompile(t *testing.T) {
 					//	ContentType: model.ContentTypeXxx,
 					//},
 				},
-				expected: classifier.Classification{
+				expected: Classification{
 					ContentAttributes: classifier.ContentAttributes{
 						ContentType:     model.NewNullContentType(model.ContentTypeXxx),
 						VideoResolution: model.NewNullVideoResolution(model.VideoResolutionV1080p),
@@ -79,7 +79,7 @@ func TestCompile(t *testing.T) {
 			//		Extension:   model.NewNullString("mkv"),
 			//		Size:        1000000000,
 			//	},
-			//	expected: classifier.Classification{
+			//	expected: Classification{
 			//		ContentType: model.NewNullContentType(model.ContentTypeMovie),
 			//	},
 			//},

@@ -1,16 +1,16 @@
 package workflow
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor/classification"
 )
 
 const attachLocalContentByIdName = "attach_local_content_by_id"
 
 type attachLocalContentByIdAction struct {
-	search search.Search
+	searchAction
 }
 
 func (attachLocalContentByIdAction) Name() string {
@@ -24,10 +24,10 @@ func (a attachLocalContentByIdAction) compileAction(ctx compilerContext) (action
 		return action{}, ctx.error(err)
 	}
 	return action{
-		run: func(ctx executionContext) (classifier.Classification, error) {
+		run: func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result
 			if ctx.torrent.Hint.IsNil() || !ctx.torrent.Hint.ContentSource.Valid {
-				return cl, ErrNoMatch
+				return cl, classification.ErrNoMatch
 			}
 			options := []query.Option{
 				query.Where(
@@ -52,7 +52,7 @@ func (a attachLocalContentByIdAction) compileAction(ctx compilerContext) (action
 					return cl, canonicalErr
 				}
 				if len(canonicalResult.Items) == 0 {
-					return cl, ErrNoMatch
+					return cl, classification.ErrNoMatch
 				}
 				content := canonicalResult.Items[0].Content
 				cl.Content = &content
@@ -67,13 +67,13 @@ func (a attachLocalContentByIdAction) compileAction(ctx compilerContext) (action
 					))...,
 				)
 				if alternativeErr != nil {
-					return cl, ErrNoMatch
+					return cl, classification.ErrNoMatch
 				}
 				if len(alternativeResult.Items) == 0 {
-					return cl, ErrNoMatch
+					return cl, classification.ErrNoMatch
 				}
 				content := alternativeResult.Items[0].Content
-				cl.Content = &content
+				cl.AttachContent(&content)
 				return cl, nil
 			}
 		},

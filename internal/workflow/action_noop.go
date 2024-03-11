@@ -1,8 +1,6 @@
 package workflow
 
-import (
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
-)
+import "github.com/bitmagnet-io/bitmagnet/internal/processor/classification"
 
 const noopName = "noop"
 
@@ -19,7 +17,7 @@ func (noopAction) compileAction(ctx compilerContext) (action, error) {
 		return action{}, ctx.error(err)
 	}
 	return action{
-		run: func(ctx executionContext) (classifier.Classification, error) {
+		run: func(ctx executionContext) (classification.Result, error) {
 			return ctx.result, nil
 		},
 	}, nil

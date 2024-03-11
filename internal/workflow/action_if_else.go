@@ -1,8 +1,6 @@
 package workflow
 
-import (
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
-)
+import "github.com/bitmagnet-io/bitmagnet/internal/processor/classification"
 
 type ifElseAction struct{}
 
@@ -59,9 +57,9 @@ func (ifElseAction) compileAction(ctx compilerContext) (action, error) {
 		elseAction = pElseAction
 	}
 	return action{
-		run: func(ctx executionContext) (classifier.Classification, error) {
+		run: func(ctx executionContext) (classification.Result, error) {
 			if result, err := cond.check(ctx); err != nil {
-				return classifier.Classification{}, err
+				return classification.Result{}, err
 			} else if result {
 				if ifAction.run != nil {
 					return ifAction.run(ctx)

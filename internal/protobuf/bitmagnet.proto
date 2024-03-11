@@ -40,14 +40,15 @@ message Torrent {
 message Classification {
   ContentType contentType = 1;
   bool hasAttachedContent = 2;
-  optional int32 year = 3;
-  repeated string languages = 4;
-  repeated string episodes = 5;
-  optional string videoResolution = 6;
-  optional string videoSource = 7;
-  optional string videoCodec = 8;
-  optional string video3d = 9;
-  optional string releaseGroup = 10;
+  bool hasBaseTitle = 3;
+  optional int32 year = 4;
+  repeated string languages = 5;
+  repeated string episodes = 6;
+  optional string videoResolution = 7;
+  optional string videoSource = 8;
+  optional string videoCodec = 9;
+  optional string video3d = 10;
+  optional string releaseGroup = 11;
 
   enum ContentType {
     unknown = 0;

@@ -1,8 +1,8 @@
 package protobuf
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor/classification"
 )
 
 func NewTorrent(t model.Torrent) *Torrent {
@@ -80,7 +80,7 @@ func NewTorrent(t model.Torrent) *Torrent {
 	}
 }
 
-func NewClassification(c classifier.Classification) *Classification {
+func NewClassification(c classification.Result) *Classification {
 	var year *int32
 	if !c.Year.IsNil() {
 		y := int32(c.Year)
@@ -116,6 +116,7 @@ func NewClassification(c classifier.Classification) *Classification {
 	return &Classification{
 		ContentType:        NewContentType(c.ContentType),
 		HasAttachedContent: c.Content != nil,
+		HasBaseTitle:       c.BaseTitle.Valid,
 		Year:               year,
 		Languages:          languages,
 		Episodes:           episodes,

@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/protobuf"
 	"github.com/google/cel-go/cel"
 	"github.com/iancoleman/strcase"
@@ -18,7 +18,7 @@ type Compiler interface {
 }
 
 type Workflow interface {
-	Run(context.Context, model.Torrent) (classifier.Classification, error)
+	Run(context.Context, model.Torrent) (classification.Result, error)
 }
 
 type compiler []option
@@ -38,11 +38,11 @@ type executionContext struct {
 	context.Context
 	torrent   model.Torrent
 	torrentPb *protobuf.Torrent
-	result    classifier.Classification
+	result    classification.Result
 	resultPb  *protobuf.Classification
 }
 
-func (c executionContext) withResult(result classifier.Classification) executionContext {
+func (c executionContext) withResult(result classification.Result) executionContext {
 	c.result = result
 	c.resultPb = protobuf.NewClassification(result)
 	return c

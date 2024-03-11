@@ -3,13 +3,15 @@ package workflow
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
+	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
 	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
 )
 
 type Params struct {
 	fx.In
-	Search lazy.Lazy[search.Search]
+	Search     lazy.Lazy[search.Search]
+	TmdbClient lazy.Lazy[tmdb.Client]
 }
 
 type Result struct {
@@ -24,21 +26,37 @@ func New(params Params) Result {
 		if err != nil {
 			return nil, err
 		}
+		tmdbClient, err := params.TmdbClient.Get()
+		if err != nil {
+			return nil, err
+		}
 		return compiler{
 			celEnvOption,
 			conditions(
 				andCondition{},
-				//fileExtensionRatioCondition{},
-				//fileTypeStatsCondition{},
-				//hasContentTypeCondition{},
-				//hasFilesStatusCondition{},
-				//includesKeywords{},
 				orCondition{},
 				expressionCondition{},
 			),
 			actions(
 				attachLocalContentByIdAction{
-					search: s,
+					searchAction: searchAction{
+						search: s,
+					},
+				},
+				attachLocalContentBySearchAction{
+					searchAction: searchAction{
+						search: s,
+					},
+				},
+				attachTmdbContentByIdAction{
+					tmdbAction: tmdbAction{
+						client: tmdbClient,
+					},
+				},
+				attachTmdbContentBySearchAction{
+					tmdbAction: tmdbAction{
+						client: tmdbClient,
+					},
 				},
 				deleteAction{},
 				findMatchAction{},
