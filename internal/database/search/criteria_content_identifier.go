@@ -2,6 +2,7 @@ package search
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
+	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"gorm.io/gen"
 )
@@ -46,6 +47,9 @@ func contentCanonicalIdentifierCriteria(contentMap contentMap) query.Criteria {
 				)
 				criteria = append(criteria, query.RawCriteria{
 					Query: q.Content.Where(conds...).UnderlyingDB(),
+					Joins: maps.NewInsertMap(
+						maps.MapEntry[string, struct{}]{Key: model.TableNameContent},
+					),
 				})
 			}
 		}
@@ -81,6 +85,9 @@ func contentAlternativeIdentifierCriteria(contentMap contentMap) query.Criteria 
 				criteria = append(criteria, query.RawCriteria{
 					Query: gen.Exists(
 						q.ContentAttribute.Where(conds...),
+					),
+					Joins: maps.NewInsertMap(
+						maps.MapEntry[string, struct{}]{Key: model.TableNameContent},
 					),
 				})
 			}
