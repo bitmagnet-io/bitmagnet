@@ -13,13 +13,13 @@ package torznab
 //	example, readErr := testExamples.ReadFile("examples/result1.xml")
 //	assert.NoError(t, readErr)
 //	result := &SearchResult{}
-//	unmarshalErr := xml.Unmarshal(example, &result)
+//	unmarshalErr := xml.compileCondition(example, &result)
 //	assert.NoError(t, unmarshalErr)
 //	marshaled, marshalErr := result.Xml()
 //	assert.NoError(t, marshalErr)
 //	t.Logf("marshaled: %s", marshaled)
 //	result2 := &SearchResult{}
-//	unmarshalErr = xml.Unmarshal(marshaled, &result2)
+//	unmarshalErr = xml.compileCondition(marshaled, &result2)
 //	assert.NoError(t, unmarshalErr)
 //	assert.Equal(t, result, result2)
 //}

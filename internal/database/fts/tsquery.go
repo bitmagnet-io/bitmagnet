@@ -18,7 +18,7 @@ func AppQueryToTsquery(str string) string {
 }
 
 type queryLexer struct {
-	lexer
+	ftsLexer
 }
 
 type Token string
@@ -50,38 +50,38 @@ const (
 
 func (l *queryLexer) readQueryToken() (TokenValue, bool) {
 	for {
-		if l.isEof() {
+		if l.IsEof() {
 			return TokenValue{}, false
 		}
-		start := l.pos
-		if l.readChar('(') {
-			return TokenValue{l.pos, 1, TokenOpenParens, "("}, true
+		start := l.Pos()
+		if l.ReadChar('(') {
+			return TokenValue{l.Pos(), 1, TokenOpenParens, "("}, true
 		}
-		if l.readChar(')') {
-			return TokenValue{l.pos, 1, TokenCloseParens, ")"}, true
+		if l.ReadChar(')') {
+			return TokenValue{l.Pos(), 1, TokenCloseParens, ")"}, true
 		}
-		if l.readChar('&') {
-			return TokenValue{l.pos, 1, TokenOperator, string(OperatorAnd)}, true
+		if l.ReadChar('&') {
+			return TokenValue{l.Pos(), 1, TokenOperator, string(OperatorAnd)}, true
 		}
-		if l.readChar('|') {
-			return TokenValue{l.pos, 1, TokenOperator, string(OperatorOr)}, true
+		if l.ReadChar('|') {
+			return TokenValue{l.Pos(), 1, TokenOperator, string(OperatorOr)}, true
 		}
-		if l.readChar('.') {
-			return TokenValue{l.pos, 1, TokenOperator, string(OperatorFollowedBy)}, true
+		if l.ReadChar('.') {
+			return TokenValue{l.Pos(), 1, TokenOperator, string(OperatorFollowedBy)}, true
 		}
-		if l.readChar('!') {
-			return TokenValue{l.pos, 1, TokenNegation, "-"}, true
+		if l.ReadChar('!') {
+			return TokenValue{l.Pos(), 1, TokenNegation, "-"}, true
 		}
-		if l.readChar('*') {
-			return TokenValue{l.pos, 1, TokenWildcard, "*"}, true
+		if l.ReadChar('*') {
+			return TokenValue{l.Pos(), 1, TokenWildcard, "*"}, true
 		}
 		if quoted, _ := l.readQuotedString('"'); quoted != "" {
-			return TokenValue{start, l.pos - start, TokenQuoted, quoted}, true
+			return TokenValue{start, l.Pos() - start, TokenQuoted, quoted}, true
 		}
-		if phrase := l.readWhile(IsWordChar); phrase != "" {
-			return TokenValue{start, l.pos - start, TokenPhrase, phrase}, true
+		if phrase := l.ReadWhile(IsWordChar); phrase != "" {
+			return TokenValue{start, l.Pos() - start, TokenPhrase, phrase}, true
 		}
-		l.read()
+		l.Read()
 	}
 }
 

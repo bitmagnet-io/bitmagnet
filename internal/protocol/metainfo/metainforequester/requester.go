@@ -258,7 +258,7 @@ func readAllPieces(r io.Reader, metadataSize uint) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		// Run TestDecoder() function in leech_test.go in case you have any doubts.
+		// run TestDecoder() function in leech_test.go in case you have any doubts.
 		rMessageBuf := bytes.NewBuffer(rUmMessage[2:])
 		rExtDict := new(extDict)
 		if decodeErr := bencode.NewDecoder(rMessageBuf).Decode(rExtDict); decodeErr != nil {

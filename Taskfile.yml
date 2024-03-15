@@ -8,6 +8,7 @@ tasks:
       - go run ./internal/gql/enums/gen/genenums.go
       - go run ./internal/torznab/gencategories/gencategories.go
       - go run github.com/99designs/gqlgen generate --config ./internal/gql/gqlgen.yml
+      - protoc --go_out=. ./internal/protobuf/bitmagnet.proto
       - go run github.com/vektra/mockery/v2
 
   lint:

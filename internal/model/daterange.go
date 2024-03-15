@@ -136,22 +136,6 @@ func (d dateRangeMonthAndYear) Start() Date {
 	}
 }
 
-func numDaysInMonth(year Year, month time.Month) uint8 {
-	switch month {
-	case time.January, time.March, time.May, time.July, time.August, time.October, time.December:
-		return 31
-	case time.April, time.June, time.September, time.November:
-		return 30
-	case time.February:
-		if year%4 == 0 {
-			return 29
-		} else {
-			return 28
-		}
-	}
-	return 0
-}
-
 func (d dateRangeMonthAndYear) End() Date {
 	return Date{
 		Year:  d.year,

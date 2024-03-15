@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/workflow"
 	"golang.org/x/sync/semaphore"
 	"gorm.io/gen/field"
 )
@@ -20,7 +21,7 @@ type Processor interface {
 
 type processor struct {
 	search           search.Search
-	classifier       classifier.Classifier
+	workflow         workflow.Workflow
 	dao              *dao.Query
 	processSemaphore *semaphore.Weighted
 	persistSemaphore *semaphore.Weighted
@@ -46,21 +47,37 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 			return []field.RelationField{
 				q.Torrent.Files.RelationField,
 				q.Torrent.Hint.RelationField,
-				q.Torrent.Contents.RelationField,
 			}
 		}),
 	)
 	if searchErr != nil {
 		return searchErr
 	}
+	tcResult, tcErr := c.search.TorrentContent(
+		ctx,
+		query.Where(search.TorrentContentInfoHashCriteria(params.InfoHashes...)),
+		search.HydrateTorrentContentContent(),
+	)
+	if tcErr != nil {
+		return tcErr
+	}
+	for _, tc := range tcResult.Items {
+		for ti, t := range searchResult.Torrents {
+			if t.InfoHash == tc.InfoHash {
+				searchResult.Torrents[ti].Contents = append(searchResult.Torrents[ti].Contents, tc.TorrentContent)
+				break
+			}
+		}
+	}
 	var errs []error
-	var failedHashes []protocol.ID
+	failedHashes := make([]protocol.ID, 0, len(searchResult.MissingInfoHashes))
+	failedHashes = append(failedHashes, searchResult.MissingInfoHashes...)
 	if len(failedHashes) > 0 {
 		errs = append(errs, MissingHashesError{InfoHashes: failedHashes})
-		failedHashes = append(failedHashes, searchResult.MissingInfoHashes...)
 	}
 	tcs := make([]model.TorrentContent, 0, len(searchResult.Torrents))
 	var deleteIds []string
+	var deleteInfoHashes []protocol.ID
 	for _, torrent := range searchResult.Torrents {
 		thisDeleteIds := make(map[string]struct{}, len(torrent.Contents))
 		foundMatch := false
@@ -78,17 +95,20 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 				foundMatch = true
 			}
 		}
-		useClassifier := c.classifier
-		if params.ClassifyMode == ClassifyModeSkipUnmatched && torrent.Hint.IsNil() {
-			useClassifier = classifier.FallbackClassifier{}
-		}
-		classification, classifyErr := useClassifier.Classify(ctx, torrent)
+		//if params.ClassifyMode == ClassifyModeSkipUnmatched && torrent.Hint.IsNil() {
+		//	useClassifier = classifier.FallbackClassifier{}
+		//}
+		cl, classifyErr := c.workflow.Run(ctx, torrent)
 		if classifyErr != nil {
-			errs = append(errs, classifyErr)
-			failedHashes = append(failedHashes, torrent.InfoHash)
+			if errors.Is(classifyErr, classification.ErrDeleteTorrent) {
+				deleteInfoHashes = append(deleteInfoHashes, torrent.InfoHash)
+			} else {
+				errs = append(errs, classifyErr)
+				failedHashes = append(failedHashes, torrent.InfoHash)
+			}
 			continue
 		}
-		torrentContent := newTorrentContent(torrent, classification)
+		torrentContent := newTorrentContent(torrent, cl)
 		tcId := torrentContent.InferID()
 		for id := range thisDeleteIds {
 			if id != tcId {
@@ -115,13 +135,17 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 	if len(tcs) == 0 {
 		return nil
 	}
-	if persistErr := c.persist(ctx, tcs, deleteIds); persistErr != nil {
+	if persistErr := c.persist(ctx, persistPayload{
+		torrentContents:  tcs,
+		deleteIds:        deleteIds,
+		deleteInfoHashes: deleteInfoHashes,
+	}); persistErr != nil {
 		return persistErr
 	}
 	return nil
 }
 
-func newTorrentContent(t model.Torrent, c classifier.Classification) model.TorrentContent {
+func newTorrentContent(t model.Torrent, c classification.Result) model.TorrentContent {
 	tc := model.TorrentContent{
 		Torrent:         t,
 		InfoHash:        t.InfoHash,

@@ -110,16 +110,38 @@ func NormalizeSearchString(input string) string {
 
 func RegexTokenFromName(name string) base.GroupToken {
 	var tokens []dialect.Token
-	for _, char := range name {
-		if char == ' ' {
-			tokens = append(tokens, AnyNonWordChar().Repeat().OneOrMore())
+	for i := 0; i < len(name); i++ {
+		char := name[i]
+		if char == '*' {
+			tokens = append(tokens, AnyWordChar().Repeat().ZeroOrMore())
 		} else {
-			lcChar := strings.ToLower(string(char))
-			ucChar := strings.ToUpper(string(char))
-			if lcChar == ucChar {
-				tokens = append(tokens, rex.Chars.Single(char))
+			var token base.ClassToken
+			if char == ' ' {
+				tokens = append(tokens, AnyNonWordChar().Repeat().OneOrMore())
+			} else if char == '#' {
+				tokens = append(tokens, rex.Chars.Digits())
 			} else {
-				tokens = append(tokens, rex.Chars.Runes(ucChar+lcChar))
+				lcChar := strings.ToLower(string(char))
+				ucChar := strings.ToUpper(string(char))
+				if lcChar == ucChar {
+					token = rex.Chars.Single(rune(char))
+				} else {
+					token = rex.Chars.Runes(ucChar + lcChar)
+				}
+			}
+			if i < len(name)-1 {
+				i++
+				switch name[i] {
+				case '?':
+					tokens = append(tokens, token.Repeat().ZeroOrOne())
+				case '+':
+					tokens = append(tokens, token.Repeat().OneOrMore())
+				default:
+					tokens = append(tokens, token)
+					i--
+				}
+			} else {
+				tokens = append(tokens, token)
 			}
 		}
 	}
@@ -131,7 +153,13 @@ func RegexTokensFromNames(names ...string) []dialect.Token {
 		return len(names[i]) > len(names[j])
 	})
 	var tokens []dialect.Token
+	usedNames := make(map[string]struct{}, len(names))
 	for _, name := range names {
+		lowerName := strings.ToLower(name)
+		if _, ok := usedNames[lowerName]; ok {
+			continue
+		}
+		usedNames[lowerName] = struct{}{}
 		tokens = append(tokens, RegexTokenFromName(name))
 	}
 	return tokens

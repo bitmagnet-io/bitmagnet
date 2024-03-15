@@ -1,105 +1,30 @@
 package fts
 
 import (
-	"bufio"
 	"errors"
-	"io"
-	"strconv"
-	"strings"
+	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
 	"unicode"
 )
 
-func newLexer(str string) lexer {
-	return lexer{
-		reader: bufio.NewReader(strings.NewReader(str)),
-	}
+func newLexer(str string) ftsLexer {
+	return ftsLexer{lexer.NewLexer(str)}
 }
 
-type lexer struct {
-	pos    int
-	reader *bufio.Reader
+type ftsLexer struct {
+	lexer.Lexer
 }
 
-func (l *lexer) read() (rune, bool) {
-	r, _, err := l.reader.ReadRune()
-	if err != nil {
-		if errors.Is(err, io.EOF) {
-			return 0, false
-		}
-		panic(err)
-	}
-	l.pos++
-	return r, true
-}
-
-func (l *lexer) backup() {
-	if err := l.reader.UnreadRune(); err != nil {
-		panic(err)
-	}
-	l.pos--
-}
-
-func (l *lexer) isEof() bool {
-	_, ok := l.read()
-	if !ok {
-		return true
-	}
-	l.backup()
-	return false
-}
-
-func (l *lexer) readIf(fn func(rune) bool) (rune, bool) {
-	r, ok := l.read()
-	if !ok {
-		return 0, false
-	}
-	if !fn(r) {
-		l.backup()
-		return 0, false
-	}
-	return r, true
-}
-
-func (l *lexer) readWhile(fn func(rune) bool) string {
-	var str string
-	for {
-		r, ok := l.readIf(fn)
-		if !ok {
-			break
-		}
-		str = str + string(r)
-	}
-	return str
-}
-
-func (l *lexer) readInt() (int, bool) {
-	str := l.readWhile(isInt)
-	if str == "" {
-		return 0, false
-	}
-	n, err := strconv.Atoi(str)
-	if err != nil {
-		panic(err)
-	}
-	return n, true
-}
-
-func (l *lexer) readChar(r1 rune) bool {
-	_, ok := l.readIf(isChar(r1))
-	return ok
-}
-
-func (l *lexer) readQuotedString(quoteChar rune) (string, error) {
-	if !l.readChar(quoteChar) {
+func (l *ftsLexer) readQuotedString(quoteChar rune) (string, error) {
+	if !l.ReadChar(quoteChar) {
 		return "", errors.New("missing opening quote")
 	}
 	var str string
 	for {
-		ch, ok := l.read()
+		ch, ok := l.Read()
 		if !ok {
 			return str, errors.New("unexpected EOF")
 		}
-		if ch == quoteChar && !l.readChar(quoteChar) {
+		if ch == quoteChar && !l.ReadChar(quoteChar) {
 			break
 		}
 		str = str + string(ch)
