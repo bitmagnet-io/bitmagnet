@@ -112,22 +112,34 @@ func RegexTokenFromName(name string) base.GroupToken {
 	var tokens []dialect.Token
 	for i := 0; i < len(name); i++ {
 		char := name[i]
-		if char == ' ' {
-			tokens = append(tokens, AnyNonWordChar().Repeat().OneOrMore())
-		} else if char == '*' {
+		if char == '*' {
 			tokens = append(tokens, AnyWordChar().Repeat().ZeroOrMore())
 		} else {
-			lcChar := strings.ToLower(string(char))
-			ucChar := strings.ToUpper(string(char))
 			var token base.ClassToken
-			if lcChar == ucChar {
-				token = rex.Chars.Single(rune(char))
+			if char == ' ' {
+				tokens = append(tokens, AnyNonWordChar().Repeat().OneOrMore())
+			} else if char == '#' {
+				tokens = append(tokens, rex.Chars.Digits())
 			} else {
-				token = rex.Chars.Runes(ucChar + lcChar)
+				lcChar := strings.ToLower(string(char))
+				ucChar := strings.ToUpper(string(char))
+				if lcChar == ucChar {
+					token = rex.Chars.Single(rune(char))
+				} else {
+					token = rex.Chars.Runes(ucChar + lcChar)
+				}
 			}
-			if i < len(name)-1 && name[i+1] == '?' {
-				tokens = append(tokens, token.Repeat().ZeroOrOne())
+			if i < len(name)-1 {
 				i++
+				switch name[i] {
+				case '?':
+					tokens = append(tokens, token.Repeat().ZeroOrOne())
+				case '+':
+					tokens = append(tokens, token.Repeat().OneOrMore())
+				default:
+					tokens = append(tokens, token)
+					i--
+				}
 			} else {
 				tokens = append(tokens, token)
 			}
