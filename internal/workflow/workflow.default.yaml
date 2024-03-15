@@ -54,8 +54,6 @@ actions:
               if_action:
                 set_content_type: xxx
               else_action: no_match
-          # exit the find_match without failing:
-          - noop
   # if we know a content ID that isn't already attached, try to attach it, either from the local `content` table or an API integration:
   - if_else:
       condition:
@@ -67,8 +65,6 @@ actions:
         find_match:
           - attach_local_content_by_id
           - attach_tmdb_content_by_id
-          # exit the find_match without failing:
-          - noop
   # parse video-related attributes for video torrents (including the base title, needed for the next step):
   - if_else:
       condition:
@@ -80,8 +76,6 @@ actions:
           # parse video-related attributes from the torrent name;
           # if the content type wasn't previously specified and the name format doesn't suggest a movie or TV show, a "no match" will be returned:
           - parse_video_content
-          # exit the find_match without failing:
-          - noop
   # if content isn't already attached, and a base title has been parsed, then search for the content, either from the local `content` table or an API integration:
   - if_else:
       condition: "!result.hasAttachedContent && result.hasBaseTitle"
@@ -89,8 +83,6 @@ actions:
         find_match:
           - attach_local_content_by_search
           - attach_tmdb_content_by_search
-          # exit the find_match without failing:
-          - noop
 #  - if_else:
 #      condition: "result.contentType in [contentType.xxx]"
 #      if_action: delete

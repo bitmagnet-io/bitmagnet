@@ -3,8 +3,8 @@ package workflow
 import (
 	"context"
 	"fmt"
-	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor/classification"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
 	"testing"
@@ -28,7 +28,6 @@ func TestCompile(t *testing.T) {
 			findMatchAction{},
 			ifElseAction{},
 			noMatchAction{},
-			noopAction{},
 			parseVideoContentAction{},
 			setContentTypeAction{},
 			//sequenceAction{},
@@ -51,7 +50,7 @@ func TestCompile(t *testing.T) {
 		}
 		type testData struct {
 			torrent     model.Torrent
-			expected    Classification
+			expected    classification.Result
 			expectedErr error
 		}
 		testCases := []testData{
@@ -65,8 +64,8 @@ func TestCompile(t *testing.T) {
 					//	ContentType: model.ContentTypeXxx,
 					//},
 				},
-				expected: Classification{
-					ContentAttributes: classifier.ContentAttributes{
+				expected: classification.Result{
+					ContentAttributes: classification.ContentAttributes{
 						ContentType:     model.NewNullContentType(model.ContentTypeXxx),
 						VideoResolution: model.NewNullVideoResolution(model.VideoResolutionV1080p),
 					},
