@@ -159,33 +159,33 @@ func ParseTitleYearEpisodes(contentType model.NullContentType, input string) (st
 	return "", 0, nil, "", classification.ErrNoMatch
 }
 
-func ParseVideoContent(hintCt model.NullContentType, input string) (classification.ContentAttributes, error) {
-	title, year, episodes, rest, err := ParseTitleYearEpisodes(hintCt, input)
+func ParseVideoContent(torrent model.Torrent, result classification.Result) (classification.ContentAttributes, error) {
+	title, year, episodes, rest, err := ParseTitleYearEpisodes(result.ContentType, torrent.Name)
 	if err != nil {
-		if !hintCt.Valid {
+		if !result.ContentType.Valid {
 			return classification.ContentAttributes{}, err
 		}
-		rest = input
+		rest = torrent.Name
 	}
 	ct := model.NullContentType{}
-	if hintCt.Valid {
-		ct = model.NullContentType{Valid: true, ContentType: hintCt.ContentType}
-	} else if len(episodes) > 0 {
+	if result.ContentType.Valid {
+		ct = model.NullContentType{Valid: true, ContentType: result.ContentType.ContentType}
+	} else if len(episodes) > 0 || result.Date.IsValid() {
 		ct = model.NullContentType{Valid: true, ContentType: model.ContentTypeTvShow}
-	} else if !year.IsNil() && !DateRegex.MatchString(input) { // todo: Don't check date regex from here!
+	} else if !year.IsNil() {
 		ct = model.NullContentType{Valid: true, ContentType: model.ContentTypeMovie}
 	}
 	if ct.ContentType != model.ContentTypeTvShow {
 		episodes = nil
 		if year.IsNil() {
 			title = ""
-			rest = input
+			rest = torrent.Name
 		}
 	}
 	attrs := classification.ContentAttributes{
-		ContentType:   model.NewNullContentType(ct),
+		ContentType:   ct,
 		BaseTitle:     model.NullString{Valid: title != "", String: title},
-		Year:          year,
+		Date:          model.Date{Year: year},
 		Episodes:      episodes,
 		Languages:     model.InferLanguages(rest),
 		LanguageMulti: multiRegex.MatchString(rest),

@@ -52,10 +52,7 @@ func (findMatchAction) compileAction(ctx compilerContext) (action, error) {
 					return result, nil
 				}
 			}
-			return classification.Result{}, classification.RuntimeError{
-				Cause: classification.ErrNoMatch,
-				Path:  path,
-			}
+			return ctx.result, nil
 		},
 	}, nil
 }

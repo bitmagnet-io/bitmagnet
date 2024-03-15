@@ -38,8 +38,8 @@ func (a attachLocalContentBySearchAction) compileAction(ctx compilerContext) (ac
 				search.ContentDefaultPreload(),
 				search.ContentDefaultHydrate(),
 			}
-			if !cl.Year.IsNil() {
-				options = append(options, query.Where(search.ContentReleaseDateCriteria(model.NewDateRangeFromYear(cl.Year))))
+			if !cl.Date.Year.IsNil() {
+				options = append(options, query.Where(search.ContentReleaseDateCriteria(model.NewDateRangeFromYear(cl.Date.Year))))
 			}
 			result, searchErr := a.search.Content(
 				ctx,

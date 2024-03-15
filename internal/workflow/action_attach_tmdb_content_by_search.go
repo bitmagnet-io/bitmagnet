@@ -32,7 +32,7 @@ func (a attachTmdbContentBySearchAction) compileAction(ctx compilerContext) (act
 			var content *model.Content
 			switch cl.ContentType.ContentType {
 			case model.ContentTypeTvShow:
-				if result, searchErr := a.searchTvShow(ctx, cl.BaseTitle.String, cl.Year); searchErr != nil {
+				if result, searchErr := a.searchTvShow(ctx, cl.BaseTitle.String, cl.Date.Year); searchErr != nil {
 					return cl, searchErr
 				} else {
 					content = &result
@@ -41,7 +41,7 @@ func (a attachTmdbContentBySearchAction) compileAction(ctx compilerContext) (act
 				if len(cl.Episodes) > 0 {
 					return cl, classification.ErrNoMatch
 				}
-				if result, searchErr := a.searchMovie(ctx, cl.BaseTitle.String, cl.Year); searchErr != nil {
+				if result, searchErr := a.searchMovie(ctx, cl.BaseTitle.String, cl.Date.Year); searchErr != nil {
 					return cl, searchErr
 				} else {
 					content = &result

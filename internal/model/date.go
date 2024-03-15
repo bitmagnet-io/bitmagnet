@@ -54,6 +54,10 @@ func (d Date) IsNil() bool {
 	return d == Date{}
 }
 
+func (d Date) IsValid() bool {
+	return d.Year >= 1000 && d.Year <= 9999 && d.Month >= 1 && d.Month <= 12 && d.Day >= 1 && d.Day <= numDaysInMonth(d.Year, d.Month)
+}
+
 func (d *Date) Scan(value interface{}) error {
 	t, tOk := value.(time.Time)
 	if tOk {
@@ -101,4 +105,20 @@ func (d Date) MarshalGQL(w io.Writer) {
 		return
 	}
 	_, _ = w.Write([]byte(`"` + d.IsoDateString() + `"`))
+}
+
+func numDaysInMonth(year Year, month time.Month) uint8 {
+	switch month {
+	case time.January, time.March, time.May, time.July, time.August, time.October, time.December:
+		return 31
+	case time.April, time.June, time.September, time.November:
+		return 30
+	case time.February:
+		if year%4 == 0 {
+			return 29
+		} else {
+			return 28
+		}
+	}
+	return 0
 }

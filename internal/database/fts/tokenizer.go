@@ -20,7 +20,7 @@ func Tokenize(str string) [][]string {
 }
 
 type tokenizerLexer struct {
-	lexer
+	ftsLexer
 }
 
 func TokenizeFlat(str string) []string {
@@ -44,11 +44,11 @@ func (l *tokenizerLexer) readPhrase() []string {
 		lexeme = lexeme + str
 	}
 	for {
-		if l.isEof() {
+		if l.IsEof() {
 			breakWord()
 			return phrase
 		}
-		if ch, ok := l.readIf(IsWordChar); ok {
+		if ch, ok := l.ReadIf(IsWordChar); ok {
 			ch = unicode.ToLower(ch)
 			if ch < unicode.MaxASCII {
 				appendStr(string(ch))
@@ -81,6 +81,6 @@ func (l *tokenizerLexer) readPhrase() []string {
 		if len(phrase) > 0 {
 			return phrase
 		}
-		l.read()
+		l.Read()
 	}
 }

@@ -62,7 +62,7 @@ func New(params Params) Result {
 				findMatchAction{},
 				ifElseAction{},
 				noMatchAction{},
-				noopAction{},
+				parseDateAction{},
 				parseVideoContentAction{},
 				setContentTypeAction{},
 			),

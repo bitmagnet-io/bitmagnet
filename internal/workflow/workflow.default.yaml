@@ -1,5 +1,8 @@
 name: default
 actions:
+  # if the name contains a full date, attach it to the result as it's a good indicator of content type:
+  - find_match:
+      - parse_date
   # try to identify content type for torrents without a hinted content type:
   - if_else:
       condition: "result.contentType == contentType.unknown"

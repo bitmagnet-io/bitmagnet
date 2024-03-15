@@ -28,7 +28,7 @@ func (r *Result) AttachContent(content *model.Content) {
 type ContentAttributes struct {
 	ContentType     model.NullContentType
 	BaseTitle       model.NullString
-	Year            model.Year
+	Date            model.Date
 	Languages       model.Languages
 	LanguageMulti   bool
 	Episodes        model.Episodes
@@ -47,8 +47,8 @@ func (a *ContentAttributes) Merge(other ContentAttributes) {
 	if !a.BaseTitle.Valid {
 		a.BaseTitle = other.BaseTitle
 	}
-	if a.Year.IsNil() {
-		a.Year = other.Year
+	if a.Date.IsNil() {
+		a.Date = other.Date
 	}
 	if len(a.Languages) == 0 {
 		a.Languages = other.Languages
