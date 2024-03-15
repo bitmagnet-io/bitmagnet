@@ -112,6 +112,7 @@ extensions:
     - rtf
   music:
     - ape
+    - dsf
     - flac
   software:
     - apk
@@ -122,6 +123,7 @@ extensions:
     - dll
     - dmg
     - exe
+    - iso
     - jar
     - lua
     - msi
@@ -136,6 +138,8 @@ keywords:
     - abridged
     - unabridged
     - narrated
+    - novels?
+    - "*biograph*"
   music:
     - discography
     - music
@@ -163,19 +167,28 @@ keywords:
   xxx:
     - anal
     - ass
+    - blowjobs?
+    - boob*
     - cocks?
     - cum*
     - dicks?
     - erotic*
     - "*fuck*"
+    - "*gloryhole*"
     - hardcore
-    - milf
+    - kink*
+    - milf*
     - nubile*
     - onlyfans
+    - orgasm*
+    - orgy
     - "*porn*"
+    - pov
     - pussy
+    - seduc*
     - sex*
-    - slut
+    - slut*
     - tits?
+    - threesome
     - "*wank*"
-    - xxx
+    - "*xxx*"
