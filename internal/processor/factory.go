@@ -42,7 +42,7 @@ func New(p Params) Result {
 				dao:              d,
 				search:           s,
 				workflow:         w,
-				processSemaphore: semaphore.NewWeighted(2),
+				processSemaphore: semaphore.NewWeighted(3),
 				persistSemaphore: semaphore.NewWeighted(1),
 			}, nil
 		}),
