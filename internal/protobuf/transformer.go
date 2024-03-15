@@ -21,10 +21,16 @@ func NewTorrent(t model.Torrent) *Torrent {
 			filesSize = &s
 		}
 	case model.FilesStatusSingle:
+		var ext *string
+		if t.Extension.Valid {
+			str := t.Extension.String
+			ext = &str
+		}
 		files = append(files, &Torrent_File{
-			Path:     t.Name,
-			Size:     int64(t.Size),
-			FileType: NewFileType(t.FileType()),
+			Path:      t.Name,
+			Extension: ext,
+			Size:      int64(t.Size),
+			FileType:  NewFileType(t.FileType()),
 		})
 		s := int64(t.Size)
 		filesSize = &s
@@ -37,6 +43,7 @@ func NewTorrent(t model.Torrent) *Torrent {
 				ext = &f.Extension.String
 			}
 			files = append(files, &Torrent_File{
+				Index:     int32(f.Index),
 				Path:      f.Path,
 				Size:      int64(f.Size),
 				Extension: ext,
@@ -81,11 +88,11 @@ func NewTorrent(t model.Torrent) *Torrent {
 }
 
 func NewClassification(c classification.Result) *Classification {
-	var year *int32
-	if !c.Year.IsNil() {
-		y := int32(c.Year)
-		year = &y
-	}
+	//var year *int32
+	//if !c.Year.IsNil() {
+	//	y := int32(c.Year)
+	//	year = &y
+	//}
 	var languages []string
 	for _, l := range c.Languages.Slice() {
 		languages = append(languages, l.Id())
@@ -117,13 +124,13 @@ func NewClassification(c classification.Result) *Classification {
 		ContentType:        NewContentType(c.ContentType),
 		HasAttachedContent: c.Content != nil,
 		HasBaseTitle:       c.BaseTitle.Valid,
-		Year:               year,
-		Languages:          languages,
-		Episodes:           episodes,
-		VideoResolution:    videoResolution,
-		VideoSource:        videoSource,
-		VideoCodec:         videoCodec,
-		ReleaseGroup:       releaseGroup,
+		//Year:               year,
+		Languages:       languages,
+		Episodes:        episodes,
+		VideoResolution: videoResolution,
+		VideoSource:     videoSource,
+		VideoCodec:      videoCodec,
+		ReleaseGroup:    releaseGroup,
 	}
 }
 
