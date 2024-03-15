@@ -62,9 +62,9 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		return tcErr
 	}
 	for _, tc := range tcResult.Items {
-		for _, t := range searchResult.Torrents {
+		for ti, t := range searchResult.Torrents {
 			if t.InfoHash == tc.InfoHash {
-				t.Contents = append(t.Contents, tc.TorrentContent)
+				searchResult.Torrents[ti].Contents = append(searchResult.Torrents[ti].Contents, tc.TorrentContent)
 				break
 			}
 		}
