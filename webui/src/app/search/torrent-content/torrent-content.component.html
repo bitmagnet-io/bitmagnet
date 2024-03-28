@@ -96,6 +96,11 @@
             matInput
             placeholder="Search"
             [formControl]="queryString"
+            (blur)="
+              search.setQueryString(queryString.value ?? '');
+              search.firstPage();
+              search.loadResult()
+            "
             (keyup.enter)="
               search.setQueryString(queryString.value ?? '');
               search.firstPage();
