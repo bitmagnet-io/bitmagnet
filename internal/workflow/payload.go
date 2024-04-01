@@ -165,8 +165,6 @@ func (s payloadSingleKeyValue[T]) JsonSchema() any {
 }
 
 func (s payloadSingleKeyValue[T]) Unmarshal(ctx compilerContext) (to T, _ error) {
-	//source := ctx.source()
-	//fmt.Printf("skv %#v\n", source)
 	rawMap, err := decode[map[string]any](ctx)
 	if err != nil {
 		return to, err
@@ -178,7 +176,6 @@ func (s payloadSingleKeyValue[T]) Unmarshal(ctx compilerContext) (to T, _ error)
 	if !ok {
 		return to, ctx.error(fmt.Errorf("missing expected key: '%s' %+v", s.key, rawMap))
 	}
-	//fmt.Printf("skvv %s %#v %#v\n", s.key, source, rawMap[s.key])
 	value, err := s.valueSpec.Unmarshal(ctx.child(s.key, rawValue))
 	if err != nil {
 		return to, err
@@ -199,7 +196,6 @@ func (s payloadEnum[T]) JsonSchema() any {
 }
 
 func (s payloadEnum[T]) Unmarshal(ctx compilerContext) (to T, _ error) {
-	//fmt.Printf("enum %#v\n", source)
 	value, err := decode[T](ctx)
 	if err != nil {
 		return to, ctx.error(err)
@@ -240,4 +236,34 @@ var contentTypePayloadSpec = payloadTransformer[string, model.NullContentType]{
 		}
 		return model.NullContentType{ContentType: contentType, Valid: true}, nil
 	},
+}
+
+type payloadKeyValue[T any] struct {
+	valueSpec TypedPayload[T]
+}
+
+func (s payloadKeyValue[T]) JsonSchema() any {
+	return map[string]any{
+		"type": "object",
+		"additionalProperties": map[string]any{
+			"type": s.valueSpec.JsonSchema(),
+		},
+		"nullable": false,
+	}
+}
+
+func (s payloadKeyValue[T]) Unmarshal(ctx compilerContext) (to map[string]T, _ error) {
+	rawMap, err := decode[map[string]any](ctx)
+	if err != nil {
+		return to, err
+	}
+	kvs := make(map[string]T, len(rawMap))
+	for key, rawValue := range rawMap {
+		value, err := s.valueSpec.Unmarshal(ctx.child(key, rawValue))
+		if err != nil {
+			return to, err
+		}
+		kvs[key] = value
+	}
+	return kvs, nil
 }

@@ -149,6 +149,12 @@ func NewContentType(ct model.NullContentType) Classification_ContentType {
 			return Classification_comic
 		case model.ContentTypeAudiobook:
 			return Classification_audiobook
+		case model.ContentTypeGame:
+			return Classification_game
+		case model.ContentTypeSoftware:
+			return Classification_software
+		case model.ContentTypeXxx:
+			return Classification_xxx
 		}
 	}
 	return Classification_unknown

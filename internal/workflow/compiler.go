@@ -98,10 +98,12 @@ type keywordGroups map[string][]string
 type extensionGroups map[string][]string
 
 type workflowSource struct {
-	Name       string
-	Keywords   keywordGroups
-	Extensions extensionGroups
-	Actions    any
+	Name            string
+	FlagDefinitions flagDefinitions
+	Flags           flags
+	Keywords        keywordGroups
+	Extensions      extensionGroups
+	Actions         any
 }
 
 type workflow struct {

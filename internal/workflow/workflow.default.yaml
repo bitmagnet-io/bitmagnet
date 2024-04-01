@@ -64,7 +64,10 @@ actions:
       if_action:
         find_match:
           - attach_local_content_by_id
-          - attach_tmdb_content_by_id
+          - if_else:
+              condition: "flags.tmdb_enabled"
+              if_action: attach_tmdb_content_by_id
+              else_action: no_match
   # parse video-related attributes for video torrents (including the base title, needed for the next step):
   - if_else:
       condition:
@@ -82,10 +85,13 @@ actions:
       if_action:
         find_match:
           - attach_local_content_by_search
-          - attach_tmdb_content_by_search
-#  - if_else:
-#      condition: "result.contentType in [contentType.xxx]"
-#      if_action: delete
+          - if_else:
+              condition: "flags.tmdb_enabled"
+              if_action: attach_tmdb_content_by_search
+              else_action: no_match
+  - if_else:
+      condition: "result.contentType in flags.delete_content_types"
+      if_action: delete
 extensions:
   audiobook:
     - m4b
@@ -192,3 +198,10 @@ keywords:
     - threesome
     - "*wank*"
     - "*xxx*"
+flag_definitions:
+  tmdb_enabled:
+    type: bool
+    default: true
+  delete_content_types:
+    type: content_type_list
+    default: []
