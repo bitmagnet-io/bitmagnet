@@ -2,9 +2,9 @@ package processor
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
+	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
-	"github.com/bitmagnet-io/bitmagnet/internal/workflow"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"golang.org/x/sync/semaphore"
@@ -13,7 +13,7 @@ import (
 type Params struct {
 	fx.In
 	Search   lazy.Lazy[search.Search]
-	Workflow lazy.Lazy[workflow.Workflow]
+	Workflow lazy.Lazy[classifier.Runner]
 	Dao      lazy.Lazy[*dao.Query]
 	Logger   *zap.SugaredLogger
 }
@@ -41,7 +41,7 @@ func New(p Params) Result {
 			return processor{
 				dao:              d,
 				search:           s,
-				workflow:         w,
+				runner:           w,
 				processSemaphore: semaphore.NewWeighted(3),
 				persistSemaphore: semaphore.NewWeighted(1),
 			}, nil

@@ -6,6 +6,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/blocking/blockingfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/app/boilerplateappfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpserver/httpserverfx"
+	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classifierfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/databasefx"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/migrations"
 	"github.com/bitmagnet-io/bitmagnet/internal/dhtcrawler/dhtcrawlerfx"
@@ -20,7 +21,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab/torznabfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/version/versionfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/webui"
-	"github.com/bitmagnet-io/bitmagnet/internal/workflow/workflowfx"
 	"go.uber.org/fx"
 )
 
@@ -42,7 +42,7 @@ func New() fx.Option {
 		tmdbfx.New(),
 		torznabfx.New(),
 		versionfx.New(),
-		workflowfx.New(),
+		classifierfx.New(),
 		// cli commands:
 		fx.Provide(
 			reprocesscmd.New,

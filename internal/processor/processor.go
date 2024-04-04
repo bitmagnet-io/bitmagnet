@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
+	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
-	"github.com/bitmagnet-io/bitmagnet/internal/processor/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"github.com/bitmagnet-io/bitmagnet/internal/workflow"
 	"golang.org/x/sync/semaphore"
 	"gorm.io/gen/field"
 )
@@ -21,7 +21,7 @@ type Processor interface {
 
 type processor struct {
 	search           search.Search
-	workflow         workflow.Workflow
+	runner           classifier.Runner
 	dao              *dao.Query
 	processSemaphore *semaphore.Weighted
 	persistSemaphore *semaphore.Weighted
@@ -40,6 +40,10 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		return err
 	}
 	defer c.processSemaphore.Release(1)
+	workflowName := params.ClassifierWorkflow
+	if workflowName == "" {
+		workflowName = "default"
+	}
 	searchResult, searchErr := c.search.TorrentsWithMissingInfoHashes(
 		ctx,
 		params.InfoHashes,
@@ -98,7 +102,7 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		//if params.ClassifyMode == ClassifyModeSkipUnmatched && torrent.Hint.IsNil() {
 		//	useClassifier = classifier.FallbackClassifier{}
 		//}
-		cl, classifyErr := c.workflow.Run(ctx, torrent)
+		cl, classifyErr := c.runner.Run(ctx, workflowName, torrent)
 		if classifyErr != nil {
 			if errors.Is(classifyErr, classification.ErrDeleteTorrent) {
 				deleteInfoHashes = append(deleteInfoHashes, torrent.InfoHash)

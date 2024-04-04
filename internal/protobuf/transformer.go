@@ -1,8 +1,8 @@
 package protobuf
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
-	"github.com/bitmagnet-io/bitmagnet/internal/processor/classification"
 )
 
 func NewTorrent(t model.Torrent) *Torrent {

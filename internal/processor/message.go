@@ -22,8 +22,9 @@ const (
 )
 
 type MessageParams struct {
-	ClassifyMode ClassifyMode
-	InfoHashes   []protocol.ID
+	ClassifyMode       ClassifyMode
+	ClassifierWorkflow string
+	InfoHashes         []protocol.ID
 }
 
 func NewQueueJob(msg MessageParams, options ...model.QueueJobOption) (model.QueueJob, error) {
