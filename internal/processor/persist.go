@@ -54,12 +54,14 @@ func (c processor) persist(ctx context.Context, payload persistPayload) error {
 				return deleteErr
 			}
 		}
-		if createErr := tx.TorrentContent.WithContext(ctx).Clauses(
-			clause.OnConflict{
-				UpdateAll: true,
-			},
-		).CreateInBatches(torrentContentsPtr, 100); createErr != nil {
-			return createErr
+		if len(torrentContentsPtr) > 0 {
+			if createErr := tx.TorrentContent.WithContext(ctx).Clauses(
+				clause.OnConflict{
+					UpdateAll: true,
+				},
+			).CreateInBatches(torrentContentsPtr, 100); createErr != nil {
+				return createErr
+			}
 		}
 		if len(payload.deleteInfoHashes) > 0 {
 			valuers := make([]driver.Valuer, 0, len(payload.deleteInfoHashes))
