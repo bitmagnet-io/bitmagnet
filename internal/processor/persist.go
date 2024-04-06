@@ -13,12 +13,14 @@ type persistPayload struct {
 	torrentContents  []model.TorrentContent
 	deleteIds        []string
 	deleteInfoHashes []protocol.ID
+	addTags          map[protocol.ID]map[string]struct{}
 }
 
 func (c processor) persist(ctx context.Context, payload persistPayload) error {
 	contentsMap := make(map[model.ContentRef]struct{}, len(payload.torrentContents))
 	contentsPtr := make([]*model.Content, 0, len(payload.torrentContents))
 	torrentContentsPtr := make([]*model.TorrentContent, 0, len(payload.torrentContents))
+	torrentTagsPtr := make([]*model.TorrentTag, 0, len(payload.addTags))
 	for _, tc := range payload.torrentContents {
 		tcCopy := tc
 		tcCopy.Torrent = model.Torrent{}
@@ -32,6 +34,14 @@ func (c processor) persist(ctx context.Context, payload persistPayload) error {
 		}
 		tcCopy.Content = model.Content{}
 		torrentContentsPtr = append(torrentContentsPtr, &tcCopy)
+	}
+	for infoHash, tags := range payload.addTags {
+		for tag := range tags {
+			torrentTagsPtr = append(torrentTagsPtr, &model.TorrentTag{
+				InfoHash: infoHash,
+				Name:     tag,
+			})
+		}
 	}
 	// a semaphore is used here to avoid a Postgres deadlock being detected when multiple processes are trying to persist
 	if err := c.persistSemaphore.Acquire(ctx, 1); err != nil {
@@ -60,6 +70,15 @@ func (c processor) persist(ctx context.Context, payload persistPayload) error {
 					UpdateAll: true,
 				},
 			).CreateInBatches(torrentContentsPtr, 100); createErr != nil {
+				return createErr
+			}
+		}
+		if len(torrentTagsPtr) > 0 {
+			if createErr := tx.TorrentTag.WithContext(ctx).Clauses(
+				clause.OnConflict{
+					DoNothing: true,
+				},
+			).CreateInBatches(torrentTagsPtr, 100); createErr != nil {
 				return createErr
 			}
 		}

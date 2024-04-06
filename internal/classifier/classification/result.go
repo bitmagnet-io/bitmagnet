@@ -5,6 +5,7 @@ import "github.com/bitmagnet-io/bitmagnet/internal/model"
 type Result struct {
 	ContentAttributes
 	Content *model.Content
+	Tags    map[string]struct{}
 }
 
 func (r *Result) ApplyHint(h model.TorrentHint) {

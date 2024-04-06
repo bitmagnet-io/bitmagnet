@@ -40,6 +40,7 @@ func New(params Params) Result {
 				expressionCondition{},
 			),
 			actions(
+				addTagAction{},
 				attachLocalContentByIdAction{
 					searchAction: searchAction{
 						search: s,

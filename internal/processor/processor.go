@@ -83,6 +83,7 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 	tcs := make([]model.TorrentContent, 0, len(searchResult.Torrents))
 	var deleteIds []string
 	var deleteInfoHashes []protocol.ID
+	addTags := make(map[protocol.ID]map[string]struct{})
 	for _, torrent := range searchResult.Torrents {
 		thisDeleteIds := make(map[string]struct{}, len(torrent.Contents))
 		foundMatch := false
@@ -121,6 +122,9 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 			}
 		}
 		tcs = append(tcs, torrentContent)
+		if len(cl.Tags) > 0 {
+			addTags[torrent.InfoHash] = cl.Tags
+		}
 	}
 	if len(failedHashes) > 0 {
 		if len(tcs) == 0 {
@@ -144,6 +148,7 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		torrentContents:  tcs,
 		deleteIds:        deleteIds,
 		deleteInfoHashes: deleteInfoHashes,
+		addTags:          addTags,
 	}); persistErr != nil {
 		return persistErr
 	}
