@@ -13,6 +13,7 @@ import (
 	"time"
 )
 
+// requesterLazy defers instantiation of the requester (and possible failure) until the first request is made, avoiding failure when the TMDB client is not needed.
 type requesterLazy struct {
 	once      sync.Once
 	config    Config

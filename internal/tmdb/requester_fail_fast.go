@@ -7,6 +7,7 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
+// requesterFailFast is a Requester that fails fast on subsequent requests having received an unauthorized response.
 type requesterFailFast struct {
 	requester      Requester
 	isUnauthorized *concurrency.AtomicValue[bool]
