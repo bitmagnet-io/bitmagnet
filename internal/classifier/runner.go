@@ -8,6 +8,11 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protobuf"
 )
 
+type runner struct {
+	dependencies
+	workflows map[string]action
+}
+
 func (r runner) Run(ctx context.Context, workflow string, t model.Torrent) (classification.Result, error) {
 	w, ok := r.workflows[workflow]
 	if !ok {
@@ -33,11 +38,12 @@ func (r runner) Run(ctx context.Context, workflow string, t model.Torrent) (clas
 		}
 	}
 	exCtx := executionContext{
-		Context:   ctx,
-		workflows: r.workflows,
-		torrent:   t,
-		torrentPb: protobuf.NewTorrent(t),
-		result:    cl,
+		Context:      ctx,
+		dependencies: r.dependencies,
+		workflows:    r.workflows,
+		torrent:      t,
+		torrentPb:    protobuf.NewTorrent(t),
+		result:       cl,
 	}
 	return w.run(exCtx)
 }

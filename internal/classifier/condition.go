@@ -4,10 +4,9 @@ import (
 	"errors"
 )
 
-func conditions(defs ...conditionDefinition) option {
-	return func(_ WorkflowSource, c *compilerContext) error {
+func conditions(defs ...conditionDefinition) feature {
+	return func(c *features) {
 		c.conditions = append(c.conditions, defs...)
-		return nil
 	}
 }
 

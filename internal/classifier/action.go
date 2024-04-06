@@ -6,10 +6,9 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 )
 
-func actions(defs ...actionDefinition) option {
-	return func(_ WorkflowSource, c *compilerContext) error {
+func actions(defs ...actionDefinition) feature {
+	return func(c *features) {
 		c.actions = append(c.actions, defs...)
-		return nil
 	}
 }
 

@@ -9,9 +9,7 @@ import (
 
 const attachLocalContentByIdName = "attach_local_content_by_id"
 
-type attachLocalContentByIdAction struct {
-	searchAction
-}
+type attachLocalContentByIdAction struct{}
 
 func (attachLocalContentByIdAction) Name() string {
 	return attachLocalContentByIdName
@@ -40,7 +38,7 @@ func (a attachLocalContentByIdAction) compileAction(ctx compilerContext) (action
 			source := ctx.torrent.Hint.ContentSource.String
 			id := ctx.torrent.Hint.ContentID.String
 			if source == "tmdb" {
-				canonicalResult, canonicalErr := a.search.Content(ctx,
+				canonicalResult, canonicalErr := ctx.search.Content(ctx,
 					append(options, query.Where(
 						search.ContentCanonicalIdentifierCriteria(model.ContentRef{
 							Source: source,
@@ -58,7 +56,7 @@ func (a attachLocalContentByIdAction) compileAction(ctx compilerContext) (action
 				cl.Content = &content
 				return cl, nil
 			} else {
-				alternativeResult, alternativeErr := a.search.Content(ctx,
+				alternativeResult, alternativeErr := ctx.search.Content(ctx,
 					append(options, query.Where(
 						search.ContentAlternativeIdentifierCriteria(model.ContentRef{
 							Source: source,

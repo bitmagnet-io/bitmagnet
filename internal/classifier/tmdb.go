@@ -1,24 +1,54 @@
 package classifier
 
 import (
-	"context"
 	"errors"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
-	"strconv"
 )
 
-type tmdbAction struct {
-	client tmdb.Client
+func (c executionContext) tmdb_searchMovie(title string, year model.Year) (model.Content, error) {
+	req := tmdb.SearchMovieRequest{
+		Query:        title,
+		IncludeAdult: true,
+	}
+	if !year.IsNil() {
+		req.Year = year
+	}
+	searchResult, searchErr := c.tmdbClient.SearchMovie(c.Context, req)
+	if searchErr != nil {
+		return model.Content{}, searchErr
+	}
+	for _, item := range searchResult.Results {
+		if levenshteinCheck(title, []string{item.Title, item.OriginalTitle}, levenshteinThreshold) {
+			return c.tmdb_getMovieByTmbdId(item.ID)
+		}
+	}
+	return model.Content{}, classification.ErrNoMatch
 }
 
-const SourceTmdb = "tmdb"
-const SourceImdb = "imdb"
-const SourceTvdb = "tvdb"
+func (c executionContext) tmdb_searchTvShow(title string, year model.Year) (model.Content, error) {
+	req := tmdb.SearchTvRequest{
+		Query:        title,
+		IncludeAdult: true,
+	}
+	if !year.IsNil() {
+		req.FirstAirDateYear = year
+	}
+	searchResult, searchErr := c.tmdbClient.SearchTv(c.Context, req)
+	if searchErr != nil {
+		return model.Content{}, searchErr
+	}
+	for _, item := range searchResult.Results {
+		if levenshteinCheck(title, []string{item.Name, item.OriginalName}, levenshteinThreshold) {
+			return c.tmdb_getTvShowByTmbdId(item.ID)
+		}
+	}
+	return model.Content{}, classification.ErrNoMatch
+}
 
-func (a tmdbAction) getMovieByTmbdId(ctx context.Context, id int64) (movie model.Content, err error) {
-	d, getDetailsErr := a.client.MovieDetails(ctx, tmdb.MovieDetailsRequest{
+func (c executionContext) tmdb_getMovieByTmbdId(id int64) (movie model.Content, err error) {
+	d, getDetailsErr := c.tmdbClient.MovieDetails(c.Context, tmdb.MovieDetailsRequest{
 		ID: id,
 	})
 	if getDetailsErr != nil {
@@ -28,94 +58,11 @@ func (a tmdbAction) getMovieByTmbdId(ctx context.Context, id int64) (movie model
 		err = getDetailsErr
 		return
 	}
-	return MovieDetailsToMovieModel(d)
+	return tmdb.MovieDetailsToMovieModel(d)
 }
 
-func MovieDetailsToMovieModel(details tmdb.MovieDetailsResponse) (movie model.Content, err error) {
-	releaseDate := model.Date{}
-	if details.ReleaseDate != "" {
-		parsedDate, parseDateErr := model.NewDateFromIsoString(details.ReleaseDate)
-		if parseDateErr != nil {
-			err = parseDateErr
-			return
-		}
-		releaseDate = parsedDate
-	}
-	var collections []model.ContentCollection
-	if details.BelongsToCollection.ID != 0 {
-		collections = append(collections, model.ContentCollection{
-			Type:   "franchise",
-			Source: SourceTmdb,
-			ID:     strconv.Itoa(int(details.BelongsToCollection.ID)),
-			Name:   details.BelongsToCollection.Name,
-		})
-	}
-	for _, genre := range details.Genres {
-		collections = append(collections, model.ContentCollection{
-			Type:   "genre",
-			Source: SourceTmdb,
-			ID:     strconv.Itoa(int(genre.ID)),
-			Name:   genre.Name,
-		})
-	}
-	var attributes []model.ContentAttribute
-	if details.IMDbID != "" {
-		attributes = append(attributes, model.ContentAttribute{
-			Source: "imdb",
-			Key:    "id",
-			Value:  details.IMDbID,
-		})
-	}
-	if details.PosterPath != "" {
-		attributes = append(attributes, model.ContentAttribute{
-			Source: "tmdb",
-			Key:    "poster_path",
-			Value:  details.PosterPath,
-		})
-	}
-	if details.BackdropPath != "" {
-		attributes = append(attributes, model.ContentAttribute{
-			Source: "tmdb",
-			Key:    "backdrop_path",
-			Value:  details.BackdropPath,
-		})
-	}
-	releaseYear := releaseDate.Year
-
-	contentType := model.ContentTypeMovie
-
-	if details.Adult {
-		contentType = model.ContentTypeXxx
-	}
-
-	return model.Content{
-		Type:             contentType,
-		Source:           SourceTmdb,
-		ID:               strconv.Itoa(int(details.ID)),
-		Title:            details.Title,
-		ReleaseDate:      releaseDate,
-		ReleaseYear:      releaseYear,
-		Adult:            model.NewNullBool(details.Adult),
-		OriginalLanguage: model.ParseLanguage(details.OriginalLanguage),
-		OriginalTitle:    model.NewNullString(details.OriginalTitle),
-		Overview: model.NullString{
-			String: details.Overview,
-			Valid:  details.Overview != "",
-		},
-		Runtime: model.NullUint16{
-			Uint16: uint16(details.Runtime),
-			Valid:  details.Runtime > 0,
-		},
-		Popularity:  model.NewNullFloat32(details.Popularity),
-		VoteAverage: model.NewNullFloat32(details.VoteAverage),
-		VoteCount:   model.NewNullUint(uint(details.VoteCount)),
-		Collections: collections,
-		Attributes:  attributes,
-	}, nil
-}
-
-func (a tmdbAction) getTvShowByTmbdId(ctx context.Context, id int64) (movie model.Content, err error) {
-	d, getDetailsErr := a.client.TvDetails(ctx, tmdb.TvDetailsRequest{
+func (c executionContext) tmdb_getTvShowByTmbdId(id int64) (movie model.Content, err error) {
+	d, getDetailsErr := c.tmdbClient.TvDetails(c.Context, tmdb.TvDetailsRequest{
 		SeriesID:         id,
 		AppendToResponse: []string{"external_ids"},
 	})
@@ -126,75 +73,33 @@ func (a tmdbAction) getTvShowByTmbdId(ctx context.Context, id int64) (movie mode
 		err = getDetailsErr
 		return
 	}
-	return TvShowDetailsToTvShowModel(d)
+	return tmdb.TvShowDetailsToTvShowModel(d)
 }
 
-func TvShowDetailsToTvShowModel(details tmdb.TvDetailsResponse) (movie model.Content, err error) {
-	firstAirDate := model.Date{}
-	if details.FirstAirDate != "" {
-		parsedDate, parseDateErr := model.NewDateFromIsoString(details.FirstAirDate)
-		if parseDateErr != nil {
-			err = parseDateErr
-			return
+func (c executionContext) tmdb_getTmdbIdByExternalId(ref model.ContentRef) (int64, error) {
+	externalSource, externalId, externalSourceErr := tmdb.ExternalSource(ref)
+	if externalSourceErr != nil {
+		return 0, externalSourceErr
+	}
+	byIdResult, byIdErr := c.tmdbClient.FindByID(c.Context, tmdb.FindByIDRequest{
+		ExternalSource: externalSource,
+		ExternalID:     externalId,
+	})
+	if byIdErr != nil {
+		return 0, byIdErr
+	}
+	switch ref.Type {
+	case model.ContentTypeMovie, model.ContentTypeXxx:
+		if len(byIdResult.MovieResults) == 0 {
+			return 0, classification.ErrNoMatch
 		}
-		firstAirDate = parsedDate
+		return byIdResult.MovieResults[0].ID, nil
+	case model.ContentTypeTvShow:
+		if len(byIdResult.TvResults) == 0 {
+			return 0, classification.ErrNoMatch
+		}
+		return byIdResult.TvResults[0].ID, nil
+	default:
+		return 0, classification.ErrNoMatch
 	}
-	var collections []model.ContentCollection
-	for _, genre := range details.Genres {
-		collections = append(collections, model.ContentCollection{
-			Type:   "genre",
-			Source: SourceTmdb,
-			ID:     strconv.Itoa(int(genre.ID)),
-			Name:   genre.Name,
-		})
-	}
-	var attributes []model.ContentAttribute
-	if details.ExternalIDs.IMDbID != "" {
-		attributes = append(attributes, model.ContentAttribute{
-			Source: "imdb",
-			Key:    "id",
-			Value:  details.ExternalIDs.IMDbID,
-		})
-	}
-	if details.ExternalIDs.TVDBID != 0 {
-		attributes = append(attributes, model.ContentAttribute{
-			Source: "tvdb",
-			Key:    "id",
-			Value:  strconv.Itoa(int(details.ExternalIDs.TVDBID)),
-		})
-	}
-	releaseYear := firstAirDate.Year
-	if details.PosterPath != "" {
-		attributes = append(attributes, model.ContentAttribute{
-			Source: "tmdb",
-			Key:    "poster_path",
-			Value:  details.PosterPath,
-		})
-	}
-	if details.BackdropPath != "" {
-		attributes = append(attributes, model.ContentAttribute{
-			Source: "tmdb",
-			Key:    "backdrop_path",
-			Value:  details.BackdropPath,
-		})
-	}
-	return model.Content{
-		Type:             model.ContentTypeTvShow,
-		Source:           SourceTmdb,
-		ID:               strconv.Itoa(int(details.ID)),
-		Title:            details.Name,
-		ReleaseDate:      firstAirDate,
-		ReleaseYear:      releaseYear,
-		OriginalLanguage: model.ParseLanguage(details.OriginalLanguage),
-		OriginalTitle:    model.NewNullString(details.OriginalName),
-		Overview: model.NullString{
-			String: details.Overview,
-			Valid:  details.Overview != "",
-		},
-		Popularity:  model.NewNullFloat32(details.Popularity),
-		VoteAverage: model.NewNullFloat32(details.VoteAverage),
-		VoteCount:   model.NewNullUint(uint(details.VoteCount)),
-		Collections: collections,
-		Attributes:  attributes,
-	}, nil
 }

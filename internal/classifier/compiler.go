@@ -19,22 +19,24 @@ type Runner interface {
 	Run(ctx context.Context, workflow string, t model.Torrent) (classification.Result, error)
 }
 
-type compiler []option
+type compiler struct {
+	options      []compilerOption
+	dependencies dependencies
+}
 
 type compilerContext struct {
+	features
 	celEnv        *cel.Env
-	conditions    []conditionDefinition
-	actions       []actionDefinition
 	source        any
 	path          []string
-	vars          map[string]any
 	workflowNames map[string]struct{}
 }
 
-type option func(WorkflowSource, *compilerContext) error
+type compilerOption func(WorkflowSource, *compilerContext) error
 
 type executionContext struct {
 	context.Context
+	dependencies
 	workflows map[string]action
 	torrent   model.Torrent
 	torrentPb *protobuf.Torrent
@@ -84,7 +86,7 @@ func (c compiler) Compile(source WorkflowSource) (Runner, error) {
 	if sourceErr != nil {
 		return nil, ctx.fatal(sourceErr)
 	}
-	for _, opt := range c {
+	for _, opt := range c.options {
 		if err := opt(source, ctx); err != nil {
 			return nil, ctx.fatal(err)
 		}
@@ -98,11 +100,10 @@ func (c compiler) Compile(source WorkflowSource) (Runner, error) {
 		}
 		workflows[name] = a
 	}
-	return runner{workflows: workflows}, nil
-}
-
-type runner struct {
-	workflows map[string]action
+	return runner{
+		dependencies: c.dependencies,
+		workflows:    workflows,
+	}, nil
 }
 
 func decodeTo[T any](ctx compilerContext, target *T) error {

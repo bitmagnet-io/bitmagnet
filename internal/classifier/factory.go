@@ -34,43 +34,14 @@ func New(params Params) Result {
 			return nil, err
 		}
 		return compiler{
-			celEnvOption,
-			conditions(
-				andCondition{},
-				orCondition{},
-				expressionCondition{},
-			),
-			actions(
-				addTagAction{},
-				attachLocalContentByIdAction{
-					searchAction: searchAction{
-						search: s,
-					},
-				},
-				attachLocalContentBySearchAction{
-					searchAction: searchAction{
-						search: s,
-					},
-				},
-				attachTmdbContentByIdAction{
-					tmdbAction: tmdbAction{
-						client: tmdbClient,
-					},
-				},
-				attachTmdbContentBySearchAction{
-					tmdbAction: tmdbAction{
-						client: tmdbClient,
-					},
-				},
-				deleteAction{},
-				findMatchAction{},
-				ifElseAction{},
-				noMatchAction{},
-				parseDateAction{},
-				parseVideoContentAction{},
-				runWorkflowAction{},
-				setContentTypeAction{},
-			),
+			options: []compilerOption{
+				compilerFeatures(defaultFeatures),
+				celEnvOption,
+			},
+			dependencies: dependencies{
+				search:     s,
+				tmdbClient: tmdbClient,
+			},
 		}, nil
 	})
 	lsrc := lazy.New[WorkflowSource](func() (WorkflowSource, error) {

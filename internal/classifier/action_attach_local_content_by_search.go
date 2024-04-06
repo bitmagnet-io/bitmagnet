@@ -10,9 +10,7 @@ import (
 
 const attachLocalContentBySearchName = "attach_local_content_by_search"
 
-type attachLocalContentBySearchAction struct {
-	searchAction
-}
+type attachLocalContentBySearchAction struct{}
 
 func (attachLocalContentBySearchAction) Name() string {
 	return attachLocalContentBySearchName
@@ -41,7 +39,7 @@ func (a attachLocalContentBySearchAction) compileAction(ctx compilerContext) (ac
 			if !cl.Date.Year.IsNil() {
 				options = append(options, query.Where(search.ContentReleaseDateCriteria(model.NewDateRangeFromYear(cl.Date.Year))))
 			}
-			result, searchErr := a.search.Content(
+			result, searchErr := ctx.search.Content(
 				ctx,
 				options...,
 			)
