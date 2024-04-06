@@ -47,6 +47,20 @@ func (c processor) persist(ctx context.Context, payload persistPayload) error {
 				return createContentErr
 			}
 		}
+		if len(payload.deleteIds) > 0 {
+			if _, deleteErr := tx.TorrentContent.WithContext(ctx).Where(
+				c.dao.TorrentContent.ID.In(payload.deleteIds...),
+			).Delete(); deleteErr != nil {
+				return deleteErr
+			}
+		}
+		if createErr := tx.TorrentContent.WithContext(ctx).Clauses(
+			clause.OnConflict{
+				UpdateAll: true,
+			},
+		).CreateInBatches(torrentContentsPtr, 100); createErr != nil {
+			return createErr
+		}
 		if len(payload.deleteInfoHashes) > 0 {
 			valuers := make([]driver.Valuer, 0, len(payload.deleteInfoHashes))
 			for _, infoHash := range payload.deleteInfoHashes {
@@ -58,17 +72,6 @@ func (c processor) persist(ctx context.Context, payload persistPayload) error {
 				return deleteErr
 			}
 		}
-		if len(payload.deleteIds) > 0 {
-			if _, deleteErr := tx.TorrentContent.WithContext(ctx).Where(
-				c.dao.TorrentContent.ID.In(payload.deleteIds...),
-			).Delete(); deleteErr != nil {
-				return deleteErr
-			}
-		}
-		return tx.TorrentContent.WithContext(ctx).Clauses(
-			clause.OnConflict{
-				UpdateAll: true,
-			},
-		).CreateInBatches(torrentContentsPtr, 100)
+		return nil
 	})
 }
