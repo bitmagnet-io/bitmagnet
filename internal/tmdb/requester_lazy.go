@@ -7,6 +7,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/go-resty/resty/v2"
 	"go.uber.org/zap"
+	"golang.org/x/sync/semaphore"
 	"golang.org/x/time/rate"
 	"sync"
 	"time"
@@ -38,19 +39,22 @@ func newRequester(ctx context.Context, config Config, logger *zap.SugaredLogger)
 	}
 	r := requesterLogger{
 		requester: requesterFailFast{
-			requester: requesterLimiter{
-				requester: requester{
-					resty: resty.New().
-						SetBaseURL(config.BaseUrl).
-						SetQueryParam("api_key", config.ApiKey).
-						SetRetryCount(3).
-						SetRetryWaitTime(2 * time.Second).
-						SetRetryMaxWaitTime(20 * time.Second).
-						SetTimeout(10 * time.Second).
-						EnableTrace().
-						SetLogger(logger),
+			requester: requesterSemaphore{
+				requester: requesterLimiter{
+					requester: requester{
+						resty: resty.New().
+							SetBaseURL(config.BaseUrl).
+							SetQueryParam("api_key", config.ApiKey).
+							SetRetryCount(3).
+							SetRetryWaitTime(2 * time.Second).
+							SetRetryMaxWaitTime(20 * time.Second).
+							SetTimeout(10 * time.Second).
+							EnableTrace().
+							SetLogger(logger),
+					},
+					limiter: rate.NewLimiter(rate.Every(config.RateLimit), config.RateLimitBurst),
 				},
-				limiter: rate.NewLimiter(rate.Every(config.RateLimit), config.RateLimitBurst),
+				semaphore: semaphore.NewWeighted(2),
 			},
 			isUnauthorized: &concurrency.AtomicValue[bool]{},
 		},
