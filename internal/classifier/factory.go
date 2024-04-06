@@ -1,6 +1,7 @@
 package classifier
 
 import (
+	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
@@ -67,12 +68,20 @@ func New(params Params) Result {
 				noMatchAction{},
 				parseDateAction{},
 				parseVideoContentAction{},
+				runWorkflowAction{},
 				setContentTypeAction{},
 			),
 		}, nil
 	})
 	lsrc := lazy.New[WorkflowSource](func() (WorkflowSource, error) {
-		return newSourceProvider(params.Config, params.TmdbConfig).source()
+		src, err := newSourceProvider(params.Config, params.TmdbConfig).source()
+		if err != nil {
+			return WorkflowSource{}, err
+		}
+		if _, ok := src.Workflows[params.Config.DefaultWorkflow]; !ok {
+			return WorkflowSource{}, fmt.Errorf("default workflow '%s' not found", params.Config.DefaultWorkflow)
+		}
+		return src, nil
 	})
 	return Result{
 		Compiler:       lc,
