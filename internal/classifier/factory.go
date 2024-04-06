@@ -16,13 +16,12 @@ type Params struct {
 
 type Result struct {
 	fx.Out
-	SourceProvider sourceProvider
 	Compiler       lazy.Lazy[Compiler]
+	WorkflowSource lazy.Lazy[WorkflowSource]
 	Runner         lazy.Lazy[Runner]
 }
 
 func New(params Params) Result {
-	sp := newSourceProvider(params.Config)
 	lc := lazy.New(func() (Compiler, error) {
 		s, err := params.Search.Get()
 		if err != nil {
@@ -71,11 +70,14 @@ func New(params Params) Result {
 			),
 		}, nil
 	})
+	lsrc := lazy.New[WorkflowSource](func() (WorkflowSource, error) {
+		return newSourceProvider(params.Config).source()
+	})
 	return Result{
-		SourceProvider: sp,
 		Compiler:       lc,
+		WorkflowSource: lsrc,
 		Runner: lazy.New(func() (Runner, error) {
-			src, err := sp.source()
+			src, err := lsrc.Get()
 			if err != nil {
 				return nil, err
 			}
