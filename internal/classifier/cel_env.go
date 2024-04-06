@@ -10,7 +10,7 @@ import (
 	"github.com/google/cel-go/ext"
 )
 
-func celEnvOption(src WorkflowSource, ctx *compilerContext) error {
+func celEnvOption(src Source, ctx *compilerContext) error {
 	options := []cel.EnvOption{
 		cel.StdLib(),
 		Lists(),

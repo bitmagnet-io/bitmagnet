@@ -20,15 +20,15 @@ func newSourceProvider(config Config, tmdbConfig tmdb.Config) sourceProvider {
 }
 
 type sourceProvider interface {
-	source() (WorkflowSource, error)
+	source() (Source, error)
 }
 
 type mergeSourceProvider struct {
 	providers []sourceProvider
 }
 
-func (m mergeSourceProvider) source() (WorkflowSource, error) {
-	source := WorkflowSource{}
+func (m mergeSourceProvider) source() (Source, error) {
+	source := Source{}
 	for _, p := range m.providers {
 		s, err := p.source()
 		if err != nil {
@@ -51,23 +51,23 @@ type yamlSourceProvider struct {
 	rawSourceProvider
 }
 
-func (y yamlSourceProvider) source() (WorkflowSource, error) {
+func (y yamlSourceProvider) source() (Source, error) {
 	raw, err := y.rawSourceProvider.source()
 	if err != nil {
-		return WorkflowSource{}, err
+		return Source{}, err
 	}
 	rawWorkflow := make(map[string]interface{})
 	parseErr := yaml.Unmarshal(raw, &rawWorkflow)
 	if parseErr != nil {
-		return WorkflowSource{}, parseErr
+		return Source{}, parseErr
 	}
-	src := WorkflowSource{}
+	src := Source{}
 	decoder, decoderErr := newDecoder(&src)
 	if decoderErr != nil {
-		return WorkflowSource{}, decoderErr
+		return Source{}, decoderErr
 	}
 	if decodeErr := decoder.Decode(rawWorkflow); decodeErr != nil {
-		return WorkflowSource{}, decodeErr
+		return Source{}, decodeErr
 	}
 	return src, nil
 }
@@ -106,8 +106,8 @@ type configSourceProvider struct {
 	config Config
 }
 
-func (c configSourceProvider) source() (WorkflowSource, error) {
-	return WorkflowSource{
+func (c configSourceProvider) source() (Source, error) {
+	return Source{
 		Keywords:   c.config.Keywords,
 		Extensions: c.config.Extensions,
 		Flags:      c.config.Flags,
@@ -118,13 +118,13 @@ type disableTmdbSourceProvider struct {
 	enabled bool
 }
 
-func (d disableTmdbSourceProvider) source() (WorkflowSource, error) {
+func (d disableTmdbSourceProvider) source() (Source, error) {
 	if !d.enabled {
-		return WorkflowSource{
+		return Source{
 			Flags: map[string]any{
 				"tmdb_enabled": false,
 			},
 		}, nil
 	}
-	return WorkflowSource{}, nil
+	return Source{}, nil
 }

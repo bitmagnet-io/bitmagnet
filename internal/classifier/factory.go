@@ -18,9 +18,9 @@ type Params struct {
 
 type Result struct {
 	fx.Out
-	Compiler       lazy.Lazy[Compiler]
-	WorkflowSource lazy.Lazy[WorkflowSource]
-	Runner         lazy.Lazy[Runner]
+	Compiler lazy.Lazy[Compiler]
+	Source   lazy.Lazy[Source]
+	Runner   lazy.Lazy[Runner]
 }
 
 func New(params Params) Result {
@@ -44,19 +44,19 @@ func New(params Params) Result {
 			},
 		}, nil
 	})
-	lsrc := lazy.New[WorkflowSource](func() (WorkflowSource, error) {
+	lsrc := lazy.New[Source](func() (Source, error) {
 		src, err := newSourceProvider(params.Config, params.TmdbConfig).source()
 		if err != nil {
-			return WorkflowSource{}, err
+			return Source{}, err
 		}
 		if _, ok := src.Workflows[params.Config.DefaultWorkflow]; !ok {
-			return WorkflowSource{}, fmt.Errorf("default workflow '%s' not found", params.Config.DefaultWorkflow)
+			return Source{}, fmt.Errorf("default workflow '%s' not found", params.Config.DefaultWorkflow)
 		}
 		return src, nil
 	})
 	return Result{
-		Compiler:       lc,
-		WorkflowSource: lsrc,
+		Compiler: lc,
+		Source:   lsrc,
 		Runner: lazy.New(func() (Runner, error) {
 			src, err := lsrc.Get()
 			if err != nil {

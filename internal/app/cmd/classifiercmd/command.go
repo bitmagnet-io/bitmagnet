@@ -10,7 +10,7 @@ import (
 
 type Params struct {
 	fx.In
-	WorkflowSource lazy.Lazy[classifier.WorkflowSource]
+	WorkflowSource lazy.Lazy[classifier.Source]
 }
 
 type Result struct {

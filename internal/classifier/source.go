@@ -1,6 +1,6 @@
 package classifier
 
-type WorkflowSource struct {
+type Source struct {
 	FlagTypes  flagTypes
 	Flags      flags
 	Keywords   keywordGroups
@@ -8,12 +8,12 @@ type WorkflowSource struct {
 	Workflows  workflowSources
 }
 
-func (s WorkflowSource) merge(other WorkflowSource) (WorkflowSource, error) {
+func (s Source) merge(other Source) (Source, error) {
 	flagDefs, err := s.FlagTypes.merge(other.FlagTypes)
 	if err != nil {
-		return WorkflowSource{}, err
+		return Source{}, err
 	}
-	return WorkflowSource{
+	return Source{
 		FlagTypes:  flagDefs,
 		Flags:      s.Flags.merge(other.Flags),
 		Keywords:   s.Keywords.merge(other.Keywords),
@@ -22,7 +22,7 @@ func (s WorkflowSource) merge(other WorkflowSource) (WorkflowSource, error) {
 	}, nil
 }
 
-func (s WorkflowSource) workflowNames() map[string]struct{} {
+func (s Source) workflowNames() map[string]struct{} {
 	result := make(map[string]struct{})
 	for k := range s.Workflows {
 		result[k] = struct{}{}

@@ -16,7 +16,7 @@ func newFeatures(fs ...feature) features {
 }
 
 func compilerFeatures(features features) compilerOption {
-	return func(_ WorkflowSource, c *compilerContext) error {
+	return func(_ Source, c *compilerContext) error {
 		c.features = features
 		return nil
 	}
