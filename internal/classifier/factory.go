@@ -5,11 +5,11 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
 	"go.uber.org/fx"
-	"gopkg.in/yaml.v3"
 )
 
 type Params struct {
 	fx.In
+	Config     Config
 	Search     lazy.Lazy[search.Search]
 	TmdbClient lazy.Lazy[tmdb.Client]
 }
@@ -22,7 +22,7 @@ type Result struct {
 }
 
 func New(params Params) Result {
-	sp := newSourceProvider()
+	sp := newSourceProvider(params.Config)
 	lc := lazy.New(func() (Compiler, error) {
 		s, err := params.Search.Get()
 		if err != nil {
@@ -81,11 +81,6 @@ func New(params Params) Result {
 			c, err := lc.Get()
 			if err != nil {
 				return nil, err
-			}
-			rawWorkflow := make(map[string]interface{})
-			parseErr := yaml.Unmarshal(classifierCoreYaml, &rawWorkflow)
-			if parseErr != nil {
-				return nil, parseErr
 			}
 			return c.Compile(src)
 		}),

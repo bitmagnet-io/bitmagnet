@@ -6,26 +6,27 @@ import (
 	"os"
 )
 
-func newSourceProvider() sourceProvider {
+func newSourceProvider(config Config) sourceProvider {
 	return mergeSourceProvider{
 		providers: []sourceProvider{
 			yamlSourceProvider{rawSourceProvider: coreSourceProvider{}},
 			yamlSourceProvider{rawSourceProvider: xdgSourceProvider{}},
 			yamlSourceProvider{rawSourceProvider: cwdSourceProvider{}},
+			configSourceProvider{config: config},
 		},
 	}
 }
 
 type sourceProvider interface {
-	source() (workflowSource, error)
+	source() (WorkflowSource, error)
 }
 
 type mergeSourceProvider struct {
 	providers []sourceProvider
 }
 
-func (m mergeSourceProvider) source() (workflowSource, error) {
-	source := workflowSource{}
+func (m mergeSourceProvider) source() (WorkflowSource, error) {
+	source := WorkflowSource{}
 	for _, p := range m.providers {
 		s, err := p.source()
 		if err != nil {
@@ -48,23 +49,23 @@ type yamlSourceProvider struct {
 	rawSourceProvider
 }
 
-func (y yamlSourceProvider) source() (workflowSource, error) {
+func (y yamlSourceProvider) source() (WorkflowSource, error) {
 	raw, err := y.rawSourceProvider.source()
 	if err != nil {
-		return workflowSource{}, err
+		return WorkflowSource{}, err
 	}
 	rawWorkflow := make(map[string]interface{})
 	parseErr := yaml.Unmarshal(raw, &rawWorkflow)
 	if parseErr != nil {
-		return workflowSource{}, parseErr
+		return WorkflowSource{}, parseErr
 	}
-	src := workflowSource{}
+	src := WorkflowSource{}
 	decoder, decoderErr := newDecoder(&src)
 	if decoderErr != nil {
-		return workflowSource{}, decoderErr
+		return WorkflowSource{}, decoderErr
 	}
 	if decodeErr := decoder.Decode(rawWorkflow); decodeErr != nil {
-		return workflowSource{}, decodeErr
+		return WorkflowSource{}, decodeErr
 	}
 	return src, nil
 }
@@ -97,4 +98,16 @@ func (x cwdSourceProvider) source() ([]byte, error) {
 		return nil, readErr
 	}
 	return []byte{'{', '}'}, nil
+}
+
+type configSourceProvider struct {
+	config Config
+}
+
+func (c configSourceProvider) source() (WorkflowSource, error) {
+	return WorkflowSource{
+		Keywords:   c.config.Keywords,
+		Extensions: c.config.Extensions,
+		Flags:      c.config.Flags,
+	}, nil
 }

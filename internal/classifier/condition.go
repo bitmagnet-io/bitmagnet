@@ -5,7 +5,7 @@ import (
 )
 
 func conditions(defs ...conditionDefinition) option {
-	return func(_ workflowSource, c *compilerContext) error {
+	return func(_ WorkflowSource, c *compilerContext) error {
 		c.conditions = append(c.conditions, defs...)
 		return nil
 	}

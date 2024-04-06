@@ -12,10 +12,11 @@ import (
 
 type Params struct {
 	fx.In
-	Search   lazy.Lazy[search.Search]
-	Workflow lazy.Lazy[classifier.Runner]
-	Dao      lazy.Lazy[*dao.Query]
-	Logger   *zap.SugaredLogger
+	ClassifierConfig classifier.Config
+	Search           lazy.Lazy[search.Search]
+	Workflow         lazy.Lazy[classifier.Runner]
+	Dao              lazy.Lazy[*dao.Query]
+	Logger           *zap.SugaredLogger
 }
 
 type Result struct {
@@ -44,6 +45,7 @@ func New(p Params) Result {
 				runner:           w,
 				processSemaphore: semaphore.NewWeighted(3),
 				persistSemaphore: semaphore.NewWeighted(1),
+				defaultWorkflow:  p.ClassifierConfig.DefaultWorkflow,
 			}, nil
 		}),
 	}

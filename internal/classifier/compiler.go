@@ -12,7 +12,7 @@ import (
 )
 
 type Compiler interface {
-	Compile(source workflowSource) (Runner, error)
+	Compile(source WorkflowSource) (Runner, error)
 }
 
 type Runner interface {
@@ -30,7 +30,7 @@ type compilerContext struct {
 	vars       map[string]any
 }
 
-type option func(workflowSource, *compilerContext) error
+type option func(WorkflowSource, *compilerContext) error
 
 type executionContext struct {
 	context.Context
@@ -73,9 +73,9 @@ func (c compilerContext) fatal(cause error) error {
 	return fatalCompilerError{compilerError{c.path, cause}}
 }
 
-func (r compiler) Compile(source workflowSource) (Runner, error) {
+func (r compiler) Compile(source WorkflowSource) (Runner, error) {
 	ctx := &compilerContext{source: source}
-	source, sourceErr := decode[workflowSource](*ctx)
+	source, sourceErr := decode[WorkflowSource](*ctx)
 	if sourceErr != nil {
 		return nil, ctx.fatal(sourceErr)
 	}

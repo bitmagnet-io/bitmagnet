@@ -20,6 +20,7 @@ type Processor interface {
 }
 
 type processor struct {
+	defaultWorkflow  string
 	search           search.Search
 	runner           classifier.Runner
 	dao              *dao.Query
@@ -42,7 +43,7 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 	defer c.processSemaphore.Release(1)
 	workflowName := params.ClassifierWorkflow
 	if workflowName == "" {
-		workflowName = "default"
+		workflowName = c.defaultWorkflow
 	}
 	searchResult, searchErr := c.search.TorrentsWithMissingInfoHashes(
 		ctx,

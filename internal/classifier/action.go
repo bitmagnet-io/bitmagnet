@@ -7,7 +7,7 @@ import (
 )
 
 func actions(defs ...actionDefinition) option {
-	return func(_ workflowSource, c *compilerContext) error {
+	return func(_ WorkflowSource, c *compilerContext) error {
 		c.actions = append(c.actions, defs...)
 		return nil
 	}
