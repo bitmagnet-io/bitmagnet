@@ -8,14 +8,12 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/handler"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 	"time"
 )
 
 type Params struct {
 	fx.In
 	Processor lazy.Lazy[processor.Processor]
-	Logger    *zap.SugaredLogger
 }
 
 type Result struct {
