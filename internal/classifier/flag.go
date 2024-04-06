@@ -14,8 +14,8 @@ type flagTypes map[string]FlagType
 func (d flagTypes) merge(other flagTypes) (flagTypes, error) {
 	result := make(flagTypes)
 	for k, v := range d {
-		if _, ok := other[k]; ok {
-			return nil, fmt.Errorf("duplicate flag definition %s", k)
+		if tp, ok := other[k]; ok && tp != v {
+			return nil, fmt.Errorf("conflicting flag definition %s", k)
 		} else {
 			result[k] = v
 		}
