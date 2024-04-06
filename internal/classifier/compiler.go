@@ -22,18 +22,20 @@ type Runner interface {
 type compiler []option
 
 type compilerContext struct {
-	celEnv     *cel.Env
-	conditions []conditionDefinition
-	actions    []actionDefinition
-	source     any
-	path       []string
-	vars       map[string]any
+	celEnv        *cel.Env
+	conditions    []conditionDefinition
+	actions       []actionDefinition
+	source        any
+	path          []string
+	vars          map[string]any
+	workflowNames map[string]struct{}
 }
 
 type option func(WorkflowSource, *compilerContext) error
 
 type executionContext struct {
 	context.Context
+	workflows map[string]action
 	torrent   model.Torrent
 	torrentPb *protobuf.Torrent
 	result    classification.Result
@@ -74,7 +76,10 @@ func (c compilerContext) fatal(cause error) error {
 }
 
 func (r compiler) Compile(source WorkflowSource) (Runner, error) {
-	ctx := &compilerContext{source: source}
+	ctx := &compilerContext{
+		source:        source,
+		workflowNames: source.workflowNames(),
+	}
 	source, sourceErr := decode[WorkflowSource](*ctx)
 	if sourceErr != nil {
 		return nil, ctx.fatal(sourceErr)

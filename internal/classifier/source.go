@@ -22,6 +22,14 @@ func (s WorkflowSource) merge(other WorkflowSource) (WorkflowSource, error) {
 	}, nil
 }
 
+func (s WorkflowSource) workflowNames() map[string]struct{} {
+	result := make(map[string]struct{})
+	for k := range s.Workflows {
+		result[k] = struct{}{}
+	}
+	return result
+}
+
 type keywordGroups map[string][]string
 
 func (g keywordGroups) merge(other keywordGroups) keywordGroups {

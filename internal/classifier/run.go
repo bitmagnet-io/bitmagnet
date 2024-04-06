@@ -34,6 +34,7 @@ func (r runner) Run(ctx context.Context, workflow string, t model.Torrent) (clas
 	}
 	exCtx := executionContext{
 		Context:   ctx,
+		workflows: r.workflows,
 		torrent:   t,
 		torrentPb: protobuf.NewTorrent(t),
 		result:    cl,
