@@ -80,7 +80,7 @@ func (c coreSourceProvider) source() ([]byte, error) {
 
 type xdgSourceProvider struct{}
 
-func (x xdgSourceProvider) source() ([]byte, error) {
+func (_ xdgSourceProvider) source() ([]byte, error) {
 	if path, pathErr := xdg.ConfigFile("bitmagnet/classifier.yml"); pathErr == nil {
 		if bytes, readErr := os.ReadFile(path); readErr == nil {
 			return bytes, nil
@@ -93,7 +93,7 @@ func (x xdgSourceProvider) source() ([]byte, error) {
 
 type cwdSourceProvider struct{}
 
-func (x cwdSourceProvider) source() ([]byte, error) {
+func (_ cwdSourceProvider) source() ([]byte, error) {
 	if bytes, readErr := os.ReadFile("./classifier.yml"); readErr == nil {
 		return bytes, nil
 	} else if !os.IsNotExist(readErr) {
