@@ -75,7 +75,7 @@ func (c compilerContext) fatal(cause error) error {
 	return fatalCompilerError{compilerError{c.path, cause}}
 }
 
-func (r compiler) Compile(source WorkflowSource) (Runner, error) {
+func (c compiler) Compile(source WorkflowSource) (Runner, error) {
 	ctx := &compilerContext{
 		source:        source,
 		workflowNames: source.workflowNames(),
@@ -84,8 +84,8 @@ func (r compiler) Compile(source WorkflowSource) (Runner, error) {
 	if sourceErr != nil {
 		return nil, ctx.fatal(sourceErr)
 	}
-	for _, c := range r {
-		if err := c(source, ctx); err != nil {
+	for _, opt := range c {
+		if err := opt(source, ctx); err != nil {
 			return nil, ctx.fatal(err)
 		}
 	}
