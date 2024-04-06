@@ -3,6 +3,7 @@ package tmdb
 import "time"
 
 type Config struct {
+	Enabled        bool
 	BaseUrl        string
 	ApiKey         string
 	RateLimit      time.Duration
@@ -11,6 +12,7 @@ type Config struct {
 
 func NewDefaultConfig() Config {
 	return Config{
+		Enabled:        true,
 		BaseUrl:        "https://api.themoviedb.org/3",
 		ApiKey:         defaultTmdbApiKey,
 		RateLimit:      defaultRateLimit,

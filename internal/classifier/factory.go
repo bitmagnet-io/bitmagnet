@@ -10,6 +10,7 @@ import (
 type Params struct {
 	fx.In
 	Config     Config
+	TmdbConfig tmdb.Config
 	Search     lazy.Lazy[search.Search]
 	TmdbClient lazy.Lazy[tmdb.Client]
 }
@@ -71,7 +72,7 @@ func New(params Params) Result {
 		}, nil
 	})
 	lsrc := lazy.New[WorkflowSource](func() (WorkflowSource, error) {
-		return newSourceProvider(params.Config).source()
+		return newSourceProvider(params.Config, params.TmdbConfig).source()
 	})
 	return Result{
 		Compiler:       lc,

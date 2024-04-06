@@ -2,17 +2,19 @@ package classifier
 
 import (
 	"github.com/adrg/xdg"
+	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
 	"gopkg.in/yaml.v3"
 	"os"
 )
 
-func newSourceProvider(config Config) sourceProvider {
+func newSourceProvider(config Config, tmdbConfig tmdb.Config) sourceProvider {
 	return mergeSourceProvider{
 		providers: []sourceProvider{
 			yamlSourceProvider{rawSourceProvider: coreSourceProvider{}},
 			yamlSourceProvider{rawSourceProvider: xdgSourceProvider{}},
 			yamlSourceProvider{rawSourceProvider: cwdSourceProvider{}},
 			configSourceProvider{config: config},
+			disableTmdbSourceProvider{enabled: tmdbConfig.Enabled},
 		},
 	}
 }
@@ -110,4 +112,19 @@ func (c configSourceProvider) source() (WorkflowSource, error) {
 		Extensions: c.config.Extensions,
 		Flags:      c.config.Flags,
 	}, nil
+}
+
+type disableTmdbSourceProvider struct {
+	enabled bool
+}
+
+func (d disableTmdbSourceProvider) source() (WorkflowSource, error) {
+	if !d.enabled {
+		return WorkflowSource{
+			Flags: map[string]any{
+				"tmdb_enabled": false,
+			},
+		}, nil
+	}
+	return WorkflowSource{}, nil
 }
