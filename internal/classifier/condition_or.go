@@ -12,7 +12,7 @@ var orConditionSpec = payloadSingleKeyValue[[]any]{
 	key: orName,
 	valueSpec: payloadMustSucceed[[]any]{payloadList[any]{payloadGeneric[any]{
 		jsonSchema: map[string]any{
-			"$ref": "#/$defs/condition",
+			"$ref": "#/definitions/condition",
 		},
 	}}},
 }

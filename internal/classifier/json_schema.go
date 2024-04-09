@@ -1,6 +1,8 @@
 package classifier
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type JsonSchema map[string]any
 
@@ -8,16 +10,21 @@ func (s JsonSchema) MarshalJSON() ([]byte, error) {
 	return json.MarshalIndent(map[string]any(s), "", "  ")
 }
 
+const schemaId = "https://bitmagnet.io/schemas/classifier-0.1.json"
+
 func (f features) JsonSchema() JsonSchema {
 	return map[string]any{
 		"$schema": "http://json-schema.org/draft-07/schema#",
-		"$id":     "https://bitmagnet.io/schemas/classifier-0.1.json",
+		"$id":     schemaId,
 		"type":    "object",
 		"properties": map[string]any{
+			"$schema": map[string]any{
+				"const": schemaId,
+			},
 			"workflows": map[string]any{
 				"type": "object",
 				"additionalProperties": map[string]any{
-					"$ref": "#/$defs/action",
+					"$ref": "#/definitions/action",
 				},
 			},
 			"flag_definitions": map[string]any{
@@ -51,22 +58,22 @@ func (f features) JsonSchema() JsonSchema {
 			},
 		},
 		"additionalProperties": false,
-		"$defs": func() map[string]any {
+		"definitions": func() map[string]any {
 			defs := map[string]any{
 				"action": map[string]any{
 					"oneOf": []map[string]any{
 						{
-							"$ref": "#/$defs/action_single",
+							"$ref": "#/definitions/action_single",
 						},
 						{
-							"$ref": "#/$defs/action_multi",
+							"$ref": "#/definitions/action_multi",
 						},
 					},
 				},
 				"action_multi": map[string]any{
 					"type": "array",
 					"items": map[string]any{
-						"$ref": "#/$defs/action_single",
+						"$ref": "#/definitions/action_single",
 					},
 				},
 				"action_single": map[string]any{
@@ -74,7 +81,7 @@ func (f features) JsonSchema() JsonSchema {
 						var result []map[string]any
 						for _, def := range f.actions {
 							result = append(result, map[string]any{
-								"$ref": "#/$defs/action__" + def.name(),
+								"$ref": "#/definitions/action__" + def.name(),
 							})
 						}
 						return result
@@ -85,7 +92,7 @@ func (f features) JsonSchema() JsonSchema {
 						var result []map[string]any
 						for _, def := range f.conditions {
 							result = append(result, map[string]any{
-								"$ref": "#/$defs/condition__" + def.name(),
+								"$ref": "#/definitions/condition__" + def.name(),
 							})
 						}
 						return result

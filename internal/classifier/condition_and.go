@@ -12,7 +12,7 @@ var andConditionPayloadSpec = payloadSingleKeyValue[[]any]{
 	key: andName,
 	valueSpec: payloadMustSucceed[[]any]{payloadList[any]{payloadGeneric[any]{
 		jsonSchema: map[string]any{
-			"$ref": "#/$defs/condition",
+			"$ref": "#/definitions/condition",
 		},
 	}}},
 }

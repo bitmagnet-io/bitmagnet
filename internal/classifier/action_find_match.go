@@ -17,7 +17,7 @@ var findMatchActionPayloadSpec = payloadSingleKeyValue[[]any]{
 	key: findMatchName,
 	valueSpec: payloadMustSucceed[[]any]{payloadList[any]{payloadGeneric[any]{
 		jsonSchema: map[string]any{
-			"$ref": "#/$defs/action_single",
+			"$ref": "#/definitions/action_single",
 		},
 	}}},
 }
