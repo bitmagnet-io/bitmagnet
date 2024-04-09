@@ -9,10 +9,10 @@ import (
 	"github.com/google/cel-go/common/types/ref"
 )
 
-type flagTypes map[string]FlagType
+type flagDefinitions map[string]FlagType
 
-func (d flagTypes) merge(other flagTypes) (flagTypes, error) {
-	result := make(flagTypes)
+func (d flagDefinitions) merge(other flagDefinitions) (flagDefinitions, error) {
+	result := make(flagDefinitions)
 	for k, v := range d {
 		if tp, ok := other[k]; ok && tp != v {
 			return nil, fmt.Errorf("conflicting flag definition %s", k)

@@ -1,9 +1,9 @@
 package classifier
 
 type Source struct {
-	Schema          string          `json:"$schema"`
+	Schema          string          `json:"$schema,omitempty" yaml:"$schema,omitempty"`
 	Workflows       workflowSources `json:"workflows"`
-	FlagDefinitions flagTypes       `json:"flag_definitions"`
+	FlagDefinitions flagDefinitions `json:"flag_definitions"`
 	Flags           flags           `json:"flags"`
 	Keywords        keywordGroups   `json:"keywords"`
 	Extensions      extensionGroups `json:"extensions"`
