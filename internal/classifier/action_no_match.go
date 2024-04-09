@@ -6,7 +6,7 @@ const noMatchName = "no_match"
 
 type noMatchAction struct{}
 
-func (noMatchAction) Name() string {
+func (noMatchAction) name() string {
 	return noMatchName
 }
 
@@ -22,4 +22,8 @@ func (noMatchAction) compileAction(ctx compilerContext) (action, error) {
 			return ctx.result, classification.RuntimeError{Cause: classification.ErrNoMatch, Path: path}
 		},
 	}, nil
+}
+
+func (noMatchAction) JsonSchema() JsonSchema {
+	return noMatchPayloadSpec.JsonSchema()
 }

@@ -23,7 +23,7 @@ func celEnvOption(src Source, ctx *compilerContext) error {
 	}
 	// `flags` is masquerading as a map of strings to regexes, but it's actually individual string constants defined with a dot in the name,
 	// along with a placeholder map of strings to nulls. This achieves correct compile-time checking with acceptable error messages.
-	for name, tp := range src.FlagTypes {
+	for name, tp := range src.FlagDefinitions {
 		rawVal := src.Flags[name]
 		val, err := tp.celVal(rawVal)
 		if err != nil {

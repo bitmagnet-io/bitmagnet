@@ -9,12 +9,16 @@ const addTagName = "add_tag"
 
 type addTagAction struct{}
 
-func (addTagAction) Name() string {
+func (addTagAction) name() string {
 	return addTagName
 }
 
 var tagPayloadSpec = payloadTransformer[string, string]{
-	spec: payloadGeneric[string]{},
+	spec: payloadGeneric[string]{
+		jsonSchema: JsonSchema{
+			"type": "string",
+		},
+	},
 	transform: func(str string, _ compilerContext) (string, error) {
 		if err := model.ValidateTagName(str); err != nil {
 			return "", err
@@ -49,4 +53,8 @@ func (addTagAction) compileAction(ctx compilerContext) (action, error) {
 			return cl, nil
 		},
 	}, nil
+}
+
+func (addTagAction) JsonSchema() JsonSchema {
+	return addTagPayloadSpec.JsonSchema()
 }

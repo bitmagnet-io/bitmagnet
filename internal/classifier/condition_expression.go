@@ -12,7 +12,12 @@ const expressionName = "expression"
 type expressionCondition struct{}
 
 var celProgramPayload = payloadTransformer[string, cel.Program]{
-	spec: payloadGeneric[string]{},
+	spec: payloadGeneric[string]{
+		jsonSchema: JsonSchema{
+			"type":      "string",
+			"minLength": 1,
+		},
+	},
 	transform: func(s string, ctx compilerContext) (cel.Program, error) {
 		ast, issues := ctx.celEnv.Compile(s)
 		if issues != nil && issues.Err() != nil {
@@ -66,4 +71,8 @@ func (c expressionCondition) compileCondition(ctx compilerContext) (condition, e
 			return bl, nil
 		},
 	}, nil
+}
+
+func (c expressionCondition) JsonSchema() JsonSchema {
+	return expressionConditionPayload.JsonSchema()
 }

@@ -12,5 +12,6 @@ func newDecoder[T any](target *T) (*mapstructure.Decoder, error) {
 			return mapKey == strcase.ToSnake(fieldName)
 		},
 		ErrorUnused: true,
+		TagName:     "json",
 	})
 }

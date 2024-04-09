@@ -9,7 +9,7 @@ const parseVideoContentName = "parse_video_content"
 
 type parseVideoContentAction struct{}
 
-func (parseVideoContentAction) Name() string {
+func (parseVideoContentAction) name() string {
 	return parseVideoContentName
 }
 
@@ -30,4 +30,8 @@ func (parseVideoContentAction) compileAction(ctx compilerContext) (action, error
 			return cl, nil
 		},
 	}, nil
+}
+
+func (parseVideoContentAction) JsonSchema() JsonSchema {
+	return parseVideoContentPayloadSpec.JsonSchema()
 }

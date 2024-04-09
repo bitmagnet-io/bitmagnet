@@ -15,6 +15,7 @@ type conditionCompiler interface {
 }
 
 type conditionDefinition interface {
+	HasJsonSchema
 	name() string
 	conditionCompiler
 }

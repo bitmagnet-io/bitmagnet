@@ -9,7 +9,7 @@ const runWorkflowName = "run_workflow"
 
 type runWorkflowAction struct{}
 
-func (runWorkflowAction) Name() string {
+func (runWorkflowAction) name() string {
 	return runWorkflowName
 }
 
@@ -17,7 +17,12 @@ var runWorkflowPayloadSpec = payloadSingleKeyValue[[]string]{
 	runWorkflowName,
 	payloadMustSucceed[[]string]{
 		payloadList[string]{
-			itemSpec: payloadGeneric[string]{},
+			itemSpec: payloadGeneric[string]{
+				jsonSchema: map[string]interface{}{
+					"type":      "string",
+					"minLength": 1,
+				},
+			},
 		},
 	},
 }
@@ -45,4 +50,8 @@ func (runWorkflowAction) compileAction(ctx compilerContext) (action, error) {
 			return cl, nil
 		},
 	}, nil
+}
+
+func (runWorkflowAction) JsonSchema() JsonSchema {
+	return runWorkflowPayloadSpec.JsonSchema()
 }

@@ -12,7 +12,7 @@ const attachLocalContentBySearchName = "attach_local_content_by_search"
 
 type attachLocalContentBySearchAction struct{}
 
-func (attachLocalContentBySearchAction) Name() string {
+func (attachLocalContentBySearchAction) name() string {
 	return attachLocalContentBySearchName
 }
 
@@ -65,4 +65,8 @@ func (a attachLocalContentBySearchAction) compileAction(ctx compilerContext) (ac
 			return cl, nil
 		},
 	}, nil
+}
+
+func (attachLocalContentBySearchAction) JsonSchema() JsonSchema {
+	return attachLocalContentBySearchPayloadSpec.JsonSchema()
 }

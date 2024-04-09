@@ -7,7 +7,7 @@ import (
 )
 
 type HasJsonSchema interface {
-	JsonSchema() any
+	JsonSchema() JsonSchema
 }
 
 type TypedPayload[T any] interface {
@@ -22,7 +22,7 @@ type payloadTransformer[From any, To any] struct {
 	transform PayloadTransformerFunc[From, To]
 }
 
-func (s payloadTransformer[From, To]) JsonSchema() any {
+func (s payloadTransformer[From, To]) JsonSchema() JsonSchema {
 	return s.spec.JsonSchema()
 }
 
@@ -34,17 +34,11 @@ func (s payloadTransformer[From, To]) Unmarshal(ctx compilerContext) (to To, _ e
 	return s.transform(from, ctx)
 }
 
-func payloadIdentityTransformer[From any, To any](value To) PayloadTransformerFunc[From, To] {
-	return func(From, compilerContext) (To, error) {
-		return value, nil
-	}
-}
-
 type payloadUnion[T any] struct {
 	oneOf []TypedPayload[T]
 }
 
-func (s payloadUnion[T]) JsonSchema() any {
+func (s payloadUnion[T]) JsonSchema() JsonSchema {
 	schemas := make([]any, len(s.oneOf))
 	for i, spec := range s.oneOf {
 		schemas[i] = spec.JsonSchema()
@@ -68,10 +62,10 @@ func (s payloadUnion[T]) Unmarshal(ctx compilerContext) (to T, _ error) {
 }
 
 type payloadGeneric[T any] struct {
-	jsonSchema any
+	jsonSchema map[string]any
 }
 
-func (s payloadGeneric[T]) JsonSchema() any {
+func (s payloadGeneric[T]) JsonSchema() JsonSchema {
 	return s.jsonSchema
 }
 
@@ -84,10 +78,10 @@ func (s payloadGeneric[T]) Unmarshal(ctx compilerContext) (to T, err error) {
 }
 
 type payloadStruct[T any] struct {
-	jsonSchema any
+	jsonSchema map[string]any
 }
 
-func (s payloadStruct[T]) JsonSchema() any {
+func (s payloadStruct[T]) JsonSchema() JsonSchema {
 	return s.jsonSchema
 }
 
@@ -99,10 +93,9 @@ type payloadLiteral[T comparable] struct {
 	literal T
 }
 
-func (s payloadLiteral[T]) JsonSchema() any {
+func (s payloadLiteral[T]) JsonSchema() JsonSchema {
 	return map[string]any{
-		"const":    s.literal,
-		"nullable": false,
+		"const": s.literal,
 	}
 }
 
@@ -121,7 +114,7 @@ type payloadList[T any] struct {
 	itemSpec TypedPayload[T]
 }
 
-func (s payloadList[T]) JsonSchema() any {
+func (s payloadList[T]) JsonSchema() JsonSchema {
 	return map[string]any{
 		"type":  "array",
 		"items": s.itemSpec.JsonSchema(),
@@ -152,7 +145,7 @@ type payloadSingleKeyValue[T any] struct {
 	valueSpec TypedPayload[T]
 }
 
-func (s payloadSingleKeyValue[T]) JsonSchema() any {
+func (s payloadSingleKeyValue[T]) JsonSchema() JsonSchema {
 	return map[string]any{
 		"type": "object",
 		"properties": map[string]any{
@@ -160,7 +153,6 @@ func (s payloadSingleKeyValue[T]) JsonSchema() any {
 		},
 		"required":             []string{s.key},
 		"additionalProperties": false,
-		"nullable":             false,
 	}
 }
 
@@ -187,11 +179,10 @@ type payloadEnum[T string] struct {
 	values []T
 }
 
-func (s payloadEnum[T]) JsonSchema() any {
+func (s payloadEnum[T]) JsonSchema() JsonSchema {
 	return map[string]any{
-		"type":     "string",
-		"enum":     s.values,
-		"nullable": false,
+		"type": "string",
+		"enum": s.values,
 	}
 }
 
@@ -220,7 +211,7 @@ func (p payloadMustSucceed[T]) Unmarshal(ctx compilerContext) (t T, _ error) {
 	return result, nil
 }
 
-func (p payloadMustSucceed[T]) JsonSchema() any {
+func (p payloadMustSucceed[T]) JsonSchema() JsonSchema {
 	return p.payload.JsonSchema()
 }
 
@@ -236,34 +227,4 @@ var contentTypePayloadSpec = payloadTransformer[string, model.NullContentType]{
 		}
 		return model.NullContentType{ContentType: contentType, Valid: true}, nil
 	},
-}
-
-type payloadKeyValue[T any] struct {
-	valueSpec TypedPayload[T]
-}
-
-func (s payloadKeyValue[T]) JsonSchema() any {
-	return map[string]any{
-		"type": "object",
-		"additionalProperties": map[string]any{
-			"type": s.valueSpec.JsonSchema(),
-		},
-		"nullable": false,
-	}
-}
-
-func (s payloadKeyValue[T]) Unmarshal(ctx compilerContext) (to map[string]T, _ error) {
-	rawMap, err := decode[map[string]any](ctx)
-	if err != nil {
-		return to, err
-	}
-	kvs := make(map[string]T, len(rawMap))
-	for key, rawValue := range rawMap {
-		value, err := s.valueSpec.Unmarshal(ctx.child(key, rawValue))
-		if err != nil {
-			return to, err
-		}
-		kvs[key] = value
-	}
-	return kvs, nil
 }

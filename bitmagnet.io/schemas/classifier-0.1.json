@@ -1,0 +1,295 @@
+{
+  "$defs": {
+    "action": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/action_single"
+        },
+        {
+          "$ref": "#/$defs/action_multi"
+        }
+      ]
+    },
+    "action__add_tag": {
+      "additionalProperties": false,
+      "properties": {
+        "add_tag": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "add_tag"
+      ],
+      "type": "object"
+    },
+    "action__attach_local_content_by_id": {
+      "const": "attach_local_content_by_id"
+    },
+    "action__attach_local_content_by_search": {
+      "const": "attach_local_content_by_search"
+    },
+    "action__attach_tmdb_content_by_id": {
+      "const": "attach_tmdb_content_by_id"
+    },
+    "action__attach_tmdb_content_by_search": {
+      "const": "attach_tmdb_content_by_search"
+    },
+    "action__delete": {
+      "const": "delete"
+    },
+    "action__find_match": {
+      "additionalProperties": false,
+      "properties": {
+        "find_match": {
+          "items": {
+            "$ref": "#/$defs/action_single"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "find_match"
+      ],
+      "type": "object"
+    },
+    "action__if_else": {
+      "additionalProperties": false,
+      "properties": {
+        "if_else": {
+          "additionalProperties": false,
+          "properties": {
+            "condition": {
+              "$ref": "#/$defs/condition"
+            },
+            "else_action": {
+              "$ref": "#/$defs/action"
+            },
+            "if_action": {
+              "$ref": "#/$defs/action"
+            }
+          },
+          "required": [
+            "condition"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "if_else"
+      ],
+      "type": "object"
+    },
+    "action__no_match": {
+      "const": "no_match"
+    },
+    "action__parse_date": {
+      "const": "parse_date"
+    },
+    "action__parse_video_content": {
+      "const": "parse_video_content"
+    },
+    "action__run_workflow": {
+      "additionalProperties": false,
+      "properties": {
+        "run_workflow": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "run_workflow"
+      ],
+      "type": "object"
+    },
+    "action__set_content_type": {
+      "additionalProperties": false,
+      "properties": {
+        "set_content_type": {
+          "enum": [
+            "movie",
+            "tv_show",
+            "music",
+            "ebook",
+            "comic",
+            "audiobook",
+            "game",
+            "software",
+            "xxx",
+            "unknown"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "set_content_type"
+      ],
+      "type": "object"
+    },
+    "action_multi": {
+      "items": {
+        "$ref": "#/$defs/action_single"
+      },
+      "type": "array"
+    },
+    "action_single": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/action__add_tag"
+        },
+        {
+          "$ref": "#/$defs/action__attach_local_content_by_id"
+        },
+        {
+          "$ref": "#/$defs/action__attach_local_content_by_search"
+        },
+        {
+          "$ref": "#/$defs/action__attach_tmdb_content_by_id"
+        },
+        {
+          "$ref": "#/$defs/action__attach_tmdb_content_by_search"
+        },
+        {
+          "$ref": "#/$defs/action__delete"
+        },
+        {
+          "$ref": "#/$defs/action__find_match"
+        },
+        {
+          "$ref": "#/$defs/action__if_else"
+        },
+        {
+          "$ref": "#/$defs/action__no_match"
+        },
+        {
+          "$ref": "#/$defs/action__parse_date"
+        },
+        {
+          "$ref": "#/$defs/action__parse_video_content"
+        },
+        {
+          "$ref": "#/$defs/action__run_workflow"
+        },
+        {
+          "$ref": "#/$defs/action__set_content_type"
+        }
+      ]
+    },
+    "condition": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/condition__and"
+        },
+        {
+          "$ref": "#/$defs/condition__or"
+        },
+        {
+          "$ref": "#/$defs/condition__expression"
+        }
+      ]
+    },
+    "condition__and": {
+      "additionalProperties": false,
+      "properties": {
+        "and": {
+          "items": {
+            "$ref": "#/$defs/condition"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "and"
+      ],
+      "type": "object"
+    },
+    "condition__expression": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "expression": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "expression"
+          ],
+          "type": "object"
+        },
+        {
+          "minLength": 1,
+          "type": "string"
+        }
+      ]
+    },
+    "condition__or": {
+      "additionalProperties": false,
+      "properties": {
+        "or": {
+          "items": {
+            "$ref": "#/$defs/condition"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "or"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://bitmagnet.io/schemas/classifier-0.1.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "extensions": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "type": "object"
+    },
+    "flag_definitions": {
+      "additionalProperties": {
+        "enum": [
+          "bool",
+          "string",
+          "int",
+          "string_list",
+          "content_type_list"
+        ],
+        "type": "string"
+      },
+      "type": "object"
+    },
+    "flags": {
+      "additionalProperties": true,
+      "type": "object"
+    },
+    "keywords": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "type": "object"
+    },
+    "workflows": {
+      "additionalProperties": {
+        "$ref": "#/$defs/action"
+      },
+      "type": "object"
+    }
+  },
+  "type": "object"
+}

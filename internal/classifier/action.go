@@ -17,7 +17,8 @@ type actionCompiler interface {
 }
 
 type actionDefinition interface {
-	Name() string
+	HasJsonSchema
+	name() string
 	actionCompiler
 }
 
@@ -39,7 +40,7 @@ outer:
 			actionCtx = ctx.child(numericPathPart(i), rawAction)
 		}
 		for _, def := range c.actions {
-			a, err := def.compileAction(actionCtx.child(def.Name(), rawAction))
+			a, err := def.compileAction(actionCtx.child(def.name(), rawAction))
 			if err == nil {
 				actions = append(actions, a)
 				continue outer

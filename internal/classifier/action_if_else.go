@@ -6,7 +6,7 @@ type ifElseAction struct{}
 
 const ifElseName = "if_else"
 
-func (ifElseAction) Name() string {
+func (ifElseAction) name() string {
 	return ifElseName
 }
 
@@ -22,9 +22,15 @@ var ifElsePayloadSpec = payloadSingleKeyValue[ifElsePayload]{
 		jsonSchema: map[string]any{
 			"type": "object",
 			"properties": map[string]any{
-				"condition":   "any",
-				"if_action":   "any",
-				"else_action": "any",
+				"condition": map[string]any{
+					"$ref": "#/$defs/condition",
+				},
+				"if_action": map[string]any{
+					"$ref": "#/$defs/action",
+				},
+				"else_action": map[string]any{
+					"$ref": "#/$defs/action",
+				},
 			},
 			"required":             []string{"condition"},
 			"additionalProperties": false,
@@ -72,4 +78,8 @@ func (ifElseAction) compileAction(ctx compilerContext) (action, error) {
 			return ctx.result, nil
 		},
 	}, nil
+}
+
+func (ifElseAction) JsonSchema() JsonSchema {
+	return ifElsePayloadSpec.JsonSchema()
 }

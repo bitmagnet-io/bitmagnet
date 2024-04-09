@@ -1,24 +1,25 @@
 package classifier
 
 type Source struct {
-	FlagTypes  flagTypes
-	Flags      flags
-	Keywords   keywordGroups
-	Extensions extensionGroups
-	Workflows  workflowSources
+	Schema          string          `json:"$schema"`
+	Workflows       workflowSources `json:"workflows"`
+	FlagDefinitions flagTypes       `json:"flag_definitions"`
+	Flags           flags           `json:"flags"`
+	Keywords        keywordGroups   `json:"keywords"`
+	Extensions      extensionGroups `json:"extensions"`
 }
 
 func (s Source) merge(other Source) (Source, error) {
-	flagDefs, err := s.FlagTypes.merge(other.FlagTypes)
+	flagDefs, err := s.FlagDefinitions.merge(other.FlagDefinitions)
 	if err != nil {
 		return Source{}, err
 	}
 	return Source{
-		FlagTypes:  flagDefs,
-		Flags:      s.Flags.merge(other.Flags),
-		Keywords:   s.Keywords.merge(other.Keywords),
-		Extensions: s.Extensions.merge(other.Extensions),
-		Workflows:  s.Workflows.merge(other.Workflows),
+		FlagDefinitions: flagDefs,
+		Flags:           s.Flags.merge(other.Flags),
+		Keywords:        s.Keywords.merge(other.Keywords),
+		Extensions:      s.Extensions.merge(other.Extensions),
+		Workflows:       s.Workflows.merge(other.Workflows),
 	}, nil
 }
 

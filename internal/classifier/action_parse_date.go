@@ -9,7 +9,7 @@ const parseDateName = "parse_date"
 
 type parseDateAction struct{}
 
-func (parseDateAction) Name() string {
+func (parseDateAction) name() string {
 	return parseDateName
 }
 
@@ -30,4 +30,8 @@ func (parseDateAction) compileAction(ctx compilerContext) (action, error) {
 			return cl, nil
 		},
 	}, nil
+}
+
+func (parseDateAction) JsonSchema() JsonSchema {
+	return parseDatePayloadSpec.JsonSchema()
 }

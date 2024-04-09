@@ -12,7 +12,7 @@ var orConditionSpec = payloadSingleKeyValue[[]any]{
 	key: orName,
 	valueSpec: payloadMustSucceed[[]any]{payloadList[any]{payloadGeneric[any]{
 		jsonSchema: map[string]any{
-			"type": "any",
+			"$ref": "#/$defs/condition",
 		},
 	}}},
 }
@@ -40,4 +40,8 @@ func (orCondition) compileCondition(ctx compilerContext) (condition, error) {
 		}
 		return false, nil
 	}}, nil
+}
+
+func (orCondition) JsonSchema() JsonSchema {
+	return orConditionSpec.JsonSchema()
 }

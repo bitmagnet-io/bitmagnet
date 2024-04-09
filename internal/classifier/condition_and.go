@@ -12,7 +12,7 @@ var andConditionActionPayloadSpec = payloadSingleKeyValue[[]any]{
 	key: andName,
 	valueSpec: payloadMustSucceed[[]any]{payloadList[any]{payloadGeneric[any]{
 		jsonSchema: map[string]any{
-			"type": "any",
+			"$ref": "#/$defs/condition",
 		},
 	}}},
 }
@@ -42,4 +42,8 @@ func (andCondition) compileCondition(ctx compilerContext) (condition, error) {
 			return true, nil
 		},
 	}, nil
+}
+
+func (andCondition) JsonSchema() JsonSchema {
+	return andConditionActionPayloadSpec.JsonSchema()
 }

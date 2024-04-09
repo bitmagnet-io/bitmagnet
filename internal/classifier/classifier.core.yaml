@@ -1,3 +1,4 @@
+$schema: "https://bitmagnet.io/schemas/classifier-0.1.json"
 workflows:
   default:
     # try to identify content type for torrents without a hinted content type:
@@ -198,7 +199,7 @@ keywords:
     - threesome
     - "*wank*"
     - "*xxx*"
-flag_types:
+flag_definitions:
   tmdb_enabled: bool
   delete_content_types: content_type_list
 flags:

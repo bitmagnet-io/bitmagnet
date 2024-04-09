@@ -9,7 +9,7 @@ const findMatchName = "find_match"
 
 type findMatchAction struct{}
 
-func (findMatchAction) Name() string {
+func (findMatchAction) name() string {
 	return findMatchName
 }
 
@@ -17,7 +17,7 @@ var findMatchActionPayloadSpec = payloadSingleKeyValue[[]any]{
 	key: findMatchName,
 	valueSpec: payloadMustSucceed[[]any]{payloadList[any]{payloadGeneric[any]{
 		jsonSchema: map[string]any{
-			"type": "any",
+			"$ref": "#/$defs/action_single",
 		},
 	}}},
 }
@@ -55,4 +55,8 @@ func (findMatchAction) compileAction(ctx compilerContext) (action, error) {
 			return ctx.result, nil
 		},
 	}, nil
+}
+
+func (findMatchAction) JsonSchema() JsonSchema {
+	return findMatchActionPayloadSpec.JsonSchema()
 }

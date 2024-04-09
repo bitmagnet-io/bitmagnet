@@ -9,7 +9,7 @@ const attachTmdbContentBySearchName = "attach_tmdb_content_by_search"
 
 type attachTmdbContentBySearchAction struct{}
 
-func (attachTmdbContentBySearchAction) Name() string {
+func (attachTmdbContentBySearchAction) name() string {
 	return attachTmdbContentBySearchName
 }
 
@@ -47,4 +47,8 @@ func (a attachTmdbContentBySearchAction) compileAction(ctx compilerContext) (act
 			return cl, nil
 		},
 	}, nil
+}
+
+func (attachTmdbContentBySearchAction) JsonSchema() JsonSchema {
+	return attachTmdbContentBySearchPayloadSpec.JsonSchema()
 }

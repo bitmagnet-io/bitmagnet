@@ -6,7 +6,7 @@ const deleteName = "delete"
 
 type deleteAction struct{}
 
-func (deleteAction) Name() string {
+func (deleteAction) name() string {
 	return deleteName
 }
 
@@ -22,4 +22,8 @@ func (deleteAction) compileAction(ctx compilerContext) (action, error) {
 			return ctx.result, classification.RuntimeError{Cause: classification.ErrDeleteTorrent, Path: path}
 		},
 	}, nil
+}
+
+func (deleteAction) JsonSchema() JsonSchema {
+	return deletePayloadSpec.JsonSchema()
 }

@@ -10,7 +10,7 @@ const attachTmdbContentByIdName = "attach_tmdb_content_by_id"
 
 type attachTmdbContentByIdAction struct{}
 
-func (attachTmdbContentByIdAction) Name() string {
+func (attachTmdbContentByIdAction) name() string {
 	return attachTmdbContentByIdName
 }
 
@@ -68,4 +68,8 @@ func (a attachTmdbContentByIdAction) compileAction(ctx compilerContext) (action,
 			return cl, nil
 		},
 	}, nil
+}
+
+func (attachTmdbContentByIdAction) JsonSchema() JsonSchema {
+	return attachTmdbContentByIdPayloadSpec.JsonSchema()
 }

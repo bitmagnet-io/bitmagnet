@@ -9,7 +9,7 @@ const setContentTypeName = "set_content_type"
 
 type setContentTypeAction struct{}
 
-func (setContentTypeAction) Name() string {
+func (setContentTypeAction) name() string {
 	return setContentTypeName
 }
 
@@ -32,4 +32,8 @@ func (setContentTypeAction) compileAction(ctx compilerContext) (action, error) {
 			return cl, nil
 		},
 	}, nil
+}
+
+func (setContentTypeAction) JsonSchema() JsonSchema {
+	return setContentTypePayloadSpec.JsonSchema()
 }

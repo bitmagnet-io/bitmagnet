@@ -11,7 +11,7 @@ const attachLocalContentByIdName = "attach_local_content_by_id"
 
 type attachLocalContentByIdAction struct{}
 
-func (attachLocalContentByIdAction) Name() string {
+func (attachLocalContentByIdAction) name() string {
 	return attachLocalContentByIdName
 }
 
@@ -76,4 +76,8 @@ func (a attachLocalContentByIdAction) compileAction(ctx compilerContext) (action
 			}
 		},
 	}, nil
+}
+
+func (a attachLocalContentByIdAction) JsonSchema() JsonSchema {
+	return attachLocalContentByIdPayloadSpec.JsonSchema()
 }
