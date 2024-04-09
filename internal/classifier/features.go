@@ -25,6 +25,7 @@ func compilerFeatures(features features) compilerOption {
 var defaultFeatures = newFeatures(
 	conditions(
 		andCondition{},
+		notCondition{},
 		orCondition{},
 		expressionCondition{},
 	),

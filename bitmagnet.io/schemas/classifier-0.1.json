@@ -186,6 +186,9 @@
           "$ref": "#/$defs/condition__and"
         },
         {
+          "$ref": "#/$defs/condition__not"
+        },
+        {
           "$ref": "#/$defs/condition__or"
         },
         {
@@ -228,6 +231,21 @@
           "type": "string"
         }
       ]
+    },
+    "condition__not": {
+      "additionalProperties": false,
+      "properties": {
+        "and": {
+          "items": {
+            "$ref": "#/$defs/condition"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "and"
+      ],
+      "type": "object"
     },
     "condition__or": {
       "additionalProperties": false,

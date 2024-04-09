@@ -8,7 +8,7 @@ func (andCondition) name() string {
 	return andName
 }
 
-var andConditionActionPayloadSpec = payloadSingleKeyValue[[]any]{
+var andConditionPayloadSpec = payloadSingleKeyValue[[]any]{
 	key: andName,
 	valueSpec: payloadMustSucceed[[]any]{payloadList[any]{payloadGeneric[any]{
 		jsonSchema: map[string]any{
@@ -18,7 +18,7 @@ var andConditionActionPayloadSpec = payloadSingleKeyValue[[]any]{
 }
 
 func (andCondition) compileCondition(ctx compilerContext) (condition, error) {
-	payload, err := andConditionActionPayloadSpec.Unmarshal(ctx)
+	payload, err := andConditionPayloadSpec.Unmarshal(ctx)
 	if err != nil {
 		return condition{}, ctx.error(err)
 	}
@@ -45,5 +45,5 @@ func (andCondition) compileCondition(ctx compilerContext) (condition, error) {
 }
 
 func (andCondition) JsonSchema() JsonSchema {
-	return andConditionActionPayloadSpec.JsonSchema()
+	return andConditionPayloadSpec.JsonSchema()
 }
