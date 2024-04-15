@@ -42,7 +42,12 @@ func MustNewRegexFromKeywords(kws ...string) *regexp.Regexp {
 
 func NewRexTokensFromKeywords(kws ...string) ([]dialect.Token, error) {
 	var tokens []dialect.Token
+	usedKeywords := make(map[string]struct{})
 	for _, kw := range kws {
+		if _, ok := usedKeywords[kw]; ok {
+			continue
+		}
+		usedKeywords[kw] = struct{}{}
 		l := keywordsLexer{Lexer: lexer.NewLexer(kw)}
 		group, err := l.lexGroupToken(false)
 		if err != nil {
