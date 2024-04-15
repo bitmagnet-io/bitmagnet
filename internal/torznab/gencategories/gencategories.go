@@ -31,12 +31,12 @@ func main() {
 	for _, category := range categoriesMap.Values() {
 		out += "  " + strconv.Itoa(category.ID) + ": {\n"
 		out += "    ID: " + strconv.Itoa(category.ID) + ",\n"
-		out += "    name: \"" + category.Name + "\",\n"
+		out += "    Name: \"" + category.Name + "\",\n"
 		out += "    Subcat: []Subcategory{\n"
 		for _, subcategory := range category.Subcat {
 			out += "      {\n"
 			out += "        ID: " + strconv.Itoa(subcategory.ID) + ",\n"
-			out += "        name: \"" + subcategory.Name + "\",\n"
+			out += "        Name: \"" + subcategory.Name + "\",\n"
 			out += "      },\n"
 		}
 		out += "    },\n"
