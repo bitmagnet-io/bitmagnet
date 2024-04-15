@@ -361,6 +361,8 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 					},
 				),
 				gen.FieldType("content_type", "NullContentType"),
+				gen.FieldType("seeders", "NullUint"),
+				gen.FieldType("leechers", "NullUint"),
 			},
 			torrentContentBaseOptions...,
 		)...,

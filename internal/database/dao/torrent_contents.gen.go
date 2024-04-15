@@ -43,6 +43,9 @@ func newTorrentContent(db *gorm.DB, opts ...gen.DOOption) torrentContent {
 	_torrentContent.CreatedAt = field.NewTime(tableName, "created_at")
 	_torrentContent.UpdatedAt = field.NewTime(tableName, "updated_at")
 	_torrentContent.Tsv = field.NewField(tableName, "tsv")
+	_torrentContent.Seeders = field.NewField(tableName, "seeders")
+	_torrentContent.Leechers = field.NewField(tableName, "leechers")
+	_torrentContent.PublishedAt = field.NewTime(tableName, "published_at")
 	_torrentContent.Torrent = torrentContentBelongsToTorrent{
 		db: db.Session(&gorm.Session{}),
 
@@ -149,6 +152,9 @@ type torrentContent struct {
 	CreatedAt       field.Time
 	UpdatedAt       field.Time
 	Tsv             field.Field
+	Seeders         field.Field
+	Leechers        field.Field
+	PublishedAt     field.Time
 	Torrent         torrentContentBelongsToTorrent
 
 	Content torrentContentBelongsToContent
@@ -184,6 +190,9 @@ func (t *torrentContent) updateTableName(table string) *torrentContent {
 	t.CreatedAt = field.NewTime(table, "created_at")
 	t.UpdatedAt = field.NewTime(table, "updated_at")
 	t.Tsv = field.NewField(table, "tsv")
+	t.Seeders = field.NewField(table, "seeders")
+	t.Leechers = field.NewField(table, "leechers")
+	t.PublishedAt = field.NewTime(table, "published_at")
 
 	t.fillFieldMap()
 
@@ -200,7 +209,7 @@ func (t *torrentContent) GetFieldByName(fieldName string) (field.OrderExpr, bool
 }
 
 func (t *torrentContent) fillFieldMap() {
-	t.fieldMap = make(map[string]field.Expr, 18)
+	t.fieldMap = make(map[string]field.Expr, 21)
 	t.fieldMap["id"] = t.ID
 	t.fieldMap["info_hash"] = t.InfoHash
 	t.fieldMap["content_type"] = t.ContentType
@@ -217,6 +226,9 @@ func (t *torrentContent) fillFieldMap() {
 	t.fieldMap["created_at"] = t.CreatedAt
 	t.fieldMap["updated_at"] = t.UpdatedAt
 	t.fieldMap["tsv"] = t.Tsv
+	t.fieldMap["seeders"] = t.Seeders
+	t.fieldMap["leechers"] = t.Leechers
+	t.fieldMap["published_at"] = t.PublishedAt
 
 }
 

@@ -52,6 +52,7 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 			return []field.RelationField{
 				q.Torrent.Files.RelationField,
 				q.Torrent.Hint.RelationField,
+				q.Torrent.Sources.RelationField,
 			}
 		}),
 	)
@@ -168,6 +169,9 @@ func newTorrentContent(t model.Torrent, c classification.Result) model.TorrentCo
 		Video3d:         c.Video3d,
 		VideoModifier:   c.VideoModifier,
 		ReleaseGroup:    c.ReleaseGroup,
+		Seeders:         t.Seeders(),
+		Leechers:        t.Leechers(),
+		PublishedAt:     t.PublishedAt(),
 	}
 	if c.Content != nil {
 		content := *c.Content

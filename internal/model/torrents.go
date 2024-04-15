@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func (t *Torrent) AfterFind(tx *gorm.DB) error {
@@ -51,6 +52,16 @@ func (t Torrent) Leechers() NullUint {
 		}
 	}
 	return leechers
+}
+
+func (t Torrent) PublishedAt() time.Time {
+	var publishedAt time.Time
+	for _, source := range t.Sources {
+		if !source.PublishedAt.IsZero() && (publishedAt.IsZero() || source.PublishedAt.Before(publishedAt)) {
+			publishedAt = source.PublishedAt
+		}
+	}
+	return publishedAt
 }
 
 func (t Torrent) MagnetUri() string {
