@@ -115,7 +115,6 @@ jobs:
           node-version: 20.x
       - name: Install web app, apply database migrations, generate code and build web app
         run: |
-          npm install -g @angular/cli; \
           (cd webui && npm ci); \
           task migrate; \
           task gen; \

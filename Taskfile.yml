@@ -31,7 +31,7 @@ tasks:
   build-webui:
     dir: ./webui
     cmds:
-      - ng build -c embedded
+      - npm run build -- -c embedded
 
   build-docsite:
     dir: ./bitmagnet.io
