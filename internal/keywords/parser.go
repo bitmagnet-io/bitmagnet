@@ -41,6 +41,9 @@ func MustNewRegexFromKeywords(kws ...string) *regexp.Regexp {
 }
 
 func NewRexTokensFromKeywords(kws ...string) ([]dialect.Token, error) {
+	if len(kws) == 0 {
+		return nil, errors.New("no keywords provided")
+	}
 	var tokens []dialect.Token
 	usedKeywords := make(map[string]struct{})
 	for _, kw := range kws {
