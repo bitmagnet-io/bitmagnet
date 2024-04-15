@@ -5,7 +5,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"errors"
-	"github.com/bitmagnet-io/bitmagnet/internal/regex"
+	"github.com/bitmagnet-io/bitmagnet/internal/keywords"
 	"github.com/facette/natsort"
 	"regexp"
 	"sort"
@@ -86,7 +86,7 @@ func newLanguagesRegex() *regexp.Regexp {
 		tokens = append(tokens, lang.Name())
 		tokens = append(tokens, lang.Aliases()...)
 	}
-	return regex.NewRegexFromNames(tokens...)
+	return keywords.MustNewRegexFromKeywords(tokens...)
 }
 
 var languagesRegex *regexp.Regexp

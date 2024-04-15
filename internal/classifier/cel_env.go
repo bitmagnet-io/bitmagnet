@@ -2,9 +2,9 @@ package classifier
 
 import (
 	"fmt"
+	"github.com/bitmagnet-io/bitmagnet/internal/keywords"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protobuf"
-	"github.com/bitmagnet-io/bitmagnet/internal/regex"
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/common/types"
 	"github.com/google/cel-go/ext"
@@ -39,8 +39,11 @@ func celEnvOption(src Source, ctx *compilerContext) error {
 		cel.Constant("flags", cel.MapType(cel.StringType, cel.NullType), types.NullValue),
 	)
 	// `keywords`, `extensions` etc use a similar trick.
-	for group, keywords := range src.Keywords {
-		r := regex.NewRegexFromNames(keywords...)
+	for group, kws := range src.Keywords {
+		r, err := keywords.NewRegexFromKeywords(kws...)
+		if err != nil {
+			return err
+		}
 		options = append(
 			options,
 			cel.Constant("keywords."+group, cel.StringType, types.String(r.String())),

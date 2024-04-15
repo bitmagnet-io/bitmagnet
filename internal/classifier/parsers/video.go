@@ -2,6 +2,7 @@ package parsers
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
+	"github.com/bitmagnet-io/bitmagnet/internal/keywords"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/regex"
 	"github.com/hedhyw/rex/pkg/dialect"
@@ -59,7 +60,7 @@ var titleEpisodesRegex = rex.New(
 	),
 ).MustCompile()
 
-var multiRegex = regex.NewRegexFromNames("multi", "dual")
+var multiRegex = keywords.MustNewRegexFromKeywords("multi", "dual")
 
 var separatorToken = rex.Chars.Runes(" ._")
 

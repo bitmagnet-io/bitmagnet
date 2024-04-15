@@ -1,12 +1,15 @@
 {
-  "$defs": {
+  "$id": "https://bitmagnet.io/schemas/classifier-0.1.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
     "action": {
       "oneOf": [
         {
-          "$ref": "#/$defs/action_single"
+          "$ref": "#/definitions/action_single"
         },
         {
-          "$ref": "#/$defs/action_multi"
+          "$ref": "#/definitions/action_multi"
         }
       ]
     },
@@ -45,7 +48,7 @@
       "properties": {
         "find_match": {
           "items": {
-            "$ref": "#/$defs/action_single"
+            "$ref": "#/definitions/action_single"
           },
           "type": "array"
         }
@@ -62,13 +65,13 @@
           "additionalProperties": false,
           "properties": {
             "condition": {
-              "$ref": "#/$defs/condition"
+              "$ref": "#/definitions/condition"
             },
             "else_action": {
-              "$ref": "#/$defs/action"
+              "$ref": "#/definitions/action"
             },
             "if_action": {
-              "$ref": "#/$defs/action"
+              "$ref": "#/definitions/action"
             }
           },
           "required": [
@@ -133,66 +136,66 @@
     },
     "action_multi": {
       "items": {
-        "$ref": "#/$defs/action_single"
+        "$ref": "#/definitions/action_single"
       },
       "type": "array"
     },
     "action_single": {
       "oneOf": [
         {
-          "$ref": "#/$defs/action__add_tag"
+          "$ref": "#/definitions/action__add_tag"
         },
         {
-          "$ref": "#/$defs/action__attach_local_content_by_id"
+          "$ref": "#/definitions/action__attach_local_content_by_id"
         },
         {
-          "$ref": "#/$defs/action__attach_local_content_by_search"
+          "$ref": "#/definitions/action__attach_local_content_by_search"
         },
         {
-          "$ref": "#/$defs/action__attach_tmdb_content_by_id"
+          "$ref": "#/definitions/action__attach_tmdb_content_by_id"
         },
         {
-          "$ref": "#/$defs/action__attach_tmdb_content_by_search"
+          "$ref": "#/definitions/action__attach_tmdb_content_by_search"
         },
         {
-          "$ref": "#/$defs/action__delete"
+          "$ref": "#/definitions/action__delete"
         },
         {
-          "$ref": "#/$defs/action__find_match"
+          "$ref": "#/definitions/action__find_match"
         },
         {
-          "$ref": "#/$defs/action__if_else"
+          "$ref": "#/definitions/action__if_else"
         },
         {
-          "$ref": "#/$defs/action__no_match"
+          "$ref": "#/definitions/action__no_match"
         },
         {
-          "$ref": "#/$defs/action__parse_date"
+          "$ref": "#/definitions/action__parse_date"
         },
         {
-          "$ref": "#/$defs/action__parse_video_content"
+          "$ref": "#/definitions/action__parse_video_content"
         },
         {
-          "$ref": "#/$defs/action__run_workflow"
+          "$ref": "#/definitions/action__run_workflow"
         },
         {
-          "$ref": "#/$defs/action__set_content_type"
+          "$ref": "#/definitions/action__set_content_type"
         }
       ]
     },
     "condition": {
       "oneOf": [
         {
-          "$ref": "#/$defs/condition__and"
+          "$ref": "#/definitions/condition__and"
         },
         {
-          "$ref": "#/$defs/condition__not"
+          "$ref": "#/definitions/condition__not"
         },
         {
-          "$ref": "#/$defs/condition__or"
+          "$ref": "#/definitions/condition__or"
         },
         {
-          "$ref": "#/$defs/condition__expression"
+          "$ref": "#/definitions/condition__expression"
         }
       ]
     },
@@ -201,7 +204,7 @@
       "properties": {
         "and": {
           "items": {
-            "$ref": "#/$defs/condition"
+            "$ref": "#/definitions/condition"
           },
           "type": "array"
         }
@@ -235,15 +238,12 @@
     "condition__not": {
       "additionalProperties": false,
       "properties": {
-        "and": {
-          "items": {
-            "$ref": "#/$defs/condition"
-          },
-          "type": "array"
+        "not": {
+          "$ref": "#/definitions/condition"
         }
       },
       "required": [
-        "and"
+        "not"
       ],
       "type": "object"
     },
@@ -252,7 +252,7 @@
       "properties": {
         "or": {
           "items": {
-            "$ref": "#/$defs/condition"
+            "$ref": "#/definitions/condition"
           },
           "type": "array"
         }
@@ -263,10 +263,10 @@
       "type": "object"
     }
   },
-  "$id": "https://bitmagnet.io/schemas/classifier-0.1.json",
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "additionalProperties": false,
   "properties": {
+    "$schema": {
+      "const": "https://bitmagnet.io/schemas/classifier-0.1.json"
+    },
     "extensions": {
       "additionalProperties": {
         "items": {
@@ -304,7 +304,7 @@
     },
     "workflows": {
       "additionalProperties": {
-        "$ref": "#/$defs/action"
+        "$ref": "#/definitions/action"
       },
       "type": "object"
     }

@@ -2,8 +2,8 @@ package banning
 
 import (
 	"errors"
+	"github.com/bitmagnet-io/bitmagnet/internal/keywords"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
-	"github.com/bitmagnet-io/bitmagnet/internal/regex"
 )
 
 var csamWords = []string{
@@ -21,7 +21,7 @@ var csamWords = []string{
 	"child porn",
 }
 
-var csamRegex = regex.NewRegexFromNames(csamWords...)
+var csamRegex = keywords.MustNewRegexFromKeywords(csamWords...)
 
 type csamChecker struct{}
 

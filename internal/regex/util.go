@@ -1,13 +1,11 @@
 package regex
 
 import (
-	"github.com/hedhyw/rex/pkg/dialect"
 	"github.com/hedhyw/rex/pkg/dialect/base"
 	"github.com/hedhyw/rex/pkg/rex"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
 	"regexp"
-	"sort"
 	"strings"
 	"unicode"
 )
@@ -106,77 +104,4 @@ func SearchStringToNormalizedTokens(input string) []string {
 
 func NormalizeSearchString(input string) string {
 	return strings.Join(SearchStringToNormalizedTokens(input), " ")
-}
-
-func RegexTokenFromName(name string) base.GroupToken {
-	var tokens []dialect.Token
-	for i := 0; i < len(name); i++ {
-		char := name[i]
-		if char == '*' {
-			tokens = append(tokens, AnyWordChar().Repeat().ZeroOrMore())
-		} else {
-			var token base.ClassToken
-			if char == ' ' {
-				tokens = append(tokens, AnyNonWordChar().Repeat().OneOrMore())
-			} else if char == '#' {
-				tokens = append(tokens, rex.Chars.Digits())
-			} else {
-				lcChar := strings.ToLower(string(char))
-				ucChar := strings.ToUpper(string(char))
-				if lcChar == ucChar {
-					token = rex.Chars.Single(rune(char))
-				} else {
-					token = rex.Chars.Runes(ucChar + lcChar)
-				}
-			}
-			if i < len(name)-1 {
-				i++
-				switch name[i] {
-				case '?':
-					tokens = append(tokens, token.Repeat().ZeroOrOne())
-				case '+':
-					tokens = append(tokens, token.Repeat().OneOrMore())
-				default:
-					tokens = append(tokens, token)
-					i--
-				}
-			} else {
-				tokens = append(tokens, token)
-			}
-		}
-	}
-	return rex.Group.NonCaptured(tokens...)
-}
-
-func RegexTokensFromNames(names ...string) []dialect.Token {
-	sort.Slice(names, func(i, j int) bool {
-		return len(names[i]) > len(names[j])
-	})
-	var tokens []dialect.Token
-	usedNames := make(map[string]struct{}, len(names))
-	for _, name := range names {
-		lowerName := strings.ToLower(name)
-		if _, ok := usedNames[lowerName]; ok {
-			continue
-		}
-		usedNames[lowerName] = struct{}{}
-		tokens = append(tokens, RegexTokenFromName(name))
-	}
-	return tokens
-}
-
-func NewRegexFromNames(names ...string) *regexp.Regexp {
-	return rex.New(
-		rex.Group.Composite(
-			rex.Chars.Begin(),
-			AnyNonWordChar().Repeat().OneOrMore(),
-		).NonCaptured(),
-		rex.Group.Composite(
-			RegexTokensFromNames(names...)...,
-		),
-		rex.Group.Composite(
-			rex.Chars.End(),
-			AnyNonWordChar().Repeat().OneOrMore(),
-		).NonCaptured(),
-	).MustCompile()
 }

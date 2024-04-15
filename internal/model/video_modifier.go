@@ -1,6 +1,8 @@
 package model
 
-import "github.com/bitmagnet-io/bitmagnet/internal/regex"
+import (
+	"github.com/bitmagnet-io/bitmagnet/internal/keywords"
+)
 
 // VideoModifier represents the modifier of a video
 // ENUM(REGIONAL, SCREENER, RAWHD, BRDISK, REMUX)
@@ -10,7 +12,7 @@ func (v VideoModifier) Label() string {
 	return v.String()
 }
 
-var videoModifierRegex = regex.NewRegexFromNames(VideoModifierNames()...)
+var videoModifierRegex = keywords.MustNewRegexFromKeywords(VideoModifierNames()...)
 
 func InferVideoModifier(input string) NullVideoModifier {
 	if match := videoModifierRegex.FindStringSubmatch(input); match != nil {

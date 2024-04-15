@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/keywords"
 	"github.com/bitmagnet-io/bitmagnet/internal/regex"
 	"github.com/hedhyw/rex/pkg/rex"
 	"regexp"
@@ -30,7 +31,7 @@ func createVideoCodecAndOptionalReleaseGroupRegex() *regexp.Regexp {
 			regex.AnyNonWordChar().Repeat().OneOrMore(),
 		).NonCaptured(),
 		rex.Group.Composite(
-			regex.RegexTokensFromNames(names...)...,
+			keywords.MustNewRexTokensFromKeywords(names...)...,
 		),
 		rex.Group.Composite(
 			rex.Chars.End(),

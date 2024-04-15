@@ -23,13 +23,13 @@ var ifElsePayloadSpec = payloadSingleKeyValue[ifElsePayload]{
 			"type": "object",
 			"properties": map[string]any{
 				"condition": map[string]any{
-					"$ref": "#/$defs/condition",
+					"$ref": "#/definitions/condition",
 				},
 				"if_action": map[string]any{
-					"$ref": "#/$defs/action",
+					"$ref": "#/definitions/action",
 				},
 				"else_action": map[string]any{
-					"$ref": "#/$defs/action",
+					"$ref": "#/definitions/action",
 				},
 			},
 			"required":             []string{"condition"},
