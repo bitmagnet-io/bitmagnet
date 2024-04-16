@@ -45,7 +45,7 @@ require (
 	golang.org/x/sys v0.16.0
 	golang.org/x/text v0.14.0
 	golang.org/x/time v0.5.0
-	google.golang.org/protobuf v1.32.0
+	google.golang.org/protobuf v1.33.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/postgres v1.5.4
 	gorm.io/gen v0.3.25
@@ -88,6 +88,7 @@ require (
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/golang/mock v1.6.0 // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.1 // indirect
