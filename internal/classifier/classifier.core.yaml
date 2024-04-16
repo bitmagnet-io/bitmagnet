@@ -12,7 +12,7 @@ workflows:
                   and:
                     - "torrent.files.map(f, f.fileType == fileType.audio ? f.size : - f.size).sum() > 50*mb"
                     - or:
-                        - "torrent.name.matches(keywords.audiobook)"
+                        - "torrent.baseName.matches(keywords.audiobook)"
                         - "torrent.files.filter(f, f.extension in extensions.audiobook).size() > 0"
                 if_action:
                   set_content_type: audiobook
@@ -35,7 +35,7 @@ workflows:
                   or:
                     - "torrent.files.map(f, f.extension in extensions.music ? f.size : - f.size).sum() > 0"
                     - and:
-                        - "torrent.name.matches(keywords.music)"
+                        - "torrent.baseName.matches(keywords.music)"
                         - "torrent.files.map(f, f.fileType == fileType.audio ? f.size : - f.size).sum() > 0"
                 if_action:
                   set_content_type: music
@@ -48,7 +48,7 @@ workflows:
                 else_action: no_match
             # match xxx:
             - if_else:
-                condition: "([torrent.name] + torrent.files.map(f, f.path)).join(' ').matches(keywords.xxx)"
+                condition: "([torrent.baseName] + torrent.files.map(f, f.baseName)).join(' ').matches(keywords.xxx)"
                 if_action:
                   set_content_type: xxx
                 else_action: no_match

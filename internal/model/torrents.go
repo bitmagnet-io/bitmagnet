@@ -83,6 +83,14 @@ func (t Torrent) SingleFile() bool {
 	return t.FilesStatus == FilesStatusSingle
 }
 
+func (t Torrent) BaseName() string {
+	baseName := t.Name
+	if t.Extension.Valid {
+		baseName = strings.TrimSuffix(baseName, "."+t.Extension.String)
+	}
+	return baseName
+}
+
 func (t Torrent) FileExtensions() []string {
 	switch t.FilesStatus {
 	case FilesStatusSingle:

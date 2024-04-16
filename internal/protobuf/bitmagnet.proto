@@ -5,23 +5,25 @@ option go_package = "/internal/protobuf";
 message Torrent {
   string infoHash = 1;
   string name = 2;
-  int64 size = 3;
-  optional string extension = 4;
-  repeated File files = 5;
-  optional int32 filesCount = 6;
-  optional int64 filesSize = 7;
-  repeated string fileExtensions = 8;
-  optional int32 seeders = 9;
-  optional int32 leechers = 10;
-  bool hasHint = 11;
-  bool hasHintedContentId = 12;
+  string baseName = 3;
+  int64 size = 4;
+  optional string extension = 5;
+  repeated File files = 6;
+  optional int32 filesCount = 7;
+  optional int64 filesSize = 8;
+  repeated string fileExtensions = 9;
+  optional int32 seeders = 10;
+  optional int32 leechers = 11;
+  bool hasHint = 12;
+  bool hasHintedContentId = 13;
 
   message File {
     int32 index = 1;
     string path = 2;
-    int64 size = 3;
-    optional string extension = 4;
-    FileType fileType = 5;
+    string baseName = 3;
+    int64 size = 4;
+    optional string extension = 5;
+    FileType fileType = 6;
 
     enum FileType {
       unknown = 0;

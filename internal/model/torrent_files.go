@@ -14,6 +14,14 @@ func (f *TorrentFile) BeforeCreate(tx *gorm.DB) (err error) {
 	return nil
 }
 
+func (f TorrentFile) BaseName() string {
+	baseName := f.Path
+	if f.Extension.Valid {
+		baseName = strings.TrimSuffix(baseName, "."+f.Extension.String)
+	}
+	return baseName
+}
+
 var fileExtensionRegex = regexp.MustCompile(`[^/.]\.([a-z0-9]+)$`)
 
 func FileExtensionFromPath(path string) NullString {
