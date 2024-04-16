@@ -33,7 +33,7 @@ type TorrentContent struct {
 	Tsv             fts.Tsvector        `gorm:"column:tsv" json:"tsv"`
 	Seeders         NullUint            `gorm:"column:seeders" json:"seeders"`
 	Leechers        NullUint            `gorm:"column:leechers" json:"leechers"`
-	PublishedAt     time.Time           `gorm:"column:published_at" json:"publishedAt"`
+	PublishedAt     time.Time           `gorm:"column:published_at;not null" json:"publishedAt"`
 	Torrent         Torrent             `gorm:"foreignKey:InfoHash;references:InfoHash" json:"torrent"`
 	Content         Content             `gorm:"foreignKey:ContentType,ContentSource,ContentID;references:Type,Source,ID" json:"content"`
 }

@@ -55,10 +55,14 @@ func (t Torrent) Leechers() NullUint {
 }
 
 func (t Torrent) PublishedAt() time.Time {
-	var publishedAt time.Time
+	publishedAt := t.CreatedAt
 	for _, source := range t.Sources {
-		if !source.PublishedAt.IsZero() && (publishedAt.IsZero() || source.PublishedAt.Before(publishedAt)) {
-			publishedAt = source.PublishedAt
+		dt := source.CreatedAt
+		if source.PublishedAt.Valid {
+			dt = source.PublishedAt.Time
+		}
+		if dt.Before(publishedAt) {
+			publishedAt = dt
 		}
 	}
 	return publishedAt

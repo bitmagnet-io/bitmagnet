@@ -2,6 +2,7 @@ package importer
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
@@ -255,10 +256,13 @@ func createTorrentModel(info Info, item Item) model.Torrent {
 		FilesStatus: model.FilesStatusNoInfo,
 		Sources: []model.TorrentsTorrentSource{
 			{
-				InfoHash:    item.InfoHash,
-				Source:      item.Source,
-				ImportID:    model.NewNullString(info.ID),
-				PublishedAt: item.PublishedAt,
+				InfoHash: item.InfoHash,
+				Source:   item.Source,
+				ImportID: model.NewNullString(info.ID),
+				PublishedAt: sql.NullTime{
+					Time:  item.PublishedAt,
+					Valid: !item.PublishedAt.IsZero(),
+				},
 			},
 		},
 	}

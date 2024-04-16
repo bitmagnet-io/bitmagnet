@@ -30,11 +30,9 @@ func newTorrentsTorrentSource(db *gorm.DB, opts ...gen.DOOption) torrentsTorrent
 	_torrentsTorrentSource.Source = field.NewString(tableName, "source")
 	_torrentsTorrentSource.InfoHash = field.NewField(tableName, "info_hash")
 	_torrentsTorrentSource.ImportID = field.NewField(tableName, "import_id")
-	_torrentsTorrentSource.Bfsd = field.NewBytes(tableName, "bfsd")
-	_torrentsTorrentSource.Bfpe = field.NewBytes(tableName, "bfpe")
 	_torrentsTorrentSource.Seeders = field.NewField(tableName, "seeders")
 	_torrentsTorrentSource.Leechers = field.NewField(tableName, "leechers")
-	_torrentsTorrentSource.PublishedAt = field.NewTime(tableName, "published_at")
+	_torrentsTorrentSource.PublishedAt = field.NewField(tableName, "published_at")
 	_torrentsTorrentSource.CreatedAt = field.NewTime(tableName, "created_at")
 	_torrentsTorrentSource.UpdatedAt = field.NewTime(tableName, "updated_at")
 	_torrentsTorrentSource.TorrentSource = torrentsTorrentSourceHasOneTorrentSource{
@@ -55,11 +53,9 @@ type torrentsTorrentSource struct {
 	Source        field.String
 	InfoHash      field.Field
 	ImportID      field.Field
-	Bfsd          field.Bytes
-	Bfpe          field.Bytes
 	Seeders       field.Field
 	Leechers      field.Field
-	PublishedAt   field.Time
+	PublishedAt   field.Field
 	CreatedAt     field.Time
 	UpdatedAt     field.Time
 	TorrentSource torrentsTorrentSourceHasOneTorrentSource
@@ -82,11 +78,9 @@ func (t *torrentsTorrentSource) updateTableName(table string) *torrentsTorrentSo
 	t.Source = field.NewString(table, "source")
 	t.InfoHash = field.NewField(table, "info_hash")
 	t.ImportID = field.NewField(table, "import_id")
-	t.Bfsd = field.NewBytes(table, "bfsd")
-	t.Bfpe = field.NewBytes(table, "bfpe")
 	t.Seeders = field.NewField(table, "seeders")
 	t.Leechers = field.NewField(table, "leechers")
-	t.PublishedAt = field.NewTime(table, "published_at")
+	t.PublishedAt = field.NewField(table, "published_at")
 	t.CreatedAt = field.NewTime(table, "created_at")
 	t.UpdatedAt = field.NewTime(table, "updated_at")
 
@@ -105,12 +99,10 @@ func (t *torrentsTorrentSource) GetFieldByName(fieldName string) (field.OrderExp
 }
 
 func (t *torrentsTorrentSource) fillFieldMap() {
-	t.fieldMap = make(map[string]field.Expr, 11)
+	t.fieldMap = make(map[string]field.Expr, 9)
 	t.fieldMap["source"] = t.Source
 	t.fieldMap["info_hash"] = t.InfoHash
 	t.fieldMap["import_id"] = t.ImportID
-	t.fieldMap["bfsd"] = t.Bfsd
-	t.fieldMap["bfpe"] = t.Bfpe
 	t.fieldMap["seeders"] = t.Seeders
 	t.fieldMap["leechers"] = t.Leechers
 	t.fieldMap["published_at"] = t.PublishedAt
