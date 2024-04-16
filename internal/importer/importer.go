@@ -204,7 +204,7 @@ func (i *activeImport) persistItems(items ...Item) error {
 	}
 	job, jobErr := processor.NewQueueJob(processor.MessageParams{
 		InfoHashes: infoHashes,
-	})
+	}, model.QueueJobPriority(20))
 	if jobErr != nil {
 		return jobErr
 	}
