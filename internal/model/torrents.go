@@ -86,7 +86,7 @@ func (t Torrent) SingleFile() bool {
 func (t Torrent) BaseName() string {
 	baseName := t.Name
 	if t.Extension.Valid {
-		baseName = strings.TrimSuffix(baseName, "."+t.Extension.String)
+		baseName = baseName[:len(baseName)-len(t.Extension.String)-1]
 	}
 	return baseName
 }

@@ -17,7 +17,7 @@ func (f *TorrentFile) BeforeCreate(tx *gorm.DB) (err error) {
 func (f TorrentFile) BaseName() string {
 	baseName := f.Path
 	if f.Extension.Valid {
-		baseName = strings.TrimSuffix(baseName, "."+f.Extension.String)
+		baseName = baseName[:len(baseName)-len(f.Extension.String)-1]
 	}
 	return baseName
 }
