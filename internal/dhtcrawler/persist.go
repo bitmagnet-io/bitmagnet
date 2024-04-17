@@ -81,19 +81,19 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 						string(c.dao.Torrent.FilesCount.ColumnName()),
 						string(c.dao.Torrent.UpdatedAt.ColumnName()),
 					}),
-				}).CreateInBatches(torrentsToPersist, 20); err != nil {
+				}).CreateInBatches(torrentsToPersist, 100); err != nil {
 					return err
 				}
 				if len(torrentFilesToPersist) > 0 {
 					if err := tx.WithContext(ctx).TorrentFile.Clauses(clause.OnConflict{
 						DoNothing: true,
-					}).CreateInBatches(torrentFilesToPersist, 20); err != nil {
+					}).CreateInBatches(torrentFilesToPersist, 100); err != nil {
 						return err
 					}
 				}
 				if err := tx.WithContext(ctx).TorrentsTorrentSource.Clauses(clause.OnConflict{
 					DoNothing: true,
-				}).CreateInBatches(torrentSourcesToPersist, 20); err != nil {
+				}).CreateInBatches(torrentSourcesToPersist, 100); err != nil {
 					return err
 				}
 				if c.savePieces {
