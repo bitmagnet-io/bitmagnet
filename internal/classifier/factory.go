@@ -39,7 +39,7 @@ func New(params Params) Result {
 				celEnvOption,
 			},
 			dependencies: dependencies{
-				search:     s,
+				search:     localSearch{s},
 				tmdbClient: tmdbClient,
 			},
 		}, nil

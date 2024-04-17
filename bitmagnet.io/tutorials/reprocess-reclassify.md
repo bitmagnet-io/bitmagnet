@@ -3,8 +3,6 @@ title: Reprocess & Reclassify
 parent: Tutorials
 layout: default
 nav_order: 3
-redirect_from:
-  - /tutorials/importing.html
 ---
 
 # Reprocess & Reclassify Torrents

@@ -1,11 +1,7 @@
 package classifier
 
 import (
-	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
-	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
 
 const attachLocalContentBySearchName = "attach_local_content_by_search"
@@ -28,40 +24,11 @@ func (a attachLocalContentBySearchAction) compileAction(ctx compilerContext) (ac
 			if !cl.ContentType.Valid || !cl.BaseTitle.Valid {
 				return cl, classification.ErrNoMatch
 			}
-			options := []query.Option{
-				query.Where(search.ContentTypeCriteria(cl.ContentType.ContentType)),
-				query.QueryString(fmt.Sprintf("\"%s\"", cl.BaseTitle.String)),
-				query.OrderByQueryStringRank(),
-				query.Limit(5),
-				search.ContentDefaultPreload(),
-				search.ContentDefaultHydrate(),
+			content, err := ctx.search.ContentBySearch(ctx, cl.ContentType.ContentType, cl.BaseTitle.String, cl.Date.Year)
+			if err != nil {
+				return cl, err
 			}
-			if !cl.Date.Year.IsNil() {
-				options = append(options, query.Where(search.ContentReleaseDateCriteria(model.NewDateRangeFromYear(cl.Date.Year))))
-			}
-			result, searchErr := ctx.search.Content(
-				ctx,
-				options...,
-			)
-			if searchErr != nil {
-				return cl, searchErr
-			}
-			var content *model.Content
-			for _, item := range result.Items {
-				candidates := []string{item.Title}
-				if item.OriginalTitle.Valid {
-					candidates = append(candidates, item.OriginalTitle.String)
-				}
-				if levenshteinCheck(cl.BaseTitle.String, candidates, levenshteinThreshold) {
-					c := item.Content
-					content = &c
-					break
-				}
-			}
-			if content == nil {
-				return cl, classification.ErrNoMatch
-			}
-			cl.AttachContent(content)
+			cl.AttachContent(&content)
 			return cl, nil
 		},
 	}, nil

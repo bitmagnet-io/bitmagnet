@@ -77,7 +77,7 @@ You can also install **bitmagnet** natively with `go install github.com/bitmagne
 
 The **bitmagnet** CLI is the entrypoint into the application. Take note of the command needed to run the CLI, depending on your installation method.
 
-- If you are using the docker-compose example above, you can run the CLI (while the stack is started) with `docker exec -it bitmagnet /bitmagnet`.
+- If you are using the docker-compose example above, you can run the CLI (while the stack is started) with `docker exec -it bitmagnet bitmagnet`.
 - If you installed bitmagnet with `go install`, you can run the CLI with `bitmagnet`.
 
 When referring to CLI commands in the rest of the documentation, for simplicity we will use `bitmagnet`; please substitute this for the correct command. For example, to show the CLI help, run:

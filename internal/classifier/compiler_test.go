@@ -3,12 +3,38 @@ package classifier
 import (
 	"context"
 	"fmt"
+	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
+	classifier_mocks "github.com/bitmagnet-io/bitmagnet/internal/classifier/mocks"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
-	"github.com/bitmagnet-io/bitmagnet/internal/processor/classification"
+	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
+	tmdb_mocks "github.com/bitmagnet-io/bitmagnet/internal/tmdb/mocks"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
 	"testing"
 )
+
+type testCompilerMocks struct {
+	compiler   Compiler
+	search     LocalSearch
+	tmdbClient tmdb.Client
+}
+
+func newTestCompilerMocks(t *testing.T) testCompilerMocks {
+	search := classifier_mocks.NewLocalSearch(t)
+	tmdbClient := tmdb_mocks.NewClient(t)
+	return testCompilerMocks{
+		compiler: compiler{
+			options: []compilerOption{
+				compilerFeatures(defaultFeatures),
+				celEnvOption,
+			},
+			dependencies: dependencies{
+				search:     search,
+				tmdbClient: tmdbClient,
+			},
+		},
+	}
+}
 
 func TestCompile(t *testing.T) {
 	c := compiler{

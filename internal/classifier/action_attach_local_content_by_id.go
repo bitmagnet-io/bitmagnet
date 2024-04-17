@@ -2,8 +2,6 @@ package classifier
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
 
@@ -27,53 +25,16 @@ func (a attachLocalContentByIdAction) compileAction(ctx compilerContext) (action
 			if ctx.torrent.Hint.IsNil() || !ctx.torrent.Hint.ContentSource.Valid {
 				return cl, classification.ErrNoMatch
 			}
-			options := []query.Option{
-				query.Where(
-					search.ContentTypeCriteria(ctx.torrent.Hint.ContentType),
-				),
-				search.ContentDefaultPreload(),
-				search.ContentDefaultHydrate(),
-				query.Limit(1),
+			content, err := ctx.search.ContentById(ctx, model.ContentRef{
+				Type:   ctx.torrent.Hint.ContentType,
+				Source: ctx.torrent.Hint.ContentSource.String,
+				ID:     ctx.torrent.Hint.ContentID.String,
+			})
+			if err != nil {
+				return cl, err
 			}
-			source := ctx.torrent.Hint.ContentSource.String
-			id := ctx.torrent.Hint.ContentID.String
-			if source == "tmdb" {
-				canonicalResult, canonicalErr := ctx.search.Content(ctx,
-					append(options, query.Where(
-						search.ContentCanonicalIdentifierCriteria(model.ContentRef{
-							Source: source,
-							ID:     id,
-						}),
-					))...,
-				)
-				if canonicalErr != nil {
-					return cl, canonicalErr
-				}
-				if len(canonicalResult.Items) == 0 {
-					return cl, classification.ErrNoMatch
-				}
-				content := canonicalResult.Items[0].Content
-				cl.Content = &content
-				return cl, nil
-			} else {
-				alternativeResult, alternativeErr := ctx.search.Content(ctx,
-					append(options, query.Where(
-						search.ContentAlternativeIdentifierCriteria(model.ContentRef{
-							Source: source,
-							ID:     id,
-						}),
-					))...,
-				)
-				if alternativeErr != nil {
-					return cl, classification.ErrNoMatch
-				}
-				if len(alternativeResult.Items) == 0 {
-					return cl, classification.ErrNoMatch
-				}
-				content := alternativeResult.Items[0].Content
-				cl.AttachContent(&content)
-				return cl, nil
-			}
+			cl.AttachContent(&content)
+			return cl, nil
 		},
 	}, nil
 }
