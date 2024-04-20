@@ -63,6 +63,121 @@ func TestClassifier(t *testing.T) {
 		},
 		{
 			torrent: model.Torrent{
+				Name:        "The Regular Local Movie (2000).mkv",
+				FilesStatus: model.FilesStatusSingle,
+				Extension:   model.NewNullString("mkv"),
+				Size:        1000000000,
+			},
+			prepareMocks: func(mocks testClassifierMocks) {
+				mocks.search.On(
+					"ContentBySearch",
+					matchContext,
+					model.ContentTypeMovie,
+					"The Regular Local Movie",
+					model.Year(2000),
+				).
+					Return(model.Content{
+						Type:        model.ContentTypeMovie,
+						Source:      "local",
+						ID:          "123",
+						Title:       "The Regular Local Movie",
+						ReleaseYear: 2000,
+					}, nil)
+			},
+			expected: classification.Result{
+				ContentAttributes: classification.ContentAttributes{
+					ContentType: model.NewNullContentType(model.ContentTypeMovie),
+					BaseTitle:   model.NewNullString("The Regular Local Movie"),
+					Date: model.Date{
+						Year: 2000,
+					},
+				},
+				Content: &model.Content{
+					Type:        model.ContentTypeMovie,
+					Source:      "local",
+					ID:          "123",
+					Title:       "The Regular Local Movie",
+					ReleaseYear: 2000,
+				},
+			},
+		},
+		{
+			torrent: model.Torrent{
+				Name:        "The Regular TMDB Movie (2000).mkv",
+				FilesStatus: model.FilesStatusSingle,
+				Extension:   model.NewNullString("mkv"),
+				Size:        1000000000,
+			},
+			prepareMocks: func(mocks testClassifierMocks) {
+				mocks.search.On(
+					"ContentBySearch",
+					matchContext,
+					model.ContentTypeMovie,
+					"The Regular TMDB Movie",
+					model.Year(2000),
+				).
+					Return(model.Content{}, classification.ErrNoMatch)
+				mocks.tmdbClient.On(
+					"SearchMovie",
+					matchContext,
+					tmdb.SearchMovieRequest{
+						Query:        "The Regular TMDB Movie",
+						Year:         2000,
+						IncludeAdult: true,
+					},
+				).
+					Return(tmdb.SearchMovieResponse{
+						Results: []tmdb.SearchMovieResult{
+							{
+								ID:          123,
+								Title:       "The Regular TMDB Movie",
+								ReleaseDate: "2000-01-01",
+							},
+						},
+					}, nil)
+				mocks.tmdbClient.On(
+					"MovieDetails",
+					matchContext,
+					tmdb.MovieDetailsRequest{
+						ID: 123,
+					},
+				).
+					Return(tmdb.MovieDetailsResponse{
+						ID:            123,
+						Title:         "The Regular TMDB Movie",
+						OriginalTitle: "The Regular TMDB Movie Original",
+						ReleaseDate:   "2000-01-01",
+					}, nil)
+			},
+			expected: classification.Result{
+				ContentAttributes: classification.ContentAttributes{
+					ContentType: model.NewNullContentType(model.ContentTypeMovie),
+					BaseTitle:   model.NewNullString("The Regular TMDB Movie"),
+					Date: model.Date{
+						Year: 2000,
+					},
+				},
+				Content: &model.Content{
+					Type:   model.ContentTypeMovie,
+					Source: "tmdb",
+					ID:     "123",
+					Title:  "The Regular TMDB Movie",
+					ReleaseDate: model.Date{
+						Year:  2000,
+						Month: 1,
+						Day:   1,
+					},
+					ReleaseYear:   2000,
+					Adult:         model.NewNullBool(false),
+					OriginalTitle: model.NewNullString("The Regular TMDB Movie Original"),
+					Popularity:    model.NewNullFloat32(0),
+					VoteAverage:   model.NewNullFloat32(0),
+					VoteCount:     model.NewNullUint(0),
+				},
+			},
+		},
+		{
+			torrent: model.Torrent{
 				Name:        "The XXX Movie 1080p.mkv",
 				FilesStatus: model.FilesStatusSingle,
 				Extension:   model.NewNullString("mkv"),
