@@ -204,17 +204,24 @@ func (c *crawler) runPersistSources(ctx context.Context) {
 					srcs = append(srcs, &src)
 				}
 			}
-			if persistErr := c.dao.WithContext(ctx).TorrentsTorrentSource.Clauses(clause.OnConflict{
-				Columns: []clause.Column{
-					{Name: string(c.dao.TorrentsTorrentSource.InfoHash.ColumnName())},
-					{Name: string(c.dao.TorrentsTorrentSource.Source.ColumnName())},
+			if persistErr := c.dao.WithContext(ctx).TorrentsTorrentSource.Clauses(
+				clause.OnConflict{
+					Columns: []clause.Column{
+						{Name: string(c.dao.TorrentsTorrentSource.InfoHash.ColumnName())},
+						{Name: string(c.dao.TorrentsTorrentSource.Source.ColumnName())},
+					},
+					DoUpdates: clause.AssignmentColumns([]string{
+						string(c.dao.TorrentsTorrentSource.Seeders.ColumnName()),
+						string(c.dao.TorrentsTorrentSource.Leechers.ColumnName()),
+						string(c.dao.TorrentsTorrentSource.UpdatedAt.ColumnName()),
+					}),
 				},
-				DoUpdates: clause.AssignmentColumns([]string{
-					string(c.dao.TorrentsTorrentSource.Seeders.ColumnName()),
-					string(c.dao.TorrentsTorrentSource.Leechers.ColumnName()),
-					string(c.dao.TorrentsTorrentSource.UpdatedAt.ColumnName()),
-				}),
-			}).CreateInBatches(srcs, 20); persistErr != nil {
+			).Where(
+				// check that the torrent record hasn't been deleted:
+				gen.Exists(c.dao.WithContext(ctx).Torrent.Where(
+					c.dao.Torrent.InfoHash.EqCol(c.dao.TorrentsTorrentSource.InfoHash),
+				)),
+			).CreateInBatches(srcs, 100); persistErr != nil {
 				c.logger.Errorf("error persisting torrent sources: %s", persistErr.Error())
 			} else {
 				c.persistedTotal.With(prometheus.Labels{"entity": "TorrentsTorrentSource"}).Add(float64(len(srcs)))
