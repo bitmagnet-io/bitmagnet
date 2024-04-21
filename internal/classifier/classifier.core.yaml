@@ -1,6 +1,10 @@
 $schema: "https://bitmagnet.io/schemas/classifier-0.1.json"
 workflows:
   default:
+    # delete torrents containing banned keywords:
+    - if_else:
+        condition: "([torrent.baseName] + torrent.files.map(f, f.basePath)).join(' ').matches(keywords.banned)"
+        if_action: delete
     # try to identify content type for torrents without a hinted content type:
     - if_else:
         condition: "result.contentType == contentType.unknown"
@@ -201,6 +205,18 @@ keywords:
     - threesome
     - "*wank*"
     - "*xxx*"
+  banned:
+    - pa?edo(fil*|phil*)?
+    - preteen
+    - pthc
+    - ptsc
+    - lsbar
+    - lsm
+    - underage
+    - hebefilia
+    - opva
+    - child porn
+    - (#|10|11|12|13|14|15|16|17) ?y ?o
 flag_definitions:
   tmdb_enabled: bool
   delete_content_types: content_type_list
