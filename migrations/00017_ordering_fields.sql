@@ -4,9 +4,6 @@
 -- Fix an egregious error that has been there from day 1:
 update torrents_torrent_sources set seeders = leechers, leechers = seeders where source = 'dht';
 
--- Fix dates that were not set to null:
-update torrents_torrent_sources set published_at = null where published_at = '0001-01-01 00:00:00+00';
-
 -- Drop some fairly useless columns that take up a lot of space:
 alter table torrents_torrent_sources drop column bfsd;
 alter table torrents_torrent_sources drop column bfpe;
