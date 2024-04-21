@@ -104,9 +104,6 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 				foundMatch = true
 			}
 		}
-		//if params.ClassifyMode == ClassifyModeSkipUnmatched && torrent.Hint.IsNil() {
-		//	useClassifier = classifier.FallbackClassifier{}
-		//}
 		cl, classifyErr := c.runner.Run(ctx, workflowName, torrent)
 		if classifyErr != nil {
 			if errors.Is(classifyErr, classification.ErrDeleteTorrent) {

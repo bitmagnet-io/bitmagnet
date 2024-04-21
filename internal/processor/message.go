@@ -16,9 +16,6 @@ const (
 	// ClassifyModeRematch will ignore any pre-existing classification and always classify from scratch
 	// This is useful if there are errors in matches from an earlier version that need to be corrected
 	ClassifyModeRematch
-	// ClassifyModeSkipUnmatched will skip classification for previously unmatched torrents (that don't have any hint)
-	// This is useful for eliminating expensive API calls while running the rest of the processing pipeline
-	ClassifyModeSkipUnmatched
 )
 
 type MessageParams struct {
