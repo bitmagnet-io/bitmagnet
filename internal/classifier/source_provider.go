@@ -13,8 +13,10 @@ func newSourceProvider(config Config, tmdbConfig tmdb.Config) sourceProvider {
 			yamlSourceProvider{rawSourceProvider: coreSourceProvider{}},
 			yamlSourceProvider{rawSourceProvider: xdgSourceProvider{}},
 			yamlSourceProvider{rawSourceProvider: cwdSourceProvider{}},
-			configSourceProvider{config: config},
-			disableTmdbSourceProvider{enabled: tmdbConfig.Enabled},
+			configSourceProvider{
+				config:      config,
+				tmdbEnabled: tmdbConfig.Enabled,
+			},
 		},
 	}
 }
@@ -103,28 +105,24 @@ func (_ cwdSourceProvider) source() ([]byte, error) {
 }
 
 type configSourceProvider struct {
-	config Config
+	config      Config
+	tmdbEnabled bool
 }
 
 func (c configSourceProvider) source() (Source, error) {
+	fs := make(flags)
+	for k, v := range c.config.Flags {
+		fs[k] = v
+	}
+	if c.config.DeleteXxx {
+		fs["delete_xxx"] = true
+	}
+	if !c.tmdbEnabled {
+		fs["tmdb_enabled"] = false
+	}
 	return Source{
 		Keywords:   c.config.Keywords,
 		Extensions: c.config.Extensions,
-		Flags:      c.config.Flags,
+		Flags:      fs,
 	}, nil
-}
-
-type disableTmdbSourceProvider struct {
-	enabled bool
-}
-
-func (d disableTmdbSourceProvider) source() (Source, error) {
-	if !d.enabled {
-		return Source{
-			Flags: map[string]any{
-				"tmdb_enabled": false,
-			},
-		}, nil
-	}
-	return Source{}, nil
 }

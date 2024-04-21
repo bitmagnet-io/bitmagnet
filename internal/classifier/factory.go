@@ -49,8 +49,8 @@ func New(params Params) Result {
 		if err != nil {
 			return Source{}, err
 		}
-		if _, ok := src.Workflows[params.Config.DefaultWorkflow]; !ok {
-			return Source{}, fmt.Errorf("default workflow '%s' not found", params.Config.DefaultWorkflow)
+		if _, ok := src.Workflows[params.Config.Workflow]; !ok {
+			return Source{}, fmt.Errorf("default workflow '%s' not found", params.Config.Workflow)
 		}
 		return src, nil
 	})
