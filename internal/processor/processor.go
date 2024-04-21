@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
@@ -24,6 +25,7 @@ type processor struct {
 	search           search.Search
 	runner           classifier.Runner
 	dao              *dao.Query
+	blockingManager  blocking.Manager
 	processSemaphore *semaphore.Weighted
 	persistSemaphore *semaphore.Weighted
 }

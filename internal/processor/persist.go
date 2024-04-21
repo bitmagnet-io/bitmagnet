@@ -43,6 +43,11 @@ func (c processor) persist(ctx context.Context, payload persistPayload) error {
 			})
 		}
 	}
+	if len(payload.deleteInfoHashes) > 0 {
+		if blockErr := c.blockingManager.Block(ctx, payload.deleteInfoHashes); blockErr != nil {
+			return blockErr
+		}
+	}
 	// a semaphore is used here to avoid a Postgres deadlock being detected when multiple processes are trying to persist
 	if err := c.persistSemaphore.Acquire(ctx, 1); err != nil {
 		return err
