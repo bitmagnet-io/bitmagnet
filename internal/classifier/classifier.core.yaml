@@ -94,6 +94,7 @@ workflows:
                 condition: "flags.tmdb_enabled"
                 if_action: attach_tmdb_content_by_search
                 else_action: unmatched
+    # delete specific content types based on the configured flags:
     - if_else:
         condition:
           or:
@@ -215,7 +216,7 @@ keywords:
     - underage
     - hebefilia
     - opva
-    - child porn
+    - child porn*
     - (#|10|11|12|13|14|15|16|17) ?y ?o
 flag_definitions:
   tmdb_enabled: bool

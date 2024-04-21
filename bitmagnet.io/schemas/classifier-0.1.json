@@ -15,6 +15,7 @@
     },
     "action__add_tag": {
       "additionalProperties": false,
+      "description": "Add one or more tags to the current torrent",
       "properties": {
         "add_tag": {
           "items": {
@@ -29,22 +30,28 @@
       "type": "object"
     },
     "action__attach_local_content_by_id": {
-      "const": "attach_local_content_by_id"
+      "const": "attach_local_content_by_id",
+      "description": "Use the torrent hint to attach locally stored content by ID"
     },
     "action__attach_local_content_by_search": {
-      "const": "attach_local_content_by_search"
+      "const": "attach_local_content_by_search",
+      "description": "Attempt to attach local content with a search on the torrent name"
     },
     "action__attach_tmdb_content_by_id": {
-      "const": "attach_tmdb_content_by_id"
+      "const": "attach_tmdb_content_by_id",
+      "description": "Use the torrent hint to attach content from the TMDB API by ID"
     },
     "action__attach_tmdb_content_by_search": {
-      "const": "attach_tmdb_content_by_search"
+      "const": "attach_tmdb_content_by_search",
+      "description": "Attempt to attach content from the TMDB API with a search on the torrent name"
     },
     "action__delete": {
-      "const": "delete"
+      "const": "delete",
+      "description": "Delete the current torrent"
     },
     "action__find_match": {
       "additionalProperties": false,
+      "description": "Iterate through a series of actions to find the first that does not return an unmatched error",
       "properties": {
         "find_match": {
           "items": {
@@ -60,6 +67,7 @@
     },
     "action__if_else": {
       "additionalProperties": false,
+      "description": "Execute an action based on a condition",
       "properties": {
         "if_else": {
           "additionalProperties": false,
@@ -85,17 +93,17 @@
       ],
       "type": "object"
     },
-    "action__no_match": {
-      "const": "no_match"
-    },
     "action__parse_date": {
-      "const": "parse_date"
+      "const": "parse_date",
+      "description": "Try to parse a date from the name of the current torrent"
     },
     "action__parse_video_content": {
-      "const": "parse_video_content"
+      "const": "parse_video_content",
+      "description": "Parse video-related attributes from the name of the current torrent"
     },
     "action__run_workflow": {
       "additionalProperties": false,
+      "description": "Run a different workflow within the current workflow",
       "properties": {
         "run_workflow": {
           "items": {
@@ -112,6 +120,7 @@
     },
     "action__set_content_type": {
       "additionalProperties": false,
+      "description": "Set the content type of the current torrent",
       "properties": {
         "set_content_type": {
           "enum": [
@@ -133,6 +142,10 @@
         "set_content_type"
       ],
       "type": "object"
+    },
+    "action__unmatched": {
+      "const": "unmatched",
+      "description": "Return a unmatched error for the current torrent"
     },
     "action_multi": {
       "items": {
@@ -167,7 +180,7 @@
           "$ref": "#/definitions/action__if_else"
         },
         {
-          "$ref": "#/definitions/action__no_match"
+          "$ref": "#/definitions/action__unmatched"
         },
         {
           "$ref": "#/definitions/action__parse_date"
@@ -203,6 +216,7 @@
       "additionalProperties": false,
       "properties": {
         "and": {
+          "description": "A condition that is satisfied if all conditions in a list are satisfied",
           "items": {
             "$ref": "#/definitions/condition"
           },
@@ -220,6 +234,7 @@
           "additionalProperties": false,
           "properties": {
             "expression": {
+              "description": "A CEL expression describing a condition",
               "minLength": 1,
               "type": "string"
             }
@@ -230,6 +245,7 @@
           "type": "object"
         },
         {
+          "description": "A CEL expression describing a condition",
           "minLength": 1,
           "type": "string"
         }
@@ -237,6 +253,7 @@
     },
     "condition__not": {
       "additionalProperties": false,
+      "description": "A condition that negates the provided condition",
       "properties": {
         "not": {
           "$ref": "#/definitions/condition"
@@ -251,6 +268,7 @@
       "additionalProperties": false,
       "properties": {
         "or": {
+          "description": "A condition that is satisfied if any of the conditions in a list are satisfied",
           "items": {
             "$ref": "#/definitions/condition"
           },
