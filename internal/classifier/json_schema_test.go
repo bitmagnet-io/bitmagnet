@@ -27,6 +27,7 @@ func TestJsonSchema(t *testing.T) {
 	coreClassifier, err := yamlSourceProvider{rawSourceProvider: coreSourceProvider{}}.source()
 	assert.NoError(t, err)
 	coreClassifierJson, err := json.Marshal(coreClassifier)
+	assert.NoError(t, err)
 
 	documentLoader := gojsonschema.NewBytesLoader(coreClassifierJson)
 
