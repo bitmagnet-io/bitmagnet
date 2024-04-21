@@ -84,3 +84,14 @@ tasks:
       - goose -s create {{.NAME}} sql
     vars:
       NAME: migration
+
+  install-protoc:
+    cmds:
+      - |
+        curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v{{.VERSION}}/protoc-{{.VERSION}}-{{.PLATFORM}}.zip
+        sudo unzip -o protoc-{{.VERSION}}-{{.PLATFORM}}.zip -d /usr/local bin/protoc
+        sudo unzip -o protoc-{{.VERSION}}-{{.PLATFORM}}.zip -d /usr/local 'include/*'
+        rm -f protoc-{{.VERSION}}-{{.PLATFORM}}.zip
+    vars:
+      VERSION: 23.4
+      PLATFORM: osx-x86_64
