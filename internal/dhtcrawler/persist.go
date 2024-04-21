@@ -8,7 +8,9 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
 	"github.com/prometheus/client_golang/prometheus"
+	"gorm.io/gen"
 	"gorm.io/gorm/clause"
+	"time"
 )
 
 // runPersistTorrents waits on the persistTorrents channel, and persists torrents to the database in batches.
@@ -31,7 +33,10 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 				if len(hashesToClassify) > 0 {
 					job, err := processor.NewQueueJob(processor.MessageParams{
 						InfoHashes: hashesToClassify,
-					})
+					},
+						// delay the classifier by a minute to allow time for the S/L scrape:
+						model.QueueJobDelayBy(time.Minute),
+					)
 					if err != nil {
 						c.logger.Errorf("error creating queue job: %s", err.Error())
 					} else {
