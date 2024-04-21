@@ -29,3 +29,4 @@ nav_external_links:
 favicon_ico: "/assets/images/favicon.png"
 plugins:
   - jekyll-redirect-from
+  - jekyll-target-blank

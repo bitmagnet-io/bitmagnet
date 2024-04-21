@@ -11,6 +11,7 @@ nav_order: 2
 
 - `postgres.host`, `postgres.name` `postgres.user` `postgres.password` (default: `localhost`, `bitmagnet`, `postgres`, _empty_): Set these values to configure connection to your Postgres database.
 - `tmdb.api_key`: This is quite an important one, please [see below](#obtaining-a-tmdb-api-key) for more details.
+- `tmdb.enabled` (default: `true`): Specify `false` to disable the TMDB API integration.
 - `dht_crawler.save_files_threshold` (default: `100`): Some torrents contain many thousands of files, which impacts performance and uses a lot of database disk space. This parameter sets a maximum limit for the number of files saved by the crawler with each torrent.
 - `dht_crawler.save_pieces` (default: `false`): If true, the DHT crawler will save the pieces bytes from the torrent metadata. The pieces take up quite a lot of space, and aren't currently very useful, but they may be used by future features.
 - `log.level` (default: `info`): If you're developing or just curious then you may want to set this to `debug`; note that `debug` output will be very verbose.
@@ -78,15 +79,18 @@ Environment variables can be used to configure simple scalar types (strings, num
 
 ## VPN configuration
 
-It's recommended that you run **bitmagnet** behind a VPN. If you're using Docker then [gluetun](https://github.com/qdm12/gluetun-wiki){:target="\_blank"} is a good solution for this, although the networking settings can be tricky. The [example docker-compose file](https://github.com/bitmagnet-io/bitmagnet/blob/main/docker-compose.yml){:target="\_blank"} demonstrates this.
+It's recommended that you run **bitmagnet** behind a VPN. If you're using Docker then [gluetun](https://github.com/qdm12/gluetun-wiki) is a good solution for this, although the networking settings can be tricky. The [example docker-compose file](https://github.com/bitmagnet-io/bitmagnet/blob/main/docker-compose.yml) demonstrates this.
 
 ## Obtaining a TMDB API Key
 
 {: .highlight }
-**bitmagnet** uses [the TMDB API](https://developer.themoviedb.org/docs){:target="\_blank"} to fetch metadata for movies and TV shows. By default you'll be sharing an API key with other users. If you're using this app and its content classifier heavily then you'll need to get a personal TMDB API key. Until you do this you'll see a warning message in the logs on startup, and you'll be limited to 1 TMDB API request per second. This is just about enough for running the DHT crawler, but if you're importing and classifying a lot of content this will be a major bottleneck. If many people are using this app with the default API key then that could add up to many requests per second, so please get your own API key if you are using this app more than casually!
+**bitmagnet** uses [the TMDB API](https://developer.themoviedb.org/docs) to fetch metadata for movies and TV shows. By default you'll be sharing an API key with other users. If you're using this app and its content classifier heavily then you'll need to get a personal TMDB API key. Until you do this you'll see a warning message in the logs on startup, and you'll be limited to 1 TMDB API request per second. This is just about enough for running the DHT crawler, but if you're importing and classifying a lot of content this will be a major bottleneck. If many people are using this app with the default API key then that could add up to many requests per second, so please get your own API key if you are using this app more than casually!
 
 Obtaining an API key is free and relatively easy, but you'll have to register for a TMDB account, provide them with some personal information such as contact details, a website URL (such as your GitHub account or social media profile) and a short description of your use case (**tip:** this app provides _"A content classifier that identifies movies and TV shows based on filenames"_). Once you've filled in the request form, approval should be instant.
 
-[Synology have provided a full tutorial on obtaining a TMDB API key](https://kb.synology.com/en-au/DSM/tutorial/How_to_apply_for_a_personal_API_key_to_get_video_info){:target="\_blank"}.
+[Synology have provided a full tutorial on obtaining a TMDB API key](https://kb.synology.com/en-au/DSM/tutorial/How_to_apply_for_a_personal_API_key_to_get_video_info).
 
-Once you've obtained your API key you'll need to configure the `tmdb.api_key` value. Your rate limit will then default to 20 requests per second, which is well within [TMDB's stated fair usage limit](https://developer.themoviedb.org/docs/rate-limiting){:target="\_blank"}.
+Once you've obtained your API key you'll need to configure the `tmdb.api_key` value. Your rate limit will then default to 20 requests per second, which is well within [TMDB's stated fair usage limit](https://developer.themoviedb.org/docs/rate-limiting).
+
+{: .highlight }
+The TMDB API integration can be disabled altogether by setting `tmdb.enabled` to `false`.

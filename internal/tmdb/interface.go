@@ -23,26 +23,28 @@ type SearchMovieRequest struct {
 	Region             model.NullString
 }
 
+type SearchMovieResult struct {
+	VoteCount        int64   `json:"vote_count"`
+	ID               int64   `json:"id"`
+	Video            bool    `json:"video"`
+	VoteAverage      float32 `json:"vote_average"`
+	Title            string  `json:"title"`
+	Popularity       float32 `json:"popularity"`
+	PosterPath       string  `json:"poster_path"`
+	OriginalLanguage string  `json:"original_language"`
+	OriginalTitle    string  `json:"original_title"`
+	GenreIDs         []int64 `json:"genre_ids"`
+	BackdropPath     string  `json:"backdrop_path"`
+	Adult            bool    `json:"adult"`
+	Overview         string  `json:"overview"`
+	ReleaseDate      string  `json:"release_date"`
+}
+
 type SearchMovieResponse struct {
-	Page         int64 `json:"page"`
-	TotalResults int64 `json:"total_results"`
-	TotalPages   int64 `json:"total_pages"`
-	Results      []struct {
-		VoteCount        int64   `json:"vote_count"`
-		ID               int64   `json:"id"`
-		Video            bool    `json:"video"`
-		VoteAverage      float32 `json:"vote_average"`
-		Title            string  `json:"title"`
-		Popularity       float32 `json:"popularity"`
-		PosterPath       string  `json:"poster_path"`
-		OriginalLanguage string  `json:"original_language"`
-		OriginalTitle    string  `json:"original_title"`
-		GenreIDs         []int64 `json:"genre_ids"`
-		BackdropPath     string  `json:"backdrop_path"`
-		Adult            bool    `json:"adult"`
-		Overview         string  `json:"overview"`
-		ReleaseDate      string  `json:"release_date"`
-	} `json:"results"`
+	Page         int64               `json:"page"`
+	TotalResults int64               `json:"total_results"`
+	TotalPages   int64               `json:"total_pages"`
+	Results      []SearchMovieResult `json:"results"`
 }
 
 type SearchTvRequest struct {

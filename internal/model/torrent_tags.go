@@ -8,7 +8,7 @@ import (
 
 var tagNameRegex = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
 
-const tagNameMaxLength = 20
+const tagNameMaxLength = 30
 
 func ValidateTagName(name string) error {
 	if !tagNameRegex.MatchString(name) {

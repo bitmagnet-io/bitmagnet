@@ -3,39 +3,160 @@ package classifier
 import (
 	"context"
 	"errors"
+	"fmt"
+	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
-	"go.uber.org/zap"
+	"github.com/bitmagnet-io/bitmagnet/internal/protobuf"
+	"github.com/google/cel-go/cel"
+	"strings"
 )
 
-var (
-	ErrNoMatch = errors.New("no match")
-)
-
-type Classifier interface {
-	Classify(ctx context.Context, torrent model.Torrent) (Classification, error)
+type Compiler interface {
+	Compile(source Source) (Runner, error)
 }
 
-type SubClassifier interface {
-	Classifier
-	Key() string
-	Priority() int
+type Runner interface {
+	Run(ctx context.Context, workflow string, t model.Torrent) (classification.Result, error)
 }
 
-type classifier struct {
-	subClassifiers []SubClassifier
-	logger         *zap.SugaredLogger
+type compiler struct {
+	options      []compilerOption
+	dependencies dependencies
 }
 
-func (c classifier) Classify(ctx context.Context, t model.Torrent) (Classification, error) {
-	for _, sc := range c.subClassifiers {
-		tc, err := sc.Classify(ctx, t)
-		if err == nil {
-			return tc, nil
-		}
-		if !errors.Is(err, ErrNoMatch) {
-			c.logger.Errorw("error classifying content", "classifier", sc.Key(), "torrent", t, "error", err)
-			return Classification{}, err
+type compilerContext struct {
+	features
+	celEnv        *cel.Env
+	source        any
+	path          []string
+	workflowNames map[string]struct{}
+}
+
+type compilerOption func(Source, *compilerContext) error
+
+type executionContext struct {
+	context.Context
+	dependencies
+	workflows map[string]action
+	torrent   model.Torrent
+	torrentPb *protobuf.Torrent
+	result    classification.Result
+	resultPb  *protobuf.Classification
+}
+
+func (c executionContext) withResult(result classification.Result) executionContext {
+	c.result = result
+	c.resultPb = protobuf.NewClassification(result)
+	return c
+}
+
+func (c compilerContext) child(pathPart string, source any) compilerContext {
+	c.source = source
+	newPath := make([]string, len(c.path), len(c.path)+1)
+	copy(newPath, c.path)
+	newPath = append(newPath, pathPart)
+	c.path = newPath
+	return c
+}
+
+func (c compilerContext) error(cause error) error {
+	if asCompilerError(cause) != nil {
+		return cause
+	}
+	return compilerError{c.path, cause}
+}
+
+func (c compilerContext) fatal(cause error) error {
+	if asFatalCompilerError(cause) != nil {
+		return cause
+	}
+	cErr := asCompilerError(cause)
+	if cErr != nil {
+		return fatalCompilerError{compilerError: *cErr}
+	}
+	return fatalCompilerError{compilerError{c.path, cause}}
+}
+
+func (c compiler) Compile(source Source) (Runner, error) {
+	ctx := &compilerContext{
+		source:        source,
+		workflowNames: source.workflowNames(),
+	}
+	source, sourceErr := decode[Source](*ctx)
+	if sourceErr != nil {
+		return nil, ctx.fatal(sourceErr)
+	}
+	for _, opt := range c.options {
+		if err := opt(source, ctx); err != nil {
+			return nil, ctx.fatal(err)
 		}
 	}
-	return Classification{}, ErrNoMatch
+	workflowsCtx := ctx.child("workflows", source.Workflows)
+	workflows := make(map[string]action)
+	for name, src := range source.Workflows {
+		a, err := ctx.compileAction(workflowsCtx.child(name, src))
+		if err != nil {
+			return nil, ctx.fatal(err)
+		}
+		workflows[name] = a
+	}
+	return runner{
+		dependencies: c.dependencies,
+		workflows:    workflows,
+	}, nil
+}
+
+func decodeTo[T any](ctx compilerContext, target *T) error {
+	decoder, decoderErr := newDecoder(target)
+	if decoderErr != nil {
+		return ctx.error(decoderErr)
+	}
+	return decoder.Decode(ctx.source)
+}
+
+func decode[T any](ctx compilerContext) (T, error) {
+	var target T
+	err := decodeTo(ctx, &target)
+	return target, err
+}
+
+type compilerError struct {
+	path  []string
+	cause error
+}
+
+func (e compilerError) Error() string {
+	return fmt.Sprintf("compiler error at path '%s': %s", strings.Join(e.path, "."), e.cause)
+}
+
+func (e compilerError) Unwrap() error {
+	return e.cause
+}
+
+func asCompilerError(err error) *compilerError {
+	ue := &compilerError{}
+	if ok := errors.As(err, ue); ok {
+		return ue
+	}
+	return nil
+}
+
+type fatalCompilerError struct {
+	compilerError
+}
+
+func (e fatalCompilerError) Unwrap() error {
+	return e.compilerError
+}
+
+func asFatalCompilerError(err error) *fatalCompilerError {
+	ue := &fatalCompilerError{}
+	if ok := errors.As(err, ue); ok {
+		return ue
+	}
+	return nil
+}
+
+func numericPathPart(num int) string {
+	return fmt.Sprintf("[%d]", num)
 }

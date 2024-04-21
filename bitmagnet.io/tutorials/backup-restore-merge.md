@@ -23,7 +23,7 @@ This tutorial will show you how to backup, restore and merge **bitmagnet** datab
 
 The following command will take a backup of the critical **bitmagnet** data and save it to a file named `export.sql`. (note this is not a full backup of the database which would include creation of tables, indexes etc.). By exporting with the `--data-only` flag the resulting file can be imported into a new or existing installation, after **bitmagnet** has run its migrations to set up the database and tables.
 
-Please refer to [the `pg_dump` documentation](https://www.postgresql.org/docs/current/app-pgdump.html){:target="\_blank"} and ensure to specify the correct values (e.g. `host`, `username` and `password`) for the source database.
+Please refer to [the `pg_dump` documentation](https://www.postgresql.org/docs/current/app-pgdump.html) and ensure to specify the correct values (e.g. `host`, `username` and `password`) for the source database.
 
 ```sh
 pg_dump \
@@ -53,7 +53,7 @@ First, ensure you have a target **bitmagnet** instance up and running, _of the s
 
 The following command will import the backup file into the target database, merging the data with any existing data.
 
-Please refer to [the `psql` documentation](https://www.postgresql.org/docs/current/app-psql.html){:target="\_blank"} and ensure to specify the correct values (e.g. `host`, `username` and `password`) for the target database.
+Please refer to [the `psql` documentation](https://www.postgresql.org/docs/current/app-psql.html) and ensure to specify the correct values (e.g. `host`, `username` and `password`) for the target database.
 
 ```sh
 psql bitmagnet < backup.sql

@@ -1,0 +1,69 @@
+syntax = "proto3";
+package bitmagnet;
+option go_package = "/internal/protobuf";
+
+message Torrent {
+  string infoHash = 1;
+  string name = 2;
+  string baseName = 3;
+  int64 size = 4;
+  optional string extension = 5;
+  repeated File files = 6;
+  optional int32 filesCount = 7;
+  optional int64 filesSize = 8;
+  repeated string fileExtensions = 9;
+  optional int32 seeders = 10;
+  optional int32 leechers = 11;
+  bool hasHint = 12;
+  bool hasHintedContentId = 13;
+
+  message File {
+    int32 index = 1;
+    string path = 2;
+    string basePath = 3;
+    string baseName = 4;
+    int64 size = 5;
+    optional string extension = 6;
+    FileType fileType = 7;
+
+    enum FileType {
+      unknown = 0;
+      archive = 1;
+      audio = 2;
+      data = 3;
+      document = 4;
+      image = 5;
+      software = 6;
+      subtitles = 7;
+      video = 8;
+    }
+  }
+}
+
+message Classification {
+  ContentType contentType = 1;
+  bool hasAttachedContent = 2;
+  bool hasBaseTitle = 3;
+  optional int32 year = 4;
+  repeated string languages = 5;
+  repeated string episodes = 6;
+  optional string videoResolution = 7;
+  optional string videoSource = 8;
+  optional string videoCodec = 9;
+  optional string video3d = 10;
+  optional string releaseGroup = 11;
+
+  enum ContentType {
+    unknown = 0;
+    movie = 1;
+    tv_show = 2;
+    music = 3;
+    ebook = 4;
+    comic = 5;
+    audiobook = 6;
+    game = 7;
+    software = 8;
+    xxx = 9;
+  }
+}
+

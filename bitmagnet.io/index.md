@@ -14,7 +14,7 @@ nav_order: -1
 
 > Important
 >
-> This software is currently in alpha. It is ready to preview some interesting and unique features, but there will likely be bugs, as well as API and database schema changes before the (currently theoretical) 1.0 release. If you'd like to support this project and help it gain momentum, **[please give it a star on GitHub](https://github.com/bitmagnet-io/bitmagnet){:target="\_blank"}**.
+> This software is currently in alpha. It is ready to preview some interesting and unique features, but there will likely be bugs, as well as API and database schema changes before the (currently theoretical) 1.0 release. If you'd like to support this project and help it gain momentum, **[please give it a star on GitHub](https://github.com/bitmagnet-io/bitmagnet)**.
 >
 > [If you're interested in getting involved and you're a backend GoLang or frontend TypeScript/Angular developer, or you're knowledgeable about BitTorrent protocols then **I'd like to hear from you**](/internals-development.html) - let's get this thing over the line!
 
@@ -51,7 +51,7 @@ This means that **bitmagnet** is not reliant on any external trackers or torrent
 - [ ] A more complete web UI
 - [ ] Saved searches for content of particular interest, enabling custom feeds in addition to the following feature
 - [ ] Smart deletion: there's a lot of crap out there; crawling DHT can quickly use lots of database disk space, and search becomes slower with millions of indexed torrents of which 90% are of no interest. A smart deletion feature would use saved searches to identify content that you're _not_ interested in, including low quality content (such as low resolution movies). It would automatically delete associated metadata and add the info hash to a bloom filter, preventing the torrent from being re-indexed in future.
-- [ ] Bi-directional integration with the [Prowlarr indexer proxy](https://prowlarr.com/){:target="\_blank"}: Currently **bitmagnet** can be added as an indexer in Prowlarr; bi-directional integration would allow **bitmagnet** to crawl content from any indexer configured in Prowlarr, unlocking many new sources of content
+- [ ] Bi-directional integration with the [Prowlarr indexer proxy](https://prowlarr.com/): Currently **bitmagnet** can be added as an indexer in Prowlarr; bi-directional integration would allow **bitmagnet** to crawl content from any indexer configured in Prowlarr, unlocking many new sources of content
 - [ ] More documentation and more tests!
 
 ### Pipe dream features
@@ -61,5 +61,5 @@ This is where things start to get a bit nebulous. For now all focus is on delive
 - [ ] In-place seeding: identify files on your computer that are part of an indexed torrent, and allow them to be seeded in place after having moved, renamed or deleted parts of the torrent
 - [ ] Integration with popular BitTorrent clients
 - [ ] Federation of some sort: allow friends to connect instances and pool the indexing effort, perhaps involving crowd sourcing manual content curation to supplement the automated classifiers
-- [ ] Something that looks like a decentralized private tracker; by this I probably mean something that's based partly on personal trust and manually weeding out any bad actors; I'd be wary of creating something that looks a bit like [Tribler](https://github.com/Tribler/tribler){:target="\_blank"}, which while an interesting project seems to have demonstrated that implementing trust, reputation and privacy at the protocol level carries too much overhead to be a compelling alternative to plain old BitTorrent, for all its imperfections
-- [ ] Support for the [BitTorrent v2 protocol](https://blog.libtorrent.org/2020/09/bittorrent-v2/){:target="\_blank"}: It remains to be seen if wider adoption will ever make this a valuable feature
+- [ ] Something that looks like a decentralized private tracker; by this I probably mean something that's based partly on personal trust and manually weeding out any bad actors; I'd be wary of creating something that looks a bit like [Tribler](https://github.com/Tribler/tribler), which while an interesting project seems to have demonstrated that implementing trust, reputation and privacy at the protocol level carries too much overhead to be a compelling alternative to plain old BitTorrent, for all its imperfections
+- [ ] Support for the [BitTorrent v2 protocol](https://blog.libtorrent.org/2020/09/bittorrent-v2/): It remains to be seen if wider adoption will ever make this a valuable feature
