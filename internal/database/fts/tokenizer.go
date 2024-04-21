@@ -1,6 +1,7 @@
 package fts
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
 	"github.com/mozillazg/go-unidecode/table"
 	"strings"
 	"unicode"
@@ -48,7 +49,7 @@ func (l *tokenizerLexer) readPhrase() []string {
 			breakWord()
 			return phrase
 		}
-		if ch, ok := l.ReadIf(IsWordChar); ok {
+		if ch, ok := l.ReadIf(lexer.IsWordChar); ok {
 			ch = unicode.ToLower(ch)
 			if ch < unicode.MaxASCII {
 				appendStr(string(ch))

@@ -1,6 +1,7 @@
 package fts
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
 	"strings"
 )
 
@@ -78,7 +79,7 @@ func (l *queryLexer) readQueryToken() (TokenValue, bool) {
 		if quoted, _ := l.readQuotedString('"'); quoted != "" {
 			return TokenValue{start, l.Pos() - start, TokenQuoted, quoted}, true
 		}
-		if phrase := l.ReadWhile(IsWordChar); phrase != "" {
+		if phrase := l.ReadWhile(lexer.IsWordChar); phrase != "" {
 			return TokenValue{start, l.Pos() - start, TokenPhrase, phrase}, true
 		}
 		l.Read()

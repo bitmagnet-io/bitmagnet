@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -120,7 +121,7 @@ func (l *tsvectorLexer) readTsvPart() (string, []TsvectorLabel, error) {
 		return "", nil, err
 	}
 	if !l.ReadChar(':') {
-		spaces := l.ReadWhile(isChar(' '))
+		spaces := l.ReadWhile(lexer.IsChar(' '))
 		if !l.IsEof() && len(spaces) == 0 {
 			return "", nil, errors.New("unexpected character")
 		}
@@ -134,7 +135,7 @@ func (l *tsvectorLexer) readTsvPart() (string, []TsvectorLabel, error) {
 }
 
 func (l *tsvectorLexer) readLexeme() (string, error) {
-	if unquoted := l.ReadWhile(IsWordChar); unquoted != "" {
+	if unquoted := l.ReadWhile(lexer.IsWordChar); unquoted != "" {
 		return unquoted, nil
 	}
 	word, err := l.readQuotedString('\'')
@@ -166,7 +167,7 @@ func (l *tsvectorLexer) readLabels() ([]TsvectorLabel, error) {
 		} else {
 			pws = append(pws, rest...)
 		}
-	} else if !l.IsEof() && l.ReadWhile(isChar(' ')) == "" {
+	} else if !l.IsEof() && l.ReadWhile(lexer.IsChar(' ')) == "" {
 		return nil, errors.New("unexpected character")
 	}
 	return pws, nil

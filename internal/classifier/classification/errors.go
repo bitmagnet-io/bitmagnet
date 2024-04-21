@@ -13,7 +13,6 @@ type Error interface {
 type WorkflowError struct {
 	key     string
 	message string
-	cause   error
 }
 
 func (e WorkflowError) Error() string {

@@ -114,24 +114,6 @@ func (l *Lexer) ReadChar(r1 rune) bool {
 	return ok
 }
 
-func (l *Lexer) readQuotedString(quoteChar rune) (string, error) {
-	if !l.ReadChar(quoteChar) {
-		return "", errors.New("missing opening quote")
-	}
-	var str string
-	for {
-		ch, ok := l.Read()
-		if !ok {
-			return str, errors.New("unexpected EOF")
-		}
-		if ch == quoteChar && !l.ReadChar(quoteChar) {
-			break
-		}
-		str = str + string(ch)
-	}
-	return str, nil
-}
-
 func IsInt(r rune) bool {
 	return r >= '0' && r <= '9'
 }

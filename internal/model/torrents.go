@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/database/fts"
+	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
 	"github.com/facette/natsort"
 	"gorm.io/gorm"
 	"net/url"
@@ -175,7 +175,7 @@ outer:
 			i++
 		}
 		for {
-			if i == 0 || !fts.IsWordChar(rune(f.Path[i])) {
+			if i == 0 || !lexer.IsWordChar(rune(f.Path[i])) {
 				break
 			}
 			i--
@@ -199,7 +199,7 @@ outer:
 			}
 		}
 		for {
-			if longestSuffixLength == 0 || !fts.IsWordChar(rune(firstPass[i][len(firstPass[i])-longestSuffixLength])) {
+			if longestSuffixLength == 0 || !lexer.IsWordChar(rune(firstPass[i][len(firstPass[i])-longestSuffixLength])) {
 				break
 			}
 			longestSuffixLength--

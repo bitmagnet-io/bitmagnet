@@ -11,7 +11,6 @@ import (
 
 type dateLexer struct {
 	lexer.Lexer
-	date model.Date
 }
 
 func ParseDate(str string) model.Date {
