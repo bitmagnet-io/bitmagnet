@@ -14,6 +14,7 @@ func NewTorrent(t model.Torrent) *Torrent {
 		if ext.Valid {
 			files = append(files, &Torrent_File{
 				Path:      t.Name,
+				BasePath:  t.Name,
 				BaseName:  t.Name,
 				Extension: &ext.String,
 				FileType:  NewFileType(model.FileTypeFromExtension(ext.String)),
@@ -29,6 +30,7 @@ func NewTorrent(t model.Torrent) *Torrent {
 		}
 		files = append(files, &Torrent_File{
 			Path:      t.Name,
+			BasePath:  t.BaseName(),
 			BaseName:  t.BaseName(),
 			Extension: ext,
 			Size:      int64(t.Size),
@@ -47,6 +49,7 @@ func NewTorrent(t model.Torrent) *Torrent {
 			files = append(files, &Torrent_File{
 				Index:     int32(f.Index),
 				Path:      f.Path,
+				BasePath:  f.BasePath(),
 				BaseName:  f.BaseName(),
 				Size:      int64(f.Size),
 				Extension: ext,

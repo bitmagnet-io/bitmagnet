@@ -48,7 +48,7 @@ workflows:
                 else_action: no_match
             # match xxx:
             - if_else:
-                condition: "([torrent.baseName] + torrent.files.map(f, f.baseName)).join(' ').matches(keywords.xxx)"
+                condition: "([torrent.baseName] + torrent.files.map(f, f.basePath)).join(' ').matches(keywords.xxx)"
                 if_action:
                   set_content_type: xxx
                 else_action: no_match
