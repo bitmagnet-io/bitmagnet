@@ -145,8 +145,7 @@ keywords:
   audiobook:
     - audiobooks?
     - books?
-    - abridged
-    - unabridged
+    - (un)?abridged
     - narrated
     - novels?
     - "*biograph*"
@@ -154,8 +153,8 @@ keywords:
     - discography
     - music
     - album
-    - va
-    - various
+    - \V.?\A.?
+    - various artists
     - compilation
     - ep
     - lp
