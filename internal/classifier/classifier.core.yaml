@@ -91,7 +91,10 @@ workflows:
                 if_action: attach_tmdb_content_by_search
                 else_action: no_match
     - if_else:
-        condition: "result.contentType in flags.delete_content_types"
+        condition:
+          or:
+            - "result.contentType in flags.delete_content_types"
+            - "flags.delete_xxx && result.contentType == contentType.xxx"
         if_action: delete
 extensions:
   audiobook:
@@ -202,6 +205,8 @@ keywords:
 flag_definitions:
   tmdb_enabled: bool
   delete_content_types: content_type_list
+  delete_xxx: bool
 flags:
   tmdb_enabled: true
   delete_content_types: []
+  delete_xxx: false
