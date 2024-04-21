@@ -116,7 +116,7 @@ func parseTitleYear(input string) (string, model.Year, string, error) {
 			return title, model.Year(yearMatch), input[len(match[0]):], nil
 		}
 	}
-	return "", 0, "", classification.ErrNoMatch
+	return "", 0, "", classification.ErrUnmatched
 }
 
 func parseTitle(input string) (string, string, error) {
@@ -126,7 +126,7 @@ func parseTitle(input string) (string, string, error) {
 			return title, input[len(match[0]):], nil
 		}
 	}
-	return "", "", classification.ErrNoMatch
+	return "", "", classification.ErrUnmatched
 }
 
 func parseTitleYearEpisodes(input string) (string, model.Year, model.Episodes, string, error) {
@@ -142,7 +142,7 @@ func parseTitleYearEpisodes(input string) (string, model.Year, model.Episodes, s
 		episodes := model.EpisodesMatchToEpisodes(match[2:])
 		return title, year, episodes, input[len(match[0]):], nil
 	}
-	return "", 0, nil, "", classification.ErrNoMatch
+	return "", 0, nil, "", classification.ErrUnmatched
 }
 
 func ParseTitleYearEpisodes(contentType model.NullContentType, input string) (string, model.Year, model.Episodes, string, error) {
@@ -157,7 +157,7 @@ func ParseTitleYearEpisodes(contentType model.NullContentType, input string) (st
 	if title, rest, err := parseTitle(input); err == nil {
 		return title, 0, nil, rest, nil
 	}
-	return "", 0, nil, "", classification.ErrNoMatch
+	return "", 0, nil, "", classification.ErrUnmatched
 }
 
 func ParseVideoContent(torrent model.Torrent, result classification.Result) (classification.ContentAttributes, error) {

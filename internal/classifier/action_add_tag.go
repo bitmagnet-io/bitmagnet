@@ -28,12 +28,13 @@ var tagPayloadSpec = payloadTransformer[string, string]{
 }
 
 var addTagPayloadSpec = payloadSingleKeyValue[[]string]{
-	addTagName,
-	payloadMustSucceed[[]string]{
+	key: addTagName,
+	valueSpec: payloadMustSucceed[[]string]{
 		payloadList[string]{
 			itemSpec: tagPayloadSpec,
 		},
 	},
+	description: "Add one or more tags to the current torrent",
 }
 
 func (addTagAction) compileAction(ctx compilerContext) (action, error) {

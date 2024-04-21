@@ -39,7 +39,7 @@ func TestClassifier(t *testing.T) {
 					"The Regular Movie",
 					model.Year(2000),
 				).
-					Return(model.Content{}, classification.ErrNoMatch)
+					Return(model.Content{}, classification.ErrUnmatched)
 				mocks.tmdbClient.On(
 					"SearchMovie",
 					matchContext,
@@ -116,7 +116,7 @@ func TestClassifier(t *testing.T) {
 					"The Regular TMDB Movie",
 					model.Year(2000),
 				).
-					Return(model.Content{}, classification.ErrNoMatch)
+					Return(model.Content{}, classification.ErrUnmatched)
 				mocks.tmdbClient.On(
 					"SearchMovie",
 					matchContext,

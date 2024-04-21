@@ -20,19 +20,19 @@ workflows:
                         - "torrent.files.filter(f, f.extension in extensions.audiobook).size() > 0"
                 if_action:
                   set_content_type: audiobook
-                else_action: no_match
+                else_action: unmatched
             # match comics:
             - if_else:
                 condition: "torrent.files.map(f, f.extension in extensions.comic ? f.size : - f.size).sum() > 0"
                 if_action:
                   set_content_type: comic
-                else_action: no_match
+                else_action: unmatched
             # match ebooks:
             - if_else:
                 condition: "torrent.files.map(f, f.extension in extensions.ebook ? f.size : - f.size).sum() > 0"
                 if_action:
                   set_content_type: ebook
-                else_action: no_match
+                else_action: unmatched
             # match music:
             - if_else:
                 condition:
@@ -43,19 +43,19 @@ workflows:
                         - "torrent.files.map(f, f.fileType == fileType.audio ? f.size : - f.size).sum() > 0"
                 if_action:
                   set_content_type: music
-                else_action: no_match
+                else_action: unmatched
             # match software:
             - if_else:
                 condition: "torrent.files.map(f, f.fileType == fileType.software ? f.size : - f.size).sum() > 0"
                 if_action:
                   set_content_type: software
-                else_action: no_match
+                else_action: unmatched
             # match xxx:
             - if_else:
                 condition: "([torrent.baseName] + torrent.files.map(f, f.basePath)).join(' ').matches(keywords.xxx)"
                 if_action:
                   set_content_type: xxx
-                else_action: no_match
+                else_action: unmatched
     # if the name contains a full date, attach it to the result as it's a good indicator of content type:
     - find_match:
         - parse_date
@@ -72,7 +72,7 @@ workflows:
             - if_else:
                 condition: "flags.tmdb_enabled"
                 if_action: attach_tmdb_content_by_id
-                else_action: no_match
+                else_action: unmatched
     # parse video-related attributes for video torrents (including the base title, needed for the next step):
     - if_else:
         condition:
@@ -93,7 +93,7 @@ workflows:
             - if_else:
                 condition: "flags.tmdb_enabled"
                 if_action: attach_tmdb_content_by_search
-                else_action: no_match
+                else_action: unmatched
     - if_else:
         condition:
           or:

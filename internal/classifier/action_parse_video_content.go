@@ -13,7 +13,10 @@ func (parseVideoContentAction) name() string {
 	return parseVideoContentName
 }
 
-var parseVideoContentPayloadSpec = payloadLiteral[string]{parseVideoContentName}
+var parseVideoContentPayloadSpec = payloadLiteral[string]{
+	literal:     parseVideoContentName,
+	description: "Parse video-related attributes from the name of the current torrent",
+}
 
 func (parseVideoContentAction) compileAction(ctx compilerContext) (action, error) {
 	if _, err := parseVideoContentPayloadSpec.Unmarshal(ctx); err != nil {

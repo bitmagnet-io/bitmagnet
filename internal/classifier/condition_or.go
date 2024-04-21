@@ -10,11 +10,14 @@ func (orCondition) name() string {
 
 var orConditionSpec = payloadSingleKeyValue[[]any]{
 	key: orName,
-	valueSpec: payloadMustSucceed[[]any]{payloadList[any]{payloadGeneric[any]{
-		jsonSchema: map[string]any{
-			"$ref": "#/definitions/condition",
+	valueSpec: payloadMustSucceed[[]any]{payloadList[any]{
+		itemSpec: payloadGeneric[any]{
+			jsonSchema: map[string]any{
+				"$ref": "#/definitions/condition",
+			},
 		},
-	}}},
+		description: "A condition that is satisfied if any of the conditions in a list are satisfied",
+	}},
 }
 
 func (orCondition) compileCondition(ctx compilerContext) (condition, error) {

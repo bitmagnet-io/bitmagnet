@@ -10,7 +10,10 @@ func (deleteAction) name() string {
 	return deleteName
 }
 
-var deletePayloadSpec = payloadLiteral[string]{deleteName}
+var deletePayloadSpec = payloadLiteral[string]{
+	literal:     deleteName,
+	description: "Delete the current torrent",
+}
 
 func (deleteAction) compileAction(ctx compilerContext) (action, error) {
 	if _, err := deletePayloadSpec.Unmarshal(ctx); err != nil {

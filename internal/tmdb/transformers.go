@@ -171,7 +171,7 @@ func ExternalSource(ref model.ContentRef) (externalSource string, externalId str
 		externalSource = "tvdb_id"
 		externalId = ref.ID
 	default:
-		err = classification.ErrNoMatch
+		err = classification.ErrUnmatched
 	}
 	return
 }

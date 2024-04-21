@@ -13,7 +13,10 @@ func (attachLocalContentByIdAction) name() string {
 	return attachLocalContentByIdName
 }
 
-var attachLocalContentByIdPayloadSpec = payloadLiteral[string]{attachLocalContentByIdName}
+var attachLocalContentByIdPayloadSpec = payloadLiteral[string]{
+	literal:     attachLocalContentByIdName,
+	description: "Use the torrent hint to attach locally stored content by ID",
+}
 
 func (a attachLocalContentByIdAction) compileAction(ctx compilerContext) (action, error) {
 	if _, err := attachLocalContentByIdPayloadSpec.Unmarshal(ctx); err != nil {
@@ -23,7 +26,7 @@ func (a attachLocalContentByIdAction) compileAction(ctx compilerContext) (action
 		run: func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result
 			if ctx.torrent.Hint.IsNil() || !ctx.torrent.Hint.ContentSource.Valid {
-				return cl, classification.ErrNoMatch
+				return cl, classification.ErrUnmatched
 			}
 			content, err := ctx.search.ContentById(ctx, model.ContentRef{
 				Type:   ctx.torrent.Hint.ContentType,

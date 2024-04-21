@@ -14,7 +14,10 @@ func (attachTmdbContentByIdAction) name() string {
 	return attachTmdbContentByIdName
 }
 
-var attachTmdbContentByIdPayloadSpec = payloadLiteral[string]{attachTmdbContentByIdName}
+var attachTmdbContentByIdPayloadSpec = payloadLiteral[string]{
+	literal:     attachTmdbContentByIdName,
+	description: "Use the torrent hint to attach content from the TMDB API by ID",
+}
 
 func (a attachTmdbContentByIdAction) compileAction(ctx compilerContext) (action, error) {
 	if _, err := attachTmdbContentByIdPayloadSpec.Unmarshal(ctx); err != nil {
@@ -25,7 +28,7 @@ func (a attachTmdbContentByIdAction) compileAction(ctx compilerContext) (action,
 			cl := ctx.result
 			var ref model.ContentRef
 			if maybeRef := ctx.torrent.Hint.ContentRef(); !maybeRef.Valid {
-				return cl, classification.ErrNoMatch
+				return cl, classification.ErrUnmatched
 			} else {
 				ref = maybeRef.Val
 			}
@@ -36,7 +39,7 @@ func (a attachTmdbContentByIdAction) compileAction(ctx compilerContext) (action,
 			switch ref.Source {
 			case model.SourceTmdb:
 				if id, err := strconv.Atoi(ref.ID); err != nil {
-					return cl, classification.ErrNoMatch
+					return cl, classification.ErrUnmatched
 				} else {
 					tmdbId = int64(id)
 				}
@@ -62,7 +65,7 @@ func (a attachTmdbContentByIdAction) compileAction(ctx compilerContext) (action,
 					content = &c
 				}
 			default:
-				return cl, classification.ErrNoMatch
+				return cl, classification.ErrUnmatched
 			}
 			cl.AttachContent(content)
 			return cl, nil

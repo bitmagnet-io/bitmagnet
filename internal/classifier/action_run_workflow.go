@@ -14,8 +14,8 @@ func (runWorkflowAction) name() string {
 }
 
 var runWorkflowPayloadSpec = payloadSingleKeyValue[[]string]{
-	runWorkflowName,
-	payloadMustSucceed[[]string]{
+	key: runWorkflowName,
+	valueSpec: payloadMustSucceed[[]string]{
 		payloadList[string]{
 			itemSpec: payloadGeneric[string]{
 				jsonSchema: map[string]interface{}{
@@ -25,6 +25,7 @@ var runWorkflowPayloadSpec = payloadSingleKeyValue[[]string]{
 			},
 		},
 	},
+	description: "Run a different workflow within the current workflow",
 }
 
 func (runWorkflowAction) compileAction(ctx compilerContext) (action, error) {

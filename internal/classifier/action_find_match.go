@@ -15,11 +15,12 @@ func (findMatchAction) name() string {
 
 var findMatchActionPayloadSpec = payloadSingleKeyValue[[]any]{
 	key: findMatchName,
-	valueSpec: payloadMustSucceed[[]any]{payloadList[any]{payloadGeneric[any]{
+	valueSpec: payloadMustSucceed[[]any]{payloadList[any]{itemSpec: payloadGeneric[any]{
 		jsonSchema: map[string]any{
 			"$ref": "#/definitions/action_single",
 		},
 	}}},
+	description: "Iterate through a series of actions to find the first that does not return an unmatched error",
 }
 
 func (findMatchAction) compileAction(ctx compilerContext) (action, error) {
@@ -41,7 +42,7 @@ func (findMatchAction) compileAction(ctx compilerContext) (action, error) {
 			for _, action := range actions {
 				result, err := action.run(ctx)
 				if err != nil {
-					if errors.Is(err, classification.ErrNoMatch) {
+					if errors.Is(err, classification.ErrUnmatched) {
 						continue
 					}
 					return classification.Result{}, classification.RuntimeError{

@@ -15,6 +15,7 @@ var notConditionPayloadSpec = payloadSingleKeyValue[any]{
 			"$ref": "#/definitions/condition",
 		},
 	}},
+	description: "A condition that negates the provided condition",
 }
 
 func (notCondition) compileCondition(ctx compilerContext) (condition, error) {

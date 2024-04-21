@@ -38,7 +38,7 @@ var defaultFeatures = newFeatures(
 		deleteAction{},
 		findMatchAction{},
 		ifElseAction{},
-		noMatchAction{},
+		unmatchedAction{},
 		parseDateAction{},
 		parseVideoContentAction{},
 		runWorkflowAction{},

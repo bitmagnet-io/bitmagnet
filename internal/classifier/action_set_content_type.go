@@ -14,10 +14,11 @@ func (setContentTypeAction) name() string {
 }
 
 var setContentTypePayloadSpec = payloadSingleKeyValue[model.NullContentType]{
-	setContentTypeName,
-	payloadMustSucceed[model.NullContentType]{
+	key: setContentTypeName,
+	valueSpec: payloadMustSucceed[model.NullContentType]{
 		payload: contentTypePayloadSpec,
 	},
+	description: "Set the content type of the current torrent",
 }
 
 func (setContentTypeAction) compileAction(ctx compilerContext) (action, error) {

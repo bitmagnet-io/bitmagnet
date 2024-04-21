@@ -10,11 +10,14 @@ func (andCondition) name() string {
 
 var andConditionPayloadSpec = payloadSingleKeyValue[[]any]{
 	key: andName,
-	valueSpec: payloadMustSucceed[[]any]{payloadList[any]{payloadGeneric[any]{
-		jsonSchema: map[string]any{
-			"$ref": "#/definitions/condition",
+	valueSpec: payloadMustSucceed[[]any]{payloadList[any]{
+		itemSpec: payloadGeneric[any]{
+			jsonSchema: map[string]any{
+				"$ref": "#/definitions/condition",
+			},
 		},
-	}}},
+		description: "A condition that is satisfied if all conditions in a list are satisfied",
+	}},
 }
 
 func (andCondition) compileCondition(ctx compilerContext) (condition, error) {

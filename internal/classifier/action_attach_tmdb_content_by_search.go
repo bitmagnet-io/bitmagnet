@@ -13,7 +13,10 @@ func (attachTmdbContentBySearchAction) name() string {
 	return attachTmdbContentBySearchName
 }
 
-var attachTmdbContentBySearchPayloadSpec = payloadLiteral[string]{attachTmdbContentBySearchName}
+var attachTmdbContentBySearchPayloadSpec = payloadLiteral[string]{
+	literal:     attachTmdbContentBySearchName,
+	description: "Attempt to attach content from the TMDB API with a search on the torrent name",
+}
 
 func (a attachTmdbContentBySearchAction) compileAction(ctx compilerContext) (action, error) {
 	if _, err := attachTmdbContentBySearchPayloadSpec.Unmarshal(ctx); err != nil {
@@ -23,7 +26,7 @@ func (a attachTmdbContentBySearchAction) compileAction(ctx compilerContext) (act
 		run: func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result
 			if !cl.BaseTitle.Valid {
-				return cl, classification.ErrNoMatch
+				return cl, classification.ErrUnmatched
 			}
 			var content *model.Content
 			switch cl.ContentType.ContentType {
@@ -35,7 +38,7 @@ func (a attachTmdbContentBySearchAction) compileAction(ctx compilerContext) (act
 				}
 			default:
 				if len(cl.Episodes) > 0 {
-					return cl, classification.ErrNoMatch
+					return cl, classification.ErrUnmatched
 				}
 				if result, searchErr := ctx.tmdb_searchMovie(cl.BaseTitle.String, cl.Date.Year); searchErr != nil {
 					return cl, searchErr

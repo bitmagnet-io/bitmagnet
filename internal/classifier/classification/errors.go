@@ -27,8 +27,8 @@ func (e WorkflowError) Key() string {
 	return e.key
 }
 
-var ErrNoMatch = WorkflowError{
-	key: "no_match",
+var ErrUnmatched = WorkflowError{
+	key: "unmatched",
 }
 
 var ErrDeleteTorrent = WorkflowError{

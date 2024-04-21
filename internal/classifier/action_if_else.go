@@ -36,6 +36,7 @@ var ifElsePayloadSpec = payloadSingleKeyValue[ifElsePayload]{
 			"additionalProperties": false,
 		},
 	}},
+	description: "Execute an action based on a condition",
 }
 
 func (ifElseAction) compileAction(ctx compilerContext) (action, error) {

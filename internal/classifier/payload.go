@@ -90,13 +90,18 @@ func (s payloadStruct[T]) Unmarshal(ctx compilerContext) (to T, err error) {
 }
 
 type payloadLiteral[T comparable] struct {
-	literal T
+	literal     T
+	description string
 }
 
 func (s payloadLiteral[T]) JsonSchema() JsonSchema {
-	return map[string]any{
+	schema := map[string]any{
 		"const": s.literal,
 	}
+	if s.description != "" {
+		schema["description"] = s.description
+	}
+	return schema
 }
 
 func (s payloadLiteral[T]) Unmarshal(ctx compilerContext) (to T, _ error) {
@@ -111,14 +116,19 @@ func (s payloadLiteral[T]) Unmarshal(ctx compilerContext) (to T, _ error) {
 }
 
 type payloadList[T any] struct {
-	itemSpec TypedPayload[T]
+	itemSpec    TypedPayload[T]
+	description string
 }
 
 func (s payloadList[T]) JsonSchema() JsonSchema {
-	return map[string]any{
+	schema := map[string]any{
 		"type":  "array",
 		"items": s.itemSpec.JsonSchema(),
 	}
+	if s.description != "" {
+		schema["description"] = s.description
+	}
+	return schema
 }
 
 func (s payloadList[T]) Unmarshal(ctx compilerContext) (to []T, _ error) {
@@ -141,12 +151,13 @@ func (s payloadList[T]) Unmarshal(ctx compilerContext) (to []T, _ error) {
 }
 
 type payloadSingleKeyValue[T any] struct {
-	key       string
-	valueSpec TypedPayload[T]
+	key         string
+	valueSpec   TypedPayload[T]
+	description string
 }
 
 func (s payloadSingleKeyValue[T]) JsonSchema() JsonSchema {
-	return map[string]any{
+	schema := map[string]any{
 		"type": "object",
 		"properties": map[string]any{
 			s.key: s.valueSpec.JsonSchema(),
@@ -154,6 +165,10 @@ func (s payloadSingleKeyValue[T]) JsonSchema() JsonSchema {
 		"required":             []string{s.key},
 		"additionalProperties": false,
 	}
+	if s.description != "" {
+		schema["description"] = s.description
+	}
+	return schema
 }
 
 func (s payloadSingleKeyValue[T]) Unmarshal(ctx compilerContext) (to T, _ error) {

@@ -47,7 +47,7 @@ func (l localSearch) ContentById(ctx context.Context, ref model.ContentRef) (mod
 		return model.Content{}, err
 	}
 	if len(result.Items) == 0 {
-		return model.Content{}, classification.ErrNoMatch
+		return model.Content{}, classification.ErrUnmatched
 	}
 	return result.Items[0].Content, nil
 }
@@ -84,7 +84,7 @@ func (l localSearch) ContentBySearch(ctx context.Context, ct model.ContentType, 
 		}
 	}
 	if content == nil {
-		return model.Content{}, classification.ErrNoMatch
+		return model.Content{}, classification.ErrUnmatched
 	}
 	return *content, nil
 }

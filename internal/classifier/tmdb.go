@@ -24,7 +24,7 @@ func (c executionContext) tmdb_searchMovie(title string, year model.Year) (model
 			return c.tmdb_getMovieByTmbdId(item.ID)
 		}
 	}
-	return model.Content{}, classification.ErrNoMatch
+	return model.Content{}, classification.ErrUnmatched
 }
 
 func (c executionContext) tmdb_searchTvShow(title string, year model.Year) (model.Content, error) {
@@ -44,7 +44,7 @@ func (c executionContext) tmdb_searchTvShow(title string, year model.Year) (mode
 			return c.tmdb_getTvShowByTmbdId(item.ID)
 		}
 	}
-	return model.Content{}, classification.ErrNoMatch
+	return model.Content{}, classification.ErrUnmatched
 }
 
 func (c executionContext) tmdb_getMovieByTmbdId(id int64) (movie model.Content, err error) {
@@ -53,7 +53,7 @@ func (c executionContext) tmdb_getMovieByTmbdId(id int64) (movie model.Content, 
 	})
 	if getDetailsErr != nil {
 		if errors.Is(getDetailsErr, tmdb.ErrNotFound) {
-			getDetailsErr = classification.ErrNoMatch
+			getDetailsErr = classification.ErrUnmatched
 		}
 		err = getDetailsErr
 		return
@@ -68,7 +68,7 @@ func (c executionContext) tmdb_getTvShowByTmbdId(id int64) (movie model.Content,
 	})
 	if getDetailsErr != nil {
 		if errors.Is(getDetailsErr, tmdb.ErrNotFound) {
-			getDetailsErr = classification.ErrNoMatch
+			getDetailsErr = classification.ErrUnmatched
 		}
 		err = getDetailsErr
 		return
@@ -91,15 +91,15 @@ func (c executionContext) tmdb_getTmdbIdByExternalId(ref model.ContentRef) (int6
 	switch ref.Type {
 	case model.ContentTypeMovie, model.ContentTypeXxx:
 		if len(byIdResult.MovieResults) == 0 {
-			return 0, classification.ErrNoMatch
+			return 0, classification.ErrUnmatched
 		}
 		return byIdResult.MovieResults[0].ID, nil
 	case model.ContentTypeTvShow:
 		if len(byIdResult.TvResults) == 0 {
-			return 0, classification.ErrNoMatch
+			return 0, classification.ErrUnmatched
 		}
 		return byIdResult.TvResults[0].ID, nil
 	default:
-		return 0, classification.ErrNoMatch
+		return 0, classification.ErrUnmatched
 	}
 }
