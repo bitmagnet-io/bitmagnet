@@ -29,7 +29,7 @@ var videoSourceAliases = map[string]VideoSource{
 }
 
 func createVideoSourceRegex() *regexp.Regexp {
-	names := VideoSourceNames()
+	names := namesToLower(VideoSourceNames()...)
 	for alias := range videoSourceAliases {
 		names = append(names, alias)
 	}

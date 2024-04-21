@@ -12,7 +12,7 @@ func (v Video3d) Label() string {
 	return v.String()[1:]
 }
 
-var video3dRegex = keywords.MustNewRegexFromKeywords(removeEnumPrefixes(Video3dNames()...)...)
+var video3dRegex = keywords.MustNewRegexFromKeywords(namesToLower(removeEnumPrefixes(Video3dNames()...)...)...)
 
 func InferVideo3d(input string) NullVideo3d {
 	if match := video3dRegex.FindStringSubmatch(input); match != nil {

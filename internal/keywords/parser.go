@@ -180,6 +180,9 @@ func (l *keywordsLexer) lexClassToken() (base.ClassToken, error) {
 		return rex.Chars.Single(exactChar), nil
 	case lexer.IsWordChar(ch):
 		lcChar := strings.ToLower(string(ch))
+		if string(ch) != lcChar {
+			return tk, ErrUnexpectedChar
+		}
 		ucChar := strings.ToUpper(string(ch))
 		if lcChar == ucChar {
 			tk = rex.Chars.Single(ch)

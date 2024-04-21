@@ -12,7 +12,7 @@ func (v VideoModifier) Label() string {
 	return v.String()
 }
 
-var videoModifierRegex = keywords.MustNewRegexFromKeywords(VideoModifierNames()...)
+var videoModifierRegex = keywords.MustNewRegexFromKeywords(namesToLower(VideoModifierNames()...)...)
 
 func InferVideoModifier(input string) NullVideoModifier {
 	if match := videoModifierRegex.FindStringSubmatch(input); match != nil {

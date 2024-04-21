@@ -83,8 +83,8 @@ func newLanguagesRegex() *regexp.Regexp {
 	for _, lang := range LanguageValues() {
 		tokens = append(tokens, lang.Alpha2()+"dub")
 		tokens = append(tokens, lang.Alpha3())
-		tokens = append(tokens, lang.Name())
-		tokens = append(tokens, lang.Aliases()...)
+		tokens = append(tokens, strings.ToLower(lang.Name()))
+		tokens = append(tokens, namesToLower(lang.Aliases()...)...)
 	}
 	return keywords.MustNewRegexFromKeywords(tokens...)
 }

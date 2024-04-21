@@ -28,7 +28,7 @@ var videoResolutionAliases = map[string]VideoResolution{
 }
 
 func createVideoResolutionRegex() *regexp.Regexp {
-	names := removeEnumPrefixes(VideoResolutionNames()...)
+	names := namesToLower(removeEnumPrefixes(VideoResolutionNames()...)...)
 	for res := range videoResolutionAliases {
 		names = append(names, res)
 	}

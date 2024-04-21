@@ -21,7 +21,7 @@ var videoCodecAliases = map[string]VideoCodec{
 }
 
 func createVideoCodecAndOptionalReleaseGroupRegex() *regexp.Regexp {
-	names := VideoCodecNames()
+	names := namesToLower(VideoCodecNames()...)
 	for videoCodec := range videoCodecAliases {
 		names = append(names, videoCodec)
 	}
