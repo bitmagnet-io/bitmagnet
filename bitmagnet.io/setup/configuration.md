@@ -11,6 +11,7 @@ nav_order: 2
 
 - `postgres.host`, `postgres.name` `postgres.user` `postgres.password` (default: `localhost`, `bitmagnet`, `postgres`, _empty_): Set these values to configure connection to your Postgres database.
 - `tmdb.api_key`: This is quite an important one, please [see below](#obtaining-a-tmdb-api-key) for more details.
+- `tmdb.enabled` (default: `true`): Specify `false` to disable the TMDB API integration.
 - `dht_crawler.save_files_threshold` (default: `100`): Some torrents contain many thousands of files, which impacts performance and uses a lot of database disk space. This parameter sets a maximum limit for the number of files saved by the crawler with each torrent.
 - `dht_crawler.save_pieces` (default: `false`): If true, the DHT crawler will save the pieces bytes from the torrent metadata. The pieces take up quite a lot of space, and aren't currently very useful, but they may be used by future features.
 - `log.level` (default: `info`): If you're developing or just curious then you may want to set this to `debug`; note that `debug` output will be very verbose.
@@ -90,3 +91,6 @@ Obtaining an API key is free and relatively easy, but you'll have to register fo
 [Synology have provided a full tutorial on obtaining a TMDB API key](https://kb.synology.com/en-au/DSM/tutorial/How_to_apply_for_a_personal_API_key_to_get_video_info).
 
 Once you've obtained your API key you'll need to configure the `tmdb.api_key` value. Your rate limit will then default to 20 requests per second, which is well within [TMDB's stated fair usage limit](https://developer.themoviedb.org/docs/rate-limiting).
+
+{: .highlight }
+The TMDB API integration can be disabled altogether by setting `tmdb.enabled` to `false`.

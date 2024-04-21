@@ -13,7 +13,7 @@ redirect_from:
 
 > Important
 >
-> Before continuing with this tutorial, please [obtain and configure a personal TMDB API key]({% link setup/configuration.md %}#obtaining-a-tmdb-api-key).
+> Before continuing with this tutorial, please [obtain and configure a personal TMDB API key, or disable the TMDB API integration]({% link setup/configuration.md %}#obtaining-a-tmdb-api-key).
 
 **bitmagnet** includes an import endpoint at `/import`; this can be used for importing Torrent files from any source.
 
@@ -29,7 +29,7 @@ For the purposes of this tutorial we'll use the RARBG SQLite backup, but you can
 
 > Pre-requisites
 >
-> - [x] You have [obtained and configured a personal TMDB API key]({% link setup/configuration.md %}#obtaining-a-tmdb-api-key)
+> - [x] You have [obtained and configured a personal TMDB API key, or disabled the TMDB API integration]({% link setup/configuration.md %}#obtaining-a-tmdb-api-key)
 > - [x] You have obtained a copy of the RARBG SQLite backup (I can't assist you in getting a copy of this, but it's generally available)
 > - [x] You have [installed the SQLite3 CLI](https://www.tutorialspoint.com/sqlite/sqlite_installation.htm)
 > - [x] You have [installed jq](https://jqlang.github.io/jq/download/)
