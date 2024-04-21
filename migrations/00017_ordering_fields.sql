@@ -11,9 +11,8 @@ alter table torrents_torrent_sources drop column bfpe;
 alter table torrent_contents add column seeders integer;
 alter table torrent_contents add column leechers integer;
 
-alter table torrent_contents add column published_at timestamp with time zone;
-update torrent_contents set published_at = created_at;
-alter table torrent_contents alter column published_at set not null;
+alter table torrent_contents add column published_at timestamp with time zone not null default '1999-01-01 00:00:00+00';
+alter table torrent_contents alter column published_at drop default;
 
 create index on torrent_contents (seeders);
 create index on torrent_contents (leechers);
