@@ -12,7 +12,7 @@ No. **bitmagnet** does not download, store or distribute any content _at all_. I
 
 ## Should I use a VPN with **bitmagnet**?
 
-It is recommended to use a VPN: **bitmagnet** may download **metadata about** illegal and copyrighted content. It is possible that rudimentary law enforcement and anti-piracy tracking tools would incorrectly flag this activity, although we've never heard about anyone getting into trouble for using this or similar metadata crawlers. Setting up a VPN is simple and cheap, and it's better to be safe than sorry. We are not affiliated with any VPN providers, but if you're unsure which provider to choose, we can recommend [Mullvad](https://mullvad.net/){:target="\_blank"}.
+It is recommended to use a VPN: **bitmagnet** may download **metadata about** illegal and copyrighted content. It is possible that rudimentary law enforcement and anti-piracy tracking tools would incorrectly flag this activity, although we've never heard about anyone getting into trouble for using this or similar metadata crawlers. Setting up a VPN is simple and cheap, and it's better to be safe than sorry. We are not affiliated with any VPN providers, but if you're unsure which provider to choose, we can recommend [Mullvad](https://mullvad.net/).
 
 ## Is **bitmagnet** intended to be used as a public service?
 
@@ -47,7 +47,7 @@ Visit the metrics endpoint at `/metrics` and check the metric `bitmagnet_dht_cra
 
 ## How are the seeders/leechers numbers determined for torrents crawled from the DHT?
 
-The DHT crawler uses a [BEP33 scrape request](https://www.bittorrent.org/beps/bep_0033.html){:target="\_blank"} to provide a very rough estimate of the current seeders/leechers.
+The DHT crawler uses a [BEP33 scrape request](https://www.bittorrent.org/beps/bep_0033.html) to provide a very rough estimate of the current seeders/leechers.
 
 ## How do I know if a torrent crawled by **bitmagnet** is being actively seeded, and that I'll be able to download it?
 

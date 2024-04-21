@@ -9,7 +9,7 @@ nav_order: 1
 
 ## Docker
 
-The quickest way to get up-and-running with **bitmagnet** is with [Docker Compose](https://docs.docker.com/compose/){:target="\_blank"}. The following `docker-compose.yml` is a minimal example. For a more full-featured example including VPN routing and observability services see the [docker compose configuration in the GitHub repository](https://github.com/bitmagnet-io/bitmagnet/blob/main/docker-compose.yml){:target="\_blank"}.
+The quickest way to get up-and-running with **bitmagnet** is with [Docker Compose](https://docs.docker.com/compose/). The following `docker-compose.yml` is a minimal example. For a more full-featured example including VPN routing and observability services see the [docker compose configuration in the GitHub repository](https://github.com/bitmagnet-io/bitmagnet/blob/main/docker-compose.yml).
 
 ```yml
 services:

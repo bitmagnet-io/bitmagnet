@@ -7,15 +7,15 @@ nav_order: 2
 
 # Architecture & Lifecycle of the DHT Crawler
 
-The DHT and BitTorrent protocols are (rather impenetrably) documented at [bittorrent.org](http://bittorrent.org/beps/bep_0000.html){:target="\_blank"}. Relevant resources include:
+The DHT and BitTorrent protocols are (rather impenetrably) documented at [bittorrent.org](http://bittorrent.org/beps/bep_0000.html). Relevant resources include:
 
-- [BEP 5: DHT Protocol](http://bittorrent.org/beps/bep_0005.html){:target="\_blank"}
-- [BEP 51: Infohash Indexing](https://www.bittorrent.org/beps/bep_0051.html){:target="\_blank"}
-- [BEP 33: DHT Scrapes](https://www.bittorrent.org/beps/bep_0033.html){:target="\_blank"}
-- [BEP 10: Extension Protocol](https://www.bittorrent.org/beps/bep_0010.html){:target="\_blank"}
-- [The Kademlia paper](https://pdos.csail.mit.edu/~petar/papers/maymounkov-kademlia-lncs.pdf){:target="\_blank"}
+- [BEP 5: DHT Protocol](http://bittorrent.org/beps/bep_0005.html)
+- [BEP 51: Infohash Indexing](https://www.bittorrent.org/beps/bep_0051.html)
+- [BEP 33: DHT Scrapes](https://www.bittorrent.org/beps/bep_0033.html)
+- [BEP 10: Extension Protocol](https://www.bittorrent.org/beps/bep_0010.html)
+- [The Kademlia paper](https://pdos.csail.mit.edu/~petar/papers/maymounkov-kademlia-lncs.pdf)
 
-The rest of what I've figured out about how to implement a DHT crawler was cobbled together from [the now archived **magnetico** project](https://github.com/boramalper/magnetico){:target="\_blank"} and [anacrolix's BitTorrent libraries](https://github.com/anacrolix){:target="\_blank"}.
+The rest of what I've figured out about how to implement a DHT crawler was cobbled together from [the now archived **magnetico** project](https://github.com/boramalper/magnetico) and [anacrolix's BitTorrent libraries](https://github.com/anacrolix).
 
 The following diagram illustrates roughly how the crawler has been implemented within **bitmagnet**. It's debatable if this will help stop anyone's brain from melting, including my own.
 
