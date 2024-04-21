@@ -111,7 +111,7 @@ Whenever an error is returned, the current classification will be terminated.
 
 Note that a workflow should never return an `unmatched` error. We expect to iterate through a series of checks corresponding to each content type. If the current torrent does not match the content type being checked, we'll proceed to the next check until we find a match; if no match can be found, the content type will be `unknown`. To facilitate this, we can use the `find_match` action.
 
-The `find_match` action is a bit like a try/catch block in some programming languages; it will try to match a particular content type, and if an `unmatched` error is returned, it will catch the `unmatched` error proceed to the next check.  For example, the following action will attempt to classify a torrent as an `audiobook`, and then as an `ebook`. If both checks fail, the content type will be `unknown`:
+The `find_match` action is a bit like a try/catch block in some programming languages; it will try to match a particular content type, and if an `unmatched` error is returned, it will catch the `unmatched` error proceed to the next check. For example, the following action will attempt to classify a torrent as an `audiobook`, and then as an `ebook`. If both checks fail, the content type will be `unknown`:
 
 ```yaml
 find_match:
@@ -204,7 +204,7 @@ keywords:
 
 ## Extensions
 
-The classifier includes lists of file extensions associated with different types of content.  For example, to identify torrents of type `comic` by their file extensions, the extensions are first declared:
+The classifier includes lists of file extensions associated with different types of content. For example, to identify torrents of type `comic` by their file extensions, the extensions are first declared:
 
 ```yaml
 extensions:
