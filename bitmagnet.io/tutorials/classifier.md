@@ -247,7 +247,7 @@ if_else:
 
 ## Configuration
 
-The classifier can be customised by providing a `classifier.yml` file in a supported location [as described above](#source-precedence). If you only want to make some minor modifications, it may be convenient to specify these [using the main application configuration](/setup/configuration.html) instead, by providing values in either `config.yml` or as environment variables. The application configuration exposes some but not all properties of the classifier.
+The classifier can be customized by providing a `classifier.yml` file in a supported location [as described above](#source-precedence). If you only want to make some minor modifications, it may be convenient to specify these [using the main application configuration](/setup/configuration.html) instead, by providing values in either `config.yml` or as environment variables. The application configuration exposes some but not all properties of the classifier.
 
 For example, in your `config.yml` you could specify:
 

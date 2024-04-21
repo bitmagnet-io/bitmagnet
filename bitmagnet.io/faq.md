@@ -59,7 +59,7 @@ No. The DHT crawler works by sampling random info hashes from the network, and w
 
 ## I'm seeing a lot of torrents in the "Unknown" category, that are clearly of a particular content type - what's wrong?
 
-**bitmagnet** is in early development, and improving the classifier will be an ongoing effort. When new versions are released, you can follow the [reclassify turorial](/tutorials/reprocess-reclassify.html) to reclassify torrents.
+**bitmagnet** is in early development, and improving the classifier will be an ongoing effort. When new versions are released, you can follow the [reclassify turorial](/tutorials/reprocess-reclassify.html) to reclassify torrents. If you'd like to [improve or customize the classifier](/tutorials/classifier.html), this is also possible.
 
 ## Can I run multiple **bitmagnet** instances pointing to the same database?
 
