@@ -2,8 +2,8 @@ package appfx
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/app/cmd/classifiercmd"
+	"github.com/bitmagnet-io/bitmagnet/internal/app/cmd/processcmd"
 	"github.com/bitmagnet-io/bitmagnet/internal/app/cmd/reprocesscmd"
-	"github.com/bitmagnet-io/bitmagnet/internal/app/cmd/torrentcmd"
 	"github.com/bitmagnet-io/bitmagnet/internal/blocking/blockingfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/app/boilerplateappfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpserver/httpserverfx"
@@ -48,7 +48,7 @@ func New() fx.Option {
 		fx.Provide(
 			classifiercmd.New,
 			reprocesscmd.New,
-			torrentcmd.New,
+			processcmd.New,
 		),
 		fx.Provide(webui.New),
 		fx.Decorate(migrations.NewDecorator),
