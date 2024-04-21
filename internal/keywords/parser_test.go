@@ -35,6 +35,10 @@ func TestParser(t *testing.T) {
 			input: []string{"foo\\(bar"},
 			match: []string{"foo(bar"},
 		},
+		{
+			input: []string{"(audio)?books?", "(auto)?biograph(y|ies)"},
+			match: []string{"book", "books", "audiobook", "audiobooks", "biography", "Autobiographies"},
+		},
 	}
 	for _, test := range tests {
 		t.Run(strings.Join(test.input, ", "), func(t *testing.T) {
