@@ -93,6 +93,10 @@ func celEnvOption(src Source, ctx *compilerContext) error {
 	)
 	options = append(
 		options,
+		cel.Constant("kb", cel.IntType, types.Int(1_000)),
+	)
+	options = append(
+		options,
 		cel.Constant("mb", cel.IntType, types.Int(1_000_000)),
 	)
 	options = append(
