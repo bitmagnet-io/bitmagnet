@@ -50,6 +50,13 @@ func TorrentContentDefaultOption() query.Option {
 			clause.OrderByColumn{
 				Column: clause.Column{
 					Table: clause.CurrentTable,
+					Name:  "created_at",
+				},
+				Desc: true,
+			},
+			clause.OrderByColumn{
+				Column: clause.Column{
+					Table: clause.CurrentTable,
 					Name:  "id",
 				},
 			},
