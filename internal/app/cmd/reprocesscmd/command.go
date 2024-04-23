@@ -105,10 +105,10 @@ func New(p Params) (Result, error) {
 			}
 			batchSize := ctx.Int("batchSize")
 			torrentCount := int64(0)
-			if result, err := d.Torrent.WithContext(ctx.Context).Scopes(scopes...).Count(); err != nil {
+			if result, err := dao.BudgetedCount(d.Torrent.WithContext(ctx.Context).Scopes(scopes...).UnderlyingDB(), 10_000); err != nil {
 				return err
 			} else {
-				torrentCount = result
+				torrentCount = result.Count
 			}
 			bar := progressbar.Default(torrentCount, "queuing torrents")
 			var torrentResult []*model.Torrent
