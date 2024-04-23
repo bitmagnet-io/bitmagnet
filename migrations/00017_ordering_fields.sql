@@ -8,7 +8,6 @@ alter table torrent_contents add column seeders integer;
 alter table torrent_contents add column leechers integer;
 
 alter table torrent_contents add column published_at timestamp with time zone not null default '1999-01-01 00:00:00+00';
-alter table torrent_contents alter column published_at drop default;
 
 create index on torrent_contents (seeders);
 create index on torrent_contents (leechers);
