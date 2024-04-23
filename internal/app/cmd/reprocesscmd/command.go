@@ -41,6 +41,10 @@ func New(p Params) (Result, error) {
 					strings.Join(model.ContentTypeNames(), "', '") +
 					"', or 'null' for unknown)",
 			},
+			&cli.BoolFlag{
+				Name:  "orphans",
+				Usage: "reprocess only torrents that have no torrent_contents record",
+			},
 			&cli.StringFlag{
 				Name:  "classifyMode",
 				Value: "default",
@@ -86,6 +90,17 @@ func New(p Params) (Result, error) {
 						sq = sq.Or(d.TorrentContent.ContentType.IsNull())
 					}
 					return tx.Where(gen.Exists(sq))
+				})
+			}
+			if ctx.Bool("orphans") {
+				scopes = append(scopes, func(tx gen.Dao) gen.Dao {
+					return tx.Not(
+						gen.Exists(
+							d.TorrentContent.Where(
+								d.TorrentContent.InfoHash.EqCol(d.Torrent.InfoHash),
+							),
+						),
+					)
 				})
 			}
 			batchSize := ctx.Int("batchSize")
