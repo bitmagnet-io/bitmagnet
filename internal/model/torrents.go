@@ -54,11 +54,13 @@ func (t Torrent) Leechers() NullUint {
 	return leechers
 }
 
+var cutoff = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+
 func (t Torrent) PublishedAt() time.Time {
 	publishedAt := t.CreatedAt
 	for _, source := range t.Sources {
 		dt := source.CreatedAt
-		if source.PublishedAt.Valid {
+		if source.PublishedAt.Valid && source.PublishedAt.Time.After(cutoff) {
 			dt = source.PublishedAt.Time
 		}
 		if dt.Before(publishedAt) {

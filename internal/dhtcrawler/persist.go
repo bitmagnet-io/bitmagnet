@@ -218,6 +218,8 @@ func (c *crawler) runPersistSources(ctx context.Context) {
 					DoUpdates: clause.AssignmentColumns([]string{
 						string(c.dao.TorrentsTorrentSource.Seeders.ColumnName()),
 						string(c.dao.TorrentsTorrentSource.Leechers.ColumnName()),
+						// sets to null, fixes torrents indexed before 0.8.0 with published_at 0001-01-01 00:00:00+00:
+						string(c.dao.TorrentsTorrentSource.PublishedAt.ColumnName()),
 						string(c.dao.TorrentsTorrentSource.UpdatedAt.ColumnName()),
 					}),
 				},
