@@ -177,15 +177,6 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 		if item.ContentType.Valid {
 			category = item.ContentType.ContentType.Label()
 		}
-		date := item.CreatedAt
-		for _, s := range item.Torrent.Sources {
-			if !s.PublishedAt.IsZero() && (date.IsZero() || s.PublishedAt.Before(date)) {
-				date = s.PublishedAt
-			}
-		}
-		if date.IsZero() {
-			date = item.CreatedAt
-		}
 		categoryId := torznab.CategoryOther.ID
 		if item.ContentType.Valid {
 			switch item.ContentType.ContentType {
@@ -226,7 +217,7 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 			},
 			{
 				AttrName:  torznab.AttrPublishDate,
-				AttrValue: date.Format(torznab.RssDateDefaultFormat),
+				AttrValue: item.PublishedAt.Format(torznab.RssDateDefaultFormat),
 			},
 		}
 		if seeders := item.Torrent.Seeders(); seeders.Valid {
@@ -296,7 +287,7 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 			Size:     item.Torrent.Size,
 			Category: category,
 			GUID:     item.InfoHash.String(),
-			PubDate:  torznab.RssDate(date),
+			PubDate:  torznab.RssDate(item.PublishedAt),
 			Enclosure: torznab.SearchResultItemEnclosure{
 				URL:    item.Torrent.MagnetUri(),
 				Type:   "application/x-bittorrent;x-scheme-handler/magnet",

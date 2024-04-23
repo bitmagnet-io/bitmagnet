@@ -2,12 +2,12 @@
 title: Servarr Integration
 parent: Tutorials
 layout: default
-nav_order: 5
+nav_order: 6
 ---
 
 # Servarr Integration
 
-**bitmagnet**'s HTTP server exposes an endpoint at `/torznab`, allowing it to integrate with any application that supports [the Torznab specification](https://torznab.github.io/spec-1.3-draft/index.html){:target="\_blank"}, most notably apps in [the Servarr stack](https://wiki.servarr.com/){:target="\_blank"} (Prowlarr, Sonarr, Radarr etc.).
+**bitmagnet**'s HTTP server exposes an endpoint at `/torznab`, allowing it to integrate with any application that supports [the Torznab specification](https://torznab.github.io/spec-1.3-draft/index.html), most notably apps in [the Servarr stack](https://wiki.servarr.com/) (Prowlarr, Sonarr, Radarr etc.).
 
 ## Adding **bitmagnet** as an indexer in Prowlarr
 
@@ -19,4 +19,4 @@ The required settings are fairly basic. Assuming you've adapted from the [exampl
 
 ![Prowlarr configure bitmagnet](/assets/images/prowlarr-2.png)
 
-[Depending on your Prowlarr configuration](https://wiki.servarr.com/prowlarr/settings#applications){:target="\_blank"}, the **bitmagnet** indexer should now be synced to your other \*arr applications. Alternatively, you can add **bitmagnet** as an indexer directly in those applications, following the same steps as above.
+[Depending on your Prowlarr configuration](https://wiki.servarr.com/prowlarr/settings#applications), the **bitmagnet** indexer should now be synced to your other \*arr applications. Alternatively, you can add **bitmagnet** as an indexer directly in those applications, following the same steps as above.

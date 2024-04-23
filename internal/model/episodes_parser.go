@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/regex"
+	"github.com/bitmagnet-io/bitmagnet/internal/keywords"
 	"github.com/hedhyw/rex/pkg/dialect"
 	"github.com/hedhyw/rex/pkg/rex"
 	"strconv"
@@ -39,7 +39,7 @@ func rangeToken(runes string) dialect.Token {
 
 var seasonToken = rex.Group.Define(
 	rex.Group.Composite(
-		regex.RegexTokensFromNames("season", "s")...,
+		keywords.MustNewRexTokensFromKeywords("season", "s")...,
 	).NonCaptured(),
 	rex.Chars.Whitespace().Repeat().ZeroOrOne(),
 	rangeToken("sS"),
@@ -48,7 +48,7 @@ var seasonToken = rex.Group.Define(
 
 var episodeToken = rex.Group.Define(
 	rex.Group.Composite(
-		regex.RegexTokensFromNames("episode", "ep", "e")...,
+		keywords.MustNewRexTokensFromKeywords("episode", "ep", "e")...,
 	).NonCaptured(),
 	rex.Chars.Whitespace().Repeat().ZeroOrOne(),
 	rangeToken("eE"),
