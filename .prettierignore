@@ -1,2 +1,3 @@
+bitmagnet.io/schemas/**/*.*
 webui/dist/**/*.*
 webui/src/app/graphql/generated/**/*.*

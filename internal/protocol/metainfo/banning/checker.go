@@ -20,7 +20,6 @@ func New(p Params) Result {
 	checkers := p.Checkers
 	checkers = append(
 		checkers,
-		csamChecker{},
 		nameLengthChecker{min: 8},
 		sizeChecker{min: 1024},
 		utf8Checker{},

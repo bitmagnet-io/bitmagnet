@@ -1,0 +1,228 @@
+$schema: "https://bitmagnet.io/schemas/classifier-0.1.json"
+workflows:
+  default:
+    # delete torrents containing banned keywords:
+    - if_else:
+        condition: "([torrent.baseName] + torrent.files.map(f, f.basePath)).join(' ').matches(keywords.banned)"
+        if_action: delete
+    # try to identify content type for torrents without a hinted content type:
+    - if_else:
+        condition: "result.contentType == contentType.unknown"
+        if_action:
+          find_match:
+            # match audiobooks:
+            - if_else:
+                condition:
+                  and:
+                    - "torrent.files.map(f, f.fileType == fileType.audio ? f.size : - f.size).sum() > 50*mb"
+                    - or:
+                        - "torrent.baseName.matches(keywords.audiobook)"
+                        - "torrent.files.filter(f, f.extension in extensions.audiobook).size() > 0"
+                if_action:
+                  set_content_type: audiobook
+                else_action: unmatched
+            # match comics:
+            - if_else:
+                condition: "torrent.files.map(f, f.extension in extensions.comic ? f.size : - f.size).sum() > 0"
+                if_action:
+                  set_content_type: comic
+                else_action: unmatched
+            # match ebooks:
+            - if_else:
+                condition: "torrent.files.map(f, f.extension in extensions.ebook ? f.size : - f.size).sum() > 0"
+                if_action:
+                  set_content_type: ebook
+                else_action: unmatched
+            # match music:
+            - if_else:
+                condition:
+                  or:
+                    - "torrent.files.map(f, f.extension in extensions.music ? f.size : - f.size).sum() > 0"
+                    - and:
+                        - "torrent.baseName.matches(keywords.music)"
+                        - "torrent.files.map(f, f.fileType == fileType.audio ? f.size : - f.size).sum() > 0"
+                if_action:
+                  set_content_type: music
+                else_action: unmatched
+            # match software:
+            - if_else:
+                condition: "torrent.files.map(f, f.fileType == fileType.software ? f.size : - f.size).sum() > 0"
+                if_action:
+                  set_content_type: software
+                else_action: unmatched
+            # match xxx:
+            - if_else:
+                condition: "([torrent.baseName] + torrent.files.map(f, f.basePath)).join(' ').matches(keywords.xxx)"
+                if_action:
+                  set_content_type: xxx
+                else_action: unmatched
+    # if the name contains a full date, attach it to the result as it's a good indicator of content type:
+    - find_match:
+        - parse_date
+    # if we know a content ID that isn't already attached, try to attach it, either from the local `content` table or an API integration:
+    - if_else:
+        condition:
+          and:
+            - "torrent.hasHintedContentId && !result.hasAttachedContent"
+            # we might as well save work by restricting this to content types that have an API integration:
+            - "result.contentType in [contentType.movie, contentType.tv_show, contentType.xxx]"
+        if_action:
+          find_match:
+            - attach_local_content_by_id
+            - if_else:
+                condition: "flags.tmdb_enabled"
+                if_action: attach_tmdb_content_by_id
+                else_action: unmatched
+    # parse video-related attributes for video torrents (including the base title, needed for the next step):
+    - if_else:
+        condition:
+          or:
+            - "result.contentType in [contentType.movie, contentType.tv_show]"
+            - "torrent.files.map(f, f.fileType == fileType.video ? f.size : - f.size).sum() > 100*mb"
+        if_action:
+          find_match:
+            # parse video-related attributes from the torrent name;
+            # if the content type wasn't previously specified and the name format doesn't suggest a movie or TV show, a "no match" will be returned:
+            - parse_video_content
+    # if content isn't already attached, and a base title has been parsed, then search for the content, either from the local `content` table or an API integration:
+    - if_else:
+        condition: "!result.hasAttachedContent && result.hasBaseTitle"
+        if_action:
+          find_match:
+            - attach_local_content_by_search
+            - if_else:
+                condition: "flags.tmdb_enabled"
+                if_action: attach_tmdb_content_by_search
+                else_action: unmatched
+    # delete specific content types based on the configured flags:
+    - if_else:
+        condition:
+          or:
+            - "result.contentType in flags.delete_content_types"
+            - "flags.delete_xxx && result.contentType == contentType.xxx"
+        if_action: delete
+extensions:
+  audiobook:
+    - m4b
+  comic:
+    - cb7
+    - cba
+    - cbr
+    - cbt
+    - cbz
+  ebook:
+    - azw
+    - azw3
+    - azw4
+    - azw8
+    - chm
+    - doc
+    - docx
+    - djvu
+    - epub
+    - lit
+    - mobi
+    - odt
+    - pdf
+    - rtf
+  music:
+    - ape
+    - dsf
+    - flac
+  software:
+    - apk
+    - app
+    - bat
+    - bin
+    - deb
+    - dll
+    - dmg
+    - exe
+    - iso
+    - jar
+    - lua
+    - msi
+    - package
+    - pkg
+    - rpm
+    - sh
+keywords:
+  audiobook:
+    - audiobooks?
+    - books?
+    - (un)?abridged
+    - narrated
+    - novels?
+    - "*biograph*"
+  music:
+    - discography
+    - music
+    - album
+    - \V.?\A.?
+    - various artists
+    - compilation
+    - ep
+    - lp
+    - single
+    - vinyl
+    - classical
+    - disco
+    - folk
+    - hits
+    - house
+    - indie
+    - jazz
+    - metal
+    - pop
+    - jazz
+    - reggae
+    - rock
+    - trance
+  xxx:
+    - anal
+    - ass
+    - blowjobs?
+    - boob*
+    - cocks?
+    - cum*
+    - dicks?
+    - erotic*
+    - "*fuck*"
+    - "*gloryhole*"
+    - hardcore
+    - kink*
+    - milf*
+    - nubile*
+    - onlyfans
+    - orgasm*
+    - orgy
+    - "*porn*"
+    - pov
+    - pussy
+    - seduc*
+    - sex*
+    - slut*
+    - tits?
+    - threesome
+    - "*wank*"
+    - "*xxx*"
+  banned:
+    - pa?edo(fil*|phil*)?
+    - preteen
+    - pthc
+    - ptsc
+    - lsbar
+    - lsm
+    - underage
+    - hebefilia
+    - opva
+    - child porn*
+    - (#|10|11|12|13|14|15|16|17) ?y ?o
+flag_definitions:
+  tmdb_enabled: bool
+  delete_content_types: content_type_list
+  delete_xxx: bool
+flags:
+  tmdb_enabled: true
+  delete_content_types: []
+  delete_xxx: false
