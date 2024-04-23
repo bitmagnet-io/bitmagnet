@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -93,12 +94,12 @@ func ParseTsvector(str string) (Tsvector, error) {
 	l := tsvectorLexer{newLexer(strings.TrimSpace(str))}
 	tsv := Tsvector{}
 	for {
-		if l.isEof() {
+		if l.IsEof() {
 			break
 		}
 		word, posWeights, err := l.readTsvPart()
 		if err != nil {
-			return nil, fmt.Errorf("error at position %d: %w", l.pos, err)
+			return nil, fmt.Errorf("error at position %d: %w", l.Pos(), err)
 		}
 		if _, ok := tsv[word]; !ok {
 			tsv[word] = make(map[int]TsvectorWeight)
@@ -111,7 +112,7 @@ func ParseTsvector(str string) (Tsvector, error) {
 }
 
 type tsvectorLexer struct {
-	lexer
+	ftsLexer
 }
 
 func (l *tsvectorLexer) readTsvPart() (string, []TsvectorLabel, error) {
@@ -119,9 +120,9 @@ func (l *tsvectorLexer) readTsvPart() (string, []TsvectorLabel, error) {
 	if err != nil {
 		return "", nil, err
 	}
-	if !l.readChar(':') {
-		spaces := l.readWhile(isChar(' '))
-		if !l.isEof() && len(spaces) == 0 {
+	if !l.ReadChar(':') {
+		spaces := l.ReadWhile(lexer.IsChar(' '))
+		if !l.IsEof() && len(spaces) == 0 {
 			return "", nil, errors.New("unexpected character")
 		}
 		return lexeme, []TsvectorLabel{}, nil
@@ -134,7 +135,7 @@ func (l *tsvectorLexer) readTsvPart() (string, []TsvectorLabel, error) {
 }
 
 func (l *tsvectorLexer) readLexeme() (string, error) {
-	if unquoted := l.readWhile(IsWordChar); unquoted != "" {
+	if unquoted := l.ReadWhile(lexer.IsWordChar); unquoted != "" {
 		return unquoted, nil
 	}
 	word, err := l.readQuotedString('\'')
@@ -148,7 +149,7 @@ func (l *tsvectorLexer) readLexeme() (string, error) {
 }
 
 func (l *tsvectorLexer) readLabels() ([]TsvectorLabel, error) {
-	pos, ok := l.readInt()
+	pos, ok := l.ReadInt()
 	if !ok {
 		return nil, errors.New("missing position")
 	}
@@ -156,17 +157,17 @@ func (l *tsvectorLexer) readLabels() ([]TsvectorLabel, error) {
 		Position: pos,
 		Weight:   TsvectorWeightD,
 	}
-	if w, ok := l.readIf(isWeight); ok {
+	if w, ok := l.ReadIf(isWeight); ok {
 		pw.Weight = TsvectorWeight(unicode.ToUpper(w))
 	}
 	pws := []TsvectorLabel{pw}
-	if l.readChar(',') {
+	if l.ReadChar(',') {
 		if rest, err := l.readLabels(); err != nil {
 			return nil, err
 		} else {
 			pws = append(pws, rest...)
 		}
-	} else if !l.isEof() && l.readWhile(isChar(' ')) == "" {
+	} else if !l.IsEof() && l.ReadWhile(lexer.IsChar(' ')) == "" {
 		return nil, errors.New("unexpected character")
 	}
 	return pws, nil

@@ -24,7 +24,7 @@ func (h TorrentHint) NullContentType() NullContentType {
 }
 
 func (h TorrentHint) ContentRef() Maybe[ContentRef] {
-	if h.ContentID.Valid {
+	if !h.IsNil() && h.ContentID.Valid {
 		return MaybeValid(ContentRef{
 			Type:   h.ContentType,
 			Source: h.ContentSource.String,

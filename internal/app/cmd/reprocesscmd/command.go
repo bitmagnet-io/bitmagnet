@@ -41,12 +41,15 @@ func New(p Params) (Result, error) {
 					strings.Join(model.ContentTypeNames(), "', '") +
 					"', or 'null' for unknown)",
 			},
+			&cli.BoolFlag{
+				Name:  "orphans",
+				Usage: "reprocess only torrents that have no torrent_contents record",
+			},
 			&cli.StringFlag{
 				Name:  "classifyMode",
 				Value: "default",
 				Usage: "default (only attempt to match previously unmatched torrents);\n" +
-					"rematch (ignore any pre-existing match and always classify from scratch);\n" +
-					"skip (skip classification for previously unmatched torrents that don't have any hint)",
+					"rematch (ignore any pre-existing match and always classify from scratch)",
 			},
 		},
 		Action: func(ctx *cli.Context) error {
@@ -56,8 +59,6 @@ func New(p Params) (Result, error) {
 				classifyMode = processor.ClassifyModeDefault
 			case "rematch":
 				classifyMode = processor.ClassifyModeRematch
-			case "skip":
-				classifyMode = processor.ClassifyModeSkipUnmatched
 			default:
 				return cli.Exit("invalid classifyMode", 1)
 			}
@@ -91,12 +92,23 @@ func New(p Params) (Result, error) {
 					return tx.Where(gen.Exists(sq))
 				})
 			}
+			if ctx.Bool("orphans") {
+				scopes = append(scopes, func(tx gen.Dao) gen.Dao {
+					return tx.Not(
+						gen.Exists(
+							d.TorrentContent.Where(
+								d.TorrentContent.InfoHash.EqCol(d.Torrent.InfoHash),
+							),
+						),
+					)
+				})
+			}
 			batchSize := ctx.Int("batchSize")
 			torrentCount := int64(0)
-			if result, err := d.Torrent.WithContext(ctx.Context).Scopes(scopes...).Count(); err != nil {
+			if result, err := dao.BudgetedCount(d.Torrent.WithContext(ctx.Context).Scopes(scopes...).UnderlyingDB(), 10_000); err != nil {
 				return err
 			} else {
-				torrentCount = result
+				torrentCount = result.Count
 			}
 			bar := progressbar.Default(torrentCount, "queuing torrents")
 			var torrentResult []*model.Torrent

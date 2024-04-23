@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
+	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
@@ -19,9 +21,11 @@ type Processor interface {
 }
 
 type processor struct {
+	defaultWorkflow  string
 	search           search.Search
-	classifier       classifier.Classifier
+	runner           classifier.Runner
 	dao              *dao.Query
+	blockingManager  blocking.Manager
 	processSemaphore *semaphore.Weighted
 	persistSemaphore *semaphore.Weighted
 }
@@ -39,6 +43,10 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		return err
 	}
 	defer c.processSemaphore.Release(1)
+	workflowName := params.ClassifierWorkflow
+	if workflowName == "" {
+		workflowName = c.defaultWorkflow
+	}
 	searchResult, searchErr := c.search.TorrentsWithMissingInfoHashes(
 		ctx,
 		params.InfoHashes,
@@ -46,21 +54,39 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 			return []field.RelationField{
 				q.Torrent.Files.RelationField,
 				q.Torrent.Hint.RelationField,
-				q.Torrent.Contents.RelationField,
+				q.Torrent.Sources.RelationField,
 			}
 		}),
 	)
 	if searchErr != nil {
 		return searchErr
 	}
+	tcResult, tcErr := c.search.TorrentContent(
+		ctx,
+		query.Where(search.TorrentContentInfoHashCriteria(params.InfoHashes...)),
+		search.HydrateTorrentContentContent(),
+	)
+	if tcErr != nil {
+		return tcErr
+	}
+	for _, tc := range tcResult.Items {
+		for ti, t := range searchResult.Torrents {
+			if t.InfoHash == tc.InfoHash {
+				searchResult.Torrents[ti].Contents = append(searchResult.Torrents[ti].Contents, tc.TorrentContent)
+				break
+			}
+		}
+	}
 	var errs []error
-	var failedHashes []protocol.ID
+	failedHashes := make([]protocol.ID, 0, len(searchResult.MissingInfoHashes))
+	failedHashes = append(failedHashes, searchResult.MissingInfoHashes...)
 	if len(failedHashes) > 0 {
 		errs = append(errs, MissingHashesError{InfoHashes: failedHashes})
-		failedHashes = append(failedHashes, searchResult.MissingInfoHashes...)
 	}
 	tcs := make([]model.TorrentContent, 0, len(searchResult.Torrents))
 	var deleteIds []string
+	var deleteInfoHashes []protocol.ID
+	addTags := make(map[protocol.ID]map[string]struct{})
 	for _, torrent := range searchResult.Torrents {
 		thisDeleteIds := make(map[string]struct{}, len(torrent.Contents))
 		foundMatch := false
@@ -78,17 +104,17 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 				foundMatch = true
 			}
 		}
-		useClassifier := c.classifier
-		if params.ClassifyMode == ClassifyModeSkipUnmatched && torrent.Hint.IsNil() {
-			useClassifier = classifier.FallbackClassifier{}
-		}
-		classification, classifyErr := useClassifier.Classify(ctx, torrent)
+		cl, classifyErr := c.runner.Run(ctx, workflowName, torrent)
 		if classifyErr != nil {
-			errs = append(errs, classifyErr)
-			failedHashes = append(failedHashes, torrent.InfoHash)
+			if errors.Is(classifyErr, classification.ErrDeleteTorrent) {
+				deleteInfoHashes = append(deleteInfoHashes, torrent.InfoHash)
+			} else {
+				errs = append(errs, classifyErr)
+				failedHashes = append(failedHashes, torrent.InfoHash)
+			}
 			continue
 		}
-		torrentContent := newTorrentContent(torrent, classification)
+		torrentContent := newTorrentContent(torrent, cl)
 		tcId := torrentContent.InferID()
 		for id := range thisDeleteIds {
 			if id != tcId {
@@ -96,6 +122,9 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 			}
 		}
 		tcs = append(tcs, torrentContent)
+		if len(cl.Tags) > 0 {
+			addTags[torrent.InfoHash] = cl.Tags
+		}
 	}
 	if len(failedHashes) > 0 {
 		if len(tcs) == 0 {
@@ -115,13 +144,18 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 	if len(tcs) == 0 {
 		return nil
 	}
-	if persistErr := c.persist(ctx, tcs, deleteIds); persistErr != nil {
+	if persistErr := c.persist(ctx, persistPayload{
+		torrentContents:  tcs,
+		deleteIds:        deleteIds,
+		deleteInfoHashes: deleteInfoHashes,
+		addTags:          addTags,
+	}); persistErr != nil {
 		return persistErr
 	}
 	return nil
 }
 
-func newTorrentContent(t model.Torrent, c classifier.Classification) model.TorrentContent {
+func newTorrentContent(t model.Torrent, c classification.Result) model.TorrentContent {
 	tc := model.TorrentContent{
 		Torrent:         t,
 		InfoHash:        t.InfoHash,
@@ -134,6 +168,9 @@ func newTorrentContent(t model.Torrent, c classifier.Classification) model.Torre
 		Video3d:         c.Video3d,
 		VideoModifier:   c.VideoModifier,
 		ReleaseGroup:    c.ReleaseGroup,
+		Seeders:         t.Seeders(),
+		Leechers:        t.Leechers(),
+		PublishedAt:     t.PublishedAt(),
 	}
 	if c.Content != nil {
 		content := *c.Content

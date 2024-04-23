@@ -1,0 +1,331 @@
+{
+  "$id": "https://bitmagnet.io/schemas/classifier-0.1.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "action": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/action_single"
+        },
+        {
+          "$ref": "#/definitions/action_multi"
+        }
+      ]
+    },
+    "action__add_tag": {
+      "additionalProperties": false,
+      "description": "Add one or more tags to the current torrent",
+      "properties": {
+        "add_tag": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "add_tag"
+      ],
+      "type": "object"
+    },
+    "action__attach_local_content_by_id": {
+      "const": "attach_local_content_by_id",
+      "description": "Use the torrent hint to attach locally stored content by ID"
+    },
+    "action__attach_local_content_by_search": {
+      "const": "attach_local_content_by_search",
+      "description": "Attempt to attach local content with a search on the torrent name"
+    },
+    "action__attach_tmdb_content_by_id": {
+      "const": "attach_tmdb_content_by_id",
+      "description": "Use the torrent hint to attach content from the TMDB API by ID"
+    },
+    "action__attach_tmdb_content_by_search": {
+      "const": "attach_tmdb_content_by_search",
+      "description": "Attempt to attach content from the TMDB API with a search on the torrent name"
+    },
+    "action__delete": {
+      "const": "delete",
+      "description": "Delete the current torrent"
+    },
+    "action__find_match": {
+      "additionalProperties": false,
+      "description": "Iterate through a series of actions to find the first that does not return an unmatched error",
+      "properties": {
+        "find_match": {
+          "items": {
+            "$ref": "#/definitions/action_single"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "find_match"
+      ],
+      "type": "object"
+    },
+    "action__if_else": {
+      "additionalProperties": false,
+      "description": "Execute an action based on a condition",
+      "properties": {
+        "if_else": {
+          "additionalProperties": false,
+          "properties": {
+            "condition": {
+              "$ref": "#/definitions/condition"
+            },
+            "else_action": {
+              "$ref": "#/definitions/action"
+            },
+            "if_action": {
+              "$ref": "#/definitions/action"
+            }
+          },
+          "required": [
+            "condition"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "if_else"
+      ],
+      "type": "object"
+    },
+    "action__parse_date": {
+      "const": "parse_date",
+      "description": "Try to parse a date from the name of the current torrent"
+    },
+    "action__parse_video_content": {
+      "const": "parse_video_content",
+      "description": "Parse video-related attributes from the name of the current torrent"
+    },
+    "action__run_workflow": {
+      "additionalProperties": false,
+      "description": "Run a different workflow within the current workflow",
+      "properties": {
+        "run_workflow": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "run_workflow"
+      ],
+      "type": "object"
+    },
+    "action__set_content_type": {
+      "additionalProperties": false,
+      "description": "Set the content type of the current torrent",
+      "properties": {
+        "set_content_type": {
+          "enum": [
+            "movie",
+            "tv_show",
+            "music",
+            "ebook",
+            "comic",
+            "audiobook",
+            "game",
+            "software",
+            "xxx",
+            "unknown"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "set_content_type"
+      ],
+      "type": "object"
+    },
+    "action__unmatched": {
+      "const": "unmatched",
+      "description": "Return a unmatched error for the current torrent"
+    },
+    "action_multi": {
+      "items": {
+        "$ref": "#/definitions/action_single"
+      },
+      "type": "array"
+    },
+    "action_single": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/action__add_tag"
+        },
+        {
+          "$ref": "#/definitions/action__attach_local_content_by_id"
+        },
+        {
+          "$ref": "#/definitions/action__attach_local_content_by_search"
+        },
+        {
+          "$ref": "#/definitions/action__attach_tmdb_content_by_id"
+        },
+        {
+          "$ref": "#/definitions/action__attach_tmdb_content_by_search"
+        },
+        {
+          "$ref": "#/definitions/action__delete"
+        },
+        {
+          "$ref": "#/definitions/action__find_match"
+        },
+        {
+          "$ref": "#/definitions/action__if_else"
+        },
+        {
+          "$ref": "#/definitions/action__unmatched"
+        },
+        {
+          "$ref": "#/definitions/action__parse_date"
+        },
+        {
+          "$ref": "#/definitions/action__parse_video_content"
+        },
+        {
+          "$ref": "#/definitions/action__run_workflow"
+        },
+        {
+          "$ref": "#/definitions/action__set_content_type"
+        }
+      ]
+    },
+    "condition": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/condition__and"
+        },
+        {
+          "$ref": "#/definitions/condition__not"
+        },
+        {
+          "$ref": "#/definitions/condition__or"
+        },
+        {
+          "$ref": "#/definitions/condition__expression"
+        }
+      ]
+    },
+    "condition__and": {
+      "additionalProperties": false,
+      "properties": {
+        "and": {
+          "description": "A condition that is satisfied if all conditions in a list are satisfied",
+          "items": {
+            "$ref": "#/definitions/condition"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "and"
+      ],
+      "type": "object"
+    },
+    "condition__expression": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "expression": {
+              "description": "A CEL expression describing a condition",
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "expression"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "A CEL expression describing a condition",
+          "minLength": 1,
+          "type": "string"
+        }
+      ]
+    },
+    "condition__not": {
+      "additionalProperties": false,
+      "description": "A condition that negates the provided condition",
+      "properties": {
+        "not": {
+          "$ref": "#/definitions/condition"
+        }
+      },
+      "required": [
+        "not"
+      ],
+      "type": "object"
+    },
+    "condition__or": {
+      "additionalProperties": false,
+      "properties": {
+        "or": {
+          "description": "A condition that is satisfied if any of the conditions in a list are satisfied",
+          "items": {
+            "$ref": "#/definitions/condition"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "or"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "$schema": {
+      "const": "https://bitmagnet.io/schemas/classifier-0.1.json"
+    },
+    "extensions": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "type": "object"
+    },
+    "flag_definitions": {
+      "additionalProperties": {
+        "enum": [
+          "bool",
+          "string",
+          "int",
+          "string_list",
+          "content_type_list"
+        ],
+        "type": "string"
+      },
+      "type": "object"
+    },
+    "flags": {
+      "additionalProperties": true,
+      "type": "object"
+    },
+    "keywords": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "type": "object"
+    },
+    "workflows": {
+      "additionalProperties": {
+        "$ref": "#/definitions/action"
+      },
+      "type": "object"
+    }
+  },
+  "type": "object"
+}

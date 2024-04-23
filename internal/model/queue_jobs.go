@@ -46,3 +46,9 @@ func QueueJobPriority(priority int) QueueJobOption {
 		j.Priority = priority
 	}
 }
+
+func QueueJobDelayBy(duration time.Duration) QueueJobOption {
+	return func(j *QueueJob) {
+		j.RunAfter = j.RunAfter.Add(duration)
+	}
+}

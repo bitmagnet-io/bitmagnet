@@ -2,7 +2,7 @@
 title: Import
 parent: Tutorials
 layout: default
-nav_order: 4
+nav_order: 5
 redirect_from:
   - /tutorials/importing.html
 ---
@@ -13,7 +13,7 @@ redirect_from:
 
 > Important
 >
-> Before continuing with this tutorial, please [obtain and configure a personal TMDB API key]({% link setup/configuration.md %}#obtaining-a-tmdb-api-key).
+> Before continuing with this tutorial, please [obtain and configure a personal TMDB API key, or disable the TMDB API integration]({% link setup/configuration.md %}#obtaining-a-tmdb-api-key).
 
 **bitmagnet** includes an import endpoint at `/import`; this can be used for importing Torrent files from any source.
 
@@ -29,10 +29,10 @@ For the purposes of this tutorial we'll use the RARBG SQLite backup, but you can
 
 > Pre-requisites
 >
-> - [x] You have [obtained and configured a personal TMDB API key]({% link setup/configuration.md %}#obtaining-a-tmdb-api-key)
+> - [x] You have [obtained and configured a personal TMDB API key, or disabled the TMDB API integration]({% link setup/configuration.md %}#obtaining-a-tmdb-api-key)
 > - [x] You have obtained a copy of the RARBG SQLite backup (I can't assist you in getting a copy of this, but it's generally available)
-> - [x] You have [installed the SQLite3 CLI](https://www.tutorialspoint.com/sqlite/sqlite_installation.htm){:target="\_blank"}
-> - [x] You have [installed jq](https://jqlang.github.io/jq/download/){:target="\_blank"}
+> - [x] You have [installed the SQLite3 CLI](https://www.tutorialspoint.com/sqlite/sqlite_installation.htm)
+> - [x] You have [installed jq](https://jqlang.github.io/jq/download/)
 
 Let's start by write a SQLite query in a file named `rarbg-import.sql`. This will extract the data we need and get it looking a bit more like the format that **bitmagnet** expects. The following is a starting point, please adapt it to your requirements:
 
@@ -111,7 +111,7 @@ sqlite3 -json -batch /path/to/your/rarbg_db.sqlite "$(cat rarbg-import.sql)" \
 So what's happening here?
 
 - First we are executing the SQL query we made above against the backup database; we tell SQLite to output the result as JSON. To test this bit in isolation you might try running just `sqlite3 -json -batch /path/to/your/rarbg_db.sqlite "$(cat rarbg-import.sql)"` (while testing you'll probably want to `limit` your results to say 10 or 100)
-- Next we need to make some tweaks to the JSON structure, so we'll pipe the result into [jq](https://jqlang.github.io/jq/){:target="\_blank"}. You can add the line beginning `| jq` to the previous part to test what we have so far. Here we will:
+- Next we need to make some tweaks to the JSON structure, so we'll pipe the result into [jq](https://jqlang.github.io/jq/). You can add the line beginning `| jq` to the previous part to test what we have so far. Here we will:
   - Add a `source` field with value `rarbg`: each torrent stored in **bitmagnet** is associated with one or more sources, this association allows filtering by source within the search facility, and can carry some source-specific information such as an import ID, and numbers of seeders and leechers (more docs needed here!)
   - Add the `contentSource` and `contentId` fields which **bitmagnet** expects, containing the IMDB ID, if it exists; these are not a required field, but if you know the external IMDB or TMDB ID of your content then it will give the classifier an easier job
   - Delete the `imdb` field which won't be recognised by **bitmagnet**
