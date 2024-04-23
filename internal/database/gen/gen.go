@@ -81,6 +81,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		infoHashReadOnly,
 		gen.FieldType("seeders", "NullUint"),
 		gen.FieldType("leechers", "NullUint"),
+		gen.FieldType("published_at", "sql.NullTime"),
 		gen.FieldRelate(
 			field.HasOne,
 			"TorrentSource",
@@ -361,6 +362,8 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 					},
 				),
 				gen.FieldType("content_type", "NullContentType"),
+				gen.FieldType("seeders", "NullUint"),
+				gen.FieldType("leechers", "NullUint"),
 			},
 			torrentContentBaseOptions...,
 		)...,

@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
@@ -12,10 +13,12 @@ import (
 
 type Params struct {
 	fx.In
-	Search     lazy.Lazy[search.Search]
-	Classifier lazy.Lazy[classifier.Classifier]
-	Dao        lazy.Lazy[*dao.Query]
-	Logger     *zap.SugaredLogger
+	ClassifierConfig classifier.Config
+	Search           lazy.Lazy[search.Search]
+	Workflow         lazy.Lazy[classifier.Runner]
+	Dao              lazy.Lazy[*dao.Query]
+	BlockingManager  lazy.Lazy[blocking.Manager]
+	Logger           *zap.SugaredLogger
 }
 
 type Result struct {
@@ -34,16 +37,22 @@ func New(p Params) Result {
 			if err != nil {
 				return nil, err
 			}
-			c, err := p.Classifier.Get()
+			bm, err := p.BlockingManager.Get()
+			if err != nil {
+				return nil, err
+			}
+			w, err := p.Workflow.Get()
 			if err != nil {
 				return nil, err
 			}
 			return processor{
-				classifier:       c,
 				dao:              d,
 				search:           s,
-				processSemaphore: semaphore.NewWeighted(2),
+				blockingManager:  bm,
+				runner:           w,
+				processSemaphore: semaphore.NewWeighted(3),
 				persistSemaphore: semaphore.NewWeighted(1),
+				defaultWorkflow:  p.ClassifierConfig.Workflow,
 			}, nil
 		}),
 	}
