@@ -16,9 +16,11 @@ jobs:
       - uses: cachix/install-nix-action@v26
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Run linters
+      - name: Install web UI
         run: |
           nix develop --ignore-environment --command task install-webui
+      - name: Run linters
+        run: |
           nix develop --ignore-environment --keep HOME . --command task lint
 
   test:
@@ -29,9 +31,11 @@ jobs:
       - uses: cachix/install-nix-action@v26
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Run tests
+      - name: Install web UI
         run: |
           nix develop --ignore-environment --command task install-webui
+      - name: Run tests
+        run: |
           nix develop --ignore-environment --keep HOME . --command task test
 
   # This job runs all code generations and builds the WebUI, to check that everything is correctly committed
@@ -61,7 +65,7 @@ jobs:
       - uses: cachix/install-nix-action@v26
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Install web app, apply database migrations, generate code and build web app
+      - name: Install web UI, apply database migrations, generate code and build web app
         run: |
           nix develop --ignore-environment --command task install-webui
           nix develop --ignore-environment --keep HOME --keep POSTGRES_PASSWORD . --command task migrate
