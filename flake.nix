@@ -12,10 +12,11 @@
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
             bundler
-            go
+            go_1_22
             go-task
             jekyll
             nodejs_20
+            nodePackages.prettier
             protobuf
             protoc-gen-go
           ];
