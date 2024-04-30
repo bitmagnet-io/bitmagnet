@@ -18,8 +18,8 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run linters
         run: |
-          nix develop --ignore-environment --keep HOME --timeout 120 . --command \
-          task lint
+          nix develop --ignore-environment --command task install-webui
+          nix develop --ignore-environment --keep HOME . --command task lint
 
   test:
     runs-on: ubuntu-latest
@@ -31,9 +31,8 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run tests
         run: |
-          nix develop --ignore-environment --command "(cd webui && npm ci)"
-          nix develop --ignore-environment --keep HOME --timeout 120 . --command \
-          task test
+          nix develop --ignore-environment --command task install-webui
+          nix develop --ignore-environment --keep HOME . --command task test
 
   # This job runs all code generations and builds the WebUI, to check that everything is correctly committed
   generated:
@@ -65,12 +64,10 @@ jobs:
       - name: Install web app, apply database migrations, generate code and build web app
         run: |
           nix develop --ignore-environment --command task install-webui
-          nix develop --ignore-environment --keep HOME . --command task migrate
-          nix develop --ignore-environment --keep HOME . --command task gen
+          nix develop --ignore-environment --keep HOME --keep POSTGRES_PASSWORD . --command task migrate
+          nix develop --ignore-environment --keep HOME --keep POSTGRES_PASSWORD . --command task gen
           nix develop --ignore-environment . --command task build-webui
         env:
-          POSTGRES_HOST: localhost
           POSTGRES_PASSWORD: postgres
-          POSTGRES_NAME: bitmagnet
       - name: Check nothing changed
         run: git diff --exit-code
