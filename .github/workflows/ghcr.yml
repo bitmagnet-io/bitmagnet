@@ -5,8 +5,8 @@ on:
     branches:
       - "main"
     tags:
-      - 'v*'
-  pull_request:
+      - 'v*.*.*'
+#    pull_request:
 
 env:
   REGISTRY: ghcr.io
@@ -17,7 +17,7 @@ permissions:
   packages: write
 
 jobs:
-  goreleaserbuild:
+  build:
     name: Build distribution binaries
     runs-on: ubuntu-latest
     steps:
@@ -26,7 +26,6 @@ jobs:
         with:
           fetch-depth: 0
 
-#     1.20 is the last version to support Windows < 10, Server < 2016, and MacOS < 1.15.
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -56,7 +55,7 @@ jobs:
       - name: Upload assets
         uses: actions/upload-artifact@v4
         with:
-          name: autobrr
+          name: assets
           path: |
             dist/*.tar.gz
             dist/*.zip
@@ -102,8 +101,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY_IMAGE }}
           tags: |
-            type=semver,pattern={{version}},prefix=v
-            type=semver,pattern={{major}}.{{minor}},prefix=v
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
             type=ref,event=branch
             type=ref,event=pr
           flavor: |
