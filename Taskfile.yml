@@ -20,7 +20,7 @@ tasks:
 
   lint-golangci:
     cmds:
-      - golangci-lint run
+      - golangci-lint run --timeout=10m
 
   lint-webui:
     dir: ./webui
