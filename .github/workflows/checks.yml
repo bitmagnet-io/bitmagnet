@@ -32,7 +32,7 @@ jobs:
       - name: Run tests
         run: |
           nix develop --ignore-environment --command "(cd webui && npm ci)"
-          nix develop --ignore-environment --keep HOME . --timeout 120 --command \
+          nix develop --ignore-environment --keep HOME --timeout 120 . --command \
           task test
 
   # This job runs all code generations and builds the WebUI, to check that everything is correctly committed
