@@ -107,4 +107,4 @@ export class GraphQLService {
   }
 }
 
-const fetchPolicy = "no-cache" as const;
+const fetchPolicy = "no-cache";
