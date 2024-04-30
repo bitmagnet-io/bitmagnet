@@ -1,13 +1,14 @@
 package model
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/database/fts"
+	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
 	"github.com/facette/natsort"
 	"gorm.io/gorm"
 	"net/url"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func (t *Torrent) AfterFind(tx *gorm.DB) error {
@@ -53,6 +54,22 @@ func (t Torrent) Leechers() NullUint {
 	return leechers
 }
 
+var cutoff = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+
+func (t Torrent) PublishedAt() time.Time {
+	publishedAt := t.CreatedAt
+	for _, source := range t.Sources {
+		dt := source.CreatedAt
+		if source.PublishedAt.Valid && source.PublishedAt.Time.After(cutoff) {
+			dt = source.PublishedAt.Time
+		}
+		if dt.Before(publishedAt) {
+			publishedAt = dt
+		}
+	}
+	return publishedAt
+}
+
 func (t Torrent) MagnetUri() string {
 	return "magnet:?xt=urn:btih:" + t.InfoHash.String() +
 		"&dn=" + url.QueryEscape(t.Name) +
@@ -68,11 +85,19 @@ func (t Torrent) SingleFile() bool {
 	return t.FilesStatus == FilesStatusSingle
 }
 
+func (t Torrent) BaseName() string {
+	baseName := t.Name
+	if t.Extension.Valid {
+		baseName = baseName[:len(baseName)-len(t.Extension.String)-1]
+	}
+	return baseName
+}
+
 func (t Torrent) FileExtensions() []string {
 	switch t.FilesStatus {
 	case FilesStatusSingle:
 		exts := make([]string, 0, 1)
-		ext := fileExtensionFromPath(t.Name)
+		ext := FileExtensionFromPath(t.Name)
 		if ext.Valid {
 			exts = append(exts, ext.String)
 		}
@@ -81,7 +106,7 @@ func (t Torrent) FileExtensions() []string {
 		exts := make([]string, 0, len(t.Files))
 		extMap := make(map[string]struct{})
 		for _, file := range t.Files {
-			ext := fileExtensionFromPath(file.Path)
+			ext := FileExtensionFromPath(file.Path)
 			if ext.Valid {
 				if _, ok := extMap[ext.String]; !ok {
 					extMap[ext.String] = struct{}{}
@@ -152,7 +177,7 @@ outer:
 			i++
 		}
 		for {
-			if i == 0 || !fts.IsWordChar(rune(f.Path[i])) {
+			if i == 0 || !lexer.IsWordChar(rune(f.Path[i])) {
 				break
 			}
 			i--
@@ -176,7 +201,7 @@ outer:
 			}
 		}
 		for {
-			if longestSuffixLength == 0 || !fts.IsWordChar(rune(firstPass[i][len(firstPass[i])-longestSuffixLength])) {
+			if longestSuffixLength == 0 || !lexer.IsWordChar(rune(firstPass[i][len(firstPass[i])-longestSuffixLength])) {
 				break
 			}
 			longestSuffixLength--

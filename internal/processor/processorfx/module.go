@@ -2,8 +2,7 @@ package processorfx
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
-	"github.com/bitmagnet-io/bitmagnet/internal/processor/queue/decorator"
-	"github.com/bitmagnet-io/bitmagnet/internal/processor/queue/handler"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor/queue"
 	"go.uber.org/fx"
 )
 
@@ -12,8 +11,7 @@ func New() fx.Option {
 		"processor",
 		fx.Provide(
 			processor.New,
-			decorator.New,
-			handler.New,
+			queue.New,
 		),
 	)
 }

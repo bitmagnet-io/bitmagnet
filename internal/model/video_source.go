@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/regex"
+	"github.com/bitmagnet-io/bitmagnet/internal/keywords"
 	"regexp"
 	"strings"
 )
@@ -29,11 +29,11 @@ var videoSourceAliases = map[string]VideoSource{
 }
 
 func createVideoSourceRegex() *regexp.Regexp {
-	names := VideoSourceNames()
+	names := namesToLower(VideoSourceNames()...)
 	for alias := range videoSourceAliases {
 		names = append(names, alias)
 	}
-	return regex.NewRegexFromNames(names...)
+	return keywords.MustNewRegexFromKeywords(names...)
 }
 
 var videoSourceRegex = createVideoSourceRegex()

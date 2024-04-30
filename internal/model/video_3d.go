@@ -1,6 +1,8 @@
 package model
 
-import "github.com/bitmagnet-io/bitmagnet/internal/regex"
+import (
+	"github.com/bitmagnet-io/bitmagnet/internal/keywords"
+)
 
 // Video3d represents the 3D type of a video
 // ENUM(V3D, V3DSBS, V3DOU)
@@ -10,7 +12,7 @@ func (v Video3d) Label() string {
 	return v.String()[1:]
 }
 
-var video3dRegex = regex.NewRegexFromNames(removeEnumPrefixes(Video3dNames()...)...)
+var video3dRegex = keywords.MustNewRegexFromKeywords(namesToLower(removeEnumPrefixes(Video3dNames()...)...)...)
 
 func InferVideo3d(input string) NullVideo3d {
 	if match := video3dRegex.FindStringSubmatch(input); match != nil {

@@ -8,7 +8,9 @@ tasks:
       - go run ./internal/gql/enums/gen/genenums.go
       - go run ./internal/torznab/gencategories/gencategories.go
       - go run github.com/99designs/gqlgen generate --config ./internal/gql/gqlgen.yml
+      - protoc --go_out=. ./internal/protobuf/bitmagnet.proto
       - go run github.com/vektra/mockery/v2
+      - go run . classifier schema --format json > ./bitmagnet.io/schemas/classifier-0.1.json
 
   lint:
     cmds:
@@ -29,7 +31,7 @@ tasks:
   build-webui:
     dir: ./webui
     cmds:
-      - ng build -c embedded
+      - npm run build -- -c embedded
 
   build-docsite:
     dir: ./bitmagnet.io
@@ -82,3 +84,14 @@ tasks:
       - goose -s create {{.NAME}} sql
     vars:
       NAME: migration
+
+  install-protoc:
+    cmds:
+      - |
+        curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v{{.VERSION}}/protoc-{{.VERSION}}-{{.PLATFORM}}.zip
+        sudo unzip -o protoc-{{.VERSION}}-{{.PLATFORM}}.zip -d /usr/local bin/protoc
+        sudo unzip -o protoc-{{.VERSION}}-{{.PLATFORM}}.zip -d /usr/local 'include/*'
+        rm -f protoc-{{.VERSION}}-{{.PLATFORM}}.zip
+    vars:
+      VERSION: 23.4
+      PLATFORM: osx-x86_64

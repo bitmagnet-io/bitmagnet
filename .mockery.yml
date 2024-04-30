@@ -4,9 +4,15 @@ mockname: "{{.InterfaceName}}"
 outpkg: "{{.PackageName}}_mocks"
 filename: "{{.InterfaceName}}.go"
 packages:
+  github.com/bitmagnet-io/bitmagnet/internal/classifier:
+    interfaces:
+      LocalSearch:
   github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable:
     interfaces:
       Table:
   github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/responder:
     interfaces:
       Limiter:
+  github.com/bitmagnet-io/bitmagnet/internal/tmdb:
+    interfaces:
+      Client:

@@ -1,13 +1,11 @@
 package regex
 
 import (
-	"github.com/hedhyw/rex/pkg/dialect"
 	"github.com/hedhyw/rex/pkg/dialect/base"
 	"github.com/hedhyw/rex/pkg/rex"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
 	"regexp"
-	"sort"
 	"strings"
 	"unicode"
 )
@@ -106,49 +104,4 @@ func SearchStringToNormalizedTokens(input string) []string {
 
 func NormalizeSearchString(input string) string {
 	return strings.Join(SearchStringToNormalizedTokens(input), " ")
-}
-
-func RegexTokenFromName(name string) base.GroupToken {
-	var tokens []dialect.Token
-	for _, char := range name {
-		if char == ' ' {
-			tokens = append(tokens, AnyNonWordChar().Repeat().OneOrMore())
-		} else {
-			lcChar := strings.ToLower(string(char))
-			ucChar := strings.ToUpper(string(char))
-			if lcChar == ucChar {
-				tokens = append(tokens, rex.Chars.Single(char))
-			} else {
-				tokens = append(tokens, rex.Chars.Runes(ucChar+lcChar))
-			}
-		}
-	}
-	return rex.Group.NonCaptured(tokens...)
-}
-
-func RegexTokensFromNames(names ...string) []dialect.Token {
-	sort.Slice(names, func(i, j int) bool {
-		return len(names[i]) > len(names[j])
-	})
-	var tokens []dialect.Token
-	for _, name := range names {
-		tokens = append(tokens, RegexTokenFromName(name))
-	}
-	return tokens
-}
-
-func NewRegexFromNames(names ...string) *regexp.Regexp {
-	return rex.New(
-		rex.Group.Composite(
-			rex.Chars.Begin(),
-			AnyNonWordChar().Repeat().OneOrMore(),
-		).NonCaptured(),
-		rex.Group.Composite(
-			RegexTokensFromNames(names...)...,
-		),
-		rex.Group.Composite(
-			rex.Chars.End(),
-			AnyNonWordChar().Repeat().OneOrMore(),
-		).NonCaptured(),
-	).MustCompile()
 }
