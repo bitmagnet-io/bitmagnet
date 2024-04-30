@@ -29,6 +29,10 @@ Some key libraries used include:
 
 Using [Angular Material components](https://material.angular.io/). The web UI is embedded in the GoLang binary and served by the Gin web framework, and hence the build artifacts are committed into the repository.
 
+## Nix dev shell
+
+The repository includes a Nix shell for a reproducible development environment. To use the shell, simply [install Nix](https://nixos.org/download/) then run `nix develop` (or better still, use [nix-direnv](https://github.com/nix-community/nix-direnv) to use the included shell automatically.
+
 ## Other tooling
 
 - The repository includes a [Taskfile](https://taskfile.dev/) containing several useful development scripts

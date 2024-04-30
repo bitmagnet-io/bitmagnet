@@ -8,72 +8,31 @@ on:
   pull_request:
 
 jobs:
-  golangci-lint:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: cachix/install-nix-action@v26
         with:
-          go-version: "^1.22"
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v4
-        with:
-          version: latest
-          args: --timeout=10m
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run linters
+        run: |
+          nix develop --ignore-environment --command task install-webui
+          nix develop --ignore-environment --keep HOME . --command task lint
 
-  go-test:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: cachix/install-nix-action@v26
         with:
-          go-version: "^1.22"
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run tests
-        run: go test -v ./...
-
-  webui-lint:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: webui
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20.x
-      - run: npm ci
-      - run: npm run eslint:check
-
-  webui-test:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: webui
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20.x
-      - run: npm ci
-      - name: Run headless test
-        uses: coactions/setup-xvfb@v1
-        with:
-          run: npm test
-          working-directory: webui
-
-  prettier:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Prettify code
-        uses: creyD/prettier_action@v4.3
-        with:
-          prettier_options: --check .
+        run: |
+          nix develop --ignore-environment --command task install-webui
+          nix develop --ignore-environment --keep HOME . --command task test
 
   # This job runs all code generations and builds the WebUI, to check that everything is correctly committed
   generated:
@@ -99,35 +58,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Check nothing changed
-        run: git diff --exit-code
-      - name: Install Task
-        uses: arduino/setup-task@v1
+      - uses: cachix/install-nix-action@v26
         with:
-          version: 3.x
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-go@v5
-        with:
-          go-version: "^1.22"
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20.x
-      - name: Setup protoc
-        uses: arduino/setup-protoc@v3
-        with:
-          version: "23.4"
-      - name: Install protoc-gen-go
-        run: go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.33.0
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install web app, apply database migrations, generate code and build web app
         run: |
-          (cd webui && npm ci); \
-          task migrate; \
-          task gen; \
-          task build-webui
+          nix develop --ignore-environment --command task install-webui
+          nix develop --ignore-environment --keep HOME --keep POSTGRES_PASSWORD . --command task migrate
+          nix develop --ignore-environment --keep HOME --keep POSTGRES_PASSWORD . --command task gen
+          nix develop --ignore-environment . --command task build-webui
         env:
-          POSTGRES_HOST: localhost
           POSTGRES_PASSWORD: postgres
-          POSTGRES_NAME: bitmagnet
       - name: Check nothing changed
         run: git diff --exit-code
