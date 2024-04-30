@@ -64,7 +64,7 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install web app, apply database migrations, generate code and build web app
         run: |
-          nix develop --ignore-environment --command "(cd webui && npm ci)"
+          nix develop --ignore-environment --command task install-webui
           nix develop --ignore-environment --keep HOME . --command task migrate
           nix develop --ignore-environment --keep HOME . --command task gen
           nix develop --ignore-environment . --command task build-webui

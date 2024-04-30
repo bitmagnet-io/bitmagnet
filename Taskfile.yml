@@ -64,6 +64,11 @@ tasks:
       - bundle install
       - bundle exec jekyll build
 
+  install-webui:
+    dir: ./webui
+    cmds:
+      - npm ci
+
   serve-webui:
     dir: ./webui
     cmds:
