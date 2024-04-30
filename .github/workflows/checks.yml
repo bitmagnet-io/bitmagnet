@@ -18,7 +18,7 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run linters
         run: |
-          nix develop --ignore-environment --keep HOME . --command \
+          nix develop --ignore-environment --keep HOME --timeout 120 . --command \
           task lint
 
   test:
@@ -31,7 +31,8 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run tests
         run: |
-          nix develop --ignore-environment --keep HOME . --command \
+          nix develop --ignore-environment --command "(cd webui && npm ci)"
+          nix develop --ignore-environment --keep HOME . --timeout 120 --command \
           task test
 
   # This job runs all code generations and builds the WebUI, to check that everything is correctly committed
@@ -63,7 +64,7 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install web app, apply database migrations, generate code and build web app
         run: |
-          nix develop --ignore-environment --command (cd webui && npm ci)
+          nix develop --ignore-environment --command "(cd webui && npm ci)"
           nix develop --ignore-environment --keep HOME . --command task migrate
           nix develop --ignore-environment --keep HOME . --command task gen
           nix develop --ignore-environment . --command task build-webui
