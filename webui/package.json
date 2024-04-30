@@ -12,7 +12,7 @@
     "eslint:fix": "npm run eslint:check -- --fix",
     "lint": "npm run eslint:check && npm run prettier:check",
     "lint:fix": "npm run eslint:fix && npm run prettier:fix",
-    "test": "ng test --watch=false",
+    "test": "ng test --no-watch --no-progress",
     "test:watch": "ng test",
     "graphql:codegen": "graphql-codegen -c ./src/app/graphql/codegen.ts"
   },
@@ -61,6 +61,7 @@
     "karma-jasmine": "^5.1.0",
     "karma-jasmine-html-reporter": "^2.1.0",
     "prettier": "^3.2.5",
+    "puppeteer": "^22.7.1",
     "typescript": "^5.3.3"
   }
 }
