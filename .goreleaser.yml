@@ -49,18 +49,18 @@ release:
   prerelease: auto
   footer: |
     **Full Changelog**: https://github.com/bitmagnet-io/bitmagnet/compare/{{ .PreviousTag }}...{{ .Tag }}
-    
+
     ## Docker images
-    
+
     - `docker pull ghcr.io/bitmagnet-io/bitmagnet:{{ .Tag }}`
-    
+
     ## What to do next?
-    
+
     - Read the [documentation](https://bitmagnet.io)
     - Join our [Discord server](https://discord.gg/6mFNszX8qM)
 
 checksum:
-  name_template: '{{ .ProjectName }}_{{ .Version }}_checksums.txt'
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
 
 changelog:
   sort: asc
@@ -71,10 +71,10 @@ changelog:
       - Merge remote-tracking branch
       - Merge branch
   groups:
-    - title: 'New Features'
+    - title: "New Features"
       regexp: "^.*feat[(\\w)]*:+.*$"
       order: 0
-    - title: 'Bug fixes'
+    - title: "Bug fixes"
       regexp: "^.*fix[(\\w)]*:+.*$"
       order: 10
     - title: Other work
@@ -85,7 +85,7 @@ nfpms:
     homepage: https://bitmagnet.io
     maintainer: bitmagnet <packages@bitmagnet.io>
     description: |-
-            bitmagnet is a self-hosted BitTorrent indexer.
+      bitmagnet is a self-hosted BitTorrent indexer.
     formats:
       - apk
       - deb
