@@ -14,11 +14,36 @@ tasks:
 
   lint:
     cmds:
+      - task lint-golangci
+      - task lint-webui
+      - task lint-prettier
+
+  lint-golangci:
+    cmds:
       - golangci-lint run
+
+  lint-webui:
+    dir: ./webui
+    cmds:
+      - npm run lint
+
+  lint-prettier:
+    cmds:
+      - prettier --check .
 
   test:
     cmds:
+      - task test-go
+      - task test-webui
+
+  test-go:
+    cmds:
       - go test -v ./...
+
+  test-webui:
+    dir: ./webui
+    cmds:
+      - npm test
 
   migrate:
     cmds:
@@ -84,14 +109,3 @@ tasks:
       - goose -s create {{.NAME}} sql
     vars:
       NAME: migration
-
-  install-protoc:
-    cmds:
-      - |
-        curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v{{.VERSION}}/protoc-{{.VERSION}}-{{.PLATFORM}}.zip
-        sudo unzip -o protoc-{{.VERSION}}-{{.PLATFORM}}.zip -d /usr/local bin/protoc
-        sudo unzip -o protoc-{{.VERSION}}-{{.PLATFORM}}.zip -d /usr/local 'include/*'
-        rm -f protoc-{{.VERSION}}-{{.PLATFORM}}.zip
-    vars:
-      VERSION: 23.4
-      PLATFORM: osx-x86_64

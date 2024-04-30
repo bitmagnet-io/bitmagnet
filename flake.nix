@@ -9,17 +9,20 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in
       {
-        devShells.default = pkgs.mkShell {
-          packages = with pkgs; [
-            bundler
-            go_1_22
-            go-task
-            jekyll
-            nodejs_20
-            nodePackages.prettier
-            protobuf
-            protoc-gen-go
-          ];
+        devShells = {
+          default = pkgs.mkShell {
+            packages = with pkgs; [
+              bundler
+              go_1_22
+              go-task
+              golangci-lint
+              jekyll
+              nodejs_20
+              nodePackages.prettier
+              protobuf
+              protoc-gen-go
+            ];
+          };
         };
       });
 }
