@@ -2,11 +2,8 @@ name: Deploy Image to GHCR
 
 on:
   push:
-    branches:
-      - "main"
     tags:
       - "v*.*.*"
-#    pull_request:
 
 env:
   REGISTRY: ghcr.io
