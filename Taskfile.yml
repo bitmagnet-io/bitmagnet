@@ -11,6 +11,7 @@ tasks:
       - protoc --go_out=. ./internal/protobuf/bitmagnet.proto
       - go run github.com/vektra/mockery/v2
       - go run . classifier schema --format json > ./bitmagnet.io/schemas/classifier-0.1.json
+      - cd webui && npm run graphql:codegen
 
   lint:
     cmds:
