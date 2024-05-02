@@ -185,22 +185,6 @@ tr.mat-mdc-row.expanded {
 .item-detail {
   width: 100%;
   overflow: hidden;
-  h2 {
-    margin-top: 10px;
-    max-width: 900px;
-    word-wrap: break-word;
-  }
-  .poster {
-    float: right;
-    margin: 10px;
-    border: 1px solid currentColor;
-  }
-  .info-hash {
-    padding-left: 5px;
-    cursor: crosshair;
-    text-decoration: underline;
-    text-decoration-style: dotted;
-  }
 }
 
 ::ng-deep .mdc-tab__text-label {
@@ -227,23 +211,6 @@ tr.mat-mdc-row.expanded {
       .mdc-evolution-chip--disabled
     ).mdc-evolution-chip__text-label {
     color: #fff;
-  }
-}
-
-.torrent-files {
-  padding-top: 10px;
-  max-height: 800px;
-  overflow: scroll;
-  table {
-    margin-bottom: 10px;
-    width: 800px;
-  }
-  td {
-    padding-right: 20px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-  }
-  tr:hover td {
-    background-color: whitesmoke;
   }
 }
 

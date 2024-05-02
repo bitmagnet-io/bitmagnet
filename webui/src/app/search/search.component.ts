@@ -4,7 +4,7 @@ import {
   ChangeDetectionStrategy,
   Component,
 } from "@angular/core";
-import { BehaviorSubject, catchError, EMPTY, tap } from "rxjs";
+import { catchError, EMPTY, tap } from "rxjs";
 import { FormControl } from "@angular/forms";
 import {
   animate,
@@ -18,10 +18,11 @@ import { SelectionModel } from "@angular/cdk/collections";
 import * as generated from "../graphql/generated";
 import { GraphQLService } from "../graphql/graphql.service";
 import { AppErrorsService } from "../app-errors.service";
+import normalizeTagInput from "../util/normalizeTagInput";
 import { SearchEngine } from "./search.engine";
 
 @Component({
-  selector: "app-torrent-content",
+  selector: "app-search",
   templateUrl: "./search.component.html",
   styleUrls: ["./search.component.scss"],
   animations: [
@@ -51,6 +52,8 @@ export class SearchComponent implements AfterContentInit, AfterViewInit {
   );
 
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
+
+  expandedTorrentContentId: string | undefined;
 
   selectedItems = new SelectionModel<generated.TorrentContent>(true, []);
   selectedTabIndex = 0;
@@ -104,26 +107,6 @@ export class SearchComponent implements AfterContentInit, AfterViewInit {
 
   originalOrder(): number {
     return 0;
-  }
-
-  getAttribute(
-    item: generated.TorrentContent,
-    key: string,
-    source?: string,
-  ): string | undefined {
-    return item.content?.attributes?.find(
-      (a) => a.key === key && (source === undefined || a.source === source),
-    )?.value;
-  }
-
-  getCollections(
-    item: generated.TorrentContent,
-    type: string,
-  ): string[] | undefined {
-    const collections = item.content?.collections
-      ?.filter((a) => a.type === type)
-      .map((a) => a.name);
-    return collections?.length ? collections.sort() : undefined;
   }
 
   /** Whether the number of selected elements matches the total number of rows. */
@@ -292,136 +275,11 @@ export class SearchComponent implements AfterContentInit, AfterViewInit {
       .subscribe();
   }
 
-  expandedItem = new (class {
-    private itemSubject = new BehaviorSubject<
-      generated.TorrentContent | undefined
-    >(undefined);
-    newTagCtrl = new FormControl<string>("");
-    private editedTags = Array<string>();
-    public readonly suggestedTags = Array<string>();
-    public selectedTabIndex = 0;
-
-    constructor(private ds: SearchComponent) {
-      ds.search.items$.subscribe((items) => {
-        const item = this.itemSubject.getValue();
-        if (!item) {
-          return;
-        }
-        const nextItem = items.find((i) => i.id === item.id);
-        this.editedTags = nextItem?.torrent.tagNames ?? [];
-        this.itemSubject.next(nextItem);
-      });
-      this.newTagCtrl.valueChanges.subscribe((value) => {
-        if (value) {
-          value = normalizeTagInput(value);
-          this.newTagCtrl.setValue(value, { emitEvent: false });
-        }
-        return ds.graphQLService
-          .torrentSuggestTags({
-            query: {
-              prefix: value,
-              exclusions: this.itemSubject.getValue()?.torrent.tagNames,
-            },
-          })
-          .pipe(
-            tap((result) => {
-              this.suggestedTags.splice(
-                0,
-                this.suggestedTags.length,
-                ...result.suggestions.map((t) => t.name),
-              );
-            }),
-          )
-          .subscribe();
-      });
+  toggleTorrentContentId(id: string) {
+    if (this.expandedTorrentContentId === id) {
+      this.expandedTorrentContentId = undefined;
+    } else {
+      this.expandedTorrentContentId = id;
     }
-
-    get id(): string | undefined {
-      return this.itemSubject.getValue()?.id;
-    }
-
-    toggle(id?: string): void {
-      if (id === this.id) {
-        id = undefined;
-      }
-      const nextItem = this.ds.items.find((i) => i.id === id);
-      const current = this.itemSubject.getValue();
-      if (current?.id !== id) {
-        this.itemSubject.next(nextItem);
-        this.editedTags = nextItem?.torrent.tagNames ?? [];
-        this.newTagCtrl.reset();
-        this.selectedTabIndex = 0;
-      }
-    }
-
-    selectTab(index: number): void {
-      this.selectedTabIndex = index;
-    }
-
-    addTag(tagName: string) {
-      this.editTags((tags) => [...tags, tagName]);
-      this.saveTags();
-    }
-
-    renameTag(oldTagName: string, newTagName: string) {
-      this.editTags((tags) =>
-        tags.map((t) => (t === oldTagName ? newTagName : t)),
-      );
-      this.saveTags();
-    }
-
-    deleteTag(tagName: string) {
-      this.editTags((tags) => tags.filter((t) => t !== tagName));
-      this.saveTags();
-    }
-
-    private editTags(fn: (tagNames: string[]) => string[]) {
-      const item = this.itemSubject.getValue();
-      if (!item) {
-        return;
-      }
-      this.editedTags = fn(this.editedTags);
-      this.newTagCtrl.reset();
-    }
-
-    saveTags(): void {
-      const expanded = this.itemSubject.getValue();
-      if (!expanded) {
-        return;
-      }
-      this.ds.graphQLService
-        .torrentSetTags({
-          infoHashes: [expanded.infoHash],
-          tagNames: this.editedTags,
-        })
-        .pipe(
-          catchError((err: Error) => {
-            this.ds.errorsService.addError(`Error saving tags: ${err.message}`);
-            return EMPTY;
-          }),
-        )
-        .pipe(
-          tap(() => {
-            this.editedTags = [];
-            this.ds.search.loadResult(false);
-          }),
-        )
-        .subscribe();
-    }
-
-    delete() {
-      const expanded = this.itemSubject.getValue();
-      if (!expanded) {
-        return;
-      }
-      this.ds.deleteTorrents([expanded.infoHash]);
-    }
-  })(this);
+  }
 }
-
-const normalizeTagInput = (value: string): string =>
-  value
-    .toLowerCase()
-    .replaceAll(/[^a-z0-9\-]/g, "-")
-    .replace(/^-+/, "")
-    .replaceAll(/-+/g, "-");
