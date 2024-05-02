@@ -231,3 +231,10 @@ app-paginator {
   margin-top: 10px;
   margin-bottom: 20px;
 }
+
+::ng-deep .tooltip-published-at {
+  div {
+    white-space: nowrap;
+    max-width: 250px;
+  }
+}

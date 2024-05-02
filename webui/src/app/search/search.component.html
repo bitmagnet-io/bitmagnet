@@ -366,8 +366,11 @@
 
         <ng-container matColumnDef="publishedAt">
           <th mat-header-cell *matHeaderCellDef>Published</th>
-          <td mat-cell *matCellDef="let i">
-            <abbr title="{{item(i).publishedAt}}">
+          <td class="td-published-at" mat-cell *matCellDef="let i">
+            <abbr
+              matTooltip="{{item(i).publishedAt}}"
+              matTooltipClass="tooltip-published-at"
+            >
               {{ item(i).publishedAt | humanTime }}
             </abbr>
           </td>
