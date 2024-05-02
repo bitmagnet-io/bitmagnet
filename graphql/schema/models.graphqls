@@ -56,6 +56,9 @@ type TorrentContent {
   video3d: Video3d
   videoModifier: VideoModifier
   releaseGroup: String
+  seeders: Int
+  leechers: Int
+  publishedAt: DateTime!
   createdAt: DateTime!
   updatedAt: DateTime!
 }

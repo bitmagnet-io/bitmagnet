@@ -42,7 +42,14 @@ export class SearchComponent implements AfterContentInit, AfterViewInit {
     this.graphQLService,
     this.errorsService,
   );
-  displayedColumns = ["select", "summary", "size", "peers", "magnet"];
+  displayedColumns = [
+    "select",
+    "summary",
+    "size",
+    "publishedAt",
+    "peers",
+    "magnet",
+  ];
   queryString = new FormControl("");
 
   items = Array<generated.TorrentContent>();

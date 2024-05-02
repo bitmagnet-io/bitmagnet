@@ -364,13 +364,22 @@
           </td>
         </ng-container>
 
+        <ng-container matColumnDef="publishedAt">
+          <th mat-header-cell *matHeaderCellDef>Published</th>
+          <td mat-cell *matCellDef="let i">
+            <abbr title="{{item(i).publishedAt}}">
+              {{ item(i).publishedAt | humanTime }}
+            </abbr>
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="peers">
           <th mat-header-cell *matHeaderCellDef>
             <abbr matTooltip="Seeders / Leechers">S / L</abbr>
           </th>
           <td mat-cell *matCellDef="let i">
-            {{ item(i).torrent.seeders ?? "?" }} /
-            {{ item(i).torrent.leechers ?? "?" }}
+            {{ item(i).seeders ?? "?" }} /
+            {{ item(i).leechers ?? "?" }}
           </td>
         </ng-container>
 

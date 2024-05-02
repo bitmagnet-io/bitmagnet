@@ -30,6 +30,9 @@ type TorrentContent struct {
 	VideoModifier   model.NullVideoModifier
 	ReleaseGroup    model.NullString
 	SearchString    string
+	Seeders         model.NullUint
+	Leechers        model.NullUint
+	PublishedAt     time.Time
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 	Torrent         model.Torrent
@@ -55,6 +58,9 @@ func NewTorrentContentFromResultItem(item search.TorrentContentResultItem) Torre
 		Video3d:         item.Video3d,
 		VideoModifier:   item.VideoModifier,
 		ReleaseGroup:    item.ReleaseGroup,
+		Seeders:         item.Seeders,
+		Leechers:        item.Leechers,
+		PublishedAt:     item.PublishedAt,
 		CreatedAt:       item.CreatedAt,
 		UpdatedAt:       item.UpdatedAt,
 		Torrent:         item.Torrent,
