@@ -232,6 +232,12 @@ app-paginator {
   margin-bottom: 20px;
 }
 
+.td-published-at abbr {
+  cursor: default;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
 ::ng-deep .tooltip-published-at {
   div {
     white-space: nowrap;
