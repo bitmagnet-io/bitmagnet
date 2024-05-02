@@ -186,4 +186,11 @@ export class TorrentContentComponent {
       .map((a) => a.name);
     return collections?.length ? collections.sort() : undefined;
   }
+
+  filesCount(): number | undefined {
+    if (this.torrentContent.torrent.filesStatus === "single") {
+      return 1;
+    }
+    return this.torrentContent.torrent.filesCount ?? undefined;
+  }
 }

@@ -112,6 +112,9 @@
     <ng-template mat-tab-label>
       <mat-icon>file_present</mat-icon>
       Files
+      @if (filesCount(); as filesCount) {
+        <span class="files-count">({{filesCount | number}})</span>
+      }
     </ng-template>
 
     <ng-template matTabContent>
