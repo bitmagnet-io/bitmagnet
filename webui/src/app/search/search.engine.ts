@@ -1,9 +1,9 @@
 import { CollectionViewer, DataSource } from "@angular/cdk/collections";
 import { BehaviorSubject, catchError, EMPTY, map, Observable } from "rxjs";
-import * as generated from "../../graphql/generated";
-import { GraphQLService } from "../../graphql/graphql.service";
-import { AppErrorsService } from "../../app-errors.service";
-import { PageEvent } from "../../paginator/paginator.types";
+import * as generated from "../graphql/generated";
+import { GraphQLService } from "../graphql/graphql.service";
+import { AppErrorsService } from "../app-errors.service";
+import { PageEvent } from "../paginator/paginator.types";
 import { Facet, VideoResolutionAgg, VideoSourceAgg } from "./facet";
 
 const emptyResult: generated.TorrentContentSearchResult = {
@@ -23,9 +23,7 @@ const emptyBudgetedCount = {
   isEstimate: false,
 };
 
-export class TorrentContentSearchEngine
-  implements DataSource<generated.TorrentContent>
-{
+export class SearchEngine implements DataSource<generated.TorrentContent> {
   private queryStringSubject = new BehaviorSubject<string>("");
 
   private contentTypeSubject = new BehaviorSubject<

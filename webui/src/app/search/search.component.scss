@@ -1,5 +1,5 @@
-@use "@angular/material" as mat;
-@import "../../app.variables";
+@use "../../../node_modules/@angular/material/index" as mat;
+@import "../app.variables";
 
 .mat-drawer-container {
   min-height: 100%;

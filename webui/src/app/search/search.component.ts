@@ -15,15 +15,15 @@ import {
 } from "@angular/animations";
 import { COMMA, ENTER } from "@angular/cdk/keycodes";
 import { SelectionModel } from "@angular/cdk/collections";
-import * as generated from "../../graphql/generated";
-import { GraphQLService } from "../../graphql/graphql.service";
-import { AppErrorsService } from "../../app-errors.service";
-import { TorrentContentSearchEngine } from "./torrent-content-search.engine";
+import * as generated from "../graphql/generated";
+import { GraphQLService } from "../graphql/graphql.service";
+import { AppErrorsService } from "../app-errors.service";
+import { SearchEngine } from "./search.engine";
 
 @Component({
   selector: "app-torrent-content",
-  templateUrl: "./torrent-content.component.html",
-  styleUrls: ["./torrent-content.component.scss"],
+  templateUrl: "./search.component.html",
+  styleUrls: ["./search.component.scss"],
   animations: [
     trigger("detailExpand", [
       state("collapsed", style({ height: "0px", minHeight: "0" })),
@@ -36,10 +36,8 @@ import { TorrentContentSearchEngine } from "./torrent-content-search.engine";
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TorrentContentComponent
-  implements AfterContentInit, AfterViewInit
-{
-  search: TorrentContentSearchEngine = new TorrentContentSearchEngine(
+export class SearchComponent implements AfterContentInit, AfterViewInit {
+  search: SearchEngine = new SearchEngine(
     this.graphQLService,
     this.errorsService,
   );
@@ -303,7 +301,7 @@ export class TorrentContentComponent
     public readonly suggestedTags = Array<string>();
     public selectedTabIndex = 0;
 
-    constructor(private ds: TorrentContentComponent) {
+    constructor(private ds: SearchComponent) {
       ds.search.items$.subscribe((items) => {
         const item = this.itemSubject.getValue();
         if (!item) {
