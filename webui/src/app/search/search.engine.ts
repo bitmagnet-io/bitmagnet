@@ -33,7 +33,7 @@ export class SearchEngine implements DataSource<generated.TorrentContent> {
   private pageIndexSubject = new BehaviorSubject<number>(0);
   public pageIndex$ = this.pageIndexSubject.asObservable();
 
-  private pageSizeSubject = new BehaviorSubject<number>(10);
+  private pageSizeSubject = new BehaviorSubject<number>(20);
   public pageSize$ = this.pageSizeSubject.asObservable();
 
   private pageLengthSubject = new BehaviorSubject<number>(0);
