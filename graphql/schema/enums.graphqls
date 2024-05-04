@@ -145,3 +145,16 @@ enum VideoSource {
   WEBRip
   BluRay
 }
+
+enum TorrentContentOrderBy {
+  Relevance
+  PublishedAt
+  CreatedAt
+  UpdatedAt
+  Size
+  Files
+  Seeders
+  Leechers
+  Name
+  InfoHash
+}

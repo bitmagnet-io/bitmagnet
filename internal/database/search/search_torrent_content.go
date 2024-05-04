@@ -57,7 +57,7 @@ func TorrentContentDefaultOption() query.Option {
 			clause.OrderByColumn{
 				Column: clause.Column{
 					Table: clause.CurrentTable,
-					Name:  "id",
+					Name:  "info_hash",
 				},
 			},
 		),

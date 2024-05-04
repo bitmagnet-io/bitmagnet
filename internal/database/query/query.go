@@ -318,7 +318,7 @@ func (b optionBuilder) Group(columns ...clause.Column) OptionBuilder {
 }
 
 func (b optionBuilder) OrderBy(columns ...clause.OrderByColumn) OptionBuilder {
-	b.orderBy = append(b.orderBy, columns...)
+	b.orderBy = columns
 	return b
 }
 
@@ -502,19 +502,8 @@ func applyJoins(sq SubQuery, joins ...TableJoin) {
 
 func (b optionBuilder) applyPost(sq SubQuery) error {
 	if len(b.orderBy) > 0 {
-		orderBy := make([]clause.OrderByColumn, 0, len(b.orderBy))
-		for _, ob := range b.orderBy {
-			if ob.Reorder {
-				orderBy = append([]clause.OrderByColumn{{
-					Column: ob.Column,
-					Desc:   ob.Desc,
-				}}, orderBy...)
-			} else {
-				orderBy = append(orderBy, ob)
-			}
-		}
 		sq.UnderlyingDB().Statement.AddClause(clause.OrderBy{
-			Columns: orderBy,
+			Columns: b.orderBy,
 		})
 	}
 	if b.limit.Valid {

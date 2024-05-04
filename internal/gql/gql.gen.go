@@ -228,7 +228,7 @@ type ComplexityRoot struct {
 	}
 
 	TorrentContentQuery struct {
-		Search func(childComplexity int, query *query.SearchParams, facets *gen.TorrentContentFacetsInput) int
+		Search func(childComplexity int, query *query.SearchParams, facets *gen.TorrentContentFacetsInput, orderBy []gen.TorrentContentOrderByInput) int
 	}
 
 	TorrentContentSearchResult struct {
@@ -1164,7 +1164,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.TorrentContentQuery.Search(childComplexity, args["query"].(*query.SearchParams), args["facets"].(*gen.TorrentContentFacetsInput)), true
+		return e.complexity.TorrentContentQuery.Search(childComplexity, args["query"].(*query.SearchParams), args["facets"].(*gen.TorrentContentFacetsInput), args["orderBy"].([]gen.TorrentContentOrderByInput)), true
 
 	case "TorrentContentSearchResult.aggregations":
 		if e.complexity.TorrentContentSearchResult.Aggregations == nil {
@@ -1514,6 +1514,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputSearchQueryInput,
 		ec.unmarshalInputSuggestTagsQueryInput,
 		ec.unmarshalInputTorrentContentFacetsInput,
+		ec.unmarshalInputTorrentContentOrderByInput,
 		ec.unmarshalInputTorrentFileTypeFacetInput,
 		ec.unmarshalInputTorrentSourceFacetInput,
 		ec.unmarshalInputTorrentTagFacetInput,
@@ -1763,6 +1764,19 @@ enum VideoSource {
   WEBRip
   BluRay
 }
+
+enum TorrentContentOrderBy {
+  Relevance
+  PublishedAt
+  CreatedAt
+  UpdatedAt
+  Size
+  Files
+  Seeders
+  Leechers
+  Name
+  InfoHash
+}
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/models.graphqls", Input: `type Torrent {
   infoHash: Hash20!
@@ -1935,6 +1949,7 @@ type TorrentContentQuery {
   search(
     query: SearchQueryInput
     facets: TorrentContentFacetsInput
+    orderBy: [TorrentContentOrderByInput!]
   ): TorrentContentSearchResult!
 }
 
@@ -2107,6 +2122,11 @@ type TorrentContentSearchResult {
   items: [TorrentContent!]!
   aggregations: TorrentContentAggregations!
 }
+
+input TorrentContentOrderByInput {
+  field: TorrentContentOrderBy!
+  descending: Boolean
+}
 `, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -2151,6 +2171,15 @@ func (ec *executionContext) field_TorrentContentQuery_search_args(ctx context.Co
 		}
 	}
 	args["facets"] = arg1
+	var arg2 []gen.TorrentContentOrderByInput
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg2, err = ec.unmarshalOTorrentContentOrderByInput2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentOrderByInputᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg2
 	return args, nil
 }
 
@@ -7673,7 +7702,7 @@ func (ec *executionContext) _TorrentContentQuery_search(ctx context.Context, fie
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Search(ctx, fc.Args["query"].(*query.SearchParams), fc.Args["facets"].(*gen.TorrentContentFacetsInput))
+		return obj.Search(ctx, fc.Args["query"].(*query.SearchParams), fc.Args["facets"].(*gen.TorrentContentFacetsInput), fc.Args["orderBy"].([]gen.TorrentContentOrderByInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11857,6 +11886,40 @@ func (ec *executionContext) unmarshalInputTorrentContentFacetsInput(ctx context.
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputTorrentContentOrderByInput(ctx context.Context, obj interface{}) (gen.TorrentContentOrderByInput, error) {
+	var it gen.TorrentContentOrderByInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"field", "descending"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "field":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			data, err := ec.unmarshalNTorrentContentOrderBy2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentOrderBy(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Field = data
+		case "descending":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descending"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Descending = graphql.OmittableOf(data)
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputTorrentFileTypeFacetInput(ctx context.Context, obj interface{}) (gen.TorrentFileTypeFacetInput, error) {
 	var it gen.TorrentFileTypeFacetInput
 	asMap := map[string]interface{}{}
@@ -14975,6 +15038,21 @@ func (ec *executionContext) marshalNTorrentContentAggregations2githubᚗcomᚋbi
 	return ec._TorrentContentAggregations(ctx, sel, &v)
 }
 
+func (ec *executionContext) unmarshalNTorrentContentOrderBy2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentOrderBy(ctx context.Context, v interface{}) (gen.TorrentContentOrderBy, error) {
+	var res gen.TorrentContentOrderBy
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNTorrentContentOrderBy2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentOrderBy(ctx context.Context, sel ast.SelectionSet, v gen.TorrentContentOrderBy) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNTorrentContentOrderByInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentOrderByInput(ctx context.Context, v interface{}) (gen.TorrentContentOrderByInput, error) {
+	res, err := ec.unmarshalInputTorrentContentOrderByInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNTorrentContentQuery2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐTorrentContentQuery(ctx context.Context, sel ast.SelectionSet, v gqlmodel.TorrentContentQuery) graphql.Marshaler {
 	return ec._TorrentContentQuery(ctx, sel, &v)
 }
@@ -16105,6 +16183,26 @@ func (ec *executionContext) unmarshalOTorrentContentFacetsInput2ᚖgithubᚗcom�
 	}
 	res, err := ec.unmarshalInputTorrentContentFacetsInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOTorrentContentOrderByInput2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentOrderByInputᚄ(ctx context.Context, v interface{}) ([]gen.TorrentContentOrderByInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]gen.TorrentContentOrderByInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNTorrentContentOrderByInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentOrderByInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
 func (ec *executionContext) marshalOTorrentFile2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐTorrentFileᚄ(ctx context.Context, sel ast.SelectionSet, v []model.TorrentFile) graphql.Marshaler {

@@ -78,7 +78,7 @@ func QueryString(str string) Option {
 	return func(ctx OptionBuilder) (OptionBuilder, error) {
 		if len(query) == 0 {
 			return ctx.Select(clause.Expr{
-				SQL: "0 AS " + queryStringRankField,
+				SQL: "0 AS " + QueryStringRankField,
 			}), nil
 		}
 		c, err := GenCriteria(func(ctx DbContext) (Criteria, error) {
@@ -98,7 +98,7 @@ func QueryString(str string) Option {
 			dao.UnderlyingDB().Where(c.Query, c.Args...)
 			return nil
 		}).RequireJoin(ctx.TableName()).Select(clause.Expr{
-			SQL: "ts_rank_cd(" + ctx.TableName() + ".tsv, ?::tsquery) AS " + queryStringRankField,
+			SQL: "ts_rank_cd(" + ctx.TableName() + ".tsv, ?::tsquery) AS " + QueryStringRankField,
 			Vars: []interface{}{
 				query,
 			},
@@ -141,12 +141,12 @@ func OrderBy(columns ...clause.OrderByColumn) Option {
 	}
 }
 
-const queryStringRankField = "query_string_rank"
+const QueryStringRankField = "query_string_rank"
 
 func OrderByQueryStringRank() Option {
 	return func(ctx OptionBuilder) (OptionBuilder, error) {
 		return ctx.OrderBy(clause.OrderByColumn{
-			Column:  clause.Column{Name: queryStringRankField},
+			Column:  clause.Column{Name: QueryStringRankField},
 			Desc:    true,
 			Reorder: true,
 		}), nil

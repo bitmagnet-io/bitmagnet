@@ -98,13 +98,9 @@
             [formControl]="queryString"
             (blur)="
               search.setQueryString(queryString.value ?? '');
-              search.firstPage();
-              search.loadResult()
             "
             (keyup.enter)="
               search.setQueryString(queryString.value ?? '');
-              search.firstPage();
-              search.loadResult()
             "
           />
           @if (queryString.value) {
@@ -115,14 +111,36 @@
               (click)="
                 queryString.reset();
                 search.setQueryString('');
-                search.firstPage();
-                search.loadResult()
               "
             >
               <mat-icon>close</mat-icon>
             </button>
           }
         </mat-form-field>
+        <mat-form-field class="field-search-order-by">
+          <mat-label>Order By</mat-label>
+          <mat-select
+            [value]="search.orderBySubject.getValue().field"
+            (valueChange)="search.selectOrderBy($event)"
+          >
+            @for (option of search.orderByOptions | keyvalue: originalOrder; track option.key) {
+              @if (option.key != "Relevance" || queryString.value) {
+                <mat-option [value]="option.key">
+                  {{option.value?.label}}
+                </mat-option>
+              }
+            }
+          </mat-select>
+        </mat-form-field>
+        <div class="button-toggle-direction">
+          <button
+            mat-icon-button
+            matTooltip="Toggle direction"
+            (click)="search.toggleOrderByDirection()"
+          >
+            <mat-icon>{{search.orderBySubject.getValue().descending ? "arrow_downward" : "arrow_upward"}}</mat-icon>
+          </button>
+        </div>
         <div class="button-refresh">
           <button
             mat-mini-fab

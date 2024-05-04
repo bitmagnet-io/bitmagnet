@@ -3,6 +3,10 @@
 package gen
 
 import (
+	"fmt"
+	"io"
+	"strconv"
+
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
@@ -95,6 +99,11 @@ type TorrentContentFacetsInput struct {
 	VideoSource     graphql.Omittable[*VideoSourceFacetInput]     `json:"videoSource,omitempty"`
 }
 
+type TorrentContentOrderByInput struct {
+	Field      TorrentContentOrderBy    `json:"field"`
+	Descending graphql.Omittable[*bool] `json:"descending,omitempty"`
+}
+
 type TorrentFileTypeAgg struct {
 	Value      model.FileType `json:"value"`
 	Label      string         `json:"label"`
@@ -156,4 +165,61 @@ type VideoSourceAgg struct {
 type VideoSourceFacetInput struct {
 	Aggregate graphql.Omittable[*bool]                `json:"aggregate,omitempty"`
 	Filter    graphql.Omittable[[]*model.VideoSource] `json:"filter,omitempty"`
+}
+
+type TorrentContentOrderBy string
+
+const (
+	TorrentContentOrderByRelevance   TorrentContentOrderBy = "Relevance"
+	TorrentContentOrderByPublishedAt TorrentContentOrderBy = "PublishedAt"
+	TorrentContentOrderByCreatedAt   TorrentContentOrderBy = "CreatedAt"
+	TorrentContentOrderByUpdatedAt   TorrentContentOrderBy = "UpdatedAt"
+	TorrentContentOrderBySize        TorrentContentOrderBy = "Size"
+	TorrentContentOrderByFiles       TorrentContentOrderBy = "Files"
+	TorrentContentOrderBySeeders     TorrentContentOrderBy = "Seeders"
+	TorrentContentOrderByLeechers    TorrentContentOrderBy = "Leechers"
+	TorrentContentOrderByName        TorrentContentOrderBy = "Name"
+	TorrentContentOrderByInfoHash    TorrentContentOrderBy = "InfoHash"
+)
+
+var AllTorrentContentOrderBy = []TorrentContentOrderBy{
+	TorrentContentOrderByRelevance,
+	TorrentContentOrderByPublishedAt,
+	TorrentContentOrderByCreatedAt,
+	TorrentContentOrderByUpdatedAt,
+	TorrentContentOrderBySize,
+	TorrentContentOrderByFiles,
+	TorrentContentOrderBySeeders,
+	TorrentContentOrderByLeechers,
+	TorrentContentOrderByName,
+	TorrentContentOrderByInfoHash,
+}
+
+func (e TorrentContentOrderBy) IsValid() bool {
+	switch e {
+	case TorrentContentOrderByRelevance, TorrentContentOrderByPublishedAt, TorrentContentOrderByCreatedAt, TorrentContentOrderByUpdatedAt, TorrentContentOrderBySize, TorrentContentOrderByFiles, TorrentContentOrderBySeeders, TorrentContentOrderByLeechers, TorrentContentOrderByName, TorrentContentOrderByInfoHash:
+		return true
+	}
+	return false
+}
+
+func (e TorrentContentOrderBy) String() string {
+	return string(e)
+}
+
+func (e *TorrentContentOrderBy) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = TorrentContentOrderBy(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid TorrentContentOrderBy", str)
+	}
+	return nil
+}
+
+func (e TorrentContentOrderBy) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }

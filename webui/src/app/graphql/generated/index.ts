@@ -359,6 +359,23 @@ export type TorrentContentFacetsInput = {
   videoSource?: InputMaybe<VideoSourceFacetInput>;
 };
 
+export type TorrentContentOrderBy =
+  | 'CreatedAt'
+  | 'Files'
+  | 'InfoHash'
+  | 'Leechers'
+  | 'Name'
+  | 'PublishedAt'
+  | 'Relevance'
+  | 'Seeders'
+  | 'Size'
+  | 'UpdatedAt';
+
+export type TorrentContentOrderByInput = {
+  descending?: InputMaybe<Scalars['Boolean']['input']>;
+  field: TorrentContentOrderBy;
+};
+
 export type TorrentContentQuery = {
   __typename?: 'TorrentContentQuery';
   search: TorrentContentSearchResult;
@@ -367,6 +384,7 @@ export type TorrentContentQuery = {
 
 export type TorrentContentQuerySearchArgs = {
   facets?: InputMaybe<TorrentContentFacetsInput>;
+  orderBy?: InputMaybe<Array<TorrentContentOrderByInput>>;
   query?: InputMaybe<SearchQueryInput>;
 };
 
@@ -607,6 +625,7 @@ export type SystemQueryQuery = { __typename?: 'Query', system: { __typename?: 'S
 export type TorrentContentSearchQueryVariables = Exact<{
   query?: InputMaybe<SearchQueryInput>;
   facets?: InputMaybe<TorrentContentFacetsInput>;
+  orderBy?: InputMaybe<Array<TorrentContentOrderByInput> | TorrentContentOrderByInput>;
 }>;
 
 
@@ -903,9 +922,9 @@ export const SystemQueryDocument = gql`
     }
   }
 export const TorrentContentSearchDocument = gql`
-    query TorrentContentSearch($query: SearchQueryInput, $facets: TorrentContentFacetsInput) {
+    query TorrentContentSearch($query: SearchQueryInput, $facets: TorrentContentFacetsInput, $orderBy: [TorrentContentOrderByInput!]) {
   torrentContent {
-    search(query: $query, facets: $facets) {
+    search(query: $query, facets: $facets, orderBy: $orderBy) {
       ...TorrentContentSearchResult
     }
   }

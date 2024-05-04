@@ -91,11 +91,22 @@
       width: 130px;
     }
   }
-  .button-refresh {
+  .field-search-order-by {
+    width: 160px;
+  }
+  .button-toggle-direction, .button-refresh {
     display: inline-block;
     width: 50px;
     vertical-align: top;
-    padding-top: 10px;
+    padding-top: 5px;
+    margin-right: 10px;
+  }
+  .button-toggle-direction {
+    margin-left: -10px;
+    margin-right: 20px;
+  }
+  .button-refresh {
+    float: right;
   }
 }
 

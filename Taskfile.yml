@@ -5,13 +5,13 @@ tasks:
     cmds:
       - go generate ./...
       - go run ./internal/dev gorm gen
-      - go run ./internal/gql/enums/gen/genenums.go
       - go run ./internal/torznab/gencategories/gencategories.go
+      - go run ./internal/gql/enums/gen/genenums.go
       - go run github.com/99designs/gqlgen generate --config ./internal/gql/gqlgen.yml
       - protoc --go_out=. ./internal/protobuf/bitmagnet.proto
       - go run github.com/vektra/mockery/v2
       - go run . classifier schema --format json > ./bitmagnet.io/schemas/classifier-0.1.json
-      - cd webui && npm run graphql:codegen
+      - (cd webui && npm run graphql:codegen)
 
   lint:
     cmds:

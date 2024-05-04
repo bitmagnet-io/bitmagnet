@@ -30,6 +30,13 @@ export class SearchEngine implements DataSource<generated.TorrentContent> {
     generated.ContentType | "null" | null | undefined
   >(undefined);
 
+  orderBySubject = new BehaviorSubject<OrderBySelection>({
+    field: "PublishedAt",
+    descending: true,
+  });
+
+  orderByOptions = orderByOptions;
+
   private pageIndexSubject = new BehaviorSubject<number>(0);
   public pageIndex$ = this.pageIndexSubject.asObservable();
 
@@ -153,6 +160,7 @@ export class SearchEngine implements DataSource<generated.TorrentContent> {
     const pageSize = this.pageSizeSubject.getValue();
     const queryString = this.queryStringSubject.getValue() || undefined;
     const offset = this.pageIndexSubject.getValue() * pageSize;
+    const orderBy = this.orderBySubject.getValue();
     const items = this.graphQLService
       .torrentContentSearch({
         query: {
@@ -164,6 +172,7 @@ export class SearchEngine implements DataSource<generated.TorrentContent> {
           totalCount: true,
         },
         facets: this.facetsInput(true),
+        orderBy: [orderBy],
       })
       .pipe(
         catchError((err: Error) => {
@@ -229,11 +238,40 @@ export class SearchEngine implements DataSource<generated.TorrentContent> {
   }
 
   setQueryString(queryString: string) {
+    if (this.queryStringSubject.getValue() === queryString) {
+      return;
+    }
     this.queryStringSubject.next(queryString);
+    if (queryString) {
+      this.orderBySubject.next({
+        field: "Relevance",
+        descending: true,
+      });
+    } else {
+      this.orderBySubject.next({
+        field: "PublishedAt",
+        descending: true,
+      });
+    }
+    this.firstPage();
+    this.loadResult();
   }
 
-  get hasQueryString(): boolean {
-    return !!this.queryStringSubject.getValue();
+  selectOrderBy(field: generated.TorrentContentOrderBy) {
+    this.orderBySubject.next({
+      field,
+      descending: this.orderByOptions[field]?.descending ?? false,
+    });
+    this.loadResult();
+  }
+
+  toggleOrderByDirection() {
+    const value = this.orderBySubject.getValue();
+    this.orderBySubject.next({
+      field: value.field,
+      descending: !value.descending,
+    });
+    this.loadResult();
   }
 
   firstPage() {
@@ -333,3 +371,54 @@ function facetInput<T = unknown, _allowNull extends boolean = true>(
       }
     : undefined;
 }
+
+const orderByOptions: Partial<
+  Record<generated.TorrentContentOrderBy, OrderByInfo>
+> = {
+  Relevance: {
+    label: "Relevance",
+    descending: true,
+  },
+  PublishedAt: {
+    label: "Published",
+    descending: true,
+  },
+  CreatedAt: {
+    label: "Created",
+    descending: true,
+  },
+  UpdatedAt: {
+    label: "Updated",
+    descending: true,
+  },
+  Size: {
+    label: "Size",
+    descending: true,
+  },
+  Files: {
+    label: "Files Count",
+    descending: true,
+  },
+  Seeders: {
+    label: "Seeders",
+    descending: true,
+  },
+  Leechers: {
+    label: "Leechers",
+    descending: true,
+  },
+  Name: {
+    label: "Name",
+    descending: false,
+  },
+};
+
+type OrderByInfo = {
+  label: string;
+  descending: boolean;
+};
+
+type OrderBySelection = {
+  field: generated.TorrentContentOrderBy;
+  descending: boolean;
+};
