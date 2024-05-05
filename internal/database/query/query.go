@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/fts"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"gorm.io/gen"
@@ -207,6 +208,7 @@ type OptionBuilder interface {
 	Table(string) OptionBuilder
 	Join(...TableJoin) OptionBuilder
 	RequireJoin(...string) OptionBuilder
+	QueryString(string) OptionBuilder
 	Scope(...Scope) OptionBuilder
 	Select(...clause.Expr) OptionBuilder
 	OrderBy(...clause.OrderByColumn) OptionBuilder
@@ -239,6 +241,7 @@ type optionBuilder struct {
 	dbContext
 	joins             map[string]TableJoin
 	requiredJoins     maps.InsertMap[string, struct{}]
+	tsquery           string
 	scopes            []Scope
 	selections        []clause.Expr
 	groupBy           []clause.Column
@@ -299,6 +302,11 @@ func (b optionBuilder) RequireJoin(names ...string) OptionBuilder {
 		bRequiredJoins.SetKey(name)
 	}
 	b.requiredJoins = bRequiredJoins
+	return b
+}
+
+func (b optionBuilder) QueryString(str string) OptionBuilder {
+	b.tsquery = fts.AppQueryToTsquery(str)
 	return b
 }
 
@@ -422,6 +430,19 @@ func (b optionBuilder) applySelect(sq SubQuery) error {
 			selectQueryArgs = append(selectQueryArgs, s.Vars...)
 		}
 	}
+	for _, orderBy := range b.orderBy {
+		if orderBy.Column.Name == QueryStringRankField {
+			rankFragment := "0"
+			args := make([]interface{}, 0)
+			if b.tsquery != "" {
+				rankFragment = "ts_rank_cd(" + b.tableName + ".tsv, ?::tsquery)"
+				args = append(args, b.tsquery)
+			}
+			selectQueryParts = append(selectQueryParts, rankFragment+" AS "+QueryStringRankField)
+			selectQueryArgs = append(selectQueryArgs, args...)
+			break
+		}
+	}
 	sq.UnderlyingDB().Select(strings.Join(selectQueryParts, ", "), selectQueryArgs...)
 	return nil
 }
@@ -431,6 +452,9 @@ func (b optionBuilder) applyPre(sq SubQuery) error {
 		if err := s(sq); err != nil {
 			return err
 		}
+	}
+	if b.tsquery != "" {
+		sq.UnderlyingDB().Where(b.tableName+".tsv @@ ?::tsquery", b.tsquery)
 	}
 	requiredJoins := b.requiredJoins.Copy()
 	aggC, aggCErr := b.createFacetsFilterCriteria()
