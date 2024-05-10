@@ -61,6 +61,7 @@ func (c client) Get(ctx context.Context, hash20 protocol.ID) (metainfo.TorrentFi
 	if resErr != nil {
 		return metainfo.TorrentFile{}, fmt.Errorf("failed to request torrent file: %w", reqErr)
 	}
+  defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
 		return metainfo.TorrentFile{}, fmt.Errorf("response status was not OK requesting torrent file: %s", res.Status)
 	}
