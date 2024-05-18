@@ -1,37 +1,7 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
 import { catchError, EMPTY, tap } from "rxjs";
-import { FormControl, ReactiveFormsModule } from "@angular/forms";
-import { DecimalPipe, NgOptimizedImage } from "@angular/common";
-import {
-  MatAutocomplete,
-  MatAutocompleteTrigger,
-  MatOption,
-} from "@angular/material/autocomplete";
-import { MatButton } from "@angular/material/button";
-import {
-  MatCard,
-  MatCardActions,
-  MatCardContent,
-} from "@angular/material/card";
-import {
-  MatChipGrid,
-  MatChipInput,
-  MatChipRemove,
-  MatChipRow,
-} from "@angular/material/chips";
-import { MatDivider } from "@angular/material/divider";
-import { MatFormField } from "@angular/material/form-field";
-import { MatIcon } from "@angular/material/icon";
-import {
-  MatTab,
-  MatTabContent,
-  MatTabGroup,
-  MatTabLabel,
-} from "@angular/material/tabs";
-import { MatTooltip } from "@angular/material/tooltip";
-import { NgxFilesizeModule } from "ngx-filesize";
+import { FormControl } from "@angular/forms";
 import { COMMA, ENTER } from "@angular/cdk/keycodes";
-import { CdkCopyToClipboard } from "@angular/cdk/clipboard";
 import { AppErrorsService } from "../app-errors.service";
 import { GraphQLService } from "../graphql/graphql.service";
 import normalizeTagInput from "../util/normalizeTagInput";
@@ -39,33 +9,6 @@ import * as generated from "../graphql/generated";
 
 @Component({
   selector: "app-torrent-content",
-  standalone: true,
-  imports: [
-    DecimalPipe,
-    MatAutocomplete,
-    MatAutocompleteTrigger,
-    MatButton,
-    MatCard,
-    MatCardActions,
-    MatCardContent,
-    MatChipGrid,
-    MatChipInput,
-    MatChipRemove,
-    MatChipRow,
-    MatDivider,
-    MatFormField,
-    MatIcon,
-    MatOption,
-    MatTab,
-    MatTabContent,
-    MatTabGroup,
-    MatTabLabel,
-    MatTooltip,
-    NgOptimizedImage,
-    NgxFilesizeModule,
-    ReactiveFormsModule,
-    CdkCopyToClipboard,
-  ],
   templateUrl: "./torrent-content.component.html",
   styleUrl: "./torrent-content.component.scss",
 })

@@ -172,7 +172,6 @@ type TorrentContentOrderBy string
 const (
 	TorrentContentOrderByRelevance   TorrentContentOrderBy = "Relevance"
 	TorrentContentOrderByPublishedAt TorrentContentOrderBy = "PublishedAt"
-	TorrentContentOrderByCreatedAt   TorrentContentOrderBy = "CreatedAt"
 	TorrentContentOrderByUpdatedAt   TorrentContentOrderBy = "UpdatedAt"
 	TorrentContentOrderBySize        TorrentContentOrderBy = "Size"
 	TorrentContentOrderByFiles       TorrentContentOrderBy = "Files"
@@ -185,7 +184,6 @@ const (
 var AllTorrentContentOrderBy = []TorrentContentOrderBy{
 	TorrentContentOrderByRelevance,
 	TorrentContentOrderByPublishedAt,
-	TorrentContentOrderByCreatedAt,
 	TorrentContentOrderByUpdatedAt,
 	TorrentContentOrderBySize,
 	TorrentContentOrderByFiles,
@@ -197,7 +195,7 @@ var AllTorrentContentOrderBy = []TorrentContentOrderBy{
 
 func (e TorrentContentOrderBy) IsValid() bool {
 	switch e {
-	case TorrentContentOrderByRelevance, TorrentContentOrderByPublishedAt, TorrentContentOrderByCreatedAt, TorrentContentOrderByUpdatedAt, TorrentContentOrderBySize, TorrentContentOrderByFiles, TorrentContentOrderBySeeders, TorrentContentOrderByLeechers, TorrentContentOrderByName, TorrentContentOrderByInfoHash:
+	case TorrentContentOrderByRelevance, TorrentContentOrderByPublishedAt, TorrentContentOrderByUpdatedAt, TorrentContentOrderBySize, TorrentContentOrderByFiles, TorrentContentOrderBySeeders, TorrentContentOrderByLeechers, TorrentContentOrderByName, TorrentContentOrderByInfoHash:
 		return true
 	}
 	return false

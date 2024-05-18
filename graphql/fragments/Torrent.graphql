@@ -4,7 +4,6 @@ fragment Torrent on Torrent {
   infoHash
   name
   size
-  private
   filesStatus
   filesCount
   hasFilesInfo

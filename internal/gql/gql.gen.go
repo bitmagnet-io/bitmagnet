@@ -182,7 +182,6 @@ type ComplexityRoot struct {
 		Leechers     func(childComplexity int) int
 		MagnetUri    func(childComplexity int) int
 		Name         func(childComplexity int) int
-		Private      func(childComplexity int) int
 		Seeders      func(childComplexity int) int
 		SingleFile   func(childComplexity int) int
 		Size         func(childComplexity int) int
@@ -894,13 +893,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Torrent.Name(childComplexity), true
-
-	case "Torrent.private":
-		if e.complexity.Torrent.Private == nil {
-			break
-		}
-
-		return e.complexity.Torrent.Private(childComplexity), true
 
 	case "Torrent.seeders":
 		if e.complexity.Torrent.Seeders == nil {
@@ -1768,7 +1760,6 @@ enum VideoSource {
 enum TorrentContentOrderBy {
   Relevance
   PublishedAt
-  CreatedAt
   UpdatedAt
   Size
   Files
@@ -1782,7 +1773,6 @@ enum TorrentContentOrderBy {
   infoHash: Hash20!
   name: String!
   size: Int!
-  private: Boolean!
   hasFilesInfo: Boolean!
   singleFile: Boolean
   extension: String
@@ -5543,50 +5533,6 @@ func (ec *executionContext) fieldContext_Torrent_size(ctx context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _Torrent_private(ctx context.Context, field graphql.CollectedField, obj *model.Torrent) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Torrent_private(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Private, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Torrent_private(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Torrent",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Torrent_hasFilesInfo(ctx context.Context, field graphql.CollectedField, obj *model.Torrent) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Torrent_hasFilesInfo(ctx, field)
 	if err != nil {
@@ -6386,8 +6332,6 @@ func (ec *executionContext) fieldContext_TorrentContent_torrent(ctx context.Cont
 				return ec.fieldContext_Torrent_name(ctx, field)
 			case "size":
 				return ec.fieldContext_Torrent_size(ctx, field)
-			case "private":
-				return ec.fieldContext_Torrent_private(ctx, field)
 			case "hasFilesInfo":
 				return ec.fieldContext_Torrent_hasFilesInfo(ctx, field)
 			case "singleFile":
@@ -13085,11 +13029,6 @@ func (ec *executionContext) _Torrent(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "size":
 			out.Values[i] = ec._Torrent_size(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "private":
-			out.Values[i] = ec._Torrent_private(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}

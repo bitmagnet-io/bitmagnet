@@ -24,7 +24,6 @@ import { MatCardModule } from "@angular/material/card";
 import { MatTooltip } from "@angular/material/tooltip";
 import { PaginatorModule } from "../paginator/paginator.module";
 import { TorrentModule } from "../torrent/torrent.module";
-import { TorrentContentComponent } from "../torrent/torrent-content.component";
 import { HumanTimePipe } from "../pipes/human-time.pipe";
 import { SearchComponent } from "./search.component";
 
@@ -57,7 +56,6 @@ import { SearchComponent } from "./search.component";
     PaginatorModule,
     ReactiveFormsModule,
     TorrentModule,
-    TorrentContentComponent,
     HumanTimePipe,
   ],
   exports: [SearchComponent],
