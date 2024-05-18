@@ -360,7 +360,6 @@ export type TorrentContentFacetsInput = {
 };
 
 export type TorrentContentOrderBy =
-  | 'CreatedAt'
   | 'Files'
   | 'InfoHash'
   | 'Leechers'
