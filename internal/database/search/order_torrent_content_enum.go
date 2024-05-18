@@ -183,7 +183,6 @@ func (n *NullOrderDirection) UnmarshalJSON(b []byte) error {
 const (
 	TorrentContentOrderByRelevance   TorrentContentOrderBy = "Relevance"
 	TorrentContentOrderByPublishedAt TorrentContentOrderBy = "PublishedAt"
-	TorrentContentOrderByCreatedAt   TorrentContentOrderBy = "CreatedAt"
 	TorrentContentOrderByUpdatedAt   TorrentContentOrderBy = "UpdatedAt"
 	TorrentContentOrderBySize        TorrentContentOrderBy = "Size"
 	TorrentContentOrderByFiles       TorrentContentOrderBy = "Files"
@@ -198,7 +197,6 @@ var ErrInvalidTorrentContentOrderBy = fmt.Errorf("not a valid TorrentContentOrde
 var _TorrentContentOrderByNames = []string{
 	string(TorrentContentOrderByRelevance),
 	string(TorrentContentOrderByPublishedAt),
-	string(TorrentContentOrderByCreatedAt),
 	string(TorrentContentOrderByUpdatedAt),
 	string(TorrentContentOrderBySize),
 	string(TorrentContentOrderByFiles),
@@ -220,7 +218,6 @@ func TorrentContentOrderByValues() []TorrentContentOrderBy {
 	return []TorrentContentOrderBy{
 		TorrentContentOrderByRelevance,
 		TorrentContentOrderByPublishedAt,
-		TorrentContentOrderByCreatedAt,
 		TorrentContentOrderByUpdatedAt,
 		TorrentContentOrderBySize,
 		TorrentContentOrderByFiles,
@@ -248,8 +245,6 @@ var _TorrentContentOrderByValue = map[string]TorrentContentOrderBy{
 	"relevance":   TorrentContentOrderByRelevance,
 	"PublishedAt": TorrentContentOrderByPublishedAt,
 	"publishedat": TorrentContentOrderByPublishedAt,
-	"CreatedAt":   TorrentContentOrderByCreatedAt,
-	"createdat":   TorrentContentOrderByCreatedAt,
 	"UpdatedAt":   TorrentContentOrderByUpdatedAt,
 	"updatedat":   TorrentContentOrderByUpdatedAt,
 	"Size":        TorrentContentOrderBySize,

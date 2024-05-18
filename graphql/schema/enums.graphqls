@@ -149,7 +149,6 @@ enum VideoSource {
 enum TorrentContentOrderBy {
   Relevance
   PublishedAt
-  CreatedAt
   UpdatedAt
   Size
   Files
