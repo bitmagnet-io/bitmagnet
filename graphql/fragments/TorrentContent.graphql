@@ -28,6 +28,9 @@ fragment TorrentContent on TorrentContent {
   videoModifier
   videoResolution
   videoSource
+  seeders
+  leechers
+  publishedAt
   createdAt
   updatedAt
 }

@@ -5,6 +5,7 @@ import (
 	q "github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
+	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"time"
@@ -30,6 +31,9 @@ type TorrentContent struct {
 	VideoModifier   model.NullVideoModifier
 	ReleaseGroup    model.NullString
 	SearchString    string
+	Seeders         model.NullUint
+	Leechers        model.NullUint
+	PublishedAt     time.Time
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 	Torrent         model.Torrent
@@ -55,6 +59,9 @@ func NewTorrentContentFromResultItem(item search.TorrentContentResultItem) Torre
 		Video3d:         item.Video3d,
 		VideoModifier:   item.VideoModifier,
 		ReleaseGroup:    item.ReleaseGroup,
+		Seeders:         item.Seeders,
+		Leechers:        item.Leechers,
+		PublishedAt:     item.PublishedAt,
 		CreatedAt:       item.CreatedAt,
 		UpdatedAt:       item.UpdatedAt,
 		Torrent:         item.Torrent,
@@ -105,12 +112,19 @@ type TorrentContentSearchResult struct {
 	Aggregations         gen.TorrentContentAggregations
 }
 
-func (t TorrentContentQuery) Search(ctx context.Context, query *q.SearchParams, facets *gen.TorrentContentFacetsInput) (TorrentContentSearchResult, error) {
+func (t TorrentContentQuery) Search(
+	ctx context.Context,
+	query *q.SearchParams,
+	facets *gen.TorrentContentFacetsInput,
+	orderBy []gen.TorrentContentOrderByInput,
+) (TorrentContentSearchResult, error) {
 	options := []q.Option{
 		search.TorrentContentDefaultOption(),
 	}
+	hasQueryString := false
 	if query != nil {
 		options = append(options, query.Option())
+		hasQueryString = query.QueryString.Valid
 	}
 	if facets != nil {
 		var qFacets []q.Facet
@@ -143,6 +157,22 @@ func (t TorrentContentQuery) Search(ctx context.Context, query *q.SearchParams, 
 		}
 		options = append(options, q.WithFacet(qFacets...))
 	}
+	fullOrderBy := maps.NewInsertMap[search.TorrentContentOrderBy, search.OrderDirection]()
+	for _, ob := range orderBy {
+		if ob.Field == gen.TorrentContentOrderByRelevance && !hasQueryString {
+			continue
+		}
+		direction := search.OrderDirectionAscending
+		if desc, ok := ob.Descending.ValueOK(); ok && *desc {
+			direction = search.OrderDirectionDescending
+		}
+		field, err := search.ParseTorrentContentOrderBy(ob.Field.String())
+		if err != nil {
+			return TorrentContentSearchResult{}, err
+		}
+		fullOrderBy.Set(field, direction)
+	}
+	options = append(options, search.TorrentContentFullOrderBy(fullOrderBy).Option())
 	result, resultErr := t.TorrentContentSearch.TorrentContent(ctx, options...)
 	if resultErr != nil {
 		return TorrentContentSearchResult{}, resultErr

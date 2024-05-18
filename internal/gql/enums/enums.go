@@ -1,6 +1,7 @@
 package enums
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
 
@@ -27,4 +28,5 @@ var Enums = []enum{
 	newEnum("VideoModifier", model.VideoModifierNames()),
 	newEnum("VideoResolution", model.VideoResolutionNames()),
 	newEnum("VideoSource", model.VideoSourceNames()),
+	newEnum("TorrentContentOrderBy", search.TorrentContentOrderByNames()),
 }

@@ -4,12 +4,10 @@ import (
 	"context"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/cache"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/fts"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"gorm.io/gen/field"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
-	"strings"
 )
 
 type Option = func(ctx OptionBuilder) (OptionBuilder, error)
@@ -74,36 +72,8 @@ func RequireJoin(names ...string) Option {
 }
 
 func QueryString(str string) Option {
-	query := fts.AppQueryToTsquery(str)
 	return func(ctx OptionBuilder) (OptionBuilder, error) {
-		if len(query) == 0 {
-			return ctx.Select(clause.Expr{
-				SQL: "0 AS " + queryStringRankField,
-			}), nil
-		}
-		c, err := GenCriteria(func(ctx DbContext) (Criteria, error) {
-			return DbCriteria{
-				Sql: strings.Join([]string{
-					ctx.TableName() + ".tsv @@ ?::tsquery",
-				}, " OR "),
-				Args: []interface{}{
-					query,
-				},
-			}, nil
-		}).Raw(ctx)
-		if err != nil {
-			return ctx, err
-		}
-		ctx = ctx.Scope(func(dao SubQuery) error {
-			dao.UnderlyingDB().Where(c.Query, c.Args...)
-			return nil
-		}).RequireJoin(ctx.TableName()).Select(clause.Expr{
-			SQL: "ts_rank_cd(" + ctx.TableName() + ".tsv, ?::tsquery) AS " + queryStringRankField,
-			Vars: []interface{}{
-				query,
-			},
-		})
-		return ctx, nil
+		return ctx.QueryString(str), nil
 	}
 }
 
@@ -141,12 +111,12 @@ func OrderBy(columns ...clause.OrderByColumn) Option {
 	}
 }
 
-const queryStringRankField = "query_string_rank"
+const QueryStringRankField = "query_string_rank"
 
 func OrderByQueryStringRank() Option {
 	return func(ctx OptionBuilder) (OptionBuilder, error) {
 		return ctx.OrderBy(clause.OrderByColumn{
-			Column:  clause.Column{Name: queryStringRankField},
+			Column:  clause.Column{Name: QueryStringRankField},
 			Desc:    true,
 			Reorder: true,
 		}), nil

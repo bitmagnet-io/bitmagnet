@@ -23,10 +23,12 @@ import { MatDividerModule } from "@angular/material/divider";
 import { MatCardModule } from "@angular/material/card";
 import { MatTooltip } from "@angular/material/tooltip";
 import { PaginatorModule } from "../paginator/paginator.module";
-import { TorrentContentComponent } from "./torrent-content/torrent-content.component";
+import { TorrentModule } from "../torrent/torrent.module";
+import { HumanTimePipe } from "../pipes/human-time.pipe";
+import { SearchComponent } from "./search.component";
 
 @NgModule({
-  declarations: [TorrentContentComponent],
+  declarations: [SearchComponent],
   imports: [
     BrowserAnimationsModule,
     ClipboardModule,
@@ -48,12 +50,14 @@ import { TorrentContentComponent } from "./torrent-content/torrent-content.compo
     MatSnackBarModule,
     MatTableModule,
     MatTabsModule,
+    MatTooltip,
+    NgOptimizedImage,
     NgxFilesizeModule,
     PaginatorModule,
     ReactiveFormsModule,
-    NgOptimizedImage,
-    MatTooltip,
+    TorrentModule,
+    HumanTimePipe,
   ],
-  exports: [TorrentContentComponent],
+  exports: [SearchComponent],
 })
 export class SearchModule {}
