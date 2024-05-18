@@ -1,5 +1,5 @@
 import { Observable } from "rxjs";
-import * as generated from "../../graphql/generated";
+import * as generated from "../graphql/generated";
 
 export type Agg<T, _allowNull extends boolean> = {
   count: number;

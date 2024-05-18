@@ -65,6 +65,11 @@ func (m InsertMap[K, V]) Get(key K) (V, bool) {
 	return v, ok
 }
 
+func (m InsertMap[K, V]) Has(key K) bool {
+	_, ok := m.keyValues[key]
+	return ok
+}
+
 func (m InsertMap[K, V]) Copy() InsertMap[K, V] {
 	return NewInsertMap[K, V](m.Entries()...)
 }

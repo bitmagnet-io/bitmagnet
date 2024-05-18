@@ -157,3 +157,8 @@ type TorrentContentSearchResult {
   items: [TorrentContent!]!
   aggregations: TorrentContentAggregations!
 }
+
+input TorrentContentOrderByInput {
+  field: TorrentContentOrderBy!
+  descending: Boolean
+}

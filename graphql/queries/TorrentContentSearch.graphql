@@ -3,9 +3,10 @@
 query TorrentContentSearch(
   $query: SearchQueryInput
   $facets: TorrentContentFacetsInput
+  $orderBy: [TorrentContentOrderByInput!]
 ) {
   torrentContent {
-    search(query: $query, facets: $facets) {
+    search(query: $query, facets: $facets, orderBy: $orderBy) {
       ...TorrentContentSearchResult
     }
   }
