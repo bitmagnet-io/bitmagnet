@@ -96,22 +96,15 @@
             matInput
             placeholder="Search"
             [formControl]="queryString"
-            (blur)="
-              search.setQueryString(queryString.value ?? '');
-            "
-            (keyup.enter)="
-              search.setQueryString(queryString.value ?? '');
-            "
+            (blur)="search.setQueryString(queryString.value ?? '')"
+            (keyup.enter)="search.setQueryString(queryString.value ?? '')"
           />
           @if (queryString.value) {
             <button
               matSuffix
               mat-icon-button
               aria-label="Clear"
-              (click)="
-                queryString.reset();
-                search.setQueryString('');
-              "
+              (click)="queryString.reset(); search.setQueryString('')"
             >
               <mat-icon>close</mat-icon>
             </button>
@@ -123,10 +116,13 @@
             [value]="search.orderBySubject.getValue().field"
             (valueChange)="search.selectOrderBy($event)"
           >
-            @for (option of search.orderByOptions | keyvalue: originalOrder; track option.key) {
+            @for (
+              option of search.orderByOptions | keyvalue: originalOrder;
+              track option.key
+            ) {
               @if (option.key != "Relevance" || queryString.value) {
                 <mat-option [value]="option.key">
-                  {{option.value?.label}}
+                  {{ option.value?.label }}
                 </mat-option>
               }
             }
@@ -138,7 +134,11 @@
             matTooltip="Toggle direction"
             (click)="search.toggleOrderByDirection()"
           >
-            <mat-icon>{{search.orderBySubject.getValue().descending ? "arrow_downward" : "arrow_upward"}}</mat-icon>
+            <mat-icon>{{
+              search.orderBySubject.getValue().descending
+                ? "arrow_downward"
+                : "arrow_upward"
+            }}</mat-icon>
           </button>
         </div>
         <div class="button-refresh">
@@ -386,7 +386,7 @@
           <th mat-header-cell *matHeaderCellDef>Published</th>
           <td class="td-published-at" mat-cell *matCellDef="let i">
             <abbr
-              matTooltip="{{item(i).publishedAt}}"
+              matTooltip="{{ item(i).publishedAt }}"
               matTooltipClass="tooltip-published-at"
             >
               {{ item(i).publishedAt | humanTime }}
@@ -430,7 +430,7 @@
               <app-torrent-content
                 [torrentContent]="i"
                 (updated)="search.loadResult(false)"
-                />
+              />
             </div>
           </td>
         </ng-container>
