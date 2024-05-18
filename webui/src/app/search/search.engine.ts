@@ -383,10 +383,6 @@ const orderByOptions: Partial<
     label: "Published",
     descending: true,
   },
-  CreatedAt: {
-    label: "Created",
-    descending: true,
-  },
   UpdatedAt: {
     label: "Updated",
     descending: true,

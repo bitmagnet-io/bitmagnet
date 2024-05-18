@@ -10,7 +10,7 @@ import (
 //go:generate go run github.com/abice/go-enum --marshal --names --nocase --nocomments --sql --sqlnullstr --values -f order_torrent_content.go
 
 // TorrentContentOrderBy represents sort orders for torrent content search results
-// ENUM(Relevance, PublishedAt, CreatedAt, UpdatedAt, Size, Files, Seeders, Leechers, Name, InfoHash)
+// ENUM(Relevance, PublishedAt, UpdatedAt, Size, Files, Seeders, Leechers, Name, InfoHash)
 type TorrentContentOrderBy string
 
 // OrderDirection represents sort order directions
@@ -32,14 +32,6 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []clause.Order
 			Column: clause.Column{
 				Table: model.TableNameTorrentContent,
 				Name:  "published_at",
-			},
-			Desc: desc,
-		}}
-	case TorrentContentOrderByCreatedAt:
-		return []clause.OrderByColumn{{
-			Column: clause.Column{
-				Table: model.TableNameTorrentContent,
-				Name:  "created_at",
 			},
 			Desc: desc,
 		}}
