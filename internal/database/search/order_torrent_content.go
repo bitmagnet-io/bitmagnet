@@ -60,21 +60,39 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []clause.Order
 			Desc: desc,
 		}}
 	case TorrentContentOrderBySeeders:
-		return []clause.OrderByColumn{{
-			Column: clause.Column{
-				Name: "COALESCE(" + model.TableNameTorrentContent + ".seeders, -1)",
-				Raw:  true,
+		return []clause.OrderByColumn{
+			{
+				Column: clause.Column{
+					Name: model.TableNameTorrentContent + ".seeders IS NULL",
+					Raw:  true,
+				},
+				Desc: !desc,
 			},
-			Desc: desc,
-		}}
+			{
+				Column: clause.Column{
+					Table: model.TableNameTorrentContent,
+					Name:  "seeders",
+				},
+				Desc: desc,
+			},
+		}
 	case TorrentContentOrderByLeechers:
-		return []clause.OrderByColumn{{
-			Column: clause.Column{
-				Name: "COALESCE(" + model.TableNameTorrentContent + ".leechers, -1)",
-				Raw:  true,
+		return []clause.OrderByColumn{
+			{
+				Column: clause.Column{
+					Name: model.TableNameTorrentContent + ".leechers IS NULL",
+					Raw:  true,
+				},
+				Desc: !desc,
 			},
-			Desc: desc,
-		}}
+			{
+				Column: clause.Column{
+					Table: model.TableNameTorrentContent,
+					Name:  "leechers",
+				},
+				Desc: desc,
+			},
+		}
 	case TorrentContentOrderByName:
 		return []clause.OrderByColumn{{
 			Column: clause.Column{
