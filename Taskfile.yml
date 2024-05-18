@@ -3,14 +3,50 @@ version: "3"
 tasks:
   gen:
     cmds:
+      - task gen-go
+      - task gen-gorm
+      - task gen-torznab-categories
+      - task gen-gql-enums
+      - task gen-gql
+      - task gen-protoc
+      - task gen-mockery
+      - task gen-classifier-schema
+      - task gen-webui-graphql
+
+  gen-go:
+    cmds:
       - go generate ./...
+
+  gen-gorm:
+    cmds:
       - go run ./internal/dev gorm gen
+
+  gen-torznab-categories:
+    cmds:
       - go run ./internal/torznab/gencategories/gencategories.go
+
+  gen-gql-enums:
+    cmds:
       - go run ./internal/gql/enums/gen/genenums.go
+
+  gen-gql:
+    cmds:
       - go run github.com/99designs/gqlgen generate --config ./internal/gql/gqlgen.yml
+
+  gen-protoc:
+    cmds:
       - protoc --go_out=. ./internal/protobuf/bitmagnet.proto
+
+  gen-mockery:
+    cmds:
       - go run github.com/vektra/mockery/v2
+
+  gen-classifier-schema:
+    cmds:
       - go run . classifier schema --format json > ./bitmagnet.io/schemas/classifier-0.1.json
+
+  gen-webui-graphql:
+    cmds:
       - cd webui && npm run graphql:codegen
 
   lint:
