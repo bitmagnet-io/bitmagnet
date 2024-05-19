@@ -1,8 +1,39 @@
-@use "../../../node_modules/@angular/material/index" as mat;
-@import "../app.variables";
+@use '@angular/material' as mat;
+@import "../../theme.scss";
 
 .mat-drawer-container {
   min-height: 100%;
+}
+
+@mixin theme-colors($theme) {
+  .mat-mdc-radio-checked {
+    label {
+      color: mat.get-theme-color($theme, accent);
+    }
+  }
+  tr.mat-mdc-row.expanded {
+    td.mat-column-summary {
+      mat-icon {
+        color: mat.get-theme-color($theme, accent);
+      }
+    }
+  }
+  .mat-mdc-standard-chip:not(.mdc-evolution-chip--disabled).chip-primary {
+    background-color: mat.get-theme-color($theme, primary, 100);
+    .mat-mdc-standard-chip:not(
+      .mdc-evolution-chip--disabled
+    ).mdc-evolution-chip__text-label {
+      color: #fff;
+    }
+  }
+}
+
+::ng-deep .app-container.theme-light{
+  @include theme-colors($light-theme);
+}
+
+::ng-deep .app-container.theme-dark{
+  @include theme-colors($dark-theme);
 }
 
 .mat-drawer.mat-drawer-side {
@@ -29,11 +60,6 @@
         margin-right: 10px;
         position: relative;
         top: 5px;
-      }
-    }
-    ::ng-deep .mat-mdc-radio-checked {
-      label {
-        color: mat.get-color-from-palette($accent-palette, 500);
       }
     }
   }
@@ -160,11 +186,6 @@ tr.expanded-detail-row {
 }
 
 tr.mat-mdc-row.expanded {
-  td.mat-column-summary {
-    mat-icon {
-      color: mat.get-color-from-palette($accent-palette, 500);
-    }
-  }
   td {
     border-bottom: 0;
   }
@@ -215,15 +236,6 @@ tr.mat-mdc-row.expanded {
 
 .form-edit-tags {
   width: 100%;
-}
-
-.mat-mdc-standard-chip:not(.mdc-evolution-chip--disabled).chip-primary {
-  background-color: mat.get-color-from-palette($primary-palette, 100);
-  .mat-mdc-standard-chip:not(
-      .mdc-evolution-chip--disabled
-    ).mdc-evolution-chip__text-label {
-    color: #fff;
-  }
 }
 
 .button-row {

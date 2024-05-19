@@ -1,7 +1,14 @@
+@use '@angular/material' as mat;
+@use "sass:map";
+
+@include mat.core();
+
 @import "@fontsource/roboto";
 @import "@fontsource/material-icons";
 @import "@fontsource/material-icons-outlined";
 @import "@fontsource/material-symbols-outlined";
+
+@import "./theme.scss";
 
 html,
 body {
@@ -49,4 +56,19 @@ body {
 .material-symbols-outlined {
   font-family: "Material Symbols Outlined";
   @include mat-icon;
+}
+
+@include mat.all-component-themes($light-theme);
+
+.spacer {
+  display: inline-flex;
+  flex: 1 1 auto;
+}
+
+::ng-deep .mat-mdc-snack-bar-container.snack-bar-error > div {
+  //background-color: mat.get-color-from-palette($warn-palette, 500);
+  color: #fff;
+  .mdc-button__label {
+    color: #fff;
+  }
 }

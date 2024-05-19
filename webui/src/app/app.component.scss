@@ -1,21 +1,14 @@
-@use "sass:map";
-@use "@angular/material" as mat;
-@import "./app.variables";
-
-.spacer {
-  display: inline-flex;
-  flex: 1 1 auto;
-}
+@use '@angular/material' as mat;
+@import "../theme.scss";
 
 svg .fill {
-  fill: mat.get-color-from-palette($primary-palette, 500);
+  fill: mat.get-theme-color($light-theme, primary, 500);
 }
 
-// Why do we need to hack away like this to use the core color palettes with the core components?!
-::ng-deep .mat-mdc-snack-bar-container.snack-bar-error > div {
-  background-color: mat.get-color-from-palette($warn-palette, 500);
-  color: #fff;
-  .mdc-button__label {
-    color: #fff;
+.app-container.theme-dark{
+  @include mat.all-component-colors($dark-theme);
+
+  ::ng-deep svg .fill {
+    fill: mat.get-theme-color($dark-theme, primary, 500);
   }
 }
