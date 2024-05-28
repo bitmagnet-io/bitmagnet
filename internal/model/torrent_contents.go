@@ -3,8 +3,23 @@ package model
 import (
 	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/fts"
+	"gorm.io/gorm"
 	"strings"
 )
+
+func (tc *TorrentContent) AfterFind(*gorm.DB) error {
+	// the following is a mitigation following the v0.9.0 release where seeders, leechers and size are sourced from the torrent_contents table
+	// because these fields won't be available until after reprocessing, calculate the values here if they are missing;
+	// it should be removed at some point
+	if !tc.Seeders.Valid && !tc.Leechers.Valid {
+		tc.Seeders = tc.Torrent.Seeders()
+		tc.Leechers = tc.Torrent.Leechers()
+	}
+	if tc.Size == 0 {
+		tc.Size = tc.Torrent.Size
+	}
+	return nil
+}
 
 func (tc TorrentContent) InferID() string {
 	parts := make([]string, 4)

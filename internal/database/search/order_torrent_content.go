@@ -17,117 +17,105 @@ type TorrentContentOrderBy string
 // ENUM(Ascending, Descending)
 type OrderDirection string
 
-func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []clause.OrderByColumn {
+func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderByColumn {
 	desc := direction == OrderDirectionDescending
 	switch ob {
 	case TorrentContentOrderByRelevance:
-		return []clause.OrderByColumn{{
-			Column: clause.Column{
-				Name: query.QueryStringRankField,
+		return []query.OrderByColumn{{
+			OrderByColumn: clause.OrderByColumn{
+				Column: clause.Column{
+					Name: query.QueryStringRankField,
+				},
+				Desc: desc,
 			},
-			Desc: desc,
 		}}
 	case TorrentContentOrderByPublishedAt:
-		return []clause.OrderByColumn{{
-			Column: clause.Column{
-				Table: model.TableNameTorrentContent,
-				Name:  "published_at",
-			},
-			Desc: desc,
-		}}
+		return []query.OrderByColumn{{
+			OrderByColumn: clause.OrderByColumn{
+				Column: clause.Column{
+					Table: model.TableNameTorrentContent,
+					Name:  "published_at",
+				},
+				Desc: desc,
+			}}}
 	case TorrentContentOrderByUpdatedAt:
-		return []clause.OrderByColumn{{
-			Column: clause.Column{
-				Table: model.TableNameTorrentContent,
-				Name:  "updated_at",
-			},
-			Desc: desc,
-		}}
+		return []query.OrderByColumn{{
+			OrderByColumn: clause.OrderByColumn{
+				Column: clause.Column{
+					Table: model.TableNameTorrentContent,
+					Name:  "updated_at",
+				},
+				Desc: desc,
+			}}}
 	case TorrentContentOrderBySize:
-		return []clause.OrderByColumn{{
-			Column: clause.Column{
-				Table: model.TableNameTorrent,
-				Name:  "size",
-			},
-			Desc: desc,
-		}}
+		return []query.OrderByColumn{{
+			OrderByColumn: clause.OrderByColumn{
+				Column: clause.Column{
+					Table: model.TableNameTorrentContent,
+					Name:  "size",
+				},
+				Desc: desc,
+			}}}
 	case TorrentContentOrderByFiles:
-		return []clause.OrderByColumn{{
-			Column: clause.Column{
-				Name: "CASE WHEN " + model.TableNameTorrent + ".files_status = 'single' THEN 1 ELSE COALESCE(" + model.TableNameTorrent + ".files_count, -1) END",
-				Raw:  true,
-			},
-			Desc: desc,
-		}}
+		return []query.OrderByColumn{{
+			OrderByColumn: clause.OrderByColumn{
+				Column: clause.Column{
+					Name: "COALESCE(" + model.TableNameTorrentContent + ".files_count, 0)",
+					Raw:  true,
+				},
+				Desc: desc,
+			}}}
 	case TorrentContentOrderBySeeders:
-		return []clause.OrderByColumn{
-			{
+		return []query.OrderByColumn{{
+			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
-					Name: model.TableNameTorrentContent + ".seeders IS NULL",
+					Name: "coalesce(" + model.TableNameTorrentContent + ".seeders, -1)",
 					Raw:  true,
-				},
-				Desc: !desc,
-			},
-			{
-				Column: clause.Column{
-					Table: model.TableNameTorrentContent,
-					Name:  "seeders",
 				},
 				Desc: desc,
 			},
-		}
+		}}
 	case TorrentContentOrderByLeechers:
-		return []clause.OrderByColumn{
-			{
+		return []query.OrderByColumn{{
+			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
-					Name: model.TableNameTorrentContent + ".leechers IS NULL",
+					Name: "coalesce(" + model.TableNameTorrentContent + ".leechers, -1)",
 					Raw:  true,
-				},
-				Desc: !desc,
-			},
-			{
-				Column: clause.Column{
-					Table: model.TableNameTorrentContent,
-					Name:  "leechers",
 				},
 				Desc: desc,
 			},
-		}
+		}}
 	case TorrentContentOrderByName:
-		return []clause.OrderByColumn{{
-			Column: clause.Column{
-				Table: model.TableNameTorrent,
-				Name:  "name",
+		return []query.OrderByColumn{{
+			OrderByColumn: clause.OrderByColumn{
+				Column: clause.Column{
+					Table: model.TableNameTorrent,
+					Name:  "name",
+				},
+				Desc: desc,
 			},
-			Desc: desc,
-		}}
+			RequiredJoins: []string{model.TableNameTorrent}}}
 	case TorrentContentOrderByInfoHash:
-		return []clause.OrderByColumn{{
-			Column: clause.Column{
-				Table: model.TableNameTorrentContent,
-				Name:  "info_hash",
-			},
-			Desc: desc,
-		}}
+		return []query.OrderByColumn{{
+			OrderByColumn: clause.OrderByColumn{
+				Column: clause.Column{
+					Table: model.TableNameTorrentContent,
+					Name:  "info_hash",
+				},
+				Desc: desc,
+			}}}
 	default:
-		return []clause.OrderByColumn{}
+		return []query.OrderByColumn{}
 	}
 }
 
 type TorrentContentFullOrderBy maps.InsertMap[TorrentContentOrderBy, OrderDirection]
 
-func (fob TorrentContentFullOrderBy) Clauses() []clause.OrderByColumn {
+func (fob TorrentContentFullOrderBy) Clauses() []query.OrderByColumn {
 	im := maps.InsertMap[TorrentContentOrderBy, OrderDirection](fob)
-	clauses := make([]clause.OrderByColumn, 0, im.Len()+2)
+	clauses := make([]query.OrderByColumn, 0, im.Len())
 	for _, ob := range im.Entries() {
 		clauses = append(clauses, ob.Key.Clauses(ob.Value)...)
-	}
-	// make ordering alphabetical and deterministic when not already specified:
-	if !im.Has(TorrentContentOrderByName) {
-		clauses = append(clauses, TorrentContentOrderByName.Clauses(OrderDirectionAscending)...)
-	}
-	if !im.Has(TorrentContentOrderByInfoHash) {
-		clauses = append(clauses, TorrentContentOrderByInfoHash.Clauses(OrderDirectionAscending)...)
 	}
 	return clauses
 }

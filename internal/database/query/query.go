@@ -1,10 +1,12 @@
 package query
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/exclause"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/fts"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
@@ -12,6 +14,7 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -30,100 +33,221 @@ type GenericResult[T interface{}] struct {
 
 type SubQueryFactory = func(context.Context, *dao.Query) SubQuery
 
+// GenericQuery executes queries for any type of search and returns a GenericResult
 func GenericQuery[T interface{}](
-	ctx context.Context,
+	_ctx context.Context,
 	daoQ *dao.Query,
 	option Option,
 	tableName string,
 	factory SubQueryFactory,
-) (r GenericResult[T], _ error) {
-	dbCtx := dbContext{
+) (GenericResult[T], error) {
+	gq := genericQuery[T]{
+		daoQ:    daoQ,
+		factory: factory,
+	}
+	if builder, optionErr := option(newQueryContext(dbContext{
 		q:         daoQ,
 		tableName: tableName,
 		factory:   factory,
-	}
-	builder, optionErr := option(newQueryContext(dbCtx))
-	ctx = builder.createContext(ctx)
-	if optionErr != nil {
-		return r, optionErr
-	}
-	newSubQuery := func() (SubQuery, error) {
-		sq := factory(ctx, daoQ)
-		if selectErr := builder.applySelect(sq); selectErr != nil {
-			return sq, selectErr
-		}
-		if preErr := builder.applyPre(sq); preErr != nil {
-			return sq, preErr
-		}
-		return sq, nil
-	}
-	var errs []error
-	mtx := sync.Mutex{}
-	addErr := func(err error) {
-		mtx.Lock()
-		defer mtx.Unlock()
-		errs = append(errs, err)
+	})); optionErr != nil {
+		return gq.result, optionErr
+	} else {
+		gq.ctx = builder.createContext(_ctx)
+		gq.builder = builder
 	}
 	wg := sync.WaitGroup{}
-	wg.Add(3)
+	wg.Add(1)
+	// first, start off any requested aggregations as we'll definitely need these
 	go (func() {
 		defer wg.Done()
-		if builder.withTotalCount() {
-			sq, sqErr := newSubQuery()
-			if sqErr != nil {
-				addErr(sqErr)
-				return
-			}
-			if countResult, countErr := dao.BudgetedCount(sq.UnderlyingDB(), builder.AggregationBudget()); countErr != nil {
-				addErr(countErr)
-			} else {
-				r.TotalCount = uint(countResult.Count)
-				r.TotalCountIsEstimate = countResult.BudgetExceeded
-			}
+		if aggs, aggErr := gq.builder.calculateAggregations(gq.ctx); aggErr != nil {
+			gq.addError(aggErr)
+		} else {
+			gq.result.Aggregations = aggs
 		}
 	})()
-	go (func() {
-		defer wg.Done()
-		sq, sqErr := newSubQuery()
+	// For querying the items, we have 2 possible strategies to try:
+	// - the default strategy is always tried, and is usually the most performant
+	// - for certain searches where items are filtered to a small number of results, and ordered with a limit,
+	// the default strategy can be very slow, so we try a CTE strategy, with order and limit on a materialized view of
+	// the complete results, and we put it in a race with the default strategy.
+	// The CTE strategy uses a stopping point, and will only return items where there are fewer than the stopping point.
+	// Therefore: IF we are to try the CTE strategy, we need to know if there are any matching results at all
+	// (to distinguish between stopping point reached, and no matching items).
+	// So we'll check that here, only if we're trying the CTE strategy.
+	// IF this query would be eligible for the CTE strategy, and IF there are no items at all, we can skip the items queries,
+	// and the count queries altogether (then `proceed` will be `false`).
+	// I appreciate this is a bit convoluted, any proposed rationalisations here would be welcome!
+	proceed := true
+	tryCteStrategy := gq.builder.shouldTryCteStrategy()
+	if tryCteStrategy {
+		exists, existsErr := gq.checkExists()
+		if existsErr != nil {
+			return gq.result, existsErr
+		}
+		proceed = exists
+	}
+	if proceed {
+		wg.Add(2)
+		go (func() {
+			defer wg.Done()
+			gq.doCount()
+		})()
+		go (func() {
+			defer wg.Done()
+			gq.doItems(tryCteStrategy)
+		})()
+	}
+	wg.Wait()
+	return gq.result, errors.Join(gq.errs...)
+}
+
+type genericQuery[T interface{}] struct {
+	ctx     context.Context
+	daoQ    *dao.Query
+	factory SubQueryFactory
+	builder OptionBuilder
+	exists  bool
+	mtx     sync.Mutex
+	errs    []error
+	result  GenericResult[T]
+}
+
+func (gq *genericQuery[_]) newSubQuery(ctx context.Context, withOrder bool) (SubQuery, error) {
+	sq := gq.factory(ctx, gq.daoQ)
+	if selectErr := gq.builder.applySelect(sq.UnderlyingDB(), withOrder); selectErr != nil {
+		return sq, selectErr
+	}
+	if preErr := gq.builder.applyPre(sq, withOrder); preErr != nil {
+		return sq, preErr
+	}
+	return sq, nil
+}
+
+func (gq *genericQuery[_]) addError(err error) {
+	gq.mtx.Lock()
+	defer gq.mtx.Unlock()
+	gq.errs = append(gq.errs, err)
+}
+
+func (gq *genericQuery[_]) checkExists() (bool, error) {
+	sq, sqErr := gq.newSubQuery(gq.ctx, false)
+	if sqErr != nil {
+		return false, sqErr
+	}
+	sql := dao.ToSQL(sq.UnderlyingDB().Select("*"))
+	row := sq.UnderlyingDB().Raw("SELECT EXISTS(" + sql + ")")
+	var exists bool
+	if existsErr := row.Scan(&exists).Error; existsErr != nil {
+		return false, existsErr
+	}
+	return exists, nil
+}
+
+func (gq *genericQuery[_]) doCount() {
+	if gq.builder.withTotalCount() {
+		sq, sqErr := gq.newSubQuery(gq.ctx, false)
 		if sqErr != nil {
-			addErr(sqErr)
+			gq.addError(sqErr)
 			return
 		}
-		if postErr := builder.applyPost(sq); postErr != nil {
-			addErr(postErr)
-			return
+		if countResult, countErr := dao.BudgetedCount(sq.UnderlyingDB(), gq.builder.AggregationBudget()); countErr != nil {
+			gq.addError(countErr)
+		} else {
+			gq.result.TotalCount = uint(countResult.Count)
+			gq.result.TotalCountIsEstimate = countResult.BudgetExceeded
 		}
-		if !builder.hasZeroLimit() || builder.needsNextPage() {
+	}
+}
+
+func (gq *genericQuery[T]) doItems(tryCteStrategy bool) {
+	if !gq.builder.hasZeroLimit() || gq.builder.needsNextPage() {
+		var finalItems []T
+		doneChan := make(chan error)
+		raceCtx, raceCancel := context.WithCancel(gq.ctx)
+		defer raceCancel()
+		mtx := sync.Mutex{}
+		done := func(items []T, err error) {
+			mtx.Lock()
+			defer mtx.Unlock()
+			if finalItems != nil || raceCtx.Err() != nil {
+				return
+			}
+			if err == nil {
+				// copy items slice to avoid modifying cached results
+				finalItems = append([]T{}, items...)
+			}
+			doneChan <- err
+		}
+		go func() {
+			sq, sqErr := gq.newSubQuery(raceCtx, true)
+			if sqErr != nil {
+				done(nil, sqErr)
+				return
+			}
+			if postErr := gq.builder.applyPost(sq.UnderlyingDB()); postErr != nil {
+				done(nil, postErr)
+				return
+			}
 			var items []T
 			if txErr := sq.UnderlyingDB().Find(&items).Error; txErr != nil {
-				addErr(txErr)
+				done(nil, txErr)
 				return
 			}
-			// copy items slice to avoid modifying cached results
-			copiedItems := append([]T{}, items...)
-			if builder.hasNextPage(len(copiedItems)) {
-				r.HasNextPage = true
-				copiedItems = copiedItems[:len(copiedItems)-1]
-			}
-			if len(copiedItems) > 0 {
-				if cbErr := builder.applyCallbacks(ctx, copiedItems); cbErr != nil {
-					addErr(cbErr)
+			done(items, nil)
+		}()
+		if tryCteStrategy {
+			go func() {
+				stoppingPoint := 50_000
+				sqCte, sqCteErr := gq.newSubQuery(raceCtx, true)
+				if sqCteErr != nil {
+					done(nil, sqCteErr)
 					return
 				}
+				sql := dao.ToSQL(sqCte.UnderlyingDB()) + " LIMIT " + strconv.Itoa(stoppingPoint)
+				cte := gq.factory(raceCtx, gq.daoQ).UnderlyingDB().Clauses(
+					exclause.NewWith("cte", sql, true),
+					exclause.NewWith("cte_count", "SELECT COUNT(*) AS total_count FROM cte", true),
+				).Table("cte").Where("(SELECT MAX(total_count) FROM cte_count) < " + strconv.Itoa(stoppingPoint))
+				if postErr := gq.builder.applyPost(cte); postErr != nil {
+					done(nil, postErr)
+					return
+				}
+				var items []T
+				if scanErr := cte.Scan(&items).Error; scanErr != nil {
+					done(nil, scanErr)
+					return
+				}
+				if len(items) == 0 {
+					// the stopping point was reached, so return without calling `done`
+					return
+				}
+				done(items, nil)
+			}()
+		}
+		select {
+		case doneErr := <-doneChan:
+			raceCancel()
+			if doneErr != nil {
+				gq.addError(doneErr)
+				return
 			}
-			r.Items = copiedItems
+		case <-raceCtx.Done():
+			gq.addError(raceCtx.Err())
+			return
 		}
-	})()
-	go (func() {
-		defer wg.Done()
-		if aggs, aggErr := builder.calculateAggregations(ctx); aggErr != nil {
-			addErr(aggErr)
-		} else {
-			r.Aggregations = aggs
+		if gq.builder.hasNextPage(len(finalItems)) {
+			gq.result.HasNextPage = true
+			finalItems = finalItems[:len(finalItems)-1]
 		}
-	})()
-	wg.Wait()
-	return r, errors.Join(errs...)
+		if len(finalItems) > 0 {
+			if cbErr := gq.builder.applyCallbacks(gq.ctx, finalItems); cbErr != nil {
+				gq.addError(cbErr)
+				return
+			}
+		}
+		gq.result.Items = finalItems
+	}
 }
 
 type BaseSubQuery interface {
@@ -162,7 +286,7 @@ func (sq GenericSubQuery[T]) Scopes(fns ...func(gen.Dao) gen.Dao) SubQuery {
 	return sq
 }
 
-type Scope = func(SubQuery) error
+type Scope = func(*gorm.DB) error
 
 type GormScope = func(gen.Dao) gen.Dao
 
@@ -203,6 +327,11 @@ type callbackContext struct {
 
 type Callback func(ctx context.Context, cbCtx CallbackContext, results any) error
 
+type OrderByColumn struct {
+	clause.OrderByColumn
+	RequiredJoins []string
+}
+
 type OptionBuilder interface {
 	DbContext
 	Table(string) OptionBuilder
@@ -211,7 +340,7 @@ type OptionBuilder interface {
 	QueryString(string) OptionBuilder
 	Scope(...Scope) OptionBuilder
 	Select(...clause.Expr) OptionBuilder
-	OrderBy(...clause.OrderByColumn) OptionBuilder
+	OrderBy(...OrderByColumn) OptionBuilder
 	Limit(uint) OptionBuilder
 	Offset(uint) OptionBuilder
 	Group(...clause.Column) OptionBuilder
@@ -219,9 +348,9 @@ type OptionBuilder interface {
 	Preload(...field.RelationField) OptionBuilder
 	Callback(...Callback) OptionBuilder
 	Context(func(ctx context.Context) context.Context) OptionBuilder
-	applySelect(SubQuery) error
-	applyPre(SubQuery) error
-	applyPost(SubQuery) error
+	applySelect(db *gorm.DB, withOrderSelect bool) error
+	applyPre(sq SubQuery, withOrderJoins bool) error
+	applyPost(*gorm.DB) error
 	createFacetsFilterCriteria() (Criteria, error)
 	calculateAggregations(context.Context) (Aggregations, error)
 	WithTotalCount(bool) OptionBuilder
@@ -234,6 +363,7 @@ type OptionBuilder interface {
 	needsNextPage() bool
 	hasNextPage(nItems int) bool
 	withCurrentFacet(string) OptionBuilder
+	shouldTryCteStrategy() bool
 	createContext(context.Context) context.Context
 }
 
@@ -245,7 +375,7 @@ type optionBuilder struct {
 	scopes            []Scope
 	selections        []clause.Expr
 	groupBy           []clause.Column
-	orderBy           []clause.OrderByColumn
+	orderBy           []OrderByColumn
 	limit             model.NullUint
 	nextPage          bool
 	offset            uint
@@ -273,8 +403,8 @@ func newQueryContext(dbCtx dbContext) OptionBuilder {
 
 func (b optionBuilder) Table(name string) OptionBuilder {
 	b.dbContext.tableName = name
-	return b.Scope(func(sq SubQuery) error {
-		sq.UnderlyingDB().Table(name)
+	return b.Scope(func(db *gorm.DB) error {
+		db.Table(name)
 		return nil
 	})
 }
@@ -325,7 +455,7 @@ func (b optionBuilder) Group(columns ...clause.Column) OptionBuilder {
 	return b
 }
 
-func (b optionBuilder) OrderBy(columns ...clause.OrderByColumn) OptionBuilder {
+func (b optionBuilder) OrderBy(columns ...OrderByColumn) OptionBuilder {
 	b.orderBy = columns
 	return b
 }
@@ -419,7 +549,7 @@ func (b optionBuilder) createContext(ctx context.Context) context.Context {
 	return ctx
 }
 
-func (b optionBuilder) applySelect(sq SubQuery) error {
+func (b optionBuilder) applySelect(db *gorm.DB, withOrderSelect bool) error {
 	var selectQueryParts []string
 	selectQueryArgs := make([]interface{}, 0)
 	if len(b.selections) == 0 {
@@ -430,26 +560,33 @@ func (b optionBuilder) applySelect(sq SubQuery) error {
 			selectQueryArgs = append(selectQueryArgs, s.Vars...)
 		}
 	}
-	for _, orderBy := range b.orderBy {
-		if orderBy.Column.Name == QueryStringRankField {
-			rankFragment := "0"
-			args := make([]interface{}, 0)
-			if b.tsquery != "" {
-				rankFragment = "ts_rank_cd(" + b.tableName + ".tsv, ?::tsquery)"
-				args = append(args, b.tsquery)
+	if withOrderSelect {
+		for i, orderBy := range b.orderBy {
+			alias := "_order_" + strconv.Itoa(i)
+			if orderBy.Column.Name == QueryStringRankField {
+				rankFragment := "0"
+				args := make([]interface{}, 0)
+				if b.tsquery != "" {
+					rankFragment = "ts_rank_cd(" + b.tableName + ".tsv, ?::tsquery)"
+					args = append(args, b.tsquery)
+				}
+				selectQueryParts = append(selectQueryParts, rankFragment+" AS "+alias)
+				selectQueryArgs = append(selectQueryArgs, args...)
+				break
+			} else if orderBy.Column.Alias == "" {
+				writer := bytes.NewBuffer(nil)
+				db.Statement.QuoteTo(writer, orderBy.Column)
+				selectQueryParts = append(selectQueryParts, writer.String()+" AS "+alias)
 			}
-			selectQueryParts = append(selectQueryParts, rankFragment+" AS "+QueryStringRankField)
-			selectQueryArgs = append(selectQueryArgs, args...)
-			break
 		}
 	}
-	sq.UnderlyingDB().Select(strings.Join(selectQueryParts, ", "), selectQueryArgs...)
+	db.Select(strings.Join(selectQueryParts, ", "), selectQueryArgs...)
 	return nil
 }
 
-func (b optionBuilder) applyPre(sq SubQuery) error {
+func (b optionBuilder) applyPre(sq SubQuery, withOrderJoins bool) error {
 	for _, s := range b.scopes {
-		if err := s(sq); err != nil {
+		if err := s(sq.UnderlyingDB()); err != nil {
 			return err
 		}
 	}
@@ -466,6 +603,13 @@ func (b optionBuilder) applyPre(sq SubQuery) error {
 		return rawAggCErr
 	}
 	requiredJoins.SetEntries(rawAggC.Joins.Entries()...)
+	if withOrderJoins {
+		for _, ob := range b.orderBy {
+			for _, j := range ob.RequiredJoins {
+				requiredJoins.Set(j, struct{}{})
+			}
+		}
+	}
 	joins, joinsErr := extractRequiredJoins(b.dbContext.tableName, b.joins, requiredJoins)
 	if joinsErr != nil {
 		return joinsErr
@@ -524,10 +668,21 @@ func applyJoins(sq SubQuery, joins ...TableJoin) {
 	}
 }
 
-func (b optionBuilder) applyPost(sq SubQuery) error {
+func (b optionBuilder) applyPost(db *gorm.DB) error {
 	if len(b.orderBy) > 0 {
-		sq.UnderlyingDB().Statement.AddClause(clause.OrderBy{
-			Columns: b.orderBy,
+		cols := make([]clause.OrderByColumn, 0, len(b.orderBy))
+		for i, orderBy := range b.orderBy {
+			alias := orderBy.Column.Alias
+			if alias == "" {
+				alias = "_order_" + strconv.Itoa(i)
+			}
+			cols = append(cols, clause.OrderByColumn{
+				Column: clause.Column{Name: alias},
+				Desc:   orderBy.Desc,
+			})
+		}
+		db.Statement.AddClause(clause.OrderBy{
+			Columns: cols,
 		})
 	}
 	if b.limit.Valid {
@@ -535,11 +690,11 @@ func (b optionBuilder) applyPost(sq SubQuery) error {
 		if b.nextPage {
 			limit++
 		}
-		sq.UnderlyingDB().Limit(limit)
+		db.Limit(limit)
 	}
-	sq.UnderlyingDB().Offset(int(b.offset))
+	db.Offset(int(b.offset))
 	for _, p := range b.preloads {
-		sq.UnderlyingDB().Preload(p.Name(), p)
+		db.Preload(p.Name(), p)
 	}
 	return nil
 }
@@ -564,4 +719,19 @@ func (b optionBuilder) applyCallbacks(ctx context.Context, results any) error {
 	}
 	wg.Wait()
 	return errors.Join(errs...)
+}
+
+func (b optionBuilder) shouldTryCteStrategy() bool {
+	if !b.limit.Valid || len(b.orderBy) == 0 {
+		return false
+	}
+	if b.tsquery != "" {
+		return true
+	}
+	for _, f := range b.facets {
+		if f.TriggersCte() && len(f.Filter()) > 0 {
+			return true
+		}
+	}
+	return false
 }

@@ -15,6 +15,7 @@ func TorrentTagsFacet(options ...query.FacetOption) query.Facet {
 				query.FacetHasLabel("Torrent Tag"),
 				query.FacetUsesAndLogic(),
 				query.FacetHasAggregationOption(query.RequireJoin(model.TableNameTorrentContent)),
+				query.FacetTriggersCte(),
 			}, options...)...,
 		),
 	}

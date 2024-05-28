@@ -4,6 +4,7 @@ go 1.22
 
 require (
 	github.com/99designs/gqlgen v0.17.45
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/abice/go-enum v0.6.0
 	github.com/adrg/xdg v0.4.0
 	github.com/agnivade/levenshtein v1.1.1
@@ -47,6 +48,7 @@ require (
 	golang.org/x/time v0.5.0
 	google.golang.org/protobuf v1.34.0
 	gopkg.in/yaml.v3 v3.0.1
+	gorm.io/driver/mysql v1.5.6
 	gorm.io/driver/postgres v1.5.7
 	gorm.io/gen v0.3.26
 	gorm.io/gorm v1.25.10
@@ -169,6 +171,5 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gorm.io/datatypes v1.2.0 // indirect
-	gorm.io/driver/mysql v1.5.6 // indirect
 	gorm.io/hints v1.1.2 // indirect
 )

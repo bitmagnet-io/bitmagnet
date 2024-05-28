@@ -40,24 +40,30 @@ func TorrentContentDefaultOption() query.Option {
 		TorrentContentDefaultHydrate(),
 		TorrentContentCoreJoins(),
 		query.OrderBy(
-			clause.OrderByColumn{
-				Column: clause.Column{
-					Table: clause.CurrentTable,
-					Name:  "published_at",
+			query.OrderByColumn{
+				OrderByColumn: clause.OrderByColumn{
+					Column: clause.Column{
+						Table: clause.CurrentTable,
+						Name:  "published_at",
+					},
+					Desc: true,
 				},
-				Desc: true,
 			},
-			clause.OrderByColumn{
-				Column: clause.Column{
-					Table: clause.CurrentTable,
-					Name:  "updated_at",
+			query.OrderByColumn{
+				OrderByColumn: clause.OrderByColumn{
+					Column: clause.Column{
+						Table: clause.CurrentTable,
+						Name:  "updated_at",
+					},
+					Desc: true,
 				},
-				Desc: true,
 			},
-			clause.OrderByColumn{
-				Column: clause.Column{
-					Table: clause.CurrentTable,
-					Name:  "info_hash",
+			query.OrderByColumn{
+				OrderByColumn: clause.OrderByColumn{
+					Column: clause.Column{
+						Table: clause.CurrentTable,
+						Name:  "info_hash",
+					},
 				},
 			},
 		),

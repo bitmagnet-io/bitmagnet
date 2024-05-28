@@ -17,6 +17,7 @@ func TorrentContentLanguageFacet(options ...query.FacetOption) query.Facet {
 				query.FacetHasKey(LanguageFacetKey),
 				query.FacetHasLabel("Language"),
 				query.FacetUsesLogic(model.FacetLogicOr),
+				query.FacetTriggersCte(),
 			}, options...)...,
 		),
 	}
