@@ -6,17 +6,32 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protobuf"
+	"github.com/google/cel-go/common/types/ref"
 )
 
 type runner struct {
 	dependencies
+	flagDefinitions
+	compiledFlags
 	workflows map[string]action
 }
 
-func (r runner) Run(ctx context.Context, workflow string, t model.Torrent) (classification.Result, error) {
+func (r runner) Run(ctx context.Context, workflow string, flags Flags, t model.Torrent) (classification.Result, error) {
 	w, ok := r.workflows[workflow]
 	if !ok {
 		return classification.Result{}, fmt.Errorf("workflow not found: %s", workflow)
+	}
+	cfs := make(map[string]ref.Val, len(r.flagDefinitions))
+	for k, d := range r.flagDefinitions {
+		if runtimeRawVal, ok := flags[k]; ok {
+			rcf, err := d.celVal(runtimeRawVal)
+			if err != nil {
+				return classification.Result{}, fmt.Errorf("invalid value for runtime flag '%s': %e", k, err)
+			}
+			cfs[k] = rcf
+		} else {
+			cfs[k] = r.compiledFlags[k]
+		}
 	}
 	cl := classification.Result{}
 	if !t.Hint.IsNil() {
@@ -41,6 +56,7 @@ func (r runner) Run(ctx context.Context, workflow string, t model.Torrent) (clas
 		Context:      ctx,
 		dependencies: r.dependencies,
 		workflows:    r.workflows,
+		flags:        cfs,
 		torrent:      t,
 		torrentPb:    protobuf.NewTorrent(t),
 		result:       cl,

@@ -21,17 +21,12 @@ func celEnvOption(src Source, ctx *compilerContext) error {
 		cel.Variable("torrent", cel.ObjectType("bitmagnet.Torrent")),
 		cel.Variable("result", cel.ObjectType("bitmagnet.Classification")),
 	}
-	// `flags` is masquerading as a map of strings to regexes, but it's actually individual string constants defined with a dot in the name,
+	// `flags` is masquerading as a map of strings to regexes, but it's actually individual variables defined with a dot in the name,
 	// along with a placeholder map of strings to nulls. This achieves correct compile-time checking with acceptable error messages.
 	for name, tp := range src.FlagDefinitions {
-		rawVal := src.Flags[name]
-		val, err := tp.celVal(rawVal)
-		if err != nil {
-			return err
-		}
 		options = append(
 			options,
-			cel.Constant("flags."+name, tp.celType(), val),
+			cel.Variable("flags."+name, tp.celType()),
 		)
 	}
 	options = append(

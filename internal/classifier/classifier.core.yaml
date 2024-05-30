@@ -70,7 +70,7 @@ workflows:
           find_match:
             - attach_local_content_by_id
             - if_else:
-                condition: "flags.tmdb_enabled"
+                condition: "flags.apis_enabled && flags.tmdb_enabled"
                 if_action: attach_tmdb_content_by_id
                 else_action: unmatched
     # parse video-related attributes for video torrents (including the base title, needed for the next step):
@@ -91,7 +91,7 @@ workflows:
           find_match:
             - attach_local_content_by_search
             - if_else:
-                condition: "flags.tmdb_enabled"
+                condition: "flags.apis_enabled && flags.tmdb_enabled"
                 if_action: attach_tmdb_content_by_search
                 else_action: unmatched
     # delete specific content types based on the configured flags:
@@ -216,20 +216,22 @@ keywords:
     - underage
     - hebefilia
     - opva
-    - child porn*
-    - child lover*
-    - porno child*
-    - kidd(y*|ie*) porn
-    - young video models
+    - child ?porn*
+    - child ?lover*
+    - porno ?child*
+    - kidd(y*|ie*) ?porn
+    - young ?video ?models
     - childfugga
     - kinderkutje
     - yvm
     - (#|10|11|12|13|14|15|16|17) ?y ?o
 flag_definitions:
+  apis_enabled: bool
   tmdb_enabled: bool
   delete_content_types: content_type_list
   delete_xxx: bool
 flags:
+  apis_enabled: true
   tmdb_enabled: true
   delete_content_types: []
   delete_xxx: false

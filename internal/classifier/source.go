@@ -4,7 +4,7 @@ type Source struct {
 	Schema          string          `json:"$schema,omitempty" yaml:"$schema,omitempty"`
 	Workflows       workflowSources `json:"workflows"`
 	FlagDefinitions flagDefinitions `json:"flag_definitions"`
-	Flags           flags           `json:"flags"`
+	Flags           Flags           `json:"Flags"`
 	Keywords        keywordGroups   `json:"keywords"`
 	Extensions      extensionGroups `json:"extensions"`
 }
