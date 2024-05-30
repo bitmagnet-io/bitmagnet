@@ -125,13 +125,6 @@ func OrderByQueryStringRank() Option {
 	}
 }
 
-//func OrderByColumn(field string, desc bool) Option {
-//	return OrderBy(clause.OrderByColumn{
-//		Column: clause.Column{Name: field},
-//		Desc:   desc,
-//	})
-//}
-
 func WithFacet(facets ...Facet) Option {
 	return func(ctx OptionBuilder) (OptionBuilder, error) {
 		return ctx.Facet(facets...), nil
