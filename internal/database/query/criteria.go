@@ -4,6 +4,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/regex"
 	"gorm.io/gen/field"
+	"gorm.io/gorm"
 	"strings"
 )
 
@@ -19,9 +20,9 @@ func Where(conditions ...Criteria) Option {
 			rawCriteria = append(rawCriteria, rc)
 			joins.SetEntries(rc.Joins.Entries()...)
 		}
-		b = b.Scope(func(dao SubQuery) error {
+		b = b.Scope(func(db *gorm.DB) error {
 			for _, raw := range rawCriteria {
-				dao.UnderlyingDB().Where(raw.Query, raw.Args...)
+				db.Where(raw.Query, raw.Args...)
 			}
 			return nil
 		})

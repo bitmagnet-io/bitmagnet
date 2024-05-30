@@ -20,6 +20,7 @@ func Video3dFacet(options ...query.FacetOption) query.Facet {
 				query.FacetHasKey(Video3dFacetKey),
 				query.FacetHasLabel("Video 3D"),
 				query.FacetUsesOrLogic(),
+				query.FacetTriggersCte(),
 			}, options...)...,
 		),
 		field: video3dField,

@@ -1,7 +1,9 @@
 package reprocesscmd
 
 import (
+	"encoding/json"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
+	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
@@ -32,7 +34,7 @@ func New(p Params) (Result, error) {
 		Flags: []cli.Flag{
 			&cli.IntFlag{
 				Name:  "batchSize",
-				Value: 1000,
+				Value: 100,
 			},
 			&cli.StringSliceFlag{
 				Name:    "contentType",
@@ -51,6 +53,11 @@ func New(p Params) (Result, error) {
 				Usage: "default (only attempt to match previously unmatched torrents);\n" +
 					"rematch (ignore any pre-existing match and always classify from scratch)",
 			},
+			&cli.StringFlag{
+				Name:  "flags",
+				Value: "{}",
+				Usage: "optional JSON-encoded runtime flags to pass to the classifier",
+			},
 		},
 		Action: func(ctx *cli.Context) error {
 			var classifyMode processor.ClassifyMode
@@ -61,6 +68,11 @@ func New(p Params) (Result, error) {
 				classifyMode = processor.ClassifyModeRematch
 			default:
 				return cli.Exit("invalid classifyMode", 1)
+			}
+			var flags classifier.Flags
+			strFlags := ctx.String("flags")
+			if err := json.Unmarshal([]byte(strFlags), &flags); err != nil {
+				return cli.Exit("invalid flags", 1)
 			}
 			var contentTypes []string
 			var unknownContentType bool
@@ -112,13 +124,14 @@ func New(p Params) (Result, error) {
 			}
 			bar := progressbar.Default(torrentCount, "queuing torrents")
 			var torrentResult []*model.Torrent
-			if err := d.Torrent.WithContext(ctx.Context).Scopes(scopes...).FindInBatches(&torrentResult, batchSize, func(tx gen.Dao, _ int) error {
+			if err := d.Torrent.WithContext(ctx.Context).Scopes(scopes...).Select(d.Torrent.InfoHash).FindInBatches(&torrentResult, batchSize, func(tx gen.Dao, _ int) error {
 				infoHashes := make([]protocol.ID, 0, len(torrentResult))
 				for _, c := range torrentResult {
 					infoHashes = append(infoHashes, c.InfoHash)
 				}
 				job, err := processor.NewQueueJob(processor.MessageParams{
 					ClassifyMode: classifyMode,
+					Flags:        flags,
 					InfoHashes:   infoHashes,
 				}, model.QueueJobPriority(10))
 				if err != nil {

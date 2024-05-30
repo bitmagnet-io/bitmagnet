@@ -16,6 +16,7 @@ func VideoModifierFacet(options ...query.FacetOption) query.Facet {
 				query.FacetHasKey(VideoModifierFacetKey),
 				query.FacetHasLabel("Video Modifier"),
 				query.FacetUsesOrLogic(),
+				query.FacetTriggersCte(),
 			}, options...)...,
 		),
 		field: func(q *dao.Query) field.Field {
