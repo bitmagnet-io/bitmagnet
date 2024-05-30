@@ -5515,9 +5515,9 @@ func (ec *executionContext) _Torrent_size(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(uint64)
+	res := resTmp.(uint)
 	fc.Result = res
-	return ec.marshalNInt2uint64(ctx, field.Selections, res)
+	return ec.marshalNInt2uint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Torrent_size(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8050,9 +8050,9 @@ func (ec *executionContext) _TorrentFile_index(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(uint32)
+	res := resTmp.(uint)
 	fc.Result = res
-	return ec.marshalNInt2uint32(ctx, field.Selections, res)
+	return ec.marshalNInt2uint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_TorrentFile_index(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8220,9 +8220,9 @@ func (ec *executionContext) _TorrentFile_size(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(uint64)
+	res := resTmp.(uint)
 	fc.Result = res
-	return ec.marshalNInt2uint64(ctx, field.Selections, res)
+	return ec.marshalNInt2uint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_TorrentFile_size(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -14704,36 +14704,6 @@ func (ec *executionContext) unmarshalNInt2uint(ctx context.Context, v interface{
 
 func (ec *executionContext) marshalNInt2uint(ctx context.Context, sel ast.SelectionSet, v uint) graphql.Marshaler {
 	res := graphql.MarshalUint(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) unmarshalNInt2uint32(ctx context.Context, v interface{}) (uint32, error) {
-	res, err := graphql.UnmarshalUint32(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNInt2uint32(ctx context.Context, sel ast.SelectionSet, v uint32) graphql.Marshaler {
-	res := graphql.MarshalUint32(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) unmarshalNInt2uint64(ctx context.Context, v interface{}) (uint64, error) {
-	res, err := graphql.UnmarshalUint64(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNInt2uint64(ctx context.Context, sel ast.SelectionSet, v uint64) graphql.Marshaler {
-	res := graphql.MarshalUint64(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")

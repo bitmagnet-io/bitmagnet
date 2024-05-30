@@ -21,7 +21,7 @@ type Item struct {
 	Source          string
 	InfoHash        protocol.ID
 	Name            string
-	Size            uint64
+	Size            uint
 	Private         bool
 	ContentType     model.NullContentType
 	ContentSource   model.NullString
