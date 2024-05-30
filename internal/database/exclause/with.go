@@ -58,28 +58,42 @@ func (with With) Build(builder clause.Builder) {
 func (cte CTE) Build(builder clause.Builder, materialized bool) {
 	builder.WriteQuoted(cte.Name)
 	if len(cte.Columns) > 0 {
-		builder.WriteString(" (")
+		if _, err := builder.WriteString(" ("); err != nil {
+			panic(err)
+		}
 		for index, column := range cte.Columns {
 			if index > 0 {
-				builder.WriteByte(',')
+				if err := builder.WriteByte(','); err != nil {
+					panic(err)
+				}
 			}
 			builder.WriteQuoted(column)
 		}
-		builder.WriteByte(')')
+		if err := builder.WriteByte(')'); err != nil {
+			panic(err)
+		}
 	}
 
-	builder.WriteString(" AS ")
+	if _, err := builder.WriteString(" AS "); err != nil {
+		panic(err)
+	}
 
 	// Latest versions of Postgres default to non-materialized CTEs, so we don't need to
 	// specify it explicitly. Sometimes you want to keep the optimisation fence though, in
 	// which case you can set the Materialized flag to true.
 	if materialized {
-		builder.WriteString("MATERIALIZED ")
+		if _, err := builder.WriteString("MATERIALIZED "); err != nil {
+			panic(err)
+		}
 	}
 
-	builder.WriteByte('(')
+	if err := builder.WriteByte('('); err != nil {
+		panic(err)
+	}
 	cte.Subquery.Build(builder)
-	builder.WriteByte(')')
+	if err := builder.WriteByte(')'); err != nil {
+		panic(err)
+	}
 }
 
 // MergeClause merge With clauses
