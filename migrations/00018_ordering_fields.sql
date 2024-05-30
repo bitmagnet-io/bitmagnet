@@ -14,6 +14,8 @@ create index torrent_contents_leechers_coalesce_idx on torrent_contents (coalesc
 -- +goose Down
 -- +goose StatementBegin
 
+alter table torrent_contents drop column size;
+alter table torrent_contents drop column files_count;
 drop index torrent_contents_seeders_coalesce_idx;
 drop index torrent_contents_leechers_coalesce_idx;
 
