@@ -110,7 +110,7 @@ type configSourceProvider struct {
 }
 
 func (c configSourceProvider) source() (Source, error) {
-	fs := make(flags)
+	fs := make(Flags)
 	for k, v := range c.config.Flags {
 		fs[k] = v
 	}
