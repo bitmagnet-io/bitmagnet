@@ -156,6 +156,12 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 }
 
 func newTorrentContent(t model.Torrent, c classification.Result) model.TorrentContent {
+	var filesCount model.NullUint
+	if t.FilesCount.Valid {
+		filesCount = t.FilesCount
+	} else if t.FilesStatus == model.FilesStatusSingle {
+		filesCount = model.NewNullUint(1)
+	}
 	tc := model.TorrentContent{
 		Torrent:         t,
 		InfoHash:        t.InfoHash,
@@ -168,6 +174,8 @@ func newTorrentContent(t model.Torrent, c classification.Result) model.TorrentCo
 		Video3d:         c.Video3d,
 		VideoModifier:   c.VideoModifier,
 		ReleaseGroup:    c.ReleaseGroup,
+		Size:            t.Size,
+		FilesCount:      filesCount,
 		Seeders:         t.Seeders(),
 		Leechers:        t.Leechers(),
 		PublishedAt:     t.PublishedAt(),

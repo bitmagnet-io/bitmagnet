@@ -28,10 +28,10 @@ func newTorrentFile(db *gorm.DB, opts ...gen.DOOption) torrentFile {
 	tableName := _torrentFile.torrentFileDo.TableName()
 	_torrentFile.ALL = field.NewAsterisk(tableName)
 	_torrentFile.InfoHash = field.NewField(tableName, "info_hash")
-	_torrentFile.Index = field.NewUint32(tableName, "index")
+	_torrentFile.Index = field.NewUint(tableName, "index")
 	_torrentFile.Path = field.NewString(tableName, "path")
 	_torrentFile.Extension = field.NewString(tableName, "extension")
-	_torrentFile.Size = field.NewUint64(tableName, "size")
+	_torrentFile.Size = field.NewUint(tableName, "size")
 	_torrentFile.CreatedAt = field.NewTime(tableName, "created_at")
 	_torrentFile.UpdatedAt = field.NewTime(tableName, "updated_at")
 
@@ -45,10 +45,10 @@ type torrentFile struct {
 
 	ALL       field.Asterisk
 	InfoHash  field.Field
-	Index     field.Uint32
+	Index     field.Uint
 	Path      field.String
 	Extension field.String
-	Size      field.Uint64
+	Size      field.Uint
 	CreatedAt field.Time
 	UpdatedAt field.Time
 
@@ -68,10 +68,10 @@ func (t torrentFile) As(alias string) *torrentFile {
 func (t *torrentFile) updateTableName(table string) *torrentFile {
 	t.ALL = field.NewAsterisk(table)
 	t.InfoHash = field.NewField(table, "info_hash")
-	t.Index = field.NewUint32(table, "index")
+	t.Index = field.NewUint(table, "index")
 	t.Path = field.NewString(table, "path")
 	t.Extension = field.NewString(table, "extension")
-	t.Size = field.NewUint64(table, "size")
+	t.Size = field.NewUint(table, "size")
 	t.CreatedAt = field.NewTime(table, "created_at")
 	t.UpdatedAt = field.NewTime(table, "updated_at")
 

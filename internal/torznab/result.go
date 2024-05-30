@@ -110,7 +110,7 @@ type SearchResultItem struct {
 	PubDate      RssDate                       `xml:"pubDate,omitempty"`
 	Category     string                        `xml:"category,omitempty"`
 	Link         string                        `xml:"link,omitempty"`
-	Size         uint64                        `xml:"size"`
+	Size         uint                          `xml:"size"`
 	Description  string                        `xml:"description,omitempty"`
 	Comments     string                        `xml:"comments,omitempty"`
 	Enclosure    SearchResultItemEnclosure     `xml:"enclosure"`

@@ -67,7 +67,7 @@ func (l *customLogger) Trace(_ context.Context, begin time.Time, fc func() (stri
 	}
 	elapsed := time.Since(begin)
 	switch {
-	case err != nil && l.logLevel >= gormlogger.Error && !errors.Is(err, gormlogger.ErrRecordNotFound):
+	case err != nil && l.logLevel >= gormlogger.Error && !errors.Is(err, gormlogger.ErrRecordNotFound) && !errors.Is(err, context.Canceled):
 		sql, rows := fc()
 		l.zap.Errorw("gorm trace", "location", utils.FileWithLineNum(), "error", err, "elapsed", float64(elapsed.Nanoseconds())/1e6, "sql", sql, "rows", rows)
 	case elapsed > l.slowThreshold && l.slowThreshold != 0 && l.logLevel >= gormlogger.Warn:

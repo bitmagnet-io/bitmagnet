@@ -16,7 +16,7 @@ const TableNameTorrent = "torrents"
 type Torrent struct {
 	InfoHash    protocol.ID             `gorm:"column:info_hash;primaryKey;<-:create" json:"infoHash"`
 	Name        string                  `gorm:"column:name;not null" json:"name"`
-	Size        uint64                  `gorm:"column:size;not null" json:"size"`
+	Size        uint                    `gorm:"column:size;not null" json:"size"`
 	Private     bool                    `gorm:"column:private;not null" json:"private"`
 	CreatedAt   time.Time               `gorm:"column:created_at;not null;<-:create" json:"createdAt"`
 	UpdatedAt   time.Time               `gorm:"column:updated_at;not null" json:"updatedAt"`

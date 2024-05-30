@@ -213,7 +213,7 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 			},
 			{
 				AttrName:  torznab.AttrSize,
-				AttrValue: strconv.FormatUint(item.Torrent.Size, 10),
+				AttrValue: strconv.FormatUint(uint64(item.Torrent.Size), 10),
 			},
 			{
 				AttrName:  torznab.AttrPublishDate,
@@ -291,7 +291,7 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 			Enclosure: torznab.SearchResultItemEnclosure{
 				URL:    item.Torrent.MagnetUri(),
 				Type:   "application/x-bittorrent;x-scheme-handler/magnet",
-				Length: strconv.FormatUint(item.Torrent.Size, 10),
+				Length: strconv.FormatUint(uint64(item.Torrent.Size), 10),
 			},
 			TorznabAttrs: attrs,
 		})
