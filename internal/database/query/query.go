@@ -82,7 +82,6 @@ type genericQuery[T interface{}] struct {
 	daoQ    *dao.Query
 	factory SubQueryFactory
 	builder OptionBuilder
-	exists  bool
 	mtx     sync.Mutex
 	errs    []error
 	result  GenericResult[T]

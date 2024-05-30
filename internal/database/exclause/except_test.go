@@ -85,7 +85,9 @@ func TestExcept_Query(t *testing.T) {
 				Conn:                      mockDB,
 				SkipInitializeWithVersion: true,
 			}))
-			db.Use(New())
+			if err := db.Use(New()); err != nil {
+				t.Fatalf("an error '%s' was not expected when using the database plugin", err)
+			}
 			mock.ExpectQuery(regexp.QuoteMeta(tt.want)).WithArgs(tt.wantArgs...).WillReturnRows(sqlmock.NewRows([]string{}))
 
 			if tt.operation != nil {

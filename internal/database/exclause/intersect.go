@@ -19,7 +19,9 @@ func (intersect Intersect) Name() string {
 func (intersect Intersect) Build(builder clause.Builder) {
 	for index, statement := range intersect.Statements {
 		if index != 0 {
-			builder.WriteString(" INTERSECT ")
+			if _, err := builder.WriteString(" INTERSECT "); err != nil {
+				panic(err)
+			}
 		}
 		statement.Build(builder)
 	}

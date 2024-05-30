@@ -19,7 +19,9 @@ func (except Except) Name() string {
 func (except Except) Build(builder clause.Builder) {
 	for index, statement := range except.Statements {
 		if index != 0 {
-			builder.WriteString(" EXCEPT ")
+			if _, err := builder.WriteString(" EXCEPT "); err != nil {
+				panic(err)
+			}
 		}
 		statement.Build(builder)
 	}

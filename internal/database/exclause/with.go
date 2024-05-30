@@ -40,11 +40,15 @@ func (with With) Name() string {
 // Build build with clause
 func (with With) Build(builder clause.Builder) {
 	if with.Recursive {
-		builder.WriteString("RECURSIVE ")
+		if _, err := builder.WriteString("RECURSIVE "); err != nil {
+			panic(err)
+		}
 	}
 	for index, cte := range with.CTEs {
 		if index > 0 {
-			builder.WriteByte(',')
+			if err := builder.WriteByte(','); err != nil {
+				panic(err)
+			}
 		}
 		cte.Build(builder, with.Materialized)
 	}

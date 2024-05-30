@@ -19,7 +19,9 @@ func (union Union) Name() string {
 func (union Union) Build(builder clause.Builder) {
 	for index, statement := range union.Statements {
 		if index != 0 {
-			builder.WriteString(" UNION ")
+			if _, err := builder.WriteString(" UNION "); err != nil {
+				panic(err)
+			}
 		}
 		statement.Build(builder)
 	}
