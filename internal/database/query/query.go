@@ -56,48 +56,23 @@ func GenericQuery[T interface{}](
 		gq.builder = builder
 	}
 	wg := sync.WaitGroup{}
-	wg.Add(1)
-	// first, start off any requested aggregations as we'll definitely need these
-	go (func() {
+	wg.Add(3)
+	go func() {
+		defer wg.Done()
+		gq.doItems()
+	}()
+	go func() {
+		defer wg.Done()
+		gq.doCount()
+	}()
+	go func() {
 		defer wg.Done()
 		if aggs, aggErr := gq.builder.calculateAggregations(gq.ctx); aggErr != nil {
 			gq.addError(aggErr)
 		} else {
 			gq.result.Aggregations = aggs
 		}
-	})()
-	// For querying the items, we have 2 possible strategies to try:
-	// - the default strategy is always tried, and is usually the most performant
-	// - for certain searches where items are filtered to a small number of results, and ordered with a limit,
-	// the default strategy can be very slow, so we try a CTE strategy, with order and limit on a materialized view of
-	// the complete results, and we put it in a race with the default strategy.
-	// The CTE strategy uses a stopping point, and will only return items where there are fewer than the stopping point.
-	// Therefore: IF we are to try the CTE strategy, we need to know if there are any matching results at all
-	// (to distinguish between stopping point reached, and no matching items).
-	// So we'll check that here, only if we're trying the CTE strategy.
-	// IF this query would be eligible for the CTE strategy, and IF there are no items at all, we can skip the items queries,
-	// and the count queries altogether (then `proceed` will be `false`).
-	// I appreciate this is a bit convoluted, any proposed rationalisations here would be welcome!
-	proceed := true
-	tryCteStrategy := gq.builder.shouldTryCteStrategy()
-	if tryCteStrategy {
-		exists, existsErr := gq.checkExists()
-		if existsErr != nil {
-			return gq.result, existsErr
-		}
-		proceed = exists
-	}
-	if proceed {
-		wg.Add(2)
-		go (func() {
-			defer wg.Done()
-			gq.doCount()
-		})()
-		go (func() {
-			defer wg.Done()
-			gq.doItems(tryCteStrategy)
-		})()
-	}
+	}()
 	wg.Wait()
 	return gq.result, errors.Join(gq.errs...)
 }
@@ -130,8 +105,8 @@ func (gq *genericQuery[_]) addError(err error) {
 	gq.errs = append(gq.errs, err)
 }
 
-func (gq *genericQuery[_]) checkExists() (bool, error) {
-	sq, sqErr := gq.newSubQuery(gq.ctx, false)
+func (gq *genericQuery[_]) checkExists(ctx context.Context) (bool, error) {
+	sq, sqErr := gq.newSubQuery(ctx, false)
 	if sqErr != nil {
 		return false, sqErr
 	}
@@ -160,7 +135,15 @@ func (gq *genericQuery[_]) doCount() {
 	}
 }
 
-func (gq *genericQuery[T]) doItems(tryCteStrategy bool) {
+// doItems gets the items from the database and sets it to the result
+//
+// For querying the items, we have 2 possible strategies to try:
+// - the default strategy is always tried, and is usually the most performant
+// - for certain searches where items are filtered to a small number of results, and ordered with a limit,
+// the default strategy can be very slow, so we try a CTE strategy, with order and limit on a materialized view of
+// the complete results, and we put it in a race with the default strategy.
+// The CTE strategy uses a stopping point, and will only return items where there are fewer than the stopping point.
+func (gq *genericQuery[T]) doItems() {
 	if !gq.builder.hasZeroLimit() || gq.builder.needsNextPage() {
 		var finalItems []T
 		doneChan := make(chan error)
@@ -179,6 +162,7 @@ func (gq *genericQuery[T]) doItems(tryCteStrategy bool) {
 			}
 			doneChan <- err
 		}
+		// start the default strategy
 		go func() {
 			sq, sqErr := gq.newSubQuery(raceCtx, true)
 			if sqErr != nil {
@@ -196,7 +180,8 @@ func (gq *genericQuery[T]) doItems(tryCteStrategy bool) {
 			}
 			done(items, nil)
 		}()
-		if tryCteStrategy {
+		if gq.builder.shouldTryCteStrategy() {
+			// start the CTE strategy
 			go func() {
 				stoppingPoint := 50_000
 				sqCte, sqCteErr := gq.newSubQuery(raceCtx, true)
@@ -219,8 +204,16 @@ func (gq *genericQuery[T]) doItems(tryCteStrategy bool) {
 					return
 				}
 				if len(items) == 0 {
-					// the stopping point was reached, so return without calling `done`
-					return
+					// if no items are returned, we need a further check to distinguish between stopping point reached and no matching items
+					exists, existsErr := gq.checkExists(raceCtx)
+					if existsErr != nil {
+						done(nil, existsErr)
+						return
+					}
+					if exists {
+						// the stopping point was reached, so return without calling `done`
+						return
+					}
 				}
 				done(items, nil)
 			}()

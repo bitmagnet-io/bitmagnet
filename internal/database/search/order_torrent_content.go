@@ -121,8 +121,5 @@ func (fob TorrentContentFullOrderBy) Clauses() []query.OrderByColumn {
 }
 
 func (fob TorrentContentFullOrderBy) Option() query.Option {
-	return query.Options(
-		query.RequireJoin(model.TableNameTorrent),
-		query.OrderBy(fob.Clauses()...),
-	)
+	return query.OrderBy(fob.Clauses()...)
 }
