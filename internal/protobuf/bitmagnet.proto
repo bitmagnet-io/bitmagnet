@@ -52,12 +52,8 @@ message Classification {
   optional string videoCodec = 9;
   optional string video3d = 10;
   optional string releaseGroup = 11;
-  optional Content content = 12;
-
-  message Content {
-    string id = 1;
-    string source = 2;
-  }
+  optional string contentId = 12;
+  optional string contentSource = 13;
 
   enum ContentType {
     unknown = 0;

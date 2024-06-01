@@ -127,12 +127,11 @@ func NewClassification(c classification.Result) *Classification {
 	if c.ReleaseGroup.Valid {
 		releaseGroup = &c.ReleaseGroup.String
 	}
-	var content *Classification_Content
+	var contentId *string
+	var contentSource *string
 	if c.Content != nil {
-		content = &Classification_Content{
-			Id:     c.Content.ID,
-			Source: c.Content.Source,
-		}
+		contentId = &c.Content.ID
+		contentSource = &c.Content.Source
 	}
 	return &Classification{
 		ContentType:        NewContentType(c.ContentType),
@@ -145,7 +144,8 @@ func NewClassification(c classification.Result) *Classification {
 		VideoSource:     videoSource,
 		VideoCodec:      videoCodec,
 		ReleaseGroup:    releaseGroup,
-		Content:         content,
+		ContentId:       contentId,
+		ContentSource:   contentSource,
 	}
 }
 
