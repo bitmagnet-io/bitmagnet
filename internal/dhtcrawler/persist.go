@@ -155,9 +155,9 @@ func createTorrentModel(
 		}
 		files = append(files, model.TorrentFile{
 			InfoHash: hash,
-			Index:    uint32(i),
+			Index:    uint(i),
 			Path:     file.DisplayPath(&info),
-			Size:     uint64(file.Length),
+			Size:     uint(file.Length),
 		})
 	}
 	var pieces model.TorrentPieces
@@ -171,7 +171,7 @@ func createTorrentModel(
 	return model.Torrent{
 		InfoHash:    hash,
 		Name:        name,
-		Size:        uint64(info.TotalLength()),
+		Size:        uint(info.TotalLength()),
 		Private:     private,
 		Pieces:      pieces,
 		Files:       files,

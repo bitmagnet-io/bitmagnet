@@ -29,7 +29,7 @@ func newTorrent(db *gorm.DB, opts ...gen.DOOption) torrent {
 	_torrent.ALL = field.NewAsterisk(tableName)
 	_torrent.InfoHash = field.NewField(tableName, "info_hash")
 	_torrent.Name = field.NewString(tableName, "name")
-	_torrent.Size = field.NewUint64(tableName, "size")
+	_torrent.Size = field.NewUint(tableName, "size")
 	_torrent.Private = field.NewBool(tableName, "private")
 	_torrent.CreatedAt = field.NewTime(tableName, "created_at")
 	_torrent.UpdatedAt = field.NewTime(tableName, "updated_at")
@@ -88,7 +88,7 @@ type torrent struct {
 	ALL         field.Asterisk
 	InfoHash    field.Field
 	Name        field.String
-	Size        field.Uint64
+	Size        field.Uint
 	Private     field.Bool
 	CreatedAt   field.Time
 	UpdatedAt   field.Time
@@ -124,7 +124,7 @@ func (t *torrent) updateTableName(table string) *torrent {
 	t.ALL = field.NewAsterisk(table)
 	t.InfoHash = field.NewField(table, "info_hash")
 	t.Name = field.NewString(table, "name")
-	t.Size = field.NewUint64(table, "size")
+	t.Size = field.NewUint(table, "size")
 	t.Private = field.NewBool(table, "private")
 	t.CreatedAt = field.NewTime(table, "created_at")
 	t.UpdatedAt = field.NewTime(table, "updated_at")

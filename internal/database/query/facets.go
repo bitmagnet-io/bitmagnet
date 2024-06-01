@@ -18,6 +18,7 @@ type FacetConfig interface {
 	Filter() FacetFilter
 	IsAggregated() bool
 	AggregationOption(b OptionBuilder) (OptionBuilder, error)
+	TriggersCte() bool
 }
 
 type Facet interface {
@@ -50,6 +51,7 @@ type facetConfig struct {
 	filter             FacetFilter
 	aggregate          bool
 	aggregationOptions []Option
+	triggersCte        bool
 }
 
 type FacetOption func(facetConfig) facetConfig
@@ -111,7 +113,7 @@ func (ctx facetContext) NewAggregationQuery(options ...Option) (SubQuery, error)
 		return nil, subErr
 	}
 	sq := ctx.optionBuilder.NewSubQuery(ctx.Context())
-	applyErr := subCtx.applyPre(sq)
+	applyErr := subCtx.applyPre(sq, false)
 	if applyErr != nil {
 		return nil, applyErr
 	}
@@ -168,6 +170,13 @@ func FacetHasAggregationOption(options ...Option) FacetOption {
 	}
 }
 
+func FacetTriggersCte() FacetOption {
+	return func(c facetConfig) facetConfig {
+		c.triggersCte = true
+		return c
+	}
+}
+
 func (c facetConfig) Key() string {
 	return c.key
 }
@@ -190,6 +199,10 @@ func (c facetConfig) AggregationOption(b OptionBuilder) (OptionBuilder, error) {
 
 func (c facetConfig) Filter() FacetFilter {
 	return c.filter
+}
+
+func (c facetConfig) TriggersCte() bool {
+	return c.triggersCte
 }
 
 func (b optionBuilder) createFacetsFilterCriteria() (c Criteria, err error) {
@@ -275,7 +288,7 @@ func (b optionBuilder) calculateAggregations(ctx context.Context) (Aggregations,
 						return
 					}
 					q := aggBuilder.NewSubQuery(ctx)
-					if preErr := aggBuilder.applyPre(q); preErr != nil {
+					if preErr := aggBuilder.applyPre(q, false); preErr != nil {
 						addErr(fmt.Errorf("failed to apply pre for key '%s': %w", facet.Key(), preErr))
 						return
 					}
