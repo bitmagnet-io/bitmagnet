@@ -34,6 +34,8 @@ type TorrentContent struct {
 	Seeders         NullUint            `gorm:"column:seeders" json:"seeders"`
 	Leechers        NullUint            `gorm:"column:leechers" json:"leechers"`
 	PublishedAt     time.Time           `gorm:"column:published_at;not null;default:1999-01-01 00:00:00+00" json:"publishedAt"`
+	Size            uint                `gorm:"column:size;not null" json:"size"`
+	FilesCount      NullUint            `gorm:"column:files_count" json:"filesCount"`
 	Torrent         Torrent             `gorm:"foreignKey:InfoHash;references:InfoHash" json:"torrent"`
 	Content         Content             `gorm:"foreignKey:ContentType,ContentSource,ContentID;references:Type,Source,ID" json:"content"`
 }

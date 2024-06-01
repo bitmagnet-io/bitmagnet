@@ -16,6 +16,7 @@ func VideoCodecFacet(options ...query.FacetOption) query.Facet {
 				query.FacetHasKey(VideoCodecFacetKey),
 				query.FacetHasLabel("Video Codec"),
 				query.FacetUsesOrLogic(),
+				query.FacetTriggersCte(),
 			}, options...)...,
 		),
 		field: func(q *dao.Query) field.Field {

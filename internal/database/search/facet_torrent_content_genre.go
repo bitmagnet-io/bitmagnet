@@ -15,6 +15,7 @@ func TorrentContentGenreFacet(options ...query.FacetOption) query.Facet {
 				query.FacetHasLabel("Genre"),
 				query.FacetUsesLogic(model.FacetLogicAnd),
 				query.FacetHasAggregationOption(query.RequireJoin(model.TableNameTorrentContent)),
+				query.FacetTriggersCte(),
 			}, options...)...,
 		),
 		collectionType: "genre",

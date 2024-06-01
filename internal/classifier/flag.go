@@ -28,10 +28,10 @@ func (d flagDefinitions) merge(other flagDefinitions) (flagDefinitions, error) {
 	return result, nil
 }
 
-type flags map[string]any
+type Flags map[string]any
 
-func (f flags) merge(other flags) flags {
-	result := make(flags)
+func (f Flags) merge(other Flags) Flags {
+	result := make(Flags)
 	for k, v := range f {
 		if _, ok := other[k]; ok {
 			result[k] = other[k]
@@ -115,3 +115,5 @@ func (t FlagType) celVal(rawVal any) (ref.Val, error) {
 	}
 	return nil, fmt.Errorf("could not convert type %T to %s", rawVal, t)
 }
+
+type compiledFlags map[string]ref.Val

@@ -73,7 +73,7 @@ func (t Torrent) PublishedAt() time.Time {
 func (t Torrent) MagnetUri() string {
 	return "magnet:?xt=urn:btih:" + t.InfoHash.String() +
 		"&dn=" + url.QueryEscape(t.Name) +
-		"&xl=" + strconv.FormatUint(t.Size, 10)
+		"&xl=" + strconv.FormatUint(uint64(t.Size), 10)
 }
 
 // HasFilesInfo returns true if we know about the files in this torrent.
