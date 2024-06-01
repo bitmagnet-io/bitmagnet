@@ -14,8 +14,9 @@ message Torrent {
   repeated string fileExtensions = 9;
   optional int32 seeders = 10;
   optional int32 leechers = 11;
-  bool hasHint = 12;
-  bool hasHintedContentId = 13;
+  optional string contentId = 12;
+  bool hasHint = 13;
+  bool hasHintedContentId = 14;
 
   message File {
     int32 index = 1;
@@ -52,6 +53,12 @@ message Classification {
   optional string videoCodec = 9;
   optional string video3d = 10;
   optional string releaseGroup = 11;
+  optional Content content = 12;
+
+  message Content {
+    string id = 1;
+    string source = 2;
+  }
 
   enum ContentType {
     unknown = 0;
