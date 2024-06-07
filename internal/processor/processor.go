@@ -136,7 +136,7 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 					foundMatch = true
 				}
 			}
-			cl, classifyErr := c.runner.Run(ctx, workflowName, params.Flags, torrent)
+			cl, classifyErr := c.runner.Run(ctx, workflowName, params.ClassifierFlags, torrent)
 			if classifyErr != nil {
 				if errors.Is(classifyErr, classification.ErrDeleteTorrent) {
 					addDeleteInfoHash(torrent.InfoHash)
@@ -164,8 +164,10 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 			return errors.Join(errs...)
 		}
 		republishJob, republishJobErr := NewQueueJob(MessageParams{
-			InfoHashes:   failedHashes,
-			ClassifyMode: params.ClassifyMode,
+			InfoHashes:         failedHashes,
+			ClassifyMode:       params.ClassifyMode,
+			ClassifierWorkflow: workflowName,
+			ClassifierFlags:    params.ClassifierFlags,
 		})
 		if republishJobErr != nil {
 			return errors.Join(append(errs, republishJobErr)...)

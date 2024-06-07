@@ -22,7 +22,7 @@ const (
 type MessageParams struct {
 	ClassifyMode       ClassifyMode
 	ClassifierWorkflow string
-	Flags              classifier.Flags
+	ClassifierFlags    classifier.Flags
 	InfoHashes         []protocol.ID
 }
 
