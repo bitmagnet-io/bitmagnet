@@ -2,18 +2,17 @@ package reprocesscmd
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor/batch"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"strings"
+	"time"
 )
 
 type Params struct {
@@ -108,6 +107,7 @@ func New(p Params) (Result, error) {
 				BatchSize:       ctx.Uint("batchSize"),
 				ContentTypes:    contentTypes,
 				Orphans:         ctx.Bool("orphans"),
+				UpdatedBefore:   time.Now(),
 			})
 			if err != nil {
 				return err
@@ -116,14 +116,11 @@ func New(p Params) (Result, error) {
 			if err != nil {
 				return err
 			}
-			createErr := d.QueueJob.WithContext(ctx.Context).Create(&job)
-			var pgErr *pgconn.PgError
-			if errors.As(createErr, &pgErr) && pgErr.Code == "23505" {
-				_, _ = ctx.App.ErrWriter.Write([]byte("Reprocess already queued!\n"))
-			} else if err == nil {
-				_, _ = ctx.App.Writer.Write([]byte("Reprocess queued!\n"))
+			if err := d.QueueJob.WithContext(ctx.Context).Create(&job); err != nil {
+				return err
 			}
-			return createErr
+			_, _ = ctx.App.Writer.Write([]byte("Reprocess queued!\n"))
+			return nil
 		},
 	}}, nil
 }

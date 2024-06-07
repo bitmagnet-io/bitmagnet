@@ -5,12 +5,14 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"time"
 )
 
 const MessageName = "process_torrent_batch"
 
 type MessageParams struct {
 	InfoHashGreaterThan protocol.ID
+	UpdatedBefore       time.Time
 	ClassifyMode        processor.ClassifyMode
 	ClassifierWorkflow  string
 	ClassifierFlags     classifier.Flags

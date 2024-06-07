@@ -9,6 +9,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/processor/batch"
 	"go.uber.org/fx"
 	"gorm.io/gorm/clause"
+	"time"
 )
 
 type Params struct {
@@ -59,6 +60,7 @@ func execHook(d *dao.Query) error {
 			return err
 		}
 		job, jobErr := batch.NewQueueJob(batch.MessageParams{
+			UpdatedBefore: time.Now(),
 			ClassifierFlags: classifier.Flags{
 				"apis_enabled": false,
 			},

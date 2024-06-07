@@ -81,7 +81,10 @@ func New(p Params) Result {
 				for {
 					torrents, findErr := d.Torrent.WithContext(ctx).
 						Scopes(scopes...).
-						Where(d.Torrent.InfoHash.Gt(maxInfoHash)).
+						Where(
+							d.Torrent.InfoHash.Gt(maxInfoHash),
+							d.Torrent.UpdatedAt.Lt(msg.UpdatedBefore),
+						).
 						Select(d.Torrent.InfoHash).
 						Order(d.Torrent.InfoHash).
 						Limit(int(msg.BatchSize)).
@@ -120,6 +123,7 @@ func New(p Params) Result {
 				if !done {
 					job, jobErr := batch.NewQueueJob(batch.MessageParams{
 						InfoHashGreaterThan: maxInfoHash,
+						UpdatedBefore:       msg.UpdatedBefore,
 						ClassifyMode:        msg.ClassifyMode,
 						ClassifierWorkflow:  msg.ClassifierWorkflow,
 						ClassifierFlags:     msg.ClassifierFlags,
