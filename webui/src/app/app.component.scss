@@ -19,3 +19,11 @@ svg .fill {
     color: #fff;
   }
 }
+
+::ng-deep .button-sponsor.mat-mdc-outlined-button:not(:disabled) {
+  margin-right: 10px;
+  border-color: #fff;
+  &:hover {
+    background-color: mat.get-color-from-palette($accent-palette, 500);
+  }
+}

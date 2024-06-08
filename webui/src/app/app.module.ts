@@ -8,6 +8,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatGridListModule } from "@angular/material/grid-list";
 import { MatMenuModule } from "@angular/material/menu";
+import { MatChipsModule } from "@angular/material/chips";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
 import { GraphQLModule } from "./graphql/graphql.module";
@@ -22,6 +23,7 @@ import { StatusModule } from "./status/status.module";
     BrowserAnimationsModule,
     BrowserModule,
     GraphQLModule,
+    MatChipsModule,
     HttpClientModule,
     MatButtonModule,
     MatGridListModule,
