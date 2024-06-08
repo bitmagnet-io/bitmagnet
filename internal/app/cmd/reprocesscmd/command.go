@@ -7,13 +7,12 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"github.com/schollz/progressbar/v3"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor/batch"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"gorm.io/gen"
 	"strings"
+	"time"
 )
 
 type Params struct {
@@ -32,9 +31,13 @@ func New(p Params) (Result, error) {
 		Name:  "reprocess",
 		Usage: "Queue all torrents for reprocessing",
 		Flags: []cli.Flag{
-			&cli.IntFlag{
+			&cli.UintFlag{
 				Name:  "batchSize",
 				Value: 100,
+			},
+			&cli.UintFlag{
+				Name:  "chunkSize",
+				Value: 10_000,
 			},
 			&cli.StringSliceFlag{
 				Name:    "contentType",
@@ -54,9 +57,14 @@ func New(p Params) (Result, error) {
 					"rematch (ignore any pre-existing match and always classify from scratch)",
 			},
 			&cli.StringFlag{
-				Name:  "flags",
+				Name:  "classifierFlags",
 				Value: "{}",
 				Usage: "optional JSON-encoded runtime flags to pass to the classifier",
+			},
+			&cli.BoolFlag{
+				Name:  "apisDisabled",
+				Value: false,
+				Usage: "disable API calls for the classifier workflow",
 			},
 		},
 		Action: func(ctx *cli.Context) error {
@@ -70,82 +78,48 @@ func New(p Params) (Result, error) {
 				return cli.Exit("invalid classifyMode", 1)
 			}
 			var flags classifier.Flags
-			strFlags := ctx.String("flags")
+			strFlags := ctx.String("classifierFlags")
 			if err := json.Unmarshal([]byte(strFlags), &flags); err != nil {
 				return cli.Exit("invalid flags", 1)
 			}
-			var contentTypes []string
-			var unknownContentType bool
+			if ctx.Bool("apisDisabled") {
+				flags["apis_enabled"] = false
+			}
+			var contentTypes []model.NullContentType
 			for _, contentType := range ctx.StringSlice("contentType") {
 				if contentType == "null" {
-					unknownContentType = true
+					contentTypes = append(contentTypes, model.NullContentType{})
 				} else {
 					ct, err := model.ParseContentType(contentType)
 					if err != nil {
 						return err
 					}
-					contentTypes = append(contentTypes, ct.String())
+					contentTypes = append(contentTypes, model.NullContentType{
+						ContentType: ct,
+						Valid:       true,
+					})
 				}
+			}
+			job, err := batch.NewQueueJob(batch.MessageParams{
+				ClassifyMode:    classifyMode,
+				ClassifierFlags: flags,
+				ChunkSize:       ctx.Uint("chunkSize"),
+				BatchSize:       ctx.Uint("batchSize"),
+				ContentTypes:    contentTypes,
+				Orphans:         ctx.Bool("orphans"),
+				UpdatedBefore:   time.Now(),
+			})
+			if err != nil {
+				return err
 			}
 			d, err := p.Dao.Get()
 			if err != nil {
 				return err
 			}
-			println("queueing reprocess...")
-			var scopes []func(gen.Dao) gen.Dao
-			if len(contentTypes) > 0 || unknownContentType {
-				scopes = append(scopes, func(tx gen.Dao) gen.Dao {
-					sq := d.TorrentContent.Where(
-						d.TorrentContent.InfoHash.EqCol(d.Torrent.InfoHash),
-					).Where(d.TorrentContent.ContentType.In(contentTypes...))
-					if unknownContentType {
-						sq = sq.Or(d.TorrentContent.ContentType.IsNull())
-					}
-					return tx.Where(gen.Exists(sq))
-				})
-			}
-			if ctx.Bool("orphans") {
-				scopes = append(scopes, func(tx gen.Dao) gen.Dao {
-					return tx.Not(
-						gen.Exists(
-							d.TorrentContent.Where(
-								d.TorrentContent.InfoHash.EqCol(d.Torrent.InfoHash),
-							),
-						),
-					)
-				})
-			}
-			batchSize := ctx.Int("batchSize")
-			torrentCount := int64(0)
-			if result, err := dao.BudgetedCount(d.Torrent.WithContext(ctx.Context).Scopes(scopes...).UnderlyingDB(), 10_000); err != nil {
-				return err
-			} else {
-				torrentCount = result.Count
-			}
-			bar := progressbar.Default(torrentCount, "queuing torrents")
-			var torrentResult []*model.Torrent
-			if err := d.Torrent.WithContext(ctx.Context).Scopes(scopes...).Select(d.Torrent.InfoHash).FindInBatches(&torrentResult, batchSize, func(tx gen.Dao, _ int) error {
-				infoHashes := make([]protocol.ID, 0, len(torrentResult))
-				for _, c := range torrentResult {
-					infoHashes = append(infoHashes, c.InfoHash)
-				}
-				job, err := processor.NewQueueJob(processor.MessageParams{
-					ClassifyMode: classifyMode,
-					Flags:        flags,
-					InfoHashes:   infoHashes,
-				}, model.QueueJobPriority(10))
-				if err != nil {
-					return err
-				}
-				if err := tx.Create(&job); err != nil {
-					return err
-				}
-				_ = bar.Add(len(torrentResult))
-				return nil
-			}); err != nil {
+			if err := d.QueueJob.WithContext(ctx.Context).Create(&job); err != nil {
 				return err
 			}
-			_ = bar.Finish()
+			_, _ = ctx.App.Writer.Write([]byte("Reprocess queued!\n"))
 			return nil
 		},
 	}}, nil
