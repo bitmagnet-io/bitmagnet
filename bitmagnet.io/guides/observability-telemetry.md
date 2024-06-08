@@ -1,8 +1,10 @@
 ---
 title: Observability & Telemetry
-parent: Internals & Development
+parent: Guides
 layout: default
-nav_order: 3
+nav_order: 9
+redirect_from:
+  - /internals-development/observability-telemetry.html
 ---
 
 # Observability & Telemetry

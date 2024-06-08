@@ -1,11 +1,18 @@
 ---
 title: Tech Stack
-parent: Internals & Development
+parent: Guides
 layout: default
-nav_order: 1
+nav_order: 10
+redirect_from:
+  - /internals-development.html
+  - /internals-development/dht-crawler.html
+  - /internals-development/tech-stack.html
 ---
 
 # The Tech Stack
+
+{: .highlight }
+Are you an experienced developer with knowledge of GoLang, Postgres, TypeScript/Angular and/or BitTorrent protocols? I'm currently a lone developer with a full time job and many other commitments, and have been working on this in spare moments for the past few months. This project is too big for one person! If you're interested in contributing please [review the open issues](https://github.com/bitmagnet-io/bitmagnet/issues) and feel free to open a PR!
 
 ## Postgres
 
@@ -37,3 +44,15 @@ The repository includes a Nix shell for a reproducible development environment. 
 
 - The repository includes a [Taskfile](https://taskfile.dev/) containing several useful development scripts
 - GitHub actions are used for CI, building the Docker image and for building this website
+
+## Architecture & Lifecycle of the DHT Crawler
+
+The DHT and BitTorrent protocols are (rather impenetrably) documented at [bittorrent.org](http://bittorrent.org/beps/bep_0000.html). Relevant resources include:
+
+- [BEP 5: DHT Protocol](http://bittorrent.org/beps/bep_0005.html)
+- [BEP 51: Infohash Indexing](https://www.bittorrent.org/beps/bep_0051.html)
+- [BEP 33: DHT Scrapes](https://www.bittorrent.org/beps/bep_0033.html)
+- [BEP 10: Extension Protocol](https://www.bittorrent.org/beps/bep_0010.html)
+- [The Kademlia paper](https://pdos.csail.mit.edu/~petar/papers/maymounkov-kademlia-lncs.pdf)
+
+The rest of what I've figured out about how to implement a DHT crawler was cobbled together from [the now archived **magnetico** project](https://github.com/boramalper/magnetico) and [anacrolix's BitTorrent libraries](https://github.com/anacrolix).

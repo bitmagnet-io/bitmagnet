@@ -1,8 +1,10 @@
 ---
 title: Text Search
-parent: Tutorials
+parent: Guides
 layout: default
-nav_order: 1
+nav_order: 2
+redirect_from:
+  - /tutorials/text-search.html
 ---
 
 # Text Search

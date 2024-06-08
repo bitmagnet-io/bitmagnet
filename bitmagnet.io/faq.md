@@ -24,13 +24,21 @@ As a rough guide, you should allow around 300MB RAM for BitMagnet, and at least 
 
 ## I've started **bitmagnet** for the first time and am not seeing torrents right away, is something wrong?
 
-If everything is working, **bitmagnet** should begin showing torrents in the web UI within a maximum of 10 minutes (which is its cache TTL). The round blue refresh button in the web UI is a cache buster - use it to see new torrent content in real time. Bear in mind that when a torrent is inserted into the database, a background queue job must run before it will become available in the UI. If you're importing thousands or millions of torrents, it might therefore take a while for everything to show. Here are some things to check if you're not seeing torrents:
+If everything is working, **bitmagnet** should begin showing torrents in the web UI within a maximum of 10 minutes (which is its cache TTL). The round blue refresh button in the web UI is a cache buster - use it to see new torrent content in real time. Bear in mind that when a torrent is inserted into the database, a background queue job must run before it will become available in the UI. If you're importing thousands or millions of torrents, it might therefore take a while for everything to show. Check the next question if you're still not seeing torrents.
+
+## **bitmagnet** isn't finding any new torrents, what's wrong?
+
+{: .highlight }
+If **bitmagnet** isn't finding new torrents, it probably isn't due to a problem with the software - many people are using it successfully. You may have a networking or firewall issue, or a VPN misconfiguration preventing you from connecting to the DHT. Additionally, the TMDB API is blocked in certain countries; if you are in an affected country you may need to either disable the TMDB integration with the `tmdb.enabled` configuration key, or use a VPN.
+
+Here are some things to check if you're not seeing any new torrents:
 
 - Press the round blue refresh button in the UI.
 - Visit the metrics endpoint at `/metrics` and check the following metrics:
   - `bitmagnet_dht_crawler_persisted_total`: If you see a positive number for this, the DHT crawler is working and has found torrents.
   - If torrents are being persisted but you still don't see them in the UI, then check:`bitmagnet_queue_jobs_total{queue="process_torrent",status="processed"}`: If you see a positive number here, then the queue worker is running and processing jobs. If you see `status="failed"` or `status="retry"`, but no `status="processed"`, then something is wrong.
   - If no torrents are being persisted, check: `bitmagnet_dht_server_query_success_total` and `bitmagnet_dht_server_query_error_total`. Having some DHT query errors is completely normal, but if you see no successful queries then something is wrong.
+- If any of the above metrics are missing, you can assume their value is zero.
 - If the metrics confirm a problem, check the logs for errors.
 
 ## Why doesn't **bitmagnet** show me exactly how many torrents it has indexed?
@@ -55,12 +63,12 @@ The short answer is you can't. The only way to know for sure is to add an info h
 
 ## Can I ask **bitmagnet**'s DHT crawler to crawl specific hashes?
 
-No. The DHT crawler works by sampling random info hashes from the network, and was not designed to locate specific hashes - it only crawls what it finds by chance. You can use the import [the `/import` endpoint](/tutorials/import.html) to import specific torrents, and additional methods (separate from the DHT crawler) may be added in future.
+No. The DHT crawler works by sampling random info hashes from the network, and was not designed to locate specific hashes - it only crawls what it finds by chance. You can use the import [the `/import` endpoint](/guides/import.html) to import specific torrents, and additional methods (separate from the DHT crawler) may be added in future.
 
 ## I'm seeing a lot of torrents in the "Unknown" category, that are clearly of a particular content type - what's wrong?
 
-**bitmagnet** is in early development, and improving the classifier will be an ongoing effort. When new versions are released, you can follow the [reclassify turorial](/tutorials/reprocess-reclassify.html) to reclassify torrents. If you'd like to [improve or customize the classifier](/tutorials/classifier.html), this is also possible.
+**bitmagnet** is in early development, and improving the classifier will be an ongoing effort. When new versions are released, you can follow the [reclassify turorial](/tutorials/reprocess-reclassify.html) to reclassify torrents. If you'd like to [improve or customize the classifier](/guides/classifier.html), this is also possible.
 
 ## Can I run multiple **bitmagnet** instances pointing to the same database?
 
-Yes you can, just point multiple instances to one database and it will work - _but_ it will put more load on the database and cause the app to run slower. An alternative is to run multiple instances with multiple databases, and periodically [merge the databases](/tutorials/backup-restore-merge.html).
+Yes you can, just point multiple instances to one database and it will work - _but_ it will put more load on the database and cause the app to run slower. An alternative is to run multiple instances with multiple databases, and periodically [merge the databases](/guides/backup-restore-merge.html).

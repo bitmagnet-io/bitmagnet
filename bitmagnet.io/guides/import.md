@@ -1,10 +1,11 @@
 ---
 title: Import
-parent: Tutorials
+parent: Guides
 layout: default
-nav_order: 5
+nav_order: 6
 redirect_from:
   - /tutorials/importing.html
+  - /tutorials/import.html
 ---
 
 # Import
