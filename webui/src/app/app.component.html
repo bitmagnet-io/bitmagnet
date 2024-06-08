@@ -4,6 +4,13 @@
     <span style="margin-left: 10px">bitmagnet</span>
     <app-version />
     <span class="spacer"></span>
+    <a
+      mat-stroked-button
+      class="button-sponsor"
+      href="https://opencollective.com/bitmagnet"
+      target="_blank"
+      ><mat-icon>favorite</mat-icon>Sponsor</a
+    >
     <button mat-icon-button aria-label="Menu" [matMenuTriggerFor]="menu">
       <mat-icon>menu</mat-icon>
     </button>
@@ -19,6 +26,12 @@
         href="https://github.com/bitmagnet-io/bitmagnet"
         target="_blank"
         >bitmagnet on GitHub</a
+      >
+      <a
+        mat-menu-item
+        href="https://opencollective.com/bitmagnet"
+        target="_blank"
+        >bitmagnet on OpenCollective</a
       >
     </mat-menu>
   </mat-toolbar>
