@@ -1,8 +1,10 @@
 ---
 title: Reprocess & Reclassify
-parent: Tutorials
+parent: Guides
 layout: default
-nav_order: 4
+nav_order: 5
+redirect_from:
+  - /tutorials/reprocess-reclassify.html
 ---
 
 # Reprocess & Reclassify Torrents
@@ -22,10 +24,11 @@ The `reprocess` command will re-queue torrents to allow the latest updates to be
 
 To reprocess all torrents in your index, simply run `bitmagnet reprocess`. If you've indexed a lot of torrents, this will take a while, so there are a few options available to control exactly what gets reprocessed:
 
+- `apisDisabled`: Disable API calls during classification. This makes the classifier run a _lot_ faster, but disables identification with external services such as TMDB (metadata already gathered from external APIs is not lost).
 - `contentType`: Only reprocess torrents of a certain content type. For example, `bitmagnet reprocess --contentType movie` will only reprocess movies. Multiple content types can be comma separated, and `null` refers to torrents of unknown content type.
 - `orphans`: Only reprocess torrents that have no content record.
 - `classifyMode`: This controls how already matched torrents are handled.
   - `default`: Only attempt to match previously unmatched torrents
   - `rematch`: Ignore any pre-existing match and always classify from scratch (A torrent is "matched" if it's associated with a specific piece of content from one of the API integrations, currently only TMDB)
 
-\*hints tell the classifier to use the hinted information instead of any classification results, which can save a lot of work for the classifier and help fix errors. Currently, the only way to add hints is by using [the `/import` endpoint](/tutorials/import.html).
+\*hints tell the classifier to use the hinted information instead of any classification results, which can save a lot of work for the classifier and help fix errors. Currently, the only way to add hints is by using [the `/import` endpoint](/guides/import.html).

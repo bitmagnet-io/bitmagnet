@@ -11,7 +11,8 @@ GEM
     eventmachine (1.2.7)
     ffi (1.16.2)
     forwardable-extended (2.6.0)
-    google-protobuf (3.24.3)
+    google-protobuf (3.24.3-arm64-darwin)
+    google-protobuf (3.24.3-x86_64-linux)
     http_parser.rb (0.8.0)
     i18n (1.14.1)
       concurrent-ruby (~> 1.0)
@@ -92,6 +93,7 @@ PLATFORMS
 DEPENDENCIES
   jekyll (~> 4.3)
   jekyll-redirect-from (~> 0.16)
+  jekyll-seo-tag
   jekyll-target-blank (~> 2.0)
   just-the-docs (~> 0.6)
   kramdown (~> 2.3)

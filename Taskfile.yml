@@ -140,6 +140,7 @@ tasks:
         --table=torrent_files \
         --table=torrent_hints \
         --table=torrent_contents \
+        --table=torrent_tags \
         --table=torrents_torrent_sources \
         --table=key_values \
         bitmagnet \
