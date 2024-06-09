@@ -105,7 +105,7 @@ func Offset(n uint) Option {
 	}
 }
 
-func OrderBy(columns ...clause.OrderByColumn) Option {
+func OrderBy(columns ...OrderByColumn) Option {
 	return func(ctx OptionBuilder) (OptionBuilder, error) {
 		return ctx.OrderBy(columns...), nil
 	}
@@ -115,19 +115,14 @@ const QueryStringRankField = "query_string_rank"
 
 func OrderByQueryStringRank() Option {
 	return func(ctx OptionBuilder) (OptionBuilder, error) {
-		return ctx.OrderBy(clause.OrderByColumn{
-			Column:  clause.Column{Name: QueryStringRankField},
-			Desc:    true,
-			Reorder: true,
+		return ctx.OrderBy(OrderByColumn{
+			OrderByColumn: clause.OrderByColumn{
+				Column:  clause.Column{Name: QueryStringRankField},
+				Desc:    true,
+				Reorder: true,
+			},
 		}), nil
 	}
-}
-
-func OrderByColumn(field string, desc bool) Option {
-	return OrderBy(clause.OrderByColumn{
-		Column: clause.Column{Name: field},
-		Desc:   desc,
-	})
 }
 
 func WithFacet(facets ...Facet) Option {

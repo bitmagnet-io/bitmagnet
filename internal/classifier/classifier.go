@@ -8,6 +8,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protobuf"
 	"github.com/google/cel-go/cel"
+	"github.com/google/cel-go/common/types/ref"
 	"strings"
 )
 
@@ -16,7 +17,7 @@ type Compiler interface {
 }
 
 type Runner interface {
-	Run(ctx context.Context, workflow string, t model.Torrent) (classification.Result, error)
+	Run(ctx context.Context, workflow string, flags Flags, t model.Torrent) (classification.Result, error)
 }
 
 type compiler struct {
@@ -37,6 +38,7 @@ type compilerOption func(Source, *compilerContext) error
 type executionContext struct {
 	context.Context
 	dependencies
+	flags     map[string]ref.Val
 	workflows map[string]action
 	torrent   model.Torrent
 	torrentPb *protobuf.Torrent
@@ -100,9 +102,23 @@ func (c compiler) Compile(source Source) (Runner, error) {
 		}
 		workflows[name] = a
 	}
+	cfs := make(compiledFlags, len(source.FlagDefinitions))
+	for k, def := range source.FlagDefinitions {
+		rawVal, ok := source.Flags[k]
+		if !ok {
+			return nil, ctx.fatal(fmt.Errorf("missing value for flag '%q'", k))
+		}
+		val, err := def.celVal(rawVal)
+		if err != nil {
+			return nil, ctx.fatal(fmt.Errorf("invalid value for flag '%s': %w", k, err))
+		}
+		cfs[k] = val
+	}
 	return runner{
-		dependencies: c.dependencies,
-		workflows:    workflows,
+		dependencies:    c.dependencies,
+		flagDefinitions: source.FlagDefinitions,
+		compiledFlags:   cfs,
+		workflows:       workflows,
 	}, nil
 }
 

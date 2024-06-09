@@ -12,3 +12,11 @@ svg .fill {
     fill: mat.get-theme-color($dark-theme, primary, 500);
   }
 }
+
+::ng-deep .button-sponsor.mat-mdc-outlined-button:not(:disabled) {
+  margin-right: 10px;
+  border-color: #fff;
+  &:hover {
+    background-color: mat.get-color-from-palette($accent-palette, 500);
+  }
+}

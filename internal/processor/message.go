@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
@@ -21,6 +22,7 @@ const (
 type MessageParams struct {
 	ClassifyMode       ClassifyMode
 	ClassifierWorkflow string
+	ClassifierFlags    classifier.Flags
 	InfoHashes         []protocol.ID
 }
 

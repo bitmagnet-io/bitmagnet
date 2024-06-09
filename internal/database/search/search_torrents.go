@@ -120,7 +120,7 @@ func (s search) TorrentSuggestTags(ctx context.Context, q SuggestTagsQuery, opti
 					SQL: "torrent_tags.name AS name",
 				},
 				clause.Expr{
-					SQL: "count(torrent_tags.*) AS count",
+					SQL: "count(torrent_tags.*) AS total_count",
 				},
 			),
 			query.Where(criteria...),
@@ -129,8 +129,22 @@ func (s search) TorrentSuggestTags(ctx context.Context, q SuggestTagsQuery, opti
 					Name: "torrent_tags.name",
 				},
 			),
-			query.OrderByColumn("count", true),
-			query.OrderByColumn("name", false),
+			query.OrderBy(
+				query.OrderByColumn{
+					OrderByColumn: clause.OrderByColumn{
+						Column: clause.Column{
+							Alias: "total_count",
+						},
+					},
+				},
+				query.OrderByColumn{
+					OrderByColumn: clause.OrderByColumn{
+						Column: clause.Column{
+							Alias: "name",
+						},
+					},
+				},
+			),
 			query.Limit(10),
 		}, options...)...),
 		model.TableNameTorrentTag,

@@ -1,8 +1,10 @@
 ---
 title: Backup, Restore & Merge
-parent: Tutorials
+parent: Guides
 layout: default
-nav_order: 2
+nav_order: 7
+redirect_from:
+  - /tutorials/backup-restore-merge.html
 ---
 
 # Backup, Restore & Merge
@@ -20,6 +22,9 @@ This tutorial will show you how to backup, restore and merge **bitmagnet** datab
 > - [x] You'll need to have `pg_dump` and `psql` installed. These are part of the PostgreSQL package. Use Google to find out how to install these tools on your operating system.
 
 ## Taking a backup
+
+{: .warning }
+If you intend to import your backup to another **bitmagnet** instance, you should ensure the other instance is the same version. If the other instance is already a higher version, you'll need to upgrade the instance you're backing up from before taking a backup.
 
 The following command will take a backup of the critical **bitmagnet** data and save it to a file named `export.sql`. (note this is not a full backup of the database which would include creation of tables, indexes etc.). By exporting with the `--data-only` flag the resulting file can be imported into a new or existing installation, after **bitmagnet** has run its migrations to set up the database and tables.
 
@@ -41,6 +46,7 @@ pg_dump \
         --table=torrent_files \
         --table=torrent_hints \
         --table=torrent_contents \
+        --table=torrent_tags \
         --table=torrents_torrent_sources \
         --table=key_values \
         bitmagnet \

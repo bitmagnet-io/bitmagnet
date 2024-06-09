@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/exclause"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/logger"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -38,12 +39,15 @@ func New(p Params) Result {
 					ZapLogger: p.Logger,
 					Config: logger.Config{
 						LogLevel:      gormlogger.Info,
-						SlowThreshold: time.Second * 3,
+						SlowThreshold: time.Second * 30,
 					},
 				}).GormLogger,
 			})
 			if dbErr != nil {
 				return nil, dbErr
+			}
+			if pluginErr := gDb.Use(exclause.New()); pluginErr != nil {
+				return nil, pluginErr
 			}
 			return gDb, nil
 		}),

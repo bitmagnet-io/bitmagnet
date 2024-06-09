@@ -1,8 +1,10 @@
 ---
 title: Servarr Integration
-parent: Tutorials
+parent: Guides
 layout: default
-nav_order: 6
+nav_order: 8
+redirect_from:
+  - /tutorials/servarr-integration.html
 ---
 
 # Servarr Integration

@@ -1,7 +1,9 @@
 package processcmd
 
 import (
+	"encoding/json"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
+	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/urfave/cli/v2"
@@ -27,11 +29,29 @@ func New(p Params) (Result, error) {
 			&cli.StringSliceFlag{
 				Name: "infoHash",
 			},
+			&cli.StringFlag{
+				Name:  "classifierFlags",
+				Value: "{}",
+				Usage: "optional JSON-encoded runtime flags to pass to the classifier",
+			},
+			&cli.BoolFlag{
+				Name:  "apisDisabled",
+				Value: false,
+				Usage: "disable API calls for the classifier workflow",
+			},
 		},
 		Action: func(ctx *cli.Context) error {
 			pr, err := p.Processor.Get()
 			if err != nil {
 				return err
+			}
+			var flags classifier.Flags
+			strFlags := ctx.String("classifierFlags")
+			if err := json.Unmarshal([]byte(strFlags), &flags); err != nil {
+				return cli.Exit("invalid flags", 1)
+			}
+			if ctx.Bool("apisDisabled") {
+				flags["apis_enabled"] = false
 			}
 			var infoHashes []protocol.ID
 			for _, infoHash := range ctx.StringSlice("infoHash") {
@@ -45,8 +65,9 @@ func New(p Params) (Result, error) {
 				return err
 			}
 			return pr.Process(ctx.Context, processor.MessageParams{
-				ClassifyMode: processor.ClassifyModeRematch,
-				InfoHashes:   infoHashes,
+				ClassifyMode:    processor.ClassifyModeRematch,
+				ClassifierFlags: flags,
+				InfoHashes:      infoHashes,
 			})
 		},
 	},

@@ -20,6 +20,7 @@ func VideoResolutionFacet(options ...query.FacetOption) query.Facet {
 				query.FacetHasKey(VideoResolutionFacetKey),
 				query.FacetHasLabel("Video Resolution"),
 				query.FacetUsesOrLogic(),
+				query.FacetTriggersCte(),
 			}, options...)...,
 		),
 		field: videoResolutionField,

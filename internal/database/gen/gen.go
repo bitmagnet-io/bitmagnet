@@ -49,8 +49,8 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		"torrent_files",
 		infoHashType,
 		infoHashReadOnly,
-		gen.FieldType("size", "uint64"),
-		gen.FieldType("index", "uint32"),
+		gen.FieldType("size", "uint"),
+		gen.FieldType("index", "uint"),
 		gen.FieldGORMTag("index", func(tag field.GormTag) field.GormTag {
 			tag.Set("<-", "create")
 			return tag
@@ -190,7 +190,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 			tag.Set("<-", "false")
 			return tag
 		}),
-		gen.FieldType("size", "uint64"),
+		gen.FieldType("size", "uint"),
 		gen.FieldIgnore("tsv"),
 		createdAtReadOnly,
 	)
@@ -364,6 +364,8 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 				gen.FieldType("content_type", "NullContentType"),
 				gen.FieldType("seeders", "NullUint"),
 				gen.FieldType("leechers", "NullUint"),
+				gen.FieldType("size", "uint"),
+				gen.FieldType("files_count", "NullUint"),
 			},
 			torrentContentBaseOptions...,
 		)...,

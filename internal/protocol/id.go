@@ -149,7 +149,7 @@ func (id *ID) UnmarshalBencode(b []byte) error {
 	return nil
 }
 
-func (b *ID) MarshalJSON() ([]byte, error) {
+func (b ID) MarshalJSON() ([]byte, error) {
 	return json.Marshal(b.String())
 }
 

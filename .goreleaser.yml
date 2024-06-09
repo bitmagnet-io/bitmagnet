@@ -30,6 +30,8 @@ builds:
         goarch: arm64
     main: ./main.go
     binary: bitmagnet
+    ldflags:
+      - "-s -w -X github.com/bitmagnet-io/bitmagnet/internal/version.GitTag={{.Version}}"
 
 archives:
   - id: bitmagnet

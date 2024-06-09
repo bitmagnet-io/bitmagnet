@@ -21,7 +21,7 @@ type Item struct {
 	Source          string
 	InfoHash        protocol.ID
 	Name            string
-	Size            uint64
+	Size            uint
 	Private         bool
 	ContentType     model.NullContentType
 	ContentSource   model.NullString
@@ -72,7 +72,6 @@ type ActiveImport interface {
 	Closed() bool
 	Close() error
 	Err() error
-	ImportedHashes() []protocol.ID
 }
 
 type ImportItemsError struct {
@@ -112,7 +111,6 @@ type activeImport struct {
 	itemChan        chan Item
 	itemBuffer      []Item
 	importedSources map[string]struct{}
-	importedHashes  []protocol.ID
 	errors          ImportErrors
 }
 
@@ -243,7 +241,6 @@ func (i *activeImport) persistItems(items ...Item) error {
 	}); txErr != nil {
 		return txErr
 	}
-	i.importedHashes = append(i.importedHashes, infoHashes...)
 	return nil
 }
 
@@ -331,10 +328,4 @@ func (i *activeImport) Close() error {
 		close(i.itemChan)
 	}
 	return i.errors.OrNil()
-}
-
-func (i *activeImport) ImportedHashes() []protocol.ID {
-	i.mutex.RLock()
-	defer i.mutex.RUnlock()
-	return i.importedHashes
 }

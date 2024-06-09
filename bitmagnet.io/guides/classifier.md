@@ -1,8 +1,10 @@
 ---
 title: Classifier
-parent: Tutorials
+parent: Guides
 layout: default
-nav_order: 3
+nav_order: 4
+redirect_from:
+  - /tutorials/classifier.html
 ---
 
 # Classifier
@@ -294,7 +296,7 @@ bitmagnet process --infoHash=aaaaaaaaaaaaaaaaaaaa --infoHash=bbbbbbbbbbbbbbbbbbb
 
 ## Reclassify all torrents
 
-Read how to [reclassify all torrents](/tutorials/reprocess-reclassify.html).
+Read how to [reclassify all torrents](/guides/reprocess-reclassify.html).
 
 ## Practical use cases and examples
 
@@ -332,6 +334,15 @@ flags:
 ```
 
 For convenience, this is also exposed as the configuration option `tmdb.enabled`, and can be specified with the environment variable `TMDB_ENABLED=false`.
+
+The `apis_enabled` flag has the same effect, disabling TMDB and any future API integrations:
+
+```yaml
+flags:
+  apis_enabled: false
+```
+
+API integrations can also be disabled for individual classifier runs, without disabling them globally, by passing the `--apisDisabled` flag to [the reprocess command](/guides/reprocess-reclassify.html).
 
 ### Extend the default workflow with custom logic
 

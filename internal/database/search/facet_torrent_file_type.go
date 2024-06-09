@@ -16,6 +16,7 @@ func TorrentFileTypeFacet(options ...query.FacetOption) query.Facet {
 				query.FacetHasLabel("File Type"),
 				query.FacetUsesOrLogic(),
 				query.FacetHasAggregationOption(query.RequireJoin(model.TableNameTorrentContent)),
+				query.FacetTriggersCte(),
 			}, options...)...,
 		),
 	}
