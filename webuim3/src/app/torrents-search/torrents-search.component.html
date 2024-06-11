@@ -1,0 +1,51 @@
+<mat-drawer-container class="drawer-container">
+  <mat-drawer #drawer class="drawer" fixedInViewport
+               [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+               [mode]="(isHandset$ | async) ? 'over' : 'side'"
+               [opened]="(isHandset$ | async) === false">
+    <mat-toolbar>Menu</mat-toolbar>
+  </mat-drawer>
+  <mat-drawer-content>
+<!--      @if (isHandset$ | async) {-->
+        <button
+          type="button"
+          aria-label="Toggle drawer"
+          mat-icon-button
+          (click)="drawer.toggle()">
+          <mat-icon aria-label="Side nav toggle icon" fontSet="material-icons">{{drawer.opened ? 'arrow_circle_left' : 'arrow_circle_right'}}</mat-icon>
+        </button>
+<!--      }-->
+
+    <div class="drawer-scroll-wrapper">
+      <div class="drawer-content"><div class="mat-elevation-z8">
+        <table mat-table class="full-width-table" matSort aria-label="Elements">
+          <!-- Id Column -->
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Id</th>
+            <td mat-cell *matCellDef="let row">{{row.id}}</td>
+          </ng-container>
+
+          <!-- Name Column -->
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+            <td mat-cell *matCellDef="let row">{{row.name}}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <mat-paginator #paginator
+                       [length]="dataSource.data.length"
+                       [pageIndex]="0"
+                       [pageSize]="10"
+                       [pageSizeOptions]="[5, 10, 20]"
+                       aria-label="Select page">
+        </mat-paginator>
+      </div>
+
+      </div>
+    </div>
+
+  </mat-drawer-content>
+</mat-drawer-container>

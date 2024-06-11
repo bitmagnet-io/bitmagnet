@@ -1,0 +1,69 @@
+<mat-toolbar class="toolbar-header">
+  <h1><mat-icon svgIcon="magnet"></mat-icon>bitmagnet</h1>
+  <nav>
+    @for (item of rootRoutes; track $index) {
+      <a
+        mat-button
+        [routerLink]="item.path"
+        #link="routerLinkActive"
+        routerLinkActive
+        [class]="link.isActive ? 'active' : ''"
+      >
+        {{ item.title }}
+      </a>
+    }
+  </nav>
+  <span class="spacer"></span>
+  <a
+    mat-button
+    class="button-sponsor"
+    href="https://opencollective.com/bitmagnet"
+    target="_blank"
+    matTooltip="Support bitmagnet"
+  ><mat-icon>favorite</mat-icon>Sponsor</a
+  >
+  <button
+    mat-icon-button
+    aria-label="Theme"
+    [matMenuTriggerFor]="themesMenu"
+    matTooltip="Change theme"
+  >
+    <mat-icon>apparel</mat-icon>
+  </button>
+  <mat-menu #themesMenu="matMenu">
+    @for (t of themeManager.themes; track t.key) {
+      <a mat-menu-item
+         (click)="themeManager.setTheme(t.key)"
+         [disabled]="t.key === themeManager.selectedTheme"
+      ><mat-icon>{{t.dark ? 'dark_mode' : 'light_mode'}}</mat-icon>{{t.label}}</a
+      >
+    }
+  </mat-menu>
+  <button mat-icon-button
+          aria-label="External links"
+          matTooltip="External links"
+          [matMenuTriggerFor]="externalLinksMenu">
+    <mat-icon svgIcon="external-link" />
+  </button>
+  <mat-menu #externalLinksMenu="matMenu">
+    <a mat-menu-item href="https://bitmagnet.io" target="_blank"
+    >bitmagnet.io</a
+    >
+    <a mat-menu-item href="https://discord.gg/6mFNszX8qM" target="_blank"
+    >bitmagnet on Discord</a
+    >
+    <a
+      mat-menu-item
+      href="https://github.com/bitmagnet-io/bitmagnet"
+      target="_blank"
+    >bitmagnet on GitHub</a
+    >
+    <a
+      mat-menu-item
+      href="https://opencollective.com/bitmagnet"
+      target="_blank"
+    >bitmagnet on OpenCollective</a
+    >
+  </mat-menu>
+</mat-toolbar>
+<ng-content></ng-content>

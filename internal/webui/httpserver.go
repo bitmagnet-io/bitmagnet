@@ -3,7 +3,7 @@ package webui
 import (
 	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpserver"
-	"github.com/bitmagnet-io/bitmagnet/webui"
+	"github.com/bitmagnet-io/bitmagnet/webuim3"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -39,8 +39,8 @@ func (b *builder) Key() string {
 }
 
 func (b *builder) Apply(e *gin.Engine) error {
-	webuiFS := webui.StaticFS()
-	appRoot, appRootErr := fs.Sub(webuiFS, "dist/bitmagnet")
+	webuiFS := webuim3.StaticFS()
+	appRoot, appRootErr := fs.Sub(webuiFS, "dist/bitmagnet/browser")
 	if appRootErr != nil {
 		b.logger.Errorf("the webui app root directory is missing; run `ng build` within the `webui` folder: %v", appRootErr)
 		return nil
@@ -48,7 +48,7 @@ func (b *builder) Apply(e *gin.Engine) error {
 	appRootFS := http.FS(appRoot)
 	if walkErr := fs.WalkDir(appRoot, ".", func(path string, d fs.DirEntry, _ error) error {
 		if !d.IsDir() {
-			e.StaticFileFS(fmt.Sprintf("/%s", path), fmt.Sprintf("./%s", path), appRootFS)
+			e.StaticFileFS(fmt.Sprintf("/webui/%s", path), fmt.Sprintf("./%s", path), appRootFS)
 		}
 		return nil
 	}); walkErr != nil {
@@ -63,7 +63,7 @@ func (b *builder) Apply(e *gin.Engine) error {
 	if indexBytesErr != nil {
 		return fmt.Errorf("failed to read index.html: %w", indexBytesErr)
 	}
-	e.GET("/", func(c *gin.Context) {
+	e.GET("/webui", func(c *gin.Context) {
 		c.Header("Content-Type", "text/html")
 		_, _ = c.Writer.Write(indexBytes)
 	})
