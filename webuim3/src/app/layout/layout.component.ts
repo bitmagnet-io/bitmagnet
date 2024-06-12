@@ -5,13 +5,24 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
-import {Route, RouterLink, RouterLinkActive, RouterOutlet} from "@angular/router";
-import {routes} from "../app.routes";
-import {MatTab, MatTabGroup, MatTabLink, MatTabNav, MatTabNavPanel} from "@angular/material/tabs";
-import {ThemeManager} from "../themes/theme-manager.service";
-import {MatMenu, MatMenuItem, MatMenuTrigger} from "@angular/material/menu";
-import {MatTooltip} from "@angular/material/tooltip";
-import {HttpClientModule} from "@angular/common/http";
+import {
+  Route,
+  RouterLink,
+  RouterLinkActive,
+  RouterOutlet,
+} from '@angular/router';
+import {
+  MatTab,
+  MatTabGroup,
+  MatTabLink,
+  MatTabNav,
+  MatTabNavPanel,
+} from '@angular/material/tabs';
+import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
+import { MatTooltip } from '@angular/material/tooltip';
+import { ThemeManager } from '../themes/theme-manager.service';
+import { routes } from '../app.routes';
+import { VersionComponent } from '../version/version.component';
 
 @Component({
   selector: 'app-layout',
@@ -36,15 +47,11 @@ import {HttpClientModule} from "@angular/common/http";
     MatMenuTrigger,
     MatMenuItem,
     MatMenu,
-    MatTooltip
+    MatTooltip,
+    VersionComponent,
   ],
-  providers: [ HttpClientModule]
 })
 export class LayoutComponent {
-  rootRoutes = routes.filter(r=>r.path);
+  rootRoutes = routes.filter((r) => r.path);
   themeManager = inject(ThemeManager);
-
-  routeTitle(route: Route): string {
-    return route.title as string;
-  }
 }

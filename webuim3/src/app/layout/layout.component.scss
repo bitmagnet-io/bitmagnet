@@ -7,26 +7,30 @@
   --mat-icon-color: #fff;
   h1 {
     margin-top: -6px;
+    cursor: default;
     mat-icon {
-      //display: inline-block;
       position: relative;
       top: 6px;
       margin-right: 10px;
     }
+    app-version {
+      margin-left: 16px;
+      font-size: 13px;
+    }
   }
   .mdc-button {
-    margin-left: 10px;
+    margin-left: 6px;
     --mdc-text-button-label-text-weight: bold;
-    --mat-text-button-horizontal-padding: 20px;
-    --mdc-text-button-container-height: 34px;
+    --mat-text-button-horizontal-padding: 12px;
+    --mdc-text-button-container-height: 30px;
   }
   --mdc-text-button-label-text-size: 15px;
   nav {
-    margin-left: 40px;
+    margin-left: 30px;
     margin-top: 2px;
   }
   .spacer {
-     display: inline-flex;
-     flex: 1 1 auto;
-   }
+    display: inline-flex;
+    flex: 1 1 auto;
+  }
 }
