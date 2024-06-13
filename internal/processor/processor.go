@@ -116,10 +116,16 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		tcs = append(tcs, tc)
 	}
 	var wg sync.WaitGroup
+	sem := semaphore.NewWeighted(3)
 	for _, torrent := range searchResult.Torrents {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
+			if semErr := sem.Acquire(ctx, 1); semErr != nil {
+				addFailedHash(torrent.InfoHash, semErr)
+				return
+			}
+			defer sem.Release(1)
 			thisDeleteIds := make(map[string]struct{}, len(torrent.Contents))
 			foundMatch := false
 			for _, tc := range torrent.Contents {
