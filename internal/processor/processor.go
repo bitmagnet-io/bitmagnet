@@ -116,7 +116,7 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		tcs = append(tcs, tc)
 	}
 	var wg sync.WaitGroup
-	sem := semaphore.NewWeighted(5)
+	sem := semaphore.NewWeighted(3)
 	for _, torrent := range searchResult.Torrents {
 		wg.Add(1)
 		go func() {
