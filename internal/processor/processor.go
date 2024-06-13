@@ -14,7 +14,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"golang.org/x/sync/semaphore"
 	"gorm.io/gen/field"
-	"sync"
 )
 
 type Processor interface {
@@ -88,33 +87,6 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 	var idsToDelete []string
 	var infoHashesToDelete []protocol.ID
 	tagsToAdd := make(map[protocol.ID]map[string]struct{})
-	var mtx sync.Mutex
-	addDeleteId := func(id string) {
-		mtx.Lock()
-		defer mtx.Unlock()
-		idsToDelete = append(idsToDelete, id)
-	}
-	addDeleteInfoHash := func(id protocol.ID) {
-		mtx.Lock()
-		defer mtx.Unlock()
-		infoHashesToDelete = append(infoHashesToDelete, id)
-	}
-	addTags := func(id protocol.ID, tags map[string]struct{}) {
-		mtx.Lock()
-		defer mtx.Unlock()
-		tagsToAdd[id] = tags
-	}
-	addFailedHash := func(id protocol.ID, err error) {
-		mtx.Lock()
-		defer mtx.Unlock()
-		failedHashes = append(failedHashes, id)
-		errs = append(errs, err)
-	}
-	addTorrentContent := func(tc model.TorrentContent) {
-		mtx.Lock()
-		defer mtx.Unlock()
-		tcs = append(tcs, tc)
-	}
 	for _, torrent := range searchResult.Torrents {
 		thisDeleteIds := make(map[string]struct{}, len(torrent.Contents))
 		foundMatch := false
@@ -135,9 +107,10 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		cl, classifyErr := c.runner.Run(ctx, workflowName, params.ClassifierFlags, torrent)
 		if classifyErr != nil {
 			if errors.Is(classifyErr, classification.ErrDeleteTorrent) {
-				addDeleteInfoHash(torrent.InfoHash)
+				infoHashesToDelete = append(infoHashesToDelete, torrent.InfoHash)
 			} else {
-				addFailedHash(torrent.InfoHash, classifyErr)
+				failedHashes = append(failedHashes, torrent.InfoHash)
+				errs = append(errs, classifyErr)
 			}
 			continue
 		}
@@ -145,12 +118,12 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		tcId := torrentContent.InferID()
 		for id := range thisDeleteIds {
 			if id != tcId {
-				addDeleteId(id)
+				idsToDelete = append(idsToDelete, id)
 			}
 		}
-		addTorrentContent(torrentContent)
+		tcs = append(tcs, torrentContent)
 		if len(cl.Tags) > 0 {
-			addTags(torrent.InfoHash, cl.Tags)
+			tagsToAdd[torrent.InfoHash] = cl.Tags
 		}
 	}
 	if len(failedHashes) > 0 {
