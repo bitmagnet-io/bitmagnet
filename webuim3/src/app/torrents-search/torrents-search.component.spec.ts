@@ -7,9 +7,9 @@ describe('TableComponent', () => {
   let component: TorrentsSearchComponent;
   let fixture: ComponentFixture<TorrentsSearchComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule]
+  beforeEach(waitForAsync(async () => {
+    await TestBed.configureTestingModule({
+      imports: [NoopAnimationsModule],
     }).compileComponents();
   }));
 

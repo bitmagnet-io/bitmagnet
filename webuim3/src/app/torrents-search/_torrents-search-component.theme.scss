@@ -2,7 +2,10 @@
 
 @mixin theme($theme) {
   .drawer-scroll-wrapper {
-    background-color: rgba(mat.get-theme-color($theme, primary-container), 0.75);
+    background-color: rgba(
+      mat.get-theme-color($theme, primary-container),
+      0.75
+    );
   }
   .drawer-content {
     @media (pointer: fine) {

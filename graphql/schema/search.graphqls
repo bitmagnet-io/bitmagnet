@@ -1,6 +1,7 @@
 input SearchQueryInput {
   queryString: String
   limit: Int
+  page: Int
   offset: Int
   totalCount: Boolean
   """

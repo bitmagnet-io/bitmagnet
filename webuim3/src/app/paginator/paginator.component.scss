@@ -1,0 +1,12 @@
+.paginator {
+  > * {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  p {
+    margin: 0 20px;
+  }
+  .field-items-per-page {
+    width: 140px;
+  }
+}

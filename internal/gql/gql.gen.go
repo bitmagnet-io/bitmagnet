@@ -1956,6 +1956,7 @@ scalar Year
 	{Name: "../../graphql/schema/search.graphqls", Input: `input SearchQueryInput {
   queryString: String
   limit: Int
+  page: Int
   offset: Int
   totalCount: Boolean
   """
@@ -11651,7 +11652,7 @@ func (ec *executionContext) unmarshalInputSearchQueryInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"queryString", "limit", "offset", "totalCount", "hasNextPage", "cached", "aggregationBudget"}
+	fieldsInOrder := [...]string{"queryString", "limit", "page", "offset", "totalCount", "hasNextPage", "cached", "aggregationBudget"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -11672,6 +11673,13 @@ func (ec *executionContext) unmarshalInputSearchQueryInput(ctx context.Context, 
 				return it, err
 			}
 			it.Limit = data
+		case "page":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+			data, err := ec.unmarshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullUint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Page = data
 		case "offset":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
 			data, err := ec.unmarshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullUint(ctx, v)

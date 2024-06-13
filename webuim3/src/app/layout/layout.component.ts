@@ -6,7 +6,6 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import {
-  Route,
   RouterLink,
   RouterLinkActive,
   RouterOutlet,

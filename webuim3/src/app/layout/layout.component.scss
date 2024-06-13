@@ -1,12 +1,12 @@
 .mat-toolbar.toolbar-header {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 10;
   --mat-toolbar-title-text-size: 22px;
   --mat-toolbar-standard-height: 56px;
   --mat-icon-color: #fff;
   h1 {
-    margin-top: -6px;
+    margin-top: -2px;
     cursor: default;
     mat-icon {
       position: relative;
@@ -33,4 +33,8 @@
     display: inline-flex;
     flex: 1 1 auto;
   }
+}
+
+.app-content {
+  z-index: 1;
 }

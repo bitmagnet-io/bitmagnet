@@ -1,0 +1,152 @@
+<table
+  mat-table
+  [dataSource]="dataSource"
+  [multiTemplateDataRows]="true"
+  class="table-results"
+>
+  <!-- Checkbox Column -->
+  <ng-container matColumnDef="select">
+    <th mat-header-cell *matHeaderCellDef>
+<!--      <mat-checkbox-->
+<!--        (change)="toggleAllRows()"-->
+<!--        [checked]="selectedItems.hasValue() && isAllSelected()"-->
+<!--        [indeterminate]="selectedItems.hasValue() && !isAllSelected()"-->
+<!--        [aria-label]="checkboxLabel()"-->
+<!--      >-->
+<!--      </mat-checkbox>-->
+    </th>
+    <td mat-cell *matCellDef="let row">
+<!--      <mat-checkbox-->
+<!--        (click)="$event.stopPropagation()"-->
+<!--        (change)="$event ? selectedItems.toggle(row) : null"-->
+<!--        [checked]="selectedItems.isSelected(row)"-->
+<!--        [aria-label]="checkboxLabel(row)"-->
+<!--      >-->
+<!--      </mat-checkbox>-->
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="summary">
+    <th mat-header-cell *matHeaderCellDef>Summary</th>
+    <td
+      mat-cell
+      *matCellDef="let i"
+      (click)="toggleTorrentContentId(i.id); $event.stopPropagation()"
+    >
+<!--      <mat-icon-->
+<!--        [attr.title]="-->
+<!--                search.contentTypeInfo(i.contentType)?.singular ?? 'Unknown'-->
+<!--              "-->
+<!--      >{{-->
+<!--          search.contentTypeInfo(i.contentType)?.icon ?? "question_mark"-->
+<!--        }}</mat-icon-->
+<!--      >-->
+      <span class="title">{{ item(i).title }}</span>
+      <mat-chip-set>
+        @for (tagName of item(i).torrent.tagNames; track tagName) {
+          <mat-chip class="chip-primary">
+            {{ tagName }}
+          </mat-chip>
+        }
+        @if (item(i).languages; as languages) {
+          <mat-chip>
+            @for (l of languages; let j = $index; track l.id) {
+              <ng-container>
+                {{ j > 0 ? ", " : "" }}{{ l.name }}
+              </ng-container>
+            }
+          </mat-chip>
+        }
+        @if (item(i).video3d?.slice(1); as video3d) {
+          <mat-chip>{{ video3d }}</mat-chip>
+        }
+        @if (item(i).videoResolution?.slice(1); as videoResolution) {
+          <mat-chip>{{ videoResolution }}</mat-chip>
+        }
+        @if (item(i).videoSource; as videoSource) {
+          <mat-chip>{{ videoSource }}</mat-chip>
+        }
+        @if (item(i).videoCodec; as videoCodec) {
+          <mat-chip>{{ videoCodec }}</mat-chip>
+        }
+        @if (item(i).videoModifier; as videoModifier) {
+          <mat-chip>{{ videoModifier }}</mat-chip>
+        }
+      </mat-chip-set>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="size">
+    <th mat-header-cell *matHeaderCellDef>Size</th>
+    <td mat-cell *matCellDef="let i">
+      {{ item(i).torrent.size | filesize }}
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="publishedAt">
+    <th mat-header-cell *matHeaderCellDef>Published</th>
+    <td class="td-published-at" mat-cell *matCellDef="let i">
+      <abbr
+        matTooltip="{{ item(i).publishedAt }}"
+        matTooltipClass="tooltip-published-at"
+      >
+        {{ item(i).publishedAt | humanTime }}
+      </abbr>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="peers">
+    <th mat-header-cell *matHeaderCellDef>
+      <abbr matTooltip="Seeders / Leechers">S / L</abbr>
+    </th>
+    <td mat-cell *matCellDef="let i">
+      {{ item(i).seeders ?? "?" }} /
+      {{ item(i).leechers ?? "?" }}
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="magnet">
+    <th mat-header-cell *matHeaderCellDef style="text-align: center">
+      Magnet
+    </th>
+    <td mat-cell *matCellDef="let i">
+      <a href="{{ item(i).torrent.magnetUri }}"
+      ><mat-icon svgIcon="magnet"></mat-icon
+      ></a>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="expandedDetail">
+    <td
+      mat-cell
+      *matCellDef="let i"
+      [attr.colspan]="displayedColumns.length"
+    >
+      <div
+        class="item-detail"
+        [@detailExpand]="
+                expandedTorrentContentId === i.id ? 'expanded' : 'collapsed'
+              "
+      >
+        <app-torrent-content-content
+        [torrentContent]="i"
+      />
+      </div>
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr
+    mat-row
+    *matRowDef="let i; columns: displayedColumns"
+    [class]="
+            'summary-row ' +
+            (i.id === expandedTorrentContentId ? 'expanded' : 'collapsed')
+          "
+  ></tr>
+  <tr
+    mat-row
+    *matRowDef="let _; columns: ['expandedDetail']"
+    class="expanded-detail-row"
+  ></tr>
+</table>
