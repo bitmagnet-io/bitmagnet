@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
+import { TranslocoService } from '@jsverse/transloco';
 import { LayoutComponent } from './layout/layout.component';
 
 @Component({
@@ -13,7 +14,11 @@ import { LayoutComponent } from './layout/layout.component';
 })
 export class AppComponent {
   title = 'bitmagnet';
-  constructor(iconRegistry: MatIconRegistry, domSanitizer: DomSanitizer) {
+  constructor(
+    iconRegistry: MatIconRegistry,
+    domSanitizer: DomSanitizer,
+    transloco: TranslocoService,
+  ) {
     iconRegistry
       .setDefaultFontSetClass(
         'material-icons-outlined',
@@ -27,5 +32,6 @@ export class AppComponent {
         'external-link',
         domSanitizer.bypassSecurityTrustResourceUrl('external-link.svg'),
       );
+    transloco.setActiveLang('en');
   }
 }

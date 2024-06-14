@@ -1,4 +1,4 @@
-import * as generated from "../graphql/generated";
+import * as generated from '../graphql/generated';
 
 type ContentTypeInfo = {
   singular: string;
@@ -6,55 +6,58 @@ type ContentTypeInfo = {
   icon: string;
 };
 
-export const contentTypes: Record<generated.ContentType | "null", ContentTypeInfo> = {
+export const contentTypes: Record<
+  generated.ContentType | 'null',
+  ContentTypeInfo
+> = {
   movie: {
-    singular: "Movie",
-    plural: "Movies",
-    icon: "movie",
+    singular: 'Movie',
+    plural: 'Movies',
+    icon: 'movie',
   },
   tv_show: {
-    singular: "TV Show",
-    plural: "TV Shows",
-    icon: "live_tv",
+    singular: 'TV Show',
+    plural: 'TV Shows',
+    icon: 'live_tv',
   },
   music: {
-    singular: "Music",
-    plural: "Music",
-    icon: "music_note",
+    singular: 'Music',
+    plural: 'Music',
+    icon: 'music_note',
   },
   ebook: {
-    singular: "E-Book",
-    plural: "E-Books",
-    icon: "auto_stories",
+    singular: 'E-Book',
+    plural: 'E-Books',
+    icon: 'auto_stories',
   },
   comic: {
-    singular: "Comic",
-    plural: "Comics",
-    icon: "comic_bubble",
+    singular: 'Comic',
+    plural: 'Comics',
+    icon: 'comic_bubble',
   },
   audiobook: {
-    singular: "Audiobook",
-    plural: "Audiobooks",
-    icon: "mic",
+    singular: 'Audiobook',
+    plural: 'Audiobooks',
+    icon: 'mic',
   },
   software: {
-    singular: "Software",
-    plural: "Software",
-    icon: "desktop_windows",
+    singular: 'Software',
+    plural: 'Software',
+    icon: 'desktop_windows',
   },
   game: {
-    singular: "Game",
-    plural: "Games",
-    icon: "sports_esports",
+    singular: 'Game',
+    plural: 'Games',
+    icon: 'sports_esports',
   },
   xxx: {
-    singular: "XXX",
-    plural: "XXX",
-    icon: "18_up_rating_outline",
+    singular: 'XXX',
+    plural: 'XXX',
+    icon: '18_up_rating_outline',
   },
   null: {
-    singular: "Unknown",
-    plural: "Unknown",
-    icon: "question_mark",
+    singular: 'Unknown',
+    plural: 'Unknown',
+    icon: 'question_mark',
   },
 };

@@ -1,3 +1,4 @@
+<ng-container *transloco="let t">
 <mat-drawer-container class="drawer-container">
   <mat-drawer
     #drawer
@@ -15,7 +16,7 @@
         expandedHeight="40px"
       >
         <mat-panel-title>
-          <mat-icon>interests</mat-icon> Content Type
+          <mat-icon>interests</mat-icon> {{ t('torrents.content_type') }}
         </mat-panel-title>
       </mat-expansion-panel-header>
       <section>
@@ -25,7 +26,7 @@
             (click)="controller.selectContentType(null)"
             [class]="(controller.controls$ | async)?.contentType === null ? 'active' : ''"
           >
-            <mat-icon fontSet="material-icons">emergency</mat-icon>All
+            <mat-icon fontSet="material-icons">emergency</mat-icon>{{ t("content_types_plural.all") }}
             @if (dataSource.overallTotalCount$ | async; as count) {
               <small
               >{{ count.isEstimate ? "~" : ""
@@ -34,17 +35,17 @@
             }
           </li>
           @for (
-              t of contentTypes;
-            track t.key
+              ct of contentTypes;
+            track ct.key
             ) {
-            @if (t.key === "null" || (dataSource.availableContentTypes$ | async)?.includes(t.key)) {
+            @if (ct.key === "null" || (dataSource.availableContentTypes$ | async)?.includes(ct.key)) {
               <li
-                (click)="controller.selectContentType(t.key)"
-                [class]="(controller.controls$ | async)?.contentType === t.key ? 'active' : ''"
+                (click)="controller.selectContentType(ct.key)"
+                [class]="(controller.controls$ | async)?.contentType === ct.key ? 'active' : ''"
               >
-                <mat-icon>{{ t.icon }}</mat-icon>
-                {{ t.plural }}
-                @if ((dataSource.contentTypeCounts$ | async)?.[t.key]; as agg) {
+                <mat-icon>{{ ct.icon }}</mat-icon>
+                {{ t("content_types_plural."+ct.key) }}
+                @if ((dataSource.contentTypeCounts$ | async)?.[ct.key]; as agg) {
                   <small
                   >{{ agg.isEstimate ? "~" : ""
                     }}{{ agg.count | number }}</small
@@ -84,3 +85,4 @@
     />
   </mat-drawer-content>
 </mat-drawer-container>
+</ng-container>

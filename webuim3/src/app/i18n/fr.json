@@ -1,0 +1,75 @@
+{
+  "content_types_plural": {
+    "all": "Tous",
+    "audiobook": "__missing__",
+    "comic": "Bandes dessinées",
+    "ebook": "__missing__",
+    "movie": "__missing__",
+    "music": "__missing__",
+    "null": "__missing__",
+    "software": "Logiciels",
+    "tv_show": "__missing__",
+    "xxx": "__missing__"
+  },
+  "file_types": {
+    "archive": "__missing__",
+    "audio": "__missing__",
+    "data": "__missing__",
+    "document": "__missing__",
+    "image": "__missing__",
+    "software": "__missing__",
+    "subtitles": "__missing__",
+    "video": "__missing__"
+  },
+  "layout": {
+    "bitmagnet_on_service": "bitmagnet chez {{service}}",
+    "change_theme": "Changer de thème",
+    "external_links": "Liens externes",
+    "sponsor": "Parrainer",
+    "support_bitmagnet": "Soutenir bitmagnet",
+    "translate": "Traduire"
+  },
+  "routes": {
+    "dashboard": "Panneau",
+    "torrents": "Torrents"
+  },
+  "torrents": {
+    "content_type": "__missing__",
+    "copy_to_clipboard": "__missing__",
+    "delete": "__missing__",
+    "delete_action_cannot_be_undone": "__missing__",
+    "delete_are_you_sure": "__missing__",
+    "edit_tags": "__missing__",
+    "episodes": "__missing__",
+    "external_links": "__missing__",
+    "file_path": "__missing__",
+    "file_size": "__missing__",
+    "file_type": "__missing__",
+    "files": "__missing__",
+    "files_count_n": "__missing__",
+    "files_no_info": "__missing__",
+    "files_single": "__missing__",
+    "genres": "__missing__",
+    "info_hash": "__missing__",
+    "languages": "__missing__",
+    "leechers": "__missing__",
+    "magnet": "__missing__",
+    "new_tag": "__missing__",
+    "original_release_date": "__missing__",
+    "poster": "__missing__",
+    "published": "__missing__",
+    "rating": "__missing__",
+    "s_l": "__missing__",
+    "seeders": "__missing__",
+    "showing_x_of_y_files": "__missing__",
+    "size": "__missing__",
+    "source": "__missing__",
+    "summary": "__missing__",
+    "title": "__missing__",
+    "votes_count_n": "__missing__"
+  },
+  "version": {
+    "bitmagnet_version": "bitmagnet version {{version}}",
+    "unknown": "inconnu"
+  }
+}

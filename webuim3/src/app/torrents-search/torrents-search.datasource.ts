@@ -1,5 +1,12 @@
 import { CollectionViewer, DataSource } from '@angular/cdk/collections';
-import {BehaviorSubject, catchError, EMPTY, Observable, scan, Subscription} from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  EMPTY,
+  Observable,
+  scan,
+  Subscription,
+} from 'rxjs';
 import { map } from 'rxjs/operators';
 import * as generated from '../graphql/generated';
 import { GraphQLService } from '../graphql/graphql.service';
@@ -49,22 +56,39 @@ export class TorrentsSearchDatasource
       return {
         count: overallTotalCount,
         isEstimate: overallIsEstimate,
-      }
-    })
-  )
-  public availableContentTypes$: Observable<generated.ContentType[]> = this.resultSubject.pipe(
-    scan((acc: generated.ContentType[], next) => Array.from(new Set([
-      ...acc,
-      ...(next.aggregations.contentType ?? []).flatMap((agg) => agg.value ? [agg.value] : []),
-    ])), [])
-  )
+      };
+    }),
+  );
+  public availableContentTypes$: Observable<generated.ContentType[]> =
+    this.resultSubject.pipe(
+      scan(
+        (acc: generated.ContentType[], next) =>
+          Array.from(
+            new Set([
+              ...acc,
+              ...(next.aggregations.contentType ?? []).flatMap((agg) =>
+                agg.value ? [agg.value] : [],
+              ),
+            ]),
+          ),
+        [],
+      ),
+    );
 
-  public contentTypeCounts$: Observable<Record<string, BudgetedCount>> = this.resultSubject.pipe(
-    map((result) => Object.fromEntries((result.aggregations.contentType ?? []).map((ct) => [ct.value, {
-      count: ct.count,
-      isEstimate: ct.isEstimate,
-    }])))
-  )
+  public contentTypeCounts$: Observable<Record<string, BudgetedCount>> =
+    this.resultSubject.pipe(
+      map((result) =>
+        Object.fromEntries(
+          (result.aggregations.contentType ?? []).map((ct) => [
+            ct.value,
+            {
+              count: ct.count,
+              isEstimate: ct.isEstimate,
+            },
+          ]),
+        ),
+      ),
+    );
 
   constructor(
     private graphQLService: GraphQLService,
@@ -77,7 +101,7 @@ export class TorrentsSearchDatasource
     );
     this.resultSubject.subscribe((result) => {
       this.result = result;
-    })
+    });
   }
 
   connect({}: CollectionViewer): Observable<generated.TorrentContent[]> {
@@ -107,7 +131,7 @@ export class TorrentsSearchDatasource
     );
     this.currentSubscription = result.subscribe((r) => {
       if (currentRequest === this.currentRequest.getValue()) {
-        this.resultSubject.next(r)
+        this.resultSubject.next(r);
       }
     });
   }

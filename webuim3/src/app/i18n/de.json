@@ -1,0 +1,75 @@
+{
+  "content_types_plural": {
+    "all": "Alle",
+    "audiobook": "Hörbücher",
+    "comic": "Comics",
+    "ebook": "E-Bücher",
+    "movie": "Filme",
+    "music": "Musik",
+    "null": "Unbekannt",
+    "software": "Software",
+    "tv_show": "Fernsehshows",
+    "xxx": "XXX"
+  },
+  "file_types": {
+    "archive": "Archiv",
+    "audio": "Audio",
+    "data": "Daten",
+    "document": "Dokument",
+    "image": "Bild",
+    "software": "Software",
+    "subtitles": "Untertitel",
+    "video": "Video"
+  },
+  "layout": {
+    "bitmagnet_on_service": "bitmagnet auf {{service}}",
+    "change_theme": "Design ändern",
+    "external_links": "Externe Links",
+    "sponsor": "Sponsor",
+    "support_bitmagnet": "Unterstütze bitmagnet",
+    "translate": "Übersetzen"
+  },
+  "routes": {
+    "dashboard": "Armaturenbrett",
+    "torrents": "Torrents"
+  },
+  "torrents": {
+    "content_type": "Inhaltstyp",
+    "copy_to_clipboard": "In die Zwischenablage kopieren",
+    "delete": "Löschen",
+    "delete_action_cannot_be_undone": "Diese Aktion kann nicht rückgängig gemacht werden",
+    "delete_are_you_sure": "Möchten Sie diesen Torrent wirklich löschen?",
+    "edit_tags": "Stichworte bearbeiten",
+    "episodes": "Folgen",
+    "external_links": "Externe Links",
+    "file_path": "Dateipfad",
+    "file_size": "Dateigröße",
+    "file_type": "Dateityp",
+    "files": "Dateien",
+    "files_count_n": "{{count}} Dateien",
+    "files_no_info": "Keine Dateiinformationen verfügbar",
+    "files_single": "Einzelne Datei",
+    "genres": "Genres",
+    "info_hash": "Info-Hash",
+    "languages": "Sprachen",
+    "leechers": "Leechers",
+    "magnet": "Magnet",
+    "new_tag": "Neues Stichwort",
+    "original_release_date": "Ursprüngliches Veröffentlichungsdatum",
+    "poster": "Poster",
+    "published": "Veröffentlicht",
+    "rating": "Bewertungen",
+    "s_l": "S / L",
+    "seeders": "Seeders",
+    "showing_x_of_y_files": "{{x}} von {{y}} Dateien angezeigt",
+    "size": "Größe",
+    "source": "Quelle",
+    "summary": "Zusammenfassung",
+    "title": "Titel",
+    "votes_count_n": "{{count}} Stimmen"
+  },
+  "version": {
+    "bitmagnet_version": "bitmagnet Version {{version}}",
+    "unknown": "unbekannt"
+  }
+}

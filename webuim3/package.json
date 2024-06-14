@@ -13,7 +13,9 @@
     "lint": "npm run eslint:check && npm run prettier:check",
     "lint:fix": "npm run eslint:fix && npm run prettier:fix",
     "test": "ng test",
-    "graphql:codegen": "graphql-codegen -c ./src/app/graphql/codegen.ts"
+    "graphql:codegen": "graphql-codegen -c ./src/app/graphql/codegen.ts",
+    "i18n:extract": "transloco-keys-manager extract",
+    "i18n:find": "transloco-keys-manager find"
   },
   "private": true,
   "dependencies": {
@@ -32,6 +34,7 @@
     "@fontsource/material-icons-outlined": "^5.0.12",
     "@fontsource/material-symbols-outlined": "^5.0.33",
     "@fontsource/roboto": "^5.0.13",
+    "@jsverse/transloco": "^7.4.2",
     "apollo-angular": "^7.0.2",
     "filesize": "^10.1.2",
     "graphql": "^16.8.1",
@@ -48,6 +51,7 @@
     "@graphql-codegen/typescript": "^4.0.7",
     "@graphql-codegen/typescript-apollo-angular": "^4.0.0",
     "@graphql-codegen/typescript-operations": "^4.2.1",
+    "@jsverse/transloco-keys-manager": "^4.2.1",
     "@types/jasmine": "~5.1.0",
     "@typescript-eslint/eslint-plugin": "^7.13.0",
     "@typescript-eslint/parser": "^7.13.0",
@@ -61,6 +65,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "ngx-build-plus": "^18.0.0",
     "prettier": "^3.3.2",
     "typescript": "~5.4.2"
   }

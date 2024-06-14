@@ -1,28 +1,42 @@
-import { Component, EventEmitter, Input, Output } from "@angular/core";
-import { catchError, EMPTY, tap } from "rxjs";
-import {FormControl, ReactiveFormsModule} from "@angular/forms";
-import { COMMA, ENTER } from "@angular/cdk/keycodes";
-import { ErrorsService } from "../errors/errors.service";
-import { GraphQLService } from "../graphql/graphql.service";
-import normalizeTagInput from "../util/normalizeTagInput";
-import * as generated from "../graphql/generated";
-import {DecimalPipe, NgOptimizedImage} from "@angular/common";
-import {CdkCopyToClipboard} from "@angular/cdk/clipboard";
-import {MatDivider} from "@angular/material/divider";
-import {MatTab, MatTabContent, MatTabGroup, MatTabLabel} from "@angular/material/tabs";
-import {MatIcon} from "@angular/material/icon";
-import {MatCard, MatCardActions, MatCardContent} from "@angular/material/card";
-import {MatFormField} from "@angular/material/form-field";
-import {MatChipGrid, MatChipInput, MatChipRow} from "@angular/material/chips";
-import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from "@angular/material/autocomplete";
-import {MatTooltip} from "@angular/material/tooltip";
-import {MatButton} from "@angular/material/button";
-import {FilesizePipe} from "../pipes/filesize.pipe";
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { catchError, EMPTY, tap } from 'rxjs';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { DecimalPipe, NgOptimizedImage } from '@angular/common';
+import { CdkCopyToClipboard } from '@angular/cdk/clipboard';
+import { MatDivider } from '@angular/material/divider';
+import {
+  MatTab,
+  MatTabContent,
+  MatTabGroup,
+  MatTabLabel,
+} from '@angular/material/tabs';
+import { MatIcon } from '@angular/material/icon';
+import {
+  MatCard,
+  MatCardActions,
+  MatCardContent,
+} from '@angular/material/card';
+import { MatFormField } from '@angular/material/form-field';
+import { MatChipGrid, MatChipInput, MatChipRow } from '@angular/material/chips';
+import {
+  MatAutocomplete,
+  MatAutocompleteTrigger,
+  MatOption,
+} from '@angular/material/autocomplete';
+import { MatTooltip } from '@angular/material/tooltip';
+import { MatButton } from '@angular/material/button';
+import { TranslocoDirective } from '@jsverse/transloco';
+import { FilesizePipe } from '../pipes/filesize.pipe';
+import * as generated from '../graphql/generated';
+import normalizeTagInput from '../util/normalizeTagInput';
+import { GraphQLService } from '../graphql/graphql.service';
+import { ErrorsService } from '../errors/errors.service';
 
 @Component({
-  selector: "app-torrent-content-content",
-  templateUrl: "./torrent-content.component.html",
-  styleUrl: "./torrent-content.component.scss",
+  selector: 'app-torrent-content-content',
+  templateUrl: './torrent-content.component.html',
+  styleUrl: './torrent-content.component.scss',
   standalone: true,
   imports: [
     NgOptimizedImage,
@@ -47,15 +61,16 @@ import {FilesizePipe} from "../pipes/filesize.pipe";
     MatCardActions,
     MatTooltip,
     MatButton,
-    FilesizePipe
-  ]
+    FilesizePipe,
+    TranslocoDirective,
+  ],
 })
 export class TorrentContentComponent {
   @Input() torrentContent: generated.TorrentContent;
 
   @Output() updated = new EventEmitter<null>();
 
-  newTagCtrl = new FormControl<string>("");
+  newTagCtrl = new FormControl<string>('');
   private editedTags = Array<string>();
   public readonly suggestedTags = Array<string>();
   public selectedTabIndex = 0;
@@ -169,7 +184,7 @@ export class TorrentContentComponent {
   }
 
   filesCount(): number | undefined {
-    if (this.torrentContent.torrent.filesStatus === "single") {
+    if (this.torrentContent.torrent.filesStatus === 'single') {
       return 1;
     }
     return this.torrentContent.torrent.filesCount ?? undefined;

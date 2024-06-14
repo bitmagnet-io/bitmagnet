@@ -4,20 +4,20 @@ import {
   Input,
   numberAttribute,
   Output,
-} from "@angular/core";
-import type { PageEvent } from "./paginator.types";
-import {MatFormField, MatLabel} from "@angular/material/form-field";
-import {MatOption, MatSelect} from "@angular/material/select";
-import {DecimalPipe} from "@angular/common";
-import {MatIconButton} from "@angular/material/button";
-import {MatTooltip} from "@angular/material/tooltip";
-import {MatIcon} from "@angular/material/icon";
+} from '@angular/core';
+import { MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatOption, MatSelect } from '@angular/material/select';
+import { DecimalPipe } from '@angular/common';
+import { MatIconButton } from '@angular/material/button';
+import { MatTooltip } from '@angular/material/tooltip';
+import { MatIcon } from '@angular/material/icon';
+import type { PageEvent } from './paginator.types';
 
 @Component({
-  selector: "app-paginator",
-  templateUrl: "./paginator.component.html",
+  selector: 'app-paginator',
+  templateUrl: './paginator.component.html',
   standalone: true,
-  styleUrls: ["./paginator.component.scss"],
+  styleUrls: ['./paginator.component.scss'],
   imports: [
     MatFormField,
     MatSelect,
@@ -26,8 +26,8 @@ import {MatIcon} from "@angular/material/icon";
     MatIconButton,
     MatTooltip,
     MatIcon,
-    MatLabel
-  ]
+    MatLabel,
+  ],
 })
 export class PaginatorComponent {
   @Input({ transform: numberAttribute }) page = 1;
@@ -41,15 +41,15 @@ export class PaginatorComponent {
   @Output() paging = new EventEmitter<PageEvent>();
 
   get firstItemIndex() {
-    return (this.page-1) * this.pageSize + 1;
+    return (this.page - 1) * this.pageSize + 1;
   }
 
   get lastItemIndex() {
-    return (this.page-1) * this.pageSize + this.pageLength;
+    return (this.page - 1) * this.pageSize + this.pageLength;
   }
 
   get hasTotalLength() {
-    return typeof this.totalLength === "number";
+    return typeof this.totalLength === 'number';
   }
 
   get hasPreviousPage() {

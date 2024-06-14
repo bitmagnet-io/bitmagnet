@@ -1,24 +1,34 @@
 import { Component, Input } from '@angular/core';
-import * as generated from '../graphql/generated';
-import {DataSource} from "@angular/cdk/collections";
+import { DataSource } from '@angular/cdk/collections';
 import {
   MatCell,
   MatCellDef,
   MatColumnDef,
   MatHeaderCell,
   MatHeaderCellDef,
-  MatHeaderRow, MatHeaderRowDef, MatRow, MatRowDef,
-  MatTable
-} from "@angular/material/table";
-import {MatCheckbox} from "@angular/material/checkbox";
-import {MatIcon} from "@angular/material/icon";
-import {MatChip, MatChipSet} from "@angular/material/chips";
-import {HumanTimePipe} from "../pipes/human-time.pipe";
-import {MatTooltip} from "@angular/material/tooltip";
-import {TorrentContentComponent} from "../torrent-content/torrent-content.component";
-import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
-import {animate, state, style, transition, trigger} from "@angular/animations";
-import {FilesizePipe} from "../pipes/filesize.pipe";
+  MatHeaderRow,
+  MatHeaderRowDef,
+  MatRow,
+  MatRowDef,
+  MatTable,
+} from '@angular/material/table';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatIcon } from '@angular/material/icon';
+import { MatChip, MatChipSet } from '@angular/material/chips';
+import { MatTooltip } from '@angular/material/tooltip';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {
+  animate,
+  state,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
+import { TranslocoDirective } from '@jsverse/transloco';
+import { FilesizePipe } from '../pipes/filesize.pipe';
+import { TorrentContentComponent } from '../torrent-content/torrent-content.component';
+import { HumanTimePipe } from '../pipes/human-time.pipe';
+import * as generated from '../graphql/generated';
 
 @Component({
   selector: 'app-torrents-table',
@@ -42,27 +52,31 @@ import {FilesizePipe} from "../pipes/filesize.pipe";
     MatHeaderRowDef,
     TorrentContentComponent,
     FilesizePipe,
+    TranslocoDirective,
   ],
   templateUrl: './torrents-table.component.html',
   styleUrl: './torrents-table.component.scss',
   animations: [
     trigger('detailExpand', [
-      state('collapsed,void', style({height: '0px', minHeight: '0'})),
-      state('expanded', style({height: '*'})),
-      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+      state('collapsed,void', style({ height: '0px', minHeight: '0' })),
+      state('expanded', style({ height: '*' })),
+      transition(
+        'expanded <=> collapsed',
+        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
+      ),
     ]),
   ],
 })
 export class TorrentsTableComponent {
-  @Input() dataSource: DataSource<generated.TorrentContent>
+  @Input() dataSource: DataSource<generated.TorrentContent>;
 
   displayedColumns = [
-    "select",
-    "summary",
-    "size",
-    "publishedAt",
-    "peers",
-    "magnet",
+    'select',
+    'summary',
+    'size',
+    'publishedAt',
+    'peers',
+    'magnet',
   ];
 
   expandedTorrentContentId: string | undefined;

@@ -1,0 +1,75 @@
+{
+  "content_types_plural": {
+    "all": "All",
+    "audiobook": "Audiobooks",
+    "comic": "Comics",
+    "ebook": "E-Books",
+    "movie": "Movies",
+    "music": "Music",
+    "null": "Unknown",
+    "software": "Software",
+    "tv_show": "TV Shows",
+    "xxx": "XXX"
+  },
+  "file_types": {
+    "archive": "Archive",
+    "audio": "Audio",
+    "data": "Data",
+    "document": "Document",
+    "image": "Image",
+    "software": "Software",
+    "subtitles": "Subtitles",
+    "video": "Video"
+  },
+  "layout": {
+    "bitmagnet_on_service": "bitmagnet on {{service}}",
+    "change_theme": "Change theme",
+    "external_links": "External links",
+    "sponsor": "Sponsor",
+    "support_bitmagnet": "Support bitmagnet",
+    "translate": "Translate"
+  },
+  "routes": {
+    "dashboard": "Dashboard",
+    "torrents": "Torrents"
+  },
+  "torrents": {
+    "content_type": "Content Type",
+    "copy_to_clipboard": "Copy to clipboard",
+    "delete": "Delete",
+    "delete_action_cannot_be_undone": "This action cannot be undone",
+    "delete_are_you_sure": "Are you sure you want to delete this torrent?",
+    "edit_tags": "Edit tags",
+    "episodes": "Episodes",
+    "external_links": "External links",
+    "file_path": "File path",
+    "file_size": "File size",
+    "file_type": "File type",
+    "files": "Files",
+    "files_count_n": "{{count}} files",
+    "files_no_info": "No files information available",
+    "files_single": "Single file",
+    "genres": "Genres",
+    "info_hash": "Info hash",
+    "languages": "Languages",
+    "leechers": "Leechers",
+    "magnet": "Magnet",
+    "new_tag": "New tag",
+    "original_release_date": "Original release date",
+    "poster": "Poster",
+    "published": "Published",
+    "rating": "Rating",
+    "s_l": "S / L",
+    "seeders": "Seeders",
+    "showing_x_of_y_files": "Showing {{x}} of {{y}} files",
+    "size": "Size",
+    "source": "Torrent Source",
+    "summary": "Summary",
+    "title": "__missing__",
+    "votes_count_n": "{{count}} votes"
+  },
+  "version": {
+    "bitmagnet_version": "bitmagnet version {{version}}",
+    "unknown": "unknown"
+  }
+}

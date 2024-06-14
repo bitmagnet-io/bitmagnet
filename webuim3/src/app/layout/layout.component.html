@@ -1,3 +1,4 @@
+<ng-container *transloco="let t; prefix: 'layout'">
 <mat-toolbar class="toolbar-header">
   <h1><mat-icon svgIcon="magnet"></mat-icon>bitmagnet<app-version /></h1>
   <nav>
@@ -9,7 +10,7 @@
         routerLinkActive
         [class]="link.isActive ? 'active' : ''"
       >
-        {{ item.title }}
+        {{ routeTitle(item) | async }}
       </a>
     }
   </nav>
@@ -19,31 +20,48 @@
     class="button-sponsor"
     href="https://opencollective.com/bitmagnet"
     target="_blank"
-    matTooltip="Support bitmagnet"
-    ><mat-icon>favorite</mat-icon>Sponsor</a
+    [matTooltip]="t('support_bitmagnet')"
+    ><mat-icon>favorite</mat-icon>{{ t('sponsor') }}</a
   >
   <button
     mat-icon-button
-    aria-label="Theme"
-    [matMenuTriggerFor]="themesMenu"
-    matTooltip="Change theme"
+    aria-label="Language"
+    [matMenuTriggerFor]="languagesMenu"
+    [matTooltip]="t('translate')"
   >
-    <mat-icon>apparel</mat-icon>
+    <mat-icon>translate</mat-icon>
   </button>
-  <mat-menu #themesMenu="matMenu">
-    @for (t of themeManager.themes; track t.key) {
+  <mat-menu #languagesMenu="matMenu">
+    @for (l of availableLanguages; track l.id) {
       <a
         mat-menu-item
-        (click)="themeManager.setTheme(t.key)"
-        [disabled]="t.key === themeManager.selectedTheme"
-        ><mat-icon>{{ t.dark ? "dark_mode" : "light_mode" }}</mat-icon
-        >{{ t.label }}</a
+        (click)="transloco.setActiveLang(l.id)"
+      >{{ l.label }}</a
       >
     }
   </mat-menu>
   <button
     mat-icon-button
-    matTooltip="External links"
+    aria-label="Theme"
+    [matMenuTriggerFor]="themesMenu"
+    [matTooltip]="t('change_theme')"
+  >
+    <mat-icon>apparel</mat-icon>
+  </button>
+  <mat-menu #themesMenu="matMenu">
+    @for (th of themeManager.themes; track th.key) {
+      <a
+        mat-menu-item
+        (click)="themeManager.setTheme(th.key)"
+        [disabled]="th.key === themeManager.selectedTheme"
+        ><mat-icon>{{ th.dark ? "dark_mode" : "light_mode" }}</mat-icon
+        >{{ th.label }}</a
+      >
+    }
+  </mat-menu>
+  <button
+    mat-icon-button
+    [matTooltip]="t('external_links')"
     [matMenuTriggerFor]="externalLinksMenu"
   >
     <mat-icon svgIcon="external-link" />
@@ -53,23 +71,23 @@
       >bitmagnet.io</a
     >
     <a mat-menu-item href="https://discord.gg/6mFNszX8qM" target="_blank"
-      >bitmagnet on Discord</a
+      >{{ t('bitmagnet_on_service', {service: "Discord"}) }}</a
     >
     <a
       mat-menu-item
       href="https://github.com/bitmagnet-io/bitmagnet"
       target="_blank"
-      >bitmagnet on GitHub</a
+      >{{ t('bitmagnet_on_service', {service: "GitHub"}) }}</a
     >
     <a
       mat-menu-item
       href="https://opencollective.com/bitmagnet"
       target="_blank"
-      >bitmagnet on OpenCollective</a
+      >{{ t('bitmagnet_on_service', {service: "OpenCollective"}) }}</a
     >
   </mat-menu>
 </mat-toolbar>
 <div class="app-content">
   <ng-content></ng-content>
 </div>
-
+</ng-container>

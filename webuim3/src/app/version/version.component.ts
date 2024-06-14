@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MatTooltip } from '@angular/material/tooltip';
+import { TranslocoDirective } from '@jsverse/transloco';
 import * as generated from '../graphql/generated';
 import { GraphQLService } from '../graphql/graphql.service';
 import { GraphQLModule } from '../graphql/graphql.module';
@@ -10,7 +11,7 @@ const defaultVersionName = 'v-unknown';
   selector: 'app-version',
   standalone: true,
   templateUrl: './version.component.html',
-  imports: [GraphQLModule, MatTooltip],
+  imports: [GraphQLModule, MatTooltip, TranslocoDirective],
 })
 export class VersionComponent implements OnInit {
   version: string = defaultVersionName;

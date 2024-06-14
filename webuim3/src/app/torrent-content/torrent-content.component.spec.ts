@@ -1,10 +1,10 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AppModule } from "../app.module";
-import { TorrentContentComponent } from "./torrent-content.component";
-import { TorrentModule } from "./torrent-content.module";
+import { AppModule } from '../app.module';
+import { TorrentContentComponent } from './torrent-content.component';
+import { TorrentModule } from './torrent-content.module';
 
-describe("TorrentContentComponent", () => {
+describe('TorrentContentComponent', () => {
   let component: TorrentContentComponent;
   let fixture: ComponentFixture<TorrentContentComponent>;
 
@@ -17,16 +17,16 @@ describe("TorrentContentComponent", () => {
     fixture = TestBed.createComponent(TorrentContentComponent);
     component = fixture.componentInstance;
     const date = new Date().toISOString();
-    const infoHash = "aaaaaaaaaaaaaaaaaaaa";
+    const infoHash = 'aaaaaaaaaaaaaaaaaaaa';
     component.torrentContent = {
-      id: "test",
+      id: 'test',
       infoHash,
-      title: "Test",
+      title: 'Test',
       torrent: {
-        name: "Test",
+        name: 'Test',
         infoHash,
         size: 10,
-        filesStatus: "no_info",
+        filesStatus: 'no_info',
         hasFilesInfo: false,
         magnetUri: `magnet:?xt=urn:btih:${infoHash}`,
         sources: [],
@@ -41,7 +41,7 @@ describe("TorrentContentComponent", () => {
     fixture.detectChanges();
   });
 
-  it("should create", () => {
+  it('should create', () => {
     expect(component).toBeTruthy();
   });
 });

@@ -12,7 +12,7 @@ export const routes: Routes = [
       import('./dashboard/dashboard.component').then(
         (c) => c.DashboardComponent,
       ),
-    title: 'Dashboard',
+    title: 'dashboard',
   },
   {
     path: 'torrents',
@@ -20,6 +20,6 @@ export const routes: Routes = [
       import('./torrents-search/torrents-search.component').then(
         (c) => c.TorrentsSearchComponent,
       ),
-    title: 'Torrents',
+    title: 'torrents',
   },
 ];
