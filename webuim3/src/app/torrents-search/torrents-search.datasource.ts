@@ -52,7 +52,7 @@ export class TorrentsSearchDatasource
       }
     })
   )
-  public availableContentTypes$: Observable<string[]> = this.resultSubject.pipe(
+  public availableContentTypes$: Observable<generated.ContentType[]> = this.resultSubject.pipe(
     scan((acc: generated.ContentType[], next) => Array.from(new Set([
       ...acc,
       ...(next.aggregations.contentType ?? []).flatMap((agg) => agg.value ? [agg.value] : []),

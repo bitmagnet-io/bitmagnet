@@ -1,4 +1,4 @@
-input SearchQueryInput {
+input TorrentContentSearchQueryInput {
   queryString: String
   limit: Int
   page: Int
@@ -8,6 +8,8 @@ input SearchQueryInput {
   hasNextPage if true, the search result will include the hasNextPage field, indicating if there are more results to fetch
   """
   hasNextPage: Boolean
+  facets: TorrentContentFacetsInput
+  orderBy: [TorrentContentOrderByInput!]
   cached: Boolean
   aggregationBudget: Float
 }

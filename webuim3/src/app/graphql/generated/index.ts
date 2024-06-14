@@ -253,18 +253,6 @@ export type ReleaseYearFacetInput = {
   filter?: InputMaybe<Array<InputMaybe<Scalars['Year']['input']>>>;
 };
 
-export type SearchQueryInput = {
-  aggregationBudget?: InputMaybe<Scalars['Float']['input']>;
-  cached?: InputMaybe<Scalars['Boolean']['input']>;
-  /** hasNextPage if true, the search result will include the hasNextPage field, indicating if there are more results to fetch */
-  hasNextPage?: InputMaybe<Scalars['Boolean']['input']>;
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  page?: InputMaybe<Scalars['Int']['input']>;
-  queryString?: InputMaybe<Scalars['String']['input']>;
-  totalCount?: InputMaybe<Scalars['Boolean']['input']>;
-};
-
 export type Season = {
   __typename?: 'Season';
   episodes?: Maybe<Array<Scalars['Int']['output']>>;
@@ -382,9 +370,21 @@ export type TorrentContentQuery = {
 
 
 export type TorrentContentQuerySearchArgs = {
+  query: TorrentContentSearchQueryInput;
+};
+
+export type TorrentContentSearchQueryInput = {
+  aggregationBudget?: InputMaybe<Scalars['Float']['input']>;
+  cached?: InputMaybe<Scalars['Boolean']['input']>;
   facets?: InputMaybe<TorrentContentFacetsInput>;
+  /** hasNextPage if true, the search result will include the hasNextPage field, indicating if there are more results to fetch */
+  hasNextPage?: InputMaybe<Scalars['Boolean']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<TorrentContentOrderByInput>>;
-  query?: InputMaybe<SearchQueryInput>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  queryString?: InputMaybe<Scalars['String']['input']>;
+  totalCount?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type TorrentContentSearchResult = {
@@ -622,9 +622,7 @@ export type SystemQueryQueryVariables = Exact<{ [key: string]: never; }>;
 export type SystemQueryQuery = { __typename?: 'Query', system: { __typename?: 'SystemQuery', version: string } };
 
 export type TorrentContentSearchQueryVariables = Exact<{
-  query?: InputMaybe<SearchQueryInput>;
-  facets?: InputMaybe<TorrentContentFacetsInput>;
-  orderBy?: InputMaybe<Array<TorrentContentOrderByInput> | TorrentContentOrderByInput>;
+  query: TorrentContentSearchQueryInput;
 }>;
 
 
@@ -920,9 +918,9 @@ export const SystemQueryDocument = gql`
     }
   }
 export const TorrentContentSearchDocument = gql`
-    query TorrentContentSearch($query: SearchQueryInput, $facets: TorrentContentFacetsInput, $orderBy: [TorrentContentOrderByInput!]) {
+    query TorrentContentSearch($query: TorrentContentSearchQueryInput!) {
   torrentContent {
-    search(query: $query, facets: $facets, orderBy: $orderBy) {
+    search(query: $query) {
       ...TorrentContentSearchResult
     }
   }

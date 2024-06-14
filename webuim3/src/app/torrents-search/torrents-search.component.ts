@@ -27,8 +27,7 @@ import {TorrentsSearchDatasource} from "./torrents-search.datasource";
 import {TorrentsTableComponent} from "../torrents-table/torrents-table.component";
 import {GraphQLModule} from "../graphql/graphql.module";
 import {PaginatorComponent} from "../paginator/paginator.component";
-import {TorrentsSearchController} from "./torrents-search.controller";
-import * as generated from "../graphql/generated";
+import {ContentTypeSelection, TorrentSearchControls, TorrentsSearchController} from "./torrents-search.controller";
 import {contentTypes} from "../taxonomy/content-types";
 import {MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle} from "@angular/material/expansion";
 import {MatRadioButton} from "@angular/material/radio";
@@ -79,7 +78,7 @@ export class TorrentsSearchComponent implements OnInit {
 
   controller: TorrentsSearchController;
 
-  contentTypes = contentTypes
+  contentTypes = Object.entries(contentTypes).map(([key, info]) => ({key: key as keyof typeof contentTypes, ...info}))
 
   constructor(
     private route: ActivatedRoute,
@@ -87,24 +86,23 @@ export class TorrentsSearchComponent implements OnInit {
     graphQLService: GraphQLService,
     errorsService: ErrorsService,
   ) {
-    this.controller = new TorrentsSearchController(initSearchParams);
+    this.controller = new TorrentsSearchController(initControls);
     this.dataSource = new TorrentsSearchDatasource(graphQLService, errorsService, this.controller.params$)
   }
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(qParams =>
-      this.controller.updateParams((cParams) => ({
-          ...cParams,
-          query: {
-            ...cParams.query,
-            limit: intParam(qParams, "limit") ?? cParams.query?.limit ?? defaultLimit,
-            page: intParam(qParams, "page") ?? 1,
-          }
+      this.controller.update((ctrl) => ({
+          ...ctrl,
+        contentType: contentTypeParam(qParams, "contentType"),
+          queryString: stringParam(qParams, "queryString") ?? ctrl.queryString,
+          limit: intParam(qParams, "limit") ?? ctrl.limit,
+          page: intParam(qParams, "page") ?? ctrl.page,
         })
     ))
-    this.controller.params$.subscribe((params) => {
-      let page = params.query?.page
-      let limit = params.query?.limit
+    this.controller.controls$.subscribe((ctrl) => {
+      let page: number | undefined = ctrl.page
+      let limit: number | undefined = ctrl.limit
       if (page === 1) {
         page = undefined
       }
@@ -115,30 +113,42 @@ export class TorrentsSearchComponent implements OnInit {
         relativeTo: this.route,
         queryParams: {
          page, limit,
+          contentType: ctrl.contentType,
         }
       })
       }
     )
   }
-
-  originalOrder(): number {
-    return 0;
-  }
 }
 
 const defaultLimit = 20;
 
-const initSearchParams: generated.TorrentContentSearchQueryVariables = {
-  query: {
-    limit: defaultLimit,
-    hasNextPage: true,
-    totalCount: true,
-  },
+const emptyAgg = {
+  aggregate: false
+}
+
+const initControls: TorrentSearchControls = {
+  page: 1,
+  limit: defaultLimit,
+  contentType: null,
   facets: {
-    contentType: {
-      aggregate: true,
-    },
+    genre: emptyAgg,
+    language: emptyAgg,
+    torrentFileType: emptyAgg,
+    torrentSource: emptyAgg,
+    torrentTag: emptyAgg,
+    videoResolution: emptyAgg,
+    videoSource: emptyAgg,
   },
+}
+
+const contentTypeParam = (params: Params, key: string): ContentTypeSelection => {
+  const str = stringParam(params, "contentType")
+  return str && str in contentTypes ? str as ContentTypeSelection : null;
+}
+
+const stringParam = (params: Params, key: string): string | undefined => {
+  return typeof params[key] === 'string' ? params[key] || undefined : undefined;
 }
 
 const intParam = (params: Params, key: string): number | undefined => {

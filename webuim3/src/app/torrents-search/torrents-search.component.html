@@ -6,8 +6,14 @@
     [mode]="(isHandset$ | async) ? 'over' : 'side'"
     [opened]="(isHandset$ | async) === false"
   >
-    <mat-expansion-panel class="panel-content-type" [expanded]="true">
-      <mat-expansion-panel-header>
+    <mat-expansion-panel
+      class="panel-content-type"
+      [expanded]="true"
+    >
+      <mat-expansion-panel-header
+        collapsedHeight="40px"
+        expandedHeight="40px"
+      >
         <mat-panel-title>
           <mat-icon>interests</mat-icon> Content Type
         </mat-panel-title>
@@ -15,8 +21,10 @@
       <section>
         <nav>
           <ul>
-          <li>
-            <a>
+          <li
+            (click)="controller.selectContentType(null)"
+            [class]="(controller.controls$ | async)?.contentType === null ? 'active' : ''"
+          >
             <mat-icon fontSet="material-icons">emergency</mat-icon>All
             @if (dataSource.overallTotalCount$ | async; as count) {
               <small
@@ -24,23 +32,25 @@
                 }}{{ count.count | number }}</small
               >
             }
-            </a>
           </li>
           @for (
-              t of contentTypes | keyvalue: originalOrder;
+              t of contentTypes;
             track t.key
             ) {
-            @if ((dataSource.availableContentTypes$ | async)?.includes(t.key)) {
-              <li><a>
-                <mat-icon>{{ t.value.icon }}</mat-icon>
-                {{ t.value.plural }}
+            @if (t.key === "null" || (dataSource.availableContentTypes$ | async)?.includes(t.key)) {
+              <li
+                (click)="controller.selectContentType(t.key)"
+                [class]="(controller.controls$ | async)?.contentType === t.key ? 'active' : ''"
+              >
+                <mat-icon>{{ t.icon }}</mat-icon>
+                {{ t.plural }}
                 @if ((dataSource.contentTypeCounts$ | async)?.[t.key]; as agg) {
                   <small
                   >{{ agg.isEstimate ? "~" : ""
                     }}{{ agg.count | number }}</small
                   >
                 }
-              </a></li>
+              </li>
             }
           }
           </ul>
@@ -65,8 +75,8 @@
           [dataSource]="dataSource" />
     <app-paginator
       (paging)="controller.handlePageEvent($event)"
-      [page]="controller.params.query?.page"
-      [pageSize]="controller.params.query?.limit"
+      [page]="(controller.controls$ | async)?.page"
+      [pageSize]="(controller.controls$ | async)?.limit"
       [pageLength]="dataSource.result.items.length"
       [totalLength]="dataSource.result.totalCount"
       [totalIsEstimate]="dataSource.result.totalCountIsEstimate"

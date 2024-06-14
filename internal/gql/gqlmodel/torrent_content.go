@@ -104,6 +104,12 @@ func TorrentSourcesFromTorrent(t model.Torrent) []TorrentSource {
 	return sources
 }
 
+type TorrentContentSearchQueryInput struct {
+	q.SearchParams
+	Facets  *gen.TorrentContentFacetsInput
+	OrderBy []gen.TorrentContentOrderByInput
+}
+
 type TorrentContentSearchResult struct {
 	TotalCount           uint
 	TotalCountIsEstimate bool
@@ -114,51 +120,46 @@ type TorrentContentSearchResult struct {
 
 func (t TorrentContentQuery) Search(
 	ctx context.Context,
-	query *q.SearchParams,
-	facets *gen.TorrentContentFacetsInput,
-	orderBy []gen.TorrentContentOrderByInput,
+	query TorrentContentSearchQueryInput,
 ) (TorrentContentSearchResult, error) {
 	options := []q.Option{
 		search.TorrentContentDefaultOption(),
 	}
-	hasQueryString := false
-	if query != nil {
-		options = append(options, query.Option())
-		hasQueryString = query.QueryString.Valid
-	}
-	if facets != nil {
+	options = append(options, query.Option())
+	hasQueryString := query.QueryString.Valid
+	if query.Facets != nil {
 		var qFacets []q.Facet
-		if contentType, ok := facets.ContentType.ValueOK(); ok {
+		if contentType, ok := query.Facets.ContentType.ValueOK(); ok {
 			qFacets = append(qFacets, torrentContentTypeFacet(*contentType))
 		}
-		if torrentSource, ok := facets.TorrentSource.ValueOK(); ok {
+		if torrentSource, ok := query.Facets.TorrentSource.ValueOK(); ok {
 			qFacets = append(qFacets, torrentSourceFacet(*torrentSource))
 		}
-		if torrentTag, ok := facets.TorrentTag.ValueOK(); ok {
+		if torrentTag, ok := query.Facets.TorrentTag.ValueOK(); ok {
 			qFacets = append(qFacets, torrentTagFacet(*torrentTag))
 		}
-		if torrentFileType, ok := facets.TorrentFileType.ValueOK(); ok {
+		if torrentFileType, ok := query.Facets.TorrentFileType.ValueOK(); ok {
 			qFacets = append(qFacets, torrentFileTypeFacet(*torrentFileType))
 		}
-		if language, ok := facets.Language.ValueOK(); ok {
+		if language, ok := query.Facets.Language.ValueOK(); ok {
 			qFacets = append(qFacets, languageFacet(*language))
 		}
-		if genre, ok := facets.Genre.ValueOK(); ok {
+		if genre, ok := query.Facets.Genre.ValueOK(); ok {
 			qFacets = append(qFacets, genreFacet(*genre))
 		}
-		if releaseYear, ok := facets.ReleaseYear.ValueOK(); ok {
+		if releaseYear, ok := query.Facets.ReleaseYear.ValueOK(); ok {
 			qFacets = append(qFacets, releaseYearFacet(*releaseYear))
 		}
-		if videoResolution, ok := facets.VideoResolution.ValueOK(); ok {
+		if videoResolution, ok := query.Facets.VideoResolution.ValueOK(); ok {
 			qFacets = append(qFacets, videoResolutionFacet(*videoResolution))
 		}
-		if videoSource, ok := facets.VideoSource.ValueOK(); ok {
+		if videoSource, ok := query.Facets.VideoSource.ValueOK(); ok {
 			qFacets = append(qFacets, videoSourceFacet(*videoSource))
 		}
 		options = append(options, q.WithFacet(qFacets...))
 	}
 	fullOrderBy := maps.NewInsertMap[search.TorrentContentOrderBy, search.OrderDirection]()
-	for _, ob := range orderBy {
+	for _, ob := range query.OrderBy {
 		if ob.Field == gen.TorrentContentOrderByRelevance && !hasQueryString {
 			continue
 		}

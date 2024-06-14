@@ -3,7 +3,7 @@
 }
 
 .drawer {
-  width: 240px;
+  width: 300px;
   padding: 0 8px;
   box-sizing: border-box;
 }
@@ -11,4 +11,32 @@
 mat-drawer-content {
   padding-right: 16px;
   overflow: visible;
+}
+
+.panel-content-type {
+  padding-top: 20px;
+  ul {
+    list-style: none;
+    padding-left: 0;
+  }
+  mat-panel-title, li {
+    position: relative;
+    line-height: 40px;
+    padding-left: 40px;
+    mat-icon {
+      position: absolute;
+      left: 0;
+      top: 8px;
+    }
+  }
+  li {
+    cursor: pointer;
+    mat-icon {
+      top: 6px;
+    }
+    small {
+      float: right;
+      font-size: 0.8rem;
+    }
+  }
 }

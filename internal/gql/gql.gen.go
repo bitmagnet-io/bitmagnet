@@ -14,7 +14,6 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
@@ -227,7 +226,7 @@ type ComplexityRoot struct {
 	}
 
 	TorrentContentQuery struct {
-		Search func(childComplexity int, query *query.SearchParams, facets *gen.TorrentContentFacetsInput, orderBy []gen.TorrentContentOrderByInput) int
+		Search func(childComplexity int, query gqlmodel.TorrentContentSearchQueryInput) int
 	}
 
 	TorrentContentSearchResult struct {
@@ -1156,7 +1155,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.TorrentContentQuery.Search(childComplexity, args["query"].(*query.SearchParams), args["facets"].(*gen.TorrentContentFacetsInput), args["orderBy"].([]gen.TorrentContentOrderByInput)), true
+		return e.complexity.TorrentContentQuery.Search(childComplexity, args["query"].(gqlmodel.TorrentContentSearchQueryInput)), true
 
 	case "TorrentContentSearchResult.aggregations":
 		if e.complexity.TorrentContentSearchResult.Aggregations == nil {
@@ -1503,10 +1502,10 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputGenreFacetInput,
 		ec.unmarshalInputLanguageFacetInput,
 		ec.unmarshalInputReleaseYearFacetInput,
-		ec.unmarshalInputSearchQueryInput,
 		ec.unmarshalInputSuggestTagsQueryInput,
 		ec.unmarshalInputTorrentContentFacetsInput,
 		ec.unmarshalInputTorrentContentOrderByInput,
+		ec.unmarshalInputTorrentContentSearchQueryInput,
 		ec.unmarshalInputTorrentFileTypeFacetInput,
 		ec.unmarshalInputTorrentSourceFacetInput,
 		ec.unmarshalInputTorrentTagFacetInput,
@@ -1937,9 +1936,7 @@ type SuggestedTag {
 
 type TorrentContentQuery {
   search(
-    query: SearchQueryInput
-    facets: TorrentContentFacetsInput
-    orderBy: [TorrentContentOrderByInput!]
+    query: TorrentContentSearchQueryInput!
   ): TorrentContentSearchResult!
 }
 
@@ -1953,7 +1950,7 @@ scalar DateTime
 scalar Void
 scalar Year
 `, BuiltIn: false},
-	{Name: "../../graphql/schema/search.graphqls", Input: `input SearchQueryInput {
+	{Name: "../../graphql/schema/search.graphqls", Input: `input TorrentContentSearchQueryInput {
   queryString: String
   limit: Int
   page: Int
@@ -1963,6 +1960,8 @@ scalar Year
   hasNextPage if true, the search result will include the hasNextPage field, indicating if there are more results to fetch
   """
   hasNextPage: Boolean
+  facets: TorrentContentFacetsInput
+  orderBy: [TorrentContentOrderByInput!]
   cached: Boolean
   aggregationBudget: Float
 }
@@ -2144,33 +2143,15 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_TorrentContentQuery_search_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *query.SearchParams
+	var arg0 gqlmodel.TorrentContentSearchQueryInput
 	if tmp, ok := rawArgs["query"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("query"))
-		arg0, err = ec.unmarshalOSearchQueryInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐSearchParams(ctx, tmp)
+		arg0, err = ec.unmarshalNTorrentContentSearchQueryInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐTorrentContentSearchQueryInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["query"] = arg0
-	var arg1 *gen.TorrentContentFacetsInput
-	if tmp, ok := rawArgs["facets"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("facets"))
-		arg1, err = ec.unmarshalOTorrentContentFacetsInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentFacetsInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["facets"] = arg1
-	var arg2 []gen.TorrentContentOrderByInput
-	if tmp, ok := rawArgs["orderBy"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
-		arg2, err = ec.unmarshalOTorrentContentOrderByInput2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentOrderByInputᚄ(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["orderBy"] = arg2
 	return args, nil
 }
 
@@ -7647,7 +7628,7 @@ func (ec *executionContext) _TorrentContentQuery_search(ctx context.Context, fie
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Search(ctx, fc.Args["query"].(*query.SearchParams), fc.Args["facets"].(*gen.TorrentContentFacetsInput), fc.Args["orderBy"].([]gen.TorrentContentOrderByInput))
+		return obj.Search(ctx, fc.Args["query"].(gqlmodel.TorrentContentSearchQueryInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11645,82 +11626,6 @@ func (ec *executionContext) unmarshalInputReleaseYearFacetInput(ctx context.Cont
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputSearchQueryInput(ctx context.Context, obj interface{}) (query.SearchParams, error) {
-	var it query.SearchParams
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"queryString", "limit", "page", "offset", "totalCount", "hasNextPage", "cached", "aggregationBudget"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "queryString":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("queryString"))
-			data, err := ec.unmarshalOString2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullString(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.QueryString = data
-		case "limit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
-			data, err := ec.unmarshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullUint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Limit = data
-		case "page":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
-			data, err := ec.unmarshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullUint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Page = data
-		case "offset":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
-			data, err := ec.unmarshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullUint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Offset = data
-		case "totalCount":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("totalCount"))
-			data, err := ec.unmarshalOBoolean2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullBool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TotalCount = data
-		case "hasNextPage":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasNextPage"))
-			data, err := ec.unmarshalOBoolean2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullBool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasNextPage = data
-		case "cached":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cached"))
-			data, err := ec.unmarshalOBoolean2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullBool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Cached = data
-		case "aggregationBudget":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregationBudget"))
-			data, err := ec.unmarshalOFloat2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullFloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.AggregationBudget = data
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputSuggestTagsQueryInput(ctx context.Context, obj interface{}) (gen.SuggestTagsQueryInput, error) {
 	var it gen.SuggestTagsQueryInput
 	asMap := map[string]interface{}{}
@@ -11866,6 +11771,96 @@ func (ec *executionContext) unmarshalInputTorrentContentOrderByInput(ctx context
 				return it, err
 			}
 			it.Descending = graphql.OmittableOf(data)
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputTorrentContentSearchQueryInput(ctx context.Context, obj interface{}) (gqlmodel.TorrentContentSearchQueryInput, error) {
+	var it gqlmodel.TorrentContentSearchQueryInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"queryString", "limit", "page", "offset", "totalCount", "hasNextPage", "facets", "orderBy", "cached", "aggregationBudget"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "queryString":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("queryString"))
+			data, err := ec.unmarshalOString2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullString(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.QueryString = data
+		case "limit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+			data, err := ec.unmarshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullUint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Limit = data
+		case "page":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+			data, err := ec.unmarshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullUint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Page = data
+		case "offset":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
+			data, err := ec.unmarshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullUint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Offset = data
+		case "totalCount":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("totalCount"))
+			data, err := ec.unmarshalOBoolean2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullBool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TotalCount = data
+		case "hasNextPage":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasNextPage"))
+			data, err := ec.unmarshalOBoolean2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullBool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasNextPage = data
+		case "facets":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("facets"))
+			data, err := ec.unmarshalOTorrentContentFacetsInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentFacetsInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Facets = data
+		case "orderBy":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+			data, err := ec.unmarshalOTorrentContentOrderByInput2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentOrderByInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.OrderBy = data
+		case "cached":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cached"))
+			data, err := ec.unmarshalOBoolean2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullBool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Cached = data
+		case "aggregationBudget":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregationBudget"))
+			data, err := ec.unmarshalOFloat2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullFloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AggregationBudget = data
 		}
 	}
 
@@ -14974,6 +14969,11 @@ func (ec *executionContext) marshalNTorrentContentQuery2githubᚗcomᚋbitmagnet
 	return ec._TorrentContentQuery(ctx, sel, &v)
 }
 
+func (ec *executionContext) unmarshalNTorrentContentSearchQueryInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐTorrentContentSearchQueryInput(ctx context.Context, v interface{}) (gqlmodel.TorrentContentSearchQueryInput, error) {
+	res, err := ec.unmarshalInputTorrentContentSearchQueryInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNTorrentContentSearchResult2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐTorrentContentSearchResult(ctx context.Context, sel ast.SelectionSet, v gqlmodel.TorrentContentSearchResult) graphql.Marshaler {
 	return ec._TorrentContentSearchResult(ctx, sel, &v)
 }
@@ -16011,14 +16011,6 @@ func (ec *executionContext) unmarshalOReleaseYearFacetInput2ᚖgithubᚗcomᚋbi
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputReleaseYearFacetInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOSearchQueryInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋdatabaseᚋqueryᚐSearchParams(ctx context.Context, v interface{}) (*query.SearchParams, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputSearchQueryInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

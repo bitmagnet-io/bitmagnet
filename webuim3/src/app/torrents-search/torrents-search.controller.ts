@@ -1,62 +1,88 @@
-import {BehaviorSubject, Observable} from "rxjs";
+import {BehaviorSubject, map, Observable} from "rxjs";
 import * as generated from "../graphql/generated";
 import {PageEvent} from "../paginator/paginator.types";
 
+type FacetInput<TValue extends string = string> = {
+  aggregate: boolean;
+  filter?: TValue[];
+}
+
+export type ContentTypeSelection = generated.ContentType | "null" | null
+
+export type TorrentSearchControls = {
+  limit: number;
+  page: number;
+  queryString?: string;
+  contentType: ContentTypeSelection;
+  orderBy?: {
+    field: generated.TorrentContentOrderBy
+    descending: boolean;
+  }
+  facets: {
+    genre: FacetInput;
+    language: FacetInput<generated.Language>
+    torrentFileType: FacetInput<generated.FileType>
+    torrentSource: FacetInput;
+    torrentTag: FacetInput;
+    videoResolution: FacetInput<generated.VideoResolution>;
+    videoSource: FacetInput<generated.VideoSource>;
+  };
+}
+
+const controlsToQueryVariables = (ctrl: TorrentSearchControls): generated.TorrentContentSearchQueryVariables => ({
+  query: {
+    queryString: ctrl.queryString,
+    limit: ctrl.limit,
+    page: ctrl.page,
+    totalCount: true,
+    hasNextPage: true,
+    facets: {
+      contentType: {
+        aggregate: true,
+        filter: ctrl.contentType ? [
+          ctrl.contentType === "null" ? null : ctrl.contentType
+        ] : undefined,
+      },
+      ...ctrl.facets,
+    },
+  }
+})
+
 export class TorrentsSearchController {
 
-  private paramsSubject: BehaviorSubject<generated.TorrentContentSearchQueryVariables>
-  params$: Observable<generated.TorrentContentSearchQueryVariables>
-  params: generated.TorrentContentSearchQueryVariables
+  private controlsSubject: BehaviorSubject<TorrentSearchControls>
+  controls$: Observable<TorrentSearchControls>
 
-  private contentTypeSubject: BehaviorSubject<ContentTypeSelection>
-  private contentType$ : Observable<ContentTypeSelection>
+  params$: Observable<generated.TorrentContentSearchQueryVariables>
 
   constructor(
-    initialParams: generated.TorrentContentSearchQueryVariables,
-    initialContentType: ContentTypeSelection = null
+    initialControls: TorrentSearchControls
   ) {
-    this.params = initialParams;
-    this.paramsSubject = new BehaviorSubject(initialParams);
-    this.params$ = this.paramsSubject.asObservable();
-    this.paramsSubject.subscribe(params => {
-      this.params = params;
-    })
-    this.contentTypeSubject = new BehaviorSubject<ContentTypeSelection>(initialContentType)
-    this.contentType$ = this.contentTypeSubject.asObservable();
-    this.contentType$.subscribe((ct) => this.updateParams((params) => ({
-      ...params,
-      facets: {
-        ...params.facets,
-        contentType: {
-          aggregate: true,
-          ...(ct ? { filter: [ct === "null" ? null : ct]} : undefined)
-        }
-      }
-    })))
+    this.controlsSubject = new BehaviorSubject(initialControls);
+    this.controls$ = this.controlsSubject.asObservable();
+    this.params$ = this.controls$.pipe(map(controlsToQueryVariables))
   }
 
-  updateParams(fn: (p: generated.TorrentContentSearchQueryVariables) => generated.TorrentContentSearchQueryVariables) {
-    const params = this.paramsSubject.getValue();
-    const nextParams = fn(params);
-    if (JSON.stringify(params) !== JSON.stringify(nextParams)) {
-      this.paramsSubject.next(nextParams);
+  update(fn: (c: TorrentSearchControls) => TorrentSearchControls) {
+    const ctrl = this.controlsSubject.getValue()
+    const next = fn(ctrl)
+    if (JSON.stringify(ctrl) !== JSON.stringify(next)) {
+      this.controlsSubject.next(next);
     }
   }
 
   handlePageEvent(event: PageEvent) {
-    this.updateParams((params) => ({
-      ...params,
-      query: {
-        ...params.query,
+    this.update((ctrl) => ({
+      ...ctrl,
         limit: event.pageSize,
         page: event.page,
-      }
     }))
   }
 
   selectContentType(ct: ContentTypeSelection) {
-    this.contentTypeSubject.next(ct);
+    this.update((ctrl) => ({
+      ...ctrl,
+      contentType: ct,
+    }))
   }
 }
-
-type ContentTypeSelection = generated.ContentType | "null" | null
