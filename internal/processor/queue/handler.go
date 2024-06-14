@@ -13,6 +13,7 @@ import (
 
 type Params struct {
 	fx.In
+	Config    processor.Config
 	Processor lazy.Lazy[processor.Processor]
 }
 
@@ -34,7 +35,7 @@ func New(p Params) Result {
 					return err
 				}
 				return pr.Process(ctx, *msg)
-			}, handler.JobTimeout(time.Second*60*10), handler.Concurrency(3)), nil
+			}, handler.JobTimeout(time.Second*60*10), handler.Concurrency(int(p.Config.Concurrency))), nil
 		}),
 	}
 }
