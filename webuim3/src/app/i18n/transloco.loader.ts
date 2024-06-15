@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Translation, TranslocoLoader } from '@jsverse/transloco';
-import i18n from "./i18n";
+import i18n from "./translations";
 
 @Injectable({ providedIn: 'root' })
-export class TranslocoHttpLoader implements TranslocoLoader {
+export class TranslocoImportLoader implements TranslocoLoader {
   getTranslation(lang: string) {
     if (lang in i18n) {
       return Promise.resolve(i18n[lang as keyof typeof i18n] as Translation).then(stripMissing);

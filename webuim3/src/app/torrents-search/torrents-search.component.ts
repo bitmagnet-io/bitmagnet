@@ -1,7 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  inject,
+  inject, Input,
   OnInit,
   ViewChild,
 } from '@angular/core';
@@ -45,6 +45,7 @@ import {
   TorrentsSearchController,
 } from './torrents-search.controller';
 import { TorrentsSearchDatasource } from './torrents-search.datasource';
+import {BreakpointsService} from "../layout/breakpoints.service";
 
 @Component({
   selector: 'app-torrents-search',
@@ -78,14 +79,7 @@ import { TorrentsSearchDatasource } from './torrents-search.datasource';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TorrentsSearchComponent implements OnInit {
-  private breakpointObserver = inject(BreakpointObserver);
-
-  isHandset$: Observable<boolean> = this.breakpointObserver
-    .observe(Breakpoints.Handset)
-    .pipe(
-      map((result) => result.matches),
-      shareReplay(),
-    );
+  breakpoints = inject(BreakpointsService)
 
   @ViewChild(PaginatorComponent) paginator: PaginatorComponent;
   @ViewChild(MatSort) sort!: MatSort;

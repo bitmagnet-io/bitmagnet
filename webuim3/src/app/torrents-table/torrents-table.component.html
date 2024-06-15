@@ -53,7 +53,7 @@
           <mat-chip>
             @for (l of languages; let j = $index; track l.id) {
               <ng-container>
-                {{ j > 0 ? ", " : "" }}{{ l.name }}
+                {{ j > 0 ? ", " : "" }}{{ t('languages.'+l.id) }}
               </ng-container>
             }
           </mat-chip>

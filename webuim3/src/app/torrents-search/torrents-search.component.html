@@ -3,9 +3,9 @@
   <mat-drawer
     #drawer
     class="drawer"
-    [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
-    [mode]="(isHandset$ | async) ? 'over' : 'side'"
-    [opened]="(isHandset$ | async) === false"
+    [attr.role]="(breakpoints.isCompact$ | async) ? 'dialog' : 'navigation'"
+    [mode]="(breakpoints.isCompact$ | async) ? 'over' : 'side'"
+    [opened]="(breakpoints.isCompact$ | async) === false"
   >
     <mat-expansion-panel
       class="panel-content-type"
@@ -60,7 +60,7 @@
     </mat-expansion-panel>
   </mat-drawer>
   <mat-drawer-content>
-    <!--      @if (isHandset$ | async) {-->
+    <!--      @if (isCompact$ | async) {-->
     <button
       type="button"
       aria-label="Toggle drawer"

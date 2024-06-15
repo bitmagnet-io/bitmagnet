@@ -4,16 +4,17 @@
   //  overflow: visible;
   //  margin-right: 20px;
   //}
-  white-space: nowrap;
+  //white-space: nowrap;
 }
 
 td.mat-column-summary {
   vertical-align: middle;
   cursor: pointer;
   .title {
-    display: inline-block;
+    //display: inline-block;
     line-height: 30px;
-    word-wrap: break-word;
+    //word-wrap: break-word;
+    word-break: break-all;
     max-width: 900px;
   }
   .mat-icon {

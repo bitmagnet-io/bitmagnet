@@ -1,50 +1,68 @@
-<ng-container *transloco="let t; prefix: 'layout'">
+<ng-container *transloco="let t">
 <mat-toolbar class="toolbar-header">
-  <h1><mat-icon svgIcon="magnet"></mat-icon>bitmagnet<app-version /></h1>
-  <nav>
-    @for (item of rootRoutes; track $index) {
-      <a
-        mat-button
-        [routerLink]="item.path"
-        #link="routerLinkActive"
+    @if (!(breakpoints.isCompact$ | async)) {
+      <h1>
+        <a routerLink="dashboard">
+          <mat-icon svgIcon="magnet"></mat-icon>
+          <span class="name">bitmagnet</span>
+          <app-version />
+        </a>
+      </h1>
+      <nav>
+        <a
+          mat-button
+          routerLink="dashboard"
+          #linkDashboard="routerLinkActive"
+          routerLinkActive
+          [class]="linkDashboard.isActive ? 'active' : ''"
+        >
+          <mat-icon>dashboard</mat-icon>
+          {{ t('routes.dashboard') }}
+        </a>
+        <a
+          mat-button
+          routerLink="torrents"
+          #linkTorrents="routerLinkActive"
+          routerLinkActive
+          [class]="linkTorrents.isActive ? 'active' : ''"
+        >
+          <mat-icon>toc</mat-icon>
+          {{ t('routes.torrents') }}
+        </a>
+      </nav>
+    } @else {
+      <h1>
+        <a routerLink="dashboard">
+          <mat-icon svgIcon="magnet"></mat-icon>
+        </a>
+      </h1>
+      <button
+        mat-icon-button
+        routerLink="dashboard"
+        #linkDashboard="routerLinkActive"
         routerLinkActive
-        [class]="link.isActive ? 'active' : ''"
+        [class]="linkDashboard.isActive ? 'active' : ''"
+        [matTooltip]="t('routes.dashboard')"
       >
-        {{ routeTitle(item) | async }}
-      </a>
+        <mat-icon>dashboard</mat-icon>
+      </button>
+      <button
+        mat-icon-button
+        routerLink="torrents"
+        #linkTorrents="routerLinkActive"
+        routerLinkActive
+        [class]="linkTorrents.isActive ? 'active' : ''"
+        [matTooltip]="t('routes.torrents')"
+      >
+        <mat-icon>toc</mat-icon>
+      </button>
     }
-  </nav>
   <span class="spacer"></span>
-  <a
-    mat-button
-    class="button-sponsor"
-    href="https://opencollective.com/bitmagnet"
-    target="_blank"
-    [matTooltip]="t('support_bitmagnet')"
-    ><mat-icon>favorite</mat-icon>{{ t('sponsor') }}</a
-  >
-  <button
-    mat-icon-button
-    aria-label="Language"
-    [matMenuTriggerFor]="languagesMenu"
-    [matTooltip]="t('translate')"
-  >
-    <mat-icon>translate</mat-icon>
-  </button>
-  <mat-menu #languagesMenu="matMenu">
-    @for (l of availableLanguages; track l.id) {
-      <a
-        mat-menu-item
-        (click)="transloco.setActiveLang(l.id)"
-      >{{ l.label }}</a
-      >
-    }
-  </mat-menu>
   <button
     mat-icon-button
     aria-label="Theme"
     [matMenuTriggerFor]="themesMenu"
-    [matTooltip]="t('change_theme')"
+    [matTooltip]="t('layout.change_theme')"
   >
     <mat-icon>apparel</mat-icon>
   </button>
@@ -61,7 +79,23 @@
   </mat-menu>
   <button
     mat-icon-button
-    [matTooltip]="t('external_links')"
+    [matMenuTriggerFor]="languagesMenu"
+    [matTooltip]="t('layout.translate')"
+  >
+    <mat-icon>translate</mat-icon>
+  </button>
+  <mat-menu #languagesMenu="matMenu">
+    @for (l of translateManager.availableLanguages; track l.id) {
+      <a
+        mat-menu-item
+        (click)="translateManager.setLanguage(l.id)"
+      >{{ l.label }}</a
+      >
+    }
+  </mat-menu>
+  <button
+    mat-icon-button
+    [matTooltip]="t('layout.external_links')"
     [matMenuTriggerFor]="externalLinksMenu"
   >
     <mat-icon svgIcon="external-link" />
@@ -71,21 +105,39 @@
       >bitmagnet.io</a
     >
     <a mat-menu-item href="https://discord.gg/6mFNszX8qM" target="_blank"
-      >{{ t('bitmagnet_on_service', {service: "Discord"}) }}</a
+      >{{ t('layout.bitmagnet_on_service', {service: "Discord"}) }}</a
     >
     <a
       mat-menu-item
       href="https://github.com/bitmagnet-io/bitmagnet"
       target="_blank"
-      >{{ t('bitmagnet_on_service', {service: "GitHub"}) }}</a
+      >{{ t('layout.bitmagnet_on_service', {service: "GitHub"}) }}</a
     >
     <a
       mat-menu-item
       href="https://opencollective.com/bitmagnet"
       target="_blank"
-      >{{ t('bitmagnet_on_service', {service: "OpenCollective"}) }}</a
+      >{{ t('layout.bitmagnet_on_service', {service: "OpenCollective"}) }}</a
     >
   </mat-menu>
+  @if (breakpoints.isCompact$ | async) {
+    <a
+      mat-icon-button
+      class="button-sponsor"
+      href="https://opencollective.com/bitmagnet"
+      target="_blank"
+      [matTooltip]="t('layout.sponsor')"
+    ><mat-icon>favorite</mat-icon></a>
+  } @else {
+    <a
+      mat-button
+      class="button-sponsor"
+      href="https://opencollective.com/bitmagnet"
+      target="_blank"
+      [matTooltip]="t('layout.support_bitmagnet')"
+    ><mat-icon>favorite</mat-icon>{{ t('layout.sponsor') }}</a
+    >
+  }
 </mat-toolbar>
 <div class="app-content">
   <ng-content></ng-content>

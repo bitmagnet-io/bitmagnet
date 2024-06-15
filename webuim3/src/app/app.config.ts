@@ -13,7 +13,7 @@ import {
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideTransloco } from '@jsverse/transloco';
 import { routes } from './app.routes';
-import { TranslocoHttpLoader } from './transloco.loader';
+import { TranslocoImportLoader } from './i18n/transloco.loader';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -26,6 +26,10 @@ export const appConfig: ApplicationConfig = {
     provideTransloco({
       config: {
         availableLangs: [
+          {
+            id: "ar",
+            label: "العربية"
+          },
           {
             id: 'en',
             label: 'English',
@@ -57,7 +61,7 @@ export const appConfig: ApplicationConfig = {
         reRenderOnLangChange: true,
         prodMode: false,
       },
-      loader: TranslocoHttpLoader,
+      loader: TranslocoImportLoader,
     }),
   ],
 };

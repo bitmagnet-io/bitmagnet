@@ -5,17 +5,23 @@
   --mat-toolbar-title-text-size: 22px;
   --mat-toolbar-standard-height: 56px;
   --mat-icon-color: #fff;
+  padding: 0 20px;
   h1 {
     margin-top: -2px;
-    margin-left: 20px;
-    cursor: default;
+    //margin-left: 20px;
+    margin-right: 20px;
+    a {
+      text-decoration: none;
+    }
     mat-icon {
       position: relative;
       top: 6px;
-      margin-right: 10px;
+    }
+    .name {
+      margin-left: 10px;
+      margin-right: 16px;
     }
     app-version {
-      margin-left: 16px;
       font-size: 13px;
     }
   }
@@ -28,10 +34,13 @@
   --mdc-text-button-label-text-size: 15px;
   nav {
     position: absolute;
-    left: 360px;
+    left: 340px;
     top: 0;
     height: 56px;
     padding-top: 14px;
+    a {
+      margin-right: 10px;
+    }
   }
   .spacer {
     display: inline-flex;
