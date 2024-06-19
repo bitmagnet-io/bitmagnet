@@ -1,18 +1,18 @@
-import {inject, Injectable} from "@angular/core";
-import {BrowserStorageService} from "../browser-storage/browser-storage.service";
-import {LangDefinition, TranslocoService} from "@jsverse/transloco";
+import { inject, Injectable } from '@angular/core';
+import { LangDefinition, TranslocoService } from '@jsverse/transloco';
+import { BrowserStorageService } from '../browser-storage/browser-storage.service';
 
 const LOCAL_STORAGE_KEY = 'bitmagnet-language';
 
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class TranslateManager {
-  transloco = inject(TranslocoService)
+  transloco = inject(TranslocoService);
   private browserStorage = inject(BrowserStorageService);
 
   availableLanguages = this.transloco.getAvailableLangs() as LangDefinition[];
 
   constructor() {
-    this.transloco.setActiveLang(this.getPreferredLanguage())
+    this.transloco.setActiveLang(this.getPreferredLanguage());
   }
 
   getPreferredLanguage(): string {
@@ -25,8 +25,8 @@ export class TranslateManager {
   }
 
   getAutoLanguage(): string {
-    const navLang = navigator?.language?.split("-")?.[0];
-    return this.transloco.isLang(navLang) ? navLang : "en";
+    const navLang = navigator?.language?.split('-')?.[0];
+    return this.transloco.isLang(navLang) ? navLang : 'en';
   }
 
   setLanguage(lang: string) {

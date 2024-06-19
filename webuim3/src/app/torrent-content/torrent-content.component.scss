@@ -1,7 +1,9 @@
 h2 {
   margin-top: 10px;
   max-width: 900px;
-  word-wrap: break-word;
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 .poster {
@@ -11,10 +13,15 @@ h2 {
 }
 
 .info-hash {
-  padding-left: 5px;
-  cursor: crosshair;
-  text-decoration: underline;
-  text-decoration-style: dotted;
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  span {
+    padding-left: 5px;
+    cursor: crosshair;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+  }
 }
 
 .torrent-files {
@@ -42,4 +49,23 @@ h2 {
 
 .files-count {
   margin-left: 4px;
+}
+
+.mat-mdc-card-content {
+  p {
+    margin-top: 0;
+  }
+}
+
+::ng-deep .mdc-tab {
+  &[aria-labelledby=hidden] {
+    display: none;
+  }
+  &[role=tab] {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  .label, .files-count {
+    margin-left: 8px;
+  }
 }

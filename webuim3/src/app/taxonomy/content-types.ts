@@ -6,7 +6,7 @@ type ContentTypeInfo = {
   icon: string;
 };
 
-export const contentTypes: Record<
+export const contentTypeMap: Record<
   generated.ContentType | 'null',
   ContentTypeInfo
 > = {
@@ -61,3 +61,15 @@ export const contentTypes: Record<
     icon: 'question_mark',
   },
 };
+
+export const contentTypeList = Object.entries(contentTypeMap).map(
+  ([key, info]) => ({
+    key: key as keyof typeof contentTypeMap,
+    ...info,
+  }),
+);
+
+export const contentTypeInfo = (
+  key?: string | null,
+): ContentTypeInfo | undefined =>
+  key ? contentTypeMap[key as generated.ContentType] : undefined;

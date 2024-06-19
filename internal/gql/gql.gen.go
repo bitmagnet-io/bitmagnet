@@ -1644,42 +1644,58 @@ enum FilesStatus {
 }
 
 enum Language {
+  af
   ar
-  bs
+  az
+  be
   bg
+  bs
   ca
-  zh
+  ce
+  co
   cs
+  cy
   da
-  nl
-  en
-  et
-  fi
-  fr
   de
   el
+  en
+  es
+  et
+  eu
+  fa
+  fi
+  fr
   he
   hi
   hr
   hu
-  is
+  hy
   id
+  is
   it
   ja
+  ka
   ko
-  lv
+  ku
   lt
+  lv
+  mi
   mk
   ml
+  mn
+  ms
+  mt
+  nl
   no
-  fa
   pl
   pt
   ro
   ru
+  sa
   sk
   sl
-  es
+  sm
+  so
   sr
   sv
   ta
@@ -1687,24 +1703,8 @@ enum Language {
   tr
   uk
   vi
-  af
-  hy
-  az
-  eu
-  be
-  ce
-  co
-  ka
-  ku
-  mi
-  ms
-  mt
-  mn
-  sa
-  sm
-  so
-  cy
   yi
+  zh
   zu
 }
 
@@ -1757,15 +1757,15 @@ enum VideoSource {
 }
 
 enum TorrentContentOrderBy {
-  Relevance
-  PublishedAt
-  UpdatedAt
-  Size
-  Files
-  Seeders
-  Leechers
-  Name
-  InfoHash
+  relevance
+  published_at
+  updated_at
+  size
+  files_count
+  seeders
+  leechers
+  name
+  info_hash
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/models.graphqls", Input: `type Torrent {

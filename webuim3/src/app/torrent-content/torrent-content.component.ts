@@ -1,8 +1,8 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { catchError, EMPTY, tap } from 'rxjs';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { DecimalPipe, NgOptimizedImage } from '@angular/common';
+import { AsyncPipe, DecimalPipe, NgOptimizedImage } from '@angular/common';
 import { CdkCopyToClipboard } from '@angular/cdk/clipboard';
 import { MatDivider } from '@angular/material/divider';
 import {
@@ -32,6 +32,7 @@ import * as generated from '../graphql/generated';
 import normalizeTagInput from '../util/normalizeTagInput';
 import { GraphQLService } from '../graphql/graphql.service';
 import { ErrorsService } from '../errors/errors.service';
+import { BreakpointsService } from '../layout/breakpoints.service';
 
 @Component({
   selector: 'app-torrent-content-content',
@@ -63,9 +64,12 @@ import { ErrorsService } from '../errors/errors.service';
     MatButton,
     FilesizePipe,
     TranslocoDirective,
+    AsyncPipe,
   ],
 })
 export class TorrentContentComponent {
+  breakpoints = inject(BreakpointsService);
+
   @Input() torrentContent: generated.TorrentContent;
 
   @Output() updated = new EventEmitter<null>();

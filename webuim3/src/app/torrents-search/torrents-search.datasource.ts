@@ -32,6 +32,8 @@ const emptyBudgetedCount = {
 export class TorrentsSearchDatasource
   implements DataSource<generated.TorrentContent>
 {
+  private query: generated.TorrentContentSearchQueryInput;
+
   private currentRequest = new BehaviorSubject(0);
   private currentSubscription?: Subscription;
 
@@ -96,8 +98,15 @@ export class TorrentsSearchDatasource
     searchQueryVariables: Observable<generated.TorrentContentSearchQueryVariables>,
   ) {
     searchQueryVariables.subscribe(
-      (variables: generated.TorrentContentSearchQueryVariables) =>
-        this.loadResult(variables),
+      (variables: generated.TorrentContentSearchQueryVariables) => {
+        this.query = variables.query;
+        this.loadResult({
+          query: {
+            ...variables.query,
+            cached: true,
+          },
+        });
+      },
     );
     this.resultSubject.subscribe((result) => {
       this.result = result;
@@ -112,6 +121,15 @@ export class TorrentsSearchDatasource
     this.resultSubject.complete();
   }
 
+  refresh() {
+    this.loadResult({
+      query: {
+        ...this.query,
+        cached: false,
+      },
+    });
+  }
+
   private loadResult(
     variables: generated.TorrentContentSearchQueryVariables,
   ): void {
@@ -119,6 +137,7 @@ export class TorrentsSearchDatasource
       this.currentSubscription.unsubscribe();
       this.currentSubscription = undefined;
     }
+    this.loadingSubject.next(true);
     const currentRequest = this.currentRequest.getValue() + 1;
     this.currentRequest.next(currentRequest);
     const result = this.graphQLService.torrentContentSearch(variables).pipe(
@@ -131,6 +150,7 @@ export class TorrentsSearchDatasource
     );
     this.currentSubscription = result.subscribe((r) => {
       if (currentRequest === this.currentRequest.getValue()) {
+        this.loadingSubject.next(false);
         this.resultSubject.next(r);
       }
     });

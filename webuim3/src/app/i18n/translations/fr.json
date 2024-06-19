@@ -11,6 +11,15 @@
     "tv_show": "__missing__",
     "xxx": "__missing__"
   },
+  "facets": {
+    "genre": "__missing__",
+    "language": "__missing__",
+    "torrent_file_type": "__missing__",
+    "torrent_source": "__missing__",
+    "torrent_tag": "__missing__",
+    "video_resolution": "__missing__",
+    "video_source": "__missing__"
+  },
   "file_types": {
     "archive": "__missing__",
     "audio": "__missing__",

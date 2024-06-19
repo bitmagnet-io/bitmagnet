@@ -170,15 +170,15 @@ type VideoSourceFacetInput struct {
 type TorrentContentOrderBy string
 
 const (
-	TorrentContentOrderByRelevance   TorrentContentOrderBy = "Relevance"
-	TorrentContentOrderByPublishedAt TorrentContentOrderBy = "PublishedAt"
-	TorrentContentOrderByUpdatedAt   TorrentContentOrderBy = "UpdatedAt"
-	TorrentContentOrderBySize        TorrentContentOrderBy = "Size"
-	TorrentContentOrderByFiles       TorrentContentOrderBy = "Files"
-	TorrentContentOrderBySeeders     TorrentContentOrderBy = "Seeders"
-	TorrentContentOrderByLeechers    TorrentContentOrderBy = "Leechers"
-	TorrentContentOrderByName        TorrentContentOrderBy = "Name"
-	TorrentContentOrderByInfoHash    TorrentContentOrderBy = "InfoHash"
+	TorrentContentOrderByRelevance   TorrentContentOrderBy = "relevance"
+	TorrentContentOrderByPublishedAt TorrentContentOrderBy = "published_at"
+	TorrentContentOrderByUpdatedAt   TorrentContentOrderBy = "updated_at"
+	TorrentContentOrderBySize        TorrentContentOrderBy = "size"
+	TorrentContentOrderByFilesCount  TorrentContentOrderBy = "files_count"
+	TorrentContentOrderBySeeders     TorrentContentOrderBy = "seeders"
+	TorrentContentOrderByLeechers    TorrentContentOrderBy = "leechers"
+	TorrentContentOrderByName        TorrentContentOrderBy = "name"
+	TorrentContentOrderByInfoHash    TorrentContentOrderBy = "info_hash"
 )
 
 var AllTorrentContentOrderBy = []TorrentContentOrderBy{
@@ -186,7 +186,7 @@ var AllTorrentContentOrderBy = []TorrentContentOrderBy{
 	TorrentContentOrderByPublishedAt,
 	TorrentContentOrderByUpdatedAt,
 	TorrentContentOrderBySize,
-	TorrentContentOrderByFiles,
+	TorrentContentOrderByFilesCount,
 	TorrentContentOrderBySeeders,
 	TorrentContentOrderByLeechers,
 	TorrentContentOrderByName,
@@ -195,7 +195,7 @@ var AllTorrentContentOrderBy = []TorrentContentOrderBy{
 
 func (e TorrentContentOrderBy) IsValid() bool {
 	switch e {
-	case TorrentContentOrderByRelevance, TorrentContentOrderByPublishedAt, TorrentContentOrderByUpdatedAt, TorrentContentOrderBySize, TorrentContentOrderByFiles, TorrentContentOrderBySeeders, TorrentContentOrderByLeechers, TorrentContentOrderByName, TorrentContentOrderByInfoHash:
+	case TorrentContentOrderByRelevance, TorrentContentOrderByPublishedAt, TorrentContentOrderByUpdatedAt, TorrentContentOrderBySize, TorrentContentOrderByFilesCount, TorrentContentOrderBySeeders, TorrentContentOrderByLeechers, TorrentContentOrderByName, TorrentContentOrderByInfoHash:
 		return true
 	}
 	return false

@@ -27,8 +27,8 @@ export const appConfig: ApplicationConfig = {
       config: {
         availableLangs: [
           {
-            id: "ar",
-            label: "العربية"
+            id: 'ar',
+            label: 'العربية',
           },
           {
             id: 'en',

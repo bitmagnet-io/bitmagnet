@@ -1,4 +1,9 @@
 <ng-container *transloco="let t">
+  <div class="progress-bar-container">
+    @if (dataSource.loading$ | async) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+  </div>
 <table
   mat-table
   [dataSource]="dataSource"
@@ -8,22 +13,21 @@
   <!-- Checkbox Column -->
   <ng-container matColumnDef="select">
     <th mat-header-cell *matHeaderCellDef>
-<!--      <mat-checkbox-->
-<!--        (change)="toggleAllRows()"-->
-<!--        [checked]="selectedItems.hasValue() && isAllSelected()"-->
-<!--        [indeterminate]="selectedItems.hasValue() && !isAllSelected()"-->
-<!--        [aria-label]="checkboxLabel()"-->
-<!--      >-->
-<!--      </mat-checkbox>-->
+      <mat-checkbox
+        (change)="toggleAllRows()"
+        [checked]="selectedItems.hasValue() && isAllSelected()"
+        [indeterminate]="selectedItems.hasValue() && !isAllSelected()"
+        [matTooltip]="isAllSelected() ? t('torrents.deselect_all') : t('torrents.select_all')"
+      >
+      </mat-checkbox>
     </th>
     <td mat-cell *matCellDef="let row">
-<!--      <mat-checkbox-->
-<!--        (click)="$event.stopPropagation()"-->
-<!--        (change)="$event ? selectedItems.toggle(row) : null"-->
-<!--        [checked]="selectedItems.isSelected(row)"-->
-<!--        [aria-label]="checkboxLabel(row)"-->
-<!--      >-->
-<!--      </mat-checkbox>-->
+      <mat-checkbox
+        (click)="$event.stopPropagation()"
+        (change)="$event ? selectedItems.toggle(row) : null"
+        [checked]="selectedItems.isSelected(row)"
+      >
+      </mat-checkbox>
     </td>
   </ng-container>
 
@@ -34,14 +38,12 @@
       *matCellDef="let i"
       (click)="toggleTorrentContentId(i.id); $event.stopPropagation()"
     >
-<!--      <mat-icon-->
-<!--        [attr.title]="-->
-<!--                search.contentTypeInfo(i.contentType)?.singular ?? 'Unknown'-->
-<!--              "-->
-<!--      >{{-->
-<!--          search.contentTypeInfo(i.contentType)?.icon ?? "question_mark"-->
-<!--        }}</mat-icon-->
-<!--      >-->
+      <mat-icon
+        [matTooltip]="t('content_types_singular.' + (item(i).contentType ?? 'null'))"
+      >{{
+          contentTypeInfo(item(i).contentType)?.icon ?? "question_mark"
+        }}</mat-icon
+      >
       <span class="title">{{ item(i).title }}</span>
       <mat-chip-set>
         @for (tagName of item(i).torrent.tagNames; track tagName) {
@@ -131,6 +133,7 @@
       >
         <app-torrent-content-content
         [torrentContent]="i"
+        (updated)="updated.emit(item(i).infoHash)"
       />
       </div>
     </td>

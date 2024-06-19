@@ -24,4 +24,24 @@
       }
     }
   }
+  .filtered {
+    .mat-mdc-checkbox-checked {
+      .mat-internal-form-field {
+        color: mat.get-theme-color($theme, secondary);
+      }
+    }
+    .mat-mdc-checkbox:hover:not(.mat-mdc-checkbox-checked) {
+      .mat-internal-form-field {
+        color: mat.get-theme-color($theme, tertiary);
+      }
+    }
+  }
+  .unfiltered {
+    --mdc-checkbox-selected-icon-color: lightgray;
+    .mat-mdc-checkbox:hover {
+      .mat-internal-form-field {
+        color: mat.get-theme-color($theme, tertiary);
+      }
+    }
+  }
 }

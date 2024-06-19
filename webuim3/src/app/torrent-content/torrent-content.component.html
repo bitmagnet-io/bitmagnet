@@ -4,15 +4,14 @@
     [ngSrc]="'https://image.tmdb.org/t/p/w300/' + posterPath"
     [alt]="t('torrents.poster')"
     class="poster"
-    width="300"
-    height="450"
+    [width]="(breakpoints.isCompact$ | async) ? 150 : 300"
+    [height]="(breakpoints.isCompact$ | async) ? 225 : 450"
   />
 }
 <h2>{{ torrentContent.torrent.name }}</h2>
-<p>
+<p class="info-hash">
   <strong>{{t("torrents.info_hash")}}:</strong>
   <span
-    class="info-hash"
     [matTooltip]="t('torrents.copy_to_clipboard')"
     [cdkCopyToClipboard]="torrentContent.infoHash"
     >{{ torrentContent.infoHash }}</span
@@ -90,12 +89,14 @@
   (focusChange)="selectTab($event.index == 4 ? 0 : $event.index)"
   [mat-stretch-tabs]="false"
 >
-  <mat-tab [aria-labelledby]="'hidden'"></mat-tab>
+  <mat-tab aria-labelledby="hidden"></mat-tab>
 
   <mat-tab>
     <ng-template mat-tab-label>
       <mat-icon>file_present</mat-icon>
-      {{t("torrents.files")}}
+      @if (!(breakpoints.isCompact$ | async)) {
+        <span class="label">{{ t("torrents.files") }}</span>
+      }
       @if (filesCount(); as filesCount) {
         <span class="files-count">({{ filesCount | number }})</span>
       }
@@ -163,11 +164,13 @@
   <mat-tab>
     <ng-template mat-tab-label>
       <mat-icon>sell</mat-icon>
-      {{t("torrents.edit_tags")}}
+      @if (!(breakpoints.isCompact$ | async)) {
+        <span class="label">{{t("torrents.edit_tags")}}</span>
+      }
     </ng-template>
     <ng-template matTabContent>
       <mat-card>
-        <mat-form-field class="form-edit-tags">
+        <mat-form-field class="form-edit-tags" subscriptSizing="dynamic">
           <mat-chip-grid #chipGrid>
             @for (
               tagName of torrentContent.torrent.tagNames;
@@ -194,6 +197,7 @@
             [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
             (matChipInputTokenEnd)="$event.value && addTag($event.value)"
             [value]="newTagCtrl.value"
+            autocapitalize="none"
           />
           <mat-autocomplete
             #auto="matAutocomplete"
@@ -211,7 +215,9 @@
   <mat-tab>
     <ng-template mat-tab-label>
       <mat-icon>delete_forever</mat-icon>
-      {{t("torrents.delete")}}
+      @if (!(breakpoints.isCompact$ | async)) {
+        <span class="label">{{t("torrents.delete")}}</span>
+      }
     </ng-template>
 
     <ng-template matTabContent>

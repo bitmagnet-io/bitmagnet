@@ -44,7 +44,7 @@ export class ThemeManager {
   };
 
   setTheme = (theme: string) => {
-    this.setActiveTheme(theme)
+    this.setActiveTheme(theme);
     this.setStoredTheme(this.selectedTheme ?? 'auto');
   };
 
@@ -56,7 +56,7 @@ export class ThemeManager {
       this.selectedTheme = theme as ThemeKey;
     }
     this.document.documentElement.setAttribute('data-bitmagnet-theme', theme);
-  }
+  };
 
   setStoredTheme = (theme: ThemeKey | 'auto') => {
     if (theme === 'auto') {

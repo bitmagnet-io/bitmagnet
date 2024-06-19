@@ -348,15 +348,15 @@ export type TorrentContentFacetsInput = {
 };
 
 export type TorrentContentOrderBy =
-  | 'Files'
-  | 'InfoHash'
-  | 'Leechers'
-  | 'Name'
-  | 'PublishedAt'
-  | 'Relevance'
-  | 'Seeders'
-  | 'Size'
-  | 'UpdatedAt';
+  | 'files_count'
+  | 'info_hash'
+  | 'leechers'
+  | 'name'
+  | 'published_at'
+  | 'relevance'
+  | 'seeders'
+  | 'size'
+  | 'updated_at';
 
 export type TorrentContentOrderByInput = {
   descending?: InputMaybe<Scalars['Boolean']['input']>;

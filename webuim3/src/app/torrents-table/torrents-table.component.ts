@@ -1,5 +1,4 @@
-import { Component, Input } from '@angular/core';
-import { DataSource } from '@angular/cdk/collections';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
   MatCell,
   MatCellDef,
@@ -16,7 +15,6 @@ import { MatCheckbox } from '@angular/material/checkbox';
 import { MatIcon } from '@angular/material/icon';
 import { MatChip, MatChipSet } from '@angular/material/chips';
 import { MatTooltip } from '@angular/material/tooltip';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   animate,
   state,
@@ -25,10 +23,15 @@ import {
   trigger,
 } from '@angular/animations';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { AsyncPipe } from '@angular/common';
+import { MatProgressBar } from '@angular/material/progress-bar';
+import { SelectionModel } from '@angular/cdk/collections';
 import { FilesizePipe } from '../pipes/filesize.pipe';
 import { TorrentContentComponent } from '../torrent-content/torrent-content.component';
 import { HumanTimePipe } from '../pipes/human-time.pipe';
 import * as generated from '../graphql/generated';
+import { TorrentsSearchDatasource } from '../torrents-search/torrents-search.datasource';
+import { contentTypeInfo, contentTypeMap } from '../taxonomy/content-types';
 
 @Component({
   selector: 'app-torrents-table',
@@ -53,6 +56,8 @@ import * as generated from '../graphql/generated';
     TorrentContentComponent,
     FilesizePipe,
     TranslocoDirective,
+    AsyncPipe,
+    MatProgressBar,
   ],
   templateUrl: './torrents-table.component.html',
   styleUrl: './torrents-table.component.scss',
@@ -67,19 +72,40 @@ import * as generated from '../graphql/generated';
     ]),
   ],
 })
-export class TorrentsTableComponent {
-  @Input() dataSource: DataSource<generated.TorrentContent>;
+export class TorrentsTableComponent implements OnInit {
+  contentTypeInfo = contentTypeInfo;
 
-  displayedColumns = [
-    'select',
-    'summary',
-    'size',
-    'publishedAt',
-    'peers',
-    'magnet',
-  ];
+  @Input() dataSource: TorrentsSearchDatasource;
+  @Input() displayedColumns: readonly Column[] = allColumns;
+
+  @Output() updated = new EventEmitter<string>();
 
   expandedTorrentContentId: string | undefined;
+
+  items = Array<generated.TorrentContent>();
+
+  selectedItems = new SelectionModel<generated.TorrentContent>(true, []);
+
+  ngOnInit() {
+    this.dataSource.items$.subscribe((items) => {
+      this.items = items;
+    });
+  }
+
+  /** Whether the number of selected elements matches the total number of rows. */
+  isAllSelected() {
+    return this.items.every((i) => this.selectedItems.isSelected(i));
+  }
+
+  /** Selects all rows if they are not all selected; otherwise clear selection. */
+  toggleAllRows() {
+    if (this.isAllSelected()) {
+      this.selectedItems.clear();
+      return;
+    }
+    this.selectedItems.select(...this.items);
+  }
+
   toggleTorrentContentId(id: string) {
     if (this.expandedTorrentContentId === id) {
       this.expandedTorrentContentId = undefined;
@@ -95,3 +121,16 @@ export class TorrentsTableComponent {
     return item;
   }
 }
+
+export const allColumns = [
+  'select',
+  'summary',
+  'size',
+  'publishedAt',
+  'peers',
+  'magnet',
+] as const;
+
+export const compactColumns = ['select', 'summary', 'size', 'magnet'] as const;
+
+export type Column = (typeof allColumns)[number];

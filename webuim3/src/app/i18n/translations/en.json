@@ -11,6 +11,26 @@
     "tv_show": "TV Shows",
     "xxx": "XXX"
   },
+  "content_types_singular": {
+    "audiobook": "Audiobook",
+    "comic": "Comic",
+    "ebook": "E-Book",
+    "movie": "Movie",
+    "music": "Music",
+    "null": "Unknown",
+    "software": "Software",
+    "tv_show": "TV Show",
+    "xxx": "XXX"
+  },
+  "facets": {
+    "genre": "Genre",
+    "language": "Language",
+    "file_type": "File Type",
+    "torrent_source": "Torrent Source",
+    "torrent_tag": "Torrent Tag",
+    "video_resolution": "Video Resolution",
+    "video_source": "Video Source"
+  },
   "file_types": {
     "archive": "Archive",
     "audio": "Audio",
@@ -98,11 +118,13 @@
     "torrents": "Torrents"
   },
   "torrents": {
+    "clear_search": "Clear Search",
     "content_type": "Content Type",
     "copy_to_clipboard": "Copy to clipboard",
     "delete": "Delete",
     "delete_action_cannot_be_undone": "This action cannot be undone",
     "delete_are_you_sure": "Are you sure you want to delete this torrent?",
+    "deselect_all": "Deselect All",
     "edit_tags": "Edit tags",
     "episodes": "Episodes",
     "external_links": "External links",
@@ -123,13 +145,17 @@
     "poster": "Poster",
     "published": "Published",
     "rating": "Rating",
+    "refresh": "Refresh results",
     "s_l": "S / L",
+    "search": "Search",
     "seeders": "Seeders",
+    "select_all": "Select All",
     "showing_x_of_y_files": "Showing {{x}} of {{y}} files",
     "size": "Size",
     "source": "Torrent Source",
     "summary": "Summary",
     "title": "Title",
+    "toggle_drawer": "Toggle Drawer",
     "votes_count_n": "{{count}} votes"
   },
   "version": {
