@@ -23,7 +23,7 @@ import {
   Router,
   RouterLinkActive,
 } from '@angular/router';
-import { combineLatestWith, Observable } from 'rxjs';
+import {BehaviorSubject, combineLatestWith, Observable} from 'rxjs';
 import { map } from 'rxjs/operators';
 import {
   MatExpansionPanel,
@@ -60,7 +60,11 @@ import {
   TorrentSearchControls,
   TorrentsSearchController,
 } from './torrents-search.controller';
-import { TorrentsSearchDatasource } from './torrents-search.datasource';
+import {emptyResult, TorrentsSearchDatasource} from './torrents-search.datasource';
+import {SelectionModel} from "@angular/cdk/collections";
+import * as generated from "../graphql/generated";
+import {MatDivider} from "@angular/material/divider";
+import {TorrentsBulkActionsComponent} from "../torrents-bulk-actions/torrents-bulk-actions.component";
 
 @Component({
   selector: 'app-torrents-search',
@@ -99,11 +103,17 @@ import { TorrentsSearchDatasource } from './torrents-search.datasource';
     MatSelect,
     MatOption,
     MatMiniFabButton,
+    MatDivider,
+    TorrentsBulkActionsComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TorrentsSearchComponent implements OnInit {
-  transloco = inject(TranslocoService);
+  private route = inject(ActivatedRoute)
+  private router = inject(Router)
+  private graphQLService = inject(GraphQLService)
+  private errorsService = inject(ErrorsService)
+  private transloco = inject(TranslocoService);
   breakpoints = inject(BreakpointsService);
 
   @ViewChild(PaginatorComponent) paginator: PaginatorComponent;
@@ -123,20 +133,21 @@ export class TorrentsSearchComponent implements OnInit {
 
   queryString = new FormControl('');
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    graphQLService: GraphQLService,
-    errorsService: ErrorsService,
-  ) {
+  result = emptyResult
+
+  selection = new SelectionModel<string>(true, []);
+  private selectedItemsSubject = new BehaviorSubject<generated.TorrentContent[]>([])
+  selectedItems$ = this.selectedItemsSubject.asObservable()
+
+  constructor() {
     this.controls = {
       ...initControls,
       language: this.transloco.getActiveLang(),
     };
     this.controller = new TorrentsSearchController(this.controls);
     this.dataSource = new TorrentsSearchDatasource(
-      graphQLService,
-      errorsService,
+      this.graphQLService,
+      this.errorsService,
       this.controller.params$,
     );
     this.controller.controls$.subscribe((ctrl) => {
@@ -164,6 +175,11 @@ export class TorrentsSearchComponent implements OnInit {
         })),
       ),
     );
+    this.dataSource.result$.subscribe((result) => {
+      this.result = result;
+      const infoHashes = new Set(result.items.map(({infoHash}) => infoHash))
+      this.selection.deselect(...this.selection.selected.filter((infoHash) => !infoHashes.has(infoHash)))
+    })
     // a bit of a hack to force an update on language switch:
     this.transloco.events$.subscribe(() =>
       this.controller.selectLanguage(this.transloco.getActiveLang()),
@@ -227,6 +243,10 @@ export class TorrentsSearchComponent implements OnInit {
         },
       });
     });
+    this.selection.changed.subscribe((selection) => {
+      const infoHashes = new Set(selection.source.selected)
+      this.selectedItemsSubject.next(this.result.items.filter((i) => infoHashes.has(i.infoHash)))
+    })
   }
 }
 

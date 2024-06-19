@@ -185,9 +185,16 @@
         </button>
       </div>
     </div>
+    <mat-divider />
+    <app-torrents-bulk-actions
+      [selectedItems$]="selectedItems$"
+      (updated)="dataSource.refresh()"
+    />
+    <mat-divider />
         <app-torrents-table
           [dataSource]="dataSource"
           [displayedColumns]="(breakpoints.isCompact$ | async) ? compactColumns : allColumns"
+          [selection]="selection"
           (updated)="dataSource.refresh()"
         />
     <app-paginator

@@ -13,7 +13,7 @@ import {
 } from '@angular/material/table';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatIcon } from '@angular/material/icon';
-import { MatChip, MatChipSet } from '@angular/material/chips';
+import {MatChip, MatChipAvatar, MatChipSet} from '@angular/material/chips';
 import { MatTooltip } from '@angular/material/tooltip';
 import {
   animate,
@@ -32,6 +32,7 @@ import { HumanTimePipe } from '../pipes/human-time.pipe';
 import * as generated from '../graphql/generated';
 import { TorrentsSearchDatasource } from '../torrents-search/torrents-search.datasource';
 import { contentTypeInfo, contentTypeMap } from '../taxonomy/content-types';
+import {map} from "rxjs/operators";
 
 @Component({
   selector: 'app-torrents-table',
@@ -58,6 +59,7 @@ import { contentTypeInfo, contentTypeMap } from '../taxonomy/content-types';
     TranslocoDirective,
     AsyncPipe,
     MatProgressBar,
+    MatChipAvatar,
   ],
   templateUrl: './torrents-table.component.html',
   styleUrl: './torrents-table.component.scss',
@@ -76,6 +78,7 @@ export class TorrentsTableComponent implements OnInit {
   contentTypeInfo = contentTypeInfo;
 
   @Input() dataSource: TorrentsSearchDatasource;
+  @Input() selection : SelectionModel<string>
   @Input() displayedColumns: readonly Column[] = allColumns;
 
   @Output() updated = new EventEmitter<string>();
@@ -83,8 +86,6 @@ export class TorrentsTableComponent implements OnInit {
   expandedTorrentContentId: string | undefined;
 
   items = Array<generated.TorrentContent>();
-
-  selectedItems = new SelectionModel<generated.TorrentContent>(true, []);
 
   ngOnInit() {
     this.dataSource.items$.subscribe((items) => {
@@ -94,16 +95,16 @@ export class TorrentsTableComponent implements OnInit {
 
   /** Whether the number of selected elements matches the total number of rows. */
   isAllSelected() {
-    return this.items.every((i) => this.selectedItems.isSelected(i));
+    return this.items.every((i) => this.selection.isSelected(i.infoHash));
   }
 
   /** Selects all rows if they are not all selected; otherwise clear selection. */
   toggleAllRows() {
     if (this.isAllSelected()) {
-      this.selectedItems.clear();
+      this.selection.clear();
       return;
     }
-    this.selectedItems.select(...this.items);
+    this.selection.select(...this.items.map((i) => i.infoHash));
   }
 
   toggleTorrentContentId(id: string) {
