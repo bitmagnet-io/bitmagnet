@@ -3,7 +3,9 @@
 @use "@angular/material" as mat;
 // Plus imports for other components in your app.
 @use "./app/layout/layout-component.theme";
+@use "./app/torrent-content/torrent-content-component.theme";
 @use "./app/torrents-search/torrents-search-component.theme";
+@use "./app/torrents-table/torrents-table-component.theme";
 
 @use "app/themes/classic-theme";
 @use "app/themes/tundra-theme";
@@ -20,7 +22,9 @@
 
 @mixin app-component-themes($theme) {
   @include layout-component.theme($theme);
+  @include torrent-content-component.theme($theme);
   @include torrents-search-component.theme($theme);
+  @include torrents-table-component.theme($theme);
 }
 
 // Include theme styles for core and each component used in your app.
@@ -90,4 +94,8 @@ body {
 .material-symbols-outlined {
   font-family: "Material Symbols Outlined";
   @include mat-icon;
+}
+
+.mat-icon {
+  fill: var(--mat-icon-color);
 }

@@ -1960,6 +1960,7 @@ scalar Year
   hasNextPage if true, the search result will include the hasNextPage field, indicating if there are more results to fetch
   """
   hasNextPage: Boolean
+  infoHashes: [Hash20!]
   facets: TorrentContentFacetsInput
   orderBy: [TorrentContentOrderByInput!]
   cached: Boolean
@@ -11784,7 +11785,7 @@ func (ec *executionContext) unmarshalInputTorrentContentSearchQueryInput(ctx con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"queryString", "limit", "page", "offset", "totalCount", "hasNextPage", "facets", "orderBy", "cached", "aggregationBudget"}
+	fieldsInOrder := [...]string{"queryString", "limit", "page", "offset", "totalCount", "hasNextPage", "infoHashes", "facets", "orderBy", "cached", "aggregationBudget"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -11833,6 +11834,13 @@ func (ec *executionContext) unmarshalInputTorrentContentSearchQueryInput(ctx con
 				return it, err
 			}
 			it.HasNextPage = data
+		case "infoHashes":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("infoHashes"))
+			data, err := ec.unmarshalOHash202ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋprotocolᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.InfoHashes = graphql.OmittableOf(data)
 		case "facets":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("facets"))
 			data, err := ec.unmarshalOTorrentContentFacetsInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentFacetsInput(ctx, v)

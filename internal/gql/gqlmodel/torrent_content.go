@@ -2,6 +2,7 @@ package gqlmodel
 
 import (
 	"context"
+	"github.com/99designs/gqlgen/graphql"
 	q "github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
@@ -106,8 +107,9 @@ func TorrentSourcesFromTorrent(t model.Torrent) []TorrentSource {
 
 type TorrentContentSearchQueryInput struct {
 	q.SearchParams
-	Facets  *gen.TorrentContentFacetsInput
-	OrderBy []gen.TorrentContentOrderByInput
+	Facets     *gen.TorrentContentFacetsInput
+	OrderBy    []gen.TorrentContentOrderByInput
+	InfoHashes graphql.Omittable[[]protocol.ID]
 }
 
 type TorrentContentSearchResult struct {
@@ -157,6 +159,9 @@ func (t TorrentContentQuery) Search(
 			qFacets = append(qFacets, videoSourceFacet(*videoSource))
 		}
 		options = append(options, q.WithFacet(qFacets...))
+	}
+	if infoHashes, ok := query.InfoHashes.ValueOK(); ok {
+		options = append(options, q.Where(search.TorrentContentInfoHashCriteria(infoHashes...)))
 	}
 	fullOrderBy := maps.NewInsertMap[search.TorrentContentOrderBy, search.OrderDirection]()
 	for _, ob := range query.OrderBy {

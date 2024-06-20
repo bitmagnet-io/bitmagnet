@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {
   MatCell,
   MatCellDef,
@@ -13,7 +13,7 @@ import {
 } from '@angular/material/table';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatIcon } from '@angular/material/icon';
-import {MatChip, MatChipAvatar, MatChipSet} from '@angular/material/chips';
+import { MatChip, MatChipAvatar, MatChipSet } from '@angular/material/chips';
 import { MatTooltip } from '@angular/material/tooltip';
 import {
   animate,
@@ -31,8 +31,8 @@ import { TorrentContentComponent } from '../torrent-content/torrent-content.comp
 import { HumanTimePipe } from '../pipes/human-time.pipe';
 import * as generated from '../graphql/generated';
 import { TorrentsSearchDatasource } from '../torrents-search/torrents-search.datasource';
-import { contentTypeInfo, contentTypeMap } from '../taxonomy/content-types';
-import {map} from "rxjs/operators";
+import { contentTypeInfo } from '../taxonomy/content-types';
+import {BehaviorSubject} from "rxjs";
 
 @Component({
   selector: 'app-torrents-table',
@@ -78,7 +78,7 @@ export class TorrentsTableComponent implements OnInit {
   contentTypeInfo = contentTypeInfo;
 
   @Input() dataSource: TorrentsSearchDatasource;
-  @Input() selection : SelectionModel<string>
+  @Input() selection: SelectionModel<string>;
   @Input() displayedColumns: readonly Column[] = allColumns;
 
   @Output() updated = new EventEmitter<string>();

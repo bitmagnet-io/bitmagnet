@@ -31,6 +31,10 @@ export class AppComponent {
       .addSvgIcon(
         'external-link',
         domSanitizer.bypassSecurityTrustResourceUrl('external-link.svg'),
+      )
+      .addSvgIcon(
+        'binary',
+        domSanitizer.bypassSecurityTrustResourceUrl('binary.svg'),
       );
     transloco.setActiveLang('en');
   }

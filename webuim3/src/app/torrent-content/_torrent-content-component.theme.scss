@@ -1,0 +1,14 @@
+@use "@angular/material" as mat;
+
+@mixin theme($theme) {
+  app-torrent-content {
+    h2 {
+      a {
+        color: var(--mat-table-row-item-label-text-color);
+        &:hover {
+          color: mat.get-theme-color($theme, primary, 60);
+        }
+      }
+    }
+  }
+}

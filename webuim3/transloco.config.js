@@ -1,6 +1,6 @@
 module.exports = {
-  rootTranslationsPath: 'src/app/i18n/translations/',
-  langs: ['ar', 'en', 'fr', 'es', 'de', 'zh'],
+  rootTranslationsPath: "src/app/i18n/translations/",
+  langs: ["ar", "en", "fr", "es", "de", "zh"],
   keysManager: {
     output: "app/i18n/translations",
     translationsPath: "app/i18n/translations",
@@ -8,6 +8,6 @@ module.exports = {
     emitErrorOnExtraKeys: true,
     unflat: true,
     sort: true,
-    defaultValue: "__missing__"
-  }
+    defaultValue: "__missing__",
+  },
 };

@@ -58,14 +58,15 @@ h2 {
 }
 
 ::ng-deep .mdc-tab {
-  &[aria-labelledby=hidden] {
+  &[aria-labelledby="hidden"] {
     display: none;
   }
-  &[role=tab] {
+  &[role="tab"] {
     padding-left: 15px;
     padding-right: 15px;
   }
-  .label, .files-count {
+  .label,
+  .files-count {
     margin-left: 8px;
   }
 }

@@ -22,4 +22,11 @@ export const routes: Routes = [
       ),
     title: 'torrents',
   },
+  {
+    path: 'torrents/:infoHash',
+    loadComponent: () =>
+      import('./torrent-permalink/torrent-permalink.component').then(
+        (c) => c.TorrentPermalinkComponent,
+      ),
+  }
 ];

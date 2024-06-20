@@ -1,5 +1,5 @@
 .progress-bar-container {
-  height: 10px
+  height: 10px;
 }
 
 tr.expanded-detail-row td {
@@ -10,7 +10,8 @@ tr.expanded + tr.expanded-detail-row td {
   border-bottom-width: 1px;
 }
 
-th, td {
+th,
+td {
   &.cdk-column-select {
     padding-right: 0;
   }
@@ -48,11 +49,13 @@ td.mat-column-summary {
       mat-icon {
         position: relative;
         left: 4px;
+        //svg {
+        //  stroke: var(--mdc-chip-with-icon-icon-color)
+        //}
       }
     }
   }
 }
-
 
 tr.expanded-detail-row {
   height: 0;
@@ -73,7 +76,7 @@ tr.mat-mdc-row.expanded {
   text-align: center;
   .mat-icon {
     position: relative;
-    top: 5px;
+    top: 3px;
   }
 }
 
@@ -91,4 +94,3 @@ tr.mat-mdc-row.expanded {
 .cdk-column-peers {
   white-space: nowrap;
 }
-

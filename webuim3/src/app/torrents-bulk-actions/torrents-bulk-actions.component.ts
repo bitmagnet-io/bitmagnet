@@ -1,23 +1,44 @@
-import {AfterViewInit, Component, EventEmitter, inject, Input, OnInit, Output} from '@angular/core';
-import {FormControl, ReactiveFormsModule} from "@angular/forms";
-import {GraphQLService} from "../graphql/graphql.service";
-import {catchError, EMPTY, Observable, tap} from "rxjs";
-import {ErrorsService} from "../errors/errors.service";
-import {MatTab, MatTabContent, MatTabGroup, MatTabLabel} from "@angular/material/tabs";
-import {MatIcon} from "@angular/material/icon";
-import {MatCard, MatCardActions, MatCardContent} from "@angular/material/card";
-import {MatFormField} from "@angular/material/form-field";
-import {MatChipGrid, MatChipInput, MatChipRow} from "@angular/material/chips";
-import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from "@angular/material/autocomplete";
-import {COMMA, ENTER} from "@angular/cdk/keycodes";
-import {MatButton} from "@angular/material/button";
-import {MatTooltip} from "@angular/material/tooltip";
-import {AsyncPipe} from "@angular/common";
-import {BreakpointsService} from "../layout/breakpoints.service";
-import {TranslocoDirective} from "@jsverse/transloco";
-import * as generated from "../graphql/generated";
-import {CdkCopyToClipboard} from "@angular/cdk/clipboard";
-import {map} from "rxjs/operators";
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { GraphQLService } from '../graphql/graphql.service';
+import { catchError, EMPTY, Observable, tap } from 'rxjs';
+import { ErrorsService } from '../errors/errors.service';
+import {
+  MatTab,
+  MatTabContent,
+  MatTabGroup,
+  MatTabLabel,
+} from '@angular/material/tabs';
+import { MatIcon } from '@angular/material/icon';
+import {
+  MatCard,
+  MatCardActions,
+  MatCardContent,
+} from '@angular/material/card';
+import { MatFormField } from '@angular/material/form-field';
+import { MatChipGrid, MatChipInput, MatChipRow } from '@angular/material/chips';
+import {
+  MatAutocomplete,
+  MatAutocompleteTrigger,
+  MatOption,
+} from '@angular/material/autocomplete';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { MatButton } from '@angular/material/button';
+import { MatTooltip } from '@angular/material/tooltip';
+import { AsyncPipe } from '@angular/common';
+import { BreakpointsService } from '../layout/breakpoints.service';
+import { TranslocoDirective } from '@jsverse/transloco';
+import * as generated from '../graphql/generated';
+import { CdkCopyToClipboard } from '@angular/cdk/clipboard';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-torrents-bulk-actions',
@@ -43,30 +64,30 @@ import {map} from "rxjs/operators";
     MatCardContent,
     AsyncPipe,
     TranslocoDirective,
-    CdkCopyToClipboard
+    CdkCopyToClipboard,
   ],
   templateUrl: './torrents-bulk-actions.component.html',
-  styleUrl: './torrents-bulk-actions.component.scss'
+  styleUrl: './torrents-bulk-actions.component.scss',
 })
-export class TorrentsBulkActionsComponent implements OnInit{
-  private graphQLService = inject(GraphQLService)
-  private errorsService = inject(ErrorsService)
+export class TorrentsBulkActionsComponent implements OnInit {
+  private graphQLService = inject(GraphQLService);
+  private errorsService = inject(ErrorsService);
   breakpoints = inject(BreakpointsService);
 
-  @Input() selectedItems$: Observable<generated.TorrentContent[]>
+  @Input() selectedItems$: Observable<generated.TorrentContent[]>;
   @Output() updated = new EventEmitter<null>();
 
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
   selectedTabIndex = 0;
-  newTagCtrl = new FormControl<string>("");
+  newTagCtrl = new FormControl<string>('');
   editedTags = Array<string>();
   suggestedTags = Array<string>();
-  selectedItems = new Array<generated.TorrentContent>()
+  selectedItems = new Array<generated.TorrentContent>();
 
   ngOnInit() {
     this.selectedItems$.subscribe((items) => {
-      this.selectedItems = items
-    })
+      this.selectedItems = items;
+    });
   }
 
   selectTab(index: number): void {
@@ -74,11 +95,11 @@ export class TorrentsBulkActionsComponent implements OnInit{
   }
 
   getSelectedMagnetLinks(): string {
-    return this.selectedItems.map((i) => i.torrent.magnetUri).join("\n")
-}
+    return this.selectedItems.map((i) => i.torrent.magnetUri).join('\n');
+  }
 
   getSelectedInfoHashes(): string {
-    return this.selectedItems.map((i) => i.infoHash).join("\n")
+    return this.selectedItems.map((i) => i.infoHash).join('\n');
   }
 
   addTag(tagName: string) {
@@ -102,7 +123,7 @@ export class TorrentsBulkActionsComponent implements OnInit{
   }
 
   putTags() {
-    const infoHashes = this.selectedItems.map(({infoHash}) => infoHash);
+    const infoHashes = this.selectedItems.map(({ infoHash }) => infoHash);
     if (!infoHashes.length) {
       return;
     }
@@ -120,14 +141,14 @@ export class TorrentsBulkActionsComponent implements OnInit{
       )
       .pipe(
         tap(() => {
-          this.updated.emit()
+          this.updated.emit();
         }),
       )
       .subscribe();
   }
 
   setTags() {
-    const infoHashes = this.selectedItems.map(({infoHash}) => infoHash);
+    const infoHashes = this.selectedItems.map(({ infoHash }) => infoHash);
     if (!infoHashes.length) {
       return;
     }
@@ -145,14 +166,14 @@ export class TorrentsBulkActionsComponent implements OnInit{
       )
       .pipe(
         tap(() => {
-          this.updated.emit()
+          this.updated.emit();
         }),
       )
       .subscribe();
   }
 
   deleteTags() {
-    const infoHashes = this.selectedItems.map(({infoHash}) => infoHash);
+    const infoHashes = this.selectedItems.map(({ infoHash }) => infoHash);
     if (!infoHashes.length) {
       return;
     }
@@ -170,7 +191,7 @@ export class TorrentsBulkActionsComponent implements OnInit{
       )
       .pipe(
         tap(() => {
-          this.updated.emit()
+          this.updated.emit();
         }),
       )
       .subscribe();
@@ -197,7 +218,7 @@ export class TorrentsBulkActionsComponent implements OnInit{
   }
 
   deleteTorrents() {
-    const infoHashes = this.selectedItems.map(({infoHash}) => infoHash);
+    const infoHashes = this.selectedItems.map(({ infoHash }) => infoHash);
     this.graphQLService
       .torrentDelete({ infoHashes })
       .pipe(
@@ -210,7 +231,7 @@ export class TorrentsBulkActionsComponent implements OnInit{
       )
       .pipe(
         tap(() => {
-          this.updated.emit()
+          this.updated.emit();
         }),
       )
       .subscribe();

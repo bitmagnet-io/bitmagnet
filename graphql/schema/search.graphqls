@@ -8,6 +8,7 @@ input TorrentContentSearchQueryInput {
   hasNextPage if true, the search result will include the hasNextPage field, indicating if there are more results to fetch
   """
   hasNextPage: Boolean
+  infoHashes: [Hash20!]
   facets: TorrentContentFacetsInput
   orderBy: [TorrentContentOrderByInput!]
   cached: Boolean

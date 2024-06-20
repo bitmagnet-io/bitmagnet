@@ -379,6 +379,7 @@ export type TorrentContentSearchQueryInput = {
   facets?: InputMaybe<TorrentContentFacetsInput>;
   /** hasNextPage if true, the search result will include the hasNextPage field, indicating if there are more results to fetch */
   hasNextPage?: InputMaybe<Scalars['Boolean']['input']>;
+  infoHashes?: InputMaybe<Array<Scalars['Hash20']['input']>>;
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<TorrentContentOrderByInput>>;

@@ -1,5 +1,5 @@
 <ng-container *transloco="let t">
-<mat-toolbar class="toolbar-header">
+  <mat-toolbar class="toolbar-header">
     @if (!(breakpoints.isCompact$ | async)) {
       <h1>
         <a routerLink="dashboard">
@@ -17,7 +17,7 @@
           [class]="linkDashboard.isActive ? 'active' : ''"
         >
           <mat-icon>dashboard</mat-icon>
-          {{ t('routes.dashboard') }}
+          {{ t("routes.dashboard") }}
         </a>
         <a
           mat-button
@@ -27,7 +27,7 @@
           [class]="linkTorrents.isActive ? 'active' : ''"
         >
           <mat-icon>toc</mat-icon>
-          {{ t('routes.torrents') }}
+          {{ t("routes.torrents") }}
         </a>
       </nav>
     } @else {
@@ -57,89 +57,90 @@
         <mat-icon>toc</mat-icon>
       </button>
     }
-  <span class="spacer"></span>
-  <button
-    mat-icon-button
-    aria-label="Theme"
-    [matMenuTriggerFor]="themesMenu"
-    [matTooltip]="t('layout.change_theme')"
-  >
-    <mat-icon>apparel</mat-icon>
-  </button>
-  <mat-menu #themesMenu="matMenu">
-    @for (th of themeManager.themes; track th.key) {
-      <a
-        mat-menu-item
-        (click)="themeManager.setTheme(th.key)"
-        [disabled]="th.key === themeManager.selectedTheme"
-        ><mat-icon>{{ th.dark ? "dark_mode" : "light_mode" }}</mat-icon
-        >{{ th.label }}</a
-      >
-    }
-  </mat-menu>
-  <button
-    mat-icon-button
-    [matMenuTriggerFor]="languagesMenu"
-    [matTooltip]="t('layout.translate')"
-  >
-    <mat-icon>translate</mat-icon>
-  </button>
-  <mat-menu #languagesMenu="matMenu">
-    @for (l of translateManager.availableLanguages; track l.id) {
-      <a
-        mat-menu-item
-        (click)="translateManager.setLanguage(l.id)"
-      >{{ l.label }}</a
-      >
-    }
-  </mat-menu>
-  <button
-    mat-icon-button
-    [matTooltip]="t('layout.external_links')"
-    [matMenuTriggerFor]="externalLinksMenu"
-  >
-    <mat-icon svgIcon="external-link" />
-  </button>
-  <mat-menu #externalLinksMenu="matMenu">
-    <a mat-menu-item href="https://bitmagnet.io" target="_blank"
-      >bitmagnet.io</a
-    >
-    <a mat-menu-item href="https://discord.gg/6mFNszX8qM" target="_blank"
-      >{{ t('layout.bitmagnet_on_service', {service: "Discord"}) }}</a
-    >
-    <a
-      mat-menu-item
-      href="https://github.com/bitmagnet-io/bitmagnet"
-      target="_blank"
-      >{{ t('layout.bitmagnet_on_service', {service: "GitHub"}) }}</a
-    >
-    <a
-      mat-menu-item
-      href="https://opencollective.com/bitmagnet"
-      target="_blank"
-      >{{ t('layout.bitmagnet_on_service', {service: "OpenCollective"}) }}</a
-    >
-  </mat-menu>
-  @if (breakpoints.isCompact$ | async) {
-    <a
+    <span class="spacer"></span>
+    <button
       mat-icon-button
-      class="button-sponsor"
-      href="https://opencollective.com/bitmagnet"
-      target="_blank"
-      [matTooltip]="t('layout.sponsor')"
-    ><mat-icon>favorite</mat-icon></a>
-  } @else {
-    <a
-      mat-button
-      class="button-sponsor"
-      href="https://opencollective.com/bitmagnet"
-      target="_blank"
-      [matTooltip]="t('layout.support_bitmagnet')"
-    ><mat-icon>favorite</mat-icon>{{ t('layout.sponsor') }}</a
+      aria-label="Theme"
+      [matMenuTriggerFor]="themesMenu"
+      [matTooltip]="t('layout.change_theme')"
     >
-  }
-</mat-toolbar>
-<div class="app-content">
-  <ng-content></ng-content>
-</div>
+      <mat-icon>apparel</mat-icon>
+    </button>
+    <mat-menu #themesMenu="matMenu">
+      @for (th of themeManager.themes; track th.key) {
+        <a
+          mat-menu-item
+          (click)="themeManager.setTheme(th.key)"
+          [disabled]="th.key === themeManager.selectedTheme"
+          ><mat-icon>{{ th.dark ? "dark_mode" : "light_mode" }}</mat-icon
+          >{{ th.label }}</a
+        >
+      }
+    </mat-menu>
+    <button
+      mat-icon-button
+      [matMenuTriggerFor]="languagesMenu"
+      [matTooltip]="t('layout.translate')"
+    >
+      <mat-icon>translate</mat-icon>
+    </button>
+    <mat-menu #languagesMenu="matMenu">
+      @for (l of translateManager.availableLanguages; track l.id) {
+        <a mat-menu-item (click)="translateManager.setLanguage(l.id)">{{
+          l.label
+        }}</a>
+      }
+    </mat-menu>
+    <button
+      mat-icon-button
+      [matTooltip]="t('layout.external_links')"
+      [matMenuTriggerFor]="externalLinksMenu"
+    >
+      <mat-icon svgIcon="external-link" />
+    </button>
+    <mat-menu #externalLinksMenu="matMenu">
+      <a mat-menu-item href="https://bitmagnet.io" target="_blank"
+        >bitmagnet.io</a
+      >
+      <a mat-menu-item href="https://discord.gg/6mFNszX8qM" target="_blank">{{
+        t("layout.bitmagnet_on_service", { service: "Discord" })
+      }}</a>
+      <a
+        mat-menu-item
+        href="https://github.com/bitmagnet-io/bitmagnet"
+        target="_blank"
+        >{{ t("layout.bitmagnet_on_service", { service: "GitHub" }) }}</a
+      >
+      <a
+        mat-menu-item
+        href="https://opencollective.com/bitmagnet"
+        target="_blank"
+        >{{
+          t("layout.bitmagnet_on_service", { service: "OpenCollective" })
+        }}</a
+      >
+    </mat-menu>
+    @if (breakpoints.isCompact$ | async) {
+      <a
+        mat-icon-button
+        class="button-sponsor"
+        href="https://opencollective.com/bitmagnet"
+        target="_blank"
+        [matTooltip]="t('layout.sponsor')"
+        ><mat-icon>favorite</mat-icon></a
+      >
+    } @else {
+      <a
+        mat-button
+        class="button-sponsor"
+        href="https://opencollective.com/bitmagnet"
+        target="_blank"
+        [matTooltip]="t('layout.support_bitmagnet')"
+        ><mat-icon>favorite</mat-icon>{{ t("layout.sponsor") }}</a
+      >
+    }
+  </mat-toolbar>
+  <div class="app-content">
+    <ng-content></ng-content>
+  </div>
 </ng-container>

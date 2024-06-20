@@ -35,7 +35,7 @@ import { ErrorsService } from '../errors/errors.service';
 import { BreakpointsService } from '../layout/breakpoints.service';
 
 @Component({
-  selector: 'app-torrent-content-content',
+  selector: 'app-torrent-content',
   templateUrl: './torrent-content.component.html',
   styleUrl: './torrent-content.component.scss',
   standalone: true,
@@ -71,6 +71,7 @@ export class TorrentContentComponent {
   breakpoints = inject(BreakpointsService);
 
   @Input() torrentContent: generated.TorrentContent;
+  @Input() heading = true;
 
   @Output() updated = new EventEmitter<null>();
 

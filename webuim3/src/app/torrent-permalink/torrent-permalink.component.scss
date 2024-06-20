@@ -1,0 +1,13 @@
+.torrent-permalink {
+  max-width: 900px;
+  margin: 20px auto;
+  .mat-mdc-card-avatar {
+    font-size: 44px;
+    margin-top: -10px;
+    border-radius: 0;
+  }
+  mat-card-subtitle {
+    margin: 16px 0 14px -56px;
+    font-size: 6px;
+  }
+}
