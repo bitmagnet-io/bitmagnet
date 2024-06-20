@@ -206,6 +206,7 @@
           (breakpoints.isCompact$ | async) ? compactColumns : allColumns
         "
         [selection]="selection"
+        [expandedId]="expandedId"
         (updated)="dataSource.refresh()"
       />
       <app-paginator

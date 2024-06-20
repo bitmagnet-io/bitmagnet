@@ -1,7 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  inject,
+  inject, Input,
   OnInit,
   ViewChild,
 } from '@angular/core';
@@ -144,6 +144,8 @@ export class TorrentsSearchComponent implements OnInit {
   >([]);
   selectedItems$ = this.selectedItemsSubject.asObservable();
 
+  expandedId = new BehaviorSubject<string | null>(null)
+
   constructor() {
     this.controls = {
       ...initControls,
@@ -188,6 +190,12 @@ export class TorrentsSearchComponent implements OnInit {
           (infoHash) => !infoHashes.has(infoHash),
         ),
       );
+      if (result.items.length) {
+        const expandedId = this.expandedId.getValue();
+        if (expandedId && !result.items.some(({id}) => id === expandedId)) {
+          this.expandedId.next(null);
+        }
+      }
     });
     // a bit of a hack to force an update on language switch:
     this.transloco.events$.subscribe(() =>
@@ -229,6 +237,11 @@ export class TorrentsSearchComponent implements OnInit {
           ),
         };
       });
+      const expandedId = this.expandedId.getValue() ?? undefined
+      const nextExpandedId = stringParam(params, "expanded")
+      if (expandedId !== nextExpandedId) {
+        this.expandedId.next(nextExpandedId ?? null);
+      }
     });
     this.controller.controls$.subscribe((ctrl) => {
       let page: number | undefined = ctrl.page;
@@ -250,6 +263,7 @@ export class TorrentsSearchComponent implements OnInit {
           content_type: ctrl.contentType,
           ...flattenFacets(ctrl.facets),
         },
+        queryParamsHandling: "merge",
       });
     });
     this.selection.changed.subscribe((selection) => {
@@ -258,6 +272,15 @@ export class TorrentsSearchComponent implements OnInit {
         this.result.items.filter((i) => infoHashes.has(i.infoHash)),
       );
     });
+    this.expandedId.subscribe((expandedId) => {
+      return this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {
+          expanded: expandedId ? encodeURIComponent(expandedId) : undefined,
+        },
+        queryParamsHandling: "merge",
+      });
+    })
   }
 }
 

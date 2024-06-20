@@ -80,10 +80,11 @@ export class TorrentsTableComponent implements OnInit {
   @Input() dataSource: TorrentsSearchDatasource;
   @Input() selection: SelectionModel<string>;
   @Input() displayedColumns: readonly Column[] = allColumns;
+  @Input() expandedId = new BehaviorSubject<string | null>(null)
 
   @Output() updated = new EventEmitter<string>();
 
-  expandedTorrentContentId: string | undefined;
+  // expandedTorrentContentId: string | undefined;
 
   items = Array<generated.TorrentContent>();
 
@@ -108,10 +109,10 @@ export class TorrentsTableComponent implements OnInit {
   }
 
   toggleTorrentContentId(id: string) {
-    if (this.expandedTorrentContentId === id) {
-      this.expandedTorrentContentId = undefined;
+    if (this.expandedId.getValue() === id) {
+      this.expandedId.next(null);
     } else {
-      this.expandedTorrentContentId = id;
+      this.expandedId.next(id);
     }
   }
 

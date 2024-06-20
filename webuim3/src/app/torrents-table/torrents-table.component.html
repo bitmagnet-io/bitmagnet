@@ -143,7 +143,7 @@
         <div
           class="item-detail"
           [@detailExpand]="
-            expandedTorrentContentId === i.id ? 'expanded' : 'collapsed'
+            expandedId.getValue() === i.id ? 'expanded' : 'collapsed'
           "
         >
           <app-torrent-content
@@ -160,7 +160,7 @@
       *matRowDef="let i; columns: displayedColumns"
       [class]="
         'summary-row ' +
-        (i.id === expandedTorrentContentId ? 'expanded' : 'collapsed')
+        (i.id === expandedId.getValue() ? 'expanded' : 'collapsed')
       "
     ></tr>
     <tr
