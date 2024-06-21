@@ -356,7 +356,7 @@ export const videoResolutionFacet: FacetDefinition<
   true
 > = {
   key: 'video_resolution',
-  icon: 'screenshot_monitor',
+  icon: 'aspect_ratio',
   allowNull: true,
   contentTypes: ['movie', 'tv_show', 'xxx'],
   extractInput: (f) => f.videoResolution,

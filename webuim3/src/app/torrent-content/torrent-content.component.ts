@@ -18,7 +18,7 @@ import {
   MatCardContent,
 } from '@angular/material/card';
 import { MatFormField } from '@angular/material/form-field';
-import { MatChipGrid, MatChipInput, MatChipRow } from '@angular/material/chips';
+import {MatChipGrid, MatChipInput, MatChipRemove, MatChipRow} from '@angular/material/chips';
 import {
   MatAutocomplete,
   MatAutocompleteTrigger,
@@ -33,6 +33,7 @@ import normalizeTagInput from '../util/normalizeTagInput';
 import { GraphQLService } from '../graphql/graphql.service';
 import { ErrorsService } from '../errors/errors.service';
 import { BreakpointsService } from '../layout/breakpoints.service';
+import {HumanTimePipe} from "../pipes/human-time.pipe";
 
 @Component({
   selector: 'app-torrent-content',
@@ -65,6 +66,8 @@ import { BreakpointsService } from '../layout/breakpoints.service';
     FilesizePipe,
     TranslocoDirective,
     AsyncPipe,
+    HumanTimePipe,
+    MatChipRemove,
   ],
 })
 export class TorrentContentComponent {
@@ -72,6 +75,9 @@ export class TorrentContentComponent {
 
   @Input() torrentContent: generated.TorrentContent;
   @Input() heading = true;
+  @Input() size = true;
+  @Input() peers = true;
+  @Input() published = true;
 
   @Output() updated = new EventEmitter<null>();
 

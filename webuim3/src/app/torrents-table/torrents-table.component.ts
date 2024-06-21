@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, inject, Input, OnInit, Output} from '@angular/core';
 import {
   MatCell,
   MatCellDef,
@@ -33,6 +33,8 @@ import * as generated from '../graphql/generated';
 import { TorrentsSearchDatasource } from '../torrents-search/torrents-search.datasource';
 import { contentTypeInfo } from '../taxonomy/content-types';
 import {BehaviorSubject} from "rxjs";
+import {BreakpointsService} from "../layout/breakpoints.service";
+import {TorrentChipsComponent} from "../torrent-chips/torrent-chips.component";
 
 @Component({
   selector: 'app-torrents-table',
@@ -46,8 +48,6 @@ import {BehaviorSubject} from "rxjs";
     MatCell,
     MatCellDef,
     MatIcon,
-    MatChipSet,
-    MatChip,
     HumanTimePipe,
     MatTooltip,
     MatHeaderRow,
@@ -59,7 +59,7 @@ import {BehaviorSubject} from "rxjs";
     TranslocoDirective,
     AsyncPipe,
     MatProgressBar,
-    MatChipAvatar,
+    TorrentChipsComponent,
   ],
   templateUrl: './torrents-table.component.html',
   styleUrl: './torrents-table.component.scss',
@@ -76,6 +76,7 @@ import {BehaviorSubject} from "rxjs";
 })
 export class TorrentsTableComponent implements OnInit {
   contentTypeInfo = contentTypeInfo;
+  breakpoints = inject(BreakpointsService);
 
   @Input() dataSource: TorrentsSearchDatasource;
   @Input() selection: SelectionModel<string>;

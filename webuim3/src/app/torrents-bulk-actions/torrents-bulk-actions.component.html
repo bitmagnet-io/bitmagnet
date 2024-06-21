@@ -61,9 +61,7 @@
                   [aria-description]="'press enter to edit'"
                 >
                   {{ tagName }}
-                  <button matChipRemove [attr.aria-label]="'remove ' + tagName">
-                    <mat-icon>cancel</mat-icon>
-                  </button>
+                  <mat-icon matChipRemove>cancel</mat-icon>
                 </mat-chip-row>
               }
             </mat-chip-grid>

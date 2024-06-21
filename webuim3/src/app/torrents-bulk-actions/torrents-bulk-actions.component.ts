@@ -24,7 +24,7 @@ import {
   MatCardContent,
 } from '@angular/material/card';
 import { MatFormField } from '@angular/material/form-field';
-import { MatChipGrid, MatChipInput, MatChipRow } from '@angular/material/chips';
+import {MatChipGrid, MatChipInput, MatChipRemove, MatChipRow} from '@angular/material/chips';
 import {
   MatAutocomplete,
   MatAutocompleteTrigger,
@@ -65,6 +65,7 @@ import { map } from 'rxjs/operators';
     AsyncPipe,
     TranslocoDirective,
     CdkCopyToClipboard,
+    MatChipRemove,
   ],
   templateUrl: './torrents-bulk-actions.component.html',
   styleUrl: './torrents-bulk-actions.component.scss',

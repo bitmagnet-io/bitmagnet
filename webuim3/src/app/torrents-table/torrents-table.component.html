@@ -51,47 +51,9 @@
           }}</mat-icon
         >
         <span class="title">{{ item(i).title }}</span>
-        <mat-chip-set>
-          @for (tagName of item(i).torrent.tagNames; track tagName) {
-            <mat-chip class="chip-primary">
-              <mat-icon matChipAvatar>sell</mat-icon>
-              {{ tagName }}
-            </mat-chip>
-          }
-          @if (item(i).languages; as languages) {
-            <mat-chip>
-              <mat-icon matChipAvatar>translate</mat-icon>
-              @for (l of languages; let j = $index; track l.id) {
-                  {{ t("languages." + l.id) + (j < languages!.length - 1 ? ", " : "") }}
-              }
-            </mat-chip>
-          }
-          @if (item(i).video3d?.slice(1); as video3d) {
-            <mat-chip>{{ video3d }}</mat-chip>
-          }
-          @if (item(i).videoResolution?.slice(1); as videoResolution) {
-            <mat-chip
-              ><mat-icon matChipAvatar>screenshot_monitor</mat-icon
-              >{{ videoResolution }}</mat-chip
-            >
-          }
-          @if (item(i).videoSource; as videoSource) {
-            <mat-chip
-              ><mat-icon matChipAvatar>album</mat-icon
-              >{{ videoSource }}</mat-chip
-            >
-          }
-          @if (item(i).videoCodec; as videoCodec) {
-            <mat-chip
-              ><mat-icon matChipAvatar svgIcon="binary" />{{
-                videoCodec
-              }}</mat-chip
-            >
-          }
-          @if (item(i).videoModifier; as videoModifier) {
-            <mat-chip>{{ videoModifier }}</mat-chip>
-          }
-        </mat-chip-set>
+        <app-torrent-chips
+          [torrentContent]="i"
+        />
       </td>
     </ng-container>
 
@@ -148,6 +110,9 @@
         >
           <app-torrent-content
             [torrentContent]="i"
+            [size]="false"
+            [published]="(breakpoints.isCompact$ | async) ?? false"
+            [peers]="(breakpoints.isCompact$ | async) ?? false"
             (updated)="updated.emit(item(i).infoHash)"
           />
         </div>
