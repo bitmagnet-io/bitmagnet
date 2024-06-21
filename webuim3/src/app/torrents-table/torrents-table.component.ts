@@ -35,6 +35,14 @@ import { contentTypeInfo } from '../taxonomy/content-types';
 import {BehaviorSubject} from "rxjs";
 import {BreakpointsService} from "../layout/breakpoints.service";
 import {TorrentChipsComponent} from "../torrent-chips/torrent-chips.component";
+import {ActivatedRoute, Router} from "@angular/router";
+import {
+  defaultOrderBy,
+  defaultQueryOrderBy,
+  facets,
+  TorrentSearchControls
+} from "../torrents-search/torrents-search.controller";
+import {stringParam} from "../util/query-string";
 
 @Component({
   selector: 'app-torrents-table',
@@ -75,24 +83,48 @@ import {TorrentChipsComponent} from "../torrent-chips/torrent-chips.component";
   ],
 })
 export class TorrentsTableComponent implements OnInit {
-  contentTypeInfo = contentTypeInfo;
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
   breakpoints = inject(BreakpointsService);
+
+  contentTypeInfo = contentTypeInfo;
 
   @Input() dataSource: TorrentsSearchDatasource;
   @Input() selection: SelectionModel<string>;
   @Input() displayedColumns: readonly Column[] = allColumns;
-  @Input() expandedId = new BehaviorSubject<string | null>(null)
 
   @Output() updated = new EventEmitter<string>();
 
-  // expandedTorrentContentId: string | undefined;
-
   items = Array<generated.TorrentContent>();
+
+  expandedId = new BehaviorSubject<string | null>(null)
 
   ngOnInit() {
     this.dataSource.items$.subscribe((items) => {
       this.items = items;
+      if (items.length) {
+        const expandedId = this.expandedId.getValue();
+        if (expandedId && !items.some(({id}) => id === expandedId)) {
+          this.expandedId.next(null);
+        }
+      }
     });
+    this.route.queryParams.subscribe((params) => {
+      const expandedId = this.expandedId.getValue() ?? undefined
+      const nextExpandedId = stringParam(params, "expanded")
+      if (expandedId !== nextExpandedId) {
+        this.expandedId.next(nextExpandedId ?? null);
+      }
+    });
+    this.expandedId.subscribe((expandedId) => {
+      return this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {
+          expanded: expandedId ? encodeURIComponent(expandedId) : undefined,
+        },
+        queryParamsHandling: "merge",
+      });
+    })
   }
 
   /** Whether the number of selected elements matches the total number of rows. */

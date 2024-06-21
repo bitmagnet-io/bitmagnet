@@ -1,7 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  inject, Input,
+  inject,
   OnInit,
   ViewChild,
 } from '@angular/core';
@@ -68,6 +68,7 @@ import { SelectionModel } from '@angular/cdk/collections';
 import * as generated from '../graphql/generated';
 import { MatDivider } from '@angular/material/divider';
 import { TorrentsBulkActionsComponent } from '../torrents-bulk-actions/torrents-bulk-actions.component';
+import {intParam, stringListParam, stringParam} from "../util/query-string";
 
 @Component({
   selector: 'app-torrents-search',
@@ -144,8 +145,6 @@ export class TorrentsSearchComponent implements OnInit {
   >([]);
   selectedItems$ = this.selectedItemsSubject.asObservable();
 
-  expandedId = new BehaviorSubject<string | null>(null)
-
   constructor() {
     this.controls = {
       ...initControls,
@@ -190,12 +189,6 @@ export class TorrentsSearchComponent implements OnInit {
           (infoHash) => !infoHashes.has(infoHash),
         ),
       );
-      if (result.items.length) {
-        const expandedId = this.expandedId.getValue();
-        if (expandedId && !result.items.some(({id}) => id === expandedId)) {
-          this.expandedId.next(null);
-        }
-      }
     });
     // a bit of a hack to force an update on language switch:
     this.transloco.events$.subscribe(() =>
@@ -237,11 +230,6 @@ export class TorrentsSearchComponent implements OnInit {
           ),
         };
       });
-      const expandedId = this.expandedId.getValue() ?? undefined
-      const nextExpandedId = stringParam(params, "expanded")
-      if (expandedId !== nextExpandedId) {
-        this.expandedId.next(nextExpandedId ?? null);
-      }
     });
     this.controller.controls$.subscribe((ctrl) => {
       let page: number | undefined = ctrl.page;
@@ -272,15 +260,6 @@ export class TorrentsSearchComponent implements OnInit {
         this.result.items.filter((i) => infoHashes.has(i.infoHash)),
       );
     });
-    this.expandedId.subscribe((expandedId) => {
-      return this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: {
-          expanded: expandedId ? encodeURIComponent(expandedId) : undefined,
-        },
-        queryParamsHandling: "merge",
-      });
-    })
   }
 }
 
@@ -309,28 +288,6 @@ const contentTypeParam = (
 ): ContentTypeSelection => {
   const str = stringParam(params, key);
   return str && str in contentTypeMap ? (str as ContentTypeSelection) : null;
-};
-
-const stringListParam = (params: Params, key: string): string[] | undefined => {
-  const str = stringParam(params, key);
-  const list = str
-    ?.split(',')
-    .map((str) => str.trim())
-    .filter(Boolean);
-  return list?.length ? Array.from(new Set(list)).sort() : undefined;
-};
-
-const stringParam = (params: Params, key: string): string | undefined => {
-  return typeof params[key] === 'string'
-    ? decodeURIComponent(params[key]) || undefined
-    : undefined;
-};
-
-const intParam = (params: Params, key: string): number | undefined => {
-  if (params && params[key] && /^\d+$/.test(params[key])) {
-    return parseInt(params[key]);
-  }
-  return undefined;
 };
 
 const flattenFacets = (
