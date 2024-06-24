@@ -9,8 +9,9 @@ import {
 } from 'rxjs';
 import { map } from 'rxjs/operators';
 import * as generated from '../graphql/generated';
-import { GraphQLService } from '../graphql/graphql.service';
 import { ErrorsService } from '../errors/errors.service';
+import {Apollo} from "apollo-angular";
+import {inject} from "@angular/core";
 
 export const emptyResult: generated.TorrentContentSearchResult = {
   items: [],
@@ -93,7 +94,7 @@ export class TorrentsSearchDatasource
     );
 
   constructor(
-    private graphQLService: GraphQLService,
+    private apollo = inject(Apollo),
     private errorsService: ErrorsService,
     searchQueryVariables: Observable<generated.TorrentContentSearchQueryVariables>,
   ) {
@@ -140,7 +141,16 @@ export class TorrentsSearchDatasource
     this.loadingSubject.next(true);
     const currentRequest = this.currentRequest.getValue() + 1;
     this.currentRequest.next(currentRequest);
-    const result = this.graphQLService.torrentContentSearch(variables).pipe(
+    const result = this.apollo
+      .query<
+        generated.TorrentContentSearchQuery,
+        generated.TorrentContentSearchQueryVariables
+      >({
+        query: generated.TorrentContentSearchDocument,
+        variables,
+        fetchPolicy: "no-cache",
+      })
+      .pipe(map((r) => r.data.torrentContent.search)).pipe(
       catchError((err: Error) => {
         this.errorsService.addError(
           `Error loading item results: ${err.message}`,

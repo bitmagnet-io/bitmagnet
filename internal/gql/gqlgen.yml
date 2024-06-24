@@ -162,3 +162,6 @@ models:
   FacetAggregationInput:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/database/query.FacetAggregationConfig
+  QueueMetricsBucket:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/queue/metrics.Bucket

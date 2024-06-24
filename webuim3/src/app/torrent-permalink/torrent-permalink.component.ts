@@ -18,6 +18,8 @@ import { TorrentContentComponent } from '../torrent-content/torrent-content.comp
 import { GraphQLModule } from '../graphql/graphql.module';
 import { contentTypeInfo } from '../taxonomy/content-types';
 import { TorrentChipsComponent } from '../torrent-chips/torrent-chips.component';
+import {Apollo} from "apollo-angular";
+import {map} from "rxjs/operators";
 
 @Component({
   selector: 'app-torrent-permalink',
@@ -42,7 +44,7 @@ import { TorrentChipsComponent } from '../torrent-chips/torrent-chips.component'
 })
 export class TorrentPermalinkComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  private graphQLService = inject(GraphQLService);
+  private apollo = inject(Apollo);
   loading = true;
   found = false;
   torrentContent: generated.TorrentContent;
@@ -50,15 +52,23 @@ export class TorrentPermalinkComponent implements OnInit {
   ngOnInit() {
     this.loading = true;
     this.route.paramMap.subscribe((params) => {
-      this.graphQLService
-        .torrentContentSearch({
-          query: {
-            infoHashes: [params.get('infoHash') as string],
+      this.apollo
+        .query<
+          generated.TorrentContentSearchQuery,
+          generated.TorrentContentSearchQueryVariables
+        >({
+          query: generated.TorrentContentSearchDocument,
+          variables: {
+            query: {
+              infoHashes: [params.get('infoHash') as string],
+            },
           },
+          fetchPolicy: "no-cache",
         })
         .subscribe((result) => {
-          this.torrentContent = result.items[0];
-          this.found = result.items.length > 0;
+          const items = result.data.torrentContent.search.items
+          this.torrentContent = items[0];
+          this.found = items.length > 0;
           this.loading = false;
         });
     });

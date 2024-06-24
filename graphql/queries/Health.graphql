@@ -11,7 +11,9 @@ query Health {
     }
   }
   workers {
-    key
-    started
+    all {
+      key
+      started
+    }
   }
 }

@@ -71,7 +71,7 @@ export class HealthService {
               ...c,
               icon: icons[c.status],
             })),
-            workers: r.data.workers.map((w) => ({
+            workers: r.data.workers.all.map((w) => ({
               ...w,
               icon: icons[w.started ? 'started' : 'inactive'],
             })),

@@ -1,7 +1,8 @@
 type Query {
   version: String!
-  workers: [Worker!]!
-  health: Health!
+  workers: WorkersQueryResult!
+  health: HealthQueryResult!
+  queue: QueueQueryResult!
   torrent: TorrentQuery!
   torrentContent: TorrentContentQuery!
 }
@@ -35,6 +36,10 @@ type Worker {
   started: Boolean!
 }
 
+type WorkersQueryResult {
+  all: [Worker!]!
+}
+
 enum HealthStatus {
   unknown
   inactive
@@ -49,7 +54,42 @@ type HealthCheck {
   error: String
 }
 
-type Health {
+type HealthQueryResult {
   status: HealthStatus!
   checks: [HealthCheck!]!
+}
+
+enum QueueJobStatus {
+  pending
+  retry
+  failed
+  processed
+}
+
+enum QueueMetricsBucketDuration {
+  minute
+  hour
+  day
+}
+
+type QueueMetricsBucket {
+  queue: String!
+  status: QueueJobStatus!
+  createdAtBucket: DateTime!
+  ranAtBucket: DateTime
+  count: Int!
+}
+
+input QueueMetricsQueryInput {
+  bucketDuration: QueueMetricsBucketDuration!
+  statuses: [QueueJobStatus!]
+  queues: [String!]
+  createdFrom: DateTime
+  createdTo: DateTime
+  ranFrom: DateTime
+  ranTo: DateTime
+}
+
+type QueueQueryResult {
+  metrics(input: QueueMetricsQueryInput!): [QueueMetricsBucket!]!
 }

@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
 import { MatTooltip } from '@angular/material/tooltip';
 import { TranslocoDirective } from '@jsverse/transloco';
 import * as generated from '../graphql/generated';
 import { GraphQLService } from '../graphql/graphql.service';
 import { GraphQLModule } from '../graphql/graphql.module';
+import {Apollo} from "apollo-angular";
+import {map} from "rxjs";
 
 const defaultVersionName = 'v-unknown';
 
@@ -14,13 +16,17 @@ const defaultVersionName = 'v-unknown';
   imports: [GraphQLModule, MatTooltip, TranslocoDirective],
 })
 export class VersionComponent implements OnInit {
+  private apollo = inject(Apollo)
+
   version: string = defaultVersionName;
   versionUnknown = true;
 
-  constructor(private graphQLService: GraphQLService) {}
-
   ngOnInit(): void {
-    this.graphQLService.versionQuery().subscribe({
+    this.apollo
+      .query<generated.VersionQuery, generated.VersionQueryVariables>({
+        query: generated.VersionDocument,
+      })
+      .pipe(map((r) => r.data.version)).subscribe({
       next: (version: string) => {
         if (version) {
           this.version = version;

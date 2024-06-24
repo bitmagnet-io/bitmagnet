@@ -40,7 +40,6 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { MatOption, MatSelect } from '@angular/material/select';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatDivider } from '@angular/material/divider';
-import { GraphQLService } from '../graphql/graphql.service';
 import { ErrorsService } from '../errors/errors.service';
 import {
   allColumns,
@@ -69,6 +68,7 @@ import {
   TorrentSearchControls,
   TorrentsSearchController,
 } from './torrents-search.controller';
+import {Apollo} from "apollo-angular";
 
 @Component({
   selector: 'app-torrents-search',
@@ -115,7 +115,7 @@ import {
 export class TorrentsSearchComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private graphQLService = inject(GraphQLService);
+  private apollo = inject(Apollo);
   private errorsService = inject(ErrorsService);
   private transloco = inject(TranslocoService);
   breakpoints = inject(BreakpointsService);
@@ -152,7 +152,7 @@ export class TorrentsSearchComponent implements OnInit {
     };
     this.controller = new TorrentsSearchController(this.controls);
     this.dataSource = new TorrentsSearchDatasource(
-      this.graphQLService,
+      this.apollo,
       this.errorsService,
       this.controller.params$,
     );

@@ -67,6 +67,16 @@ type Mutation struct {
 type Query struct {
 }
 
+type QueueMetricsQueryInput struct {
+	BucketDuration QueueMetricsBucketDuration                `json:"bucketDuration"`
+	Statuses       graphql.Omittable[[]model.QueueJobStatus] `json:"statuses,omitempty"`
+	Queues         graphql.Omittable[[]string]               `json:"queues,omitempty"`
+	CreatedFrom    graphql.Omittable[*time.Time]             `json:"createdFrom,omitempty"`
+	CreatedTo      graphql.Omittable[*time.Time]             `json:"createdTo,omitempty"`
+	RanFrom        graphql.Omittable[*time.Time]             `json:"ranFrom,omitempty"`
+	RanTo          graphql.Omittable[*time.Time]             `json:"ranTo,omitempty"`
+}
+
 type ReleaseYearAgg struct {
 	Value      *model.Year `json:"value,omitempty"`
 	Label      string      `json:"label"`
@@ -181,6 +191,10 @@ type Worker struct {
 	Started bool   `json:"started"`
 }
 
+type WorkersQuery struct {
+	All []Worker `json:"all"`
+}
+
 type HealthStatus string
 
 const (
@@ -223,6 +237,49 @@ func (e *HealthStatus) UnmarshalGQL(v interface{}) error {
 }
 
 func (e HealthStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type QueueMetricsBucketDuration string
+
+const (
+	QueueMetricsBucketDurationMinute QueueMetricsBucketDuration = "minute"
+	QueueMetricsBucketDurationHour   QueueMetricsBucketDuration = "hour"
+	QueueMetricsBucketDurationDay    QueueMetricsBucketDuration = "day"
+)
+
+var AllQueueMetricsBucketDuration = []QueueMetricsBucketDuration{
+	QueueMetricsBucketDurationMinute,
+	QueueMetricsBucketDurationHour,
+	QueueMetricsBucketDurationDay,
+}
+
+func (e QueueMetricsBucketDuration) IsValid() bool {
+	switch e {
+	case QueueMetricsBucketDurationMinute, QueueMetricsBucketDurationHour, QueueMetricsBucketDurationDay:
+		return true
+	}
+	return false
+}
+
+func (e QueueMetricsBucketDuration) String() string {
+	return string(e)
+}
+
+func (e *QueueMetricsBucketDuration) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = QueueMetricsBucketDuration(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid QueueMetricsBucketDuration", str)
+	}
+	return nil
+}
+
+func (e QueueMetricsBucketDuration) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

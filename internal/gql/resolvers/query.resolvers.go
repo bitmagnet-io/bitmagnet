@@ -6,12 +6,12 @@ package resolvers
 
 import (
 	"context"
-	"github.com/bitmagnet-io/bitmagnet/internal/health"
 	"sort"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
+	"github.com/bitmagnet-io/bitmagnet/internal/health"
 	"github.com/bitmagnet-io/bitmagnet/internal/version"
 )
 
@@ -21,7 +21,7 @@ func (r *queryResolver) Version(ctx context.Context) (string, error) {
 }
 
 // Workers is the resolver for the workers field.
-func (r *queryResolver) Workers(ctx context.Context) ([]gen.Worker, error) {
+func (r *queryResolver) Workers(ctx context.Context) (gen.WorkersQuery, error) {
 	var workers []gen.Worker
 	for _, w := range r.Resolver.Workers.Workers() {
 		workers = append(workers, gen.Worker{
@@ -29,11 +29,25 @@ func (r *queryResolver) Workers(ctx context.Context) ([]gen.Worker, error) {
 			Started: w.Started(),
 		})
 	}
-	return workers, nil
+	return gen.WorkersQuery{
+		All: workers,
+	}, nil
 }
 
 // Health is the resolver for the health field.
 func (r *queryResolver) Health(ctx context.Context) (gen.HealthQuery, error) {
+	transformHealthCheckStatus := func(s health.AvailabilityStatus) gen.HealthStatus {
+		switch s {
+		case health.StatusInactive:
+			return gen.HealthStatusInactive
+		case health.StatusDown:
+			return gen.HealthStatusDown
+		case health.StatusUp:
+			return gen.HealthStatusUp
+		default:
+			return gen.HealthStatusUnknown
+		}
+	}
 	check := r.Checker.Check(ctx)
 	checks := make([]gen.HealthCheck, 0, len(check.Details))
 	for k, v := range check.Details {
@@ -59,17 +73,9 @@ func (r *queryResolver) Health(ctx context.Context) (gen.HealthQuery, error) {
 	return result, nil
 }
 
-func transformHealthCheckStatus(s health.AvailabilityStatus) gen.HealthStatus {
-	switch s {
-	case health.StatusInactive:
-		return gen.HealthStatusInactive
-	case health.StatusDown:
-		return gen.HealthStatusDown
-	case health.StatusUp:
-		return gen.HealthStatusUp
-	default:
-		return gen.HealthStatusUnknown
-	}
+// Queue is the resolver for the queue field.
+func (r *queryResolver) Queue(ctx context.Context) (gqlmodel.QueueQuery, error) {
+	return gqlmodel.QueueQuery{QueueMetricsClient: r.QueueMetricsClient}, nil
 }
 
 // Torrent is the resolver for the torrent field.
