@@ -13,7 +13,7 @@
       >
         <mat-expansion-panel-header>
           <mat-panel-title>
-            <mat-icon>interests</mat-icon> {{ t("torrents.content_type") }}
+            <mat-icon>interests</mat-icon> {{ t("facets.content_type") }}
           </mat-panel-title>
         </mat-expansion-panel-header>
         <section>
@@ -24,7 +24,7 @@
                 [class]="controls.contentType === null ? 'active' : ''"
               >
                 <mat-icon fontSet="material-icons">emergency</mat-icon
-                >{{ t("content_types_plural.all") }}
+                >{{ t("content_types.plural.all") }}
                 @if (dataSource.overallTotalCount$ | async; as count) {
                   <small
                     >{{ count.isEstimate ? "~" : ""
@@ -42,7 +42,7 @@
                     [class]="controls.contentType === ct.key ? 'active' : ''"
                   >
                     <mat-icon>{{ ct.icon }}</mat-icon>
-                    {{ t("content_types_plural." + ct.key) }}
+                    {{ t("content_types.plural." + ct.key) }}
                     @if (
                       (dataSource.contentTypeCounts$ | async)?.[ct.key];
                       as agg

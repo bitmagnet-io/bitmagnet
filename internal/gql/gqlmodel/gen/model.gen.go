@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
@@ -34,6 +35,18 @@ type GenreFacetInput struct {
 	Aggregate graphql.Omittable[*bool]             `json:"aggregate,omitempty"`
 	Logic     graphql.Omittable[*model.FacetLogic] `json:"logic,omitempty"`
 	Filter    graphql.Omittable[[]string]          `json:"filter,omitempty"`
+}
+
+type HealthCheck struct {
+	Key       string       `json:"key"`
+	Status    HealthStatus `json:"status"`
+	Timestamp time.Time    `json:"timestamp"`
+	Error     *string      `json:"error,omitempty"`
+}
+
+type HealthQuery struct {
+	Status HealthStatus  `json:"status"`
+	Checks []HealthCheck `json:"checks"`
 }
 
 type LanguageAgg struct {
@@ -69,10 +82,6 @@ type ReleaseYearFacetInput struct {
 type SuggestTagsQueryInput struct {
 	Prefix     graphql.Omittable[*string]  `json:"prefix,omitempty"`
 	Exclusions graphql.Omittable[[]string] `json:"exclusions,omitempty"`
-}
-
-type SystemQuery struct {
-	Version string `json:"version"`
 }
 
 type TorrentContentAggregations struct {
@@ -165,6 +174,56 @@ type VideoSourceAgg struct {
 type VideoSourceFacetInput struct {
 	Aggregate graphql.Omittable[*bool]                `json:"aggregate,omitempty"`
 	Filter    graphql.Omittable[[]*model.VideoSource] `json:"filter,omitempty"`
+}
+
+type Worker struct {
+	Key     string `json:"key"`
+	Started bool   `json:"started"`
+}
+
+type HealthStatus string
+
+const (
+	HealthStatusUnknown  HealthStatus = "unknown"
+	HealthStatusInactive HealthStatus = "inactive"
+	HealthStatusUp       HealthStatus = "up"
+	HealthStatusDown     HealthStatus = "down"
+)
+
+var AllHealthStatus = []HealthStatus{
+	HealthStatusUnknown,
+	HealthStatusInactive,
+	HealthStatusUp,
+	HealthStatusDown,
+}
+
+func (e HealthStatus) IsValid() bool {
+	switch e {
+	case HealthStatusUnknown, HealthStatusInactive, HealthStatusUp, HealthStatusDown:
+		return true
+	}
+	return false
+}
+
+func (e HealthStatus) String() string {
+	return string(e)
+}
+
+func (e *HealthStatus) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = HealthStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid HealthStatus", str)
+	}
+	return nil
+}
+
+func (e HealthStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type TorrentContentOrderBy string

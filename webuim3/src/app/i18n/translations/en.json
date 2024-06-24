@@ -1,31 +1,34 @@
 {
-  "content_types_plural": {
-    "all": "All",
-    "audiobook": "Audiobooks",
-    "comic": "Comics",
-    "ebook": "E-Books",
-    "movie": "Movies",
-    "music": "Music",
-    "null": "Unknown",
-    "software": "Software",
-    "tv_show": "TV Shows",
-    "xxx": "XXX"
-  },
-  "content_types_singular": {
-    "audiobook": "Audiobook",
-    "comic": "Comic",
-    "ebook": "E-Book",
-    "movie": "Movie",
-    "music": "Music",
-    "null": "Unknown",
-    "software": "Software",
-    "tv_show": "TV Show",
-    "xxx": "XXX"
+  "content_types": {
+    "plural": {
+      "all": "All",
+      "audiobook": "Audiobooks",
+      "comic": "Comics",
+      "ebook": "E-Books",
+      "movie": "Movies",
+      "music": "Music",
+      "null": "Unknown",
+      "software": "Software",
+      "tv_show": "TV Shows",
+      "xxx": "XXX"
+    },
+    "singular": {
+      "audiobook": "Audiobook",
+      "comic": "Comic",
+      "ebook": "E-Book",
+      "movie": "Movie",
+      "music": "Music",
+      "null": "Unknown",
+      "software": "Software",
+      "tv_show": "TV Show",
+      "xxx": "XXX"
+    }
   },
   "facets": {
+    "content_type": "Content Type",
+    "file_type": "File Type",
     "genre": "Genre",
     "language": "Language",
-    "file_type": "File Type",
     "torrent_source": "Torrent Source",
     "torrent_tag": "Torrent Tag",
     "video_resolution": "Video Resolution",
@@ -39,7 +42,36 @@
     "image": "Image",
     "software": "Software",
     "subtitles": "Subtitles",
+    "unknown": "Unknown",
     "video": "Video"
+  },
+  "health": {
+    "bitmagnet_is_status": "bitmagnet is {{status}}",
+    "check_failed_with_error": "Check failed with error",
+    "component": "Component",
+    "components": {
+      "dht": "DHT",
+      "postgres": "Postgres",
+      "tmdb": "TMDB"
+    },
+    "dismiss": "Dismiss",
+    "error": "Error",
+    "status": "Status",
+    "statuses": {
+      "down": "Down",
+      "error": "Error",
+      "inactive": "Inactive",
+      "started": "Started",
+      "unknown": "Pending",
+      "up": "Up"
+    },
+    "summary": "Health summary",
+    "worker": "Worker",
+    "workers": {
+      "dht_crawler": "DHT crawler",
+      "http_server": "HTTP server",
+      "queue_server": "Queue server"
+    }
   },
   "languages": {
     "af": "Afrikaans",
@@ -119,7 +151,7 @@
   },
   "torrents": {
     "clear_search": "Clear Search",
-    "content_type": "Content Type",
+    "copy": "__missing__",
     "copy_to_clipboard": "Copy to clipboard",
     "delete": "Delete",
     "delete_action_cannot_be_undone": "This action cannot be undone",
@@ -137,10 +169,14 @@
     "files_single": "Single file",
     "genres": "Genres",
     "info_hash": "Info hash",
+    "info_hashes": "__missing__",
     "languages": "Languages",
     "leechers": "Leechers",
     "magnet": "Magnet",
+    "magnet_links": "__missing__",
     "new_tag": "New tag",
+    "order_by": "__missing__",
+    "order_direction_toggle": "__missing__",
     "original_release_date": "Original release date",
     "permalink": "Permalink",
     "poster": "Poster",

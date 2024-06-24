@@ -1,7 +1,9 @@
 type Query {
+  version: String!
+  workers: [Worker!]!
+  health: Health!
   torrent: TorrentQuery!
   torrentContent: TorrentContentQuery!
-  system: SystemQuery!
 }
 
 type TorrentQuery {
@@ -28,6 +30,26 @@ type TorrentContentQuery {
   ): TorrentContentSearchResult!
 }
 
-type SystemQuery {
-  version: String!
+type Worker {
+  key: String!
+  started: Boolean!
+}
+
+enum HealthStatus {
+  unknown
+  inactive
+  up
+  down
+}
+
+type HealthCheck {
+  key: String!
+  status: HealthStatus!
+  timestamp: DateTime!
+  error: String
+}
+
+type Health {
+  status: HealthStatus!
+  checks: [HealthCheck!]!
 }

@@ -1,0 +1,17 @@
+#import "../fragments/TorrentContentSearchResult"
+
+query Health {
+  health {
+    status
+    checks {
+      key
+      status
+      timestamp
+      error
+    }
+  }
+  workers {
+    key
+    started
+  }
+}

@@ -1,4 +1,28 @@
 {
+  "content_types": {
+    "plural": {
+      "all": "__missing__",
+      "audiobook": "__missing__",
+      "comic": "__missing__",
+      "ebook": "__missing__",
+      "movie": "__missing__",
+      "music": "__missing__",
+      "null": "__missing__",
+      "software": "__missing__",
+      "tv_show": "__missing__",
+      "xxx": "__missing__"
+    },
+    "singular": {
+      "audiobook": "__missing__",
+      "comic": "__missing__",
+      "ebook": "__missing__",
+      "movie": "__missing__",
+      "music": "__missing__",
+      "software": "__missing__",
+      "tv_show": "__missing__",
+      "xxx": "__missing__"
+    }
+  },
   "content_types_plural": {
     "all": "الكل",
     "audiobook": "كتب صوتية",
@@ -11,7 +35,18 @@
     "tv_show": "برامج تلفزيونية",
     "xxx": "XXX"
   },
+  "content_types_singular": {
+    "audiobook": "__missing__",
+    "comic": "__missing__",
+    "ebook": "__missing__",
+    "movie": "__missing__",
+    "music": "__missing__",
+    "software": "__missing__",
+    "tv_show": "__missing__",
+    "xxx": "__missing__"
+  },
   "facets": {
+    "file_type": "__missing__",
     "genre": "__missing__",
     "language": "__missing__",
     "torrent_file_type": "__missing__",
@@ -29,6 +64,34 @@
     "software": "برنامج",
     "subtitles": "ترجمات",
     "video": "فيديو"
+  },
+  "health": {
+    "bitmagnet_is_status": "__missing__",
+    "check_failed_with_error": "__missing__",
+    "component": "__missing__",
+    "components": {
+      "dht": "__missing__",
+      "postgres": "__missing__",
+      "tmdb": "__missing__"
+    },
+    "dismiss": "__missing__",
+    "error": "__missing__",
+    "status": "__missing__",
+    "statuses": {
+      "down": "__missing__",
+      "error": "__missing__",
+      "inactive": "__missing__",
+      "started": "__missing__",
+      "unknown": "__missing__",
+      "up": "__missing__"
+    },
+    "summary": "__missing__",
+    "worker": "__missing__",
+    "workers": {
+      "dht_crawler": "__missing__",
+      "http_server": "__missing__",
+      "queue_server": "__missing__"
+    }
   },
   "languages": {
     "af": "الأفريكانية",
@@ -107,11 +170,14 @@
     "torrents": "التورنتات"
   },
   "torrents": {
+    "clear_search": "__missing__",
     "content_type": "نوع المحتوى",
+    "copy": "__missing__",
     "copy_to_clipboard": "نسخ إلى الحافظة",
     "delete": "حذف",
     "delete_action_cannot_be_undone": "لا يمكن التراجع عن هذا الإجراء",
     "delete_are_you_sure": "هل أنت متأكد أنك تريد حذف هذا التورنت؟",
+    "deselect_all": "__missing__",
     "edit_tags": "تحرير الوسوم",
     "episodes": "حلقات",
     "external_links": "روابط خارجية",
@@ -124,21 +190,30 @@
     "files_single": "ملف واحد",
     "genres": "الأنواع",
     "info_hash": "هاش المعلومات",
+    "info_hashes": "__missing__",
     "languages": "اللغات",
     "leechers": "المحملون",
     "magnet": "مغناطيس",
+    "magnet_links": "__missing__",
     "new_tag": "وسم جديد",
+    "order_by": "__missing__",
+    "order_direction_toggle": "__missing__",
     "original_release_date": "تاريخ الإصدار الأصلي",
+    "permalink": "__missing__",
     "poster": "ملصق",
     "published": "نشر",
     "rating": "التقييم",
+    "refresh": "__missing__",
     "s_l": "S / L",
+    "search": "__missing__",
     "seeders": "المزارعون",
+    "select_all": "__missing__",
     "showing_x_of_y_files": "عرض {{x}} من {{y}} ملفات",
     "size": "الحجم",
     "source": "مصدر التورنت",
     "summary": "الملخص",
     "title": "__missing__",
+    "toggle_drawer": "__missing__",
     "votes_count_n": "{{count}} أصوات"
   },
   "version": {

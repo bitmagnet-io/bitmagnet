@@ -1,4 +1,28 @@
 {
+  "content_types": {
+    "plural": {
+      "all": "__missing__",
+      "audiobook": "__missing__",
+      "comic": "__missing__",
+      "ebook": "__missing__",
+      "movie": "__missing__",
+      "music": "__missing__",
+      "null": "__missing__",
+      "software": "__missing__",
+      "tv_show": "__missing__",
+      "xxx": "__missing__"
+    },
+    "singular": {
+      "audiobook": "__missing__",
+      "comic": "__missing__",
+      "ebook": "__missing__",
+      "movie": "__missing__",
+      "music": "__missing__",
+      "software": "__missing__",
+      "tv_show": "__missing__",
+      "xxx": "__missing__"
+    }
+  },
   "content_types_plural": {
     "all": "__missing__",
     "audiobook": "__missing__",
@@ -11,7 +35,18 @@
     "tv_show": "__missing__",
     "xxx": "__missing__"
   },
+  "content_types_singular": {
+    "audiobook": "__missing__",
+    "comic": "__missing__",
+    "ebook": "__missing__",
+    "movie": "__missing__",
+    "music": "__missing__",
+    "software": "__missing__",
+    "tv_show": "__missing__",
+    "xxx": "__missing__"
+  },
   "facets": {
+    "file_type": "__missing__",
     "genre": "__missing__",
     "language": "__missing__",
     "torrent_file_type": "__missing__",
@@ -29,6 +64,34 @@
     "software": "__missing__",
     "subtitles": "__missing__",
     "video": "__missing__"
+  },
+  "health": {
+    "bitmagnet_is_status": "__missing__",
+    "check_failed_with_error": "__missing__",
+    "component": "__missing__",
+    "components": {
+      "dht": "__missing__",
+      "postgres": "__missing__",
+      "tmdb": "__missing__"
+    },
+    "dismiss": "__missing__",
+    "error": "__missing__",
+    "status": "__missing__",
+    "statuses": {
+      "down": "__missing__",
+      "error": "__missing__",
+      "inactive": "__missing__",
+      "started": "__missing__",
+      "unknown": "__missing__",
+      "up": "__missing__"
+    },
+    "summary": "__missing__",
+    "worker": "__missing__",
+    "workers": {
+      "dht_crawler": "__missing__",
+      "http_server": "__missing__",
+      "queue_server": "__missing__"
+    }
   },
   "languages": {
     "af": "Afrikáans",
@@ -107,11 +170,14 @@
     "torrents": "__missing__"
   },
   "torrents": {
+    "clear_search": "__missing__",
     "content_type": "__missing__",
+    "copy": "__missing__",
     "copy_to_clipboard": "__missing__",
     "delete": "__missing__",
     "delete_action_cannot_be_undone": "__missing__",
     "delete_are_you_sure": "__missing__",
+    "deselect_all": "__missing__",
     "edit_tags": "__missing__",
     "episodes": "__missing__",
     "external_links": "__missing__",
@@ -124,21 +190,30 @@
     "files_single": "__missing__",
     "genres": "__missing__",
     "info_hash": "__missing__",
+    "info_hashes": "__missing__",
     "languages": "__missing__",
     "leechers": "__missing__",
     "magnet": "__missing__",
+    "magnet_links": "__missing__",
     "new_tag": "__missing__",
+    "order_by": "__missing__",
+    "order_direction_toggle": "__missing__",
     "original_release_date": "__missing__",
+    "permalink": "__missing__",
     "poster": "__missing__",
     "published": "__missing__",
     "rating": "__missing__",
+    "refresh": "__missing__",
     "s_l": "__missing__",
+    "search": "__missing__",
     "seeders": "__missing__",
+    "select_all": "__missing__",
     "showing_x_of_y_files": "__missing__",
     "size": "__missing__",
     "source": "__missing__",
     "summary": "__missing__",
     "title": "__missing__",
+    "toggle_drawer": "__missing__",
     "votes_count_n": "__missing__"
   },
   "version": {

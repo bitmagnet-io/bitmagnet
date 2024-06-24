@@ -12,6 +12,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/migrations"
 	"github.com/bitmagnet-io/bitmagnet/internal/dhtcrawler/dhtcrawlerfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlfx"
+	"github.com/bitmagnet-io/bitmagnet/internal/health/healthfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/importer/importerfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor/processorfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/dhtfx"
@@ -34,6 +35,7 @@ func New() fx.Option {
 		dhtfx.New(),
 		databasefx.New(),
 		gqlfx.New(),
+		healthfx.New(),
 		httpserverfx.New(),
 		importerfx.New(),
 		metainfofx.New(),

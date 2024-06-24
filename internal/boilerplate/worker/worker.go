@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+	"sort"
 	"sync"
 )
 
@@ -125,8 +126,13 @@ func (r *registry) Workers() []Worker {
 	var workers []Worker
 	r.mutex.RLock()
 	defer r.mutex.RUnlock()
-	for _, w := range r.workers {
-		workers = append(workers, w)
+	keys := make([]string, 0, len(r.workers))
+	for k := range r.workers {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		workers = append(workers, r.workers[k])
 	}
 	return workers
 }

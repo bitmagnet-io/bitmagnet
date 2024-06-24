@@ -1,4 +1,11 @@
-import {Component, EventEmitter, inject, Input, OnInit, Output} from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import {
   MatCell,
   MatCellDef,
@@ -26,23 +33,23 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { AsyncPipe } from '@angular/common';
 import { MatProgressBar } from '@angular/material/progress-bar';
 import { SelectionModel } from '@angular/cdk/collections';
+import { BehaviorSubject } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FilesizePipe } from '../pipes/filesize.pipe';
 import { TorrentContentComponent } from '../torrent-content/torrent-content.component';
 import { HumanTimePipe } from '../pipes/human-time.pipe';
 import * as generated from '../graphql/generated';
 import { TorrentsSearchDatasource } from '../torrents-search/torrents-search.datasource';
 import { contentTypeInfo } from '../taxonomy/content-types';
-import {BehaviorSubject} from "rxjs";
-import {BreakpointsService} from "../layout/breakpoints.service";
-import {TorrentChipsComponent} from "../torrent-chips/torrent-chips.component";
-import {ActivatedRoute, Router} from "@angular/router";
+import { BreakpointsService } from '../layout/breakpoints.service';
+import { TorrentChipsComponent } from '../torrent-chips/torrent-chips.component';
 import {
   defaultOrderBy,
   defaultQueryOrderBy,
   facets,
-  TorrentSearchControls
-} from "../torrents-search/torrents-search.controller";
-import {stringParam} from "../util/query-string";
+  TorrentSearchControls,
+} from '../torrents-search/torrents-search.controller';
+import { stringParam } from '../util/query-string';
 
 @Component({
   selector: 'app-torrents-table',
@@ -97,21 +104,21 @@ export class TorrentsTableComponent implements OnInit {
 
   items = Array<generated.TorrentContent>();
 
-  expandedId = new BehaviorSubject<string | null>(null)
+  expandedId = new BehaviorSubject<string | null>(null);
 
   ngOnInit() {
     this.dataSource.items$.subscribe((items) => {
       this.items = items;
       if (items.length) {
         const expandedId = this.expandedId.getValue();
-        if (expandedId && !items.some(({id}) => id === expandedId)) {
+        if (expandedId && !items.some(({ id }) => id === expandedId)) {
           this.expandedId.next(null);
         }
       }
     });
     this.route.queryParams.subscribe((params) => {
-      const expandedId = this.expandedId.getValue() ?? undefined
-      const nextExpandedId = stringParam(params, "expanded")
+      const expandedId = this.expandedId.getValue() ?? undefined;
+      const nextExpandedId = stringParam(params, 'expanded');
       if (expandedId !== nextExpandedId) {
         this.expandedId.next(nextExpandedId ?? null);
       }
@@ -122,9 +129,9 @@ export class TorrentsTableComponent implements OnInit {
         queryParams: {
           expanded: expandedId ? encodeURIComponent(expandedId) : undefined,
         },
-        queryParamsHandling: "merge",
+        queryParamsHandling: 'merge',
       });
-    })
+    });
   }
 
   /** Whether the number of selected elements matches the total number of rows. */

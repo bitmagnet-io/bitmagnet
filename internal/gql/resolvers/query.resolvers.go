@@ -6,6 +6,8 @@ package resolvers
 
 import (
 	"context"
+	"github.com/bitmagnet-io/bitmagnet/internal/health"
+	"sort"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
@@ -13,24 +15,74 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/version"
 )
 
+// Version is the resolver for the version field.
+func (r *queryResolver) Version(ctx context.Context) (string, error) {
+	return version.GitTag, nil
+}
+
+// Workers is the resolver for the workers field.
+func (r *queryResolver) Workers(ctx context.Context) ([]gen.Worker, error) {
+	var workers []gen.Worker
+	for _, w := range r.Resolver.Workers.Workers() {
+		workers = append(workers, gen.Worker{
+			Key:     w.Key(),
+			Started: w.Started(),
+		})
+	}
+	return workers, nil
+}
+
+// Health is the resolver for the health field.
+func (r *queryResolver) Health(ctx context.Context) (gen.HealthQuery, error) {
+	check := r.Checker.Check(ctx)
+	checks := make([]gen.HealthCheck, 0, len(check.Details))
+	for k, v := range check.Details {
+		var err *string
+		if v.Error != nil {
+			strErr := v.Error.Error()
+			err = &strErr
+		}
+		checks = append(checks, gen.HealthCheck{
+			Key:       k,
+			Status:    transformHealthCheckStatus(v.Status),
+			Timestamp: v.Timestamp,
+			Error:     err,
+		})
+	}
+	sort.Slice(checks, func(i, j int) bool {
+		return checks[i].Key < checks[j].Key
+	})
+	result := gen.HealthQuery{
+		Status: transformHealthCheckStatus(check.Status),
+		Checks: checks,
+	}
+	return result, nil
+}
+
+func transformHealthCheckStatus(s health.AvailabilityStatus) gen.HealthStatus {
+	switch s {
+	case health.StatusInactive:
+		return gen.HealthStatusInactive
+	case health.StatusDown:
+		return gen.HealthStatusDown
+	case health.StatusUp:
+		return gen.HealthStatusUp
+	default:
+		return gen.HealthStatusUnknown
+	}
+}
+
 // Torrent is the resolver for the torrent field.
 func (r *queryResolver) Torrent(ctx context.Context) (gqlmodel.TorrentQuery, error) {
 	return gqlmodel.TorrentQuery{
-		TorrentSearch: r.search,
+		TorrentSearch: r.Search,
 	}, nil
 }
 
 // TorrentContent is the resolver for the torrentContent field.
 func (r *queryResolver) TorrentContent(ctx context.Context) (gqlmodel.TorrentContentQuery, error) {
 	return gqlmodel.TorrentContentQuery{
-		TorrentContentSearch: r.search,
-	}, nil
-}
-
-// System is the resolver for the system field.
-func (r *queryResolver) System(ctx context.Context) (gen.SystemQuery, error) {
-	return gen.SystemQuery{
-		Version: version.GitTag,
+		TorrentContentSearch: r.Search,
 	}, nil
 }
 

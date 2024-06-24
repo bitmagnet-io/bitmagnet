@@ -42,6 +42,7 @@ func New(p Params) Result {
 						SlowThreshold: time.Second * 30,
 					},
 				}).GormLogger,
+				DisableAutomaticPing: true,
 			})
 			if dbErr != nil {
 				return nil, dbErr

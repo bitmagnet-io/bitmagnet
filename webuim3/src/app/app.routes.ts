@@ -28,5 +28,5 @@ export const routes: Routes = [
       import('./torrent-permalink/torrent-permalink.component').then(
         (c) => c.TorrentPermalinkComponent,
       ),
-  }
+  },
 ];

@@ -1,0 +1,10 @@
+@use "@angular/material" as mat;
+
+@mixin theme($theme) {
+  .health-icon-down,
+  .health-icon-error {
+    mat-icon {
+      color: mat.get-theme-color($theme, error, 80);
+    }
+  }
+}

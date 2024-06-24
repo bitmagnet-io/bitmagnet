@@ -19,21 +19,18 @@
     }
     @if (torrentContent.videoResolution?.slice(1); as videoResolution) {
       <mat-chip
-      ><mat-icon matChipAvatar>aspect_ratio</mat-icon
-      >{{ videoResolution }}</mat-chip
+        ><mat-icon matChipAvatar>aspect_ratio</mat-icon
+        >{{ videoResolution }}</mat-chip
       >
     }
     @if (torrentContent.videoSource; as videoSource) {
       <mat-chip
-      ><mat-icon matChipAvatar>album</mat-icon
-      >{{ videoSource }}</mat-chip
+        ><mat-icon matChipAvatar>album</mat-icon>{{ videoSource }}</mat-chip
       >
     }
     @if (torrentContent.videoCodec; as videoCodec) {
       <mat-chip
-      ><mat-icon matChipAvatar svgIcon="binary" />{{
-          videoCodec
-        }}</mat-chip
+        ><mat-icon matChipAvatar svgIcon="binary" />{{ videoCodec }}</mat-chip
       >
     }
     @if (torrentContent.videoModifier; as videoModifier) {

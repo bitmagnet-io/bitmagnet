@@ -3,7 +3,6 @@ package boilerplatefx
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/cli/clifx"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/config/configfx"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/healthcheck/healthcheckfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/logging/loggingfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/validation/validationfx"
 	"go.uber.org/fx"
@@ -14,7 +13,6 @@ func New() fx.Option {
 		"boilerplate",
 		clifx.New(),
 		configfx.New(),
-		healthcheckfx.New(),
 		loggingfx.New(),
 		validationfx.New(),
 	)

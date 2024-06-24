@@ -20,10 +20,10 @@ export class VersionComponent implements OnInit {
   constructor(private graphQLService: GraphQLService) {}
 
   ngOnInit(): void {
-    this.graphQLService.systemQuery().subscribe({
-      next: (data: generated.SystemQuery) => {
-        if (data.version) {
-          this.version = data.version;
+    this.graphQLService.versionQuery().subscribe({
+      next: (version: string) => {
+        if (version) {
+          this.version = version;
           this.versionUnknown = false;
         } else {
           this.version = defaultVersionName;

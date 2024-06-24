@@ -97,13 +97,23 @@ export class GraphQLService {
       .pipe(map((r) => r.data.torrent.suggestTags));
   }
 
-  systemQuery(): Observable<generated.SystemQuery> {
+  versionQuery(): Observable<string> {
     return this.apollo
-      .query<generated.SystemQueryQuery, generated.SystemQueryQueryVariables>({
-        query: generated.SystemQueryDocument,
+      .query<generated.VersionQuery, generated.VersionQueryVariables>({
+        query: generated.VersionDocument,
         fetchPolicy,
       })
-      .pipe(map((r) => r.data.system));
+      .pipe(map((r) => r.data.version));
+  }
+
+  healthQuery(): Observable<generated.Health> {
+    return this.apollo
+      .watchQuery<generated.HealthQuery, generated.HealthQueryVariables>({
+        query: generated.HealthDocument,
+        fetchPolicy,
+        pollInterval: 10000,
+      })
+      .valueChanges.pipe(map((r) => r.data.health));
   }
 }
 

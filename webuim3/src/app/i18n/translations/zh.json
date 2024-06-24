@@ -1,4 +1,28 @@
 {
+  "content_types": {
+    "plural": {
+      "all": "__missing__",
+      "audiobook": "__missing__",
+      "comic": "__missing__",
+      "ebook": "__missing__",
+      "movie": "__missing__",
+      "music": "__missing__",
+      "null": "__missing__",
+      "software": "__missing__",
+      "tv_show": "__missing__",
+      "xxx": "__missing__"
+    },
+    "singular": {
+      "audiobook": "__missing__",
+      "comic": "__missing__",
+      "ebook": "__missing__",
+      "movie": "__missing__",
+      "music": "__missing__",
+      "software": "__missing__",
+      "tv_show": "__missing__",
+      "xxx": "__missing__"
+    }
+  },
   "content_types_plural": {
     "all": "全部",
     "audiobook": "有声书",
@@ -11,7 +35,18 @@
     "tv_show": "电视剧",
     "xxx": "成人"
   },
+  "content_types_singular": {
+    "audiobook": "__missing__",
+    "comic": "__missing__",
+    "ebook": "__missing__",
+    "movie": "__missing__",
+    "music": "__missing__",
+    "software": "__missing__",
+    "tv_show": "__missing__",
+    "xxx": "__missing__"
+  },
   "facets": {
+    "file_type": "__missing__",
     "genre": "__missing__",
     "language": "__missing__",
     "torrent_file_type": "__missing__",
@@ -29,6 +64,34 @@
     "software": "软件",
     "subtitles": "字幕",
     "video": "视频"
+  },
+  "health": {
+    "bitmagnet_is_status": "__missing__",
+    "check_failed_with_error": "__missing__",
+    "component": "__missing__",
+    "components": {
+      "dht": "__missing__",
+      "postgres": "__missing__",
+      "tmdb": "__missing__"
+    },
+    "dismiss": "__missing__",
+    "error": "__missing__",
+    "status": "__missing__",
+    "statuses": {
+      "down": "__missing__",
+      "error": "__missing__",
+      "inactive": "__missing__",
+      "started": "__missing__",
+      "unknown": "__missing__",
+      "up": "__missing__"
+    },
+    "summary": "__missing__",
+    "worker": "__missing__",
+    "workers": {
+      "dht_crawler": "__missing__",
+      "http_server": "__missing__",
+      "queue_server": "__missing__"
+    }
   },
   "languages": {
     "af": "南非语",
@@ -107,11 +170,14 @@
     "torrents": "种子"
   },
   "torrents": {
+    "clear_search": "__missing__",
     "content_type": "内容类型",
+    "copy": "__missing__",
     "copy_to_clipboard": "复制到剪贴板",
     "delete": "删除",
     "delete_action_cannot_be_undone": "此操作无法撤销",
     "delete_are_you_sure": "您确定要删除这个种子吗？",
+    "deselect_all": "__missing__",
     "edit_tags": "编辑标签",
     "episodes": "剧集",
     "external_links": "外部链接",
@@ -124,21 +190,30 @@
     "files_single": "单个文件",
     "genres": "类别",
     "info_hash": "信息哈希",
+    "info_hashes": "__missing__",
     "languages": "语言",
     "leechers": "下载者",
     "magnet": "磁力链接",
+    "magnet_links": "__missing__",
     "new_tag": "新标签",
+    "order_by": "__missing__",
+    "order_direction_toggle": "__missing__",
     "original_release_date": "原始发布日期",
+    "permalink": "__missing__",
     "poster": "海报",
     "published": "已发布",
     "rating": "评分",
+    "refresh": "__missing__",
     "s_l": "上传/下载",
+    "search": "__missing__",
     "seeders": "上传者",
+    "select_all": "__missing__",
     "showing_x_of_y_files": "显示 {{x}} 个文件，共 {{y}} 个文件",
     "size": "大小",
     "source": "种子来源",
     "summary": "摘要",
     "title": "__missing__",
+    "toggle_drawer": "__missing__",
     "votes_count_n": "{{count}} 票"
   },
   "version": {

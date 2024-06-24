@@ -1,4 +1,28 @@
 {
+  "content_types": {
+    "plural": {
+      "all": "__missing__",
+      "audiobook": "__missing__",
+      "comic": "__missing__",
+      "ebook": "__missing__",
+      "movie": "__missing__",
+      "music": "__missing__",
+      "null": "__missing__",
+      "software": "__missing__",
+      "tv_show": "__missing__",
+      "xxx": "__missing__"
+    },
+    "singular": {
+      "audiobook": "__missing__",
+      "comic": "__missing__",
+      "ebook": "__missing__",
+      "movie": "__missing__",
+      "music": "__missing__",
+      "software": "__missing__",
+      "tv_show": "__missing__",
+      "xxx": "__missing__"
+    }
+  },
   "content_types_plural": {
     "all": "Alle",
     "audiobook": "Hörbücher",
@@ -11,7 +35,18 @@
     "tv_show": "Fernsehshows",
     "xxx": "XXX"
   },
+  "content_types_singular": {
+    "audiobook": "__missing__",
+    "comic": "__missing__",
+    "ebook": "__missing__",
+    "movie": "__missing__",
+    "music": "__missing__",
+    "software": "__missing__",
+    "tv_show": "__missing__",
+    "xxx": "__missing__"
+  },
   "facets": {
+    "file_type": "__missing__",
     "genre": "__missing__",
     "language": "__missing__",
     "torrent_file_type": "__missing__",
@@ -29,6 +64,34 @@
     "software": "Software",
     "subtitles": "Untertitel",
     "video": "Video"
+  },
+  "health": {
+    "bitmagnet_is_status": "__missing__",
+    "check_failed_with_error": "__missing__",
+    "component": "__missing__",
+    "components": {
+      "dht": "__missing__",
+      "postgres": "__missing__",
+      "tmdb": "__missing__"
+    },
+    "dismiss": "__missing__",
+    "error": "__missing__",
+    "status": "__missing__",
+    "statuses": {
+      "down": "__missing__",
+      "error": "__missing__",
+      "inactive": "__missing__",
+      "started": "__missing__",
+      "unknown": "__missing__",
+      "up": "__missing__"
+    },
+    "summary": "__missing__",
+    "worker": "__missing__",
+    "workers": {
+      "dht_crawler": "__missing__",
+      "http_server": "__missing__",
+      "queue_server": "__missing__"
+    }
   },
   "languages": {
     "af": "Afrikaans",
@@ -107,11 +170,14 @@
     "torrents": "Torrents"
   },
   "torrents": {
+    "clear_search": "__missing__",
     "content_type": "Inhaltstyp",
+    "copy": "__missing__",
     "copy_to_clipboard": "In die Zwischenablage kopieren",
     "delete": "Löschen",
     "delete_action_cannot_be_undone": "Diese Aktion kann nicht rückgängig gemacht werden",
     "delete_are_you_sure": "Möchten Sie diesen Torrent wirklich löschen?",
+    "deselect_all": "__missing__",
     "edit_tags": "Stichworte bearbeiten",
     "episodes": "Folgen",
     "external_links": "Externe Links",
@@ -124,21 +190,30 @@
     "files_single": "Einzelne Datei",
     "genres": "Genres",
     "info_hash": "Info-Hash",
+    "info_hashes": "__missing__",
     "languages": "Sprachen",
     "leechers": "Leechers",
     "magnet": "Magnet",
+    "magnet_links": "__missing__",
     "new_tag": "Neues Stichwort",
+    "order_by": "__missing__",
+    "order_direction_toggle": "__missing__",
     "original_release_date": "Ursprüngliches Veröffentlichungsdatum",
+    "permalink": "__missing__",
     "poster": "Poster",
     "published": "Veröffentlicht",
     "rating": "Bewertungen",
+    "refresh": "__missing__",
     "s_l": "S / L",
+    "search": "__missing__",
     "seeders": "Seeders",
+    "select_all": "__missing__",
     "showing_x_of_y_files": "{{x}} von {{y}} Dateien angezeigt",
     "size": "Größe",
     "source": "Quelle",
     "summary": "Zusammenfassung",
     "title": "Titel",
+    "toggle_drawer": "__missing__",
     "votes_count_n": "{{count}} Stimmen"
   },
   "version": {

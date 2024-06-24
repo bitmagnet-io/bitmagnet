@@ -18,7 +18,12 @@ import {
   MatCardContent,
 } from '@angular/material/card';
 import { MatFormField } from '@angular/material/form-field';
-import {MatChipGrid, MatChipInput, MatChipRemove, MatChipRow} from '@angular/material/chips';
+import {
+  MatChipGrid,
+  MatChipInput,
+  MatChipRemove,
+  MatChipRow,
+} from '@angular/material/chips';
 import {
   MatAutocomplete,
   MatAutocompleteTrigger,
@@ -33,7 +38,7 @@ import normalizeTagInput from '../util/normalizeTagInput';
 import { GraphQLService } from '../graphql/graphql.service';
 import { ErrorsService } from '../errors/errors.service';
 import { BreakpointsService } from '../layout/breakpoints.service';
-import {HumanTimePipe} from "../pipes/human-time.pipe";
+import { HumanTimePipe } from '../pipes/human-time.pipe';
 
 @Component({
   selector: 'app-torrent-content',

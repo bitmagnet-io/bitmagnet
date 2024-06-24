@@ -9,27 +9,30 @@
     />
   }
   @if (heading) {
-  <h2><a
-    [href]="'torrents/'+torrentContent.infoHash"
-    [matTooltip]="t('torrents.permalink')"
-  >{{ torrentContent.torrent.name }}</a></h2>
+    <h2>
+      <a
+        [href]="'torrents/' + torrentContent.infoHash"
+        [matTooltip]="t('torrents.permalink')"
+        >{{ torrentContent.torrent.name }}</a
+      >
+    </h2>
   }
   @if (size) {
     <p class="size">
-      <strong>{{ t('torrents.size') }}:</strong>
+      <strong>{{ t("torrents.size") }}:</strong>
       {{ torrentContent.torrent.size | filesize }}
     </p>
   }
   @if (published) {
     <p class="published">
-      <strong>{{ t('torrents.published') }}</strong>
+      <strong>{{ t("torrents.published") }}</strong>
       {{ torrentContent.publishedAt | humanTime }}
     </p>
   }
   @if (peers) {
     <p class="peers">
-      <strong>{{ t('torrents.s_l') }}:</strong>
-      {{ torrentContent.seeders ?? '?' }} / {{ torrentContent.leechers ?? '?' }}
+      <strong>{{ t("torrents.s_l") }}:</strong>
+      {{ torrentContent.seeders ?? "?" }} / {{ torrentContent.leechers ?? "?" }}
     </p>
   }
   <p class="info-hash">

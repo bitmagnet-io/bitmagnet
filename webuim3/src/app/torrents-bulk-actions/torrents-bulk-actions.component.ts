@@ -8,9 +8,7 @@ import {
   Output,
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { GraphQLService } from '../graphql/graphql.service';
 import { catchError, EMPTY, Observable, tap } from 'rxjs';
-import { ErrorsService } from '../errors/errors.service';
 import {
   MatTab,
   MatTabContent,
@@ -24,7 +22,12 @@ import {
   MatCardContent,
 } from '@angular/material/card';
 import { MatFormField } from '@angular/material/form-field';
-import {MatChipGrid, MatChipInput, MatChipRemove, MatChipRow} from '@angular/material/chips';
+import {
+  MatChipGrid,
+  MatChipInput,
+  MatChipRemove,
+  MatChipRow,
+} from '@angular/material/chips';
 import {
   MatAutocomplete,
   MatAutocompleteTrigger,
@@ -34,11 +37,13 @@ import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
 import { AsyncPipe } from '@angular/common';
-import { BreakpointsService } from '../layout/breakpoints.service';
 import { TranslocoDirective } from '@jsverse/transloco';
-import * as generated from '../graphql/generated';
 import { CdkCopyToClipboard } from '@angular/cdk/clipboard';
 import { map } from 'rxjs/operators';
+import * as generated from '../graphql/generated';
+import { BreakpointsService } from '../layout/breakpoints.service';
+import { ErrorsService } from '../errors/errors.service';
+import { GraphQLService } from '../graphql/graphql.service';
 
 @Component({
   selector: 'app-torrents-bulk-actions',

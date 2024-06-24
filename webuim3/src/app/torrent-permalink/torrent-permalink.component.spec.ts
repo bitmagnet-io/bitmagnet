@@ -8,9 +8,8 @@ describe('TorrentPermalinkComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TorrentPermalinkComponent]
-    })
-    .compileComponents();
+      imports: [TorrentPermalinkComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(TorrentPermalinkComponent);
     component = fixture.componentInstance;

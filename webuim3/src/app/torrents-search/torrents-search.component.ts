@@ -38,6 +38,8 @@ import { MatInput } from '@angular/material/input';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatTooltip } from '@angular/material/tooltip';
 import { MatOption, MatSelect } from '@angular/material/select';
+import { SelectionModel } from '@angular/cdk/collections';
+import { MatDivider } from '@angular/material/divider';
 import { GraphQLService } from '../graphql/graphql.service';
 import { ErrorsService } from '../errors/errors.service';
 import {
@@ -49,6 +51,13 @@ import { GraphQLModule } from '../graphql/graphql.module';
 import { PaginatorComponent } from '../paginator/paginator.component';
 import { contentTypeList, contentTypeMap } from '../taxonomy/content-types';
 import { BreakpointsService } from '../layout/breakpoints.service';
+import * as generated from '../graphql/generated';
+import { TorrentsBulkActionsComponent } from '../torrents-bulk-actions/torrents-bulk-actions.component';
+import { intParam, stringListParam, stringParam } from '../util/query-string';
+import {
+  emptyResult,
+  TorrentsSearchDatasource,
+} from './torrents-search.datasource';
 import {
   ContentTypeSelection,
   defaultOrderBy,
@@ -60,15 +69,6 @@ import {
   TorrentSearchControls,
   TorrentsSearchController,
 } from './torrents-search.controller';
-import {
-  emptyResult,
-  TorrentsSearchDatasource,
-} from './torrents-search.datasource';
-import { SelectionModel } from '@angular/cdk/collections';
-import * as generated from '../graphql/generated';
-import { MatDivider } from '@angular/material/divider';
-import { TorrentsBulkActionsComponent } from '../torrents-bulk-actions/torrents-bulk-actions.component';
-import {intParam, stringListParam, stringParam} from "../util/query-string";
 
 @Component({
   selector: 'app-torrents-search',
@@ -251,7 +251,7 @@ export class TorrentsSearchComponent implements OnInit {
           content_type: ctrl.contentType,
           ...flattenFacets(ctrl.facets),
         },
-        queryParamsHandling: "merge",
+        queryParamsHandling: 'merge',
       });
     });
     this.selection.changed.subscribe((selection) => {
