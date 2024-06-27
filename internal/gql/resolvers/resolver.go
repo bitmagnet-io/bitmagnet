@@ -4,6 +4,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
+	"github.com/bitmagnet-io/bitmagnet/internal/servarr"
 )
 
 // This file will not be regenerated automatically.
@@ -11,16 +12,19 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	dao    *dao.Query
-	search search.Search
+	dao           *dao.Query
+	search        search.Search
+	servarrConfig servarr.Config
 }
 
 func New(
 	dao *dao.Query,
 	search search.Search,
+	servarrConfig servarr.Config,
 ) gql.ResolverRoot {
 	return &Resolver{
-		dao:    dao,
-		search: search,
+		dao:           dao,
+		search:        search,
+		servarrConfig: servarrConfig,
 	}
 }

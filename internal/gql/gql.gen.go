@@ -47,6 +47,7 @@ type ResolverRoot interface {
 	Content() ContentResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
+	ServarrMutation() ServarrMutationResolver
 	Torrent() TorrentResolver
 	TorrentMutation() TorrentMutationResolver
 }
@@ -139,6 +140,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		Servarr func(childComplexity int) int
 		Torrent func(childComplexity int) int
 	}
 
@@ -160,13 +162,18 @@ type ComplexityRoot struct {
 		Season   func(childComplexity int) int
 	}
 
+	ServarrMutation struct {
+		Download func(childComplexity int, infoHashes []protocol.ID) int
+	}
+
 	SuggestedTag struct {
 		Count func(childComplexity int) int
 		Name  func(childComplexity int) int
 	}
 
 	SystemQuery struct {
-		Version func(childComplexity int) int
+		Download func(childComplexity int) int
+		Version  func(childComplexity int) int
 	}
 
 	Torrent struct {
@@ -313,11 +320,15 @@ type ContentResolver interface {
 }
 type MutationResolver interface {
 	Torrent(ctx context.Context) (gqlmodel.TorrentMutation, error)
+	Servarr(ctx context.Context) (gqlmodel.ServarrMutation, error)
 }
 type QueryResolver interface {
 	Torrent(ctx context.Context) (gqlmodel.TorrentQuery, error)
 	TorrentContent(ctx context.Context) (gqlmodel.TorrentContentQuery, error)
 	System(ctx context.Context) (gen.SystemQuery, error)
+}
+type ServarrMutationResolver interface {
+	Download(ctx context.Context, obj *gqlmodel.ServarrMutation, infoHashes []protocol.ID) (*string, error)
 }
 type TorrentResolver interface {
 	Sources(ctx context.Context, obj *model.Torrent) ([]gqlmodel.TorrentSource, error)
@@ -719,6 +730,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MetadataSource.Name(childComplexity), true
 
+	case "Mutation.servarr":
+		if e.complexity.Mutation.Servarr == nil {
+			break
+		}
+
+		return e.complexity.Mutation.Servarr(childComplexity), true
+
 	case "Mutation.torrent":
 		if e.complexity.Mutation.Torrent == nil {
 			break
@@ -789,6 +807,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Season.Season(childComplexity), true
 
+	case "ServarrMutation.download":
+		if e.complexity.ServarrMutation.Download == nil {
+			break
+		}
+
+		args, err := ec.field_ServarrMutation_download_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.ServarrMutation.Download(childComplexity, args["infoHashes"].([]protocol.ID)), true
+
 	case "SuggestedTag.count":
 		if e.complexity.SuggestedTag.Count == nil {
 			break
@@ -802,6 +832,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SuggestedTag.Name(childComplexity), true
+
+	case "SystemQuery.download":
+		if e.complexity.SystemQuery.Download == nil {
+			break
+		}
+
+		return e.complexity.SystemQuery.Download(childComplexity), true
 
 	case "SystemQuery.version":
 		if e.complexity.SystemQuery.Version == nil {
@@ -1902,6 +1939,7 @@ type ContentCollection {
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/mutation.graphqls", Input: `type Mutation {
   torrent: TorrentMutation!
+  servarr: ServarrMutation!
 }
 
 type TorrentMutation {
@@ -1910,7 +1948,10 @@ type TorrentMutation {
   setTags(infoHashes: [Hash20!]!, tagNames: [String!]!): Void
   deleteTags(infoHashes: [Hash20!], tagNames: [String!]): Void
 }
-`, BuiltIn: false},
+
+type ServarrMutation {
+  download(infoHashes: [Hash20!]): Void
+}`, BuiltIn: false},
 	{Name: "../../graphql/schema/query.graphqls", Input: `type Query {
   torrent: TorrentQuery!
   torrentContent: TorrentContentQuery!
@@ -1945,6 +1986,7 @@ type TorrentContentQuery {
 
 type SystemQuery {
   version: String!
+  download: Boolean!
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/scalars.graphqls", Input: `scalar Hash20
@@ -2137,6 +2179,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_ServarrMutation_download_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []protocol.ID
+	if tmp, ok := rawArgs["infoHashes"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("infoHashes"))
+		arg0, err = ec.unmarshalOHash202ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋprotocolᚐIDᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["infoHashes"] = arg0
 	return args, nil
 }
 
@@ -4738,6 +4795,54 @@ func (ec *executionContext) fieldContext_Mutation_torrent(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_servarr(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_servarr(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().Servarr(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(gqlmodel.ServarrMutation)
+	fc.Result = res
+	return ec.marshalNServarrMutation2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐServarrMutation(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_servarr(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "download":
+				return ec.fieldContext_ServarrMutation_download(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ServarrMutation", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_torrent(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_torrent(ctx, field)
 	if err != nil {
@@ -4875,6 +4980,8 @@ func (ec *executionContext) fieldContext_Query_system(ctx context.Context, field
 			switch field.Name {
 			case "version":
 				return ec.fieldContext_SystemQuery_version(ctx, field)
+			case "download":
+				return ec.fieldContext_SystemQuery_download(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type SystemQuery", field.Name)
 		},
@@ -5269,6 +5376,58 @@ func (ec *executionContext) fieldContext_Season_episodes(ctx context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _ServarrMutation_download(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.ServarrMutation) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ServarrMutation_download(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ServarrMutation().Download(rctx, obj, fc.Args["infoHashes"].([]protocol.ID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOVoid2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ServarrMutation_download(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ServarrMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Void does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_ServarrMutation_download_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _SuggestedTag_name(ctx context.Context, field graphql.CollectedField, obj *search.SuggestedTag) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_SuggestedTag_name(ctx, field)
 	if err != nil {
@@ -5396,6 +5555,50 @@ func (ec *executionContext) fieldContext_SystemQuery_version(ctx context.Context
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SystemQuery_download(ctx context.Context, field graphql.CollectedField, obj *gen.SystemQuery) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SystemQuery_download(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Download, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SystemQuery_download(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SystemQuery",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -12692,6 +12895,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "servarr":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_servarr(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12923,6 +13133,73 @@ func (ec *executionContext) _Season(ctx context.Context, sel ast.SelectionSet, o
 	return out
 }
 
+var servarrMutationImplementors = []string{"ServarrMutation"}
+
+func (ec *executionContext) _ServarrMutation(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.ServarrMutation) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, servarrMutationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ServarrMutation")
+		case "download":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ServarrMutation_download(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var suggestedTagImplementors = []string{"SuggestedTag"}
 
 func (ec *executionContext) _SuggestedTag(ctx context.Context, sel ast.SelectionSet, obj *search.SuggestedTag) graphql.Marshaler {
@@ -12980,6 +13257,11 @@ func (ec *executionContext) _SystemQuery(ctx context.Context, sel ast.SelectionS
 			out.Values[i] = graphql.MarshalString("SystemQuery")
 		case "version":
 			out.Values[i] = ec._SystemQuery_version(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "download":
+			out.Values[i] = ec._SystemQuery_download(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -14790,6 +15072,10 @@ func (ec *executionContext) marshalNSeason2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbi
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalNServarrMutation2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐServarrMutation(ctx context.Context, sel ast.SelectionSet, v gqlmodel.ServarrMutation) graphql.Marshaler {
+	return ec._ServarrMutation(ctx, sel, &v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
