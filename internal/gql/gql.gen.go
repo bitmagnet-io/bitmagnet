@@ -1951,7 +1951,8 @@ type TorrentMutation {
 
 type ServarrMutation {
   download(infoHashes: [Hash20!]): Void
-}`, BuiltIn: false},
+}
+`, BuiltIn: false},
 	{Name: "../../graphql/schema/query.graphqls", Input: `type Query {
   torrent: TorrentQuery!
   torrentContent: TorrentContentQuery!

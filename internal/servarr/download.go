@@ -147,7 +147,7 @@ func (d *downloadHelper) download() (*string, error) {
 
 	i = slices.IndexFunc(releases, func(r ReleaseResource) bool { return r.GUID == d.tc.InfoHash.String() })
 	if i == -1 {
-		return nil, fmt.Errorf("download not found")
+		return nil, fmt.Errorf("(%s) download not found by [%s]", d.use, d.url(endpoint))
 	}
 	_, err = d.resty(&release).SetBody(&ReleaseResource{GUID: releases[i].GUID, IndexerID: indexer.ID}).Post(d.url(endpoint))
 	if err != nil {

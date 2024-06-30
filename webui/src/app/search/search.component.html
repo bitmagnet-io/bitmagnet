@@ -281,6 +281,20 @@
             </mat-card>
           </ng-template>
         </mat-tab>
+        <div *ngIf="downloadEnabled">
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <button
+                mat-button
+                (click)="servarrDownload(selectedInfoHashes())"
+                [disabled]="!selectedItems.hasValue()"
+              >
+                <mat-icon>download_for_offline</mat-icon>
+                Download
+              </button>
+            </ng-template>
+          </mat-tab>
+        </div>
         @if (selectedTabIndex > 0) {
           <mat-tab>
             <ng-template mat-tab-label>
