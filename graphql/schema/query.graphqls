@@ -32,4 +32,5 @@ type TorrentContentQuery {
 
 type SystemQuery {
   version: String!
+  download: Boolean!
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/config"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/resolvers"
+	"github.com/bitmagnet-io/bitmagnet/internal/servarr"
 	"go.uber.org/fx"
 )
 
@@ -21,6 +22,7 @@ func New() fx.Option {
 			func(
 				ls lazy.Lazy[search.Search],
 				ld lazy.Lazy[*dao.Query],
+				lc servarr.Config,
 			) lazy.Lazy[gql.ResolverRoot] {
 				return lazy.New(func() (gql.ResolverRoot, error) {
 					s, err := ls.Get()
@@ -31,7 +33,7 @@ func New() fx.Option {
 					if err != nil {
 						return nil, err
 					}
-					return resolvers.New(d, s), nil
+					return resolvers.New(d, s, lc), nil
 				})
 			},
 			func(

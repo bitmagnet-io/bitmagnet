@@ -230,6 +230,7 @@ export type MetadataSource = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  servarr: ServarrMutation;
   torrent: TorrentMutation;
 };
 
@@ -270,6 +271,16 @@ export type Season = {
   season: Scalars['Int']['output'];
 };
 
+export type ServarrMutation = {
+  __typename?: 'ServarrMutation';
+  download?: Maybe<Scalars['Void']['output']>;
+};
+
+
+export type ServarrMutationDownloadArgs = {
+  infoHashes?: InputMaybe<Array<Scalars['Hash20']['input']>>;
+};
+
 export type SuggestTagsQueryInput = {
   exclusions?: InputMaybe<Array<Scalars['String']['input']>>;
   prefix?: InputMaybe<Scalars['String']['input']>;
@@ -283,6 +294,7 @@ export type SuggestedTag = {
 
 export type SystemQuery = {
   __typename?: 'SystemQuery';
+  download: Scalars['Boolean']['output'];
   version: Scalars['String']['output'];
 };
 
@@ -584,6 +596,13 @@ export type TorrentContentSearchResultFragment = { __typename?: 'TorrentContentS
 
 export type TorrentFileFragment = { __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string };
 
+export type ServarrDownloadMutationVariables = Exact<{
+  infoHashes: Array<Scalars['Hash20']['input']> | Scalars['Hash20']['input'];
+}>;
+
+
+export type ServarrDownloadMutation = { __typename?: 'Mutation', servarr: { __typename?: 'ServarrMutation', download?: void | null } };
+
 export type TorrentDeleteMutationVariables = Exact<{
   infoHashes: Array<Scalars['Hash20']['input']> | Scalars['Hash20']['input'];
 }>;
@@ -618,7 +637,7 @@ export type TorrentSetTagsMutation = { __typename?: 'Mutation', torrent: { __typ
 export type SystemQueryQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type SystemQueryQuery = { __typename?: 'Query', system: { __typename?: 'SystemQuery', version: string } };
+export type SystemQueryQuery = { __typename?: 'Query', system: { __typename?: 'SystemQuery', version: string, download: boolean } };
 
 export type TorrentContentSearchQueryVariables = Exact<{
   query?: InputMaybe<SearchQueryInput>;
@@ -828,6 +847,24 @@ export const TorrentContentSearchResultFragmentDoc = gql`
   }
 }
     ${TorrentContentFragmentDoc}`;
+export const ServarrDownloadDocument = gql`
+    mutation ServarrDownload($infoHashes: [Hash20!]!) {
+  servarr {
+    download(infoHashes: $infoHashes)
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class ServarrDownloadGQL extends Apollo.Mutation<ServarrDownloadMutation, ServarrDownloadMutationVariables> {
+    override document = ServarrDownloadDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const TorrentDeleteDocument = gql`
     mutation TorrentDelete($infoHashes: [Hash20!]!) {
   torrent {
@@ -904,6 +941,7 @@ export const SystemQueryDocument = gql`
     query SystemQuery {
   system {
     version
+    download
   }
 }
     `;

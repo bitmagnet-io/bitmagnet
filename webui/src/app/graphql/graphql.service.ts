@@ -37,6 +37,21 @@ export class GraphQLService {
       .pipe(map(() => void 0));
   }
 
+  servarrDownload(
+    input: generated.ServarrDownloadMutationVariables,
+  ): Observable<void> {
+    return this.apollo
+      .mutate<
+        generated.ServarrDownloadMutation,
+        generated.ServarrDownloadMutationVariables
+      >({
+        mutation: generated.ServarrDownloadDocument,
+        variables: input,
+        fetchPolicy,
+      })
+      .pipe(map(() => void 0));
+  }
+
   torrentPutTags(
     input: generated.TorrentPutTagsMutationVariables,
   ): Observable<void> {
@@ -105,6 +120,7 @@ export class GraphQLService {
       })
       .pipe(map((r) => r.data.system));
   }
+
 }
 
 const fetchPolicy = "no-cache";

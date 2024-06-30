@@ -72,7 +72,8 @@ type SuggestTagsQueryInput struct {
 }
 
 type SystemQuery struct {
-	Version string `json:"version"`
+	Version  string `json:"version"`
+	Download bool   `json:"download"`
 }
 
 type TorrentContentAggregations struct {

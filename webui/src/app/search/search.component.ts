@@ -1,6 +1,7 @@
 import {
   AfterContentInit,
   AfterViewInit,
+  OnInit,
   ChangeDetectionStrategy,
   Component,
 } from "@angular/core";
@@ -37,7 +38,9 @@ import { SearchEngine } from "./search.engine";
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SearchComponent implements AfterContentInit, AfterViewInit {
+export class SearchComponent
+  implements AfterContentInit, AfterViewInit, OnInit
+{
   search: SearchEngine = new SearchEngine(
     this.graphQLService,
     this.errorsService,
@@ -68,6 +71,7 @@ export class SearchComponent implements AfterContentInit, AfterViewInit {
   newTagCtrl = new FormControl<string>("");
   editedTags = Array<string>();
   suggestedTags = Array<string>();
+  downloadEnabled = false;
 
   constructor(
     private graphQLService: GraphQLService,
@@ -81,6 +85,19 @@ export class SearchComponent implements AfterContentInit, AfterViewInit {
         ),
       );
     });
+  }
+
+  ngOnInit(): void {
+    this.graphQLService.systemQuery().subscribe({
+      next: this.parseDownloadEnabled.bind(this),
+      error: () => {
+        this.downloadEnabled = false;
+      },
+    });
+  }
+
+  parseDownloadEnabled(data: generated.SystemQuery) {
+    this.downloadEnabled = data?.download || false;
   }
 
   ngAfterContentInit() {
@@ -271,6 +288,23 @@ export class SearchComponent implements AfterContentInit, AfterViewInit {
           this.errorsService.addError(
             `Error deleting torrents: ${err.message}`,
           );
+          return EMPTY;
+        }),
+      )
+      .pipe(
+        tap(() => {
+          this.search.loadResult(false);
+        }),
+      )
+      .subscribe();
+  }
+
+  servarrDownload(infoHashes: string[]) {
+    this.graphQLService
+      .servarrDownload({ infoHashes })
+      .pipe(
+        catchError((err: Error) => {
+          this.errorsService.addError(`Download errors: ${err.message}`);
           return EMPTY;
         }),
       )

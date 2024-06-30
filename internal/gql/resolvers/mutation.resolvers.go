@@ -10,11 +10,22 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/servarr"
 )
 
 // Torrent is the resolver for the torrent field.
 func (r *mutationResolver) Torrent(ctx context.Context) (gqlmodel.TorrentMutation, error) {
 	return gqlmodel.TorrentMutation{}, nil
+}
+
+// Servarr is the resolver for the servarr field.
+func (r *mutationResolver) Servarr(ctx context.Context) (gqlmodel.ServarrMutation, error) {
+	return gqlmodel.ServarrMutation{}, nil
+}
+
+// Download is the resolver for the download field.
+func (r *servarrMutationResolver) Download(ctx context.Context, obj *gqlmodel.ServarrMutation, infoHashes []protocol.ID) (*string, error) {
+	return servarr.Download(ctx, &r.servarrConfig, r.search, infoHashes)
 }
 
 // Delete is the resolver for the delete field.
@@ -41,8 +52,12 @@ func (r *torrentMutationResolver) DeleteTags(ctx context.Context, obj *gqlmodel.
 // Mutation returns gql.MutationResolver implementation.
 func (r *Resolver) Mutation() gql.MutationResolver { return &mutationResolver{r} }
 
+// ServarrMutation returns gql.ServarrMutationResolver implementation.
+func (r *Resolver) ServarrMutation() gql.ServarrMutationResolver { return &servarrMutationResolver{r} }
+
 // TorrentMutation returns gql.TorrentMutationResolver implementation.
 func (r *Resolver) TorrentMutation() gql.TorrentMutationResolver { return &torrentMutationResolver{r} }
 
 type mutationResolver struct{ *Resolver }
+type servarrMutationResolver struct{ *Resolver }
 type torrentMutationResolver struct{ *Resolver }

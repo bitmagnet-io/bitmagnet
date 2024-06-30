@@ -30,7 +30,8 @@ func (r *queryResolver) TorrentContent(ctx context.Context) (gqlmodel.TorrentCon
 // System is the resolver for the system field.
 func (r *queryResolver) System(ctx context.Context) (gen.SystemQuery, error) {
 	return gen.SystemQuery{
-		Version: version.GitTag,
+		Version:  version.GitTag,
+		Download: r.servarrConfig.Prowlarr.ApiKey != "private" || r.servarrConfig.Radarr.ApiKey != "private" || r.servarrConfig.Sonarr.ApiKey != "private",
 	}, nil
 }
 
