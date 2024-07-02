@@ -34,6 +34,11 @@ func New(p Params) Result {
 				if err := json.Unmarshal([]byte(job.Payload), msg); err != nil {
 					return err
 				}
+				if job.Priority == 5 && msg.ClassifierFlags != nil {
+					if _, ok := msg.ClassifierFlags["local_search_enabled"]; !ok {
+						msg.ClassifierFlags["local_search_enabled"] = false
+					}
+				}
 				return pr.Process(ctx, *msg)
 			}, handler.JobTimeout(time.Second*60*10), handler.Concurrency(int(p.Config.Concurrency))), nil
 		}),

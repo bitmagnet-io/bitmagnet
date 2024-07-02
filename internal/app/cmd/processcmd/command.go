@@ -39,6 +39,11 @@ func New(p Params) (Result, error) {
 				Value: false,
 				Usage: "disable API calls for the classifier workflow",
 			},
+			&cli.BoolFlag{
+				Name:  "localSearchDisabled",
+				Value: false,
+				Usage: "disable local search queries for the classifier workflow",
+			},
 		},
 		Action: func(ctx *cli.Context) error {
 			pr, err := p.Processor.Get()
@@ -52,6 +57,9 @@ func New(p Params) (Result, error) {
 			}
 			if ctx.Bool("apisDisabled") {
 				flags["apis_enabled"] = false
+			}
+			if ctx.Bool("localSearchDisabled") {
+				flags["local_search_enabled"] = false
 			}
 			var infoHashes []protocol.ID
 			for _, infoHash := range ctx.StringSlice("infoHash") {

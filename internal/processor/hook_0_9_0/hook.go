@@ -62,7 +62,8 @@ func execHook(d *dao.Query) error {
 		job, jobErr := batch.NewQueueJob(batch.MessageParams{
 			UpdatedBefore: time.Now(),
 			ClassifierFlags: classifier.Flags{
-				"apis_enabled": false,
+				"apis_enabled":         false,
+				"local_search_enabled": false,
 			},
 			ChunkSize: 10_000,
 			BatchSize: 100,
