@@ -44,7 +44,7 @@ type HealthCheck struct {
 	Error     *string      `json:"error,omitempty"`
 }
 
-type HealthQuery struct {
+type HealthQueryResult struct {
 	Status HealthStatus  `json:"status"`
 	Checks []HealthCheck `json:"checks"`
 }
@@ -191,7 +191,7 @@ type Worker struct {
 	Started bool   `json:"started"`
 }
 
-type WorkersQuery struct {
+type WorkersQueryResult struct {
 	All []Worker `json:"all"`
 }
 

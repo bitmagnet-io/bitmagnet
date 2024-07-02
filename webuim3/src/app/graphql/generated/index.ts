@@ -19,6 +19,7 @@ export type Scalars = {
   Float: { input: number; output: number; }
   Date: { input: string; output: string; }
   DateTime: { input: string; output: string; }
+  Duration: { input: string; output: string; }
   Hash20: { input: string; output: string; }
   Void: { input: void; output: void; }
   Year: { input: number; output: number; }
@@ -273,6 +274,7 @@ export type QueueMetricsBucket = {
   __typename?: 'QueueMetricsBucket';
   count: Scalars['Int']['output'];
   createdAtBucket: Scalars['DateTime']['output'];
+  latency?: Maybe<Scalars['Duration']['output']>;
   queue: Scalars['String']['output'];
   ranAtBucket?: Maybe<Scalars['DateTime']['output']>;
   status: QueueJobStatus;
@@ -691,6 +693,13 @@ export type HealthQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type HealthQuery = { __typename?: 'Query', health: { __typename?: 'HealthQueryResult', status: HealthStatus, checks: Array<{ __typename?: 'HealthCheck', key: string, status: HealthStatus, timestamp: string, error?: string | null }> }, workers: { __typename?: 'WorkersQueryResult', all: Array<{ __typename?: 'Worker', key: string, started: boolean }> } };
 
+export type QueueMetricsQueryVariables = Exact<{
+  input: QueueMetricsQueryInput;
+}>;
+
+
+export type QueueMetricsQuery = { __typename?: 'Query', queue: { __typename?: 'QueueQueryResult', metrics: Array<{ __typename?: 'QueueMetricsBucket', queue: string, status: QueueJobStatus, createdAtBucket: string, ranAtBucket?: string | null, count: number, latency?: string | null }> } };
+
 export type TorrentContentSearchQueryVariables = Exact<{
   query: TorrentContentSearchQueryInput;
 }>;
@@ -999,6 +1008,31 @@ export const HealthDocument = gql`
   })
   export class HealthGQL extends Apollo.Query<HealthQuery, HealthQueryVariables> {
     override document = HealthDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const QueueMetricsDocument = gql`
+    query QueueMetrics($input: QueueMetricsQueryInput!) {
+  queue {
+    metrics(input: $input) {
+      queue
+      status
+      createdAtBucket
+      ranAtBucket
+      count
+      latency
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class QueueMetricsGQL extends Apollo.Query<QueueMetricsQuery, QueueMetricsQueryVariables> {
+    override document = QueueMetricsDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

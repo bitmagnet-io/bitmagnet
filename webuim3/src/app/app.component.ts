@@ -35,6 +35,10 @@ export class AppComponent {
       .addSvgIcon(
         'binary',
         domSanitizer.bypassSecurityTrustResourceUrl('binary.svg'),
+      )
+      .addSvgIcon(
+        'queue',
+        domSanitizer.bypassSecurityTrustResourceUrl('queue.svg'),
       );
     transloco.setActiveLang('en');
   }

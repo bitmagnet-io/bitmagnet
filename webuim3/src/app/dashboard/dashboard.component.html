@@ -3,6 +3,21 @@
     <mat-grid-tile [colspan]="1" [rowspan]="1">
       <app-health-card></app-health-card>
     </mat-grid-tile>
+    <mat-grid-tile [colspan]="1" [rowspan]="1">
+      <mat-card class="dashboard-card">
+        <mat-card-header>
+          <mat-card-title>
+            <h3>
+              <mat-icon svgIcon="queue" />
+              Queue
+            </h3>
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <app-queue-chart />
+        </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
     @for (card of cards | async; track card) {
       <mat-grid-tile [colspan]="card.cols" [rowspan]="card.rows">
         <mat-card class="dashboard-card">

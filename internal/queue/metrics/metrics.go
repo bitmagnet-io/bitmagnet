@@ -18,6 +18,7 @@ type Bucket struct {
 	CreatedAtBucket time.Time
 	RanAtBucket     time.Time
 	Count           uint
+	Latency         *time.Duration
 }
 
 type Request struct {
@@ -60,11 +61,11 @@ func (c client) Request(ctx context.Context, req Request) ([]Bucket, error) {
 		conditions = append(conditions, "ran_at <= ?")
 		params = append(params, req.RanTo)
 	}
-	if len(req.Queues) > 0 {
+	if req.Queues != nil {
 		conditions = append(conditions, "queue IN ?")
 		params = append(params, req.Queues)
 	}
-	if len(req.Statuses) > 0 {
+	if req.Statuses != nil {
 		conditions = append(conditions, "status IN ?")
 		params = append(params, req.Statuses)
 	}
@@ -72,20 +73,51 @@ func (c client) Request(ctx context.Context, req Request) ([]Bucket, error) {
 	if len(conditions) > 0 {
 		conditionClause = "WHERE (" + strings.Join(conditions, " AND ") + ")"
 	}
-	var results []Bucket
+	var rawResult []rawBucket
 	if err := c.db.WithContext(ctx).Raw(`select queue,
-       status,
-       date_trunc(?, created_at) as created_at_bucket,
-       date_trunc(?, ran_at) as ran_at_bucket,
-       count(*) as count from queue_jobs
+        status,
+        date_trunc(?, created_at) as created_at_bucket,
+        date_trunc(?, ran_at) as ran_at_bucket,
+        count(*) as count,
+        avg(ran_at-created_at) as latency
+        from queue_jobs
        `+
 		conditionClause+
 		`
     group by queue, status, created_at_bucket, ran_at_bucket
     order by queue, status, created_at_bucket, ran_at_bucket`,
 		params...,
-	).Scan(&results).Error; err != nil {
+	).Scan(&rawResult).Error; err != nil {
 		return nil, err
 	}
-	return results, nil
+	result := make([]Bucket, len(rawResult))
+	for i, raw := range rawResult {
+		result[i] = raw.bucket()
+	}
+	return result, nil
+}
+
+type rawBucket struct {
+	Queue           string
+	Status          model.QueueJobStatus
+	CreatedAtBucket time.Time
+	RanAtBucket     time.Time
+	Count           uint
+	Latency         model.Duration
+}
+
+func (b rawBucket) bucket() Bucket {
+	var latency *time.Duration
+	if b.Latency > 0 {
+		l := time.Duration(b.Latency)
+		latency = &l
+	}
+	return Bucket{
+		Queue:           b.Queue,
+		Status:          b.Status,
+		CreatedAtBucket: b.CreatedAtBucket,
+		RanAtBucket:     b.RanAtBucket,
+		Count:           b.Count,
+		Latency:         latency,
+	}
 }

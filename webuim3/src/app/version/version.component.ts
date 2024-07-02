@@ -2,7 +2,6 @@ import {Component, inject, OnInit} from '@angular/core';
 import { MatTooltip } from '@angular/material/tooltip';
 import { TranslocoDirective } from '@jsverse/transloco';
 import * as generated from '../graphql/generated';
-import { GraphQLService } from '../graphql/graphql.service';
 import { GraphQLModule } from '../graphql/graphql.module';
 import {Apollo} from "apollo-angular";
 import {map} from "rxjs";

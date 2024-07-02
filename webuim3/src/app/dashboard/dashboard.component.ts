@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { HealthCardComponent } from '../health/health-card.component';
 import { HealthModule } from '../health/health.module';
+import {QueueChartComponent} from "../queue/queue-chart.component";
 
 @Component({
   selector: 'app-dashboard',
@@ -23,6 +24,7 @@ import { HealthModule } from '../health/health.module';
     MatButtonModule,
     MatCardModule,
     HealthModule,
+    QueueChartComponent,
   ],
 })
 export class DashboardComponent {

@@ -28,6 +28,7 @@ const config: CodegenConfig = {
         scalars: {
           Date: 'string',
           DateTime: 'string',
+          Duration: 'string',
           Hash20: 'string',
           Void: 'void',
           Year: 'number',

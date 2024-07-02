@@ -110,6 +110,9 @@ models:
   DateTime:
     model:
       - github.com/99designs/gqlgen/graphql.Time
+  Duration:
+    model:
+      - github.com/99designs/gqlgen/graphql.Duration
   Hash20:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/protocol.ID

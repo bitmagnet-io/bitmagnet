@@ -78,6 +78,7 @@ type QueueMetricsBucket {
   createdAtBucket: DateTime!
   ranAtBucket: DateTime
   count: Int!
+  latency: Duration
 }
 
 input QueueMetricsQueryInput {

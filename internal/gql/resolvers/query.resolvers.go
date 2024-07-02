@@ -21,7 +21,7 @@ func (r *queryResolver) Version(ctx context.Context) (string, error) {
 }
 
 // Workers is the resolver for the workers field.
-func (r *queryResolver) Workers(ctx context.Context) (gen.WorkersQuery, error) {
+func (r *queryResolver) Workers(ctx context.Context) (gen.WorkersQueryResult, error) {
 	var workers []gen.Worker
 	for _, w := range r.Resolver.Workers.Workers() {
 		workers = append(workers, gen.Worker{
@@ -29,13 +29,13 @@ func (r *queryResolver) Workers(ctx context.Context) (gen.WorkersQuery, error) {
 			Started: w.Started(),
 		})
 	}
-	return gen.WorkersQuery{
+	return gen.WorkersQueryResult{
 		All: workers,
 	}, nil
 }
 
 // Health is the resolver for the health field.
-func (r *queryResolver) Health(ctx context.Context) (gen.HealthQuery, error) {
+func (r *queryResolver) Health(ctx context.Context) (gen.HealthQueryResult, error) {
 	transformHealthCheckStatus := func(s health.AvailabilityStatus) gen.HealthStatus {
 		switch s {
 		case health.StatusInactive:
@@ -66,7 +66,7 @@ func (r *queryResolver) Health(ctx context.Context) (gen.HealthQuery, error) {
 	sort.Slice(checks, func(i, j int) bool {
 		return checks[i].Key < checks[j].Key
 	})
-	result := gen.HealthQuery{
+	result := gen.HealthQueryResult{
 		Status: transformHealthCheckStatus(check.Status),
 		Checks: checks,
 	}
@@ -74,8 +74,8 @@ func (r *queryResolver) Health(ctx context.Context) (gen.HealthQuery, error) {
 }
 
 // Queue is the resolver for the queue field.
-func (r *queryResolver) Queue(ctx context.Context) (gqlmodel.QueueQuery, error) {
-	return gqlmodel.QueueQuery{QueueMetricsClient: r.QueueMetricsClient}, nil
+func (r *queryResolver) Queue(ctx context.Context) (gqlmodel.QueueQueryResult, error) {
+	return gqlmodel.QueueQueryResult{QueueMetricsClient: r.QueueMetricsClient}, nil
 }
 
 // Torrent is the resolver for the torrent field.

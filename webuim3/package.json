@@ -36,8 +36,11 @@
     "@fontsource/roboto": "^5.0.13",
     "@jsverse/transloco": "^7.4.2",
     "apollo-angular": "^7.0.2",
+    "chart.js": "^4.3.0",
     "filesize": "^10.1.2",
     "graphql": "^16.8.1",
+    "iso8601-duration": "^2.1.2",
+    "ng2-charts": "^6.0.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.3"

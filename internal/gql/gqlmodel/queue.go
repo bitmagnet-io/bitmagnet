@@ -7,11 +7,11 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/metrics"
 )
 
-type QueueQuery struct {
+type QueueQueryResult struct {
 	QueueMetricsClient metrics.Client
 }
 
-func (q QueueQuery) Metrics(ctx context.Context, input gen.QueueMetricsQueryInput) ([]metrics.Bucket, error) {
+func (q QueueQueryResult) Metrics(ctx context.Context, input gen.QueueMetricsQueryInput) ([]metrics.Bucket, error) {
 	req := metrics.Request{}
 	switch input.BucketDuration {
 	case gen.QueueMetricsBucketDurationMinute:
