@@ -38,14 +38,14 @@ export class GraphQLService {
   }
 
   servarrDownload(
-    input: generated.ServarrDownloadMutationVariables,
+    input: generated.ClientDownloadMutationVariables,
   ): Observable<void> {
     return this.apollo
       .mutate<
-        generated.ServarrDownloadMutation,
-        generated.ServarrDownloadMutationVariables
+        generated.ClientDownloadMutation,
+        generated.ClientDownloadMutationVariables
       >({
-        mutation: generated.ServarrDownloadDocument,
+        mutation: generated.ClientDownloadDocument,
         variables: input,
         fetchPolicy,
       })

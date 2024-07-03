@@ -1,5 +1,0 @@
-mutation ServarrDownload($infoHashes: [Hash20!]!) {
-  servarr {
-    download(infoHashes: $infoHashes)
-  }
-}

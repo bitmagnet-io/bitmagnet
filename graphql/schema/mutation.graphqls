@@ -1,6 +1,6 @@
 type Mutation {
   torrent: TorrentMutation!
-  servarr: ServarrMutation!
+  client: ClientMutation!
 }
 
 type TorrentMutation {
@@ -10,6 +10,6 @@ type TorrentMutation {
   deleteTags(infoHashes: [Hash20!], tagNames: [String!]): Void
 }
 
-type ServarrMutation {
+type ClientMutation {
   download(infoHashes: [Hash20!]): Void
 }

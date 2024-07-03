@@ -24,6 +24,16 @@ export type Scalars = {
   Year: { input: number; output: number; }
 };
 
+export type ClientMutation = {
+  __typename?: 'ClientMutation';
+  download?: Maybe<Scalars['Void']['output']>;
+};
+
+
+export type ClientMutationDownloadArgs = {
+  infoHashes?: InputMaybe<Array<Scalars['Hash20']['input']>>;
+};
+
 export type Content = {
   __typename?: 'Content';
   adult?: Maybe<Scalars['Boolean']['output']>;
@@ -230,7 +240,7 @@ export type MetadataSource = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  servarr: ServarrMutation;
+  client: ClientMutation;
   torrent: TorrentMutation;
 };
 
@@ -269,16 +279,6 @@ export type Season = {
   __typename?: 'Season';
   episodes?: Maybe<Array<Scalars['Int']['output']>>;
   season: Scalars['Int']['output'];
-};
-
-export type ServarrMutation = {
-  __typename?: 'ServarrMutation';
-  download?: Maybe<Scalars['Void']['output']>;
-};
-
-
-export type ServarrMutationDownloadArgs = {
-  infoHashes?: InputMaybe<Array<Scalars['Hash20']['input']>>;
 };
 
 export type SuggestTagsQueryInput = {
@@ -596,12 +596,12 @@ export type TorrentContentSearchResultFragment = { __typename?: 'TorrentContentS
 
 export type TorrentFileFragment = { __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string };
 
-export type ServarrDownloadMutationVariables = Exact<{
+export type ClientDownloadMutationVariables = Exact<{
   infoHashes: Array<Scalars['Hash20']['input']> | Scalars['Hash20']['input'];
 }>;
 
 
-export type ServarrDownloadMutation = { __typename?: 'Mutation', servarr: { __typename?: 'ServarrMutation', download?: void | null } };
+export type ClientDownloadMutation = { __typename?: 'Mutation', client: { __typename?: 'ClientMutation', download?: void | null } };
 
 export type TorrentDeleteMutationVariables = Exact<{
   infoHashes: Array<Scalars['Hash20']['input']> | Scalars['Hash20']['input'];
@@ -847,9 +847,9 @@ export const TorrentContentSearchResultFragmentDoc = gql`
   }
 }
     ${TorrentContentFragmentDoc}`;
-export const ServarrDownloadDocument = gql`
-    mutation ServarrDownload($infoHashes: [Hash20!]!) {
-  servarr {
+export const ClientDownloadDocument = gql`
+    mutation ClientDownload($infoHashes: [Hash20!]!) {
+  client {
     download(infoHashes: $infoHashes)
   }
 }
@@ -858,8 +858,8 @@ export const ServarrDownloadDocument = gql`
   @Injectable({
     providedIn: 'root'
   })
-  export class ServarrDownloadGQL extends Apollo.Mutation<ServarrDownloadMutation, ServarrDownloadMutationVariables> {
-    override document = ServarrDownloadDocument;
+  export class ClientDownloadGQL extends Apollo.Mutation<ClientDownloadMutation, ClientDownloadMutationVariables> {
+    override document = ClientDownloadDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
