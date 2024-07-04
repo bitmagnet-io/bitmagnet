@@ -17,7 +17,6 @@ func TorrentContentTypeFacet(options ...query.FacetOption) query.Facet {
 					query.FacetHasKey(TorrentContentTypeFacetKey),
 					query.FacetHasLabel("Content Type"),
 					query.FacetUsesOrLogic(),
-					query.FacetTriggersCte(),
 				}, options...)...,
 			),
 			field: func(q *dao.Query) field.Field {
