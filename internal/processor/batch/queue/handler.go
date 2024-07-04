@@ -72,7 +72,7 @@ func New(p Params) Result {
 				priority := 10
 				// prioritise jobs where API calls are disabled as they will run faster:
 				if msg.ApisDisabled() {
-					priority = 5
+					priority = 4
 				}
 				maxInfoHash := msg.InfoHashGreaterThan
 				chunkSize := uint(0)

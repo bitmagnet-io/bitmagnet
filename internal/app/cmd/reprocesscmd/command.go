@@ -66,6 +66,11 @@ func New(p Params) (Result, error) {
 				Value: false,
 				Usage: "disable API calls for the classifier workflow",
 			},
+			&cli.BoolFlag{
+				Name:  "localSearchDisabled",
+				Value: false,
+				Usage: "disable local search queries for the classifier workflow",
+			},
 		},
 		Action: func(ctx *cli.Context) error {
 			var classifyMode processor.ClassifyMode
@@ -84,6 +89,9 @@ func New(p Params) (Result, error) {
 			}
 			if ctx.Bool("apisDisabled") {
 				flags["apis_enabled"] = false
+			}
+			if ctx.Bool("localSearchDisabled") {
+				flags["local_search_enabled"] = false
 			}
 			var contentTypes []model.NullContentType
 			for _, contentType := range ctx.StringSlice("contentType") {

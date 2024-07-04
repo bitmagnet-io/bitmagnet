@@ -89,7 +89,10 @@ workflows:
         condition: "!result.hasAttachedContent && result.hasBaseTitle"
         if_action:
           find_match:
-            - attach_local_content_by_search
+            - if_else:
+                condition: "flags.local_search_enabled"
+                if_action: attach_local_content_by_search
+                else_action: unmatched
             - if_else:
                 condition: "flags.apis_enabled && flags.tmdb_enabled"
                 if_action: attach_tmdb_content_by_search
@@ -226,11 +229,13 @@ keywords:
     - yvm
     - (#|10|11|12|13|14|15|16|17) ?y ?o
 flag_definitions:
+  local_search_enabled: bool
   apis_enabled: bool
   tmdb_enabled: bool
   delete_content_types: content_type_list
   delete_xxx: bool
 flags:
+  local_search_enabled: true
   apis_enabled: true
   tmdb_enabled: true
   delete_content_types: []
