@@ -717,13 +717,10 @@ func (b optionBuilder) shouldTryCteStrategy() bool {
 	if !b.limit.Valid || len(b.orderBy) == 0 {
 		return false
 	}
-	if b.tsquery != "" {
-		return true
-	}
 	for _, f := range b.facets {
 		if f.TriggersCte() && len(f.Filter()) > 0 {
 			return true
 		}
 	}
-	return false
+	return b.tsquery != "" && (len(b.orderBy) != 1 || b.orderBy[0].Column.Name != QueryStringRankField || !b.orderBy[0].Desc)
 }
