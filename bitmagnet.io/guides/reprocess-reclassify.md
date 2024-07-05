@@ -25,6 +25,7 @@ The `reprocess` command will re-queue torrents to allow the latest updates to be
 To reprocess all torrents in your index, simply run `bitmagnet reprocess`. If you've indexed a lot of torrents, this will take a while, so there are a few options available to control exactly what gets reprocessed:
 
 - `apisDisabled`: Disable API calls during classification. This makes the classifier run a _lot_ faster, but disables identification with external services such as TMDB (metadata already gathered from external APIs is not lost).
+- `localSearchDisabled`: Disable the local search query on the content table for matching torrents to known content. This should be tried before any external API call is attempted, but it's an expensive query and so it's useful to be able to disable it using this flag.
 - `contentType`: Only reprocess torrents of a certain content type. For example, `bitmagnet reprocess --contentType movie` will only reprocess movies. Multiple content types can be comma separated, and `null` refers to torrents of unknown content type.
 - `orphans`: Only reprocess torrents that have no content record.
 - `classifyMode`: This controls how already matched torrents are handled.
