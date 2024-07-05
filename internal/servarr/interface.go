@@ -1,8 +1,18 @@
 package servarr
 
+type IndexerBulkResource struct {
+	Ids                     []*int64 `json:"ids,omitempty"`
+	EnableRss               *bool    `json:"enableRss,omitempty"`
+	EnableAutomaticSearch   *bool    `json:"enableAutomaticSearch,omitempty"`
+	EnableInteractiveSearch *bool    `json:"enableInteractiveSearch,omitempty"`
+}
+
 type IndexerResource struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name,omitempty"`
+	ID                      int64  `json:"id"`
+	Name                    string `json:"name,omitempty"`
+	EnableRss               bool   `json:"enableRss"`
+	EnableAutomaticSearch   bool   `json:"enableAutomaticSearch"`
+	EnableInteractiveSearch bool   `json:"enableInteractiveSearch"`
 }
 
 type SeriesResource struct {

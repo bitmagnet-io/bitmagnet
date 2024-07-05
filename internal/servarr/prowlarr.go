@@ -24,13 +24,14 @@ func (prowlarr Prowlarr) SearchQueryParam() (map[string]string, error) {
 func NewProwlarr(content *gqlmodel.TorrentContent, config *Config, ctx context.Context) *servarrDownload {
 	if config.Prowlarr.ApiKey != "private" {
 		dl := &servarrDownload{
-			ctx:            ctx,
-			config:         config,
-			content:        content,
-			api:            config.Prowlarr,
-			searchEndpoint: "search",
-			apiVersion:     "v1",
-			indexerName:    config.IndexerName,
+			ctx:                 ctx,
+			config:              config,
+			content:             content,
+			api:                 config.Prowlarr,
+			searchEndpoint:      "search",
+			apiVersion:          "v1",
+			onlySearchBitmagnet: false,
+			indexerName:         config.IndexerName,
 		}
 		dl.arr = Prowlarr{download: dl}
 		return dl

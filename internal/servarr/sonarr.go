@@ -22,10 +22,10 @@ func (sonarr Sonarr) SearchQueryParam() (map[string]string, error) {
 	var series []SeriesResource
 	resp, err := sonarr.download.resty(&series).SetQueryParam("tvdbId",
 		sonarr.download.content.Content.Attributes[i].Value).Get(sonarr.download.url("series"))
-	if err != nil {
-		return nil, err
+	if err != nil || resp.IsError() {
+		return nil, sonarr.download.fmtErr("get series", resp, err)
 	} else if len(series) != 1 {
-		return nil, sonarr.download.fmtErr("series not found", resp)
+		return nil, sonarr.download.fmtErr("series not found", resp, nil)
 	}
 
 	qp := map[string]string{
@@ -34,15 +34,15 @@ func (sonarr Sonarr) SearchQueryParam() (map[string]string, error) {
 	}
 	var episodes []EpisodeResource
 	resp, err = sonarr.download.resty(&episodes).SetQueryParams(qp).Get(sonarr.download.url("episode"))
-	if err != nil {
-		return nil, err
+	if err != nil || resp.IsError() {
+		return nil, sonarr.download.fmtErr("get episode", resp, err)
 	}
 	i = slices.IndexFunc(episodes, func(e EpisodeResource) bool {
 		return e.SeasonNumber == int64(sonarr.download.content.Episodes.Seasons[0].Season) &&
 			e.EpisodeNumber == int64(sonarr.download.content.Episodes.Seasons[0].Episodes[0])
 	})
 	if i == -1 {
-		return nil, sonarr.download.fmtErr("episode not found", resp)
+		return nil, sonarr.download.fmtErr("episode not found", resp, nil)
 	}
 
 	qp["episodeId"] = fmt.Sprint(episodes[i].ID)
@@ -56,13 +56,14 @@ func NewSonarr(content *gqlmodel.TorrentContent, config *Config, ctx context.Con
 		len(content.Episodes.Seasons[0].Episodes) == 1 &&
 		config.Sonarr.ApiKey != "private" {
 		dl := &servarrDownload{
-			ctx:            ctx,
-			config:         config,
-			content:        content,
-			api:            config.Sonarr,
-			searchEndpoint: "release",
-			apiVersion:     "v3",
-			indexerName:    fmt.Sprintf("%s (Prowlarr)", config.IndexerName),
+			ctx:                 ctx,
+			config:              config,
+			content:             content,
+			api:                 config.Sonarr,
+			searchEndpoint:      "release",
+			apiVersion:          "v3",
+			onlySearchBitmagnet: config.OnlySearchBitmagnet,
+			indexerName:         fmt.Sprintf("%s (Prowlarr)", config.IndexerName),
 		}
 		dl.arr = Sonarr{download: dl}
 		return dl

@@ -24,16 +24,6 @@ export type Scalars = {
   Year: { input: number; output: number; }
 };
 
-export type ClientMutation = {
-  __typename?: 'ClientMutation';
-  download?: Maybe<Scalars['Void']['output']>;
-};
-
-
-export type ClientMutationDownloadArgs = {
-  infoHashes?: InputMaybe<Array<Scalars['Hash20']['input']>>;
-};
-
 export type Content = {
   __typename?: 'Content';
   adult?: Maybe<Scalars['Boolean']['output']>;
@@ -240,7 +230,6 @@ export type MetadataSource = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  client: ClientMutation;
   torrent: TorrentMutation;
 };
 
@@ -294,7 +283,6 @@ export type SuggestedTag = {
 
 export type SystemQuery = {
   __typename?: 'SystemQuery';
-  download: Scalars['Boolean']['output'];
   version: Scalars['String']['output'];
 };
 
@@ -596,13 +584,6 @@ export type TorrentContentSearchResultFragment = { __typename?: 'TorrentContentS
 
 export type TorrentFileFragment = { __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string };
 
-export type ClientDownloadMutationVariables = Exact<{
-  infoHashes: Array<Scalars['Hash20']['input']> | Scalars['Hash20']['input'];
-}>;
-
-
-export type ClientDownloadMutation = { __typename?: 'Mutation', client: { __typename?: 'ClientMutation', download?: void | null } };
-
 export type TorrentDeleteMutationVariables = Exact<{
   infoHashes: Array<Scalars['Hash20']['input']> | Scalars['Hash20']['input'];
 }>;
@@ -637,7 +618,7 @@ export type TorrentSetTagsMutation = { __typename?: 'Mutation', torrent: { __typ
 export type SystemQueryQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type SystemQueryQuery = { __typename?: 'Query', system: { __typename?: 'SystemQuery', version: string, download: boolean } };
+export type SystemQueryQuery = { __typename?: 'Query', system: { __typename?: 'SystemQuery', version: string } };
 
 export type TorrentContentSearchQueryVariables = Exact<{
   query?: InputMaybe<SearchQueryInput>;
@@ -847,24 +828,6 @@ export const TorrentContentSearchResultFragmentDoc = gql`
   }
 }
     ${TorrentContentFragmentDoc}`;
-export const ClientDownloadDocument = gql`
-    mutation ClientDownload($infoHashes: [Hash20!]!) {
-  client {
-    download(infoHashes: $infoHashes)
-  }
-}
-    `;
-
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class ClientDownloadGQL extends Apollo.Mutation<ClientDownloadMutation, ClientDownloadMutationVariables> {
-    override document = ClientDownloadDocument;
-    
-    constructor(apollo: Apollo.Apollo) {
-      super(apollo);
-    }
-  }
 export const TorrentDeleteDocument = gql`
     mutation TorrentDelete($infoHashes: [Hash20!]!) {
   torrent {
@@ -941,7 +904,6 @@ export const SystemQueryDocument = gql`
     query SystemQuery {
   system {
     version
-    download
   }
 }
     `;

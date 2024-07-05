@@ -23,6 +23,7 @@ func (r *clientMutationResolver) Download(ctx context.Context, obj *gqlmodel.Cli
 	return nil, runner(&servarr.ServarrClient{
 		Search: &r.search,
 		Config: &r.servarrConfig,
+		Logger: r.logger,
 	})
 }
 
