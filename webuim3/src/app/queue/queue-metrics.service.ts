@@ -10,17 +10,41 @@ export type Params = {
 
 type StatusCounts = Record<generated.QueueJobStatus, number>
 
+const emptyStatusCounts: StatusCounts = {
+  pending: 0,
+  failed: 0,
+  retry: 0,
+  processed: 0,
+}
+
 type Event = "created" | "processed" | "failed"
 
-type EventBucket = {
+type EventBucketEntry = {
   count: number,
-  latency?: number,
+  totalLatency: number,
+}
+
+type EventBucketEntries = Partial<Record<string, EventBucketEntry>>
+
+type EventBucket = {
+  earliestBucket: string;
+  latestBucket: string;
+  entries: EventBucketEntries
+};
+
+type EventBuckets = Partial<Record<Event, EventBucket>>
+
+type QueueEvents = {
+  bucketDuration: generated.QueueMetricsBucketDuration
+  earliestBucket: string;
+  latestBucket: string;
+  eventBuckets: EventBuckets;
 }
 
 type QueueSummary = {
   queue: string
   statusCounts: StatusCounts
-  eventBuckets: Record<Event, Record<string, EventBucket>>
+  events?: QueueEvents
 }
 
 export type Result = {
@@ -42,72 +66,88 @@ export class QueueMetricsService {
       }
     }).pipe(
       map((r): QueueSummary[] =>
-        Object.values(r.data.queue.metrics.reduce<Record<string, QueueSummary>>(
+        Object.entries(r.data.queue.metrics.reduce<Record<string, [StatusCounts, Partial<Record<Event, EventBucketEntries>>]>>(
           (acc, next) => {
-            const current = acc[next.queue] ?? {
-              queue: next.queue,
-              statusCounts: {
-                pending: 0,
-                failed: 0,
-                retry: 0,
-                processed: 0,
-              },
-              eventBuckets: {
-                created: {},
-                processed: {},
-                failed: {},
-              }
-            }
-            const currentBucket: Record<Event, EventBucket> = {
+            const [currentStatusCounts, currentEventBuckets ] = acc[next.queue] ?? [
+              emptyStatusCounts,
+              []
+            ]
+            const currentLatency = next.latency ? toSeconds(parseDuration(next.latency)) : undefined
+            const currentBucket: Record<Event, EventBucketEntry> = {
               created: {
-                count: current.eventBuckets.created[next.createdAtBucket]?.count ?? 0,
+                count: next.count + (currentEventBuckets.created?.[next.createdAtBucket]?.count ?? 0),
+                totalLatency: 0,
               },
               processed: next.ranAtBucket ? {
-                count: current.eventBuckets.processed[next.ranAtBucket]?.count ?? 0,
-                latency: current.eventBuckets.processed[next.ranAtBucket]?.latency,
-              } : { count: 0 },
+                count: next.count + (currentEventBuckets.processed?.[next.ranAtBucket]?.count ?? 0),
+                totalLatency: (currentEventBuckets.processed?.[next.ranAtBucket]?.totalLatency ?? 0) + (currentLatency ?? 0),
+              } : { count: 0, totalLatency: 0 },
               failed: next.ranAtBucket ? {
-                count: current.eventBuckets.failed[next.ranAtBucket]?.count ?? 0,
-                latency: current.eventBuckets.failed[next.ranAtBucket]?.latency,
-              } : { count: 0 },
+                count: next.count + (currentEventBuckets.failed?.[next.ranAtBucket]?.count ?? 0),
+                totalLatency: (currentEventBuckets.failed?.[next.ranAtBucket]?.totalLatency ?? 0) + (currentLatency ?? 0),
+              } : { count: 0, totalLatency: 0 },
             }
-            const nextLatency = next.latency ? toSeconds(parseDuration(next.latency)) : undefined
             return {
               ...acc,
-              [next.queue]: {
-                queue: next.queue,
-                statusCounts: {
-                  ...current.statusCounts,
-                  [next.status]: next.count + current.statusCounts[next.status],
+              [next.queue]: [{
+                ...currentStatusCounts,
+                [next.status]: next.count + currentStatusCounts[next.status],
+              },  {
+                created: {
+                  ...currentEventBuckets.created,
+                  [next.createdAtBucket]: currentBucket.created
                 },
-                eventBuckets: {
-                  created: {
-                    ...current.eventBuckets.created,
-                    [next.createdAtBucket]: {
-                      count: next.count + currentBucket.created.count,
-                    }
-                  },
-                  processed: (next.ranAtBucket && next.status === "processed") ? {
-                    ...current.eventBuckets.processed,
-                    [next.ranAtBucket]: {
-                      count: next.count + currentBucket.processed.count,
-                      latency: (((nextLatency ?? 0) * next.count) + ((currentBucket.processed.latency ?? 0) * currentBucket.processed.count)) / (next.count + currentBucket.processed.count)
-                    },
-                  } : current.eventBuckets.processed,
-                  failed: (next.ranAtBucket && next.status === "failed") ? {
-                    ...current.eventBuckets.failed,
-                    [next.ranAtBucket]: {
-                      count: next.count + currentBucket.failed.count,
-                      latency: (((nextLatency ?? 0) * next.count) + ((currentBucket.failed.latency ?? 0) * currentBucket.failed.count)) / (next.count + currentBucket.failed.count)
-                    },
-                  } : current.eventBuckets.failed
-                }
-              } as QueueSummary
-            }
+                processed: (next.ranAtBucket && next.status === "processed") ? {
+                  ...currentEventBuckets.processed,
+                  [next.ranAtBucket]: currentBucket.processed
+                } : currentEventBuckets.processed,
+                failed: (next.ranAtBucket && next.status === "failed") ? {
+                  ...currentEventBuckets.failed,
+                  [next.ranAtBucket]: currentBucket.failed
+                } : currentEventBuckets.failed
+              }]
+            };
           },
           {}
-        ))
+        )).map(([queue, [statusCounts, eventBuckets]]) => {
+          let events: QueueEvents | undefined;
+          // const bucketKeys = Object.keys(eventBuckets).sort()
+          if (Object.keys(eventBuckets).length) {
+            const bucketDates = Array<string>()
+            const buckets: EventBuckets = fromEntries(Array<Event>("created", "processed", "failed").flatMap<[Event, EventBucket]>((event): [Event, EventBucket][] => {
+              const entries = fromEntries(
+                Object.entries(eventBuckets[event] ?? {}).filter(([, v]) => v?.count).sort(([a], [b]) => a < b ? 1 : -1),
+              )
+              const keys = Object.keys(entries)
+              if (!keys.length) {
+                return [];
+              }
+              const earliestBucket = keys[0];
+              const latestBucket = keys[keys.length - 1];
+              bucketDates.push(earliestBucket, latestBucket)
+              return [[event, {
+                earliestBucket,
+                latestBucket,
+                entries
+              }]]
+            }));
+            bucketDates.sort()
+            events = {
+              bucketDuration: params.bucketDuration,
+              earliestBucket: bucketDates[0],
+              latestBucket: bucketDates[bucketDates.length - 1],
+              eventBuckets: buckets,
+            }
+          }
+          return {
+            queue,
+            statusCounts,
+            events,
+          }
+        })
       )
     )
   }
 }
+
+const fromEntries = <K extends string, V>(entries: Array<[K, V]>): Partial<Record<K, V>>  => Object.fromEntries(entries) as Partial<Record<K, V>>

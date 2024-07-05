@@ -23,7 +23,7 @@ export class QueueChartComponent {
     scales: {
       x: {},
       y: {
-        min: 10,
+        // min: 10,
       },
     },
     plugins: {
