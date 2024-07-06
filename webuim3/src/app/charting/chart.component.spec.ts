@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { QueueChartComponent } from './queue-chart.component';
+import { ChartComponent } from './chart.component';
 
 describe('QueueComponent', () => {
-  let component: QueueChartComponent;
-  let fixture: ComponentFixture<QueueChartComponent>;
+  let component: ChartComponent;
+  let fixture: ComponentFixture<ChartComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [QueueChartComponent]
+      imports: [ChartComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(QueueChartComponent);
+    fixture = TestBed.createComponent(ChartComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

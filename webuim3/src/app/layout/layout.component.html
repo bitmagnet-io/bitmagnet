@@ -29,6 +29,16 @@
           <mat-icon>toc</mat-icon>
           {{ t("routes.torrents") }}
         </a>
+        <a
+          mat-button
+          routerLink="queue"
+          #linkQueue="routerLinkActive"
+          routerLinkActive
+          [class]="linkQueue.isActive ? 'active' : ''"
+        >
+          <mat-icon svgIcon="queue" />
+          Queue
+        </a>
       </nav>
     } @else {
       <h1>
@@ -55,6 +65,16 @@
         [matTooltip]="t('routes.torrents')"
       >
         <mat-icon>toc</mat-icon>
+      </button>
+      <button
+        mat-icon-button
+        routerLink="queue"
+        #linkQueue="routerLinkActive"
+        routerLinkActive
+        [class]="linkQueue.isActive ? 'active' : ''"
+        [matTooltip]="'Queue'"
+      >
+        <mat-icon svgIcon="queue" />
       </button>
     }
     <span class="spacer"></span>

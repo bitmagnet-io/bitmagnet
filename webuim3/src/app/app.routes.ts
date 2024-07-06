@@ -29,4 +29,12 @@ export const routes: Routes = [
         (c) => c.TorrentPermalinkComponent,
       ),
   },
+  {
+    path: 'queue',
+    loadComponent: () =>
+      import('./queue/queue-card.component').then(
+        (c) => c.QueueCardComponent,
+      ),
+    title: 'torrents',
+  },
 ];

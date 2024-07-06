@@ -2166,10 +2166,8 @@ input QueueMetricsQueryInput {
   bucketDuration: QueueMetricsBucketDuration!
   statuses: [QueueJobStatus!]
   queues: [String!]
-  createdFrom: DateTime
-  createdTo: DateTime
-  ranFrom: DateTime
-  ranTo: DateTime
+  startTime: DateTime
+  endTime: DateTime
 }
 
 type QueueQueryResult {
@@ -12682,7 +12680,7 @@ func (ec *executionContext) unmarshalInputQueueMetricsQueryInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"bucketDuration", "statuses", "queues", "createdFrom", "createdTo", "ranFrom", "ranTo"}
+	fieldsInOrder := [...]string{"bucketDuration", "statuses", "queues", "startTime", "endTime"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -12710,34 +12708,20 @@ func (ec *executionContext) unmarshalInputQueueMetricsQueryInput(ctx context.Con
 				return it, err
 			}
 			it.Queues = graphql.OmittableOf(data)
-		case "createdFrom":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdFrom"))
+		case "startTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("startTime"))
 			data, err := ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.CreatedFrom = graphql.OmittableOf(data)
-		case "createdTo":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdTo"))
+			it.StartTime = graphql.OmittableOf(data)
+		case "endTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("endTime"))
 			data, err := ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.CreatedTo = graphql.OmittableOf(data)
-		case "ranFrom":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ranFrom"))
-			data, err := ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.RanFrom = graphql.OmittableOf(data)
-		case "ranTo":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ranTo"))
-			data, err := ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.RanTo = graphql.OmittableOf(data)
+			it.EndTime = graphql.OmittableOf(data)
 		}
 	}
 

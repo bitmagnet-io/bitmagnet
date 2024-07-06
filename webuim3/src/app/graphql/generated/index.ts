@@ -287,11 +287,9 @@ export type QueueMetricsBucketDuration =
 
 export type QueueMetricsQueryInput = {
   bucketDuration: QueueMetricsBucketDuration;
-  createdFrom?: InputMaybe<Scalars['DateTime']['input']>;
-  createdTo?: InputMaybe<Scalars['DateTime']['input']>;
+  endTime?: InputMaybe<Scalars['DateTime']['input']>;
   queues?: InputMaybe<Array<Scalars['String']['input']>>;
-  ranFrom?: InputMaybe<Scalars['DateTime']['input']>;
-  ranTo?: InputMaybe<Scalars['DateTime']['input']>;
+  startTime?: InputMaybe<Scalars['DateTime']['input']>;
   statuses?: InputMaybe<Array<QueueJobStatus>>;
 };
 

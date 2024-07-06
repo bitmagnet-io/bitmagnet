@@ -23,17 +23,11 @@ func (q QueueQueryResult) Metrics(ctx context.Context, input gen.QueueMetricsQue
 	default:
 		return nil, fmt.Errorf("invalid bucket duration: %s", input.BucketDuration)
 	}
-	if t, ok := input.CreatedFrom.ValueOK(); ok && !t.IsZero() {
-		req.CreatedFrom = *t
+	if t, ok := input.StartTime.ValueOK(); ok && !t.IsZero() {
+		req.StartTime = *t
 	}
-	if t, ok := input.CreatedTo.ValueOK(); ok && !t.IsZero() {
-		req.CreatedTo = *t
-	}
-	if t, ok := input.RanFrom.ValueOK(); ok && !t.IsZero() {
-		req.RanFrom = *t
-	}
-	if t, ok := input.RanTo.ValueOK(); ok && !t.IsZero() {
-		req.RanTo = *t
+	if t, ok := input.EndTime.ValueOK(); ok && !t.IsZero() {
+		req.EndTime = *t
 	}
 	if statuses, ok := input.Statuses.ValueOK(); ok {
 		req.Statuses = statuses

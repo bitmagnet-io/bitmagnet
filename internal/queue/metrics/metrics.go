@@ -25,10 +25,8 @@ type Request struct {
 	BucketDuration BucketDuration
 	Statuses       []model.QueueJobStatus
 	Queues         []string
-	CreatedFrom    time.Time
-	CreatedTo      time.Time
-	RanFrom        time.Time
-	RanTo          time.Time
+	StartTime      time.Time
+	EndTime        time.Time
 }
 
 type Client interface {
@@ -45,21 +43,15 @@ func (c client) Request(ctx context.Context, req Request) ([]Bucket, error) {
 		req.BucketDuration,
 	}
 	var conditions []string
-	if !req.CreatedFrom.IsZero() {
-		conditions = append(conditions, "created_at >= ?")
-		params = append(params, req.CreatedFrom)
+	if !req.StartTime.IsZero() {
+		conditions = append(conditions, "status != 'pending' OR created_at >= ?")
+		conditions = append(conditions, "status = 'pending' OR ran_at >= ?")
+		params = append(params, req.StartTime, req.StartTime)
 	}
-	if !req.CreatedTo.IsZero() {
-		conditions = append(conditions, "created_at <= ?")
-		params = append(params, req.CreatedTo)
-	}
-	if !req.RanFrom.IsZero() {
-		conditions = append(conditions, "ran_at >= ?")
-		params = append(params, req.RanFrom)
-	}
-	if !req.RanTo.IsZero() {
-		conditions = append(conditions, "ran_at <= ?")
-		params = append(params, req.RanTo)
+	if !req.EndTime.IsZero() {
+		conditions = append(conditions, "status != 'pending' OR created_at <= ?")
+		conditions = append(conditions, "status = 'pending' OR ran_at <= ?")
+		params = append(params, req.EndTime, req.EndTime)
 	}
 	if req.Queues != nil {
 		conditions = append(conditions, "queue IN ?")

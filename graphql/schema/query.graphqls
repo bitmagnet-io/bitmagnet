@@ -85,10 +85,8 @@ input QueueMetricsQueryInput {
   bucketDuration: QueueMetricsBucketDuration!
   statuses: [QueueJobStatus!]
   queues: [String!]
-  createdFrom: DateTime
-  createdTo: DateTime
-  ranFrom: DateTime
-  ranTo: DateTime
+  startTime: DateTime
+  endTime: DateTime
 }
 
 type QueueQueryResult {

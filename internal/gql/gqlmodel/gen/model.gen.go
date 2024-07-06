@@ -71,10 +71,8 @@ type QueueMetricsQueryInput struct {
 	BucketDuration QueueMetricsBucketDuration                `json:"bucketDuration"`
 	Statuses       graphql.Omittable[[]model.QueueJobStatus] `json:"statuses,omitempty"`
 	Queues         graphql.Omittable[[]string]               `json:"queues,omitempty"`
-	CreatedFrom    graphql.Omittable[*time.Time]             `json:"createdFrom,omitempty"`
-	CreatedTo      graphql.Omittable[*time.Time]             `json:"createdTo,omitempty"`
-	RanFrom        graphql.Omittable[*time.Time]             `json:"ranFrom,omitempty"`
-	RanTo          graphql.Omittable[*time.Time]             `json:"ranTo,omitempty"`
+	StartTime      graphql.Omittable[*time.Time]             `json:"startTime,omitempty"`
+	EndTime        graphql.Omittable[*time.Time]             `json:"endTime,omitempty"`
 }
 
 type ReleaseYearAgg struct {
