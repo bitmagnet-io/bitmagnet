@@ -1,0 +1,54 @@
+type QueueQueryResult {
+  metrics(input: QueueMetricsQueryInput!): [QueueMetricsBucket!]!
+}
+
+enum QueueJobStatus {
+  pending
+  retry
+  failed
+  processed
+}
+
+enum QueueMetricsBucketDuration {
+  minute
+  hour
+  day
+}
+
+type QueueMetricsBucket {
+  queue: String!
+  status: QueueJobStatus!
+  createdAtBucket: DateTime!
+  ranAtBucket: DateTime
+  count: Int!
+  latency: Duration
+}
+
+input QueueMetricsQueryInput {
+  bucketDuration: QueueMetricsBucketDuration!
+  statuses: [QueueJobStatus!]
+  queues: [String!]
+  startTime: DateTime
+  endTime: DateTime
+}
+
+type QueueMutation {
+  purgeJobs(input: QueuePurgeJobsInput!): Void
+  enqueueReprocessTorrentsBatch(input: QueueEnqueueReprocessTorrentsBatchInput): Void
+}
+
+input QueuePurgeJobsInput {
+  queues: [String!]
+  statuses: [QueueJobStatus!]
+}
+
+input QueueEnqueueReprocessTorrentsBatchInput {
+  batchSize: Int
+  chunkSize: Int
+  contentTypes: [ContentType]
+  orphans: Boolean
+  classifierRematch: Boolean
+  classifierWorkflow: String
+  apisDisabled: Boolean
+  localSearchDisabled: Boolean
+}

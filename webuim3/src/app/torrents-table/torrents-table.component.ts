@@ -20,7 +20,6 @@ import {
 } from '@angular/material/table';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatIcon } from '@angular/material/icon';
-import { MatChip, MatChipAvatar, MatChipSet } from '@angular/material/chips';
 import { MatTooltip } from '@angular/material/tooltip';
 import {
   animate,

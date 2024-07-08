@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
+	"github.com/bitmagnet-io/bitmagnet/internal/queue/manager"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/metrics"
 )
 
@@ -36,4 +37,18 @@ func (q QueueQueryResult) Metrics(ctx context.Context, input gen.QueueMetricsQue
 		req.Queues = queues
 	}
 	return q.QueueMetricsClient.Request(ctx, req)
+}
+
+type QueueMutation struct {
+	QueueManager manager.Manager
+}
+
+func (m *QueueMutation) PurgeJobs(ctx context.Context, input manager.PurgeJobsRequest) (*string, error) {
+	err := m.QueueManager.PurgeJobs(ctx, input)
+	return nil, err
+}
+
+func (m *QueueMutation) EnqueueReprocessTorrentsBatch(ctx context.Context, input manager.EnqueueReprocessTorrentsBatchRequest) (*string, error) {
+	err := m.QueueManager.EnqueueReprocessTorrentsBatch(ctx, input)
+	return nil, err
 }

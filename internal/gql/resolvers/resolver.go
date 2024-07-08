@@ -5,6 +5,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
+	"github.com/bitmagnet-io/bitmagnet/internal/queue/manager"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/metrics"
 )
 
@@ -18,4 +19,5 @@ type Resolver struct {
 	Workers            worker.Registry
 	Checker            health.Checker
 	QueueMetricsClient metrics.Client
+	QueueManager       manager.Manager
 }

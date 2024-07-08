@@ -251,6 +251,7 @@ export type MetadataSource = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  queue: QueueMutation;
   torrent: TorrentMutation;
 };
 
@@ -262,6 +263,17 @@ export type Query = {
   torrentContent: TorrentContentQuery;
   version: Scalars['String']['output'];
   workers: WorkersQueryResult;
+};
+
+export type QueueEnqueueReprocessTorrentsBatchInput = {
+  apisDisabled?: InputMaybe<Scalars['Boolean']['input']>;
+  batchSize?: InputMaybe<Scalars['Int']['input']>;
+  chunkSize?: InputMaybe<Scalars['Int']['input']>;
+  classifierRematch?: InputMaybe<Scalars['Boolean']['input']>;
+  classifierWorkflow?: InputMaybe<Scalars['String']['input']>;
+  contentTypes?: InputMaybe<Array<InputMaybe<ContentType>>>;
+  localSearchDisabled?: InputMaybe<Scalars['Boolean']['input']>;
+  orphans?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type QueueJobStatus =
@@ -290,6 +302,27 @@ export type QueueMetricsQueryInput = {
   endTime?: InputMaybe<Scalars['DateTime']['input']>;
   queues?: InputMaybe<Array<Scalars['String']['input']>>;
   startTime?: InputMaybe<Scalars['DateTime']['input']>;
+  statuses?: InputMaybe<Array<QueueJobStatus>>;
+};
+
+export type QueueMutation = {
+  __typename?: 'QueueMutation';
+  enqueueReprocessTorrentsBatch?: Maybe<Scalars['Void']['output']>;
+  purgeJobs?: Maybe<Scalars['Void']['output']>;
+};
+
+
+export type QueueMutationEnqueueReprocessTorrentsBatchArgs = {
+  input?: InputMaybe<QueueEnqueueReprocessTorrentsBatchInput>;
+};
+
+
+export type QueueMutationPurgeJobsArgs = {
+  input: QueuePurgeJobsInput;
+};
+
+export type QueuePurgeJobsInput = {
+  queues?: InputMaybe<Array<Scalars['String']['input']>>;
   statuses?: InputMaybe<Array<QueueJobStatus>>;
 };
 
@@ -655,6 +688,20 @@ export type TorrentContentSearchResultFragment = { __typename?: 'TorrentContentS
 
 export type TorrentFileFragment = { __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string };
 
+export type QueueEnqueueReprocessTorrentsBatchMutationVariables = Exact<{
+  input: QueueEnqueueReprocessTorrentsBatchInput;
+}>;
+
+
+export type QueueEnqueueReprocessTorrentsBatchMutation = { __typename?: 'Mutation', queue: { __typename?: 'QueueMutation', enqueueReprocessTorrentsBatch?: void | null } };
+
+export type QueuePurgeJobsMutationVariables = Exact<{
+  input: QueuePurgeJobsInput;
+}>;
+
+
+export type QueuePurgeJobsMutation = { __typename?: 'Mutation', queue: { __typename?: 'QueueMutation', purgeJobs?: void | null } };
+
 export type TorrentDeleteMutationVariables = Exact<{
   infoHashes: Array<Scalars['Hash20']['input']> | Scalars['Hash20']['input'];
 }>;
@@ -909,6 +956,42 @@ export const TorrentContentSearchResultFragmentDoc = gql`
   }
 }
     ${TorrentContentFragmentDoc}`;
+export const QueueEnqueueReprocessTorrentsBatchDocument = gql`
+    mutation QueueEnqueueReprocessTorrentsBatch($input: QueueEnqueueReprocessTorrentsBatchInput!) {
+  queue {
+    enqueueReprocessTorrentsBatch(input: $input)
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class QueueEnqueueReprocessTorrentsBatchGQL extends Apollo.Mutation<QueueEnqueueReprocessTorrentsBatchMutation, QueueEnqueueReprocessTorrentsBatchMutationVariables> {
+    override document = QueueEnqueueReprocessTorrentsBatchDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const QueuePurgeJobsDocument = gql`
+    mutation QueuePurgeJobs($input: QueuePurgeJobsInput!) {
+  queue {
+    purgeJobs(input: $input)
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class QueuePurgeJobsGQL extends Apollo.Mutation<QueuePurgeJobsMutation, QueuePurgeJobsMutationVariables> {
+    override document = QueuePurgeJobsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const TorrentDeleteDocument = gql`
     mutation TorrentDelete($infoHashes: [Hash20!]!) {
   torrent {

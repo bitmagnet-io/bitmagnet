@@ -13,6 +13,24 @@ export const routes: Routes = [
         (c) => c.DashboardComponent,
       ),
     title: 'dashboard',
+    children: [
+      {
+        path: 'home',
+        loadComponent: () =>
+          import('./dashboard/dashboard-home.component').then(
+            (c) => c.DashboardHomeComponent,
+          ),
+        title: "home",
+      },
+      {
+        path: 'queues',
+        loadComponent: () =>
+          import('./queue/queue-card.component').then(
+            (c) => c.QueueCardComponent,
+          ),
+        title: 'queues',
+      },
+    ]
   },
   {
     path: 'torrents',
@@ -29,12 +47,12 @@ export const routes: Routes = [
         (c) => c.TorrentPermalinkComponent,
       ),
   },
-  {
-    path: 'queue',
-    loadComponent: () =>
-      import('./queue/queue-card.component').then(
-        (c) => c.QueueCardComponent,
-      ),
-    title: 'torrents',
-  },
+  // {
+  //   path: 'queue',
+  //   loadComponent: () =>
+  //     import('./queue/queue-card.component').then(
+  //       (c) => c.QueueCardComponent,
+  //     ),
+  //   title: 'queue',
+  // },
 ];

@@ -1,228 +1,295 @@
 <ng-container *transloco="let t">
-  <mat-card class="dashboard-card dashboard-card-health">
+  <mat-card class="dashboard-card">
     <mat-card-header>
-      <mat-card-title>
-        <h3>
-          <mat-icon svgIcon="queue" />
-          Queue
-        </h3>
-      </mat-card-title>
+      <mat-toolbar>
+        <h2><mat-icon svgIcon="queue" />Queues</h2>
+        <span class="spacer"></span>
+        <a
+          mat-button
+          [matMenuTriggerFor]="maintenanceMenu"
+          >
+          <mat-icon>construction</mat-icon>
+          Maintenance Tasks
+        </a>
+        <mat-menu #maintenanceMenu="matMenu">
+          <a mat-menu-item
+             (click)="openDialogPurgeJobs()"
+          >Purge Queue Jobs</a>
+          <a mat-menu-item
+             (click)="openDialogEnqueueReprocessTorrentsBatch()"
+          >Enqueue Torrent Processing Batch</a>
+        </mat-menu>
+      </mat-toolbar>
     </mat-card-header>
     <mat-card-content class="dashboard-card-content">
-      <div class="progress-bar-container">
-        @if (queueMetricsController.loading) {
-          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-        }
-      </div>
-      <mat-grid-list cols="6" rowHeight="180px">
-        <mat-grid-tile [colspan]="1" [rowspan]="1">
-          <mat-card class="form-timeframe">
-            <mat-card-header>
-              <mat-card-title>Timeframe</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <mat-form-field>
-                <mat-select
-                  [disabled]="queueMetricsController.loading"
-                  [value]="queueMetricsController.params.buckets.timeframe"
-                  (valueChange)="queueMetricsController.setTimeframe($event)"
-                >
-                  @for (name of timeframeNames; track name) {
-                    <mat-option [value]="name">{{name}}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-              <div class="paginator">
-                <button
-                  mat-icon-button
-                  [disabled]="queueMetricsController.loading || timeframeNames.indexOf(queueMetricsController.params.buckets.timeframe) <= 0"
-                  (click)="queueMetricsController.setTimeframe(timeframeNames[0])"
-                >
-                  <mat-icon>first_page</mat-icon>
-                </button>
-                <button
-                  mat-icon-button
-                  [disabled]="queueMetricsController.loading || timeframeNames.indexOf(queueMetricsController.params.buckets.timeframe) <= 0"
-                  (click)="queueMetricsController.setTimeframe(timeframeNames[timeframeNames.indexOf(queueMetricsController.params.buckets.timeframe)-1])"
-                >
-                  <mat-icon>navigate_before</mat-icon>
-                </button>
-                <button
-                  mat-icon-button
-                  [disabled]="queueMetricsController.loading || timeframeNames.indexOf(queueMetricsController.params.buckets.timeframe) >= timeframeNames.length - 1"
-                  (click)="queueMetricsController.setTimeframe(timeframeNames[timeframeNames.indexOf(queueMetricsController.params.buckets.timeframe)+1])"
-                >
-                  <mat-icon>navigate_next</mat-icon>
-                </button>
-                <button
-                  mat-icon-button
-                  [disabled]="queueMetricsController.loading || timeframeNames.indexOf(queueMetricsController.params.buckets.timeframe) >= timeframeNames.length - 1"
-                  (click)="queueMetricsController.setTimeframe(timeframeNames[timeframeNames.length-1])"
-                >
-                  <mat-icon>last_page</mat-icon>
-                </button>
-              </div>
-            </mat-card-content>
-          </mat-card>
-        </mat-grid-tile>
-        <mat-grid-tile [colspan]="1" [rowspan]="1">
-          <mat-card class="form-resolution">
-            <mat-card-header>
-              <mat-card-title>Resolution</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <mat-form-field>
-                <mat-select
-                  [disabled]="queueMetricsController.loading"
-                  [value]="queueMetricsController.params.buckets.duration"
-                  (valueChange)="queueMetricsController.setBucketDuration($event)"
-                >
-                  @for (name of resolutionNames; track name) {
-                    <mat-option [value]="name">{{name}}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-              <div class="paginator">
-                <button
-                  mat-icon-button
-                  [disabled]="queueMetricsController.loading || resolutionNames.indexOf(queueMetricsController.params.buckets.duration) <= 0"
-                  (click)="queueMetricsController.setBucketDuration(resolutionNames[0])"
-                >
-                  <mat-icon>first_page</mat-icon>
-                </button>
-                <button
-                  mat-icon-button
-                  [disabled]="queueMetricsController.loading || resolutionNames.indexOf(queueMetricsController.params.buckets.duration) <= 0"
-                  (click)="queueMetricsController.setBucketDuration(resolutionNames[resolutionNames.indexOf(queueMetricsController.params.buckets.duration)-1])"
-                >
-                  <mat-icon>navigate_before</mat-icon>
-                </button>
-                <button
-                  mat-icon-button
-                  [disabled]="queueMetricsController.loading || resolutionNames.indexOf(queueMetricsController.params.buckets.duration) >= resolutionNames.length - 1"
-                  (click)="queueMetricsController.setBucketDuration(resolutionNames[resolutionNames.indexOf(queueMetricsController.params.buckets.duration)+1])"
-                >
-                  <mat-icon>navigate_next</mat-icon>
-                </button>
-                <button
-                  mat-icon-button
-                  [disabled]="queueMetricsController.loading || resolutionNames.indexOf(queueMetricsController.params.buckets.duration) >= resolutionNames.length - 1"
-                  (click)="queueMetricsController.setBucketDuration(resolutionNames[resolutionNames.length-1])"
-                >
-                  <mat-icon>last_page</mat-icon>
-                </button>
-              </div>
-            </mat-card-content>
-          </mat-card>
-        </mat-grid-tile>
-        <mat-grid-tile [colspan]="1" [rowspan]="1">
-          <mat-card class="form-queues">
-            <mat-card-header>
-              <mat-card-title>
-                Queue
-              </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <mat-form-field>
-                <mat-select
-                  [disabled]="queueMetricsController.loading"
-                  [value]="queueMetricsController.params.queue ?? '_all'"
-                  (valueChange)="queueMetricsController.setQueue($event === '_all' ? null : $event)"
-                >
-                  <mat-option value="_all">All</mat-option>
-                  @for (queue of availableQueueNames; track queue) {
-                    <mat-option [value]="queue">{{queue}}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-              <div class="actions">
-                <button
-                  mat-icon-button
-                  [matTooltip]="'all'"
-                  [disabled]="queueMetricsController.loading || !queueMetricsController.params.queue"
-                  (click)="queueMetricsController.setQueue(null)"
-                >
-                  <mat-icon fontSet="material-icons">emergency</mat-icon>
-                </button>
-                @for (queue of availableQueueNames; track queue) {
-                  <button
-                    mat-icon-button
-                    [disabled]="queueMetricsController.loading"
-                    [matTooltip]="queue"
-                    (click)="queueMetricsController.params.queue === queue || queueMetricsController.setQueue(queue)"
-                  >
-                    <mat-icon>{{queueMetricsController.params.queue === queue ? 'radio_button_checked' : 'radio_button_unchecked'}}</mat-icon>
-                  </button>
-                }
-              </div>
-            </mat-card-content>
-          </mat-card>
-        </mat-grid-tile>
-        <mat-grid-tile [colspan]="1" [rowspan]="1">
-          <mat-card class="form-refresh">
-            <mat-card-header>
-              <mat-card-title>
-                Refresh
-              </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <mat-form-field>
-                <mat-select
-                  [value]="queueMetricsController.params.autoRefresh"
-                  (valueChange)="queueMetricsController.setAutoRefreshInterval($event)"
-                >
-                  @for (name of autoRefreshIntervalNames; track name) {
-                    <mat-option [value]="name">{{name}}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-              <div class="actions">
-                <button
-                  mat-icon-button
-                  [matTooltip]="'Refresh'"
-                  (click)="queueMetricsController.refresh()"
-                >
-                  <mat-icon>sync</mat-icon>
-                </button>
-              </div>
-            </mat-card-content>
-          </mat-card>
-        </mat-grid-tile>
-        <mat-grid-tile [colspan]="3" [rowspan]="3">
-          <mat-card>
-            <mat-card-header>
-              <mat-card-title>
-                <h4>Total counts</h4>
-              </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <app-chart
-                [adapter]="totals"
-                [$data]="queueMetricsController.result$"
-                [height]="400"
-                [width]="700"
-              />
-            </mat-card-content>
-          </mat-card>
-        </mat-grid-tile>
-        <mat-grid-tile [colspan]="3" [rowspan]="3">
-          <mat-card>
-            <mat-card-header>
-              <mat-card-title>
-                <h4>Throughput</h4>
-              </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <app-chart
-                [adapter]="timeline"
-                [$data]="queueMetricsController.result$"
-                [height]="400"
-                [width]="700"
-              />
-            </mat-card-content>
-          </mat-card>
-        </mat-grid-tile>
-      </mat-grid-list>
+          <div class="progress-bar-container">
+            <mat-progress-bar
+              [mode]="queueMetricsController.loading ? 'indeterminate' : 'determinate'"
+              [value]="0"
+            ></mat-progress-bar>
+          </div>
+          <mat-grid-list cols="6" rowHeight="100px">
+            <mat-grid-tile [colspan]="1" [rowspan]="2">
+              <mat-card class="form-timeframe">
+                <mat-card-header>
+                  <mat-card-title><h4>Timeframe</h4></mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <mat-form-field>
+                    <mat-select
+                      [value]="queueMetricsController.params.buckets.timeframe"
+                      (valueChange)="queueMetricsController.setTimeframe($event)"
+                    >
+                      @for (name of timeframeNames; track name) {
+                        <mat-option [value]="name">{{name}}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  <div class="paginator">
+                    <button
+                      mat-icon-button
+                      [disabled]="timeframeNames.indexOf(queueMetricsController.params.buckets.timeframe) <= 0"
+                      (click)="queueMetricsController.setTimeframe(timeframeNames[0])"
+                    >
+                      <mat-icon>first_page</mat-icon>
+                    </button>
+                    <button
+                      mat-icon-button
+                      [disabled]="timeframeNames.indexOf(queueMetricsController.params.buckets.timeframe) <= 0"
+                      (click)="queueMetricsController.setTimeframe(timeframeNames[timeframeNames.indexOf(queueMetricsController.params.buckets.timeframe)-1])"
+                    >
+                      <mat-icon>navigate_before</mat-icon>
+                    </button>
+                    <button
+                      mat-icon-button
+                      [disabled]="timeframeNames.indexOf(queueMetricsController.params.buckets.timeframe) >= timeframeNames.length - 1"
+                      (click)="queueMetricsController.setTimeframe(timeframeNames[timeframeNames.indexOf(queueMetricsController.params.buckets.timeframe)+1])"
+                    >
+                      <mat-icon>navigate_next</mat-icon>
+                    </button>
+                    <button
+                      mat-icon-button
+                      [disabled]="timeframeNames.indexOf(queueMetricsController.params.buckets.timeframe) >= timeframeNames.length - 1"
+                      (click)="queueMetricsController.setTimeframe(timeframeNames[timeframeNames.length-1])"
+                    >
+                      <mat-icon>last_page</mat-icon>
+                    </button>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </mat-grid-tile>
+            <mat-grid-tile [colspan]="1" [rowspan]="2">
+              <mat-card class="form-resolution">
+                <mat-card-header>
+                  <mat-card-title><h4>Resolution</h4></mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <mat-form-field>
+                    <mat-select
+                      [value]="queueMetricsController.params.buckets.duration"
+                      (valueChange)="queueMetricsController.setBucketDuration($event)"
+                    >
+                      @for (name of resolutionNames; track name) {
+                        <mat-option [value]="name">{{name}}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  <div class="paginator">
+                    <button
+                      mat-icon-button
+                      [disabled]="resolutionNames.indexOf(queueMetricsController.params.buckets.duration) <= 0"
+                      (click)="queueMetricsController.setBucketDuration(resolutionNames[0])"
+                    >
+                      <mat-icon>first_page</mat-icon>
+                    </button>
+                    <button
+                      mat-icon-button
+                      [disabled]="resolutionNames.indexOf(queueMetricsController.params.buckets.duration) <= 0"
+                      (click)="queueMetricsController.setBucketDuration(resolutionNames[resolutionNames.indexOf(queueMetricsController.params.buckets.duration)-1])"
+                    >
+                      <mat-icon>navigate_before</mat-icon>
+                    </button>
+                    <button
+                      mat-icon-button
+                      [disabled]="resolutionNames.indexOf(queueMetricsController.params.buckets.duration) >= resolutionNames.length - 1"
+                      (click)="queueMetricsController.setBucketDuration(resolutionNames[resolutionNames.indexOf(queueMetricsController.params.buckets.duration)+1])"
+                    >
+                      <mat-icon>navigate_next</mat-icon>
+                    </button>
+                    <button
+                      mat-icon-button
+                      [disabled]="resolutionNames.indexOf(queueMetricsController.params.buckets.duration) >= resolutionNames.length - 1"
+                      (click)="queueMetricsController.setBucketDuration(resolutionNames[resolutionNames.length-1])"
+                    >
+                      <mat-icon>last_page</mat-icon>
+                    </button>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </mat-grid-tile>
+            <mat-grid-tile [colspan]="1" [rowspan]="2">
+              <mat-card class="form-queues">
+                <mat-card-header>
+                  <mat-card-title>
+                    <h4>Queue</h4>
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <mat-form-field>
+                    <mat-select
+                      [value]="queueMetricsController.params.queue ?? '_all'"
+                      (valueChange)="queueMetricsController.setQueue($event === '_all' ? null : $event)"
+                    >
+                      <mat-option value="_all">All</mat-option>
+                      @for (queue of availableQueueNames; track queue) {
+                        <mat-option [value]="queue">{{queue}}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  <div class="actions">
+                    <button
+                      mat-icon-button
+                      [matTooltip]="'all'"
+                      [class]="queueMetricsController.params.queue ? 'deselected' : 'selected'"
+                      (click)="queueMetricsController.setQueue(null)"
+                    >
+                      <mat-icon fontSet="material-icons">workspaces</mat-icon>
+                    </button>
+                    @for (queue of availableQueueNames; track queue) {
+                      <button
+                        mat-icon-button
+                        [class]="queueMetricsController.params.queue === queue ? 'selected' : 'deselected'"
+                        [matTooltip]="queue"
+                        (click)="queueMetricsController.params.queue === queue || queueMetricsController.setQueue(queue)"
+                      >
+                        <mat-icon>{{queueMetricsController.params.queue === queue ? 'radio_button_checked' : 'radio_button_unchecked'}}</mat-icon>
+                      </button>
+                    }
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </mat-grid-tile>
+            <mat-grid-tile [colspan]="1" [rowspan]="2">
+              <mat-card>
+                <mat-card-header>
+                  <mat-card-title>
+                    <h4>Event</h4>
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <mat-form-field>
+                    <mat-select
+                      [value]="queueMetricsController.params.event ?? '_all'"
+                      (valueChange)="queueMetricsController.setEvent($event === '_all' ? null : $event)"
+                    >
+                      <mat-option value="_all">All</mat-option>
+                      @for (event of eventNames; track event) {
+                        <mat-option [value]="event">{{event}}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  <div class="actions">
+                    <button
+                      mat-icon-button
+                      [matTooltip]="'all'"
+                      [class]="!queueMetricsController.params.event ? 'selected' : 'deselected'"
+                      (click)="queueMetricsController.setEvent(null)"
+                    >
+                      <mat-icon fontSet="material-icons">radio_button_checked</mat-icon>
+                    </button>
+                    <button
+                      mat-icon-button
+                      [matTooltip]="'created'"
+                      [class]="queueMetricsController.params.event === 'created' ? 'selected' : 'deselected'"
+                      (click)="queueMetricsController.params.event === 'created' || queueMetricsController.setEvent('created')"
+                    >
+                      <mat-icon>add_circle</mat-icon>
+                    </button>
+                    <button
+                      mat-icon-button
+                      [matTooltip]="'processed'"
+                      [class]="queueMetricsController.params.event === 'processed' ? 'selected' : 'deselected'"
+                      (click)="queueMetricsController.params.event === 'processed' || queueMetricsController.setEvent('processed')"
+                    >
+                      <mat-icon>check_circle</mat-icon>
+                    </button>
+                    <button
+                      mat-icon-button
+                      [matTooltip]="'failed'"
+                      [class]="queueMetricsController.params.event === 'failed' ? 'selected' : 'deselected'"
+                      (click)="queueMetricsController.params.event === 'failed' || queueMetricsController.setEvent('failed')"
+                    >
+                      <mat-icon>error</mat-icon>
+                    </button>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </mat-grid-tile>
+            <mat-grid-tile [colspan]="1" [rowspan]="2">
+              <mat-card class="form-refresh">
+                <mat-card-header>
+                  <mat-card-title>
+                    <h4>Refresh</h4>
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <mat-form-field>
+                    <mat-select
+                      [value]="queueMetricsController.params.autoRefresh"
+                      (valueChange)="queueMetricsController.setAutoRefreshInterval($event)"
+                    >
+                      @for (name of autoRefreshIntervalNames; track name) {
+                        <mat-option [value]="name">{{name}}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  <div class="actions">
+                    <button
+                      mat-icon-button
+                      [matTooltip]="'Refresh'"
+                      (click)="queueMetricsController.refresh()"
+                    >
+                      <mat-icon>sync</mat-icon>
+                    </button>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </mat-grid-tile>
+            <mat-grid-tile [colspan]="3" [rowspan]="5">
+              <mat-card>
+                <mat-card-header>
+                  <mat-card-title>
+                    <h4>Total Counts By Status</h4>
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <app-chart
+                    [adapter]="totals"
+                    [$data]="queueMetricsController.result$"
+                    [height]="400"
+                    [width]="700"
+                  />
+                </mat-card-content>
+              </mat-card>
+            </mat-grid-tile>
+            <mat-grid-tile [colspan]="3" [rowspan]="5">
+              <mat-card>
+                <mat-card-header>
+                  <mat-card-title>
+                    <h4>Throughput</h4>
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <app-chart
+                    [adapter]="timeline"
+                    [$data]="queueMetricsController.result$"
+                    [height]="400"
+                    [width]="700"
+                  />
+                </mat-card-content>
+              </mat-card>
+            </mat-grid-tile>
+          </mat-grid-list>
     </mat-card-content>
   </mat-card>
 </ng-container>

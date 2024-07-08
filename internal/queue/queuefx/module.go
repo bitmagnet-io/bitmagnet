@@ -1,6 +1,7 @@
 package queuefx
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/queue/manager"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/prometheus"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/server"
@@ -12,6 +13,7 @@ func New() fx.Option {
 		"queue",
 		fx.Provide(
 			server.New,
+			manager.New,
 			metrics.New,
 			prometheus.New,
 		),

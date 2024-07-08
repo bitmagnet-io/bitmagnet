@@ -1,0 +1,40 @@
+.grid-container {
+  margin: 20px;
+}
+
+//.dashboard-card {
+//  position: absolute;
+//  top: 15px;
+//  left: 15px;
+//  right: 15px;
+//  bottom: 15px;
+//}
+
+.more-button {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+}
+
+//.dashboard-card-content {
+//  text-align: center;
+//}
+
+app-health-card {
+  width: 100%;
+  height: 100%;
+  mat-card {
+    height: 100%;
+  }
+}
+
+mat-grid-tile mat-card {
+  width: 100%;
+}
+
+mat-toolbar h2 mat-icon {
+  position: relative;
+  top: 3px;
+  margin-right: 14px;
+  margin-left: 32px;
+}

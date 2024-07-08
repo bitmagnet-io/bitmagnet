@@ -58,37 +58,3 @@ type HealthQueryResult {
   status: HealthStatus!
   checks: [HealthCheck!]!
 }
-
-enum QueueJobStatus {
-  pending
-  retry
-  failed
-  processed
-}
-
-enum QueueMetricsBucketDuration {
-  minute
-  hour
-  day
-}
-
-type QueueMetricsBucket {
-  queue: String!
-  status: QueueJobStatus!
-  createdAtBucket: DateTime!
-  ranAtBucket: DateTime
-  count: Int!
-  latency: Duration
-}
-
-input QueueMetricsQueryInput {
-  bucketDuration: QueueMetricsBucketDuration!
-  statuses: [QueueJobStatus!]
-  queues: [String!]
-  startTime: DateTime
-  endTime: DateTime
-}
-
-type QueueQueryResult {
-  metrics(input: QueueMetricsQueryInput!): [QueueMetricsBucket!]!
-}

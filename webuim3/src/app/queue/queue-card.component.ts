@@ -19,29 +19,37 @@ import {TranslocoDirective} from "@jsverse/transloco";
 import {MatFormField, MatLabel} from "@angular/material/form-field";
 import {
   autoRefreshIntervalNames,
-  availableQueueNames,
+  availableQueueNames, eventNames,
   resolutionNames,
   timeframeNames
-} from "./queue-metrics.constants";
+} from "./queue.constants";
 import {MatInput} from "@angular/material/input";
 import {MatOption, MatSelect} from "@angular/material/select";
 import {MatRadioButton, MatRadioGroup} from "@angular/material/radio";
 import {AsyncPipe} from "@angular/common";
-import {MatIconButton, MatMiniFabButton} from "@angular/material/button";
+import {MatAnchor, MatButton, MatIconButton, MatMiniFabButton} from "@angular/material/button";
 import {MatTooltip} from "@angular/material/tooltip";
 import {MatSlider, MatSliderThumb} from "@angular/material/slider";
 import {MatGridList, MatGridTile} from "@angular/material/grid-list";
 import {MatProgressBar} from "@angular/material/progress-bar";
+import {MatDialog, MatDialogModule} from "@angular/material/dialog";
+import {QueuePurgeJobsDialog} from "./queue-purge-jobs-dialog.component";
+import {MatToolbar} from "@angular/material/toolbar";
+import {MatMenu, MatMenuItem, MatMenuTrigger} from "@angular/material/menu";
+import {
+  QueueEnqueueReprocessTorrentsBatchDialog
+} from "./queue-enqueue-reprocess-torrents-batch-dialog.component";
 
 @Component({
   selector: 'app-queue-card',
   standalone: true,
   templateUrl: './queue-card.component.html',
   styleUrl: './queue-card.component.scss',
-  imports: [QueueModule, MatCardContent, ChartComponent, MatIcon, MatCardTitle, MatCardHeader, MatCard, GraphQLModule, TranslocoDirective, MatFormField, MatLabel, MatInput, MatSelect, MatOption, MatRadioGroup, MatRadioButton, AsyncPipe, MatMiniFabButton, MatTooltip, MatSlider, MatSliderThumb, MatIconButton, MatGridList, MatGridTile, MatCardFooter, MatCardActions, MatProgressBar]
+  imports: [QueueModule, MatCardContent, MatDialogModule, ChartComponent, MatIcon, MatCardTitle, MatCardHeader, MatCard, GraphQLModule, TranslocoDirective, MatFormField, MatLabel, MatInput, MatSelect, MatOption, MatRadioGroup, MatRadioButton, AsyncPipe, MatMiniFabButton, MatTooltip, MatSlider, MatSliderThumb, MatIconButton, MatGridList, MatGridTile, MatCardFooter, MatCardActions, MatProgressBar, MatButton, MatToolbar, MatMenu, MatMenuItem, MatMenuTrigger, MatAnchor]
 })
 export class QueueCardComponent implements OnInit, OnDestroy{
   private apollo = inject(Apollo);
+  readonly dialog = inject(MatDialog);
   queueMetricsController = new QueueMetricsController(
     this.apollo,
     {
@@ -61,10 +69,34 @@ export class QueueCardComponent implements OnInit, OnDestroy{
   protected readonly autoRefreshIntervalNames = autoRefreshIntervalNames;
 
   ngOnInit() {
-    this.queueMetricsController.refresh()
+    this.dialog.afterAllClosed.subscribe(() => {
+      this.queueMetricsController.refresh()
+    })
   }
 
   ngOnDestroy() {
     this.queueMetricsController.setAutoRefreshInterval("off")
   }
+
+  openDialogPurgeJobs() {
+    this.dialog.open(QueuePurgeJobsDialog, {
+      data: {
+        onPurged: () => {
+          this.queueMetricsController.refresh()
+        }
+      }
+    })
+  }
+
+  openDialogEnqueueReprocessTorrentsBatch() {
+    this.dialog.open(QueueEnqueueReprocessTorrentsBatchDialog, {
+      data: {
+        onEnqueued: () => {
+          this.queueMetricsController.refresh()
+        }
+      }
+    })
+  }
+
+  protected readonly eventNames = eventNames;
 }

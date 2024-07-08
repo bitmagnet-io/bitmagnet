@@ -1,63 +1,101 @@
-import { Component, inject } from '@angular/core';
-import { Breakpoints, BreakpointObserver } from '@angular/cdk/layout';
-import { map } from 'rxjs/operators';
-import { AsyncPipe } from '@angular/common';
-import { MatGridListModule } from '@angular/material/grid-list';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { HealthModule } from '../health/health.module';
-import {ChartComponent} from "../charting/chart.component";
-import {queueChartAdapterTotals} from "../queue/queue-chart-adapter.totals";
-import {QueueMetricsController} from "../queue/queue-metrics.controller";
-import {QueueModule} from "../queue/queue.module";
-import {queueChartAdapterTimeline} from "../queue/queue-chart-adapter.timeline";
-import {Apollo} from "apollo-angular";
+import {Component, inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {AsyncPipe, DecimalPipe} from "@angular/common";
+import {MatCheckbox} from "@angular/material/checkbox";
+import {MatDivider} from "@angular/material/divider";
+import {MatDrawer, MatDrawerContainer, MatDrawerContent} from "@angular/material/sidenav";
+import {MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle} from "@angular/material/expansion";
+import {MatFormField, MatLabel} from "@angular/material/form-field";
+import {MatIcon} from "@angular/material/icon";
+import {MatAnchor, MatIconButton, MatMiniFabButton} from "@angular/material/button";
+import {MatInput} from "@angular/material/input";
+import {MatOption} from "@angular/material/core";
+import {MatSelect} from "@angular/material/select";
+import {PaginatorComponent} from "../paginator/paginator.component";
+import {ReactiveFormsModule} from "@angular/forms";
+import {TorrentsBulkActionsComponent} from "../torrents-bulk-actions/torrents-bulk-actions.component";
+import {TorrentsTableComponent} from "../torrents-table/torrents-table.component";
+import {TranslocoDirective} from "@jsverse/transloco";
+import {BreakpointsService} from "../layout/breakpoints.service";
+import {MatTooltip} from "@angular/material/tooltip";
+import {
+  ActivatedRoute,
+  EventType,
+  Router,
+  RouterLink,
+  RouterLinkActive,
+  RouterOutlet
+} from "@angular/router";
+import {MatMenu, MatMenuItem} from "@angular/material/menu";
+import {EMPTY, Subscription} from "rxjs";
 
 @Component({
   selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss',
   standalone: true,
   imports: [
     AsyncPipe,
-    MatGridListModule,
-    MatMenuModule,
-    MatIconModule,
-    MatButtonModule,
-    MatCardModule,
-    HealthModule,
-    ChartComponent,
-    QueueModule,
+    DecimalPipe,
+    MatCheckbox,
+    MatDivider,
+    MatDrawer,
+    MatDrawerContainer,
+    MatDrawerContent,
+    MatExpansionPanel,
+    MatExpansionPanelHeader,
+    MatExpansionPanelTitle,
+    MatFormField,
+    MatIcon,
+    MatIconButton,
+    MatInput,
+    MatLabel,
+    MatMiniFabButton,
+    MatOption,
+    MatSelect,
+    PaginatorComponent,
+    ReactiveFormsModule,
+    TorrentsBulkActionsComponent,
+    TorrentsTableComponent,
+    TranslocoDirective,
+    MatTooltip,
+    RouterOutlet,
+    MatMenu,
+    MatMenuItem,
+    RouterLink,
+    MatAnchor,
+    RouterLinkActive,
+    TranslocoDirective,
   ],
+  templateUrl: './dashboard.component.html',
+  styleUrl: './dashboard.component.scss'
 })
-export class DashboardComponent {
-  private apollo = inject(Apollo);
-  private breakpointObserver = inject(BreakpointObserver);
-  queueMetricsController = new QueueMetricsController(
-    this.apollo,
-    {
-      buckets: {
-        duration: "minute",
-        multiplier: 5,
-        timeframe: "days_1"
-      },
-      autoRefresh: "off",
+export class DashboardComponent implements  OnInit, OnDestroy{
+  breakpoints = inject(BreakpointsService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private subscriptions = new Array<Subscription>()
+
+  ngOnInit() {
+    this.subscriptions.push(this.route.url.subscribe(() => {
+      if (!this.route.firstChild) {
+        return this.redirectHome()
+      }
+      return EMPTY;
+    }))
+    this.subscriptions.push(this.router.events.subscribe(((event) => {
+      if (event.type === EventType.NavigationEnd && event.urlAfterRedirects === "/dashboard") {
+        return this.redirectHome();
+      }
+      return EMPTY;
+    })))
+  }
+
+  private redirectHome() {
+    return this.router.navigate(["home"], {
+      relativeTo: this.route,
     })
+  }
 
-  totals = queueChartAdapterTotals
-  timeline = queueChartAdapterTimeline
-
-  /** Based on the screen size, switch from standard to one column per row */
-  cards = this.breakpointObserver.observe(Breakpoints.Handset).pipe(
-    map(({ matches }) => {
-      return [
-        { title: 'Card 1', cols: 1, rows: 1 },
-        { title: 'Card 2', cols: matches ? 1 : 2, rows: 1 },
-        { title: 'Card 3', cols: 1, rows: matches ? 1 : 2 },
-        { title: 'Card 4', cols: 1, rows: 1 },
-      ];
-    }),
-  );
+  ngOnDestroy(){
+    this.subscriptions.forEach((subscription) => subscription.unsubscribe())
+    this.subscriptions = new Array<Subscription>();
+  }
 }

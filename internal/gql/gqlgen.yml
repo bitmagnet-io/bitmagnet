@@ -168,3 +168,9 @@ models:
   QueueMetricsBucket:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/queue/metrics.Bucket
+  QueuePurgeJobsInput:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/queue/manager.PurgeJobsRequest
+  QueueEnqueueReprocessTorrentsBatchInput:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/queue/manager.EnqueueReprocessTorrentsBatchRequest

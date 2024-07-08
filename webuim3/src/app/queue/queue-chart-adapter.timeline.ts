@@ -1,7 +1,7 @@
 import {ChartAdapter} from "../charting/types";
 import {ChartConfiguration} from "chart.js";
 import {BucketParams, Result} from "./queue-metrics.types";
-import {durationSeconds, eventNames, timeframeLengths} from "./queue-metrics.constants";
+import {durationSeconds, eventNames, timeframeLengths} from "./queue.constants";
 import {normalizeBucket} from "./queue-metrics.controller";
 
 const eventColors = {
@@ -12,7 +12,6 @@ const eventColors = {
 
 export const queueChartAdapterTimeline: ChartAdapter<Result> = {
   create: (result) => {
-    console.log({result})
     const labels = Array<string>()
     const datasets: ChartConfiguration<"line">["data"]["datasets"] = []
     if (result) {
@@ -21,26 +20,28 @@ export const queueChartAdapterTimeline: ChartAdapter<Result> = {
         (q) => q.events ? [q.events.earliestBucket, q.events.latestBucket] : []
       ))).sort()
       const now = new Date()
-      const minBucket = result.bucketParams.timeframe ==="all"?nonEmptyBuckets[0]:Math.min(
+      const minBucket = result.params.buckets.timeframe ==="all"?nonEmptyBuckets[0]:Math.min(
         nonEmptyBuckets[0],
-        normalizeBucket(now.getTime() - (1000 * timeframeLengths[result.bucketParams.timeframe]), result.bucketParams).index
+        normalizeBucket(now.getTime() - (1000 * timeframeLengths[result.params.buckets.timeframe]), result.params.buckets).index
       )
       const maxBucket = Math.max(
         nonEmptyBuckets[nonEmptyBuckets.length -1],
-        normalizeBucket(now, result.bucketParams).index
+        normalizeBucket(now, result.params.buckets).index
       )
       // const seriesLabels = nonEmptyQueues.flatMap((q) => events.map((status) => [q.queue, status].join("/")))
       if (nonEmptyBuckets.length) {
         for (let i = minBucket; i <= maxBucket; i++) {
-          labels.push(formatBucketKey(result.bucketParams, i))
+          labels.push(formatBucketKey(result.params.buckets, i))
         }
+        const relevantEvents = eventNames.filter((n) => (result.params.event ?? n) === n)
         for (const queue of nonEmptyQueues) {
-          for (const event of eventNames) {
+          for (const event of relevantEvents) {
             const series = Array<number>()
             for (let i = minBucket; i <= maxBucket; i++) {
               series.push(queue.events?.eventBuckets?.[event]?.entries?.[`${i}`]?.count ?? 0)
             }
             datasets.push({
+              yAxisID: "yCount",
               label: [queue.queue, event].join("/"),
               data: series,
               // fill: 'origin',
@@ -65,7 +66,7 @@ export const queueChartAdapterTimeline: ChartAdapter<Result> = {
           },
         },
         scales: {
-          y: {
+          yCount: {
             position: 'left',
             // max: 100,
           },

@@ -19,6 +19,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/queue/manager"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/metrics"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -49,6 +50,7 @@ type ResolverRoot interface {
 	Query() QueryResolver
 	Torrent() TorrentResolver
 	TorrentMutation() TorrentMutationResolver
+	QueueEnqueueReprocessTorrentsBatchInput() QueueEnqueueReprocessTorrentsBatchInputResolver
 }
 
 type DirectiveRoot struct {
@@ -151,6 +153,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		Queue   func(childComplexity int) int
 		Torrent func(childComplexity int) int
 	}
 
@@ -170,6 +173,11 @@ type ComplexityRoot struct {
 		Queue           func(childComplexity int) int
 		RanAtBucket     func(childComplexity int) int
 		Status          func(childComplexity int) int
+	}
+
+	QueueMutation struct {
+		EnqueueReprocessTorrentsBatch func(childComplexity int, input manager.EnqueueReprocessTorrentsBatchRequest) int
+		PurgeJobs                     func(childComplexity int, input manager.PurgeJobsRequest) int
 	}
 
 	QueueQueryResult struct {
@@ -346,6 +354,7 @@ type ContentResolver interface {
 }
 type MutationResolver interface {
 	Torrent(ctx context.Context) (gqlmodel.TorrentMutation, error)
+	Queue(ctx context.Context) (gqlmodel.QueueMutation, error)
 }
 type QueryResolver interface {
 	Version(ctx context.Context) (string, error)
@@ -363,6 +372,10 @@ type TorrentMutationResolver interface {
 	PutTags(ctx context.Context, obj *gqlmodel.TorrentMutation, infoHashes []protocol.ID, tagNames []string) (*string, error)
 	SetTags(ctx context.Context, obj *gqlmodel.TorrentMutation, infoHashes []protocol.ID, tagNames []string) (*string, error)
 	DeleteTags(ctx context.Context, obj *gqlmodel.TorrentMutation, infoHashes []protocol.ID, tagNames []string) (*string, error)
+}
+
+type QueueEnqueueReprocessTorrentsBatchInputResolver interface {
+	ClassifierRematch(ctx context.Context, obj *manager.EnqueueReprocessTorrentsBatchRequest, data *bool) error
 }
 
 type executableSchema struct {
@@ -797,6 +810,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MetadataSource.Name(childComplexity), true
 
+	case "Mutation.queue":
+		if e.complexity.Mutation.Queue == nil {
+			break
+		}
+
+		return e.complexity.Mutation.Queue(childComplexity), true
+
 	case "Mutation.torrent":
 		if e.complexity.Mutation.Torrent == nil {
 			break
@@ -887,6 +907,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.QueueMetricsBucket.Status(childComplexity), true
+
+	case "QueueMutation.enqueueReprocessTorrentsBatch":
+		if e.complexity.QueueMutation.EnqueueReprocessTorrentsBatch == nil {
+			break
+		}
+
+		args, err := ec.field_QueueMutation_enqueueReprocessTorrentsBatch_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.QueueMutation.EnqueueReprocessTorrentsBatch(childComplexity, args["input"].(manager.EnqueueReprocessTorrentsBatchRequest)), true
+
+	case "QueueMutation.purgeJobs":
+		if e.complexity.QueueMutation.PurgeJobs == nil {
+			break
+		}
+
+		args, err := ec.field_QueueMutation_purgeJobs_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.QueueMutation.PurgeJobs(childComplexity, args["input"].(manager.PurgeJobsRequest)), true
 
 	case "QueueQueryResult.metrics":
 		if e.complexity.QueueQueryResult.Metrics == nil {
@@ -1669,7 +1713,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputContentTypeFacetInput,
 		ec.unmarshalInputGenreFacetInput,
 		ec.unmarshalInputLanguageFacetInput,
+		ec.unmarshalInputQueueEnqueueReprocessTorrentsBatchInput,
 		ec.unmarshalInputQueueMetricsQueryInput,
+		ec.unmarshalInputQueuePurgeJobsInput,
 		ec.unmarshalInputReleaseYearFacetInput,
 		ec.unmarshalInputSuggestTagsQueryInput,
 		ec.unmarshalInputTorrentContentFacetsInput,
@@ -2070,6 +2116,7 @@ type ContentCollection {
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/mutation.graphqls", Input: `type Mutation {
   torrent: TorrentMutation!
+  queue: QueueMutation!
 }
 
 type TorrentMutation {
@@ -2139,6 +2186,10 @@ type HealthQueryResult {
   status: HealthStatus!
   checks: [HealthCheck!]!
 }
+`, BuiltIn: false},
+	{Name: "../../graphql/schema/queue.graphqls", Input: `type QueueQueryResult {
+  metrics(input: QueueMetricsQueryInput!): [QueueMetricsBucket!]!
+}
 
 enum QueueJobStatus {
   pending
@@ -2170,8 +2221,25 @@ input QueueMetricsQueryInput {
   endTime: DateTime
 }
 
-type QueueQueryResult {
-  metrics(input: QueueMetricsQueryInput!): [QueueMetricsBucket!]!
+type QueueMutation {
+  purgeJobs(input: QueuePurgeJobsInput!): Void
+  enqueueReprocessTorrentsBatch(input: QueueEnqueueReprocessTorrentsBatchInput): Void
+}
+
+input QueuePurgeJobsInput {
+  queues: [String!]
+  statuses: [QueueJobStatus!]
+}
+
+input QueueEnqueueReprocessTorrentsBatchInput {
+  batchSize: Int
+  chunkSize: Int
+  contentTypes: [ContentType]
+  orphans: Boolean
+  classifierRematch: Boolean
+  classifierWorkflow: String
+  apisDisabled: Boolean
+  localSearchDisabled: Boolean
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/scalars.graphqls", Input: `scalar Hash20
@@ -2369,6 +2437,36 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_QueueMutation_enqueueReprocessTorrentsBatch_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 manager.EnqueueReprocessTorrentsBatchRequest
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOQueueEnqueueReprocessTorrentsBatchInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋqueueᚋmanagerᚐEnqueueReprocessTorrentsBatchRequest(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_QueueMutation_purgeJobs_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 manager.PurgeJobsRequest
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNQueuePurgeJobsInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋqueueᚋmanagerᚐPurgeJobsRequest(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -5238,6 +5336,56 @@ func (ec *executionContext) fieldContext_Mutation_torrent(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_queue(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_queue(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().Queue(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(gqlmodel.QueueMutation)
+	fc.Result = res
+	return ec.marshalNQueueMutation2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐQueueMutation(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_queue(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "purgeJobs":
+				return ec.fieldContext_QueueMutation_purgeJobs(ctx, field)
+			case "enqueueReprocessTorrentsBatch":
+				return ec.fieldContext_QueueMutation_enqueueReprocessTorrentsBatch(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type QueueMutation", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_version(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_version(ctx, field)
 	if err != nil {
@@ -5907,6 +6055,110 @@ func (ec *executionContext) fieldContext_QueueMetricsBucket_latency(ctx context.
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Duration does not have child fields")
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueueMutation_purgeJobs(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.QueueMutation) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueueMutation_purgeJobs(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PurgeJobs(ctx, fc.Args["input"].(manager.PurgeJobsRequest))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOVoid2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueueMutation_purgeJobs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueueMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Void does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_QueueMutation_purgeJobs_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueueMutation_enqueueReprocessTorrentsBatch(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.QueueMutation) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueueMutation_enqueueReprocessTorrentsBatch(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EnqueueReprocessTorrentsBatch(ctx, fc.Args["input"].(manager.EnqueueReprocessTorrentsBatchRequest))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOVoid2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueueMutation_enqueueReprocessTorrentsBatch(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueueMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Void does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_QueueMutation_enqueueReprocessTorrentsBatch_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -12673,6 +12925,84 @@ func (ec *executionContext) unmarshalInputLanguageFacetInput(ctx context.Context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputQueueEnqueueReprocessTorrentsBatchInput(ctx context.Context, obj interface{}) (manager.EnqueueReprocessTorrentsBatchRequest, error) {
+	var it manager.EnqueueReprocessTorrentsBatchRequest
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"batchSize", "chunkSize", "contentTypes", "orphans", "classifierRematch", "classifierWorkflow", "apisDisabled", "localSearchDisabled"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "batchSize":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("batchSize"))
+			data, err := ec.unmarshalOInt2uint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BatchSize = data
+		case "chunkSize":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("chunkSize"))
+			data, err := ec.unmarshalOInt2uint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ChunkSize = data
+		case "contentTypes":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contentTypes"))
+			data, err := ec.unmarshalOContentType2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullContentType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ContentTypes = data
+		case "orphans":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orphans"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Orphans = data
+		case "classifierRematch":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("classifierRematch"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.QueueEnqueueReprocessTorrentsBatchInput().ClassifierRematch(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "classifierWorkflow":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("classifierWorkflow"))
+			data, err := ec.unmarshalOString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClassifierWorkflow = data
+		case "apisDisabled":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("apisDisabled"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ApisDisabled = data
+		case "localSearchDisabled":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("localSearchDisabled"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LocalSearchDisabled = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputQueueMetricsQueryInput(ctx context.Context, obj interface{}) (gen.QueueMetricsQueryInput, error) {
 	var it gen.QueueMetricsQueryInput
 	asMap := map[string]interface{}{}
@@ -12722,6 +13052,40 @@ func (ec *executionContext) unmarshalInputQueueMetricsQueryInput(ctx context.Con
 				return it, err
 			}
 			it.EndTime = graphql.OmittableOf(data)
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputQueuePurgeJobsInput(ctx context.Context, obj interface{}) (manager.PurgeJobsRequest, error) {
+	var it manager.PurgeJobsRequest
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"queues", "statuses"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "queues":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("queues"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Queues = data
+		case "statuses":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statuses"))
+			data, err := ec.unmarshalOQueueJobStatus2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐQueueJobStatusᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Statuses = data
 		}
 	}
 
@@ -13933,6 +14297,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "queue":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_queue(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -14173,6 +14544,106 @@ func (ec *executionContext) _QueueMetricsBucket(ctx context.Context, sel ast.Sel
 			}
 		case "latency":
 			out.Values[i] = ec._QueueMetricsBucket_latency(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var queueMutationImplementors = []string{"QueueMutation"}
+
+func (ec *executionContext) _QueueMutation(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.QueueMutation) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, queueMutationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QueueMutation")
+		case "purgeJobs":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._QueueMutation_purgeJobs(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "enqueueReprocessTorrentsBatch":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._QueueMutation_enqueueReprocessTorrentsBatch(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -16360,6 +16831,15 @@ func (ec *executionContext) unmarshalNQueueMetricsQueryInput2githubᚗcomᚋbitm
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNQueueMutation2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐQueueMutation(ctx context.Context, sel ast.SelectionSet, v gqlmodel.QueueMutation) graphql.Marshaler {
+	return ec._QueueMutation(ctx, sel, &v)
+}
+
+func (ec *executionContext) unmarshalNQueuePurgeJobsInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋqueueᚋmanagerᚐPurgeJobsRequest(ctx context.Context, v interface{}) (manager.PurgeJobsRequest, error) {
+	res, err := ec.unmarshalInputQueuePurgeJobsInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNQueueQueryResult2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐQueueQueryResult(ctx context.Context, sel ast.SelectionSet, v gqlmodel.QueueQueryResult) graphql.Marshaler {
 	return ec._QueueQueryResult(ctx, sel, &v)
 }
@@ -17037,6 +17517,67 @@ func (ec *executionContext) marshalOContentType2githubᚗcomᚋbitmagnetᚑioᚋ
 	return v
 }
 
+func (ec *executionContext) unmarshalOContentType2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullContentType(ctx context.Context, v interface{}) ([]model.NullContentType, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]model.NullContentType, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOContentType2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullContentType(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOContentType2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullContentType(ctx context.Context, sel ast.SelectionSet, v []model.NullContentType) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOContentType2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullContentType(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalOContentType2ᚕᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐContentType(ctx context.Context, v interface{}) ([]*model.ContentType, error) {
 	if v == nil {
 		return nil, nil
@@ -17456,6 +17997,16 @@ func (ec *executionContext) marshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmagne
 	return v
 }
 
+func (ec *executionContext) unmarshalOInt2uint(ctx context.Context, v interface{}) (uint, error) {
+	res, err := graphql.UnmarshalUint(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2uint(ctx context.Context, sel ast.SelectionSet, v uint) graphql.Marshaler {
+	res := graphql.MarshalUint(v)
+	return res
+}
+
 func (ec *executionContext) unmarshalOInt2ᚕintᚄ(ctx context.Context, v interface{}) ([]int, error) {
 	if v == nil {
 		return nil, nil
@@ -17670,6 +18221,19 @@ func (ec *executionContext) marshalOLanguageInfo2ᚖgithubᚗcomᚋbitmagnetᚑi
 	return ec._LanguageInfo(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalOQueueEnqueueReprocessTorrentsBatchInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋqueueᚋmanagerᚐEnqueueReprocessTorrentsBatchRequest(ctx context.Context, v interface{}) (manager.EnqueueReprocessTorrentsBatchRequest, error) {
+	res, err := ec.unmarshalInputQueueEnqueueReprocessTorrentsBatchInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOQueueEnqueueReprocessTorrentsBatchInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋqueueᚋmanagerᚐEnqueueReprocessTorrentsBatchRequest(ctx context.Context, v interface{}) (*manager.EnqueueReprocessTorrentsBatchRequest, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputQueueEnqueueReprocessTorrentsBatchInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOQueueJobStatus2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐQueueJobStatusᚄ(ctx context.Context, v interface{}) ([]model.QueueJobStatus, error) {
 	if v == nil {
 		return nil, nil
@@ -17800,6 +18364,16 @@ func (ec *executionContext) unmarshalOString2githubᚗcomᚋbitmagnetᚑioᚋbit
 
 func (ec *executionContext) marshalOString2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullString(ctx context.Context, sel ast.SelectionSet, v model.NullString) graphql.Marshaler {
 	return v
+}
+
+func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	res := graphql.MarshalString(v)
+	return res
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {

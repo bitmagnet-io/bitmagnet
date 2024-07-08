@@ -1,8 +1,9 @@
 <ng-container *transloco="let t">
   <div class="progress-bar-container">
-    @if (dataSource.loading$ | async) {
-      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-    }
+    <mat-progress-bar
+      [mode]="(dataSource.loading$ | async) ? 'indeterminate' : 'determinate'"
+      [value]="0"
+    ></mat-progress-bar>
   </div>
   <table
     mat-table

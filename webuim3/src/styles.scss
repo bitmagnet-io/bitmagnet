@@ -4,6 +4,8 @@
 // Plus imports for other components in your app.
 @use "./app/health/health-widget-component.theme";
 @use "./app/layout/layout-component.theme";
+@use "./app/dashboard/dashboard-component.theme";
+@use "./app/queue/queue-card-component.theme";
 @use "./app/torrent-content/torrent-content-component.theme";
 @use "./app/torrents-search/torrents-search-component.theme";
 @use "./app/torrents-table/torrents-table-component.theme";
@@ -24,6 +26,8 @@
 @mixin app-component-themes($theme) {
   @include health-widget-component.theme($theme);
   @include layout-component.theme($theme);
+  @include dashboard-component.theme($theme);
+  @include queue-card-component.theme($theme);
   @include torrent-content-component.theme($theme);
   @include torrents-search-component.theme($theme);
   @include torrents-table-component.theme($theme);
@@ -100,4 +104,24 @@ body {
 
 .mat-icon {
   fill: var(--mat-icon-color);
+}
+
+.spacer {
+  display: inline-flex;
+  flex: 1 1 auto;
+}
+.drawer-container {
+  min-height: 100vh;
+}
+
+.drawer {
+  width: 340px;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+mat-drawer-content {
+  padding-right: 16px;
+  overflow: visible;
+  padding-bottom: 20px;
 }

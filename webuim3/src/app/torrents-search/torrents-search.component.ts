@@ -1,7 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  inject,
+  inject, OnDestroy,
   OnInit,
   ViewChild,
 } from '@angular/core';
@@ -23,7 +23,7 @@ import {
   Router,
   RouterLinkActive,
 } from '@angular/router';
-import { BehaviorSubject, combineLatestWith, Observable } from 'rxjs';
+import {BehaviorSubject, combineLatestWith, Observable, Subscription} from 'rxjs';
 import { map } from 'rxjs/operators';
 import {
   MatExpansionPanel,
@@ -112,7 +112,7 @@ import {Apollo} from "apollo-angular";
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TorrentsSearchComponent implements OnInit {
+export class TorrentsSearchComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private apollo = inject(Apollo);
@@ -120,7 +120,6 @@ export class TorrentsSearchComponent implements OnInit {
   private transloco = inject(TranslocoService);
   breakpoints = inject(BreakpointsService);
 
-  @ViewChild(PaginatorComponent) paginator: PaginatorComponent;
   dataSource: TorrentsSearchDatasource;
 
   controller: TorrentsSearchController;
@@ -145,6 +144,8 @@ export class TorrentsSearchComponent implements OnInit {
   >([]);
   selectedItems$ = this.selectedItemsSubject.asObservable();
 
+  private subscriptions = Array<Subscription>()
+
   constructor() {
     this.controls = {
       ...initControls,
@@ -156,9 +157,9 @@ export class TorrentsSearchComponent implements OnInit {
       this.errorsService,
       this.controller.params$,
     );
-    this.controller.controls$.subscribe((ctrl) => {
+    this.subscriptions.push(this.controller.controls$.subscribe((ctrl) => {
       this.controls = ctrl;
-    });
+    }));
     this.facets$ = this.controller.controls$.pipe(
       combineLatestWith(this.dataSource.result$),
       map(([controls, result]) =>
@@ -181,7 +182,7 @@ export class TorrentsSearchComponent implements OnInit {
         })),
       ),
     );
-    this.dataSource.result$.subscribe((result) => {
+    this.subscriptions.push(this.dataSource.result$.subscribe((result) => {
       this.result = result;
       const infoHashes = new Set(result.items.map(({ infoHash }) => infoHash));
       this.selection.deselect(
@@ -189,15 +190,15 @@ export class TorrentsSearchComponent implements OnInit {
           (infoHash) => !infoHashes.has(infoHash),
         ),
       );
-    });
+    }));
     // a bit of a hack to force an update on language switch:
-    this.transloco.events$.subscribe(() =>
+    this.subscriptions.push(this.transloco.events$.subscribe(() =>
       this.controller.selectLanguage(this.transloco.getActiveLang()),
-    );
+    ));
   }
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
+    this.subscriptions.push(this.route.queryParams.subscribe((params) => {
       const queryString = stringParam(params, 'query');
       this.queryString.setValue(queryString ?? null);
       this.controller.update((ctrl) => {
@@ -230,7 +231,7 @@ export class TorrentsSearchComponent implements OnInit {
           ),
         };
       });
-    });
+    }),
     this.controller.controls$.subscribe((ctrl) => {
       let page: number | undefined = ctrl.page;
       let limit: number | undefined = ctrl.limit;
@@ -253,13 +254,18 @@ export class TorrentsSearchComponent implements OnInit {
         },
         queryParamsHandling: 'merge',
       });
-    });
+    }),
     this.selection.changed.subscribe((selection) => {
       const infoHashes = new Set(selection.source.selected);
       this.selectedItemsSubject.next(
         this.result.items.filter((i) => infoHashes.has(i.infoHash)),
       );
-    });
+    }));
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach((subscription) => subscription.unsubscribe())
+    this.subscriptions = new Array<Subscription>();
   }
 }
 

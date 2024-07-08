@@ -1,4 +1,4 @@
-import {BehaviorSubject, debounce, debounceTime} from "rxjs";
+import {BehaviorSubject, debounce, debounceTime, Subscription} from "rxjs";
 import {
   BucketParams,
   EventName, EventBucket,
@@ -16,7 +16,7 @@ import {
   emptyResult,
   emptyStatusCounts,
   timeframeLengths
-} from "./queue-metrics.constants";
+} from "./queue.constants";
 import {Apollo} from "apollo-angular";
 import * as generated from "../graphql/generated";
 import {map} from "rxjs/operators";
@@ -34,7 +34,6 @@ export class QueueMetricsController {
   private resultSubject = new BehaviorSubject<Result>(emptyResult)
   public result$ = this.resultSubject.asObservable()
   private loadingSubject = new BehaviorSubject(false);
-  public loading$ = this.loadingSubject.asObservable();
 
   private refreshTimeout?: number;
 
@@ -43,17 +42,17 @@ export class QueueMetricsController {
     initParams: Params = emptyParams
   ) {
     this.paramsSubject = new BehaviorSubject<Params>(initParams);
-    this.variablesSubject = new BehaviorSubject<generated.QueueMetricsQueryVariables>(createVaraibles(initParams))
-    this.paramsSubject.subscribe((params) => {
+    this.variablesSubject = new BehaviorSubject<generated.QueueMetricsQueryVariables>(createVariables(initParams))
+    this.paramsSubject.pipe(debounceTime(50)).subscribe((params) => {
       const variables = this.variablesSubject.getValue();
-      const nextVariables = createVaraibles(params);
+      const nextVariables = createVariables(params);
       if (JSON.stringify(variables) !== JSON.stringify(nextVariables)) {
         this.variablesSubject.next(nextVariables);
       } else {
         this.resultSubject.next(createResult(params, this.rawResultSubject.getValue()))
       }
     })
-    this.variablesSubject.pipe(debounceTime(100)).subscribe((variables) =>
+    this.variablesSubject.pipe(debounceTime(50)).subscribe((variables) =>
       this.request(variables)
     )
     this.rawResultSubject.subscribe((rawResult) => {
@@ -109,6 +108,13 @@ export class QueueMetricsController {
     }))
   }
 
+  setEvent(event: EventName | null) {
+    this.updateParams((p) => ({
+      ...p,
+      event: event ?? undefined,
+    }))
+  }
+
   setAutoRefreshInterval(autoRefreshInterval: AutoRefreshInterval) {
     this.updateParams((p) => ({
       ...p,
@@ -121,7 +127,7 @@ export class QueueMetricsController {
   }
 
   refresh() {
-    return this.request(this.variablesSubject.getValue())
+    this.variablesSubject.next(this.variablesSubject.getValue());
   }
 
   private request(variables:  generated.QueueMetricsQueryVariables) {
@@ -140,7 +146,7 @@ export class QueueMetricsController {
   }
 }
 
-const createVaraibles = (params: Params): generated.QueueMetricsQueryVariables=> ({
+const createVariables = (params: Params): generated.QueueMetricsQueryVariables=> ({
   input: {
     bucketDuration: params.buckets.duration,
     queues: params.queue ? [params.queue] : undefined,
@@ -153,20 +159,29 @@ const fromEntries = <K extends string, V>(entries: Array<[K, V]>): Partial<Recor
 const createResult = (params: Params, rawResult: generated.QueueMetricsQuery): Result => {
   const {bucketParams,earliestBucket, latestBucket} = createBucketParams(params, rawResult)
   return {
-    bucketParams,
+    params: {
+      ...params,
+      buckets: bucketParams,
+    },
     queues: Object
       .entries(rawResult.queue.metrics.reduce<Record<string, [StatusCounts, Partial<Record<EventName, EventBucketEntries>>]>>(
         (acc, next) => {
           if (next.queue !== (params.queue ?? next.queue)) {
             return acc
           }
-          let createdAt: NormalizedBucket | undefined = normalizeBucket(next.createdAtBucket, bucketParams)
-          if (earliestBucket && earliestBucket.index > createdAt.index) {
-            createdAt = undefined;
+          let createdAt: NormalizedBucket | undefined
+          let ranAt: NormalizedBucket | undefined
+          if (params.event ?? "created" === "created") {
+            createdAt = normalizeBucket(next.createdAtBucket, bucketParams)
+            if (earliestBucket && earliestBucket.index > createdAt.index) {
+              createdAt = undefined;
+            }
           }
-          let ranAt = next.ranAtBucket ? normalizeBucket(next.ranAtBucket, bucketParams) : undefined
-          if (ranAt && (latestBucket.index < ranAt.index || (earliestBucket && earliestBucket.index > ranAt.index))) {
-            ranAt = undefined;
+          if (next.ranAtBucket && params.event !== "created") {
+            ranAt = normalizeBucket(next.ranAtBucket, bucketParams)
+            if (ranAt && (latestBucket.index < ranAt.index || (earliestBucket && earliestBucket.index > ranAt.index))) {
+              ranAt = undefined;
+            }
           }
           if (next.queue !== params.queue && !createdAt && (
             !ranAt || next.status === "pending"
@@ -192,7 +207,7 @@ const createResult = (params: Params, rawResult: generated.QueueMetricsQuery): R
                   startTime: createdAt.start,
                 }
               } : currentEventBuckets.created,
-              processed: (ranAt && next.status === "processed") ? {
+              processed: (ranAt && next.status === "processed" && (params.event ?? "processed" === "processed")) ? {
                 ...currentEventBuckets.processed,
                 [ranAt.key]: {
                   count: next.count + (currentEventBuckets.processed?.[ranAt.key]?.count ?? 0),
@@ -200,7 +215,7 @@ const createResult = (params: Params, rawResult: generated.QueueMetricsQuery): R
                   startTime: ranAt.start,
                 }
               } : currentEventBuckets.processed,
-              failed: (ranAt && next.status === "failed") ? {
+              failed: (ranAt && next.status === "failed" && (params.event ?? "failed" === "failed")) ? {
                 ...currentEventBuckets.failed,
                 [ranAt.key]: {
                   count: next.count + (currentEventBuckets.failed?.[ranAt.key]?.count ?? 0),

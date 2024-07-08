@@ -11,6 +11,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/resolvers"
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
+	"github.com/bitmagnet-io/bitmagnet/internal/queue/manager"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/metrics"
 	"go.uber.org/fx"
 )
@@ -53,11 +54,16 @@ func New() fx.Option {
 						if err != nil {
 							return nil, err
 						}
+						qm, err := p.QueueManager.Get()
+						if err != nil {
+							return nil, err
+						}
 						return &resolvers.Resolver{
 							Dao:                d,
 							Search:             s,
 							Checker:            ch,
 							QueueMetricsClient: qmc,
+							QueueManager:       qm,
 						}, nil
 					}),
 				}
@@ -82,6 +88,7 @@ type Params struct {
 	Dao                lazy.Lazy[*dao.Query]
 	Checker            lazy.Lazy[health.Checker]
 	QueueMetricsClient lazy.Lazy[metrics.Client]
+	QueueManager       lazy.Lazy[manager.Manager]
 }
 
 type Result struct {

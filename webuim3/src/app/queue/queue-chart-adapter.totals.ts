@@ -1,6 +1,8 @@
 import {ChartAdapter} from "../charting/types";
 import {ChartConfiguration} from "chart.js";
 import {Result} from "./queue-metrics.types";
+import * as generated from "../graphql/generated";
+import {statusNames} from "./queue.constants";
 
 export const queueChartAdapterTotals: ChartAdapter<Result> = {
   create: (result) => {
@@ -11,7 +13,22 @@ export const queueChartAdapterTotals: ChartAdapter<Result> = {
       if (bucketKeys.length) {
         const nonEmptyQueues = result.queues.filter((q) => !q.isEmpty)
         labels.push(...nonEmptyQueues.map((q) => q.queue))
-        datasets.push(...(["pending", "retry", "failed", "processed"] as const).map((status) => ({
+        const statuses = Array<generated.QueueJobStatus>()
+        switch (result.params.event) {
+          case "created":
+            statuses.push("pending")
+            break
+          case "processed":
+            statuses.push("processed")
+            break
+          case "failed":
+            statuses.push("retry", "failed")
+            break
+          default:
+            statuses.push(...statusNames)
+            break
+        }
+        datasets.push(...statuses.map((status) => ({
           label: status,
           data: nonEmptyQueues.map((q) => q.statusCounts[status]),
         })))

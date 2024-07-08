@@ -17,7 +17,6 @@ export class ChartComponent<Data = unknown, Type extends ChartType = ChartType> 
   @Input() adapter: ChartAdapter<Data, Type>;
   @Input() width: number = 500;
   @Input() height: number = 500;
-  @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
   chartConfig: ChartConfiguration
 

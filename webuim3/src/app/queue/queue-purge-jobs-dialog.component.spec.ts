@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DashboardComponent } from './dashboard.component';
+import { QueuePurgeJobsDialog } from './queue-purge-jobs-dialog.component';
 
-describe('DashboardComponent', () => {
-  let component: DashboardComponent;
-  let fixture: ComponentFixture<DashboardComponent>;
+describe('QueuePurgeJobsComponent', () => {
+  let component: QueuePurgeJobsDialog;
+  let fixture: ComponentFixture<QueuePurgeJobsDialog>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DashboardComponent]
+      imports: [QueuePurgeJobsDialog]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(DashboardComponent);
+    fixture = TestBed.createComponent(QueuePurgeJobsDialog);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

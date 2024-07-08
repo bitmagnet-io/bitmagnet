@@ -28,11 +28,13 @@ export const emptyParams: Params = {
 }
 
 export const emptyResult: Result = {
-  bucketParams: defaultBucketParams,
+  params: emptyParams,
   queues: []
 }
 
 export const eventNames = ["created", "processed", "failed"] as const
+
+export const statusNames = ["pending", "processed", "retry", "failed"] as const
 
 export const timeframeNames = ["minutes_15", "minutes_30", "hours_1", "hours_6", "hours_12", "days_1", "weeks_1" ,"all"] as const
 

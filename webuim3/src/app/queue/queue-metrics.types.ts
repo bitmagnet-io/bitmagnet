@@ -1,5 +1,5 @@
 import * as generated from "../graphql/generated";
-import {autoRefreshIntervalNames, autoRefreshIntervals, eventNames, timeframeNames} from "./queue-metrics.constants";
+import {autoRefreshIntervalNames, autoRefreshIntervals, eventNames, timeframeNames} from "./queue.constants";
 
 export type TimeframeName = typeof timeframeNames[number]
 
@@ -11,15 +11,16 @@ export type BucketParams<_withAuto extends boolean = boolean> = {
 
 export type AutoRefreshInterval = typeof autoRefreshIntervalNames[number]
 
-export type Params = {
-  buckets: BucketParams<true>;
-  queue?: string;
-  autoRefresh: AutoRefreshInterval;
-}
-
 export type StatusCounts = Record<generated.QueueJobStatus, number>
 
 export type EventName = typeof eventNames[number]
+
+export type Params<_withAuto extends boolean = boolean> = {
+  buckets: BucketParams<_withAuto>;
+  queue?: string;
+  event?: EventName;
+  autoRefresh: AutoRefreshInterval;
+}
 
 export type EventBucketEntry = {
   startTime: Date;
@@ -53,7 +54,7 @@ export type QueueSummary<IsEmpty extends boolean = boolean> = {
 }
 
 export type Result = {
-  bucketParams: BucketParams<false>;
+  params: Params<false>;
   // earliestBucket: number;
   // latestBucket: number;
   bucketSpan?: BucketSpan;
