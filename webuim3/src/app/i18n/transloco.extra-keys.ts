@@ -44,6 +44,7 @@
  * t(health.workers.dht_crawler)
  * t(health.workers.http_server)
  * t(health.workers.queue_server)
+ * t(health.statuses.degraded)
  * t(health.statuses.down)
  * t(health.statuses.error)
  * t(health.statuses.inactive)

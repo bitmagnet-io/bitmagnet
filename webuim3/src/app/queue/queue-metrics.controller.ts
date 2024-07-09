@@ -1,4 +1,4 @@
-import {BehaviorSubject, debounce, debounceTime, Observable, Subscription} from "rxjs";
+import {BehaviorSubject, catchError, debounce, debounceTime, EMPTY, Observable, Subscription} from "rxjs";
 import {
   BucketParams,
   EventName, EventBucket,
@@ -22,6 +22,7 @@ import * as generated from "../graphql/generated";
 import {map} from "rxjs/operators";
 import {parse as parseDuration, toSeconds} from "iso8601-duration";
 import {QueueMetricsBucketDuration} from "../graphql/generated";
+import {ErrorsService} from "../errors/errors.service";
 
 export class QueueMetricsController {
   private paramsSubject :BehaviorSubject<Params>;
@@ -40,7 +41,8 @@ export class QueueMetricsController {
 
   constructor(
     private apollo: Apollo,
-    initParams: Params = emptyParams
+    initParams: Params = emptyParams,
+    private errorsService: ErrorsService
   ) {
     this.paramsSubject = new BehaviorSubject<Params>(initParams);
     this.params$ = this.paramsSubject.asObservable()
@@ -64,9 +66,9 @@ export class QueueMetricsController {
     })
   }
 
-  private setInterval(interval: AutoRefreshInterval) {
+  private setInterval(interval?: AutoRefreshInterval) {
     clearTimeout(this.refreshTimeout);
-    const delay = autoRefreshIntervals[interval];
+    const delay = autoRefreshIntervals[interval ?? this.params.autoRefresh];
     if (delay) {
       this.refreshTimeout = setTimeout(() => {
         this.refresh()
@@ -163,9 +165,17 @@ export class QueueMetricsController {
       fetchPolicy: "no-cache",
     }).pipe(
       map((r) => {
+        if (r) {
+          this.loadingSubject.next(false)
+          this.rawResultSubject.next(r.data)
+        }
+      })).pipe(
+      catchError((err: Error) => {
+        this.errorsService.addError(`Failed to load queue metrics: ${err.message}`)
         this.loadingSubject.next(false)
-        this.rawResultSubject.next(r.data)
-      })
+        this.setInterval()
+        return EMPTY;
+      }),
     ).subscribe()
   }
 }

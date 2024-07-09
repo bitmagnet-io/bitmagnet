@@ -40,6 +40,7 @@ import {
   QueueEnqueueReprocessTorrentsBatchDialog
 } from "./queue-enqueue-reprocess-torrents-batch-dialog.component";
 import {BreakpointsService} from "../layout/breakpoints.service";
+import {ErrorsService} from "../errors/errors.service";
 
 @Component({
   selector: 'app-queue-card',
@@ -61,7 +62,9 @@ export class QueueCardComponent implements OnInit, OnDestroy{
         timeframe: "all"
       },
       autoRefresh: "seconds_30",
-    })
+    },
+    inject(ErrorsService)
+    )
   protected readonly timeline = queueChartAdapterTimeline;
   protected readonly totals = queueChartAdapterTotals;
 

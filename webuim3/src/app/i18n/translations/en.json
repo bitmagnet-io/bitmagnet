@@ -58,6 +58,7 @@
     "error": "Error",
     "status": "Status",
     "statuses": {
+      "degraded": "Degraded",
       "down": "Down",
       "error": "Error",
       "inactive": "Inactive",

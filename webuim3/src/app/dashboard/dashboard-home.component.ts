@@ -17,6 +17,7 @@ import {Apollo} from "apollo-angular";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {MatToolbar} from "@angular/material/toolbar";
 import {MatDivider} from "@angular/material/divider";
+import {ErrorsService} from "../errors/errors.service";
 
 @Component({
   selector: 'app-dashboard',
@@ -50,7 +51,9 @@ export class DashboardHomeComponent {
         timeframe: "days_1"
       },
       autoRefresh: "off",
-    })
+    },
+    inject(ErrorsService)
+  )
 
   totals = queueChartAdapterTotals
   timeline = queueChartAdapterTimeline

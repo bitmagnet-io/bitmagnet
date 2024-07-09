@@ -32,7 +32,6 @@ export class BreakpointsService {
 
   constructor() {
     this.size$.subscribe((s) => {
-      console.log(s)
       this.size = s;
     })
   }
