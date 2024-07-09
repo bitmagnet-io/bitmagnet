@@ -110,8 +110,8 @@
           <app-torrent-content
             [torrentContent]="i"
             [size]="false"
-            [published]="(breakpoints.isCompact$ | async) ?? false"
-            [peers]="(breakpoints.isCompact$ | async) ?? false"
+            [published]="breakpoints.sizeAtLeast('Medium')"
+            [peers]="breakpoints.sizeAtLeast('Medium')"
             (updated)="updated.emit(item(i).infoHash)"
           />
         </div>

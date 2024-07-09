@@ -1,6 +1,9 @@
 package manager
 
-import "context"
+import (
+	"context"
+	"github.com/bitmagnet-io/bitmagnet/internal/model"
+)
 
 func (m manager) PurgeJobs(ctx context.Context, req PurgeJobsRequest) error {
 	q := m.dao.QueueJob.WithContext(ctx)
@@ -17,9 +20,9 @@ func (m manager) PurgeJobs(ctx context.Context, req PurgeJobsRequest) error {
 		q = q.Where(m.dao.QueueJob.Status.In(statuses...))
 		where = true
 	}
+	db := q.UnderlyingDB()
 	if !where {
-		q = q.Where(m.dao.QueueJob.ID.EqCol(m.dao.QueueJob.ID))
+		db = db.Where("true")
 	}
-	_, err := q.Delete()
-	return err
+	return db.Delete(&model.QueueJob{}).Error
 }

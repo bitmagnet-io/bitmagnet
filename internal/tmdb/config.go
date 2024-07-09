@@ -23,5 +23,5 @@ func NewDefaultConfig() Config {
 const (
 	defaultTmdbApiKey     = "9c6689fa83ae6814fbfb200d70bba3a8"
 	defaultRateLimit      = time.Second / 20
-	defaultRateLimitBurst = 5
+	defaultRateLimitBurst = 8
 )

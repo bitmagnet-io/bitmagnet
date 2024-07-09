@@ -25,7 +25,7 @@ type Result struct {
 func New(params Params) Result {
 	return Result{
 		Option: health.WithPeriodicCheck(
-			time.Minute*5,
+			time.Minute*10,
 			time.Second*10,
 			NewCheck(params.DhtCrawlerActive, params.Client, params.Config.BootstrapNodes),
 		),

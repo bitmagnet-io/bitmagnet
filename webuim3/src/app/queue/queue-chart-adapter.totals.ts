@@ -3,9 +3,19 @@ import {ChartConfiguration} from "chart.js";
 import {Result} from "./queue-metrics.types";
 import * as generated from "../graphql/generated";
 import {statusNames} from "./queue.constants";
+import {ThemeBaseColor} from "../themes/theme-types";
+import {QueueJobStatus} from "../graphql/generated";
+import {createThemeColor} from "../themes/theme-utils";
+
+const statusColors: Record<QueueJobStatus, ThemeBaseColor> = {
+  'pending': 'primary',
+  'processed': 'success',
+  'failed': 'error',
+  'retry': 'caution'
+}
 
 export const queueChartAdapterTotals: ChartAdapter<Result> = {
-  create: (result) => {
+  create: (result, {colors}) => {
     const labels = Array<string>()
     const datasets: ChartConfiguration<"bar">["data"]["datasets"] = []
     if (result) {
@@ -31,6 +41,7 @@ export const queueChartAdapterTotals: ChartAdapter<Result> = {
         datasets.push(...statuses.map((status) => ({
           label: status,
           data: nonEmptyQueues.map((q) => q.statusCounts[status]),
+          backgroundColor: colors[createThemeColor(statusColors[status], 50)],
         })))
       }
     }

@@ -39,7 +39,7 @@ func newRequester(ctx context.Context, config Config, logger *zap.SugaredLogger)
 	if config.ApiKey == defaultTmdbApiKey {
 		logger.Warnln("you are using the default TMDB api key; TMDB requests will be limited to 1 per second; to remove this warning please configure a personal TMDB api key")
 		config.RateLimit = time.Second
-		config.RateLimitBurst = 1
+		config.RateLimitBurst = defaultRateLimitBurst
 	}
 	r := requesterLogger{
 		requester: requesterFailFast{

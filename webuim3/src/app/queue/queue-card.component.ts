@@ -39,6 +39,7 @@ import {MatMenu, MatMenuItem, MatMenuTrigger} from "@angular/material/menu";
 import {
   QueueEnqueueReprocessTorrentsBatchDialog
 } from "./queue-enqueue-reprocess-torrents-batch-dialog.component";
+import {BreakpointsService} from "../layout/breakpoints.service";
 
 @Component({
   selector: 'app-queue-card',
@@ -48,15 +49,16 @@ import {
   imports: [QueueModule, MatCardContent, MatDialogModule, ChartComponent, MatIcon, MatCardTitle, MatCardHeader, MatCard, GraphQLModule, TranslocoDirective, MatFormField, MatLabel, MatInput, MatSelect, MatOption, MatRadioGroup, MatRadioButton, AsyncPipe, MatMiniFabButton, MatTooltip, MatSlider, MatSliderThumb, MatIconButton, MatGridList, MatGridTile, MatCardFooter, MatCardActions, MatProgressBar, MatButton, MatToolbar, MatMenu, MatMenuItem, MatMenuTrigger, MatAnchor]
 })
 export class QueueCardComponent implements OnInit, OnDestroy{
+  breakpoints = inject(BreakpointsService)
   private apollo = inject(Apollo);
   readonly dialog = inject(MatDialog);
   queueMetricsController = new QueueMetricsController(
     this.apollo,
     {
       buckets: {
-        duration: "minute",
-        multiplier: 5,
-        timeframe: "days_1"
+        duration: "AUTO",
+        multiplier: "AUTO",
+        timeframe: "all"
       },
       autoRefresh: "seconds_30",
     })
@@ -71,6 +73,18 @@ export class QueueCardComponent implements OnInit, OnDestroy{
   ngOnInit() {
     this.dialog.afterAllClosed.subscribe(() => {
       this.queueMetricsController.refresh()
+    })
+    this.queueMetricsController.result$.subscribe((result) => {
+      // change the default settings to more sensible ones if there is <12 hours of data to show
+      if (this.queueMetricsController.params.buckets.timeframe === "all" &&
+        this.queueMetricsController.params.buckets.duration === "AUTO" &&
+        result.params.buckets.duration === "hour")
+      {
+        const span = result.bucketSpan
+        if (span && (span.latestBucket - span.earliestBucket < 12)) {
+          this.queueMetricsController.setBucketDuration('minute')
+        }
+      }
     })
   }
 
@@ -99,4 +113,9 @@ export class QueueCardComponent implements OnInit, OnDestroy{
   }
 
   protected readonly eventNames = eventNames;
+
+  handleMultiplierEvent(event: Event) {
+    const value = (event.currentTarget as HTMLInputElement).value
+    this.queueMetricsController.setBucketMultiplier(/^\d+$/.test(value) ? parseInt(value) : "AUTO")
+  }
 }

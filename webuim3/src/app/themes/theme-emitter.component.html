@@ -1,0 +1,6 @@
+<ng-container>
+  @for (c of themeColors; track c) {
+    <app-theme-emitter-color [color]="c" />
+  }
+  <div class="theme-emitter-lightdark" #lightdark></div>
+</ng-container>

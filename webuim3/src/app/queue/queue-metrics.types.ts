@@ -4,7 +4,7 @@ import {autoRefreshIntervalNames, autoRefreshIntervals, eventNames, timeframeNam
 export type TimeframeName = typeof timeframeNames[number]
 
 export type BucketParams<_withAuto extends boolean = boolean> = {
-  duration: generated.QueueMetricsBucketDuration
+  duration: _withAuto extends true ? "AUTO" | generated.QueueMetricsBucketDuration : generated.QueueMetricsBucketDuration;
   multiplier: _withAuto extends true ? "AUTO" | number : number;
   timeframe: TimeframeName;
 }
@@ -25,12 +25,12 @@ export type Params<_withAuto extends boolean = boolean> = {
 export type EventBucketEntry = {
   startTime: Date;
   count: number,
-  totalLatency: number,
+  latency: number,
 }
 
 export type EventBucketEntries = Partial<Record<string, EventBucketEntry>>
 
-type BucketSpan = {
+export type BucketSpan = {
   earliestBucket: number;
   latestBucket: number;
 }

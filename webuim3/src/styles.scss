@@ -6,6 +6,7 @@
 @use "./app/layout/layout-component.theme";
 @use "./app/dashboard/dashboard-component.theme";
 @use "./app/queue/queue-card-component.theme";
+@use "./app/themes/theme-emitter-component.theme";
 @use "./app/torrent-content/torrent-content-component.theme";
 @use "./app/torrents-search/torrents-search-component.theme";
 @use "./app/torrents-table/torrents-table-component.theme";
@@ -28,6 +29,7 @@
   @include layout-component.theme($theme);
   @include dashboard-component.theme($theme);
   @include queue-card-component.theme($theme);
+  @include theme-emitter-component.theme($theme);
   @include torrent-content-component.theme($theme);
   @include torrents-search-component.theme($theme);
   @include torrents-table-component.theme($theme);

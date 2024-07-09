@@ -4,8 +4,8 @@
       [ngSrc]="'https://image.tmdb.org/t/p/w300/' + posterPath"
       [alt]="t('torrents.poster')"
       class="poster"
-      [width]="(breakpoints.isCompact$ | async) ? 150 : 300"
-      [height]="(breakpoints.isCompact$ | async) ? 225 : 450"
+      [width]="breakpoints.sizeAtLeast('Medium') ? 300 : 150"
+      [height]="breakpoints.sizeAtLeast('Medium') ? 450 : 225"
     />
   }
   @if (heading) {
@@ -134,7 +134,7 @@
     <mat-tab>
       <ng-template mat-tab-label>
         <mat-icon>file_present</mat-icon>
-        @if (!(breakpoints.isCompact$ | async)) {
+        @if (!breakpoints.sizeAtLeast('Medium')) {
           <span class="label">{{ t("torrents.files") }}</span>
         }
         @if (filesCount(); as filesCount) {
@@ -218,7 +218,7 @@
     <mat-tab>
       <ng-template mat-tab-label>
         <mat-icon>sell</mat-icon>
-        @if (!(breakpoints.isCompact$ | async)) {
+        @if (breakpoints.sizeAtLeast('Medium')) {
           <span class="label">{{ t("torrents.edit_tags") }}</span>
         }
       </ng-template>
@@ -267,7 +267,7 @@
     <mat-tab>
       <ng-template mat-tab-label>
         <mat-icon>delete_forever</mat-icon>
-        @if (!(breakpoints.isCompact$ | async)) {
+        @if (breakpoints.sizeAtLeast('Medium')) {
           <span class="label">{{ t("torrents.delete") }}</span>
         }
       </ng-template>

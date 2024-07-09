@@ -9,9 +9,9 @@ export const emptyStatusCounts: StatusCounts = {
 }
 
 export const defaultBucketParams: BucketParams = {
-  duration: "minute",
+  duration: "hour",
   multiplier: 1,
-  timeframe: "days_1",
+  timeframe: "all",
 }
 
 export const resolutionNames = ["day", "hour", "minute"] as const;

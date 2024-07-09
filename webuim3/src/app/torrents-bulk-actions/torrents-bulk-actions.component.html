@@ -14,7 +14,7 @@
     <mat-tab>
       <ng-template mat-tab-label>
         <mat-icon>content_copy</mat-icon>
-        @if (!(breakpoints.isCompact$ | async)) {
+        @if (breakpoints.sizeAtLeast('Medium')) {
           <span class="label">{{ t("torrents.copy") }}</span>
         }
       </ng-template>
@@ -44,7 +44,7 @@
     <mat-tab>
       <ng-template mat-tab-label>
         <mat-icon>sell</mat-icon>
-        @if (!(breakpoints.isCompact$ | async)) {
+        @if (breakpoints.sizeAtLeast('Medium')) {
           <span class="label">{{ t("torrents.edit_tags") }}</span>
         }
       </ng-template>
@@ -125,7 +125,7 @@
     <mat-tab>
       <ng-template mat-tab-label>
         <mat-icon>delete_forever</mat-icon>
-        @if (!(breakpoints.isCompact$ | async)) {
+        @if (breakpoints.sizeAtLeast('Medium')) {
           <span class="label">{{ t("torrents.delete") }}</span>
         }
       </ng-template>

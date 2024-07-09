@@ -36,7 +36,11 @@
       } @else if (stage === "REQUESTING") {
         <mat-spinner></mat-spinner>
       } @else if (stage === "DONE") {
-        <p>Queue purged</p>
+        @if (error) {
+          <p>Error purging queue: {{error.message}}</p>
+        } @else {
+          <p>Queue purged</p>
+        }
       }
     </mat-dialog-content>
     <mat-dialog-actions>

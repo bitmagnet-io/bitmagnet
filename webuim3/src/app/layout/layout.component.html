@@ -1,6 +1,6 @@
 <ng-container *transloco="let t">
   <mat-toolbar class="toolbar-header">
-    @if (!(breakpoints.isCompact$ | async)) {
+    @if (breakpoints.sizeAtLeast('Medium')) {
       <h1>
         <a routerLink="dashboard">
           <mat-icon svgIcon="magnet"></mat-icon>
@@ -121,7 +121,7 @@
         }}</a
       >
     </mat-menu>
-    @if (breakpoints.isCompact$ | async) {
+    @if (!breakpoints.sizeAtLeast('Medium')) {
       <a
         mat-icon-button
         class="button-sponsor"
@@ -144,4 +144,5 @@
   <div class="app-content">
     <ng-content></ng-content>
   </div>
+  <app-theme-emitter />
 </ng-container>

@@ -17,6 +17,9 @@ import {
 } from "@angular/material/dialog";
 import {MatButton} from "@angular/material/button";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
+import {map} from "rxjs/operators";
+import {subscribe} from "graphql/execution";
+import {catchError, EMPTY} from "rxjs";
 
 @Component({
   selector: 'app-queue-purge-jobs',
@@ -38,6 +41,8 @@ export class QueuePurgeJobsDialog {
   protected stage: "PENDING" | "REQUESTING" | "DONE" = "PENDING"
 
   @Inject(MAT_DIALOG_DATA) public data: {onPurged: () => void}
+
+  protected error?: Error
 
   handleQueueEvent(event: MatCheckboxChange) {
     if (event.source.value === "_all") {
@@ -104,9 +109,16 @@ export class QueuePurgeJobsDialog {
           statuses: this.statuses,
         }
       }
-    }).subscribe(() => {
-      this.stage = "DONE"
-      this.data.onPurged();
-    })
+    }).pipe(
+      catchError((err) => {
+        this.stage = "DONE"
+        this.error = err
+        return EMPTY
+      }),
+      map(() => {
+          this.stage = "DONE"
+          this.data.onPurged();
+      })
+    ).subscribe()
   }
 }

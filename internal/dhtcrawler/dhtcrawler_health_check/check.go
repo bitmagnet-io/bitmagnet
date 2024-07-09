@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"net"
 	"net/netip"
+	"time"
 )
 
 func NewCheck(
@@ -24,6 +25,7 @@ func NewCheck(
 		IsActive: func() bool {
 			return dhtCrawlerActive.Get()
 		},
+		Timeout: 60 * 5 * time.Second,
 		Check: func(ctx context.Context) error {
 			if len(bootstrapNodes) == 0 {
 				return errors.New("no bootstrap nodes provided")

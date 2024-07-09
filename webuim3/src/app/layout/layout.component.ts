@@ -28,6 +28,7 @@ import { TranslateManager } from '../i18n/translate-manager.service';
 import { HealthModule } from '../health/health.module';
 import { HealthService } from '../health/health.service';
 import { BreakpointsService } from './breakpoints.service';
+import {ThemeEmitterComponent} from "../themes/theme-emitter.component";
 
 @Component({
   selector: 'app-layout',
@@ -57,6 +58,7 @@ import { BreakpointsService } from './breakpoints.service';
     TranslocoDirective,
     TranslocoPipe,
     HealthModule,
+    ThemeEmitterComponent,
   ],
 })
 export class LayoutComponent {

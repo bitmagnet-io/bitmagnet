@@ -3,13 +3,13 @@
     <mat-drawer
       #drawer
       class="drawer"
-      [attr.role]="(breakpoints.isCompact$ | async) ? 'dialog' : 'navigation'"
-      [mode]="(breakpoints.isCompact$ | async) ? 'over' : 'side'"
-      [opened]="(breakpoints.isCompact$ | async) === false"
+      [attr.role]="breakpoints.sizeAtLeast('Medium') ? 'navigation' : 'dialog'"
+      [mode]="breakpoints.sizeAtLeast('Medium') ? 'side' : 'over'"
+      [opened]="breakpoints.sizeAtLeast('Medium')"
     >
       <mat-expansion-panel
         class="panel-content-type"
-        [expanded]="!(breakpoints.isCompact$ | async)"
+        [expanded]="breakpoints.sizeAtLeast('Medium')"
       >
         <mat-expansion-panel-header>
           <mat-panel-title>
@@ -203,7 +203,7 @@
       <app-torrents-table
         [dataSource]="dataSource"
         [displayedColumns]="
-          (breakpoints.isCompact$ | async) ? compactColumns : allColumns
+          breakpoints.sizeAtLeast('Medium') ? allColumns : compactColumns
         "
         [selection]="selection"
         (updated)="dataSource.refresh()"

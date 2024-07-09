@@ -1,17 +1,19 @@
 import {ChartAdapter} from "../charting/types";
 import {ChartConfiguration} from "chart.js";
-import {BucketParams, Result} from "./queue-metrics.types";
+import {BucketParams, EventName, Result} from "./queue-metrics.types";
 import {durationSeconds, eventNames, timeframeLengths} from "./queue.constants";
 import {normalizeBucket} from "./queue-metrics.controller";
+import {ThemeBaseColor, ThemeColor} from "../themes/theme-types";
+import {createThemeColor} from "../themes/theme-utils";
 
-const eventColors = {
-  'created': 'blue',
-  'processed': 'green',
-  'failed': 'red',
+const eventColors: Record<EventName, ThemeBaseColor> = {
+  'created': 'primary',
+  'processed': 'success',
+  'failed': 'error',
 }
 
 export const queueChartAdapterTimeline: ChartAdapter<Result> = {
-  create: (result) => {
+  create: (result, {colors}) => {
     const labels = Array<string>()
     const datasets: ChartConfiguration<"line">["data"]["datasets"] = []
     if (result) {
@@ -46,11 +48,40 @@ export const queueChartAdapterTimeline: ChartAdapter<Result> = {
               data: series,
               // fill: 'origin',
               // backgroundColor: 'rgba(148,159,177,0.2)',
-              borderColor: eventColors[event],
-              pointBackgroundColor: 'rgba(148,159,177,1)',
-              pointBorderColor: '#fff',
-              pointHoverBackgroundColor: '#fff',
-              pointHoverBorderColor: 'rgba(148,159,177,0.8)',
+              borderColor: colors[createThemeColor(eventColors[event], 50)],
+              pointBackgroundColor: colors[createThemeColor(eventColors[event], 20)],
+              pointBorderColor: colors[createThemeColor(eventColors[event], 80)],
+              pointHoverBackgroundColor: colors[createThemeColor(eventColors[event], 40)],
+              pointHoverBorderColor: colors[createThemeColor(eventColors[event], 60)],
+            })
+          }
+          const latencyEvents = (["processed", "failed"] as const).filter((e) => relevantEvents.includes(e))
+          if (latencyEvents.length) {
+            const latencySeries = Array<number|null>()
+            for (let i = minBucket; i <= maxBucket; i++) {
+              const result = (["processed", "failed"] as const).filter((e) => relevantEvents.includes(e)).reduce<[number, number] | null>(
+                (acc, next) => {
+                  const entry = queue.events?.eventBuckets?.[next]?.entries?.[`${i}`]
+                  if (!entry?.count) {
+                    return acc
+                  }
+                  return [(acc?.[0] ?? 0)+entry.latency, (acc?.[1] ?? 0)+entry.count]
+                },
+                null
+              )
+              latencySeries.push(result ? result[0] / result[1] : null)
+            }
+            datasets.push({
+              yAxisID: "yLatency",
+              label: [queue.queue, 'latency'].join("/"),
+              data: latencySeries,
+              // fill: 'origin',
+              // backgroundColor: 'rgba(148,159,177,0.2)',
+              borderColor: colors["tertiary-50"],
+              // pointBackgroundColor: 'rgba(148,159,177,1)',
+              // pointBorderColor: '#fff',
+              pointHoverBackgroundColor: colors["tertiary-80"],
+              pointHoverBorderColor: colors["tertiary-20"],
             })
           }
         }
@@ -68,6 +99,13 @@ export const queueChartAdapterTimeline: ChartAdapter<Result> = {
         scales: {
           yCount: {
             position: 'left',
+            // max: 100,
+            ticks: {
+              stepSize: 1
+            }
+          },
+          yLatency: {
+            position: 'right',
             // max: 100,
           },
           x: {

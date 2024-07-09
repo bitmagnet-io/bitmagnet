@@ -5,6 +5,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
 	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
+	"time"
 )
 
 func NewCheck(
@@ -12,7 +13,8 @@ func NewCheck(
 	client lazy.Lazy[tmdb.Client],
 ) health.Check {
 	return health.Check{
-		Name: "tmdb",
+		Name:    "tmdb",
+		Timeout: time.Second * 30,
 		IsActive: func() bool {
 			return enabled
 		},

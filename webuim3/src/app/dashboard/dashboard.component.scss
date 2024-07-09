@@ -7,6 +7,8 @@ mat-drawer nav {
     a {
       width: 100%;
       font-size: var(--mat-expansion-container-text-size);
+      justify-content: flex-start;
+      padding-left: 20px;
     }
     li {
       margin-bottom: 6px;

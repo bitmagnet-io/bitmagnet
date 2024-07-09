@@ -1,6 +1,11 @@
 import {ChartConfiguration,ChartType} from "chart.js";
+import {ThemeColors} from "../themes/theme-types";
 
-export type ChartConfigFactory<Data = unknown, Type extends ChartType = ChartType> = (data?: Data) => ChartConfiguration<Type>;
+export type ChartDependencies = {
+  colors: ThemeColors
+}
+
+export type ChartConfigFactory<Data = unknown, Type extends ChartType = ChartType> = (data: Data | undefined, dependencies: ChartDependencies) => ChartConfiguration<Type>;
 
 export interface ChartAdapter<Data = unknown, Type extends ChartType = ChartType> {
   create: ChartConfigFactory<Data, Type>

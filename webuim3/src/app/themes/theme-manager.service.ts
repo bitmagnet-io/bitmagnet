@@ -7,6 +7,7 @@ import {
   ThemeKey,
   themes,
 } from './theme-registry';
+import {BehaviorSubject} from "rxjs";
 
 const LOCAL_STORAGE_KEY = 'bitmagnet-theme';
 
@@ -15,6 +16,8 @@ export class ThemeManager {
   private document = inject(DOCUMENT);
   private browserStorage = inject(BrowserStorageService);
   private _window = this.document.defaultView;
+  private selectedThemeSubject = new BehaviorSubject<ThemeKey | undefined>(undefined);
+  public selectedTheme$ = this.selectedThemeSubject.asObservable()
   public selectedTheme?: ThemeKey;
   public themes = Object.values(themes);
 
@@ -48,7 +51,7 @@ export class ThemeManager {
     this.setStoredTheme(this.selectedTheme ?? 'auto');
   };
 
-  setActiveTheme = (theme: string) => {
+  private setActiveTheme = (theme: string) => {
     if (theme === 'auto' || !(theme in themes)) {
       theme = this.getAutoTheme();
       this.selectedTheme = undefined;
@@ -56,9 +59,10 @@ export class ThemeManager {
       this.selectedTheme = theme as ThemeKey;
     }
     this.document.documentElement.setAttribute('data-bitmagnet-theme', theme);
+    this.selectedThemeSubject.next(this.selectedTheme);
   };
 
-  setStoredTheme = (theme: ThemeKey | 'auto') => {
+  private setStoredTheme = (theme: ThemeKey | 'auto') => {
     if (theme === 'auto') {
       this.browserStorage.remove(LOCAL_STORAGE_KEY);
     } else {

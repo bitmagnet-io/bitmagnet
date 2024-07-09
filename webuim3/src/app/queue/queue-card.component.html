@@ -28,14 +28,14 @@
               [value]="0"
             ></mat-progress-bar>
           </div>
-          <mat-grid-list cols="6" rowHeight="100px">
+          <mat-grid-list [cols]="breakpoints.sizeAtLeast('Large') ? 5 : breakpoints.sizeAtLeast('Medium') ? 3 : breakpoints.sizeAtLeast('Small') ? 2 : 1" rowHeight="100px">
             <mat-grid-tile [colspan]="1" [rowspan]="2">
               <mat-card class="form-timeframe">
                 <mat-card-header>
                   <mat-card-title><h4>Timeframe</h4></mat-card-title>
                 </mat-card-header>
                 <mat-card-content>
-                  <mat-form-field>
+                  <mat-form-field subscriptSizing="dynamic">
                     <mat-select
                       [value]="queueMetricsController.params.buckets.timeframe"
                       (valueChange)="queueMetricsController.setTimeframe($event)"
@@ -45,7 +45,7 @@
                       }
                     </mat-select>
                   </mat-form-field>
-                  <div class="paginator">
+                  <div class="paginator actions">
                     <button
                       mat-icon-button
                       [disabled]="timeframeNames.indexOf(queueMetricsController.params.buckets.timeframe) <= 0"
@@ -84,9 +84,20 @@
                   <mat-card-title><h4>Resolution</h4></mat-card-title>
                 </mat-card-header>
                 <mat-card-content>
-                  <mat-form-field>
+                  <mat-form-field subscriptSizing="dynamic" class="form-input-multiplier">
+                    <input
+                      type="number"
+                      matInput
+                      min="1"
+                      step="1"
+                      [placeholder]="(queueMetricsController.result$ | async)?.params?.buckets?.multiplier?.toString() ?? ''"
+                      [value]="queueMetricsController.params.buckets.multiplier"
+                      (change)="handleMultiplierEvent($event)"
+                    />
+                  </mat-form-field>
+                  <mat-form-field subscriptSizing="dynamic" class="form-select-duration">
                     <mat-select
-                      [value]="queueMetricsController.params.buckets.duration"
+                      [value]="queueMetricsController.bucketDuration"
                       (valueChange)="queueMetricsController.setBucketDuration($event)"
                     >
                       @for (name of resolutionNames; track name) {
@@ -94,31 +105,40 @@
                       }
                     </mat-select>
                   </mat-form-field>
-                  <div class="paginator">
+                  <div class="paginator actions">
                     <button
                       mat-icon-button
-                      [disabled]="resolutionNames.indexOf(queueMetricsController.params.buckets.duration) <= 0"
+                      [disabled]="queueMetricsController.bucketMultiplier === 1"
+                      (click)="queueMetricsController.setBucketMultiplier(queueMetricsController.bucketMultiplier -1)"
+                      ><mat-icon>remove</mat-icon></button>
+                    <button
+                      mat-icon-button
+                      (click)="queueMetricsController.setBucketMultiplier(queueMetricsController.bucketMultiplier +1)"
+                    ><mat-icon>add</mat-icon></button>
+                    <button
+                      mat-icon-button
+                      [disabled]="resolutionNames.indexOf(queueMetricsController.bucketDuration) <= 0"
                       (click)="queueMetricsController.setBucketDuration(resolutionNames[0])"
                     >
                       <mat-icon>first_page</mat-icon>
                     </button>
                     <button
                       mat-icon-button
-                      [disabled]="resolutionNames.indexOf(queueMetricsController.params.buckets.duration) <= 0"
-                      (click)="queueMetricsController.setBucketDuration(resolutionNames[resolutionNames.indexOf(queueMetricsController.params.buckets.duration)-1])"
+                      [disabled]="resolutionNames.indexOf(queueMetricsController.bucketDuration) <= 0"
+                      (click)="queueMetricsController.setBucketDuration(resolutionNames[resolutionNames.indexOf(queueMetricsController.bucketDuration)-1])"
                     >
                       <mat-icon>navigate_before</mat-icon>
                     </button>
                     <button
                       mat-icon-button
-                      [disabled]="resolutionNames.indexOf(queueMetricsController.params.buckets.duration) >= resolutionNames.length - 1"
-                      (click)="queueMetricsController.setBucketDuration(resolutionNames[resolutionNames.indexOf(queueMetricsController.params.buckets.duration)+1])"
+                      [disabled]="resolutionNames.indexOf(queueMetricsController.bucketDuration) >= resolutionNames.length - 1"
+                      (click)="queueMetricsController.setBucketDuration(resolutionNames[resolutionNames.indexOf(queueMetricsController.bucketDuration)+1])"
                     >
                       <mat-icon>navigate_next</mat-icon>
                     </button>
                     <button
                       mat-icon-button
-                      [disabled]="resolutionNames.indexOf(queueMetricsController.params.buckets.duration) >= resolutionNames.length - 1"
+                      [disabled]="resolutionNames.indexOf(queueMetricsController.bucketDuration) >= resolutionNames.length - 1"
                       (click)="queueMetricsController.setBucketDuration(resolutionNames[resolutionNames.length-1])"
                     >
                       <mat-icon>last_page</mat-icon>
@@ -135,7 +155,7 @@
                   </mat-card-title>
                 </mat-card-header>
                 <mat-card-content>
-                  <mat-form-field>
+                  <mat-form-field subscriptSizing="dynamic">
                     <mat-select
                       [value]="queueMetricsController.params.queue ?? '_all'"
                       (valueChange)="queueMetricsController.setQueue($event === '_all' ? null : $event)"
@@ -177,7 +197,7 @@
                   </mat-card-title>
                 </mat-card-header>
                 <mat-card-content>
-                  <mat-form-field>
+                  <mat-form-field subscriptSizing="dynamic">
                     <mat-select
                       [value]="queueMetricsController.params.event ?? '_all'"
                       (valueChange)="queueMetricsController.setEvent($event === '_all' ? null : $event)"
@@ -233,7 +253,7 @@
                   </mat-card-title>
                 </mat-card-header>
                 <mat-card-content>
-                  <mat-form-field>
+                  <mat-form-field subscriptSizing="dynamic">
                     <mat-select
                       [value]="queueMetricsController.params.autoRefresh"
                       (valueChange)="queueMetricsController.setAutoRefreshInterval($event)"
@@ -255,7 +275,9 @@
                 </mat-card-content>
               </mat-card>
             </mat-grid-tile>
-            <mat-grid-tile [colspan]="3" [rowspan]="5">
+          </mat-grid-list>
+          <mat-grid-list [cols]="breakpoints.sizeAtLeast('Large') ? 2 : 1" rowHeight="100px">
+            <mat-grid-tile [colspan]="1" [rowspan]="5">
               <mat-card>
                 <mat-card-header>
                   <mat-card-title>
@@ -267,12 +289,12 @@
                     [adapter]="totals"
                     [$data]="queueMetricsController.result$"
                     [height]="400"
-                    [width]="700"
+                    [width]="550"
                   />
                 </mat-card-content>
               </mat-card>
             </mat-grid-tile>
-            <mat-grid-tile [colspan]="3" [rowspan]="5">
+            <mat-grid-tile [colspan]="1" [rowspan]="5">
               <mat-card>
                 <mat-card-header>
                   <mat-card-title>
@@ -284,7 +306,7 @@
                     [adapter]="timeline"
                     [$data]="queueMetricsController.result$"
                     [height]="400"
-                    [width]="700"
+                    [width]="550"
                   />
                 </mat-card-content>
               </mat-card>
