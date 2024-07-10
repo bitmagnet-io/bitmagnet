@@ -14,7 +14,7 @@ import {
 import { MatGridTile } from '@angular/material/grid-list';
 import { MatMenu, MatMenuItem } from '@angular/material/menu';
 import { GraphQLModule } from '../graphql/graphql.module';
-import {ChartComponent} from "../charting/chart.component";
+import { ChartComponent } from '../charting/chart.component';
 
 @NgModule({
   imports: [

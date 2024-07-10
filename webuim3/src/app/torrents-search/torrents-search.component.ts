@@ -1,9 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  inject, OnDestroy,
+  inject,
+  OnDestroy,
   OnInit,
-  ViewChild,
 } from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule } from '@angular/material/sort';
@@ -23,7 +23,12 @@ import {
   Router,
   RouterLinkActive,
 } from '@angular/router';
-import {BehaviorSubject, combineLatestWith, Observable, Subscription} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatestWith,
+  Observable,
+  Subscription,
+} from 'rxjs';
 import { map } from 'rxjs/operators';
 import {
   MatExpansionPanel,
@@ -40,6 +45,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { MatOption, MatSelect } from '@angular/material/select';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatDivider } from '@angular/material/divider';
+import { Apollo } from 'apollo-angular';
 import { ErrorsService } from '../errors/errors.service';
 import {
   allColumns,
@@ -68,7 +74,6 @@ import {
   TorrentSearchControls,
   TorrentsSearchController,
 } from './torrents-search.controller';
-import {Apollo} from "apollo-angular";
 
 @Component({
   selector: 'app-torrents-search',
@@ -144,7 +149,7 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
   >([]);
   selectedItems$ = this.selectedItemsSubject.asObservable();
 
-  private subscriptions = Array<Subscription>()
+  private subscriptions = Array<Subscription>();
 
   constructor() {
     this.controls = {
@@ -157,9 +162,11 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
       this.errorsService,
       this.controller.params$,
     );
-    this.subscriptions.push(this.controller.controls$.subscribe((ctrl) => {
-      this.controls = ctrl;
-    }));
+    this.subscriptions.push(
+      this.controller.controls$.subscribe((ctrl) => {
+        this.controls = ctrl;
+      }),
+    );
     this.facets$ = this.controller.controls$.pipe(
       combineLatestWith(this.dataSource.result$),
       map(([controls, result]) =>
@@ -182,89 +189,97 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
         })),
       ),
     );
-    this.subscriptions.push(this.dataSource.result$.subscribe((result) => {
-      this.result = result;
-      const infoHashes = new Set(result.items.map(({ infoHash }) => infoHash));
-      this.selection.deselect(
-        ...this.selection.selected.filter(
-          (infoHash) => !infoHashes.has(infoHash),
-        ),
-      );
-    }));
+    this.subscriptions.push(
+      this.dataSource.result$.subscribe((result) => {
+        this.result = result;
+        const infoHashes = new Set(
+          result.items.map(({ infoHash }) => infoHash),
+        );
+        this.selection.deselect(
+          ...this.selection.selected.filter(
+            (infoHash) => !infoHashes.has(infoHash),
+          ),
+        );
+      }),
+    );
     // a bit of a hack to force an update on language switch:
-    this.subscriptions.push(this.transloco.events$.subscribe(() =>
-      this.controller.selectLanguage(this.transloco.getActiveLang()),
-    ));
+    this.subscriptions.push(
+      this.transloco.events$.subscribe(() =>
+        this.controller.selectLanguage(this.transloco.getActiveLang()),
+      ),
+    );
   }
 
   ngOnInit(): void {
-    this.subscriptions.push(this.route.queryParams.subscribe((params) => {
-      const queryString = stringParam(params, 'query');
-      this.queryString.setValue(queryString ?? null);
-      this.controller.update((ctrl) => {
-        const activeFacets = stringListParam(params, 'facets');
-        let orderBy = ctrl.orderBy;
-        if (queryString) {
-          if (queryString !== ctrl.queryString) {
-            orderBy = defaultQueryOrderBy;
+    this.subscriptions.push(
+      this.route.queryParams.subscribe((params) => {
+        const queryString = stringParam(params, 'query');
+        this.queryString.setValue(queryString ?? null);
+        this.controller.update((ctrl) => {
+          const activeFacets = stringListParam(params, 'facets');
+          let orderBy = ctrl.orderBy;
+          if (queryString) {
+            if (queryString !== ctrl.queryString) {
+              orderBy = defaultQueryOrderBy;
+            }
+          } else if (orderBy.field === 'relevance') {
+            orderBy = defaultOrderBy;
           }
-        } else if (orderBy.field === 'relevance') {
-          orderBy = defaultOrderBy;
+          return {
+            ...ctrl,
+            queryString,
+            orderBy,
+            contentType: contentTypeParam(params, 'content_type'),
+            limit: intParam(params, 'limit') ?? ctrl.limit,
+            page: intParam(params, 'page') ?? ctrl.page,
+            facets: facets.reduce<TorrentSearchControls['facets']>(
+              (acc, facet) => {
+                const active = activeFacets?.includes(facet.key) ?? false;
+                const filter = stringListParam(params, facet.key);
+                return facet.patchInput(acc, {
+                  active,
+                  filter,
+                });
+              },
+              ctrl.facets,
+            ),
+          };
+        });
+      }),
+      this.controller.controls$.subscribe(async (ctrl) => {
+        let page: number | undefined = ctrl.page;
+        let limit: number | undefined = ctrl.limit;
+        if (page === 1) {
+          page = undefined;
         }
-        return {
-          ...ctrl,
-          queryString,
-          orderBy,
-          contentType: contentTypeParam(params, 'content_type'),
-          limit: intParam(params, 'limit') ?? ctrl.limit,
-          page: intParam(params, 'page') ?? ctrl.page,
-          facets: facets.reduce<TorrentSearchControls['facets']>(
-            (acc, facet) => {
-              const active = activeFacets?.includes(facet.key) ?? false;
-              const filter = stringListParam(params, facet.key);
-              return facet.patchInput(acc, {
-                active,
-                filter,
-              });
-            },
-            ctrl.facets,
-          ),
-        };
-      });
-    }),
-    this.controller.controls$.subscribe((ctrl) => {
-      let page: number | undefined = ctrl.page;
-      let limit: number | undefined = ctrl.limit;
-      if (page === 1) {
-        page = undefined;
-      }
-      if (limit === defaultLimit) {
-        limit = undefined;
-      }
-      return this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: {
-          query: ctrl.queryString
-            ? encodeURIComponent(ctrl.queryString)
-            : undefined,
-          page,
-          limit,
-          content_type: ctrl.contentType,
-          ...flattenFacets(ctrl.facets),
-        },
-        queryParamsHandling: 'merge',
-      });
-    }),
-    this.selection.changed.subscribe((selection) => {
-      const infoHashes = new Set(selection.source.selected);
-      this.selectedItemsSubject.next(
-        this.result.items.filter((i) => infoHashes.has(i.infoHash)),
-      );
-    }));
+        if (limit === defaultLimit) {
+          limit = undefined;
+        }
+        await this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: {
+            query: ctrl.queryString
+              ? encodeURIComponent(ctrl.queryString)
+              : undefined,
+            page,
+            limit,
+            content_type: ctrl.contentType,
+            ...flattenFacets(ctrl.facets),
+          },
+          queryParamsHandling: 'merge',
+        });
+      }),
+      this.selection.changed.subscribe((selection) => {
+        const infoHashes = new Set(selection.source.selected);
+        this.selectedItemsSubject.next(
+          this.result.items.filter((i) => infoHashes.has(i.infoHash)),
+        );
+      }),
+    );
   }
 
   ngOnDestroy() {
-    this.subscriptions.forEach((subscription) => subscription.unsubscribe())
+    this.subscriptions.forEach((subscription) => subscription.unsubscribe());
     this.subscriptions = new Array<Subscription>();
   }
 }

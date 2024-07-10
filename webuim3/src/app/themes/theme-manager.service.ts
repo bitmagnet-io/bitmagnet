@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { Injectable, inject } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { BrowserStorageService } from '../browser-storage/browser-storage.service';
 import {
   defaultDarkTheme,
@@ -7,7 +8,6 @@ import {
   ThemeKey,
   themes,
 } from './theme-registry';
-import {BehaviorSubject} from "rxjs";
 
 const LOCAL_STORAGE_KEY = 'bitmagnet-theme';
 
@@ -16,8 +16,10 @@ export class ThemeManager {
   private document = inject(DOCUMENT);
   private browserStorage = inject(BrowserStorageService);
   private _window = this.document.defaultView;
-  private selectedThemeSubject = new BehaviorSubject<ThemeKey | undefined>(undefined);
-  public selectedTheme$ = this.selectedThemeSubject.asObservable()
+  private selectedThemeSubject = new BehaviorSubject<ThemeKey | undefined>(
+    undefined,
+  );
+  public selectedTheme$ = this.selectedThemeSubject.asObservable();
   public selectedTheme?: ThemeKey;
   public themes = Object.values(themes);
 

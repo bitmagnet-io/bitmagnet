@@ -7,17 +7,17 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { Apollo } from 'apollo-angular';
+import { TranslocoDirective } from '@jsverse/transloco';
+import { MatToolbar } from '@angular/material/toolbar';
+import { MatDivider } from '@angular/material/divider';
 import { HealthModule } from '../health/health.module';
-import {ChartComponent} from "../charting/chart.component";
-import {QueueMetricsController} from "../queue/queue-metrics.controller";
-import {QueueModule} from "../queue/queue.module";
-import {Apollo} from "apollo-angular";
-import {TranslocoDirective} from "@jsverse/transloco";
-import {MatToolbar} from "@angular/material/toolbar";
-import {MatDivider} from "@angular/material/divider";
-import {ErrorsService} from "../errors/errors.service";
-import {QueueChartAdapterTotals} from "../queue/queue-chart-adapter.totals";
-import {QueueChartAdapterTimeline} from "../queue/queue-chart-adapter.timeline";
+import { ChartComponent } from '../charting/chart.component';
+import { QueueMetricsController } from '../queue/queue-metrics.controller';
+import { QueueModule } from '../queue/queue.module';
+import { ErrorsService } from '../errors/errors.service';
+import { QueueChartAdapterTotals } from '../queue/queue-chart-adapter.totals';
+import { QueueChartAdapterTimeline } from '../queue/queue-chart-adapter.timeline';
 
 @Component({
   selector: 'app-dashboard',
@@ -46,17 +46,17 @@ export class DashboardHomeComponent {
     this.apollo,
     {
       buckets: {
-        duration: "minute",
+        duration: 'minute',
         multiplier: 5,
-        timeframe: "days_1"
+        timeframe: 'days_1',
       },
-      autoRefresh: "off",
+      autoRefresh: 'off',
     },
-    inject(ErrorsService)
-  )
+    inject(ErrorsService),
+  );
 
-  totals = inject(QueueChartAdapterTotals)
-  timeline = inject(QueueChartAdapterTimeline)
+  totals = inject(QueueChartAdapterTotals);
+  timeline = inject(QueueChartAdapterTimeline);
 
   /** Based on the screen size, switch from standard to one column per row */
   cards = this.breakpointObserver.observe(Breakpoints.Handset).pipe(

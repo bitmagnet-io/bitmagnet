@@ -4,11 +4,10 @@ import i18n from './translations';
 
 @Injectable({ providedIn: 'root' })
 export class TranslocoImportLoader implements TranslocoLoader {
-  getTranslation(lang: string) {
+  async getTranslation(lang: string) {
     if (lang in i18n) {
-      return Promise.resolve(
-        i18n[lang as keyof typeof i18n] as Translation,
-      ).then(stripMissing);
+      const tr = i18n[lang as keyof typeof i18n] as Translation;
+      return stripMissing(tr);
     } else {
       return Promise.reject(`Translation not found: ${lang}`);
     }
@@ -17,11 +16,11 @@ export class TranslocoImportLoader implements TranslocoLoader {
 
 const missingValues = ['__missing__', '__fallback__'];
 
-const stripMissing = (tr: Translation) =>
+const stripMissing = (tr: Translation): Translation =>
   Object.fromEntries(
     Object.entries(tr).flatMap(([k, v]) => {
       if (typeof v === 'object') {
-        v = stripMissing(v);
+        v = stripMissing(v as Translation);
       } else if (typeof v === 'string' && missingValues.includes(v)) {
         return [];
       }

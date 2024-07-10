@@ -8,9 +8,8 @@ describe('QueueEnqueueReprocessTorrentsBatchDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [QueueEnqueueReprocessTorrentsBatchDialog]
-    })
-    .compileComponents();
+      imports: [QueueEnqueueReprocessTorrentsBatchDialog],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(QueueEnqueueReprocessTorrentsBatchDialog);
     component = fixture.componentInstance;

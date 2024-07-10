@@ -1,5 +1,4 @@
 import {
-  AfterViewInit,
   Component,
   EventEmitter,
   inject,
@@ -39,7 +38,6 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { AsyncPipe } from '@angular/common';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { CdkCopyToClipboard } from '@angular/cdk/clipboard';
-import { map } from 'rxjs/operators';
 import * as generated from '../graphql/generated';
 import { BreakpointsService } from '../layout/breakpoints.service';
 import { ErrorsService } from '../errors/errors.service';

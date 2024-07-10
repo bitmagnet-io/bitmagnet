@@ -20,7 +20,7 @@ export const routes: Routes = [
           import('./dashboard/dashboard-home.component').then(
             (c) => c.DashboardHomeComponent,
           ),
-        title: "home",
+        title: 'home',
       },
       {
         path: 'queues',
@@ -30,7 +30,7 @@ export const routes: Routes = [
           ),
         title: 'queues',
       },
-    ]
+    ],
   },
   {
     path: 'torrents',

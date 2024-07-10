@@ -1,4 +1,4 @@
-import { BehaviorSubject, debounceTime, map, Observable } from 'rxjs';
+import { BehaviorSubject, debounceTime, Observable } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import * as generated from '../graphql/generated';
 import { PageEvent } from '../paginator/paginator.types';

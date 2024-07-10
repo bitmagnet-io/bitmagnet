@@ -8,9 +8,8 @@ describe('QueuePurgeJobsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [QueuePurgeJobsDialog]
-    })
-    .compileComponents();
+      imports: [QueuePurgeJobsDialog],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(QueuePurgeJobsDialog);
     component = fixture.componentInstance;

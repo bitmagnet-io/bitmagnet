@@ -28,7 +28,7 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
-import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
+import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { AsyncPipe } from '@angular/common';
 import { MatProgressBar } from '@angular/material/progress-bar';
 import { SelectionModel } from '@angular/cdk/collections';
@@ -42,14 +42,7 @@ import { TorrentsSearchDatasource } from '../torrents-search/torrents-search.dat
 import { contentTypeInfo } from '../taxonomy/content-types';
 import { BreakpointsService } from '../layout/breakpoints.service';
 import { TorrentChipsComponent } from '../torrent-chips/torrent-chips.component';
-import {
-  defaultOrderBy,
-  defaultQueryOrderBy,
-  facets,
-  TorrentSearchControls,
-} from '../torrents-search/torrents-search.controller';
 import { stringParam } from '../util/query-string';
-import {TranslateManager} from "../i18n/translate-manager.service";
 
 @Component({
   selector: 'app-torrents-table',
@@ -93,7 +86,7 @@ export class TorrentsTableComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   breakpoints = inject(BreakpointsService);
-  transloco = inject(TranslocoService)
+  transloco = inject(TranslocoService);
 
   contentTypeInfo = contentTypeInfo;
 

@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { HealthService, HealthStatus } from './health.service';
+import { HealthService } from './health.service';
 
 @Component({
   selector: 'app-health-widget',

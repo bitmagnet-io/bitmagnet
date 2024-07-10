@@ -51,7 +51,9 @@
             contentTypeInfo(item(i).contentType)?.icon ?? "question_mark"
           }}</mat-icon
         >
-        <span class="title">{{ item(i).title }}</span>
+        <span class="title"
+              [matTooltip]="item(i).title === item(i).torrent.name ? '' : item(i).torrent.name"
+        >{{ item(i).title }}</span>
         <app-torrent-chips [torrentContent]="i" />
       </td>
     </ng-container>

@@ -12,14 +12,12 @@ import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { MatProgressBar } from '@angular/material/progress-bar';
-import { GraphQLService } from '../graphql/graphql.service';
+import { Apollo } from 'apollo-angular';
 import * as generated from '../graphql/generated';
 import { TorrentContentComponent } from '../torrent-content/torrent-content.component';
 import { GraphQLModule } from '../graphql/graphql.module';
 import { contentTypeInfo } from '../taxonomy/content-types';
 import { TorrentChipsComponent } from '../torrent-chips/torrent-chips.component';
-import {Apollo} from "apollo-angular";
-import {map} from "rxjs/operators";
 
 @Component({
   selector: 'app-torrent-permalink',
@@ -63,10 +61,10 @@ export class TorrentPermalinkComponent implements OnInit {
               infoHashes: [params.get('infoHash') as string],
             },
           },
-          fetchPolicy: "no-cache",
+          fetchPolicy: 'no-cache',
         })
         .subscribe((result) => {
-          const items = result.data.torrentContent.search.items
+          const items = result.data.torrentContent.search.items;
           this.torrentContent = items[0];
           this.found = items.length > 0;
           this.loading = false;

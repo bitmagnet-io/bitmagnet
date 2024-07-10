@@ -3,7 +3,11 @@ import { Apollo } from 'apollo-angular';
 import { BehaviorSubject, map } from 'rxjs';
 import * as generated from '../graphql/generated';
 
-export type HealthStatus = generated.HealthStatus | 'started' | 'error' | "degraded";
+export type HealthStatus =
+  | generated.HealthStatus
+  | 'started'
+  | 'error'
+  | 'degraded';
 
 const icons: Record<HealthStatus, string> = {
   error: 'error',
@@ -67,7 +71,10 @@ export class HealthService {
       .valueChanges.pipe(
         map(
           (r): Result => ({
-            status: r.data.health.status === "down" ? "degraded" : r.data.health.status,
+            status:
+              r.data.health.status === 'down'
+                ? 'degraded'
+                : r.data.health.status,
             checks: r.data.health.checks.map((c) => ({
               ...c,
               icon: icons[c.status],
@@ -83,7 +90,7 @@ export class HealthService {
       )
       .subscribe({
         next: (result) => this.resultSubject.next(result),
-        error: (error) => {
+        error: (error: Error) => {
           this.resultSubject.next({
             status: 'error',
             checks: [],

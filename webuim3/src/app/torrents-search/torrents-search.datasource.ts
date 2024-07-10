@@ -8,10 +8,10 @@ import {
   Subscription,
 } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { Apollo } from 'apollo-angular';
+import { inject } from '@angular/core';
 import * as generated from '../graphql/generated';
 import { ErrorsService } from '../errors/errors.service';
-import {Apollo} from "apollo-angular";
-import {inject} from "@angular/core";
 
 export const emptyResult: generated.TorrentContentSearchResult = {
   items: [],
@@ -23,11 +23,6 @@ export const emptyResult: generated.TorrentContentSearchResult = {
 type BudgetedCount = {
   count: number;
   isEstimate: boolean;
-};
-
-const emptyBudgetedCount = {
-  count: 0,
-  isEstimate: false,
 };
 
 export class TorrentsSearchDatasource
@@ -81,9 +76,9 @@ export class TorrentsSearchDatasource
   public contentTypeCounts$: Observable<Record<string, BudgetedCount>> =
     this.resultSubject.pipe(
       map((result) =>
-        Object.fromEntries(
+        Object.fromEntries<BudgetedCount>(
           (result.aggregations.contentType ?? []).map((ct) => [
-            ct.value,
+            ct.value as string,
             {
               count: ct.count,
               isEstimate: ct.isEstimate,
@@ -148,16 +143,17 @@ export class TorrentsSearchDatasource
       >({
         query: generated.TorrentContentSearchDocument,
         variables,
-        fetchPolicy: "no-cache",
+        fetchPolicy: 'no-cache',
       })
-      .pipe(map((r) => r.data.torrentContent.search)).pipe(
-      catchError((err: Error) => {
-        this.errorsService.addError(
-          `Error loading item results: ${err.message}`,
-        );
-        return EMPTY;
-      }),
-    );
+      .pipe(map((r) => r.data.torrentContent.search))
+      .pipe(
+        catchError((err: Error) => {
+          this.errorsService.addError(
+            `Error loading item results: ${err.message}`,
+          );
+          return EMPTY;
+        }),
+      );
     this.currentSubscription = result.subscribe((r) => {
       if (currentRequest === this.currentRequest.getValue()) {
         this.loadingSubject.next(false);

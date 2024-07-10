@@ -1,20 +1,20 @@
-import {Component, Inject, inject} from '@angular/core';
-import {Apollo} from "apollo-angular";
+import { Component, Inject, inject } from '@angular/core';
+import { Apollo } from 'apollo-angular';
 import {
   MAT_DIALOG_DATA,
   MatDialogActions,
   MatDialogContent,
   MatDialogRef,
-  MatDialogTitle
-} from "@angular/material/dialog";
-import * as generated from "../graphql/generated";
-import {QueuePurgeJobsDialog} from "./queue-purge-jobs-dialog.component";
+  MatDialogTitle,
+} from '@angular/material/dialog';
+import { MatButton } from '@angular/material/button';
+import { MatCard } from '@angular/material/card';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { TranslocoDirective } from '@jsverse/transloco';
+import * as generated from '../graphql/generated';
 import { availableQueueNames, statusNames } from './queue.constants';
-import {MatButton} from "@angular/material/button";
-import {MatCard} from "@angular/material/card";
-import {MatCheckbox} from "@angular/material/checkbox";
-import {MatProgressSpinner} from "@angular/material/progress-spinner";
-import {TranslocoDirective} from "@jsverse/transloco";
+import { QueuePurgeJobsDialog } from './queue-purge-jobs-dialog.component';
 
 @Component({
   selector: 'app-queue-enqueue-reprocess-torrents-batch-dialog',
@@ -27,48 +27,52 @@ import {TranslocoDirective} from "@jsverse/transloco";
     MatDialogContent,
     MatDialogTitle,
     MatProgressSpinner,
-    TranslocoDirective
+    TranslocoDirective,
   ],
   templateUrl: './queue-enqueue-reprocess-torrents-batch-dialog.component.html',
-  styleUrl: './queue-enqueue-reprocess-torrents-batch-dialog.component.scss'
+  styleUrl: './queue-enqueue-reprocess-torrents-batch-dialog.component.scss',
 })
 export class QueueEnqueueReprocessTorrentsBatchDialog {
-
-  apollo = inject(Apollo)
+  apollo = inject(Apollo);
   readonly dialogRef = inject(MatDialogRef<QueuePurgeJobsDialog>);
 
-  protected readonly availableQueueNames = availableQueueNames
-  protected readonly statusNames = statusNames
+  protected readonly availableQueueNames = availableQueueNames;
+  protected readonly statusNames = statusNames;
 
-  protected stage: "PENDING" | "REQUESTING" | "DONE" = "PENDING"
+  protected stage: 'PENDING' | 'REQUESTING' | 'DONE' = 'PENDING';
 
-  @Inject(MAT_DIALOG_DATA) public data: {onEnqueued: () => void}
+  @Inject(MAT_DIALOG_DATA) public data: { onEnqueued: () => void };
 
   apisDisabled = true;
   localSearchDisabled = true;
   classifierRematch = false;
-  contentTypes?: Array<generated.ContentType | null>
+  contentTypes?: Array<generated.ContentType | null>;
   orphans = false;
 
   handleEnqueue() {
-    if (this.stage !== "PENDING") {
+    if (this.stage !== 'PENDING') {
       return;
     }
-    this.stage = "REQUESTING"
-    this.apollo.mutate<generated.QueueEnqueueReprocessTorrentsBatchMutation, generated.QueueEnqueueReprocessTorrentsBatchMutationVariables>({
-      mutation:  generated.QueueEnqueueReprocessTorrentsBatchDocument,
-      variables: {
-        input: {
-          apisDisabled: this.apisDisabled,
-          localSearchDisabled: this.localSearchDisabled,
-          classifierRematch: this.classifierRematch,
-          contentTypes: this.contentTypes,
-          orphans: this.orphans ? true : undefined,
-        }
-      }
-    }).subscribe(() => {
-      this.stage = "DONE"
-      this.data.onEnqueued();
-    })
+    this.stage = 'REQUESTING';
+    this.apollo
+      .mutate<
+        generated.QueueEnqueueReprocessTorrentsBatchMutation,
+        generated.QueueEnqueueReprocessTorrentsBatchMutationVariables
+      >({
+        mutation: generated.QueueEnqueueReprocessTorrentsBatchDocument,
+        variables: {
+          input: {
+            apisDisabled: this.apisDisabled,
+            localSearchDisabled: this.localSearchDisabled,
+            classifierRematch: this.classifierRematch,
+            contentTypes: this.contentTypes,
+            orphans: this.orphans ? true : undefined,
+          },
+        },
+      })
+      .subscribe(() => {
+        this.stage = 'DONE';
+        this.data.onEnqueued();
+      });
   }
 }

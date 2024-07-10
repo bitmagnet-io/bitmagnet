@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -27,8 +27,8 @@ import { VersionComponent } from '../version/version.component';
 import { TranslateManager } from '../i18n/translate-manager.service';
 import { HealthModule } from '../health/health.module';
 import { HealthService } from '../health/health.service';
+import { ThemeEmitterComponent } from '../themes/theme-emitter.component';
 import { BreakpointsService } from './breakpoints.service';
-import {ThemeEmitterComponent} from "../themes/theme-emitter.component";
 
 @Component({
   selector: 'app-layout',

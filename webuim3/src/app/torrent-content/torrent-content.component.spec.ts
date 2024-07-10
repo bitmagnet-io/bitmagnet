@@ -1,8 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AppModule } from '../app.module';
 import { TorrentContentComponent } from './torrent-content.component';
-import { TorrentModule } from './torrent-content.module';
 
 describe('TorrentContentComponent', () => {
   let component: TorrentContentComponent;
@@ -10,7 +8,6 @@ describe('TorrentContentComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppModule, TorrentModule],
       declarations: [TorrentContentComponent],
     }).compileComponents();
 

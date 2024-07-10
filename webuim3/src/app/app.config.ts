@@ -1,7 +1,4 @@
-import {
-  ApplicationConfig,
-  provideZoneChangeDetection,
-} from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
@@ -10,9 +7,9 @@ import {
   withInterceptorsFromDi,
 } from '@angular/common/http';
 import { provideTransloco } from '@jsverse/transloco';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { routes } from './app.routes';
 import { TranslocoImportLoader } from './i18n/transloco.loader';
-import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -60,6 +57,7 @@ export const appConfig: ApplicationConfig = {
         prodMode: false,
       },
       loader: TranslocoImportLoader,
-    }), provideCharts(withDefaultRegisterables()),
+    }),
+    provideCharts(withDefaultRegisterables()),
   ],
 };
