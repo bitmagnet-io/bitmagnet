@@ -4,16 +4,33 @@ import {
   Input,
   numberAttribute,
   Output,
-} from "@angular/core";
-import type { PageEvent } from "./paginator.types";
+} from '@angular/core';
+import { MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatOption, MatSelect } from '@angular/material/select';
+import { DecimalPipe } from '@angular/common';
+import { MatIconButton } from '@angular/material/button';
+import { MatTooltip } from '@angular/material/tooltip';
+import { MatIcon } from '@angular/material/icon';
+import type { PageEvent } from './paginator.types';
 
 @Component({
-  selector: "app-paginator",
-  templateUrl: "./paginator.component.html",
-  styleUrls: ["./paginator.component.scss"],
+  selector: 'app-paginator',
+  templateUrl: './paginator.component.html',
+  standalone: true,
+  styleUrls: ['./paginator.component.scss'],
+  imports: [
+    MatFormField,
+    MatSelect,
+    MatOption,
+    DecimalPipe,
+    MatIconButton,
+    MatTooltip,
+    MatIcon,
+    MatLabel,
+  ],
 })
 export class PaginatorComponent {
-  @Input({ transform: numberAttribute }) pageIndex = 0;
+  @Input({ transform: numberAttribute }) page = 1;
   @Input({ transform: numberAttribute }) pageSize = 10;
   @Input() pageSizes: number[] = [10, 20, 50, 100];
   @Input({ transform: numberAttribute }) pageLength = 0;
@@ -21,27 +38,27 @@ export class PaginatorComponent {
   @Input() totalIsEstimate = false;
   @Input() hasNextPage: boolean | null | undefined = null;
 
-  @Output() page = new EventEmitter<PageEvent>();
+  @Output() paging = new EventEmitter<PageEvent>();
 
   get firstItemIndex() {
-    return this.pageIndex * this.pageSize + 1;
+    return (this.page - 1) * this.pageSize + 1;
   }
 
   get lastItemIndex() {
-    return this.pageIndex * this.pageSize + this.pageLength;
+    return (this.page - 1) * this.pageSize + this.pageLength;
   }
 
   get hasTotalLength() {
-    return typeof this.totalLength === "number";
+    return typeof this.totalLength === 'number';
   }
 
   get hasPreviousPage() {
-    return this.pageIndex > 0;
+    return this.page > 1;
   }
 
   emitChange() {
-    this.page.emit({
-      pageIndex: this.pageIndex,
+    this.paging.emit({
+      page: this.page,
       pageSize: this.pageSize,
     });
   }

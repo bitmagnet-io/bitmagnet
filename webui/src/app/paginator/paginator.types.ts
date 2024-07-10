@@ -1,4 +1,4 @@
 export type PageEvent = {
-  pageIndex: number;
+  page: number;
   pageSize: number;
 };

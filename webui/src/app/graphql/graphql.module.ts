@@ -1,9 +1,9 @@
-import { APOLLO_OPTIONS, ApolloModule } from "apollo-angular";
-import { HttpLink } from "apollo-angular/http";
-import { NgModule } from "@angular/core";
-import { ApolloClientOptions, InMemoryCache } from "@apollo/client/core";
-import { graphqlEndpoint } from "../../environments/environment";
-import { GraphQLService } from "./graphql.service";
+import { APOLLO_OPTIONS, ApolloModule } from 'apollo-angular';
+import { HttpLink } from 'apollo-angular/http';
+import { NgModule } from '@angular/core';
+import { ApolloClientOptions, InMemoryCache } from '@apollo/client/core';
+import { graphqlEndpoint } from '../../environments/environment';
+import { GraphQLService } from './graphql.service';
 
 export function createApollo(httpLink: HttpLink): ApolloClientOptions<unknown> {
   return {

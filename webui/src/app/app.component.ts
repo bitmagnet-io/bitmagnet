@@ -1,25 +1,45 @@
-import { Component } from "@angular/core";
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { MatIconRegistry } from '@angular/material/icon';
+import { DomSanitizer } from '@angular/platform-browser';
+import { TranslocoService } from '@jsverse/transloco';
+import { LayoutComponent } from './layout/layout.component';
 
 @Component({
-  selector: "app-root",
-  templateUrl: "./app.component.html",
-  styleUrls: ["./app.component.scss"],
+  selector: 'app-root',
+  standalone: true,
+  imports: [RouterOutlet, LayoutComponent],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss',
 })
 export class AppComponent {
-  title = "bitmagnet";
-  theme: Theme = "light";
-
-  constructor() {
-    if (window.matchMedia("(prefers-color-scheme)").media !== "not all") {
-      const darkModeMediaQuery = window.matchMedia(
-        "(prefers-color-scheme: dark)",
+  title = 'bitmagnet';
+  constructor(
+    iconRegistry: MatIconRegistry,
+    domSanitizer: DomSanitizer,
+    transloco: TranslocoService,
+  ) {
+    iconRegistry
+      .setDefaultFontSetClass(
+        'material-icons-outlined',
+        'material-symbols-outlined',
+      )
+      .addSvgIcon(
+        'magnet',
+        domSanitizer.bypassSecurityTrustResourceUrl('magnet.svg'),
+      )
+      .addSvgIcon(
+        'external-link',
+        domSanitizer.bypassSecurityTrustResourceUrl('external-link.svg'),
+      )
+      .addSvgIcon(
+        'binary',
+        domSanitizer.bypassSecurityTrustResourceUrl('binary.svg'),
+      )
+      .addSvgIcon(
+        'queue',
+        domSanitizer.bypassSecurityTrustResourceUrl('queue.svg'),
       );
-      this.theme = darkModeMediaQuery.matches ? "dark" : "light";
-      darkModeMediaQuery.addEventListener("change", (e) => {
-        this.theme = e.matches ? "dark" : "light";
-      });
-    }
+    transloco.setActiveLang('en');
   }
 }
-
-type Theme = "light" | "dark";

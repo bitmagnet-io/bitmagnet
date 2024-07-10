@@ -1,9 +1,9 @@
 <div class="paginator">
-  <mat-form-field class="field-items-per-page">
+  <mat-form-field class="field-items-per-page" subscriptSizing="dynamic">
     <mat-label>Items per page</mat-label>
     <mat-select
       [value]="pageSize"
-      (valueChange)="pageSize = $event; pageIndex = 0; emitChange()"
+      (valueChange)="pageSize = $event; page = 1; emitChange()"
     >
       @for (size of pageSizes; track size) {
         <mat-option [value]="size">
@@ -24,7 +24,7 @@
     <button
       mat-icon-button
       [disabled]="!hasPreviousPage"
-      (click)="pageIndex = 0; emitChange()"
+      (click)="page = 1; emitChange()"
       matTooltip="First page"
     >
       <mat-icon>first_page</mat-icon>
@@ -32,7 +32,7 @@
     <button
       mat-icon-button
       [disabled]="!hasPreviousPage"
-      (click)="pageIndex = pageIndex - 1; emitChange()"
+      (click)="page = page - 1; emitChange()"
       matTooltip="Previous page"
     >
       <mat-icon>navigate_before</mat-icon>
@@ -40,7 +40,7 @@
     <button
       mat-icon-button
       [disabled]="!hasNextPage"
-      (click)="pageIndex = pageIndex + 1; emitChange()"
+      (click)="page = page + 1; emitChange()"
       matTooltip="Next page"
     >
       <mat-icon>navigate_next</mat-icon>

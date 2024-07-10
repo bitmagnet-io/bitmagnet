@@ -19,6 +19,7 @@ export type Scalars = {
   Float: { input: number; output: number; }
   Date: { input: string; output: string; }
   DateTime: { input: string; output: string; }
+  Duration: { input: string; output: string; }
   Hash20: { input: string; output: string; }
   Void: { input: void; output: void; }
   Year: { input: number; output: number; }
@@ -139,6 +140,26 @@ export type GenreFacetInput = {
   logic?: InputMaybe<FacetLogic>;
 };
 
+export type HealthCheck = {
+  __typename?: 'HealthCheck';
+  error?: Maybe<Scalars['String']['output']>;
+  key: Scalars['String']['output'];
+  status: HealthStatus;
+  timestamp: Scalars['DateTime']['output'];
+};
+
+export type HealthQueryResult = {
+  __typename?: 'HealthQueryResult';
+  checks: Array<HealthCheck>;
+  status: HealthStatus;
+};
+
+export type HealthStatus =
+  | 'down'
+  | 'inactive'
+  | 'unknown'
+  | 'up';
+
 export type Language =
   | 'af'
   | 'ar'
@@ -230,14 +251,89 @@ export type MetadataSource = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  queue: QueueMutation;
   torrent: TorrentMutation;
 };
 
 export type Query = {
   __typename?: 'Query';
-  system: SystemQuery;
+  health: HealthQueryResult;
+  queue: QueueQueryResult;
   torrent: TorrentQuery;
   torrentContent: TorrentContentQuery;
+  version: Scalars['String']['output'];
+  workers: WorkersQueryResult;
+};
+
+export type QueueEnqueueReprocessTorrentsBatchInput = {
+  apisDisabled?: InputMaybe<Scalars['Boolean']['input']>;
+  batchSize?: InputMaybe<Scalars['Int']['input']>;
+  chunkSize?: InputMaybe<Scalars['Int']['input']>;
+  classifierRematch?: InputMaybe<Scalars['Boolean']['input']>;
+  classifierWorkflow?: InputMaybe<Scalars['String']['input']>;
+  contentTypes?: InputMaybe<Array<InputMaybe<ContentType>>>;
+  localSearchDisabled?: InputMaybe<Scalars['Boolean']['input']>;
+  orphans?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+export type QueueJobStatus =
+  | 'failed'
+  | 'pending'
+  | 'processed'
+  | 'retry';
+
+export type QueueMetricsBucket = {
+  __typename?: 'QueueMetricsBucket';
+  count: Scalars['Int']['output'];
+  createdAtBucket: Scalars['DateTime']['output'];
+  latency?: Maybe<Scalars['Duration']['output']>;
+  queue: Scalars['String']['output'];
+  ranAtBucket?: Maybe<Scalars['DateTime']['output']>;
+  status: QueueJobStatus;
+};
+
+export type QueueMetricsBucketDuration =
+  | 'day'
+  | 'hour'
+  | 'minute';
+
+export type QueueMetricsQueryInput = {
+  bucketDuration: QueueMetricsBucketDuration;
+  endTime?: InputMaybe<Scalars['DateTime']['input']>;
+  queues?: InputMaybe<Array<Scalars['String']['input']>>;
+  startTime?: InputMaybe<Scalars['DateTime']['input']>;
+  statuses?: InputMaybe<Array<QueueJobStatus>>;
+};
+
+export type QueueMutation = {
+  __typename?: 'QueueMutation';
+  enqueueReprocessTorrentsBatch?: Maybe<Scalars['Void']['output']>;
+  purgeJobs?: Maybe<Scalars['Void']['output']>;
+};
+
+
+export type QueueMutationEnqueueReprocessTorrentsBatchArgs = {
+  input?: InputMaybe<QueueEnqueueReprocessTorrentsBatchInput>;
+};
+
+
+export type QueueMutationPurgeJobsArgs = {
+  input: QueuePurgeJobsInput;
+};
+
+export type QueuePurgeJobsInput = {
+  queues?: InputMaybe<Array<Scalars['String']['input']>>;
+  statuses?: InputMaybe<Array<QueueJobStatus>>;
+};
+
+export type QueueQueryResult = {
+  __typename?: 'QueueQueryResult';
+  metrics: Array<QueueMetricsBucket>;
+};
+
+
+export type QueueQueryResultMetricsArgs = {
+  input: QueueMetricsQueryInput;
 };
 
 export type ReleaseYearAgg = {
@@ -251,17 +347,6 @@ export type ReleaseYearAgg = {
 export type ReleaseYearFacetInput = {
   aggregate?: InputMaybe<Scalars['Boolean']['input']>;
   filter?: InputMaybe<Array<InputMaybe<Scalars['Year']['input']>>>;
-};
-
-export type SearchQueryInput = {
-  aggregationBudget?: InputMaybe<Scalars['Float']['input']>;
-  cached?: InputMaybe<Scalars['Boolean']['input']>;
-  /** hasNextPage if true, the search result will include the hasNextPage field, indicating if there are more results to fetch */
-  hasNextPage?: InputMaybe<Scalars['Boolean']['input']>;
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  queryString?: InputMaybe<Scalars['String']['input']>;
-  totalCount?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type Season = {
@@ -279,11 +364,6 @@ export type SuggestedTag = {
   __typename?: 'SuggestedTag';
   count: Scalars['Int']['output'];
   name: Scalars['String']['output'];
-};
-
-export type SystemQuery = {
-  __typename?: 'SystemQuery';
-  version: Scalars['String']['output'];
 };
 
 export type Torrent = {
@@ -359,15 +439,15 @@ export type TorrentContentFacetsInput = {
 };
 
 export type TorrentContentOrderBy =
-  | 'Files'
-  | 'InfoHash'
-  | 'Leechers'
-  | 'Name'
-  | 'PublishedAt'
-  | 'Relevance'
-  | 'Seeders'
-  | 'Size'
-  | 'UpdatedAt';
+  | 'files_count'
+  | 'info_hash'
+  | 'leechers'
+  | 'name'
+  | 'published_at'
+  | 'relevance'
+  | 'seeders'
+  | 'size'
+  | 'updated_at';
 
 export type TorrentContentOrderByInput = {
   descending?: InputMaybe<Scalars['Boolean']['input']>;
@@ -381,9 +461,22 @@ export type TorrentContentQuery = {
 
 
 export type TorrentContentQuerySearchArgs = {
+  query: TorrentContentSearchQueryInput;
+};
+
+export type TorrentContentSearchQueryInput = {
+  aggregationBudget?: InputMaybe<Scalars['Float']['input']>;
+  cached?: InputMaybe<Scalars['Boolean']['input']>;
   facets?: InputMaybe<TorrentContentFacetsInput>;
+  /** hasNextPage if true, the search result will include the hasNextPage field, indicating if there are more results to fetch */
+  hasNextPage?: InputMaybe<Scalars['Boolean']['input']>;
+  infoHashes?: InputMaybe<Array<Scalars['Hash20']['input']>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<TorrentContentOrderByInput>>;
-  query?: InputMaybe<SearchQueryInput>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  queryString?: InputMaybe<Scalars['String']['input']>;
+  totalCount?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type TorrentContentSearchResult = {
@@ -574,6 +667,17 @@ export type VideoSourceFacetInput = {
   filter?: InputMaybe<Array<InputMaybe<VideoSource>>>;
 };
 
+export type Worker = {
+  __typename?: 'Worker';
+  key: Scalars['String']['output'];
+  started: Scalars['Boolean']['output'];
+};
+
+export type WorkersQueryResult = {
+  __typename?: 'WorkersQueryResult';
+  all: Array<Worker>;
+};
+
 export type ContentFragment = { __typename?: 'Content', type: ContentType, source: string, id: string, title: string, releaseDate?: string | null, releaseYear?: number | null, overview?: string | null, runtime?: number | null, voteAverage?: number | null, voteCount?: number | null, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string }, originalLanguage?: { __typename?: 'LanguageInfo', id: string, name: string } | null, attributes: Array<{ __typename?: 'ContentAttribute', source: string, key: string, value: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, collections: Array<{ __typename?: 'ContentCollection', type: string, source: string, id: string, name: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, externalLinks: Array<{ __typename?: 'ExternalLink', url: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }> };
 
 export type TorrentFragment = { __typename?: 'Torrent', infoHash: string, name: string, size: number, filesStatus: FilesStatus, filesCount?: number | null, hasFilesInfo: boolean, singleFile?: boolean | null, fileType?: FileType | null, seeders?: number | null, leechers?: number | null, tagNames: Array<string>, magnetUri: string, createdAt: string, updatedAt: string, files?: Array<{ __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string }> | null, sources: Array<{ __typename?: 'TorrentSource', key: string, name: string }> };
@@ -583,6 +687,20 @@ export type TorrentContentFragment = { __typename?: 'TorrentContent', id: string
 export type TorrentContentSearchResultFragment = { __typename?: 'TorrentContentSearchResult', totalCount: number, totalCountIsEstimate: boolean, hasNextPage?: boolean | null, items: Array<{ __typename?: 'TorrentContent', id: string, infoHash: string, contentType?: ContentType | null, title: string, video3d?: Video3d | null, videoCodec?: VideoCodec | null, videoModifier?: VideoModifier | null, videoResolution?: VideoResolution | null, videoSource?: VideoSource | null, seeders?: number | null, leechers?: number | null, publishedAt: string, createdAt: string, updatedAt: string, torrent: { __typename?: 'Torrent', infoHash: string, name: string, size: number, filesStatus: FilesStatus, filesCount?: number | null, hasFilesInfo: boolean, singleFile?: boolean | null, fileType?: FileType | null, seeders?: number | null, leechers?: number | null, tagNames: Array<string>, magnetUri: string, createdAt: string, updatedAt: string, files?: Array<{ __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string }> | null, sources: Array<{ __typename?: 'TorrentSource', key: string, name: string }> }, content?: { __typename?: 'Content', type: ContentType, source: string, id: string, title: string, releaseDate?: string | null, releaseYear?: number | null, overview?: string | null, runtime?: number | null, voteAverage?: number | null, voteCount?: number | null, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string }, originalLanguage?: { __typename?: 'LanguageInfo', id: string, name: string } | null, attributes: Array<{ __typename?: 'ContentAttribute', source: string, key: string, value: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, collections: Array<{ __typename?: 'ContentCollection', type: string, source: string, id: string, name: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, externalLinks: Array<{ __typename?: 'ExternalLink', url: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }> } | null, languages?: Array<{ __typename?: 'LanguageInfo', id: string, name: string }> | null, episodes?: { __typename?: 'Episodes', label: string, seasons: Array<{ __typename?: 'Season', season: number, episodes?: Array<number> | null }> } | null }>, aggregations: { __typename?: 'TorrentContentAggregations', contentType?: Array<{ __typename?: 'ContentTypeAgg', value?: ContentType | null, label: string, count: number, isEstimate: boolean }> | null, torrentSource?: Array<{ __typename?: 'TorrentSourceAgg', value: string, label: string, count: number, isEstimate: boolean }> | null, torrentTag?: Array<{ __typename?: 'TorrentTagAgg', value: string, label: string, count: number, isEstimate: boolean }> | null, torrentFileType?: Array<{ __typename?: 'TorrentFileTypeAgg', value: FileType, label: string, count: number, isEstimate: boolean }> | null, language?: Array<{ __typename?: 'LanguageAgg', value: Language, label: string, count: number, isEstimate: boolean }> | null, genre?: Array<{ __typename?: 'GenreAgg', value: string, label: string, count: number, isEstimate: boolean }> | null, releaseYear?: Array<{ __typename?: 'ReleaseYearAgg', value?: number | null, label: string, count: number, isEstimate: boolean }> | null, videoResolution?: Array<{ __typename?: 'VideoResolutionAgg', value?: VideoResolution | null, label: string, count: number, isEstimate: boolean }> | null, videoSource?: Array<{ __typename?: 'VideoSourceAgg', value?: VideoSource | null, label: string, count: number, isEstimate: boolean }> | null } };
 
 export type TorrentFileFragment = { __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string };
+
+export type QueueEnqueueReprocessTorrentsBatchMutationVariables = Exact<{
+  input: QueueEnqueueReprocessTorrentsBatchInput;
+}>;
+
+
+export type QueueEnqueueReprocessTorrentsBatchMutation = { __typename?: 'Mutation', queue: { __typename?: 'QueueMutation', enqueueReprocessTorrentsBatch?: void | null } };
+
+export type QueuePurgeJobsMutationVariables = Exact<{
+  input: QueuePurgeJobsInput;
+}>;
+
+
+export type QueuePurgeJobsMutation = { __typename?: 'Mutation', queue: { __typename?: 'QueueMutation', purgeJobs?: void | null } };
 
 export type TorrentDeleteMutationVariables = Exact<{
   infoHashes: Array<Scalars['Hash20']['input']> | Scalars['Hash20']['input'];
@@ -615,15 +733,20 @@ export type TorrentSetTagsMutationVariables = Exact<{
 
 export type TorrentSetTagsMutation = { __typename?: 'Mutation', torrent: { __typename?: 'TorrentMutation', setTags?: void | null } };
 
-export type SystemQueryQueryVariables = Exact<{ [key: string]: never; }>;
+export type HealthQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type SystemQueryQuery = { __typename?: 'Query', system: { __typename?: 'SystemQuery', version: string } };
+export type HealthQuery = { __typename?: 'Query', health: { __typename?: 'HealthQueryResult', status: HealthStatus, checks: Array<{ __typename?: 'HealthCheck', key: string, status: HealthStatus, timestamp: string, error?: string | null }> }, workers: { __typename?: 'WorkersQueryResult', all: Array<{ __typename?: 'Worker', key: string, started: boolean }> } };
+
+export type QueueMetricsQueryVariables = Exact<{
+  input: QueueMetricsQueryInput;
+}>;
+
+
+export type QueueMetricsQuery = { __typename?: 'Query', queue: { __typename?: 'QueueQueryResult', metrics: Array<{ __typename?: 'QueueMetricsBucket', queue: string, status: QueueJobStatus, createdAtBucket: string, ranAtBucket?: string | null, count: number, latency?: string | null }> } };
 
 export type TorrentContentSearchQueryVariables = Exact<{
-  query?: InputMaybe<SearchQueryInput>;
-  facets?: InputMaybe<TorrentContentFacetsInput>;
-  orderBy?: InputMaybe<Array<TorrentContentOrderByInput> | TorrentContentOrderByInput>;
+  query: TorrentContentSearchQueryInput;
 }>;
 
 
@@ -635,6 +758,11 @@ export type TorrentSuggestTagsQueryVariables = Exact<{
 
 
 export type TorrentSuggestTagsQuery = { __typename?: 'Query', torrent: { __typename?: 'TorrentQuery', suggestTags: { __typename?: 'TorrentSuggestTagsResult', suggestions: Array<{ __typename?: 'SuggestedTag', name: string, count: number }> } } };
+
+export type VersionQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type VersionQuery = { __typename?: 'Query', version: string };
 
 export const TorrentFileFragmentDoc = gql`
     fragment TorrentFile on TorrentFile {
@@ -828,6 +956,42 @@ export const TorrentContentSearchResultFragmentDoc = gql`
   }
 }
     ${TorrentContentFragmentDoc}`;
+export const QueueEnqueueReprocessTorrentsBatchDocument = gql`
+    mutation QueueEnqueueReprocessTorrentsBatch($input: QueueEnqueueReprocessTorrentsBatchInput!) {
+  queue {
+    enqueueReprocessTorrentsBatch(input: $input)
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class QueueEnqueueReprocessTorrentsBatchGQL extends Apollo.Mutation<QueueEnqueueReprocessTorrentsBatchMutation, QueueEnqueueReprocessTorrentsBatchMutationVariables> {
+    override document = QueueEnqueueReprocessTorrentsBatchDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const QueuePurgeJobsDocument = gql`
+    mutation QueuePurgeJobs($input: QueuePurgeJobsInput!) {
+  queue {
+    purgeJobs(input: $input)
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class QueuePurgeJobsGQL extends Apollo.Mutation<QueuePurgeJobsMutation, QueuePurgeJobsMutationVariables> {
+    override document = QueuePurgeJobsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const TorrentDeleteDocument = gql`
     mutation TorrentDelete($infoHashes: [Hash20!]!) {
   torrent {
@@ -900,10 +1064,22 @@ export const TorrentSetTagsDocument = gql`
       super(apollo);
     }
   }
-export const SystemQueryDocument = gql`
-    query SystemQuery {
-  system {
-    version
+export const HealthDocument = gql`
+    query Health {
+  health {
+    status
+    checks {
+      key
+      status
+      timestamp
+      error
+    }
+  }
+  workers {
+    all {
+      key
+      started
+    }
   }
 }
     `;
@@ -911,17 +1087,42 @@ export const SystemQueryDocument = gql`
   @Injectable({
     providedIn: 'root'
   })
-  export class SystemQueryGQL extends Apollo.Query<SystemQueryQuery, SystemQueryQueryVariables> {
-    override document = SystemQueryDocument;
+  export class HealthGQL extends Apollo.Query<HealthQuery, HealthQueryVariables> {
+    override document = HealthDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const QueueMetricsDocument = gql`
+    query QueueMetrics($input: QueueMetricsQueryInput!) {
+  queue {
+    metrics(input: $input) {
+      queue
+      status
+      createdAtBucket
+      ranAtBucket
+      count
+      latency
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class QueueMetricsGQL extends Apollo.Query<QueueMetricsQuery, QueueMetricsQueryVariables> {
+    override document = QueueMetricsDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
     }
   }
 export const TorrentContentSearchDocument = gql`
-    query TorrentContentSearch($query: SearchQueryInput, $facets: TorrentContentFacetsInput, $orderBy: [TorrentContentOrderByInput!]) {
+    query TorrentContentSearch($query: TorrentContentSearchQueryInput!) {
   torrentContent {
-    search(query: $query, facets: $facets, orderBy: $orderBy) {
+    search(query: $query) {
       ...TorrentContentSearchResult
     }
   }
@@ -956,6 +1157,22 @@ export const TorrentSuggestTagsDocument = gql`
   })
   export class TorrentSuggestTagsGQL extends Apollo.Query<TorrentSuggestTagsQuery, TorrentSuggestTagsQueryVariables> {
     override document = TorrentSuggestTagsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const VersionDocument = gql`
+    query Version {
+  version
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class VersionGQL extends Apollo.Query<VersionQuery, VersionQueryVariables> {
+    override document = VersionDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

@@ -1,13 +1,13 @@
 import { inject, Injectable } from '@angular/core';
 import dayjs, { Dayjs } from 'dayjs';
-import duration, { DurationUnitsObjectType } from 'dayjs/plugin/duration';
-import relativeTime from 'dayjs/plugin/relativeTime';
+import duration, { DurationUnitsObjectType } from 'dayjs/plugin/duration.js';
+import relativeTime from 'dayjs/plugin/relativeTime.js';
 import { TranslateManager } from '../i18n/translate-manager.service';
-import 'dayjs/locale/ar';
-import 'dayjs/locale/de';
-import 'dayjs/locale/en';
-import 'dayjs/locale/fr';
-import 'dayjs/locale/zh';
+import 'dayjs/locale/ar.js';
+import 'dayjs/locale/de.js';
+import 'dayjs/locale/en.js';
+import 'dayjs/locale/fr.js';
+import 'dayjs/locale/zh.js';
 
 dayjs.extend(duration);
 dayjs.extend(relativeTime);

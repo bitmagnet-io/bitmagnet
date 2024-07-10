@@ -6,13 +6,11 @@ parserOptions:
 plugins:
   - "@typescript-eslint/eslint-plugin"
   - import
-  - sonarjs
 extends:
   - "plugin:@typescript-eslint/recommended"
   - "plugin:@typescript-eslint/recommended-requiring-type-checking"
   - "plugin:import/errors"
   - "plugin:import/typescript"
-  - "plugin:sonarjs/recommended"
   - "plugin:prettier/recommended"
 settings:
   import/resolver:
