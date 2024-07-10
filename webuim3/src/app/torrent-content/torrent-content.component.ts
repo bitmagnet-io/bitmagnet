@@ -31,7 +31,7 @@ import {
 } from '@angular/material/autocomplete';
 import { MatTooltip } from '@angular/material/tooltip';
 import { MatButton } from '@angular/material/button';
-import { TranslocoDirective } from '@jsverse/transloco';
+import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
 import { FilesizePipe } from '../pipes/filesize.pipe';
 import * as generated from '../graphql/generated';
 import normalizeTagInput from '../util/normalizeTagInput';
@@ -92,6 +92,8 @@ export class TorrentContentComponent {
   public selectedTabIndex = 0;
 
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
+
+  transloco = inject(TranslocoService)
 
   constructor(
     private graphQLService: GraphQLService,

@@ -3,8 +3,12 @@ import {ChartConfiguration} from "chart.js";
 import {BucketParams, EventName, Result} from "./queue-metrics.types";
 import {durationSeconds, eventNames, timeframeLengths} from "./queue.constants";
 import {normalizeBucket} from "./queue-metrics.controller";
-import {ThemeBaseColor, ThemeColor} from "../themes/theme-types";
+import {ThemeBaseColor} from "../themes/theme-types";
 import {createThemeColor} from "../themes/theme-utils";
+import {ThemeInfoService} from "../themes/theme-info.service";
+import {inject, Injectable} from "@angular/core";
+import {DayjsService} from "../dayjs/dayjs.service";
+import {TranslocoService} from "@jsverse/transloco";
 
 const eventColors: Record<EventName, ThemeBaseColor> = {
   'created': 'primary',
@@ -12,8 +16,14 @@ const eventColors: Record<EventName, ThemeBaseColor> = {
   'failed': 'error',
 }
 
-export const queueChartAdapterTimeline: ChartAdapter<Result> = {
-  create: (result, {colors}) => {
+@Injectable({providedIn: "root"})
+export class QueueChartAdapterTimeline implements ChartAdapter<Result, "line"> {
+  private themeInfo = inject(ThemeInfoService)
+  private transloco = inject(TranslocoService)
+  private dayjs = inject(DayjsService)
+
+  create(result?: Result) : ChartConfiguration<"line"> {
+    const { colors } = this.themeInfo.info
     const labels = Array<string>()
     const datasets: ChartConfiguration<"line">["data"]["datasets"] = []
     if (result) {
@@ -33,7 +43,7 @@ export const queueChartAdapterTimeline: ChartAdapter<Result> = {
       // const seriesLabels = nonEmptyQueues.flatMap((q) => events.map((status) => [q.queue, status].join("/")))
       if (nonEmptyBuckets.length) {
         for (let i = minBucket; i <= maxBucket; i++) {
-          labels.push(formatBucketKey(result.params.buckets, i))
+          labels.push(this.formatBucketKey(result.params.buckets, i))
         }
         const relevantEvents = eventNames.filter((n) => (result.params.event ?? n) === n)
         for (const queue of nonEmptyQueues) {
@@ -99,20 +109,39 @@ export const queueChartAdapterTimeline: ChartAdapter<Result> = {
         scales: {
           yCount: {
             position: 'left',
-            // max: 100,
             ticks: {
-              stepSize: 1
+              callback: (v) => parseInt(v as string).toLocaleString(this.transloco.getActiveLang())
             }
           },
           yLatency: {
             position: 'right',
-            // max: 100,
-          },
-          x: {
             ticks: {
-              stepSize: 5
+              callback: (v) => {
+                if (typeof v === "string") {
+                  v = parseInt(v)
+                }
+                if (v === 0) {
+                  return "0"
+                }
+                const d = this.dayjs.createDuration({seconds: v})
+                if (v > (60 * 60)) {
+                  return d.format("H[h]mm")
+                }
+                if (v < 1) {
+                  return d.format("SSS[ms]")
+                }
+                if (v < 5) {
+                  return d.format("s.SSS[s]")
+                }
+                  return d.format("mm:ss[m]")
+              }
             }
-          }
+          },
+          // x: {
+          //   ticks: {
+          //     stepSize: 5
+          //   }
+          // }
           // y1: {
           //   position: 'right',
           //   grid: {
@@ -142,9 +171,9 @@ export const queueChartAdapterTimeline: ChartAdapter<Result> = {
       },
     }
   }
-}
 
-const formatBucketKey = (params: BucketParams<false>, key: number) => {
-  const msMultiplier = 1000 * durationSeconds[params.duration] * params.multiplier
-  return new Date(key * msMultiplier).toISOString().split("T")[1]
+  private formatBucketKey (params: BucketParams<false>, key: number): string {
+    const msMultiplier = 1000 * durationSeconds[params.duration] * params.multiplier
+    return this.dayjs.createDate(key * msMultiplier, this.transloco.getActiveLang()).format('h:mm A')
+  }
 }

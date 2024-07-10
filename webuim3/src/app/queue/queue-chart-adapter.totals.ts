@@ -6,6 +6,9 @@ import {statusNames} from "./queue.constants";
 import {ThemeBaseColor} from "../themes/theme-types";
 import {QueueJobStatus} from "../graphql/generated";
 import {createThemeColor} from "../themes/theme-utils";
+import {inject, Injectable} from "@angular/core";
+import {ThemeInfoService} from "../themes/theme-info.service";
+import {TranslocoService} from "@jsverse/transloco";
 
 const statusColors: Record<QueueJobStatus, ThemeBaseColor> = {
   'pending': 'primary',
@@ -14,8 +17,13 @@ const statusColors: Record<QueueJobStatus, ThemeBaseColor> = {
   'retry': 'caution'
 }
 
-export const queueChartAdapterTotals: ChartAdapter<Result> = {
-  create: (result, {colors}) => {
+@Injectable({providedIn: "root"})
+export class QueueChartAdapterTotals implements ChartAdapter<Result> {
+  private themeInfo = inject(ThemeInfoService)
+  private transloco = inject(TranslocoService)
+
+  create(result?: Result) : ChartConfiguration<"bar"> {
+    const { colors } = this.themeInfo.info
     const labels = Array<string>()
     const datasets: ChartConfiguration<"bar">["data"]["datasets"] = []
     if (result) {
@@ -71,9 +79,12 @@ export const queueChartAdapterTotals: ChartAdapter<Result> = {
         //   // },
         // },
         scales: {
-          x: {},
+          x: {
+            ticks: {
+              callback: (v) => parseInt(v as string).toLocaleString(this.transloco.getActiveLang())
+            }
+            },
           y: {
-            // min: 10,
           },
         },
         indexAxis: "y",

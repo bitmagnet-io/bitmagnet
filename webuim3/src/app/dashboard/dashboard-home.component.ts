@@ -9,15 +9,15 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { HealthModule } from '../health/health.module';
 import {ChartComponent} from "../charting/chart.component";
-import {queueChartAdapterTotals} from "../queue/queue-chart-adapter.totals";
 import {QueueMetricsController} from "../queue/queue-metrics.controller";
 import {QueueModule} from "../queue/queue.module";
-import {queueChartAdapterTimeline} from "../queue/queue-chart-adapter.timeline";
 import {Apollo} from "apollo-angular";
 import {TranslocoDirective} from "@jsverse/transloco";
 import {MatToolbar} from "@angular/material/toolbar";
 import {MatDivider} from "@angular/material/divider";
 import {ErrorsService} from "../errors/errors.service";
+import {QueueChartAdapterTotals} from "../queue/queue-chart-adapter.totals";
+import {QueueChartAdapterTimeline} from "../queue/queue-chart-adapter.timeline";
 
 @Component({
   selector: 'app-dashboard',
@@ -55,8 +55,8 @@ export class DashboardHomeComponent {
     inject(ErrorsService)
   )
 
-  totals = queueChartAdapterTotals
-  timeline = queueChartAdapterTimeline
+  totals = inject(QueueChartAdapterTotals)
+  timeline = inject(QueueChartAdapterTimeline)
 
   /** Based on the screen size, switch from standard to one column per row */
   cards = this.breakpointObserver.observe(Breakpoints.Handset).pipe(

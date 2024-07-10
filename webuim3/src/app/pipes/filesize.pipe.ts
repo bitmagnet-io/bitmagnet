@@ -5,7 +5,7 @@ import { filesize } from 'filesize';
   standalone: true,
 })
 export class FilesizePipe implements PipeTransform {
-  transform(value: number): string {
-    return filesize(value);
+  transform(value: number, locale?: string): string {
+    return filesize(value, { locale });
   }
 }

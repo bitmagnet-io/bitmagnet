@@ -1,8 +1,7 @@
 import {Component, inject, OnDestroy, OnInit} from '@angular/core';
 import {Apollo} from "apollo-angular";
 import {QueueMetricsController} from "./queue-metrics.controller";
-import {queueChartAdapterTimeline} from "./queue-chart-adapter.timeline";
-import {queueChartAdapterTotals} from "./queue-chart-adapter.totals";
+import {QueueChartAdapterTotals} from "./queue-chart-adapter.totals";
 import {QueueModule} from "./queue.module";
 import {
   MatCard,
@@ -41,6 +40,7 @@ import {
 } from "./queue-enqueue-reprocess-torrents-batch-dialog.component";
 import {BreakpointsService} from "../layout/breakpoints.service";
 import {ErrorsService} from "../errors/errors.service";
+import {QueueChartAdapterTimeline} from "./queue-chart-adapter.timeline";
 
 @Component({
   selector: 'app-queue-card',
@@ -65,8 +65,8 @@ export class QueueCardComponent implements OnInit, OnDestroy{
     },
     inject(ErrorsService)
     )
-  protected readonly timeline = queueChartAdapterTimeline;
-  protected readonly totals = queueChartAdapterTotals;
+  protected readonly timeline = inject(QueueChartAdapterTimeline);
+  protected readonly totals = inject(QueueChartAdapterTotals);
 
   protected readonly resolutionNames = resolutionNames;
   protected readonly timeframeNames = timeframeNames;

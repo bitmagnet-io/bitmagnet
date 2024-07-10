@@ -1,3 +1,5 @@
+import {ThemeColors, ThemeInfo} from "./theme-types";
+
 export const themeBaseColors = [
   "primary",
   "secondary",
@@ -16,3 +18,8 @@ export const themeColors = [
   "foreground",
   ...themeBaseColors.flatMap((baseColor) => themeColorHues.map((n): `${typeof themeBaseColors[number]}-${typeof themeColorHues[number]}` => `${baseColor}-${n}`)),
 ] as const;
+
+export const emptyThemeInfo: ThemeInfo = {
+  type: "light",
+  colors: {}  as ThemeColors
+}

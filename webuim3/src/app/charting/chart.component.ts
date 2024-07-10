@@ -5,6 +5,7 @@ import {ChartAdapter, ChartDependencies} from "./types";
 import {ChartConfiguration, ChartType} from "chart.js";
 import {Observable} from "rxjs";
 import {ThemeInfoService} from "../themes/theme-info.service";
+import {TranslocoService} from "@jsverse/transloco";
 
 @Component({
   selector: 'app-chart',
@@ -15,6 +16,7 @@ import {ThemeInfoService} from "../themes/theme-info.service";
 })
 export class ChartComponent<Data = unknown, Type extends ChartType = ChartType> implements OnInit{
   private themeInfo = inject(ThemeInfoService)
+  private transloco = inject(TranslocoService)
 
   @Input() $data: Observable<Data>
   @Input() adapter: ChartAdapter<Data, Type>;
@@ -27,7 +29,6 @@ export class ChartComponent<Data = unknown, Type extends ChartType = ChartType> 
 
   ngOnInit() {
     this.updateChart()
-    // this.chartConfig = this.adapter.create(undefined, this.createDependencies()) as ChartConfiguration
     this.$data.subscribe((data) => {
       this.data = data;
       this.updateChart()
@@ -35,16 +36,13 @@ export class ChartComponent<Data = unknown, Type extends ChartType = ChartType> 
     this.themeInfo.info$.subscribe(() => {
       this.updateChart()
     })
-  }
-
-  private createDependencies(): ChartDependencies {
-    return {
-      colors: this.themeInfo.colors
-    }
+    this.transloco.langChanges$.subscribe(() => {
+      this.updateChart()
+    })
   }
 
   private updateChart() {
-    this.chartConfig = this.adapter.create(this.data, this.createDependencies()) as ChartConfiguration
+    this.chartConfig = this.adapter.create(this.data) as ChartConfiguration
   }
 }
 
