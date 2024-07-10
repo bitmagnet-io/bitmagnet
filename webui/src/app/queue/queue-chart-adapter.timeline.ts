@@ -5,7 +5,6 @@ import { ChartAdapter } from '../charting/types';
 import { ThemeBaseColor } from '../themes/theme-types';
 import { createThemeColor } from '../themes/theme-utils';
 import { ThemeInfoService } from '../themes/theme-info.service';
-import { DayjsService } from '../dayjs/dayjs.service';
 import { normalizeBucket } from './queue-metrics.controller';
 import {
   durationSeconds,
@@ -13,6 +12,9 @@ import {
   timeframeLengths,
 } from './queue.constants';
 import { BucketParams, EventName, Result } from './queue-metrics.types';
+import {format as formatDate} from "date-fns/format";
+import {resolveDateLocale} from "../dates/dates.locales";
+import {formatDuration} from "../dates/dates.utils";
 
 const eventColors: Record<EventName, ThemeBaseColor> = {
   created: 'primary',
@@ -24,7 +26,6 @@ const eventColors: Record<EventName, ThemeBaseColor> = {
 export class QueueChartAdapterTimeline implements ChartAdapter<Result, 'line'> {
   private themeInfo = inject(ThemeInfoService);
   private transloco = inject(TranslocoService);
-  private dayjs = inject(DayjsService);
 
   create(result?: Result): ChartConfiguration<'line'> {
     const { colors } = this.themeInfo.info;
@@ -154,17 +155,17 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, 'line'> {
                 if (v === 0) {
                   return '0';
                 }
-                const d = this.dayjs.createDuration({ seconds: v });
-                if (v > 60 * 60) {
-                  return d.format('H[h]mm');
-                }
-                if (v < 1) {
-                  return d.format('SSS[ms]');
-                }
-                if (v < 5) {
-                  return d.format('s.SSS[s]');
-                }
-                return d.format('mm:ss[m]');
+                return formatDuration(v, this.transloco.getActiveLang());
+                // if (v > 60 * 60) {
+                //   return d.format('H[h]mm');
+                // }
+                // if (v < 1) {
+                //   return d.format('SSS[ms]');
+                // }
+                // if (v < 5) {
+                //   return d.format('s.SSS[s]');
+                // }
+                // return d.format('mm:ss[m]');
               },
             },
           },
@@ -204,10 +205,20 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, 'line'> {
   }
 
   private formatBucketKey(params: BucketParams<false>, key: number): string {
-    const msMultiplier =
-      1000 * durationSeconds[params.duration] * params.multiplier;
-    return this.dayjs
-      .createDate(key * msMultiplier, this.transloco.getActiveLang())
-      .format('h:mm A');
+    let formatStr: string
+    switch (params.duration) {
+      case "day":
+        formatStr = "d LLL"
+        break
+      case "hour":
+        formatStr = "d LLL H:00"
+        break
+      case "minute":
+        formatStr = "H:mm"
+        break
+    }
+    return formatDate(1000 * durationSeconds[params.duration] * params.multiplier * key, formatStr, {
+      locale: resolveDateLocale(this.transloco.getActiveLang())
+    })
   }
 }

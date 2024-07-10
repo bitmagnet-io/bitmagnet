@@ -38,7 +38,7 @@ import normalizeTagInput from '../util/normalizeTagInput';
 import { GraphQLService } from '../graphql/graphql.service';
 import { ErrorsService } from '../errors/errors.service';
 import { BreakpointsService } from '../layout/breakpoints.service';
-import { HumanTimePipe } from '../pipes/human-time.pipe';
+import { TimeAgoPipe } from '../dates/time-ago.pipe';
 
 @Component({
   selector: 'app-torrent-content',
@@ -71,7 +71,7 @@ import { HumanTimePipe } from '../pipes/human-time.pipe';
     FilesizePipe,
     TranslocoDirective,
     AsyncPipe,
-    HumanTimePipe,
+    TimeAgoPipe,
     MatChipRemove,
   ],
 })

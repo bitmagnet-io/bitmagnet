@@ -20,13 +20,13 @@
   @if (size) {
     <p class="size">
       <strong>{{ t("torrents.size") }}:</strong>
-      {{ torrentContent.torrent.size | filesize | humanTime: transloco.getActiveLang() }}
+      {{ torrentContent.torrent.size | filesize | timeAgo: transloco.getActiveLang() }}
     </p>
   }
   @if (published) {
     <p class="published">
       <strong>{{ t("torrents.published") }}</strong>
-      {{ torrentContent.publishedAt | humanTime: transloco.getActiveLang() }}
+      {{ torrentContent.publishedAt | timeAgo: transloco.getActiveLang() }}
     </p>
   }
   @if (peers) {

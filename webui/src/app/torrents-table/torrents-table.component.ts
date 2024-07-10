@@ -36,7 +36,7 @@ import { BehaviorSubject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FilesizePipe } from '../pipes/filesize.pipe';
 import { TorrentContentComponent } from '../torrent-content/torrent-content.component';
-import { HumanTimePipe } from '../pipes/human-time.pipe';
+import { TimeAgoPipe } from '../dates/time-ago.pipe';
 import * as generated from '../graphql/generated';
 import { TorrentsSearchDatasource } from '../torrents-search/torrents-search.datasource';
 import { contentTypeInfo } from '../taxonomy/content-types';
@@ -56,7 +56,7 @@ import { stringParam } from '../util/query-string';
     MatCell,
     MatCellDef,
     MatIcon,
-    HumanTimePipe,
+    TimeAgoPipe,
     MatTooltip,
     MatHeaderRow,
     MatRow,

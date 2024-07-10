@@ -72,7 +72,7 @@
           matTooltip="{{ item(i).publishedAt }}"
           matTooltipClass="tooltip-published-at"
         >
-          {{ item(i).publishedAt | humanTime: transloco.getActiveLang() }}
+          {{ item(i).publishedAt | timeAgo: transloco.getActiveLang() }}
         </abbr>
       </td>
     </ng-container>

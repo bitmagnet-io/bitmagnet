@@ -93,8 +93,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
         return EMPTY;
       }),
-    );
-    this.subscriptions.push(
       this.router.events.subscribe(async (event) => {
         if (
           event.type === EventType.NavigationEnd &&
