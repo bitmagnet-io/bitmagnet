@@ -148,25 +148,7 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, 'line'> {
           yLatency: {
             position: 'right',
             ticks: {
-              callback: (v) => {
-                if (typeof v === 'string') {
-                  v = parseInt(v);
-                }
-                if (v === 0) {
-                  return '0';
-                }
-                return formatDuration(v, this.transloco.getActiveLang());
-                // if (v > 60 * 60) {
-                //   return d.format('H[h]mm');
-                // }
-                // if (v < 1) {
-                //   return d.format('SSS[ms]');
-                // }
-                // if (v < 5) {
-                //   return d.format('s.SSS[s]');
-                // }
-                // return d.format('mm:ss[m]');
-              },
+              callback: this.formatDuration.bind(this),
             },
           },
           // x: {
@@ -221,4 +203,36 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, 'line'> {
       locale: resolveDateLocale(this.transloco.getActiveLang())
     })
   }
+
+  private formatDuration(d: number | string): string {
+      if (typeof d === 'string') {
+        d = parseInt(d);
+      }
+      if (d === 0) {
+        return '0';
+      }
+      let seconds = d;
+      let minutes = 0;
+      let hours = 0;
+      let days = 0;
+      if (seconds >= 60) {
+        minutes = Math.floor(seconds / 60);
+        seconds = seconds % 60;
+        if (minutes >= 5) {
+          seconds = 0;
+          if (minutes >= 60) {
+            hours = Math.floor(minutes / 60);
+            minutes = minutes % 60;
+            if (hours >= 5) {
+              minutes = 0;
+              if (hours >= 24) {
+                days = Math.floor(hours / 24);
+                hours = hours % 24;
+              }
+            }
+          }
+        }
+      }
+      return formatDuration({ days, hours, minutes, seconds }, this.transloco.getActiveLang());
+    }
 }

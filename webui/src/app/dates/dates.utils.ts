@@ -1,4 +1,4 @@
-import {formatDistance, formatDistanceToNow} from "date-fns";
+import {formatDistanceToNow, formatDuration as fnsFormatDuration, Duration} from "date-fns";
 import {resolveDateLocale} from "./dates.locales";
 import {DateType} from "./dates.types";
 
@@ -8,8 +8,7 @@ export const formatTimeAgo = (date: DateType, locale: string) =>
     locale: resolveDateLocale(locale),
   })
 
-export const formatDuration = (seconds: number, locale: string) =>
-  formatDistance(seconds * 1000, 0, {
-    includeSeconds: true,
+export const formatDuration = (duration: Duration, locale: string) =>
+  fnsFormatDuration(duration, {
     locale: resolveDateLocale(locale),
   })

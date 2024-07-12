@@ -17,7 +17,7 @@ import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
 import { AsyncPipe } from '@angular/common';
 import {
   MatAnchor,
-  MatButton,
+  MatButton, MatIconAnchor,
   MatIconButton,
   MatMiniFabButton,
 } from '@angular/material/button';
@@ -86,6 +86,7 @@ import { QueueChartAdapterTimeline } from './queue-chart-adapter.timeline';
     MatMenuItem,
     MatMenuTrigger,
     MatAnchor,
+    MatIconAnchor,
   ],
 })
 export class QueueCardComponent implements OnInit, OnDestroy {

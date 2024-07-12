@@ -4,13 +4,23 @@
       <mat-toolbar>
         <h2><mat-icon svgIcon="queue" />Queues</h2>
         <span class="spacer"></span>
-        <a
-          mat-button
-          [matMenuTriggerFor]="maintenanceMenu"
+        @if (breakpoints.sizeAtLeast('Medium')) {
+          <a
+            mat-button
+            [matMenuTriggerFor]="maintenanceMenu"
+            >
+            <mat-icon>construction</mat-icon>
+            Maintenance Tasks
+          </a>
+        } @else {
+          <a
+            mat-icon-button
+            [matMenuTriggerFor]="maintenanceMenu"
+            [matTooltip]="'Maintenance Tasks'"
           >
-          <mat-icon>construction</mat-icon>
-          Maintenance Tasks
-        </a>
+            <mat-icon>construction</mat-icon>
+          </a>
+        }
         <mat-menu #maintenanceMenu="matMenu">
           <a mat-menu-item
              (click)="openDialogPurgeJobs()"
