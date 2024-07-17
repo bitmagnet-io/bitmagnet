@@ -11,20 +11,13 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"github.com/bitmagnet-io/bitmagnet/internal/servarr"
 )
 
 // Download is the resolver for the download field.
 func (r *clientMutationResolver) Download(ctx context.Context, obj *gqlmodel.ClientMutation, infoHashes []protocol.ID) (*string, error) {
-	runner := func(ci client.Client) error {
-		return ci.AddInfoHashes(ctx, client.AddInfoHashesRequest{ClientID: "servarr", InfoHashes: infoHashes})
-	}
+	c := &client.ServarrClient{Config: r.clientConfig}
+	return nil, c.AddInfoHashes(ctx, client.AddInfoHashesRequest{ClientID: "servarr", InfoHashes: infoHashes})
 
-	return nil, runner(&servarr.ServarrClient{
-		Search: &r.search,
-		Config: &r.servarrConfig,
-		Logger: r.logger,
-	})
 }
 
 // Torrent is the resolver for the torrent field.

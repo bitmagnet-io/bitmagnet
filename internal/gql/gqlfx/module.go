@@ -3,15 +3,14 @@ package gqlfx
 import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
+	"github.com/bitmagnet-io/bitmagnet/internal/client"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/config"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/resolvers"
-	"github.com/bitmagnet-io/bitmagnet/internal/servarr"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 func New() fx.Option {
@@ -23,8 +22,7 @@ func New() fx.Option {
 			func(
 				ls lazy.Lazy[search.Search],
 				ld lazy.Lazy[*dao.Query],
-				lc servarr.Config,
-				logger *zap.SugaredLogger,
+				c client.Config,
 
 			) lazy.Lazy[gql.ResolverRoot] {
 				return lazy.New(func() (gql.ResolverRoot, error) {
@@ -36,7 +34,7 @@ func New() fx.Option {
 					if err != nil {
 						return nil, err
 					}
-					return resolvers.New(d, s, lc, logger), nil
+					return resolvers.New(d, s, c), nil
 				})
 			},
 			func(

@@ -7,11 +7,8 @@ import (
 	"slices"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/client"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
-	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
-	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/go-resty/resty/v2"
 	"go.uber.org/zap"
 )
@@ -164,18 +161,10 @@ func (c *ServarrClient) downloadOne(ctx context.Context, content *gqlmodel.Torre
 func (c *ServarrClient) AddInfoHashes(ctx context.Context, req client.AddInfoHashesRequest) error {
 	var allErr error
 	for _, infoHash := range req.InfoHashes {
-		content, err := gqlmodel.TorrentContentQuery{TorrentContentSearch: *c.Search}.Search(
-			ctx,
-			&query.SearchParams{QueryString: model.NullString{String: infoHash.String(), Valid: true}},
-			&gen.TorrentContentFacetsInput{},
-			make([]gen.TorrentContentOrderByInput, 0),
-		)
-		if err != nil {
-			allErr = errors.Join(allErr, err)
-		} else if len(content.Items) != 1 {
-			allErr = errors.Join(allErr, fmt.Errorf("Too many content results (%d) for download", len(content.Items)))
+		content, err := localSearch{Search: *c.Search}.TorrentContentByInfoHash(ctx, infoHash)
+		if err == nil {
+			err = c.downloadOne(ctx, &content)
 		}
-		err = c.downloadOne(ctx, &content.Items[0])
 		allErr = errors.Join(allErr, err)
 
 	}

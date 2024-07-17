@@ -56,10 +56,13 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/Khan/genqlient v0.7.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.3 // indirect
 	github.com/alecthomas/atomic v0.1.0-alpha2 // indirect
+	github.com/alexflint/go-arg v1.4.3 // indirect
+	github.com/alexflint/go-scalar v1.1.0 // indirect
 	github.com/anacrolix/chansync v0.4.0 // indirect
 	github.com/anacrolix/generics v0.0.1 // indirect
 	github.com/anacrolix/log v0.15.2 // indirect

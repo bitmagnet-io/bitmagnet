@@ -49,6 +49,13 @@ tasks:
     cmds:
       - cd webui && npm run graphql:codegen
 
+  gen-gql-client:
+    dir: ./internal/client
+    cmds:
+      - rover graph introspect http://localhost:3335/graphql -o schema/schema.graphql
+      - go run github.com/Khan/genqlient 
+
+
   lint:
     cmds:
       - task lint-golangci

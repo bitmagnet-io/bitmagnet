@@ -1,0 +1,12 @@
+# Default genqlient config; for full documentation see:
+# https://github.com/Khan/genqlient/blob/main/docs/genqlient.yaml
+schema: schema/schema.graphql
+operations:
+- mutations/*.graphql
+generated: gqlclient-gen.go
+
+bindings:
+  Hash20: 
+    type: string
+  Void:
+    type: string

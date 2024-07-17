@@ -1,0 +1,5 @@
+mutation ServarrDownload($infoHashes: [Hash20!]) {
+  client {
+    download(infoHashes: $infoHashes)
+  }
+}

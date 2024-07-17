@@ -8,6 +8,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/app/boilerplateappfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpserver/httpserverfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classifierfx"
+	"github.com/bitmagnet-io/bitmagnet/internal/client/clientfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/databasefx"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/migrations"
 	"github.com/bitmagnet-io/bitmagnet/internal/dhtcrawler/dhtcrawlerfx"
@@ -17,7 +18,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/dhtfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainfofx"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/queuefx"
-	"github.com/bitmagnet-io/bitmagnet/internal/servarr/servarrfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/telemetry/telemetryfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/tmdb/tmdbfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab/torznabfx"
@@ -42,7 +42,7 @@ func New() fx.Option {
 		queuefx.New(),
 		telemetryfx.New(),
 		tmdbfx.New(),
-		servarrfx.New(),
+		clientfx.New(),
 		torznabfx.New(),
 		versionfx.New(),
 		classifierfx.New(),

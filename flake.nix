@@ -24,6 +24,8 @@
             nodePackages.prettier
             protobuf
             protoc-gen-go
+            rover
+
           ];
         };
       };
