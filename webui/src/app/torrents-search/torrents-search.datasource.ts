@@ -9,7 +9,6 @@ import {
 } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Apollo } from 'apollo-angular';
-import { inject } from '@angular/core';
 import * as generated from '../graphql/generated';
 import { ErrorsService } from '../errors/errors.service';
 
@@ -89,7 +88,7 @@ export class TorrentsSearchDatasource
     );
 
   constructor(
-    private apollo = inject(Apollo),
+    private apollo: Apollo,
     private errorsService: ErrorsService,
     searchQueryVariables: Observable<generated.TorrentContentSearchQueryVariables>,
   ) {

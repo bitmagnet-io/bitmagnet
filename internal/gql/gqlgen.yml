@@ -174,3 +174,6 @@ models:
   QueueEnqueueReprocessTorrentsBatchInput:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/queue/manager.EnqueueReprocessTorrentsBatchRequest
+#  QueueJobsQueryInput:
+#    model:
+#      - github.com/bitmagnet-io/bitmagnet/internal/database/query.SearchParams

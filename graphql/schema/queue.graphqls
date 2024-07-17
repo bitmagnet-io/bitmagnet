@@ -1,5 +1,40 @@
 type QueueQueryResult {
-  metrics(input: QueueMetricsQueryInput!): [QueueMetricsBucket!]!
+  jobs(input: QueueJobsQueryInput!): QueueJobsQueryResult!
+  metrics(input: QueueMetricsQueryInput!): QueueMetricsQueryResult!
+}
+
+input QueueJobsQueryInput {
+  queues: [String!]
+  statuses: [QueueJobStatus!]
+  limit: Int
+  page: Int
+  offset: Int
+  hasNextPage: Boolean
+  orderBy: [QueueJobsOrderByInput!]
+}
+
+input QueueJobsOrderByInput {
+  field: QueueJobsOrderByField!
+  descending: Boolean
+}
+
+type QueueJob {
+  id: ID!
+  queue: String!
+  status: QueueJobStatus!
+  payload: String!
+  priority: Int!
+  retries: Int!
+  maxRetries: Int!
+  runAfter: DateTime!
+  ranAt: DateTime
+  error: String
+  createdAt: DateTime!
+}
+
+type QueueJobsQueryResult {
+  items: [QueueJob!]!
+  hasNextPage: Boolean
 }
 
 enum QueueJobStatus {
@@ -22,6 +57,10 @@ type QueueMetricsBucket {
   ranAtBucket: DateTime
   count: Int!
   latency: Duration
+}
+
+type QueueMetricsQueryResult {
+  buckets: [QueueMetricsBucket!]!
 }
 
 input QueueMetricsQueryInput {

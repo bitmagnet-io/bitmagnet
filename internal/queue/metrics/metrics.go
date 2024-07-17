@@ -71,7 +71,7 @@ func (c client) Request(ctx context.Context, req Request) ([]Bucket, error) {
         date_trunc(?, created_at) as created_at_bucket,
         date_trunc(?, ran_at) as ran_at_bucket,
         count(*) as count,
-        sum(ran_at-run_after) as latency
+        (date_part('epoch', sum(ran_at-run_after)) * INTERVAL '1 second') as latency
         from queue_jobs
        `+
 		conditionClause+

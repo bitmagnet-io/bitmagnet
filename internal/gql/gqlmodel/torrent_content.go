@@ -165,7 +165,7 @@ func (t TorrentContentQuery) Search(
 	}
 	fullOrderBy := maps.NewInsertMap[search.TorrentContentOrderBy, search.OrderDirection]()
 	for _, ob := range query.OrderBy {
-		if ob.Field == gen.TorrentContentOrderByRelevance && !hasQueryString {
+		if ob.Field == gen.TorrentContentOrderByFieldRelevance && !hasQueryString {
 			continue
 		}
 		direction := search.OrderDirectionAscending

@@ -146,7 +146,7 @@ enum VideoSource {
   BluRay
 }
 
-enum TorrentContentOrderBy {
+enum TorrentContentOrderByField {
   relevance
   published_at
   updated_at
@@ -156,4 +156,10 @@ enum TorrentContentOrderBy {
   leechers
   name
   info_hash
+}
+
+enum QueueJobsOrderByField {
+  created_at
+  ran_at
+  priority
 }

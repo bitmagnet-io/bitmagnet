@@ -10,6 +10,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/queue/metrics"
 )
 
 type ContentTypeAgg struct {
@@ -67,12 +68,21 @@ type Mutation struct {
 type Query struct {
 }
 
+type QueueJobsOrderByInput struct {
+	Field      QueueJobsOrderByField    `json:"field"`
+	Descending graphql.Omittable[*bool] `json:"descending,omitempty"`
+}
+
 type QueueMetricsQueryInput struct {
 	BucketDuration QueueMetricsBucketDuration                `json:"bucketDuration"`
 	Statuses       graphql.Omittable[[]model.QueueJobStatus] `json:"statuses,omitempty"`
 	Queues         graphql.Omittable[[]string]               `json:"queues,omitempty"`
 	StartTime      graphql.Omittable[*time.Time]             `json:"startTime,omitempty"`
 	EndTime        graphql.Omittable[*time.Time]             `json:"endTime,omitempty"`
+}
+
+type QueueMetricsQueryResult struct {
+	Buckets []metrics.Bucket `json:"buckets"`
 }
 
 type ReleaseYearAgg struct {
@@ -117,8 +127,8 @@ type TorrentContentFacetsInput struct {
 }
 
 type TorrentContentOrderByInput struct {
-	Field      TorrentContentOrderBy    `json:"field"`
-	Descending graphql.Omittable[*bool] `json:"descending,omitempty"`
+	Field      TorrentContentOrderByField `json:"field"`
+	Descending graphql.Omittable[*bool]   `json:"descending,omitempty"`
 }
 
 type TorrentFileTypeAgg struct {
@@ -238,6 +248,49 @@ func (e HealthStatus) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type QueueJobsOrderByField string
+
+const (
+	QueueJobsOrderByFieldCreatedAt QueueJobsOrderByField = "created_at"
+	QueueJobsOrderByFieldRanAt     QueueJobsOrderByField = "ran_at"
+	QueueJobsOrderByFieldPriority  QueueJobsOrderByField = "priority"
+)
+
+var AllQueueJobsOrderByField = []QueueJobsOrderByField{
+	QueueJobsOrderByFieldCreatedAt,
+	QueueJobsOrderByFieldRanAt,
+	QueueJobsOrderByFieldPriority,
+}
+
+func (e QueueJobsOrderByField) IsValid() bool {
+	switch e {
+	case QueueJobsOrderByFieldCreatedAt, QueueJobsOrderByFieldRanAt, QueueJobsOrderByFieldPriority:
+		return true
+	}
+	return false
+}
+
+func (e QueueJobsOrderByField) String() string {
+	return string(e)
+}
+
+func (e *QueueJobsOrderByField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = QueueJobsOrderByField(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid QueueJobsOrderByField", str)
+	}
+	return nil
+}
+
+func (e QueueJobsOrderByField) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type QueueMetricsBucketDuration string
 
 const (
@@ -281,57 +334,57 @@ func (e QueueMetricsBucketDuration) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
-type TorrentContentOrderBy string
+type TorrentContentOrderByField string
 
 const (
-	TorrentContentOrderByRelevance   TorrentContentOrderBy = "relevance"
-	TorrentContentOrderByPublishedAt TorrentContentOrderBy = "published_at"
-	TorrentContentOrderByUpdatedAt   TorrentContentOrderBy = "updated_at"
-	TorrentContentOrderBySize        TorrentContentOrderBy = "size"
-	TorrentContentOrderByFilesCount  TorrentContentOrderBy = "files_count"
-	TorrentContentOrderBySeeders     TorrentContentOrderBy = "seeders"
-	TorrentContentOrderByLeechers    TorrentContentOrderBy = "leechers"
-	TorrentContentOrderByName        TorrentContentOrderBy = "name"
-	TorrentContentOrderByInfoHash    TorrentContentOrderBy = "info_hash"
+	TorrentContentOrderByFieldRelevance   TorrentContentOrderByField = "relevance"
+	TorrentContentOrderByFieldPublishedAt TorrentContentOrderByField = "published_at"
+	TorrentContentOrderByFieldUpdatedAt   TorrentContentOrderByField = "updated_at"
+	TorrentContentOrderByFieldSize        TorrentContentOrderByField = "size"
+	TorrentContentOrderByFieldFilesCount  TorrentContentOrderByField = "files_count"
+	TorrentContentOrderByFieldSeeders     TorrentContentOrderByField = "seeders"
+	TorrentContentOrderByFieldLeechers    TorrentContentOrderByField = "leechers"
+	TorrentContentOrderByFieldName        TorrentContentOrderByField = "name"
+	TorrentContentOrderByFieldInfoHash    TorrentContentOrderByField = "info_hash"
 )
 
-var AllTorrentContentOrderBy = []TorrentContentOrderBy{
-	TorrentContentOrderByRelevance,
-	TorrentContentOrderByPublishedAt,
-	TorrentContentOrderByUpdatedAt,
-	TorrentContentOrderBySize,
-	TorrentContentOrderByFilesCount,
-	TorrentContentOrderBySeeders,
-	TorrentContentOrderByLeechers,
-	TorrentContentOrderByName,
-	TorrentContentOrderByInfoHash,
+var AllTorrentContentOrderByField = []TorrentContentOrderByField{
+	TorrentContentOrderByFieldRelevance,
+	TorrentContentOrderByFieldPublishedAt,
+	TorrentContentOrderByFieldUpdatedAt,
+	TorrentContentOrderByFieldSize,
+	TorrentContentOrderByFieldFilesCount,
+	TorrentContentOrderByFieldSeeders,
+	TorrentContentOrderByFieldLeechers,
+	TorrentContentOrderByFieldName,
+	TorrentContentOrderByFieldInfoHash,
 }
 
-func (e TorrentContentOrderBy) IsValid() bool {
+func (e TorrentContentOrderByField) IsValid() bool {
 	switch e {
-	case TorrentContentOrderByRelevance, TorrentContentOrderByPublishedAt, TorrentContentOrderByUpdatedAt, TorrentContentOrderBySize, TorrentContentOrderByFilesCount, TorrentContentOrderBySeeders, TorrentContentOrderByLeechers, TorrentContentOrderByName, TorrentContentOrderByInfoHash:
+	case TorrentContentOrderByFieldRelevance, TorrentContentOrderByFieldPublishedAt, TorrentContentOrderByFieldUpdatedAt, TorrentContentOrderByFieldSize, TorrentContentOrderByFieldFilesCount, TorrentContentOrderByFieldSeeders, TorrentContentOrderByFieldLeechers, TorrentContentOrderByFieldName, TorrentContentOrderByFieldInfoHash:
 		return true
 	}
 	return false
 }
 
-func (e TorrentContentOrderBy) String() string {
+func (e TorrentContentOrderByField) String() string {
 	return string(e)
 }
 
-func (e *TorrentContentOrderBy) UnmarshalGQL(v interface{}) error {
+func (e *TorrentContentOrderByField) UnmarshalGQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
 	}
 
-	*e = TorrentContentOrderBy(str)
+	*e = TorrentContentOrderByField(str)
 	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid TorrentContentOrderBy", str)
+		return fmt.Errorf("%s is not a valid TorrentContentOrderByField", str)
 	}
 	return nil
 }
 
-func (e TorrentContentOrderBy) MarshalGQL(w io.Writer) {
+func (e TorrentContentOrderByField) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

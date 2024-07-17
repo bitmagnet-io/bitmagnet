@@ -3,16 +3,18 @@ package gqlmodel
 import (
 	"context"
 	"fmt"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/manager"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/metrics"
 )
 
 type QueueQueryResult struct {
+	QueueJobSearch     search.QueueJobSearch
 	QueueMetricsClient metrics.Client
 }
 
-func (q QueueQueryResult) Metrics(ctx context.Context, input gen.QueueMetricsQueryInput) ([]metrics.Bucket, error) {
+func (q QueueQueryResult) Metrics(ctx context.Context, input gen.QueueMetricsQueryInput) (*gen.QueueMetricsQueryResult, error) {
 	req := metrics.Request{}
 	switch input.BucketDuration {
 	case gen.QueueMetricsBucketDurationMinute:
@@ -36,7 +38,13 @@ func (q QueueQueryResult) Metrics(ctx context.Context, input gen.QueueMetricsQue
 	if queues, ok := input.Queues.ValueOK(); ok {
 		req.Queues = queues
 	}
-	return q.QueueMetricsClient.Request(ctx, req)
+	buckets, err := q.QueueMetricsClient.Request(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return &gen.QueueMetricsQueryResult{
+		Buckets: buckets,
+	}, nil
 }
 
 type QueueMutation struct {

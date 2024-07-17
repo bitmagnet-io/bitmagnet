@@ -62,7 +62,7 @@ export class QueuePurgeJobsDialog {
 
   protected stage: 'PENDING' | 'REQUESTING' | 'DONE' = 'PENDING';
 
-  @Inject(MAT_DIALOG_DATA) public data: { onPurged: () => void };
+  @Inject(MAT_DIALOG_DATA) public data: { onPurged?: () => void };
 
   protected error?: Error;
 
@@ -147,7 +147,7 @@ export class QueuePurgeJobsDialog {
         }),
         map(() => {
           this.stage = 'DONE';
-          this.data.onPurged();
+          this.data.onPurged?.();
         }),
       )
       .subscribe();

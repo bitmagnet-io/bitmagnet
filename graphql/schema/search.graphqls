@@ -163,6 +163,6 @@ type TorrentContentSearchResult {
 }
 
 input TorrentContentOrderByInput {
-  field: TorrentContentOrderBy!
+  field: TorrentContentOrderByField!
   descending: Boolean
 }

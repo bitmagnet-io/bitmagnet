@@ -15,11 +15,13 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import * as generated from '../graphql/generated';
 import { availableQueueNames, statusNames } from './queue.constants';
 import { QueuePurgeJobsDialog } from './queue-purge-jobs-dialog.component';
+import {GraphQLModule} from "../graphql/graphql.module";
 
 @Component({
   selector: 'app-queue-enqueue-reprocess-torrents-batch-dialog',
   standalone: true,
   imports: [
+    GraphQLModule,
     MatButton,
     MatCard,
     MatCheckbox,
@@ -41,7 +43,7 @@ export class QueueEnqueueReprocessTorrentsBatchDialog {
 
   protected stage: 'PENDING' | 'REQUESTING' | 'DONE' = 'PENDING';
 
-  @Inject(MAT_DIALOG_DATA) public data: { onEnqueued: () => void };
+  @Inject(MAT_DIALOG_DATA) public data: { onEnqueued?: () => void };
 
   apisDisabled = true;
   localSearchDisabled = true;
@@ -72,7 +74,7 @@ export class QueueEnqueueReprocessTorrentsBatchDialog {
       })
       .subscribe(() => {
         this.stage = 'DONE';
-        this.data.onEnqueued();
+        this.data.onEnqueued?.();
       });
   }
 }

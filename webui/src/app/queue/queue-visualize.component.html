@@ -1,43 +1,6 @@
 <ng-container *transloco="let t">
-  <mat-card class="dashboard-card">
-    <mat-card-header>
-      <mat-toolbar>
-        <h2><mat-icon svgIcon="queue" />Queues</h2>
-        <span class="spacer"></span>
-        @if (breakpoints.sizeAtLeast('Medium')) {
-          <a
-            mat-button
-            [matMenuTriggerFor]="maintenanceMenu"
-            >
-            <mat-icon>construction</mat-icon>
-            Maintenance Tasks
-          </a>
-        } @else {
-          <a
-            mat-icon-button
-            [matMenuTriggerFor]="maintenanceMenu"
-            [matTooltip]="'Maintenance Tasks'"
-          >
-            <mat-icon>construction</mat-icon>
-          </a>
-        }
-        <mat-menu #maintenanceMenu="matMenu">
-          <a mat-menu-item
-             (click)="openDialogPurgeJobs()"
-          >Purge Queue Jobs</a>
-          <a mat-menu-item
-             (click)="openDialogEnqueueReprocessTorrentsBatch()"
-          >Enqueue Torrent Processing Batch</a>
-        </mat-menu>
-      </mat-toolbar>
-    </mat-card-header>
-    <mat-card-content class="dashboard-card-content">
-          <div class="progress-bar-container">
-            <mat-progress-bar
-              [mode]="queueMetricsController.loading ? 'indeterminate' : 'determinate'"
-              [value]="0"
-            ></mat-progress-bar>
-          </div>
+  <mat-card>
+    <mat-card-content>
           <mat-grid-list [cols]="breakpoints.sizeAtLeast('Large') ? 5 : breakpoints.sizeAtLeast('Medium') ? 3 : breakpoints.sizeAtLeast('Small') ? 2 : 1" rowHeight="100px">
             <mat-grid-tile [colspan]="1" [rowspan]="2">
               <mat-card class="form-timeframe">
@@ -286,6 +249,12 @@
               </mat-card>
             </mat-grid-tile>
           </mat-grid-list>
+          <div class="progress-bar-container">
+            <mat-progress-bar
+              [mode]="queueMetricsController.loading ? 'indeterminate' : 'determinate'"
+              [value]="0"
+            ></mat-progress-bar>
+          </div>
           <mat-grid-list [cols]="breakpoints.sizeAtLeast('Large') ? 2 : 1" rowHeight="100px">
             <mat-grid-tile [colspan]="1" [rowspan]="5">
               <mat-card>

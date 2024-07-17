@@ -7,7 +7,6 @@ import {
 } from 'rxjs';
 import { Apollo } from 'apollo-angular';
 import { map } from 'rxjs/operators';
-import { parse as parseDuration, toSeconds } from 'iso8601-duration';
 import * as generated from '../graphql/generated';
 import { QueueMetricsBucketDuration } from '../graphql/generated';
 import { ErrorsService } from '../errors/errors.service';
@@ -33,6 +32,7 @@ import {
   AutoRefreshInterval,
   BucketSpan,
 } from './queue-metrics.types';
+import {durationToSeconds, parseDuration} from "../dates/parse-duration";
 
 export class QueueMetricsController {
   private paramsSubject: BehaviorSubject<Params>;
@@ -40,7 +40,9 @@ export class QueueMetricsController {
   private variablesSubject: BehaviorSubject<generated.QueueMetricsQueryVariables>;
   private rawResultSubject = new BehaviorSubject<generated.QueueMetricsQuery>({
     queue: {
-      metrics: [],
+      metrics: {
+        buckets: [],
+      },
     },
   });
   private resultSubject = new BehaviorSubject<Result>(emptyResult);
@@ -238,7 +240,7 @@ const createResult = (
     rawResult,
   );
   const queues = Object.entries(
-    rawResult.queue.metrics.reduce<
+    rawResult.queue.metrics.buckets.reduce<
       Record<
         string,
         [StatusCounts, Partial<Record<EventName, EventBucketEntries>>]
@@ -277,7 +279,7 @@ const createResult = (
         [],
       ];
       const currentLatency = next.latency
-        ? toSeconds(parseDuration(next.latency))
+        ? durationToSeconds(parseDuration(next.latency))
         : undefined;
       return {
         ...acc,
@@ -437,7 +439,7 @@ const createBucketParams = (
         });
   const allBuckets = [
     ...(startBucket ? [startBucket] : []),
-    ...rawResult.queue.metrics.flatMap((b) => [
+    ...rawResult.queue.metrics.buckets.flatMap((b) => [
       normalizeBucket(b.createdAtBucket, { duration, multiplier }),
       ...(b.ranAtBucket
         ? [normalizeBucket(b.ranAtBucket, { duration, multiplier })]

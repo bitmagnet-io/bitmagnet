@@ -232,7 +232,7 @@ export class TorrentsSearchController {
     });
   }
 
-  selectOrderBy(field: generated.TorrentContentOrderBy) {
+  selectOrderBy(field: generated.TorrentContentOrderByField) {
     const orderBy = {
       field,
       descending:
@@ -467,7 +467,7 @@ export const defaultQueryOrderBy = {
 };
 
 type OrderBySelection = {
-  field: generated.TorrentContentOrderBy;
+  field: generated.TorrentContentOrderByField;
   descending: boolean;
 };
 

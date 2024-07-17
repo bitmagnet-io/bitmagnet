@@ -25,14 +25,12 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { MatSlider, MatSliderThumb } from '@angular/material/slider';
 import { MatGridList, MatGridTile } from '@angular/material/grid-list';
 import { MatProgressBar } from '@angular/material/progress-bar';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { GraphQLModule } from '../graphql/graphql.module';
 import { ChartComponent } from '../charting/chart.component';
 import { BreakpointsService } from '../layout/breakpoints.service';
 import { ErrorsService } from '../errors/errors.service';
-import { QueuePurgeJobsDialog } from './queue-purge-jobs-dialog.component';
 import {
   autoRefreshIntervalNames,
   availableQueueNames,
@@ -47,14 +45,13 @@ import { QueueMetricsController } from './queue-metrics.controller';
 import { QueueChartAdapterTimeline } from './queue-chart-adapter.timeline';
 
 @Component({
-  selector: 'app-queue-card',
+  selector: 'app-queue-visualize',
   standalone: true,
-  templateUrl: './queue-card.component.html',
-  styleUrl: './queue-card.component.scss',
+  templateUrl: './queue-visualize.component.html',
+  styleUrl: './queue-visualize.component.scss',
   imports: [
     QueueModule,
     MatCardContent,
-    MatDialogModule,
     ChartComponent,
     MatIcon,
     MatCardTitle,
@@ -89,10 +86,9 @@ import { QueueChartAdapterTimeline } from './queue-chart-adapter.timeline';
     MatIconAnchor,
   ],
 })
-export class QueueCardComponent implements OnInit, OnDestroy {
+export class QueueVisualizeComponent implements OnInit, OnDestroy {
   breakpoints = inject(BreakpointsService);
   private apollo = inject(Apollo);
-  readonly dialog = inject(MatDialog);
   queueMetricsController = new QueueMetricsController(
     this.apollo,
     {
@@ -114,9 +110,6 @@ export class QueueCardComponent implements OnInit, OnDestroy {
   protected readonly autoRefreshIntervalNames = autoRefreshIntervalNames;
 
   ngOnInit() {
-    this.dialog.afterAllClosed.subscribe(() => {
-      this.queueMetricsController.refresh();
-    });
     this.queueMetricsController.result$.subscribe((result) => {
       // change the default settings to more sensible ones if there is <12 hours of data to show
       if (
@@ -134,26 +127,6 @@ export class QueueCardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.queueMetricsController.setAutoRefreshInterval('off');
-  }
-
-  openDialogPurgeJobs() {
-    this.dialog.open(QueuePurgeJobsDialog, {
-      data: {
-        onPurged: () => {
-          this.queueMetricsController.refresh();
-        },
-      },
-    });
-  }
-
-  openDialogEnqueueReprocessTorrentsBatch() {
-    this.dialog.open(QueueEnqueueReprocessTorrentsBatchDialog, {
-      data: {
-        onEnqueued: () => {
-          this.queueMetricsController.refresh();
-        },
-      },
-    });
   }
 
   protected readonly eventNames = eventNames;

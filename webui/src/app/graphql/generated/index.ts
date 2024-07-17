@@ -276,11 +276,51 @@ export type QueueEnqueueReprocessTorrentsBatchInput = {
   orphans?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
+export type QueueJob = {
+  __typename?: 'QueueJob';
+  createdAt: Scalars['DateTime']['output'];
+  error?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  maxRetries: Scalars['Int']['output'];
+  priority: Scalars['Int']['output'];
+  queue: Scalars['String']['output'];
+  ranAt?: Maybe<Scalars['DateTime']['output']>;
+  retries: Scalars['Int']['output'];
+  runAfter: Scalars['DateTime']['output'];
+  status: QueueJobStatus;
+};
+
 export type QueueJobStatus =
   | 'failed'
   | 'pending'
   | 'processed'
   | 'retry';
+
+export type QueueJobsOrderByField =
+  | 'created_at'
+  | 'priority'
+  | 'ran_at';
+
+export type QueueJobsOrderByInput = {
+  descending?: InputMaybe<Scalars['Boolean']['input']>;
+  field: QueueJobsOrderByField;
+};
+
+export type QueueJobsQueryInput = {
+  hasNextPage?: InputMaybe<Scalars['Boolean']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<QueueJobsOrderByInput>>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  queues?: InputMaybe<Array<Scalars['String']['input']>>;
+  statuses?: InputMaybe<Array<QueueJobStatus>>;
+};
+
+export type QueueJobsQueryResult = {
+  __typename?: 'QueueJobsQueryResult';
+  hasNextPage?: Maybe<Scalars['Boolean']['output']>;
+  items: Array<QueueJob>;
+};
 
 export type QueueMetricsBucket = {
   __typename?: 'QueueMetricsBucket';
@@ -303,6 +343,11 @@ export type QueueMetricsQueryInput = {
   queues?: InputMaybe<Array<Scalars['String']['input']>>;
   startTime?: InputMaybe<Scalars['DateTime']['input']>;
   statuses?: InputMaybe<Array<QueueJobStatus>>;
+};
+
+export type QueueMetricsQueryResult = {
+  __typename?: 'QueueMetricsQueryResult';
+  buckets: Array<QueueMetricsBucket>;
 };
 
 export type QueueMutation = {
@@ -328,7 +373,13 @@ export type QueuePurgeJobsInput = {
 
 export type QueueQueryResult = {
   __typename?: 'QueueQueryResult';
-  metrics: Array<QueueMetricsBucket>;
+  jobs: QueueJobsQueryResult;
+  metrics: QueueMetricsQueryResult;
+};
+
+
+export type QueueQueryResultJobsArgs = {
+  input: QueueJobsQueryInput;
 };
 
 
@@ -438,7 +489,7 @@ export type TorrentContentFacetsInput = {
   videoSource?: InputMaybe<VideoSourceFacetInput>;
 };
 
-export type TorrentContentOrderBy =
+export type TorrentContentOrderByField =
   | 'files_count'
   | 'info_hash'
   | 'leechers'
@@ -451,7 +502,7 @@ export type TorrentContentOrderBy =
 
 export type TorrentContentOrderByInput = {
   descending?: InputMaybe<Scalars['Boolean']['input']>;
-  field: TorrentContentOrderBy;
+  field: TorrentContentOrderByField;
 };
 
 export type TorrentContentQuery = {
@@ -680,6 +731,8 @@ export type WorkersQueryResult = {
 
 export type ContentFragment = { __typename?: 'Content', type: ContentType, source: string, id: string, title: string, releaseDate?: string | null, releaseYear?: number | null, overview?: string | null, runtime?: number | null, voteAverage?: number | null, voteCount?: number | null, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string }, originalLanguage?: { __typename?: 'LanguageInfo', id: string, name: string } | null, attributes: Array<{ __typename?: 'ContentAttribute', source: string, key: string, value: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, collections: Array<{ __typename?: 'ContentCollection', type: string, source: string, id: string, name: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, externalLinks: Array<{ __typename?: 'ExternalLink', url: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }> };
 
+export type QueueJobFragment = { __typename?: 'QueueJob', id: string, queue: string, status: QueueJobStatus, priority: number, retries: number, maxRetries: number, runAfter: string, ranAt?: string | null, error?: string | null, createdAt: string };
+
 export type TorrentFragment = { __typename?: 'Torrent', infoHash: string, name: string, size: number, filesStatus: FilesStatus, filesCount?: number | null, hasFilesInfo: boolean, singleFile?: boolean | null, fileType?: FileType | null, seeders?: number | null, leechers?: number | null, tagNames: Array<string>, magnetUri: string, createdAt: string, updatedAt: string, files?: Array<{ __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string }> | null, sources: Array<{ __typename?: 'TorrentSource', key: string, name: string }> };
 
 export type TorrentContentFragment = { __typename?: 'TorrentContent', id: string, infoHash: string, contentType?: ContentType | null, title: string, video3d?: Video3d | null, videoCodec?: VideoCodec | null, videoModifier?: VideoModifier | null, videoResolution?: VideoResolution | null, videoSource?: VideoSource | null, seeders?: number | null, leechers?: number | null, publishedAt: string, createdAt: string, updatedAt: string, torrent: { __typename?: 'Torrent', infoHash: string, name: string, size: number, filesStatus: FilesStatus, filesCount?: number | null, hasFilesInfo: boolean, singleFile?: boolean | null, fileType?: FileType | null, seeders?: number | null, leechers?: number | null, tagNames: Array<string>, magnetUri: string, createdAt: string, updatedAt: string, files?: Array<{ __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string }> | null, sources: Array<{ __typename?: 'TorrentSource', key: string, name: string }> }, content?: { __typename?: 'Content', type: ContentType, source: string, id: string, title: string, releaseDate?: string | null, releaseYear?: number | null, overview?: string | null, runtime?: number | null, voteAverage?: number | null, voteCount?: number | null, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string }, originalLanguage?: { __typename?: 'LanguageInfo', id: string, name: string } | null, attributes: Array<{ __typename?: 'ContentAttribute', source: string, key: string, value: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, collections: Array<{ __typename?: 'ContentCollection', type: string, source: string, id: string, name: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, externalLinks: Array<{ __typename?: 'ExternalLink', url: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }> } | null, languages?: Array<{ __typename?: 'LanguageInfo', id: string, name: string }> | null, episodes?: { __typename?: 'Episodes', label: string, seasons: Array<{ __typename?: 'Season', season: number, episodes?: Array<number> | null }> } | null };
@@ -738,12 +791,19 @@ export type HealthQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type HealthQuery = { __typename?: 'Query', health: { __typename?: 'HealthQueryResult', status: HealthStatus, checks: Array<{ __typename?: 'HealthCheck', key: string, status: HealthStatus, timestamp: string, error?: string | null }> }, workers: { __typename?: 'WorkersQueryResult', all: Array<{ __typename?: 'Worker', key: string, started: boolean }> } };
 
+export type QueueJobsQueryVariables = Exact<{
+  input: QueueJobsQueryInput;
+}>;
+
+
+export type QueueJobsQuery = { __typename?: 'Query', queue: { __typename?: 'QueueQueryResult', jobs: { __typename?: 'QueueJobsQueryResult', hasNextPage?: boolean | null, items: Array<{ __typename?: 'QueueJob', id: string, queue: string, status: QueueJobStatus, priority: number, retries: number, maxRetries: number, runAfter: string, ranAt?: string | null, error?: string | null, createdAt: string }> } } };
+
 export type QueueMetricsQueryVariables = Exact<{
   input: QueueMetricsQueryInput;
 }>;
 
 
-export type QueueMetricsQuery = { __typename?: 'Query', queue: { __typename?: 'QueueQueryResult', metrics: Array<{ __typename?: 'QueueMetricsBucket', queue: string, status: QueueJobStatus, createdAtBucket: string, ranAtBucket?: string | null, count: number, latency?: string | null }> } };
+export type QueueMetricsQuery = { __typename?: 'Query', queue: { __typename?: 'QueueQueryResult', metrics: { __typename?: 'QueueMetricsQueryResult', buckets: Array<{ __typename?: 'QueueMetricsBucket', queue: string, status: QueueJobStatus, createdAtBucket: string, ranAtBucket?: string | null, count: number, latency?: string | null }> } } };
 
 export type TorrentContentSearchQueryVariables = Exact<{
   query: TorrentContentSearchQueryInput;
@@ -764,6 +824,20 @@ export type VersionQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type VersionQuery = { __typename?: 'Query', version: string };
 
+export const QueueJobFragmentDoc = gql`
+    fragment QueueJob on QueueJob {
+  id
+  queue
+  status
+  priority
+  retries
+  maxRetries
+  runAfter
+  ranAt
+  error
+  createdAt
+}
+    `;
 export const TorrentFileFragmentDoc = gql`
     fragment TorrentFile on TorrentFile {
   infoHash
@@ -1094,16 +1168,41 @@ export const HealthDocument = gql`
       super(apollo);
     }
   }
+export const QueueJobsDocument = gql`
+    query QueueJobs($input: QueueJobsQueryInput!) {
+  queue {
+    jobs(input: $input) {
+      items {
+        ...QueueJob
+      }
+      hasNextPage
+    }
+  }
+}
+    ${QueueJobFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class QueueJobsGQL extends Apollo.Query<QueueJobsQuery, QueueJobsQueryVariables> {
+    override document = QueueJobsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const QueueMetricsDocument = gql`
     query QueueMetrics($input: QueueMetricsQueryInput!) {
   queue {
     metrics(input: $input) {
-      queue
-      status
-      createdAtBucket
-      ranAtBucket
-      count
-      latency
+      buckets {
+        queue
+        status
+        createdAtBucket
+        ranAtBucket
+        count
+        latency
+      }
     }
   }
 }

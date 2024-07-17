@@ -12,7 +12,6 @@ export const routes: Routes = [
       import('./dashboard/dashboard.component').then(
         (c) => c.DashboardComponent,
       ),
-    title: 'dashboard',
     children: [
       {
         path: 'home',
@@ -20,15 +19,36 @@ export const routes: Routes = [
           import('./dashboard/dashboard-home.component').then(
             (c) => c.DashboardHomeComponent,
           ),
-        title: 'home',
       },
       {
         path: 'queues',
         loadComponent: () =>
-          import('./queue/queue-card.component').then(
-            (c) => c.QueueCardComponent,
+          import('./queue/queue-dashboard.component').then(
+            (c) => c.QueueDashboardComponent,
           ),
-        title: 'queues',
+        children: [
+          {
+            path: 'visualize',
+            loadComponent: () =>
+              import('./queue/queue-visualize.component').then(
+                (c) => c.QueueVisualizeComponent,
+              ),
+          },
+          {
+            path: 'jobs',
+            loadComponent: () =>
+              import('./queue/queue-jobs.component').then(
+                (c) => c.QueueJobsComponent,
+              ),
+          },
+          {
+            path: 'admin',
+            loadComponent: () =>
+              import('./queue/queue-admin.component').then(
+                (c) => c.QueueAdminComponent,
+              ),
+          }
+        ]
       },
     ],
   },
@@ -38,7 +58,6 @@ export const routes: Routes = [
       import('./torrents-search/torrents-search.component').then(
         (c) => c.TorrentsSearchComponent,
       ),
-    title: 'torrents',
   },
   {
     path: 'torrents/:infoHash',
