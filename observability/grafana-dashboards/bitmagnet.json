@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 6,
+  "id": 79,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -78,7 +78,8 @@
               }
             ]
           },
-          "unit": "decbytes"
+          "unit": "decbytes",
+          "unitScale": true
         },
         "overrides": []
       },
@@ -173,7 +174,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -338,7 +340,7 @@
             "uid": "${DS_LOKI}"
           },
           "editorMode": "code",
-          "expr": "{container=\"bitmagnet\"} |~ \"WARN|ERROR\"",
+          "expr": "{job=\"bitmagnet\"} | json | severity = \"WARNING\" or severity = \"ERROR\"",
           "queryType": "range",
           "refId": "A"
         }
@@ -401,7 +403,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -500,7 +503,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -595,7 +599,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -691,7 +696,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -786,7 +792,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -881,7 +888,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -977,7 +985,8 @@
               }
             ]
           },
-          "unit": "s"
+          "unit": "s",
+          "unitScale": true
         },
         "overrides": []
       },
@@ -1072,7 +1081,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -1167,7 +1177,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -1262,7 +1273,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -1357,7 +1369,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -1452,7 +1465,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unitScale": true
         },
         "overrides": []
       },
@@ -1502,7 +1516,7 @@
         "current": {
           "selected": false,
           "text": "Prometheus",
-          "value": "PBFA97CFB590B2093"
+          "value": "prometheus"
         },
         "hide": 0,
         "includeAll": false,
@@ -1519,8 +1533,8 @@
       {
         "current": {
           "selected": false,
-          "text": "loki",
-          "value": "edrvq33lbzdvke"
+          "text": "Loki",
+          "value": "loki"
         },
         "hide": 0,
         "includeAll": false,
@@ -1538,13 +1552,13 @@
     ]
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-24h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "bitmagnet",
   "uid": "c0abadd0-6633-40c4-a2fc-01408a8dfc4e",
-  "version": 4,
+  "version": 2,
   "weekStart": ""
 }
