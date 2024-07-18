@@ -182,9 +182,28 @@ type ComplexityRoot struct {
 		Status     func(childComplexity int) int
 	}
 
+	QueueJobQueueAgg struct {
+		Count func(childComplexity int) int
+		Label func(childComplexity int) int
+		Value func(childComplexity int) int
+	}
+
+	QueueJobStatusAgg struct {
+		Count func(childComplexity int) int
+		Label func(childComplexity int) int
+		Value func(childComplexity int) int
+	}
+
+	QueueJobsAggregations struct {
+		Queue  func(childComplexity int) int
+		Status func(childComplexity int) int
+	}
+
 	QueueJobsQueryResult struct {
-		HasNextPage func(childComplexity int) int
-		Items       func(childComplexity int) int
+		Aggregations func(childComplexity int) int
+		HasNextPage  func(childComplexity int) int
+		Items        func(childComplexity int) int
+		TotalCount   func(childComplexity int) int
 	}
 
 	QueueMetricsBucket struct {
@@ -975,6 +994,69 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.QueueJob.Status(childComplexity), true
 
+	case "QueueJobQueueAgg.count":
+		if e.complexity.QueueJobQueueAgg.Count == nil {
+			break
+		}
+
+		return e.complexity.QueueJobQueueAgg.Count(childComplexity), true
+
+	case "QueueJobQueueAgg.label":
+		if e.complexity.QueueJobQueueAgg.Label == nil {
+			break
+		}
+
+		return e.complexity.QueueJobQueueAgg.Label(childComplexity), true
+
+	case "QueueJobQueueAgg.value":
+		if e.complexity.QueueJobQueueAgg.Value == nil {
+			break
+		}
+
+		return e.complexity.QueueJobQueueAgg.Value(childComplexity), true
+
+	case "QueueJobStatusAgg.count":
+		if e.complexity.QueueJobStatusAgg.Count == nil {
+			break
+		}
+
+		return e.complexity.QueueJobStatusAgg.Count(childComplexity), true
+
+	case "QueueJobStatusAgg.label":
+		if e.complexity.QueueJobStatusAgg.Label == nil {
+			break
+		}
+
+		return e.complexity.QueueJobStatusAgg.Label(childComplexity), true
+
+	case "QueueJobStatusAgg.value":
+		if e.complexity.QueueJobStatusAgg.Value == nil {
+			break
+		}
+
+		return e.complexity.QueueJobStatusAgg.Value(childComplexity), true
+
+	case "QueueJobsAggregations.queue":
+		if e.complexity.QueueJobsAggregations.Queue == nil {
+			break
+		}
+
+		return e.complexity.QueueJobsAggregations.Queue(childComplexity), true
+
+	case "QueueJobsAggregations.status":
+		if e.complexity.QueueJobsAggregations.Status == nil {
+			break
+		}
+
+		return e.complexity.QueueJobsAggregations.Status(childComplexity), true
+
+	case "QueueJobsQueryResult.aggregations":
+		if e.complexity.QueueJobsQueryResult.Aggregations == nil {
+			break
+		}
+
+		return e.complexity.QueueJobsQueryResult.Aggregations(childComplexity), true
+
 	case "QueueJobsQueryResult.hasNextPage":
 		if e.complexity.QueueJobsQueryResult.HasNextPage == nil {
 			break
@@ -988,6 +1070,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.QueueJobsQueryResult.Items(childComplexity), true
+
+	case "QueueJobsQueryResult.totalCount":
+		if e.complexity.QueueJobsQueryResult.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.QueueJobsQueryResult.TotalCount(childComplexity), true
 
 	case "QueueMetricsBucket.count":
 		if e.complexity.QueueMetricsBucket.Count == nil {
@@ -1856,6 +1945,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputGenreFacetInput,
 		ec.unmarshalInputLanguageFacetInput,
 		ec.unmarshalInputQueueEnqueueReprocessTorrentsBatchInput,
+		ec.unmarshalInputQueueJobQueueFacetInput,
+		ec.unmarshalInputQueueJobStatusFacetInput,
+		ec.unmarshalInputQueueJobsFacetsInput,
 		ec.unmarshalInputQueueJobsOrderByInput,
 		ec.unmarshalInputQueueJobsQueryInput,
 		ec.unmarshalInputQueueMetricsQueryInput,
@@ -2348,8 +2440,25 @@ input QueueJobsQueryInput {
   limit: Int
   page: Int
   offset: Int
+  totalCount: Boolean
   hasNextPage: Boolean
+  facets: QueueJobsFacetsInput
   orderBy: [QueueJobsOrderByInput!]
+}
+
+input QueueJobQueueFacetInput {
+  aggregate: Boolean
+  filter: [String!]
+}
+
+input QueueJobStatusFacetInput {
+  aggregate: Boolean
+  filter: [QueueJobStatus!]
+}
+
+input QueueJobsFacetsInput {
+  status: QueueJobStatusFacetInput
+  queue: QueueJobQueueFacetInput
 }
 
 input QueueJobsOrderByInput {
@@ -2372,8 +2481,27 @@ type QueueJob {
 }
 
 type QueueJobsQueryResult {
-  items: [QueueJob!]!
+  totalCount: Int!
   hasNextPage: Boolean
+  items: [QueueJob!]!
+  aggregations: QueueJobsAggregations!
+}
+
+type QueueJobQueueAgg {
+  value: String!
+  label: String!
+  count: Int!
+}
+
+type QueueJobStatusAgg {
+  value: QueueJobStatus!
+  label: String!
+  count: Int!
+}
+
+type QueueJobsAggregations {
+  queue: [QueueJobQueueAgg!]
+  status: [QueueJobStatusAgg!]
 }
 
 enum QueueJobStatus {
@@ -2438,7 +2566,7 @@ scalar Duration
 scalar Void
 scalar Year
 `, BuiltIn: false},
-	{Name: "../../graphql/schema/search.graphqls", Input: `input TorrentContentSearchQueryInput {
+	{Name: "../../graphql/schema/torrent_content.graphqls", Input: `input TorrentContentSearchQueryInput {
   queryString: String
   limit: Int
   page: Int
@@ -6485,6 +6613,453 @@ func (ec *executionContext) fieldContext_QueueJob_createdAt(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _QueueJobQueueAgg_value(ctx context.Context, field graphql.CollectedField, obj *gen.QueueJobQueueAgg) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueueJobQueueAgg_value(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Value, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueueJobQueueAgg_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueueJobQueueAgg",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueueJobQueueAgg_label(ctx context.Context, field graphql.CollectedField, obj *gen.QueueJobQueueAgg) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueueJobQueueAgg_label(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Label, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueueJobQueueAgg_label(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueueJobQueueAgg",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueueJobQueueAgg_count(ctx context.Context, field graphql.CollectedField, obj *gen.QueueJobQueueAgg) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueueJobQueueAgg_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Count, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueueJobQueueAgg_count(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueueJobQueueAgg",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueueJobStatusAgg_value(ctx context.Context, field graphql.CollectedField, obj *gen.QueueJobStatusAgg) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueueJobStatusAgg_value(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Value, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.QueueJobStatus)
+	fc.Result = res
+	return ec.marshalNQueueJobStatus2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐQueueJobStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueueJobStatusAgg_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueueJobStatusAgg",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type QueueJobStatus does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueueJobStatusAgg_label(ctx context.Context, field graphql.CollectedField, obj *gen.QueueJobStatusAgg) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueueJobStatusAgg_label(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Label, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueueJobStatusAgg_label(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueueJobStatusAgg",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueueJobStatusAgg_count(ctx context.Context, field graphql.CollectedField, obj *gen.QueueJobStatusAgg) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueueJobStatusAgg_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Count, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueueJobStatusAgg_count(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueueJobStatusAgg",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueueJobsAggregations_queue(ctx context.Context, field graphql.CollectedField, obj *gen.QueueJobsAggregations) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueueJobsAggregations_queue(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Queue, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]gen.QueueJobQueueAgg)
+	fc.Result = res
+	return ec.marshalOQueueJobQueueAgg2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobQueueAggᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueueJobsAggregations_queue(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueueJobsAggregations",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "value":
+				return ec.fieldContext_QueueJobQueueAgg_value(ctx, field)
+			case "label":
+				return ec.fieldContext_QueueJobQueueAgg_label(ctx, field)
+			case "count":
+				return ec.fieldContext_QueueJobQueueAgg_count(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type QueueJobQueueAgg", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueueJobsAggregations_status(ctx context.Context, field graphql.CollectedField, obj *gen.QueueJobsAggregations) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueueJobsAggregations_status(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Status, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]gen.QueueJobStatusAgg)
+	fc.Result = res
+	return ec.marshalOQueueJobStatusAgg2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobStatusAggᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueueJobsAggregations_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueueJobsAggregations",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "value":
+				return ec.fieldContext_QueueJobStatusAgg_value(ctx, field)
+			case "label":
+				return ec.fieldContext_QueueJobStatusAgg_label(ctx, field)
+			case "count":
+				return ec.fieldContext_QueueJobStatusAgg_count(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type QueueJobStatusAgg", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueueJobsQueryResult_totalCount(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.QueueJobsQueryResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueueJobsQueryResult_totalCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uint)
+	fc.Result = res
+	return ec.marshalNInt2uint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueueJobsQueryResult_totalCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueueJobsQueryResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _QueueJobsQueryResult_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.QueueJobsQueryResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueueJobsQueryResult_hasNextPage(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HasNextPage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalOBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_QueueJobsQueryResult_hasNextPage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "QueueJobsQueryResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _QueueJobsQueryResult_items(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.QueueJobsQueryResult) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_QueueJobsQueryResult_items(ctx, field)
 	if err != nil {
@@ -6553,8 +7128,8 @@ func (ec *executionContext) fieldContext_QueueJobsQueryResult_items(ctx context.
 	return fc, nil
 }
 
-func (ec *executionContext) _QueueJobsQueryResult_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.QueueJobsQueryResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_QueueJobsQueryResult_hasNextPage(ctx, field)
+func (ec *executionContext) _QueueJobsQueryResult_aggregations(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.QueueJobsQueryResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueueJobsQueryResult_aggregations(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -6567,28 +7142,37 @@ func (ec *executionContext) _QueueJobsQueryResult_hasNextPage(ctx context.Contex
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.HasNextPage, nil
+		return obj.Aggregations, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(bool)
+	res := resTmp.(gen.QueueJobsAggregations)
 	fc.Result = res
-	return ec.marshalOBoolean2bool(ctx, field.Selections, res)
+	return ec.marshalNQueueJobsAggregations2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobsAggregations(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_QueueJobsQueryResult_hasNextPage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_QueueJobsQueryResult_aggregations(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "QueueJobsQueryResult",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
+			switch field.Name {
+			case "queue":
+				return ec.fieldContext_QueueJobsAggregations_queue(ctx, field)
+			case "status":
+				return ec.fieldContext_QueueJobsAggregations_status(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type QueueJobsAggregations", field.Name)
 		},
 	}
 	return fc, nil
@@ -7053,10 +7637,14 @@ func (ec *executionContext) fieldContext_QueueQueryResult_jobs(ctx context.Conte
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "items":
-				return ec.fieldContext_QueueJobsQueryResult_items(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_QueueJobsQueryResult_totalCount(ctx, field)
 			case "hasNextPage":
 				return ec.fieldContext_QueueJobsQueryResult_hasNextPage(ctx, field)
+			case "items":
+				return ec.fieldContext_QueueJobsQueryResult_items(ctx, field)
+			case "aggregations":
+				return ec.fieldContext_QueueJobsQueryResult_aggregations(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type QueueJobsQueryResult", field.Name)
 		},
@@ -13905,6 +14493,108 @@ func (ec *executionContext) unmarshalInputQueueEnqueueReprocessTorrentsBatchInpu
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputQueueJobQueueFacetInput(ctx context.Context, obj interface{}) (gen.QueueJobQueueFacetInput, error) {
+	var it gen.QueueJobQueueFacetInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"aggregate", "filter"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "aggregate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Aggregate = graphql.OmittableOf(data)
+		case "filter":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Filter = graphql.OmittableOf(data)
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputQueueJobStatusFacetInput(ctx context.Context, obj interface{}) (gen.QueueJobStatusFacetInput, error) {
+	var it gen.QueueJobStatusFacetInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"aggregate", "filter"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "aggregate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aggregate"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Aggregate = graphql.OmittableOf(data)
+		case "filter":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
+			data, err := ec.unmarshalOQueueJobStatus2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐQueueJobStatusᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Filter = graphql.OmittableOf(data)
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputQueueJobsFacetsInput(ctx context.Context, obj interface{}) (gen.QueueJobsFacetsInput, error) {
+	var it gen.QueueJobsFacetsInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"status", "queue"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "status":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			data, err := ec.unmarshalOQueueJobStatusFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobStatusFacetInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Status = graphql.OmittableOf(data)
+		case "queue":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("queue"))
+			data, err := ec.unmarshalOQueueJobQueueFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobQueueFacetInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Queue = graphql.OmittableOf(data)
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputQueueJobsOrderByInput(ctx context.Context, obj interface{}) (gen.QueueJobsOrderByInput, error) {
 	var it gen.QueueJobsOrderByInput
 	asMap := map[string]interface{}{}
@@ -13946,7 +14636,7 @@ func (ec *executionContext) unmarshalInputQueueJobsQueryInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"queues", "statuses", "limit", "page", "offset", "hasNextPage", "orderBy"}
+	fieldsInOrder := [...]string{"queues", "statuses", "limit", "page", "offset", "totalCount", "hasNextPage", "facets", "orderBy"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -13988,6 +14678,13 @@ func (ec *executionContext) unmarshalInputQueueJobsQueryInput(ctx context.Contex
 				return it, err
 			}
 			it.Offset = data
+		case "totalCount":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("totalCount"))
+			data, err := ec.unmarshalOBoolean2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullBool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TotalCount = data
 		case "hasNextPage":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasNextPage"))
 			data, err := ec.unmarshalOBoolean2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullBool(ctx, v)
@@ -13995,6 +14692,13 @@ func (ec *executionContext) unmarshalInputQueueJobsQueryInput(ctx context.Contex
 				return it, err
 			}
 			it.HasNextPage = data
+		case "facets":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("facets"))
+			data, err := ec.unmarshalOQueueJobsFacetsInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobsFacetsInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Facets = data
 		case "orderBy":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
 			data, err := ec.unmarshalOQueueJobsOrderByInput2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobsOrderByInputᚄ(ctx, v)
@@ -15628,6 +16332,142 @@ func (ec *executionContext) _QueueJob(ctx context.Context, sel ast.SelectionSet,
 	return out
 }
 
+var queueJobQueueAggImplementors = []string{"QueueJobQueueAgg"}
+
+func (ec *executionContext) _QueueJobQueueAgg(ctx context.Context, sel ast.SelectionSet, obj *gen.QueueJobQueueAgg) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, queueJobQueueAggImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QueueJobQueueAgg")
+		case "value":
+			out.Values[i] = ec._QueueJobQueueAgg_value(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "label":
+			out.Values[i] = ec._QueueJobQueueAgg_label(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "count":
+			out.Values[i] = ec._QueueJobQueueAgg_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var queueJobStatusAggImplementors = []string{"QueueJobStatusAgg"}
+
+func (ec *executionContext) _QueueJobStatusAgg(ctx context.Context, sel ast.SelectionSet, obj *gen.QueueJobStatusAgg) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, queueJobStatusAggImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QueueJobStatusAgg")
+		case "value":
+			out.Values[i] = ec._QueueJobStatusAgg_value(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "label":
+			out.Values[i] = ec._QueueJobStatusAgg_label(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "count":
+			out.Values[i] = ec._QueueJobStatusAgg_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var queueJobsAggregationsImplementors = []string{"QueueJobsAggregations"}
+
+func (ec *executionContext) _QueueJobsAggregations(ctx context.Context, sel ast.SelectionSet, obj *gen.QueueJobsAggregations) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, queueJobsAggregationsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("QueueJobsAggregations")
+		case "queue":
+			out.Values[i] = ec._QueueJobsAggregations_queue(ctx, field, obj)
+		case "status":
+			out.Values[i] = ec._QueueJobsAggregations_status(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var queueJobsQueryResultImplementors = []string{"QueueJobsQueryResult"}
 
 func (ec *executionContext) _QueueJobsQueryResult(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.QueueJobsQueryResult) graphql.Marshaler {
@@ -15639,13 +16479,23 @@ func (ec *executionContext) _QueueJobsQueryResult(ctx context.Context, sel ast.S
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("QueueJobsQueryResult")
-		case "items":
-			out.Values[i] = ec._QueueJobsQueryResult_items(ctx, field, obj)
+		case "totalCount":
+			out.Values[i] = ec._QueueJobsQueryResult_totalCount(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
 		case "hasNextPage":
 			out.Values[i] = ec._QueueJobsQueryResult_hasNextPage(ctx, field, obj)
+		case "items":
+			out.Values[i] = ec._QueueJobsQueryResult_items(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "aggregations":
+			out.Values[i] = ec._QueueJobsQueryResult_aggregations(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -18035,6 +18885,10 @@ func (ec *executionContext) marshalNQueueJob2ᚕgithubᚗcomᚋbitmagnetᚑioᚋ
 	return ret
 }
 
+func (ec *executionContext) marshalNQueueJobQueueAgg2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobQueueAgg(ctx context.Context, sel ast.SelectionSet, v gen.QueueJobQueueAgg) graphql.Marshaler {
+	return ec._QueueJobQueueAgg(ctx, sel, &v)
+}
+
 func (ec *executionContext) unmarshalNQueueJobStatus2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐQueueJobStatus(ctx context.Context, v interface{}) (model.QueueJobStatus, error) {
 	tmp, err := graphql.UnmarshalString(v)
 	res := model.QueueJobStatus(tmp)
@@ -18049,6 +18903,14 @@ func (ec *executionContext) marshalNQueueJobStatus2githubᚗcomᚋbitmagnetᚑio
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNQueueJobStatusAgg2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobStatusAgg(ctx context.Context, sel ast.SelectionSet, v gen.QueueJobStatusAgg) graphql.Marshaler {
+	return ec._QueueJobStatusAgg(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNQueueJobsAggregations2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobsAggregations(ctx context.Context, sel ast.SelectionSet, v gen.QueueJobsAggregations) graphql.Marshaler {
+	return ec._QueueJobsAggregations(ctx, sel, &v)
 }
 
 func (ec *executionContext) unmarshalNQueueJobsOrderByField2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobsOrderByField(ctx context.Context, v interface{}) (gen.QueueJobsOrderByField, error) {
@@ -19551,6 +20413,61 @@ func (ec *executionContext) unmarshalOQueueEnqueueReprocessTorrentsBatchInput2�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalOQueueJobQueueAgg2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobQueueAggᚄ(ctx context.Context, sel ast.SelectionSet, v []gen.QueueJobQueueAgg) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNQueueJobQueueAgg2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobQueueAgg(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOQueueJobQueueFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobQueueFacetInput(ctx context.Context, v interface{}) (*gen.QueueJobQueueFacetInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputQueueJobQueueFacetInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOQueueJobStatus2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐQueueJobStatusᚄ(ctx context.Context, v interface{}) ([]model.QueueJobStatus, error) {
 	if v == nil {
 		return nil, nil
@@ -19616,6 +20533,69 @@ func (ec *executionContext) marshalOQueueJobStatus2ᚕgithubᚗcomᚋbitmagnet�
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalOQueueJobStatusAgg2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobStatusAggᚄ(ctx context.Context, sel ast.SelectionSet, v []gen.QueueJobStatusAgg) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNQueueJobStatusAgg2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobStatusAgg(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOQueueJobStatusFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobStatusFacetInput(ctx context.Context, v interface{}) (*gen.QueueJobStatusFacetInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputQueueJobStatusFacetInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOQueueJobsFacetsInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobsFacetsInput(ctx context.Context, v interface{}) (*gen.QueueJobsFacetsInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputQueueJobsFacetsInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOQueueJobsOrderByInput2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobsOrderByInputᚄ(ctx context.Context, v interface{}) ([]gen.QueueJobsOrderByInput, error) {

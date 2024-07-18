@@ -1,0 +1,21 @@
+#import "../fragments/QueueJob"
+
+fragment QueueJobsQueryResult on QueueJobsQueryResult {
+  items {
+    ...QueueJob
+  }
+  totalCount
+  hasNextPage
+  aggregations {
+    queue {
+      value
+      label
+      count
+    }
+    status {
+      value
+      label
+      count
+    }
+  }
+}

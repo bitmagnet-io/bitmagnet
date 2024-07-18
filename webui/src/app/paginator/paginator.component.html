@@ -39,11 +39,21 @@
     </button>
     <button
       mat-icon-button
-      [disabled]="!hasNextPage"
+      [disabled]="!actuallyHasNextPage"
       (click)="page = page + 1; emitChange()"
       matTooltip="Next page"
     >
       <mat-icon>navigate_next</mat-icon>
     </button>
+    @if (showLastPage) {
+      <button
+        mat-icon-button
+        [disabled]="[null, page].includes(pageCount)"
+        (click)="page = pageCount ?? 1; emitChange()"
+        matTooltip="Last page"
+      >
+        <mat-icon>last_page</mat-icon>
+      </button>
+    }
   </div>
 </div>

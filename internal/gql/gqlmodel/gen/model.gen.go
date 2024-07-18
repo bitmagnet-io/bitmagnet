@@ -68,6 +68,38 @@ type Mutation struct {
 type Query struct {
 }
 
+type QueueJobQueueAgg struct {
+	Value string `json:"value"`
+	Label string `json:"label"`
+	Count int    `json:"count"`
+}
+
+type QueueJobQueueFacetInput struct {
+	Aggregate graphql.Omittable[*bool]    `json:"aggregate,omitempty"`
+	Filter    graphql.Omittable[[]string] `json:"filter,omitempty"`
+}
+
+type QueueJobStatusAgg struct {
+	Value model.QueueJobStatus `json:"value"`
+	Label string               `json:"label"`
+	Count int                  `json:"count"`
+}
+
+type QueueJobStatusFacetInput struct {
+	Aggregate graphql.Omittable[*bool]                  `json:"aggregate,omitempty"`
+	Filter    graphql.Omittable[[]model.QueueJobStatus] `json:"filter,omitempty"`
+}
+
+type QueueJobsAggregations struct {
+	Queue  []QueueJobQueueAgg  `json:"queue,omitempty"`
+	Status []QueueJobStatusAgg `json:"status,omitempty"`
+}
+
+type QueueJobsFacetsInput struct {
+	Status graphql.Omittable[*QueueJobStatusFacetInput] `json:"status,omitempty"`
+	Queue  graphql.Omittable[*QueueJobQueueFacetInput]  `json:"queue,omitempty"`
+}
+
 type QueueJobsOrderByInput struct {
 	Field      QueueJobsOrderByField    `json:"field"`
 	Descending graphql.Omittable[*bool] `json:"descending,omitempty"`

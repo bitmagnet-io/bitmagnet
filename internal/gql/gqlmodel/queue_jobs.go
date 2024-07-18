@@ -17,6 +17,7 @@ type QueueJobsQueryInput struct {
 	Offset      model.NullUint
 	TotalCount  model.NullBool
 	HasNextPage model.NullBool
+	Facets      *gen.QueueJobsFacetsInput
 	OrderBy     []gen.QueueJobsOrderByInput
 }
 
@@ -25,6 +26,7 @@ type QueueJobsQueryResult struct {
 	TotalCountIsEstimate bool
 	HasNextPage          bool
 	Items                []model.QueueJob
+	Aggregations         gen.QueueJobsAggregations
 }
 
 func (r QueueQueryResult) Jobs(
@@ -43,6 +45,16 @@ func (r QueueQueryResult) Jobs(
 			TotalCount:  query.TotalCount,
 			HasNextPage: query.HasNextPage,
 		}.Option(),
+	}
+	if query.Facets != nil {
+		var qFacets []q.Facet
+		if queue, ok := query.Facets.Queue.ValueOK(); ok {
+			qFacets = append(qFacets, queueJobQueueFacet(*queue))
+		}
+		if status, ok := query.Facets.Status.ValueOK(); ok {
+			qFacets = append(qFacets, queueJobStatusFacet(*status))
+		}
+		options = append(options, q.WithFacet(qFacets...))
 	}
 	var criteria []q.Criteria
 	if query.Queues != nil {
@@ -71,10 +83,38 @@ func (r QueueQueryResult) Jobs(
 	if resultErr != nil {
 		return QueueJobsQueryResult{}, resultErr
 	}
+	return transformQueueJobsQueryResult(result)
+}
+
+func transformQueueJobsQueryResult(result q.GenericResult[model.QueueJob]) (QueueJobsQueryResult, error) {
+	aggs, err := transformQueueJobsAggregations(result.Aggregations)
+	if err != nil {
+		return QueueJobsQueryResult{}, err
+	}
 	return QueueJobsQueryResult{
 		TotalCount:           result.TotalCount,
 		TotalCountIsEstimate: result.TotalCountIsEstimate,
 		HasNextPage:          result.HasNextPage,
 		Items:                result.Items,
+		Aggregations:         aggs,
 	}, nil
+}
+
+func transformQueueJobsAggregations(aggs q.Aggregations) (gen.QueueJobsAggregations, error) {
+	a := gen.QueueJobsAggregations{}
+	if queue, ok := aggs[search.QueueJobQueueFacetKey]; ok {
+		agg, err := queueJobQueueAggs(queue.Items)
+		if err != nil {
+			return a, err
+		}
+		a.Queue = agg
+	}
+	if status, ok := aggs[search.QueueJobStatusFacetKey]; ok {
+		agg, err := queueJobStatusAggs(status.Items)
+		if err != nil {
+			return a, err
+		}
+		a.Status = agg
+	}
+	return a, nil
 }

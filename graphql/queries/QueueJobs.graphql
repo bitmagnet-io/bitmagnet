@@ -1,12 +1,9 @@
-#import "../fragments/QueueJob"
+#import "../fragments/QueueJobsQueryResult"
 
 query QueueJobs($input: QueueJobsQueryInput!) {
   queue {
     jobs(input: $input) {
-      items {
-        ...QueueJob
-      }
-      hasNextPage
+      ...QueueJobsQueryResult
     }
   }
 }

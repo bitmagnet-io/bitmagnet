@@ -9,8 +9,25 @@ input QueueJobsQueryInput {
   limit: Int
   page: Int
   offset: Int
+  totalCount: Boolean
   hasNextPage: Boolean
+  facets: QueueJobsFacetsInput
   orderBy: [QueueJobsOrderByInput!]
+}
+
+input QueueJobQueueFacetInput {
+  aggregate: Boolean
+  filter: [String!]
+}
+
+input QueueJobStatusFacetInput {
+  aggregate: Boolean
+  filter: [QueueJobStatus!]
+}
+
+input QueueJobsFacetsInput {
+  status: QueueJobStatusFacetInput
+  queue: QueueJobQueueFacetInput
 }
 
 input QueueJobsOrderByInput {
@@ -33,8 +50,27 @@ type QueueJob {
 }
 
 type QueueJobsQueryResult {
-  items: [QueueJob!]!
+  totalCount: Int!
   hasNextPage: Boolean
+  items: [QueueJob!]!
+  aggregations: QueueJobsAggregations!
+}
+
+type QueueJobQueueAgg {
+  value: String!
+  label: String!
+  count: Int!
+}
+
+type QueueJobStatusAgg {
+  value: QueueJobStatus!
+  label: String!
+  count: Int!
+}
+
+type QueueJobsAggregations {
+  queue: [QueueJobQueueAgg!]
+  status: [QueueJobStatusAgg!]
 }
 
 enum QueueJobStatus {

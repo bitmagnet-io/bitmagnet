@@ -37,6 +37,7 @@ export class PaginatorComponent {
   @Input() totalLength: number | null = null;
   @Input() totalIsEstimate = false;
   @Input() hasNextPage: boolean | null | undefined = null;
+  @Input() showLastPage = false;
 
   @Output() paging = new EventEmitter<PageEvent>();
 
@@ -54,6 +55,23 @@ export class PaginatorComponent {
 
   get hasPreviousPage() {
     return this.page > 1;
+  }
+
+  get pageCount(): number | null {
+    if (typeof this.totalLength !== "number") {
+      return null
+    }
+    return Math.ceil(this.totalLength / this.pageSize);
+  }
+
+  get actuallyHasNextPage() {
+    if (typeof this.hasNextPage === "boolean") {
+      return this.hasNextPage;
+    }
+    if (typeof this.totalLength !== "number") {
+      return false
+    }
+    return this.page * this.pageSize < this.totalLength;
   }
 
   emitChange() {

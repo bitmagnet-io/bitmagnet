@@ -8,6 +8,11 @@ import {map} from "rxjs/operators";
 const emptyResult = {
   items: [],
   hasNextPage: false,
+  totalCount: 0,
+  aggregations: {
+    queue: [],
+    status: [],
+  }
 }
 
 export class QueueJobsDatasource implements DataSource<generated.QueueJob>{
@@ -24,6 +29,8 @@ export class QueueJobsDatasource implements DataSource<generated.QueueJob>{
 
   public items$ = this.resultSubject.pipe(map((result) => result.items));
 
+  private variables?: generated.QueueJobsQueryVariables
+
   constructor(
     private apollo: Apollo,
     private errorsService: ErrorsService,
@@ -31,6 +38,7 @@ export class QueueJobsDatasource implements DataSource<generated.QueueJob>{
   ) {
     queryVariables.subscribe(
       (variables: generated.QueueJobsQueryVariables) => {
+        this.variables = variables;
         this.loadResult(variables);
       },
     );
@@ -45,6 +53,12 @@ export class QueueJobsDatasource implements DataSource<generated.QueueJob>{
 
   disconnect(): void {
     this.resultSubject.complete();
+  }
+
+  refresh() {
+    if (this.variables) {
+      this.loadResult(this.variables);
+    }
   }
 
   private loadResult(

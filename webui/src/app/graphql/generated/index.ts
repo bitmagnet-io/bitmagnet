@@ -282,6 +282,7 @@ export type QueueJob = {
   error?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   maxRetries: Scalars['Int']['output'];
+  payload: Scalars['String']['output'];
   priority: Scalars['Int']['output'];
   queue: Scalars['String']['output'];
   ranAt?: Maybe<Scalars['DateTime']['output']>;
@@ -290,11 +291,46 @@ export type QueueJob = {
   status: QueueJobStatus;
 };
 
+export type QueueJobQueueAgg = {
+  __typename?: 'QueueJobQueueAgg';
+  count: Scalars['Int']['output'];
+  label: Scalars['String']['output'];
+  value: Scalars['String']['output'];
+};
+
+export type QueueJobQueueFacetInput = {
+  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
 export type QueueJobStatus =
   | 'failed'
   | 'pending'
   | 'processed'
   | 'retry';
+
+export type QueueJobStatusAgg = {
+  __typename?: 'QueueJobStatusAgg';
+  count: Scalars['Int']['output'];
+  label: Scalars['String']['output'];
+  value: QueueJobStatus;
+};
+
+export type QueueJobStatusFacetInput = {
+  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Array<QueueJobStatus>>;
+};
+
+export type QueueJobsAggregations = {
+  __typename?: 'QueueJobsAggregations';
+  queue?: Maybe<Array<QueueJobQueueAgg>>;
+  status?: Maybe<Array<QueueJobStatusAgg>>;
+};
+
+export type QueueJobsFacetsInput = {
+  queue?: InputMaybe<QueueJobQueueFacetInput>;
+  status?: InputMaybe<QueueJobStatusFacetInput>;
+};
 
 export type QueueJobsOrderByField =
   | 'created_at'
@@ -307,6 +343,7 @@ export type QueueJobsOrderByInput = {
 };
 
 export type QueueJobsQueryInput = {
+  facets?: InputMaybe<QueueJobsFacetsInput>;
   hasNextPage?: InputMaybe<Scalars['Boolean']['input']>;
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
@@ -314,12 +351,15 @@ export type QueueJobsQueryInput = {
   page?: InputMaybe<Scalars['Int']['input']>;
   queues?: InputMaybe<Array<Scalars['String']['input']>>;
   statuses?: InputMaybe<Array<QueueJobStatus>>;
+  totalCount?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type QueueJobsQueryResult = {
   __typename?: 'QueueJobsQueryResult';
+  aggregations: QueueJobsAggregations;
   hasNextPage?: Maybe<Scalars['Boolean']['output']>;
   items: Array<QueueJob>;
+  totalCount: Scalars['Int']['output'];
 };
 
 export type QueueMetricsBucket = {
@@ -731,7 +771,9 @@ export type WorkersQueryResult = {
 
 export type ContentFragment = { __typename?: 'Content', type: ContentType, source: string, id: string, title: string, releaseDate?: string | null, releaseYear?: number | null, overview?: string | null, runtime?: number | null, voteAverage?: number | null, voteCount?: number | null, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string }, originalLanguage?: { __typename?: 'LanguageInfo', id: string, name: string } | null, attributes: Array<{ __typename?: 'ContentAttribute', source: string, key: string, value: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, collections: Array<{ __typename?: 'ContentCollection', type: string, source: string, id: string, name: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, externalLinks: Array<{ __typename?: 'ExternalLink', url: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }> };
 
-export type QueueJobFragment = { __typename?: 'QueueJob', id: string, queue: string, status: QueueJobStatus, priority: number, retries: number, maxRetries: number, runAfter: string, ranAt?: string | null, error?: string | null, createdAt: string };
+export type QueueJobFragment = { __typename?: 'QueueJob', id: string, queue: string, status: QueueJobStatus, payload: string, priority: number, retries: number, maxRetries: number, runAfter: string, ranAt?: string | null, error?: string | null, createdAt: string };
+
+export type QueueJobsQueryResultFragment = { __typename?: 'QueueJobsQueryResult', totalCount: number, hasNextPage?: boolean | null, items: Array<{ __typename?: 'QueueJob', id: string, queue: string, status: QueueJobStatus, payload: string, priority: number, retries: number, maxRetries: number, runAfter: string, ranAt?: string | null, error?: string | null, createdAt: string }>, aggregations: { __typename?: 'QueueJobsAggregations', queue?: Array<{ __typename?: 'QueueJobQueueAgg', value: string, label: string, count: number }> | null, status?: Array<{ __typename?: 'QueueJobStatusAgg', value: QueueJobStatus, label: string, count: number }> | null } };
 
 export type TorrentFragment = { __typename?: 'Torrent', infoHash: string, name: string, size: number, filesStatus: FilesStatus, filesCount?: number | null, hasFilesInfo: boolean, singleFile?: boolean | null, fileType?: FileType | null, seeders?: number | null, leechers?: number | null, tagNames: Array<string>, magnetUri: string, createdAt: string, updatedAt: string, files?: Array<{ __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string }> | null, sources: Array<{ __typename?: 'TorrentSource', key: string, name: string }> };
 
@@ -796,7 +838,7 @@ export type QueueJobsQueryVariables = Exact<{
 }>;
 
 
-export type QueueJobsQuery = { __typename?: 'Query', queue: { __typename?: 'QueueQueryResult', jobs: { __typename?: 'QueueJobsQueryResult', hasNextPage?: boolean | null, items: Array<{ __typename?: 'QueueJob', id: string, queue: string, status: QueueJobStatus, priority: number, retries: number, maxRetries: number, runAfter: string, ranAt?: string | null, error?: string | null, createdAt: string }> } } };
+export type QueueJobsQuery = { __typename?: 'Query', queue: { __typename?: 'QueueQueryResult', jobs: { __typename?: 'QueueJobsQueryResult', totalCount: number, hasNextPage?: boolean | null, items: Array<{ __typename?: 'QueueJob', id: string, queue: string, status: QueueJobStatus, payload: string, priority: number, retries: number, maxRetries: number, runAfter: string, ranAt?: string | null, error?: string | null, createdAt: string }>, aggregations: { __typename?: 'QueueJobsAggregations', queue?: Array<{ __typename?: 'QueueJobQueueAgg', value: string, label: string, count: number }> | null, status?: Array<{ __typename?: 'QueueJobStatusAgg', value: QueueJobStatus, label: string, count: number }> | null } } } };
 
 export type QueueMetricsQueryVariables = Exact<{
   input: QueueMetricsQueryInput;
@@ -829,6 +871,7 @@ export const QueueJobFragmentDoc = gql`
   id
   queue
   status
+  payload
   priority
   retries
   maxRetries
@@ -838,6 +881,27 @@ export const QueueJobFragmentDoc = gql`
   createdAt
 }
     `;
+export const QueueJobsQueryResultFragmentDoc = gql`
+    fragment QueueJobsQueryResult on QueueJobsQueryResult {
+  items {
+    ...QueueJob
+  }
+  totalCount
+  hasNextPage
+  aggregations {
+    queue {
+      value
+      label
+      count
+    }
+    status {
+      value
+      label
+      count
+    }
+  }
+}
+    ${QueueJobFragmentDoc}`;
 export const TorrentFileFragmentDoc = gql`
     fragment TorrentFile on TorrentFile {
   infoHash
@@ -1172,14 +1236,11 @@ export const QueueJobsDocument = gql`
     query QueueJobs($input: QueueJobsQueryInput!) {
   queue {
     jobs(input: $input) {
-      items {
-        ...QueueJob
-      }
-      hasNextPage
+      ...QueueJobsQueryResult
     }
   }
 }
-    ${QueueJobFragmentDoc}`;
+    ${QueueJobsQueryResultFragmentDoc}`;
 
   @Injectable({
     providedIn: 'root'
