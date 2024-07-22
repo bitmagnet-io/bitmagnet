@@ -181,15 +181,15 @@ func (n *NullOrderDirection) UnmarshalJSON(b []byte) error {
 }
 
 const (
-	TorrentContentOrderByRelevance   TorrentContentOrderBy = "Relevance"
-	TorrentContentOrderByPublishedAt TorrentContentOrderBy = "PublishedAt"
-	TorrentContentOrderByUpdatedAt   TorrentContentOrderBy = "UpdatedAt"
-	TorrentContentOrderBySize        TorrentContentOrderBy = "Size"
-	TorrentContentOrderByFiles       TorrentContentOrderBy = "Files"
-	TorrentContentOrderBySeeders     TorrentContentOrderBy = "Seeders"
-	TorrentContentOrderByLeechers    TorrentContentOrderBy = "Leechers"
-	TorrentContentOrderByName        TorrentContentOrderBy = "Name"
-	TorrentContentOrderByInfoHash    TorrentContentOrderBy = "InfoHash"
+	TorrentContentOrderByRelevance   TorrentContentOrderBy = "relevance"
+	TorrentContentOrderByPublishedAt TorrentContentOrderBy = "published_at"
+	TorrentContentOrderByUpdatedAt   TorrentContentOrderBy = "updated_at"
+	TorrentContentOrderBySize        TorrentContentOrderBy = "size"
+	TorrentContentOrderByFilesCount  TorrentContentOrderBy = "files_count"
+	TorrentContentOrderBySeeders     TorrentContentOrderBy = "seeders"
+	TorrentContentOrderByLeechers    TorrentContentOrderBy = "leechers"
+	TorrentContentOrderByName        TorrentContentOrderBy = "name"
+	TorrentContentOrderByInfoHash    TorrentContentOrderBy = "info_hash"
 )
 
 var ErrInvalidTorrentContentOrderBy = fmt.Errorf("not a valid TorrentContentOrderBy, try [%s]", strings.Join(_TorrentContentOrderByNames, ", "))
@@ -199,7 +199,7 @@ var _TorrentContentOrderByNames = []string{
 	string(TorrentContentOrderByPublishedAt),
 	string(TorrentContentOrderByUpdatedAt),
 	string(TorrentContentOrderBySize),
-	string(TorrentContentOrderByFiles),
+	string(TorrentContentOrderByFilesCount),
 	string(TorrentContentOrderBySeeders),
 	string(TorrentContentOrderByLeechers),
 	string(TorrentContentOrderByName),
@@ -220,7 +220,7 @@ func TorrentContentOrderByValues() []TorrentContentOrderBy {
 		TorrentContentOrderByPublishedAt,
 		TorrentContentOrderByUpdatedAt,
 		TorrentContentOrderBySize,
-		TorrentContentOrderByFiles,
+		TorrentContentOrderByFilesCount,
 		TorrentContentOrderBySeeders,
 		TorrentContentOrderByLeechers,
 		TorrentContentOrderByName,
@@ -241,24 +241,15 @@ func (x TorrentContentOrderBy) IsValid() bool {
 }
 
 var _TorrentContentOrderByValue = map[string]TorrentContentOrderBy{
-	"Relevance":   TorrentContentOrderByRelevance,
-	"relevance":   TorrentContentOrderByRelevance,
-	"PublishedAt": TorrentContentOrderByPublishedAt,
-	"publishedat": TorrentContentOrderByPublishedAt,
-	"UpdatedAt":   TorrentContentOrderByUpdatedAt,
-	"updatedat":   TorrentContentOrderByUpdatedAt,
-	"Size":        TorrentContentOrderBySize,
-	"size":        TorrentContentOrderBySize,
-	"Files":       TorrentContentOrderByFiles,
-	"files":       TorrentContentOrderByFiles,
-	"Seeders":     TorrentContentOrderBySeeders,
-	"seeders":     TorrentContentOrderBySeeders,
-	"Leechers":    TorrentContentOrderByLeechers,
-	"leechers":    TorrentContentOrderByLeechers,
-	"Name":        TorrentContentOrderByName,
-	"name":        TorrentContentOrderByName,
-	"InfoHash":    TorrentContentOrderByInfoHash,
-	"infohash":    TorrentContentOrderByInfoHash,
+	"relevance":    TorrentContentOrderByRelevance,
+	"published_at": TorrentContentOrderByPublishedAt,
+	"updated_at":   TorrentContentOrderByUpdatedAt,
+	"size":         TorrentContentOrderBySize,
+	"files_count":  TorrentContentOrderByFilesCount,
+	"seeders":      TorrentContentOrderBySeeders,
+	"leechers":     TorrentContentOrderByLeechers,
+	"name":         TorrentContentOrderByName,
+	"info_hash":    TorrentContentOrderByInfoHash,
 }
 
 // ParseTorrentContentOrderBy attempts to convert a string to a TorrentContentOrderBy.

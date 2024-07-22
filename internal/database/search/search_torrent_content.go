@@ -49,23 +49,6 @@ func TorrentContentDefaultOption() query.Option {
 					Desc: true,
 				},
 			},
-			query.OrderByColumn{
-				OrderByColumn: clause.OrderByColumn{
-					Column: clause.Column{
-						Table: clause.CurrentTable,
-						Name:  "updated_at",
-					},
-					Desc: true,
-				},
-			},
-			query.OrderByColumn{
-				OrderByColumn: clause.OrderByColumn{
-					Column: clause.Column{
-						Table: clause.CurrentTable,
-						Name:  "info_hash",
-					},
-				},
-			},
 		),
 	)
 }

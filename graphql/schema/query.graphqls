@@ -24,9 +24,7 @@ type SuggestedTag {
 
 type TorrentContentQuery {
   search(
-    query: SearchQueryInput
-    facets: TorrentContentFacetsInput
-    orderBy: [TorrentContentOrderByInput!]
+    query: TorrentContentSearchQueryInput!
   ): TorrentContentSearchResult!
 }
 

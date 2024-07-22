@@ -7,6 +7,7 @@ import (
 type SearchParams struct {
 	QueryString       model.NullString
 	Limit             model.NullUint
+	Page              model.NullUint
 	Offset            model.NullUint
 	TotalCount        model.NullBool
 	HasNextPage       model.NullBool
@@ -19,11 +20,18 @@ func (s SearchParams) Option() Option {
 	if s.QueryString.Valid {
 		options = append(options, QueryString(s.QueryString.String), OrderByQueryStringRank())
 	}
+	offset := uint(0)
 	if s.Limit.Valid {
 		options = append(options, Limit(s.Limit.Uint))
+		if s.Page.Valid && s.Page.Uint > 0 {
+			offset += (s.Page.Uint - 1) * s.Limit.Uint
+		}
 	}
 	if s.Offset.Valid {
-		options = append(options, Offset(s.Offset.Uint))
+		offset += s.Offset.Uint
+	}
+	if offset > 0 {
+		options = append(options, Offset(offset))
 	}
 	if s.TotalCount.Valid {
 		options = append(options, WithTotalCount(s.TotalCount.Bool))
