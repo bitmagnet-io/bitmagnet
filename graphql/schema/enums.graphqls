@@ -157,3 +157,9 @@ enum TorrentContentOrderBy {
   Name
   InfoHash
 }
+
+
+enum ClientID {
+    Transmission
+    QBittorrent
+}

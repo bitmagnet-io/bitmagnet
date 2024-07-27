@@ -11,6 +11,7 @@ require (
 	github.com/anacrolix/dht/v2 v2.21.1
 	github.com/anacrolix/missinggo/v2 v2.7.3
 	github.com/anacrolix/torrent v1.55.0
+	github.com/autobrr/go-qbittorrent v1.9.0
 	github.com/bits-and-blooms/bloom/v3 v3.7.0
 	github.com/facette/natsort v0.0.0-20181210072756-2cd4dd1e2dcb
 	github.com/frankban/quicktest v1.14.6
@@ -21,6 +22,7 @@ require (
 	github.com/grafana/pyroscope-go/godeltaprof v0.1.7
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/hedhyw/rex v0.6.0
+	github.com/hekmon/transmissionrpc/v3 v3.0.0
 	github.com/hellofresh/health-go/v5 v5.5.3
 	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgx/v5 v5.5.5
@@ -69,6 +71,7 @@ require (
 	github.com/anacrolix/stm v0.5.0 // indirect
 	github.com/anacrolix/sync v0.5.1 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
+	github.com/avast/retry-go v3.0.0+incompatible // indirect
 	github.com/benbjohnson/immutable v0.4.3 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bits-and-blooms/bitset v1.13.0 // indirect
@@ -94,7 +97,9 @@ require (
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.1 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/hekmon/cunits/v2 v2.1.0 // indirect
 	github.com/huandu/xstrings v1.4.0 // indirect
 	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
