@@ -8,6 +8,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/app/boilerplateappfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpserver/httpserverfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classifierfx"
+	"github.com/bitmagnet-io/bitmagnet/internal/client/clientfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/databasefx"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/migrations"
 	"github.com/bitmagnet-io/bitmagnet/internal/dhtcrawler/dhtcrawlerfx"
@@ -48,6 +49,7 @@ func New() fx.Option {
 		torznabfx.New(),
 		versionfx.New(),
 		classifierfx.New(),
+		clientfx.New(),
 		// cli commands:
 		fx.Provide(
 			classifiercmd.New,

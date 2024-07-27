@@ -4,6 +4,8 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/worker"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/client"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
@@ -70,6 +72,7 @@ func New() fx.Option {
 							QueueMetricsClient:   qmc,
 							QueueManager:         qm,
 							TorrentMetricsClient: tm,
+							ClientConfig:         p.ClientConfig,
 						}, nil
 					}),
 				}
@@ -96,6 +99,7 @@ type Params struct {
 	QueueMetricsClient   lazy.Lazy[queuemetrics.Client]
 	QueueManager         lazy.Lazy[manager.Manager]
 	TorrentMetricsClient lazy.Lazy[torrentmetrics.Client]
+	ClientConfig         client.Config
 }
 
 type Result struct {
