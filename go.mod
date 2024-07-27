@@ -5,6 +5,7 @@ go 1.22
 require (
 	github.com/99designs/gqlgen v0.17.45
 	github.com/DATA-DOG/go-sqlmock v1.5.2
+	github.com/Khan/genqlient v0.7.0
 	github.com/abice/go-enum v0.6.0
 	github.com/adrg/xdg v0.4.0
 	github.com/agnivade/levenshtein v1.1.1
@@ -56,7 +57,6 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
-	github.com/Khan/genqlient v0.7.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.3 // indirect

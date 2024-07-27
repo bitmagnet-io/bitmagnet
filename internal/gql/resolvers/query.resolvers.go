@@ -27,11 +27,16 @@ func (r *queryResolver) TorrentContent(ctx context.Context) (gqlmodel.TorrentCon
 	}, nil
 }
 
+// TorrentContentByID is the resolver for the torrentContentByID field.
+func (r *queryResolver) TorrentContentByID(ctx context.Context) (gqlmodel.TorrentContentByID, error) {
+	return gqlmodel.TorrentContentByID{Search: r.search}, nil
+}
+
 // System is the resolver for the system field.
 func (r *queryResolver) System(ctx context.Context) (gen.SystemQuery, error) {
 	return gen.SystemQuery{
 		Version:  version.GitTag,
-		Download: true, /// needs an implemenation
+		Download: r.clientConfig.DownloadEnabled,
 	}, nil
 }
 

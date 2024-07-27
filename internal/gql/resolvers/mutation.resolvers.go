@@ -15,9 +15,8 @@ import (
 
 // Download is the resolver for the download field.
 func (r *clientMutationResolver) Download(ctx context.Context, obj *gqlmodel.ClientMutation, infoHashes []protocol.ID) (*string, error) {
-	c := &client.ServarrClient{Config: r.clientConfig}
-	return nil, c.AddInfoHashes(ctx, client.AddInfoHashesRequest{ClientID: "servarr", InfoHashes: infoHashes})
-
+	c := &client.ServicesClient{Config: r.clientConfig}
+	return nil, c.AddInfoHashes(ctx, client.AddInfoHashesRequest{ClientID: r.clientConfig.DownloadClient, InfoHashes: infoHashes})
 }
 
 // Torrent is the resolver for the torrent field.

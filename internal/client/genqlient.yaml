@@ -7,6 +7,6 @@ generated: gqlclient-gen.go
 
 bindings:
   Hash20: 
-    type: string
+    type: github.com/bitmagnet-io/bitmagnet/internal/protocol.ID
   Void:
     type: string

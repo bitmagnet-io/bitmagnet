@@ -1,6 +1,7 @@
 type Query {
   torrent: TorrentQuery!
   torrentContent: TorrentContentQuery!
+  torrentContentByID: TorrentContentByID!
   system: SystemQuery!
 }
 
@@ -28,6 +29,10 @@ type TorrentContentQuery {
     facets: TorrentContentFacetsInput
     orderBy: [TorrentContentOrderByInput!]
   ): TorrentContentSearchResult!
+}
+
+type TorrentContentByID {
+  id(infoHash: Hash20): TorrentContentSearchResult!
 }
 
 type SystemQuery {

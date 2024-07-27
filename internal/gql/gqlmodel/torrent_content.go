@@ -2,13 +2,14 @@ package gqlmodel
 
 import (
 	"context"
+	"time"
+
 	q "github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"time"
 )
 
 type TorrentContentQuery struct {
@@ -264,4 +265,30 @@ func transformTorrentContentAggregations(aggs q.Aggregations) (gen.TorrentConten
 		a.VideoSource = agg
 	}
 	return a, nil
+}
+
+type TorrentContentByID struct {
+	Search search.Search
+}
+
+func (t TorrentContentByID) Id(
+	ctx context.Context,
+	infoHash protocol.ID,
+) (TorrentContentSearchResult, error) {
+	options := []q.Option{
+		q.Where(
+			search.TorrentContentInfoHashCriteria(infoHash),
+		),
+		search.TorrentContentCoreJoins(),
+		search.HydrateTorrentContentContent(),
+		search.HydrateTorrentContentTorrent(),
+		q.Limit(1),
+	}
+
+	result, err := t.Search.TorrentContent(ctx, options...)
+	if err != nil {
+		return TorrentContentSearchResult{}, err
+	}
+
+	return transformTorrentContentSearchResult(result)
 }

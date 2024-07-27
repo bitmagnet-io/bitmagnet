@@ -6,56 +6,69 @@ import (
 	"context"
 
 	"github.com/Khan/genqlient/graphql"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
-// ServarrDownloadClientClientMutation includes the requested fields of the GraphQL type ClientMutation.
-type ServarrDownloadClientClientMutation struct {
+type ClientID string
+
+const (
+	ClientIDServarr ClientID = "Servarr"
+)
+
+// ServicesDownloadClientClientMutation includes the requested fields of the GraphQL type ClientMutation.
+type ServicesDownloadClientClientMutation struct {
 	Download string `json:"download"`
 }
 
-// GetDownload returns ServarrDownloadClientClientMutation.Download, and is useful for accessing the field via an interface.
-func (v *ServarrDownloadClientClientMutation) GetDownload() string { return v.Download }
+// GetDownload returns ServicesDownloadClientClientMutation.Download, and is useful for accessing the field via an interface.
+func (v *ServicesDownloadClientClientMutation) GetDownload() string { return v.Download }
 
-// ServarrDownloadResponse is returned by ServarrDownload on success.
-type ServarrDownloadResponse struct {
-	Client ServarrDownloadClientClientMutation `json:"client"`
+// ServicesDownloadResponse is returned by ServicesDownload on success.
+type ServicesDownloadResponse struct {
+	Client ServicesDownloadClientClientMutation `json:"client"`
 }
 
-// GetClient returns ServarrDownloadResponse.Client, and is useful for accessing the field via an interface.
-func (v *ServarrDownloadResponse) GetClient() ServarrDownloadClientClientMutation { return v.Client }
+// GetClient returns ServicesDownloadResponse.Client, and is useful for accessing the field via an interface.
+func (v *ServicesDownloadResponse) GetClient() ServicesDownloadClientClientMutation { return v.Client }
 
-// __ServarrDownloadInput is used internally by genqlient
-type __ServarrDownloadInput struct {
-	InfoHashes []string `json:"infoHashes"`
+// __ServicesDownloadInput is used internally by genqlient
+type __ServicesDownloadInput struct {
+	InfoHashes []protocol.ID `json:"infoHashes"`
+	ClientID   ClientID      `json:"clientID"`
 }
 
-// GetInfoHashes returns __ServarrDownloadInput.InfoHashes, and is useful for accessing the field via an interface.
-func (v *__ServarrDownloadInput) GetInfoHashes() []string { return v.InfoHashes }
+// GetInfoHashes returns __ServicesDownloadInput.InfoHashes, and is useful for accessing the field via an interface.
+func (v *__ServicesDownloadInput) GetInfoHashes() []protocol.ID { return v.InfoHashes }
 
-// The query or mutation executed by ServarrDownload.
-const ServarrDownload_Operation = `
-mutation ServarrDownload ($infoHashes: [Hash20!]) {
+// GetClientID returns __ServicesDownloadInput.ClientID, and is useful for accessing the field via an interface.
+func (v *__ServicesDownloadInput) GetClientID() ClientID { return v.ClientID }
+
+// The query or mutation executed by ServicesDownload.
+const ServicesDownload_Operation = `
+mutation ServicesDownload ($infoHashes: [Hash20!], $clientID: ClientID) {
 	client {
-		download(infoHashes: $infoHashes)
+		download(infoHashes: $infoHashes, clientID: $clientID)
 	}
 }
 `
 
-func ServarrDownload(
+func ServicesDownload(
 	ctx_ context.Context,
 	client_ graphql.Client,
-	infoHashes []string,
-) (*ServarrDownloadResponse, error) {
+	infoHashes []protocol.ID,
+	clientID ClientID,
+) (*ServicesDownloadResponse, error) {
 	req_ := &graphql.Request{
-		OpName: "ServarrDownload",
-		Query:  ServarrDownload_Operation,
-		Variables: &__ServarrDownloadInput{
+		OpName: "ServicesDownload",
+		Query:  ServicesDownload_Operation,
+		Variables: &__ServicesDownloadInput{
 			InfoHashes: infoHashes,
+			ClientID:   clientID,
 		},
 	}
 	var err_ error
 
-	var data_ ServarrDownloadResponse
+	var data_ ServicesDownloadResponse
 	resp_ := &graphql.Response{Data: &data_}
 
 	err_ = client_.MakeRequest(

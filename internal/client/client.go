@@ -17,19 +17,16 @@ type Client interface {
 	AddInfoHashes(ctx context.Context, req AddInfoHashesRequest) error
 }
 
-type ServarrClient struct {
+type ServicesClient struct {
 	Config Config
 }
 
-func (c *ServarrClient) AddInfoHashes(ctx context.Context, req AddInfoHashesRequest) error {
-	strInfoHashes := make([]string, len(req.InfoHashes))
-	for i, ih := range req.InfoHashes {
-		strInfoHashes[i] = ih.String()
-	}
-	_, err := ServarrDownload(
+func (c *ServicesClient) AddInfoHashes(ctx context.Context, req AddInfoHashesRequest) error {
+	_, err := ServicesDownload(
 		ctx,
 		graphql.NewClient(c.Config.ArrServiceUrl+"/graphql", http.DefaultClient),
-		strInfoHashes,
+		req.InfoHashes,
+		ClientID(req.ClientID),
 	)
 
 	return err

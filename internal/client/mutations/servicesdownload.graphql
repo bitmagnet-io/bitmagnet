@@ -1,0 +1,5 @@
+mutation ServicesDownload($infoHashes: [Hash20!], $clientID: ClientID) {
+  client {
+    download(infoHashes: $infoHashes, clientID: $clientID)
+  }
+}
