@@ -7,15 +7,9 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-//go:generate go run github.com/abice/go-enum --marshal --names --nocase --nocomments --sql --sqlnullstr --values -f order_torrent_content.go
-
 // TorrentContentOrderBy represents sort orders for torrent content search results
 // ENUM(relevance, published_at, updated_at, size, files_count, seeders, leechers, name, info_hash)
 type TorrentContentOrderBy string
-
-// OrderDirection represents sort order directions
-// ENUM(Ascending, Descending)
-type OrderDirection string
 
 func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderByColumn {
 	desc := direction == OrderDirectionDescending

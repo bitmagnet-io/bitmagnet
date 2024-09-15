@@ -1,0 +1,11 @@
+#import "../fragments/TorrentFilesQueryResult"
+
+query TorrentFiles(
+  $input: TorrentFilesQueryInput!
+) {
+  torrent {
+    files(input: $input) {
+      ...TorrentFilesQueryResult
+    }
+  }
+}

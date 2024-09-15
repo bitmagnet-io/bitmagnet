@@ -7,7 +7,7 @@ import (
 )
 
 type TorrentQuery struct {
-	TorrentSearch search.TorrentSearch
+	Search search.Search
 }
 
 func (t TorrentQuery) SuggestTags(ctx context.Context, query *gen.SuggestTagsQueryInput) (search.TorrentSuggestTagsResult, error) {
@@ -20,7 +20,7 @@ func (t TorrentQuery) SuggestTags(ctx context.Context, query *gen.SuggestTagsQue
 			suggestTagsQuery.Exclusions = exclusions
 		}
 	}
-	return t.TorrentSearch.TorrentSuggestTags(ctx, suggestTagsQuery)
+	return t.Search.TorrentSuggestTags(ctx, suggestTagsQuery)
 }
 
 type TorrentMutation struct{}

@@ -39,6 +39,7 @@ import { GraphQLService } from '../graphql/graphql.service';
 import { ErrorsService } from '../errors/errors.service';
 import { BreakpointsService } from '../layout/breakpoints.service';
 import { TimeAgoPipe } from '../dates/time-ago.pipe';
+import {TorrentFilesTableComponent} from "../torrent-files-table/torrent-files-table.component";
 
 @Component({
   selector: 'app-torrent-content',
@@ -73,6 +74,7 @@ import { TimeAgoPipe } from '../dates/time-ago.pipe';
     AsyncPipe,
     TimeAgoPipe,
     MatChipRemove,
+    TorrentFilesTableComponent,
   ],
 })
 export class TorrentContentComponent {

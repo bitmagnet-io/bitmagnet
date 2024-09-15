@@ -6,6 +6,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
-func TorrentContentInfoHashCriteria(infoHashes ...protocol.ID) query.Criteria {
-	return infoHashCriteria(model.TableNameTorrentContent, infoHashes...)
+func TorrentFileInfoHashCriteria(infoHashes ...protocol.ID) query.Criteria {
+	return infoHashCriteria(model.TableNameTorrentFile, infoHashes...)
 }

@@ -176,6 +176,11 @@ type TorrentFileTypeFacetInput struct {
 	Filter    graphql.Omittable[[]model.FileType]  `json:"filter,omitempty"`
 }
 
+type TorrentFilesOrderByInput struct {
+	Field      TorrentFilesOrderByField `json:"field"`
+	Descending graphql.Omittable[*bool] `json:"descending,omitempty"`
+}
+
 type TorrentSourceAgg struct {
 	Value      string `json:"value"`
 	Label      string `json:"label"`
@@ -418,5 +423,50 @@ func (e *TorrentContentOrderByField) UnmarshalGQL(v interface{}) error {
 }
 
 func (e TorrentContentOrderByField) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type TorrentFilesOrderByField string
+
+const (
+	TorrentFilesOrderByFieldIndex     TorrentFilesOrderByField = "index"
+	TorrentFilesOrderByFieldPath      TorrentFilesOrderByField = "path"
+	TorrentFilesOrderByFieldExtension TorrentFilesOrderByField = "extension"
+	TorrentFilesOrderByFieldSize      TorrentFilesOrderByField = "size"
+)
+
+var AllTorrentFilesOrderByField = []TorrentFilesOrderByField{
+	TorrentFilesOrderByFieldIndex,
+	TorrentFilesOrderByFieldPath,
+	TorrentFilesOrderByFieldExtension,
+	TorrentFilesOrderByFieldSize,
+}
+
+func (e TorrentFilesOrderByField) IsValid() bool {
+	switch e {
+	case TorrentFilesOrderByFieldIndex, TorrentFilesOrderByFieldPath, TorrentFilesOrderByFieldExtension, TorrentFilesOrderByFieldSize:
+		return true
+	}
+	return false
+}
+
+func (e TorrentFilesOrderByField) String() string {
+	return string(e)
+}
+
+func (e *TorrentFilesOrderByField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = TorrentFilesOrderByField(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid TorrentFilesOrderByField", str)
+	}
+	return nil
+}
+
+func (e TorrentFilesOrderByField) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

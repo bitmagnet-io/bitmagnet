@@ -104,7 +104,7 @@
         *matCellDef="let i"
         (click)="toggleQueueJobId(i.id); $event.stopPropagation()"
       >
-        {{ item(i).createdAt | timeAgo: transloco.getActiveLang()}}
+        {{ item(i).createdAt | timeAgo }}
       </td>
     </ng-container>
 
@@ -118,7 +118,7 @@
         (click)="toggleQueueJobId(i.id); $event.stopPropagation()"
       >
         @if (i.ranAt; as ranAt) {
-          {{ ranAt | timeAgo: transloco.getActiveLang()}}
+          {{ ranAt | timeAgo }}
         } @else {
           <i>N/A</i>
         }

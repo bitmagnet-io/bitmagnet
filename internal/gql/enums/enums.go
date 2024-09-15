@@ -29,5 +29,6 @@ var Enums = []enum{
 	newEnum("VideoResolution", model.VideoResolutionNames()),
 	newEnum("VideoSource", model.VideoSourceNames()),
 	newEnum("TorrentContentOrderByField", search.TorrentContentOrderByNames()),
+	newEnum("TorrentFilesOrderByField", search.TorrentFilesOrderByNames()),
 	newEnum("QueueJobsOrderByField", search.QueueJobsOrderByNames()),
 }

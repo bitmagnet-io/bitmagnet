@@ -86,7 +86,6 @@ export class TorrentsTableComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   breakpoints = inject(BreakpointsService);
-  transloco = inject(TranslocoService);
 
   contentTypeInfo = contentTypeInfo;
 

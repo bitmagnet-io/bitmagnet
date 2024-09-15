@@ -1,20 +1,28 @@
 package search
 
 import (
-	"database/sql/driver"
+	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
+	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"gorm.io/gen/field"
+	"strings"
 )
 
 func TorrentInfoHashCriteria(infoHashes ...protocol.ID) query.Criteria {
-	valuers := make([]driver.Valuer, 0, len(infoHashes))
-	for _, infoHash := range infoHashes {
-		valuers = append(valuers, infoHash)
+	return infoHashCriteria(model.TableNameTorrent, infoHashes...)
+}
+
+func infoHashCriteria(table string, infoHashes ...protocol.ID) query.Criteria {
+	if len(infoHashes) == 0 {
+		return query.DbCriteria{
+			Sql: "FALSE",
+		}
 	}
-	return query.DaoCriteria{
-		Conditions: func(ctx query.DbContext) ([]field.Expr, error) {
-			return []field.Expr{ctx.Query().Torrent.InfoHash.In(valuers...)}, nil
-		},
+	decodes := make([]string, len(infoHashes))
+	for i, infoHash := range infoHashes {
+		decodes[i] = fmt.Sprintf("DECODE('%s', 'hex')", infoHash.String())
+	}
+	return query.DbCriteria{
+		Sql: fmt.Sprintf("%s.info_hash IN (%s)", table, strings.Join(decodes, ", ")),
 	}
 }

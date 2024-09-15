@@ -2,6 +2,7 @@ package dao
 
 import (
 	"database/sql"
+	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -27,5 +28,6 @@ func BudgetedCount(db *gorm.DB, budget float64) (BudgetedCountResult, error) {
 	}
 	result := BudgetedCountResult{}
 	err := row.Scan(&result.Count, &result.Cost, &result.BudgetExceeded)
+	fmt.Printf("row: %s, %v", q, result)
 	return result, err
 }

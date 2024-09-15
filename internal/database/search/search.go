@@ -9,8 +9,9 @@ import (
 type Search interface {
 	ContentSearch
 	QueueJobSearch
-	TorrentContentSearch
 	TorrentSearch
+	TorrentContentSearch
+	TorrentFilesSearch
 }
 
 type search struct {

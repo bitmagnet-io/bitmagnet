@@ -20,13 +20,13 @@
   @if (size) {
     <p class="size">
       <strong>{{ t("torrents.size") }}:</strong>
-      {{ torrentContent.torrent.size | filesize | timeAgo: transloco.getActiveLang() }}
+      {{ torrentContent.torrent.size | filesize }}
     </p>
   }
   @if (published) {
     <p class="published">
       <strong>{{ t("torrents.published") }}</strong>
-      {{ torrentContent.publishedAt | timeAgo: transloco.getActiveLang() }}
+      {{ torrentContent.publishedAt | timeAgo }}
     </p>
   }
   @if (peers) {
@@ -134,7 +134,7 @@
     <mat-tab>
       <ng-template mat-tab-label>
         <mat-icon>file_present</mat-icon>
-        @if (!breakpoints.sizeAtLeast('Medium')) {
+        @if (breakpoints.sizeAtLeast('Medium')) {
           <span class="label">{{ t("torrents.files") }}</span>
         }
         @if (filesCount(); as filesCount) {
@@ -147,70 +147,9 @@
           @if (torrentContent.torrent.filesStatus === "no_info") {
             <p>{{ t("torrents.files_no_info") }}</p>
           }
-          @if (torrentContent.torrent.filesStatus === "single") {
-            <p>
-              <strong>{{ t("torrents.files_single") }}:</strong>
-              {{ torrentContent.torrent.name }}<br />
-              @if (torrentContent.torrent.fileType; as ft) {
-                <span
-                  ><strong>{{ t("torrents.file_type") }}: </strong>
-                  {{ ft!.charAt(0).toUpperCase() + ft!.slice(1) }}<br
-                /></span>
-              }
-              <strong>{{ t("torrents.file_size") }}:</strong>
-              {{ torrentContent.torrent.size | filesize }}
-            </p>
-          }
-          @if (torrentContent.torrent.filesStatus === "multi") {
-            <p>
-              {{
-                t("torrents.files_count_n", {
-                  count: torrentContent.torrent.files?.length | number
-                })
-              }}
-            </p>
-          }
-          @if (torrentContent.torrent.filesStatus === "over_threshold") {
-            <p>
-              {{
-                t("torrents.showing_x_of_y_files", {
-                  x: torrentContent.torrent.files?.length | number,
-                  y:
-                    torrentContent.torrent.filesCount == null
-                      ? "?"
-                      : (torrentContent.torrent.filesCount | number)
-                })
-              }}
-            </p>
-          }
-          @if (torrentContent.torrent.files?.length) {
-            <table>
-              <thead>
-                <tr>
-                  <th>{{ t("torrents.file_path") }}</th>
-                  <th>{{ t("torrents.file_type") }}</th>
-                  <th>{{ t("torrents.file_size") }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (f of torrentContent.torrent.files; track f.path) {
-                  <tr>
-                    <td class="table-torrent-files-td-file">
-                      {{ f.path }}
-                    </td>
-                    <td>
-                      {{
-                        t("file_types." + (f.fileType ? f.fileType : "unknown"))
-                      }}
-                    </td>
-                    <td class="table-torrent-files-td-size">
-                      {{ f.size | filesize }}
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          }
+          <app-torrent-files-table
+            [torrent]="torrentContent.torrent"
+            />
         </mat-card>
       </ng-template>
     </mat-tab>

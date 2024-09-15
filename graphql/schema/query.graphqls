@@ -8,6 +8,7 @@ type Query {
 }
 
 type TorrentQuery {
+  files(input: TorrentFilesQueryInput!): TorrentFilesQueryResult!
   suggestTags(query: SuggestTagsQueryInput): TorrentSuggestTagsResult!
 }
 

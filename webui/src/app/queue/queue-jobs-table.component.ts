@@ -65,16 +65,10 @@ export class QueueJobsTableComponent implements OnInit {
   @Input() displayedColumns = allColumns;
 
   @Output() updated = new EventEmitter<string>();
-  // protected controller = new QueueJobsController()
-  // protected dataSource = new QueueJobsDatasource(this.apollo, this.errorsService, this.controller.variables$)
 
   expandedId = new BehaviorSubject<string | null>(null);
 
   items = Array<generated.QueueJob>();
-
-  // @ViewChild('selection') selection: SelectionModel<string>;
-
-  // displayedColumns = ["id", "queue", "priority", "status", "error", "createdAt", "ranAt"];
 
   ngOnInit() {
     this.dataSource.items$.subscribe((items) => {

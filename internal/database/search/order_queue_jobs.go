@@ -7,8 +7,6 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-//go:generate go run github.com/abice/go-enum --marshal --names --nocase --nocomments --sql --sqlnullstr --values -f order_queue_jobs.go
-
 // QueueJobsOrderBy represents sort orders for queue jobs search results
 // ENUM(created_at, ran_at, priority)
 type QueueJobsOrderBy string

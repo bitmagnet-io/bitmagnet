@@ -9,6 +9,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/vektah/gqlparser/v2/ast"
 	"time"
 )
 
@@ -120,12 +121,39 @@ type TorrentContentSearchResult struct {
 	Aggregations         gen.TorrentContentAggregations
 }
 
+func isPathSelectedCtx(ctx *graphql.OperationContext, selSet ast.SelectionSet, path ...string) bool {
+	for _, f := range graphql.CollectFields(ctx, selSet, nil) {
+		if f.Name == path[0] {
+			if len(path) == 1 {
+				return true
+			}
+			return isPathSelectedCtx(ctx, f.Selections, path[1:]...)
+		}
+	}
+	return false
+}
+
+func isPathSelected(ctx context.Context, first string, rest ...string) bool {
+	for _, f1 := range graphql.CollectFieldsCtx(ctx, nil) {
+		if f1.Name == first {
+			if len(rest) == 0 {
+				return true
+			}
+			return isPathSelectedCtx(graphql.GetOperationContext(ctx), f1.Selections, rest...)
+		}
+	}
+	return false
+}
+
 func (t TorrentContentQuery) Search(
 	ctx context.Context,
 	query TorrentContentSearchQueryInput,
 ) (TorrentContentSearchResult, error) {
 	options := []q.Option{
-		search.TorrentContentDefaultOption(),
+		q.DefaultOption(),
+		search.TorrentContentCoreJoins(),
+		search.HydrateTorrentContentContent(),
+		search.HydrateTorrentContentTorrent(),
 	}
 	options = append(options, query.Option())
 	hasQueryString := query.QueryString.Valid

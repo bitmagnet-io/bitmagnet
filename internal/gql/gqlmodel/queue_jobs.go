@@ -22,11 +22,10 @@ type QueueJobsQueryInput struct {
 }
 
 type QueueJobsQueryResult struct {
-	TotalCount           uint
-	TotalCountIsEstimate bool
-	HasNextPage          bool
-	Items                []model.QueueJob
-	Aggregations         gen.QueueJobsAggregations
+	TotalCount   uint
+	HasNextPage  bool
+	Items        []model.QueueJob
+	Aggregations gen.QueueJobsAggregations
 }
 
 func (r QueueQueryResult) Jobs(
@@ -92,11 +91,10 @@ func transformQueueJobsQueryResult(result q.GenericResult[model.QueueJob]) (Queu
 		return QueueJobsQueryResult{}, err
 	}
 	return QueueJobsQueryResult{
-		TotalCount:           result.TotalCount,
-		TotalCountIsEstimate: result.TotalCountIsEstimate,
-		HasNextPage:          result.HasNextPage,
-		Items:                result.Items,
-		Aggregations:         aggs,
+		TotalCount:   result.TotalCount,
+		HasNextPage:  result.HasNextPage,
+		Items:        result.Items,
+		Aggregations: aggs,
 	}, nil
 }
 

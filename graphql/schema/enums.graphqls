@@ -158,6 +158,13 @@ enum TorrentContentOrderByField {
   info_hash
 }
 
+enum TorrentFilesOrderByField {
+  index
+  path
+  extension
+  size
+}
+
 enum QueueJobsOrderByField {
   created_at
   ran_at

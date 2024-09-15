@@ -2,7 +2,6 @@ import * as generated from "../graphql/generated";
 import {BehaviorSubject, debounceTime, Observable} from "rxjs";
 import {TranslocoService} from "@jsverse/transloco";
 import {PageEvent} from "../paginator/paginator.types";
-import {defaultOrderBy} from "../torrents-search/torrents-search.controller";
 
 export class QueueJobsController {
   private controlsSubject: BehaviorSubject<QueueJobsControls>;

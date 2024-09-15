@@ -8,10 +8,12 @@ import (
 	"context"
 	"sort"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
+	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/version"
 )
 
@@ -81,7 +83,7 @@ func (r *queryResolver) Queue(ctx context.Context) (gqlmodel.QueueQueryResult, e
 // Torrent is the resolver for the torrent field.
 func (r *queryResolver) Torrent(ctx context.Context) (gqlmodel.TorrentQuery, error) {
 	return gqlmodel.TorrentQuery{
-		TorrentSearch: r.Search,
+		Search: r.Search,
 	}, nil
 }
 
@@ -92,7 +94,18 @@ func (r *queryResolver) TorrentContent(ctx context.Context) (gqlmodel.TorrentCon
 	}, nil
 }
 
+// Files is the resolver for the files field.
+func (r *torrentQueryResolver) Files(ctx context.Context, obj *gqlmodel.TorrentQuery, input gqlmodel.TorrentFilesQueryInput) (query.GenericResult[model.TorrentFile], error) {
+	return gqlmodel.TorrentQuery{
+		Search: r.Search,
+	}.Files(ctx, input)
+}
+
 // Query returns gql.QueryResolver implementation.
 func (r *Resolver) Query() gql.QueryResolver { return &queryResolver{r} }
 
+// TorrentQuery returns gql.TorrentQueryResolver implementation.
+func (r *Resolver) TorrentQuery() gql.TorrentQueryResolver { return &torrentQueryResolver{r} }
+
 type queryResolver struct{ *Resolver }
+type torrentQueryResolver struct{ *Resolver }
