@@ -58,7 +58,7 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 		}
 	}
 	if r.Query != "" {
-		options = append(options, query.QueryString(r.Query), query.OrderByQueryStringRank())
+		options = append(options, query.QueryString(r.Query), query.OrderByPublishedAt())
 	}
 	var catsCriteria []query.Criteria
 	for _, cat := range r.Cats {
