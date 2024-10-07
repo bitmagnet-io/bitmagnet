@@ -6,6 +6,7 @@ import { DateType } from './dates.types';
 @Pipe({
   name: 'timeAgo',
   standalone: true,
+  pure: false,
 })
 export class TimeAgoPipe implements PipeTransform {
   transloco = inject(TranslocoService);

@@ -12,6 +12,7 @@ import { MatIconButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
 import { MatIcon } from '@angular/material/icon';
 import type { PageEvent } from './paginator.types';
+import {TranslocoDirective} from "@jsverse/transloco";
 
 @Component({
   selector: 'app-paginator',
@@ -27,6 +28,7 @@ import type { PageEvent } from './paginator.types';
     MatTooltip,
     MatIcon,
     MatLabel,
+    TranslocoDirective,
   ],
 })
 export class PaginatorComponent {

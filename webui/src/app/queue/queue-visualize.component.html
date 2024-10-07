@@ -16,7 +16,7 @@
         <mat-grid-tile [colspan]="1" [rowspan]="2">
           <mat-card class="form-timeframe">
             <mat-card-header>
-              <mat-card-title><h4>Timeframe</h4></mat-card-title>
+              <mat-card-title><h4>{{t('dashboard.metrics.timeframe')}}</h4></mat-card-title>
             </mat-card-header>
             <mat-card-content>
               <mat-form-field subscriptSizing="dynamic">
@@ -105,7 +105,7 @@
         <mat-grid-tile [colspan]="1" [rowspan]="2">
           <mat-card class="form-resolution">
             <mat-card-header>
-              <mat-card-title><h4>Resolution</h4></mat-card-title>
+              <mat-card-title><h4>{{t('dashboard.metrics.resolution')}}</h4></mat-card-title>
             </mat-card-header>
             <mat-card-content>
               <mat-form-field
@@ -239,7 +239,7 @@
           <mat-card class="form-queues">
             <mat-card-header>
               <mat-card-title>
-                <h4>Queue</h4>
+                <h4>{{t('dashboard.queues.queue')}}</h4>
               </mat-card-title>
             </mat-card-header>
             <mat-card-content>
@@ -252,7 +252,7 @@
                     )
                   "
                 >
-                  <mat-option value="_all">All</mat-option>
+                  <mat-option value="_all">{{t('general.all')}}</mat-option>
                   @for (queue of availableQueueNames; track queue) {
                     <mat-option [value]="queue">{{ queue }}</mat-option>
                   }
@@ -261,7 +261,7 @@
               <div class="actions">
                 <button
                   mat-icon-button
-                  [matTooltip]="'all'"
+                  [matTooltip]="t('general.all')"
                   [class]="
                     queueMetricsController.params.queue
                       ? 'deselected'
@@ -300,7 +300,7 @@
           <mat-card>
             <mat-card-header>
               <mat-card-title>
-                <h4>Event</h4>
+                <h4>{{t('dashboard.metrics.event')}}</h4>
               </mat-card-title>
             </mat-card-header>
             <mat-card-content>
@@ -322,7 +322,7 @@
               <div class="actions">
                 <button
                   mat-icon-button
-                  [matTooltip]="'all'"
+                  [matTooltip]="t('general.all')"
                   [class]="
                     !queueMetricsController.params.event
                       ? 'selected'
@@ -336,7 +336,7 @@
                 </button>
                 <button
                   mat-icon-button
-                  [matTooltip]="'created'"
+                  [matTooltip]="t('dashboard.queues.created')"
                   [class]="
                     queueMetricsController.params.event === 'created'
                       ? 'selected'
@@ -351,7 +351,7 @@
                 </button>
                 <button
                   mat-icon-button
-                  [matTooltip]="'processed'"
+                  [matTooltip]="t('dashboard.queues.processed')"
                   [class]="
                     queueMetricsController.params.event === 'processed'
                       ? 'selected'
@@ -366,7 +366,7 @@
                 </button>
                 <button
                   mat-icon-button
-                  [matTooltip]="'failed'"
+                  [matTooltip]="t('dashboard.queues.failed')"
                   [class]="
                     queueMetricsController.params.event === 'failed'
                       ? 'selected'
@@ -387,7 +387,7 @@
           <mat-card class="form-refresh">
             <mat-card-header>
               <mat-card-title>
-                <h4>Refresh</h4>
+                <h4>{{t('general.refresh')}}</h4>
               </mat-card-title>
             </mat-card-header>
             <mat-card-content>
@@ -399,14 +399,14 @@
                   "
                 >
                   @for (name of autoRefreshIntervalNames; track name) {
-                    <mat-option [value]="name">{{ name }}</mat-option>
+                    <mat-option [value]="name">{{ t('dashboard.refresh_interval.'+name) }}</mat-option>
                   }
                 </mat-select>
               </mat-form-field>
               <div class="actions">
                 <button
                   mat-icon-button
-                  [matTooltip]="'Refresh'"
+                  [matTooltip]="t('general.refresh')"
                   (click)="queueMetricsController.refresh()"
                 >
                   <mat-icon>sync</mat-icon>
@@ -432,7 +432,7 @@
           <mat-card>
             <mat-card-header>
               <mat-card-title>
-                <h4>Total Counts By Status</h4>
+                <h4>{{t('dashboard.queues.total_counts_by_status')}}</h4>
               </mat-card-title>
             </mat-card-header>
             <mat-card-content>
@@ -449,7 +449,7 @@
           <mat-card>
             <mat-card-header>
               <mat-card-title>
-                <h4>Throughput</h4>
+                <h4>{{t('dashboard.metrics.throughput')}}</h4>
               </mat-card-title>
             </mat-card-header>
             <mat-card-content>

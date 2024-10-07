@@ -24,6 +24,44 @@
       "xxx": "XXX"
     }
   },
+  "dashboard": {
+    "metrics": {
+      "event": "Event",
+      "resolution": "Resolution",
+      "throughput": "Throughput",
+      "timeframe": "Timeframe"
+    },
+    "queues": {
+      "created": "Created",
+      "created_at": "Created at",
+      "enqueue_jobs": "Enqueue jobs",
+      "enqueue_torrent_processing_batch": "Enqueue Torrent Processing Batch",
+      "failed": "Failed",
+      "force_rematch": "Force rematch of already matched content",
+      "jobs_enqueued": "Jobs enqueued",
+      "match_content_by_external_api_search": "Match content by external API search",
+      "match_content_by_local_search": "Match content by local search",
+      "payload": "Payload",
+      "priority": "Priority",
+      "process_orphaned_torrents_only": "Process orphaned torrents only",
+      "processed": "Processed",
+      "purge_jobs": "Purge jobs",
+      "purge_queue_jobs": "Purge queue jobs",
+      "queue": "Queue",
+      "queue_purged": "Queue purged",
+      "queues": "Queues",
+      "ran_at": "Ran at",
+      "status": "Status",
+      "total_counts_by_status": "Total counts by status"
+    },
+    "refresh_interval": {
+      "minutes_1": "1 minute",
+      "minutes_5": "5 minutes",
+      "off": "Off",
+      "seconds_10": "10 seconds",
+      "seconds_30": "30 seconds"
+    }
+  },
   "facets": {
     "content_type": "Content Type",
     "file_type": "File Type",
@@ -44,6 +82,14 @@
     "subtitles": "Subtitles",
     "unknown": "Unknown",
     "video": "Video"
+  },
+  "general": {
+    "all": "All",
+    "dismiss": "Dismiss",
+    "error": "Error",
+    "id": "ID",
+    "refresh": "Refresh",
+    "status": "Status"
   },
   "health": {
     "bitmagnet_is_status": "bitmagnet is {{status}}",
@@ -146,13 +192,28 @@
     "support_bitmagnet": "Support bitmagnet",
     "translate": "Translate"
   },
+  "paginator": {
+    "first_page": "First page",
+    "items_per_page": "Items per page",
+    "last_page": "Last page",
+    "next_page": "Next page",
+    "previous_page": "Previous page",
+    "x_to_y": "{{x}} to {{y}}",
+    "x_to_y_of_y": "__missing__",
+    "x_to_y_of_z": "{{x}} to {{y}} of {{z}}"
+  },
   "routes": {
+    "admin": "Admin",
     "dashboard": "Dashboard",
-    "torrents": "Torrents"
+    "home": "Home",
+    "jobs": "Jobs",
+    "queues": "Queues",
+    "torrents": "Torrents",
+    "visualize": "Visualize"
   },
   "torrents": {
     "clear_search": "Clear Search",
-    "copy": "__missing__",
+    "copy": "Copy",
     "copy_to_clipboard": "Copy to clipboard",
     "delete": "Delete",
     "delete_action_cannot_be_undone": "This action cannot be undone",
@@ -161,6 +222,7 @@
     "edit_tags": "Edit tags",
     "episodes": "Episodes",
     "external_links": "External links",
+    "file_index": "File index",
     "file_path": "File path",
     "file_size": "File size",
     "file_type": "File type",
@@ -170,14 +232,14 @@
     "files_single": "Single file",
     "genres": "Genres",
     "info_hash": "Info hash",
-    "info_hashes": "__missing__",
+    "info_hashes": "Info hashes",
     "languages": "Languages",
     "leechers": "Leechers",
     "magnet": "Magnet",
-    "magnet_links": "__missing__",
+    "magnet_links": "Magnet links",
     "new_tag": "New tag",
-    "order_by": "__missing__",
-    "order_direction_toggle": "__missing__",
+    "order_by": "Order by",
+    "order_direction_toggle": "Toggle direction",
     "original_release_date": "Original release date",
     "permalink": "Permalink",
     "poster": "Poster",

@@ -1,3 +1,4 @@
+<ng-container *transloco="let t">
 <div class="paginator">
   <mat-form-field class="field-items-per-page" subscriptSizing="dynamic">
     <mat-label>Items per page</mat-label>
@@ -13,19 +14,25 @@
     </mat-select>
   </mat-form-field>
   <p class="paginator-description">
-    {{ firstItemIndex | number }} - {{ lastItemIndex | number
-    }}{{
-      hasTotalLength
-        ? " of " + (totalIsEstimate ? "~" : "") + (totalLength | number)
-        : ""
-    }}
+    @if (hasTotalLength) {
+      {{t('paginator.x_to_y_of_y', {
+      x: (firstItemIndex | number),
+      y: (lastItemIndex | number),
+      z: (totalLength | number),
+    })}}
+    } @else {
+      {{t('paginator.x_to_y', {
+      x: (firstItemIndex | number),
+      y: (lastItemIndex | number),
+    })}}
+    }
   </p>
   <div class="paginator-navigation">
     <button
       mat-icon-button
       [disabled]="!hasPreviousPage"
       (click)="page = 1; emitChange()"
-      matTooltip="First page"
+      [matTooltip]="t('paginator.first_page')"
     >
       <mat-icon>first_page</mat-icon>
     </button>
@@ -33,7 +40,7 @@
       mat-icon-button
       [disabled]="!hasPreviousPage"
       (click)="page = page - 1; emitChange()"
-      matTooltip="Previous page"
+      [matTooltip]="t('paginator.previous_page')"
     >
       <mat-icon>navigate_before</mat-icon>
     </button>
@@ -41,7 +48,7 @@
       mat-icon-button
       [disabled]="!actuallyHasNextPage"
       (click)="page = page + 1; emitChange()"
-      matTooltip="Next page"
+      [matTooltip]="t('paginator.next_page')"
     >
       <mat-icon>navigate_next</mat-icon>
     </button>
@@ -50,10 +57,11 @@
         mat-icon-button
         [disabled]="[null, page].includes(pageCount)"
         (click)="page = pageCount ?? 1; emitChange()"
-        matTooltip="Last page"
+        [matTooltip]="t('paginator.last_page')"
       >
         <mat-icon>last_page</mat-icon>
       </button>
     }
   </div>
 </div>
+</ng-container>

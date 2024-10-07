@@ -4,11 +4,12 @@ import { MatAnchor } from '@angular/material/button';
 import { MatCard, MatCardContent } from '@angular/material/card';
 import { QueueEnqueueReprocessTorrentsBatchDialog } from './queue-enqueue-reprocess-torrents-batch-dialog.component';
 import { QueuePurgeJobsDialog } from './queue-purge-jobs-dialog.component';
+import {TranslocoDirective} from "@jsverse/transloco";
 
 @Component({
   selector: 'app-queue-admin',
   standalone: true,
-  imports: [MatDialogModule, MatAnchor, MatCardContent, MatCard],
+  imports: [MatDialogModule, MatAnchor, MatCardContent, MatCard, TranslocoDirective],
   templateUrl: './queue-admin.component.html',
   styleUrl: './queue-admin.component.scss',
 })

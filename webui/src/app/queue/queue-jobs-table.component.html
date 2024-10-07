@@ -12,7 +12,7 @@
     class="table-results"
   >
     <ng-container matColumnDef="id">
-      <th mat-header-cell *matHeaderCellDef>ID</th>
+      <th mat-header-cell *matHeaderCellDef>{{t('general.id')}}</th>
       <td
         mat-cell
         *matCellDef="let i"
@@ -23,7 +23,7 @@
     </ng-container>
 
     <ng-container matColumnDef="queue">
-      <th mat-header-cell *matHeaderCellDef>Queue</th>
+      <th mat-header-cell *matHeaderCellDef>{{t('dashboard.queues.queue')}}</th>
       <td
         mat-cell
         *matCellDef="let i"
@@ -34,7 +34,7 @@
     </ng-container>
 
     <ng-container matColumnDef="priority">
-      <th mat-header-cell *matHeaderCellDef>Priority</th>
+      <th mat-header-cell *matHeaderCellDef>{{t('dashboard.queues.priority')}}</th>
       <td
         mat-cell
         *matCellDef="let i"
@@ -45,7 +45,7 @@
     </ng-container>
 
     <ng-container matColumnDef="status">
-      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <th mat-header-cell *matHeaderCellDef>{{t('dashboard.queues.status')}}</th>
       <td
         mat-cell
         *matCellDef="let i"
@@ -56,7 +56,7 @@
     </ng-container>
 
     <ng-container matColumnDef="error">
-      <th mat-header-cell *matHeaderCellDef>Error</th>
+      <th mat-header-cell *matHeaderCellDef>{{t('general.error')}}</th>
       <td
         mat-cell
         *matCellDef="let i"
@@ -64,15 +64,13 @@
       >
         @if (i.error) {
           {{ (item(i).error | slice: 0 : 20) + "..." }}
-        } @else {
-          <i>N/A</i>
         }
       </td>
     </ng-container>
 
     <ng-container matColumnDef="createdAt">
       <th mat-header-cell *matHeaderCellDef style="text-align: center">
-        Created
+        {{t('dashboard.queues.created_at')}}
       </th>
       <td
         mat-cell
@@ -84,7 +82,9 @@
     </ng-container>
 
     <ng-container matColumnDef="ranAt">
-      <th mat-header-cell *matHeaderCellDef style="text-align: center">Ran</th>
+      <th mat-header-cell *matHeaderCellDef style="text-align: center">
+        {{t('dashboard.queues.ran_at')}}
+      </th>
       <td
         mat-cell
         *matCellDef="let i"
@@ -92,8 +92,6 @@
       >
         @if (i.ranAt; as ranAt) {
           {{ ranAt | timeAgo }}
-        } @else {
-          <i>N/A</i>
         }
       </td>
     </ng-container>
@@ -107,7 +105,7 @@
           "
         >
           <p>
-            <strong>ID:</strong>&nbsp;<span
+            <strong>{{t('general.id')}}:</strong>&nbsp;<span
               class="copy"
               [matTooltip]="t('torrents.copy_to_clipboard')"
               [cdkCopyToClipboard]="item(i).id"
@@ -119,7 +117,7 @@
               class="copy"
               [matTooltip]="t('torrents.copy_to_clipboard')"
               [cdkCopyToClipboard]="item(i).payload"
-              >Payload:</span
+              >{{t('dashboard.queues.payload')}}:</span
             >
           </h5>
           <pre class="payload">{{ beautifyPayload(item(i).payload) }}</pre>
@@ -129,7 +127,7 @@
                 class="copy"
                 [matTooltip]="t('torrents.copy_to_clipboard')"
                 [cdkCopyToClipboard]="error!"
-                >Error:</span
+                >{{t('general.error')}}:</span
               >
             </h5>
             <pre class="payload">{{ error }}</pre>

@@ -4,12 +4,12 @@
     <mat-dialog-content>
       @if (stage === "PENDING") {
         <section>
-          <h4>Queues:</h4>
+          <h4>{{t('dashboard.queues.queues')}}:</h4>
           <mat-checkbox
             value="_all"
             [checked]="queues === undefined"
             (change)="handleQueueEvent($event)"
-            >All</mat-checkbox
+            >{{t('general.all')}}</mat-checkbox
           >
           @for (queue of availableQueueNames; track queue) {
             <mat-checkbox
@@ -41,9 +41,9 @@
         <mat-spinner></mat-spinner>
       } @else if (stage === "DONE") {
         @if (error) {
-          <p>Error purging queue: {{ error.message }}</p>
+          <p>{{t('general.error')}}: {{ error.message }}</p>
         } @else {
-          <p>Queue purged</p>
+          <p>{{t('dashboard.queues.queue_purged')}}</p>
         }
       }
     </mat-dialog-content>
@@ -54,9 +54,9 @@
         color="warning"
         (click)="handlePurgeJobs()"
       >
-        Purge Jobs
+        {{t('dashboard.queues.purge_jobs')}}
       </button>
-      <button mat-stroked-button (click)="dialogRef.close()">Close</button>
+      <button mat-stroked-button (click)="dialogRef.close()">{{t('general.dismiss')}}</button>
     </mat-dialog-actions>
   </mat-card>
 </ng-container>
