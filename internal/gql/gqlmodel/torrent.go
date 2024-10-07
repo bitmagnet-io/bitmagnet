@@ -4,10 +4,12 @@ import (
 	"context"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
+	"github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics"
 )
 
 type TorrentQuery struct {
-	Search search.Search
+	Search               search.Search
+	TorrentMetricsClient torrentmetrics.Client
 }
 
 func (t TorrentQuery) SuggestTags(ctx context.Context, query *gen.SuggestTagsQueryInput) (search.TorrentSuggestTagsResult, error) {

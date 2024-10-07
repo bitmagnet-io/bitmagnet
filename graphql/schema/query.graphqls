@@ -10,6 +10,7 @@ type Query {
 type TorrentQuery {
   files(input: TorrentFilesQueryInput!): TorrentFilesQueryResult!
   suggestTags(query: SuggestTagsQueryInput): TorrentSuggestTagsResult!
+  metrics(input: TorrentMetricsQueryInput!): TorrentMetricsQueryResult!
 }
 
 input SuggestTagsQueryInput {

@@ -33,23 +33,22 @@ import { BreakpointsService } from '../layout/breakpoints.service';
 import { ErrorsService } from '../errors/errors.service';
 import {
   autoRefreshIntervalNames,
-  availableQueueNames,
   eventNames,
   resolutionNames,
   timeframeNames,
-} from './queue.constants';
-import { QueueModule } from './queue.module';
-import { QueueChartAdapterTotals } from './queue-chart-adapter.totals';
-import { QueueMetricsController } from './queue-metrics.controller';
-import { QueueChartAdapterTimeline } from './queue-chart-adapter.timeline';
+} from './torrent-metrics.constants';
+import {TorrentMetricsController} from "./torrent-metrics.controller";
+import {TorrentChartAdapterTimeline} from "./torrent-chart-adapter.timeline";
+// import { QueueChartAdapterTotals } from './queue-chart-adapter.totals';
+// import { QueueMetricsController } from './queue-metrics.controller';
+// import { QueueChartAdapterTimeline } from './queue-chart-adapter.timeline';
 
 @Component({
-  selector: 'app-queue-visualize',
+  selector: 'app-torrent-metrics',
   standalone: true,
-  templateUrl: './queue-visualize.component.html',
-  styleUrl: './queue-visualize.component.scss',
+  templateUrl: './torrent-metrics.component.html',
+  styleUrl: './torrent-metrics.component.scss',
   imports: [
-    QueueModule,
     MatCardContent,
     ChartComponent,
     MatIcon,
@@ -85,54 +84,36 @@ import { QueueChartAdapterTimeline } from './queue-chart-adapter.timeline';
     MatIconAnchor,
   ],
 })
-export class QueueVisualizeComponent implements OnInit, OnDestroy {
+export class TorrentMetricsComponent implements OnDestroy {
   breakpoints = inject(BreakpointsService);
   private apollo = inject(Apollo);
-  queueMetricsController = new QueueMetricsController(
+  torrentMetricsController = new TorrentMetricsController(
     this.apollo,
     {
       buckets: {
         duration: 'AUTO',
         multiplier: 'AUTO',
-        timeframe: 'all',
+        timeframe: 'days_1',
       },
       autoRefresh: 'seconds_30',
     },
     inject(ErrorsService),
   );
-  protected readonly timeline = inject(QueueChartAdapterTimeline);
-  protected readonly totals = inject(QueueChartAdapterTotals);
+  protected readonly timeline = inject(TorrentChartAdapterTimeline);
 
   protected readonly resolutionNames = resolutionNames;
   protected readonly timeframeNames = timeframeNames;
-  protected readonly availableQueueNames = availableQueueNames;
   protected readonly autoRefreshIntervalNames = autoRefreshIntervalNames;
 
-  ngOnInit() {
-    this.queueMetricsController.result$.subscribe((result) => {
-      // change the default settings to more sensible ones if there is <12 hours of data to show
-      if (
-        this.queueMetricsController.params.buckets.timeframe === 'all' &&
-        this.queueMetricsController.params.buckets.duration === 'AUTO' &&
-        result.params.buckets.duration === 'hour'
-      ) {
-        const span = result.bucketSpan;
-        if (span && span.latestBucket - span.earliestBucket < 12) {
-          this.queueMetricsController.setBucketDuration('minute');
-        }
-      }
-    });
-  }
-
   ngOnDestroy() {
-    this.queueMetricsController.setAutoRefreshInterval('off');
+    this.torrentMetricsController.setAutoRefreshInterval('off');
   }
 
   protected readonly eventNames = eventNames;
 
   handleMultiplierEvent(event: Event) {
     const value = (event.currentTarget as HTMLInputElement).value;
-    this.queueMetricsController.setBucketMultiplier(
+    this.torrentMetricsController.setBucketMultiplier(
       /^\d+$/.test(value) ? parseInt(value) : 'AUTO',
     );
   }

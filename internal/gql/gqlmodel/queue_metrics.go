@@ -5,23 +5,23 @@ import (
 	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
+	"github.com/bitmagnet-io/bitmagnet/internal/metrics/queuemetrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/manager"
-	"github.com/bitmagnet-io/bitmagnet/internal/queue/metrics"
 )
 
 type QueueQueryResult struct {
 	QueueJobSearch     search.QueueJobSearch
-	QueueMetricsClient metrics.Client
+	QueueMetricsClient queuemetrics.Client
 }
 
 func (q QueueQueryResult) Metrics(ctx context.Context, input gen.QueueMetricsQueryInput) (*gen.QueueMetricsQueryResult, error) {
-	req := metrics.Request{}
+	req := queuemetrics.Request{}
 	switch input.BucketDuration {
-	case gen.QueueMetricsBucketDurationMinute:
+	case gen.MetricsBucketDurationMinute:
 		req.BucketDuration = "minute"
-	case gen.QueueMetricsBucketDurationHour:
+	case gen.MetricsBucketDurationHour:
 		req.BucketDuration = "hour"
-	case gen.QueueMetricsBucketDurationDay:
+	case gen.MetricsBucketDurationDay:
 		req.BucketDuration = "day"
 	default:
 		return nil, fmt.Errorf("invalid bucket duration: %s", input.BucketDuration)

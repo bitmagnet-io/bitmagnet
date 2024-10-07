@@ -83,7 +83,8 @@ func (r *queryResolver) Queue(ctx context.Context) (gqlmodel.QueueQueryResult, e
 // Torrent is the resolver for the torrent field.
 func (r *queryResolver) Torrent(ctx context.Context) (gqlmodel.TorrentQuery, error) {
 	return gqlmodel.TorrentQuery{
-		Search: r.Search,
+		Search:               r.Search,
+		TorrentMetricsClient: r.TorrentMetricsClient,
 	}, nil
 }
 

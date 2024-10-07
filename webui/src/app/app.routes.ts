@@ -4,7 +4,30 @@ export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'dashboard',
+    redirectTo: 'torrents',
+  },
+  {
+    path: 'torrents',
+    loadComponent: () =>
+      import('./torrents/torrents.component').then(
+        (c) => c.TorrentsComponent,
+      ),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./torrents-search/torrents-search.component').then(
+            (c) => c.TorrentsSearchComponent,
+          ),
+      },
+      {
+        path: 'permalink/:infoHash',
+        loadComponent: () =>
+          import('./torrent-permalink/torrent-permalink.component').then(
+            (c) => c.TorrentPermalinkComponent,
+          ),
+      },
+    ]
   },
   {
     path: 'dashboard',
@@ -18,6 +41,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./dashboard/dashboard-home.component').then(
             (c) => c.DashboardHomeComponent,
+          ),
+      },
+      {
+        path: 'torrents',
+        loadComponent: () =>
+          import('./torrents-dashboard/torrents-dashboard.component').then(
+            (c) => c.TorrentsDashboardComponent,
           ),
       },
       {
@@ -52,26 +82,4 @@ export const routes: Routes = [
       },
     ],
   },
-  {
-    path: 'torrents',
-    loadComponent: () =>
-      import('./torrents-search/torrents-search.component').then(
-        (c) => c.TorrentsSearchComponent,
-      ),
-  },
-  {
-    path: 'torrents/:infoHash',
-    loadComponent: () =>
-      import('./torrent-permalink/torrent-permalink.component').then(
-        (c) => c.TorrentPermalinkComponent,
-      ),
-  },
-  // {
-  //   path: 'queue',
-  //   loadComponent: () =>
-  //     import('./queue/queue-card.component').then(
-  //       (c) => c.QueueCardComponent,
-  //     ),
-  //   title: 'queue',
-  // },
 ];

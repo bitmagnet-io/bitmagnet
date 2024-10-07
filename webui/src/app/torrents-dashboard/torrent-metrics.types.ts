@@ -3,7 +3,7 @@ import {
   autoRefreshIntervalNames,
   eventNames,
   timeframeNames,
-} from './queue.constants';
+} from './torrent-metrics.constants';
 
 export type TimeframeName = (typeof timeframeNames)[number];
 
@@ -17,13 +17,11 @@ export type BucketParams<_withAuto extends boolean = boolean> = {
 
 export type AutoRefreshInterval = (typeof autoRefreshIntervalNames)[number];
 
-export type StatusCounts = Record<generated.QueueJobStatus, number>;
-
 export type EventName = (typeof eventNames)[number];
 
 export type Params<_withAuto extends boolean = boolean> = {
   buckets: BucketParams<_withAuto>;
-  queue?: string;
+  source?: string;
   event?: EventName;
   autoRefresh: AutoRefreshInterval;
 };
@@ -31,7 +29,6 @@ export type Params<_withAuto extends boolean = boolean> = {
 export type EventBucketEntry = {
   startTime: Date;
   count: number;
-  latency: number;
 };
 
 export type EventBucketEntries = Partial<Record<string, EventBucketEntry>>;
@@ -47,22 +44,19 @@ export type EventBucket = BucketSpan & {
 
 export type EventBuckets = Partial<Record<EventName, EventBucket>>;
 
-export type QueueEvents = BucketSpan & {
+export type TorrentEvents = BucketSpan & {
   bucketDuration: generated.MetricsBucketDuration;
   eventBuckets: EventBuckets;
 };
 
-export type QueueSummary<IsEmpty extends boolean = boolean> = {
-  queue: string;
+export type SourceSummary<IsEmpty extends boolean = boolean> = {
+  source: string;
   isEmpty: IsEmpty;
-  statusCounts: StatusCounts;
-  events: IsEmpty extends false ? QueueEvents : undefined;
+  events: IsEmpty extends false ? TorrentEvents : undefined;
 };
 
 export type Result = {
   params: Params<false>;
-  // earliestBucket: number;
-  // latestBucket: number;
   bucketSpan?: BucketSpan;
-  queues: QueueSummary[];
+  sources: SourceSummary[];
 };

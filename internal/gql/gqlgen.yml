@@ -170,13 +170,13 @@ models:
       - github.com/bitmagnet-io/bitmagnet/internal/database/query.FacetAggregationConfig
   QueueMetricsBucket:
     model:
-      - github.com/bitmagnet-io/bitmagnet/internal/queue/metrics.Bucket
+      - github.com/bitmagnet-io/bitmagnet/internal/metrics/queuemetrics.Bucket
   QueuePurgeJobsInput:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/queue/manager.PurgeJobsRequest
   QueueEnqueueReprocessTorrentsBatchInput:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/queue/manager.EnqueueReprocessTorrentsBatchRequest
-#  QueueJobsQueryInput:
-#    model:
-#      - github.com/bitmagnet-io/bitmagnet/internal/database/query.SearchParams
+  TorrentMetricsBucket:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics.Bucket

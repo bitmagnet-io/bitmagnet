@@ -14,6 +14,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/health/healthfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/importer/importerfx"
+	"github.com/bitmagnet-io/bitmagnet/internal/metrics/metricsfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor/processorfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/dhtfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainfofx"
@@ -39,6 +40,7 @@ func New() fx.Option {
 		httpserverfx.New(),
 		importerfx.New(),
 		metainfofx.New(),
+		metricsfx.New(),
 		processorfx.New(),
 		queuefx.New(),
 		telemetryfx.New(),

@@ -40,6 +40,7 @@ import { ErrorsService } from '../errors/errors.service';
 import { BreakpointsService } from '../layout/breakpoints.service';
 import { TimeAgoPipe } from '../dates/time-ago.pipe';
 import {TorrentFilesTableComponent} from "../torrent-files-table/torrent-files-table.component";
+import {RouterLink} from "@angular/router";
 
 @Component({
   selector: 'app-torrent-content',
@@ -75,6 +76,7 @@ import {TorrentFilesTableComponent} from "../torrent-files-table/torrent-files-t
     TimeAgoPipe,
     MatChipRemove,
     TorrentFilesTableComponent,
+    RouterLink,
   ],
 })
 export class TorrentContentComponent {

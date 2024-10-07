@@ -1,4 +1,4 @@
-package metrics
+package queuemetrics
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"

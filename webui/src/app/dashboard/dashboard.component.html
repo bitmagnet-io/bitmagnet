@@ -18,6 +18,13 @@
         ><mat-icon>dashboard</mat-icon>Home</a></li>
         <li><a
           mat-button
+          routerLink="torrents"
+          routerLinkActive
+          #linkTorrents="routerLinkActive"
+          [class]="linkTorrents.isActive ? 'active' : ''"
+        ><mat-icon svgIcon="queue" />Torrents</a></li>
+        <li><a
+          mat-button
           routerLink="queues"
           routerLinkActive
           #linkQueues="routerLinkActive"

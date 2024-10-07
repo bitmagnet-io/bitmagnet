@@ -1,0 +1,12 @@
+query TorrentMetrics($input: TorrentMetricsQueryInput!) {
+  torrent {
+    metrics(input: $input) {
+      buckets {
+        source
+        updated
+        bucket
+        count
+      }
+    }
+  }
+}

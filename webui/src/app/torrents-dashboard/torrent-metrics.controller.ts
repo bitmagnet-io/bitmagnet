@@ -14,9 +14,8 @@ import {
   durationSeconds,
   emptyParams,
   emptyResult,
-  emptyStatusCounts,
   timeframeLengths,
-} from './queue.constants';
+} from './torrent-metrics.constants';
 import {
   BucketParams,
   EventName,
@@ -24,21 +23,19 @@ import {
   EventBucketEntries,
   EventBuckets,
   Params,
-  QueueEvents,
+  TorrentEvents,
   Result,
-  StatusCounts,
   TimeframeName,
   AutoRefreshInterval,
   BucketSpan,
-} from './queue-metrics.types';
-import {durationToSeconds, parseDuration} from "../dates/parse-duration";
+} from './torrent-metrics.types';
 
-export class QueueMetricsController {
+export class TorrentMetricsController {
   private paramsSubject: BehaviorSubject<Params>;
   public params$: Observable<Params>;
-  private variablesSubject: BehaviorSubject<generated.QueueMetricsQueryVariables>;
-  private rawResultSubject = new BehaviorSubject<generated.QueueMetricsQuery>({
-    queue: {
+  private variablesSubject: BehaviorSubject<generated.TorrentMetricsQueryVariables>;
+  private rawResultSubject = new BehaviorSubject<generated.TorrentMetricsQuery>({
+    torrent: {
       metrics: {
         buckets: [],
       },
@@ -58,7 +55,7 @@ export class QueueMetricsController {
     this.paramsSubject = new BehaviorSubject<Params>(initParams);
     this.params$ = this.paramsSubject.asObservable();
     this.variablesSubject =
-      new BehaviorSubject<generated.QueueMetricsQueryVariables>(
+      new BehaviorSubject<generated.TorrentMetricsQueryVariables>(
         createVariables(initParams),
       );
     this.paramsSubject.pipe(debounceTime(50)).subscribe((params) => {
@@ -125,10 +122,10 @@ export class QueueMetricsController {
     }));
   }
 
-  setQueue(queue: string | null) {
+  setSource(source: string | null) {
     this.updateParams((p) => ({
       ...p,
-      queue: queue ?? undefined,
+      source: source ?? undefined,
     }));
   }
 
@@ -175,13 +172,13 @@ export class QueueMetricsController {
     this.variablesSubject.next(this.variablesSubject.getValue());
   }
 
-  private request(variables: generated.QueueMetricsQueryVariables) {
+  private request(variables: generated.TorrentMetricsQueryVariables) {
     clearTimeout(this.refreshTimeout);
     this.loadingSubject.next(true);
     return this.apollo
-      .query<generated.QueueMetricsQuery, generated.QueueMetricsQueryVariables>(
+      .query<generated.TorrentMetricsQuery, generated.TorrentMetricsQueryVariables>(
         {
-          query: generated.QueueMetricsDocument,
+          query: generated.TorrentMetricsDocument,
           variables,
           fetchPolicy: 'no-cache',
         },
@@ -197,7 +194,7 @@ export class QueueMetricsController {
       .pipe(
         catchError((err: Error) => {
           this.errorsService.addError(
-            `Failed to load queue metrics: ${err.message}`,
+            `Failed to load torrent metrics: ${err.message}`,
           );
           this.loadingSubject.next(false);
           this.setInterval();
@@ -210,15 +207,12 @@ export class QueueMetricsController {
 
 const createVariables = (
   params: Params,
-): generated.QueueMetricsQueryVariables => ({
+): generated.TorrentMetricsQueryVariables => ({
   input: {
     bucketDuration:
       params.buckets.duration === 'AUTO' ? 'hour' : params.buckets.duration,
-    queues: params.queue ? [params.queue] : undefined,
-    startTime:
-      params.buckets.timeframe === 'all'
-        ? undefined
-        : new Date(
+    sources: params.source ? [params.source] : undefined,
+    startTime: new Date(
             new Date().getTime() -
               1000 * timeframeLengths[params.buckets.timeframe],
           ).toISOString(),
@@ -232,123 +226,68 @@ const fromEntries = <K extends string, V>(
 
 const createResult = (
   params: Params,
-  rawResult: generated.QueueMetricsQuery,
+  rawResult: generated.TorrentMetricsQuery,
 ): Result => {
   const { bucketParams, earliestBucket, latestBucket } = createBucketParams(
     params,
     rawResult,
   );
-  const queues = Object.entries(
-    rawResult.queue.metrics.buckets.reduce<
+  const sources = Object.entries(
+    rawResult.torrent.metrics.buckets.reduce<
       Record<
         string,
-        [StatusCounts, Partial<Record<EventName, EventBucketEntries>>]
+        Partial<Record<EventName, EventBucketEntries>>
       >
     >((acc, next) => {
-      if (next.queue !== (params.queue ?? next.queue)) {
+      if (next.source !== (params.source ?? next.source)) {
         return acc;
       }
-      let createdAt: NormalizedBucket | undefined;
-      let ranAt: NormalizedBucket | undefined;
-      if (params.event ?? 'created' === 'created') {
-        createdAt = normalizeBucket(next.createdAtBucket, bucketParams);
-        if (earliestBucket && earliestBucket.index > createdAt.index) {
-          createdAt = undefined;
+        let bucket: NormalizedBucket | undefined = normalizeBucket(next.bucket, bucketParams);
+        if (earliestBucket && earliestBucket.index > bucket.index) {
+          bucket = undefined;
         }
-      }
-      if (next.ranAtBucket && params.event !== 'created') {
-        ranAt = normalizeBucket(next.ranAtBucket, bucketParams);
-        if (
-          ranAt &&
-          (latestBucket.index < ranAt.index ||
-            (earliestBucket && earliestBucket.index > ranAt.index))
-        ) {
-          ranAt = undefined;
+        if (!bucket) {
+          return acc;
         }
-      }
-      if (
-        next.queue !== params.queue &&
-        !createdAt &&
-        (!ranAt || next.status === 'pending')
-      ) {
-        return acc;
-      }
-      const [currentStatusCounts, currentEventBuckets] = acc[next.queue] ?? [
-        emptyStatusCounts,
-        [],
-      ];
-      const currentLatency = next.latency
-        ? durationToSeconds(parseDuration(next.latency))
-        : undefined;
+      const currentEventBuckets = acc[next.source] ?? [];
       return {
         ...acc,
-        [next.queue]: [
-          (next.status === 'pending' ? createdAt : ranAt)
-            ? {
-                ...currentStatusCounts,
-                [next.status]: next.count + currentStatusCounts[next.status],
-              }
-            : currentStatusCounts,
+        [next.source]:
           {
-            created: createdAt
+            created: !next.updated
               ? {
                   ...currentEventBuckets.created,
-                  [createdAt.key]: {
+                  [bucket.key]: {
                     count:
                       next.count +
-                      (currentEventBuckets.created?.[createdAt.key]?.count ??
+                      (currentEventBuckets.created?.[bucket.key]?.count ??
                         0),
-                    latency: 0,
-                    startTime: createdAt.start,
+                    startTime: bucket.start,
                   },
                 }
               : currentEventBuckets.created,
-            processed:
-              ranAt &&
-              next.status === 'processed' &&
-              (params.event ?? 'processed' === 'processed')
+            updated: next.updated
                 ? {
-                    ...currentEventBuckets.processed,
-                    [ranAt.key]: {
+                    ...currentEventBuckets.updated,
+                    [bucket.key]: {
                       count:
                         next.count +
-                        (currentEventBuckets.processed?.[ranAt.key]?.count ??
+                        (currentEventBuckets.updated?.[bucket.key]?.count ??
                           0),
-                      latency:
-                        (currentEventBuckets.processed?.[ranAt.key]?.latency ??
-                          0) + (currentLatency ?? 0),
-                      startTime: ranAt.start,
+                      startTime: bucket.start,
                     },
                   }
-                : currentEventBuckets.processed,
-            failed:
-              ranAt &&
-              next.status === 'failed' &&
-              (params.event ?? 'failed' === 'failed')
-                ? {
-                    ...currentEventBuckets.failed,
-                    [ranAt.key]: {
-                      count:
-                        next.count +
-                        (currentEventBuckets.failed?.[ranAt.key]?.count ?? 0),
-                      latency:
-                        (currentEventBuckets.failed?.[ranAt.key]?.latency ??
-                          0) + (currentLatency ?? 0),
-                      startTime: ranAt.start,
-                    },
-                  }
-                : currentEventBuckets.failed,
+                : currentEventBuckets.updated,
           },
-        ],
       };
     }, {}),
-  ).map(([queue, [statusCounts, eventBuckets]]) => {
-    let events: QueueEvents | undefined;
+  ).map(([source, eventBuckets]) => {
+    let events: TorrentEvents | undefined;
     // const bucketKeys = Object.keys(eventBuckets).sort()
     if (Object.keys(eventBuckets).length) {
       const bucketDates = Array<number>();
       const buckets: EventBuckets = fromEntries(
-        Array<EventName>('created', 'processed', 'failed').flatMap<
+        Array<EventName>('created', 'updated').flatMap<
           [EventName, EventBucket]
         >((event): [EventName, EventBucket][] => {
           const entries = fromEntries(
@@ -384,17 +323,16 @@ const createResult = (
       };
     }
     return {
-      queue,
-      statusCounts,
+      source,
       events,
       isEmpty: !events?.eventBuckets,
     };
   });
   let bucketSpan: BucketSpan | undefined;
-  const earliestFoundBucket = queues
+  const earliestFoundBucket = sources
     .flatMap((q) => (q.events ? [q.events.earliestBucket] : []))
     .sort()[0];
-  const latestFoundBucket = queues
+  const latestFoundBucket = sources
     .flatMap((q) => (q.events ? [q.events.latestBucket] : []))
     .sort()
     .reverse()[0];
@@ -409,17 +347,17 @@ const createResult = (
       ...params,
       buckets: bucketParams,
     },
-    queues,
+    sources,
     bucketSpan,
   };
 };
 
 const createBucketParams = (
   params: Params,
-  rawResult: generated.QueueMetricsQuery,
+  rawResult: generated.TorrentMetricsQuery,
 ): {
   bucketParams: BucketParams<false>;
-  earliestBucket: NormalizedBucket | undefined;
+  earliestBucket: NormalizedBucket;
   latestBucket: NormalizedBucket;
 } => {
   const duration =
@@ -429,24 +367,18 @@ const createBucketParams = (
   const timeframe = params.buckets.timeframe;
   const now = new Date();
   const nowBucket = normalizeBucket(now, { duration, multiplier });
-  const startBucket =
-    timeframe === 'all'
-      ? undefined
-      : normalizeBucket(now.getTime() - 1000 * timeframeLengths[timeframe], {
+  const startBucket = normalizeBucket(now.getTime() - 1000 * timeframeLengths[timeframe], {
           duration,
           multiplier,
         });
   const allBuckets = [
-    ...(startBucket ? [startBucket] : []),
-    ...rawResult.queue.metrics.buckets.flatMap((b) => [
-      normalizeBucket(b.createdAtBucket, { duration, multiplier }),
-      ...(b.ranAtBucket
-        ? [normalizeBucket(b.ranAtBucket, { duration, multiplier })]
-        : []),
+    startBucket,
+    ...rawResult.torrent.metrics.buckets.flatMap((b) => [
+      normalizeBucket(b.bucket, { duration, multiplier }),
     ]),
     nowBucket,
   ]
-    .filter((b) => !startBucket || b.index >= startBucket.index)
+    .filter((b) => b.index >= startBucket.index)
     .sort((a, b) => a.index - b.index);
   const minBucket = allBuckets[0];
   const maxBucket = allBuckets[allBuckets.length - 1];
@@ -464,10 +396,7 @@ const createBucketParams = (
       multiplier,
       timeframe,
     },
-    earliestBucket:
-      timeframe === 'all'
-        ? undefined
-        : normalizeBucket(now.getTime() - 1000 * timeframeLengths[timeframe], {
+    earliestBucket: normalizeBucket(now.getTime() - 1000 * timeframeLengths[timeframe], {
             duration,
             multiplier,
           }),

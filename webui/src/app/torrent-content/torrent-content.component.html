@@ -11,7 +11,7 @@
   @if (heading) {
     <h2>
       <a
-        [href]="'torrents/' + torrentContent.infoHash"
+        [routerLink]="'permalink/' + torrentContent.infoHash"
         [matTooltip]="t('torrents.permalink')"
         >{{ torrentContent.torrent.name }}</a
       >

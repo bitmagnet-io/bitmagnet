@@ -80,31 +80,15 @@ enum QueueJobStatus {
   processed
 }
 
-enum QueueMetricsBucketDuration {
-  minute
-  hour
-  day
-}
-
-type QueueMetricsBucket {
-  queue: String!
-  status: QueueJobStatus!
-  createdAtBucket: DateTime!
-  ranAtBucket: DateTime
-  count: Int!
-  latency: Duration
-}
-
-type QueueMetricsQueryResult {
-  buckets: [QueueMetricsBucket!]!
-}
-
-input QueueMetricsQueryInput {
-  bucketDuration: QueueMetricsBucketDuration!
-  statuses: [QueueJobStatus!]
-  queues: [String!]
-  startTime: DateTime
-  endTime: DateTime
+input QueueEnqueueReprocessTorrentsBatchInput {
+  batchSize: Int
+  chunkSize: Int
+  contentTypes: [ContentType]
+  orphans: Boolean
+  classifierRematch: Boolean
+  classifierWorkflow: String
+  apisDisabled: Boolean
+  localSearchDisabled: Boolean
 }
 
 type QueueMutation {
@@ -115,15 +99,4 @@ type QueueMutation {
 input QueuePurgeJobsInput {
   queues: [String!]
   statuses: [QueueJobStatus!]
-}
-
-input QueueEnqueueReprocessTorrentsBatchInput {
-  batchSize: Int
-  chunkSize: Int
-  contentTypes: [ContentType]
-  orphans: Boolean
-  classifierRematch: Boolean
-  classifierWorkflow: String
-  apisDisabled: Boolean
-  localSearchDisabled: Boolean
 }

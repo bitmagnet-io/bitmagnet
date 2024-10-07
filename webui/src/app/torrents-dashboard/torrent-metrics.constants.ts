@@ -3,20 +3,12 @@ import {
   BucketParams,
   Params,
   Result,
-  StatusCounts,
-} from './queue-metrics.types';
-
-export const emptyStatusCounts: StatusCounts = {
-  pending: 0,
-  failed: 0,
-  retry: 0,
-  processed: 0,
-};
+} from './torrent-metrics.types';
 
 export const defaultBucketParams: BucketParams = {
   duration: 'hour',
   multiplier: 1,
-  timeframe: 'all',
+  timeframe: 'days_1',
 };
 
 export const resolutionNames = ['day', 'hour', 'minute'] as const;
@@ -37,12 +29,10 @@ export const emptyParams: Params = {
 
 export const emptyResult: Result = {
   params: emptyParams,
-  queues: [],
+  sources: [],
 };
 
-export const eventNames = ['created', 'processed', 'failed'] as const;
-
-export const statusNames = ['pending', 'processed', 'retry', 'failed'] as const;
+export const eventNames = ['created', 'updated'] as const;
 
 export const timeframeNames = [
   'minutes_15',
@@ -52,7 +42,6 @@ export const timeframeNames = [
   'hours_12',
   'days_1',
   'weeks_1',
-  'all',
 ] as const;
 
 export const timeframeLengths: Record<(typeof timeframeNames)[number], number> =
@@ -64,10 +53,7 @@ export const timeframeLengths: Record<(typeof timeframeNames)[number], number> =
     hours_12: 60 * 60 * 12,
     days_1: 60 * 60 * 24,
     weeks_1: 60 * 60 * 24 * 7,
-    all: Infinity,
   };
-
-export const availableQueueNames = ['process_torrent', 'process_torrent_batch'];
 
 export const autoRefreshIntervalNames = [
   'off',

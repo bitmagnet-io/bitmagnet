@@ -249,6 +249,11 @@ export type MetadataSource = {
   name: Scalars['String']['output'];
 };
 
+export type MetricsBucketDuration =
+  | 'day'
+  | 'hour'
+  | 'minute';
+
 export type Mutation = {
   __typename?: 'Mutation';
   queue: QueueMutation;
@@ -372,13 +377,8 @@ export type QueueMetricsBucket = {
   status: QueueJobStatus;
 };
 
-export type QueueMetricsBucketDuration =
-  | 'day'
-  | 'hour'
-  | 'minute';
-
 export type QueueMetricsQueryInput = {
-  bucketDuration: QueueMetricsBucketDuration;
+  bucketDuration: MetricsBucketDuration;
   endTime?: InputMaybe<Scalars['DateTime']['input']>;
   queues?: InputMaybe<Array<Scalars['String']['input']>>;
   startTime?: InputMaybe<Scalars['DateTime']['input']>;
@@ -635,6 +635,26 @@ export type TorrentFilesQueryResult = {
   totalCount: Scalars['Int']['output'];
 };
 
+export type TorrentMetricsBucket = {
+  __typename?: 'TorrentMetricsBucket';
+  bucket: Scalars['DateTime']['output'];
+  count: Scalars['Int']['output'];
+  source: Scalars['String']['output'];
+  updated: Scalars['Boolean']['output'];
+};
+
+export type TorrentMetricsQueryInput = {
+  bucketDuration: MetricsBucketDuration;
+  endTime?: InputMaybe<Scalars['DateTime']['input']>;
+  sources?: InputMaybe<Array<Scalars['String']['input']>>;
+  startTime?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+export type TorrentMetricsQueryResult = {
+  __typename?: 'TorrentMetricsQueryResult';
+  buckets: Array<TorrentMetricsBucket>;
+};
+
 export type TorrentMutation = {
   __typename?: 'TorrentMutation';
   delete?: Maybe<Scalars['Void']['output']>;
@@ -669,12 +689,18 @@ export type TorrentMutationSetTagsArgs = {
 export type TorrentQuery = {
   __typename?: 'TorrentQuery';
   files: TorrentFilesQueryResult;
+  metrics: TorrentMetricsQueryResult;
   suggestTags: TorrentSuggestTagsResult;
 };
 
 
 export type TorrentQueryFilesArgs = {
   input: TorrentFilesQueryInput;
+};
+
+
+export type TorrentQueryMetricsArgs = {
+  input: TorrentMetricsQueryInput;
 };
 
 
@@ -897,6 +923,13 @@ export type TorrentFilesQueryVariables = Exact<{
 
 
 export type TorrentFilesQuery = { __typename?: 'Query', torrent: { __typename?: 'TorrentQuery', files: { __typename?: 'TorrentFilesQueryResult', totalCount: number, hasNextPage?: boolean | null, items: Array<{ __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string }> } } };
+
+export type TorrentMetricsQueryVariables = Exact<{
+  input: TorrentMetricsQueryInput;
+}>;
+
+
+export type TorrentMetricsQuery = { __typename?: 'Query', torrent: { __typename?: 'TorrentQuery', metrics: { __typename?: 'TorrentMetricsQueryResult', buckets: Array<{ __typename?: 'TorrentMetricsBucket', source: string, updated: boolean, bucket: string, count: number }> } } };
 
 export type TorrentSuggestTagsQueryVariables = Exact<{
   query: SuggestTagsQueryInput;
@@ -1364,6 +1397,31 @@ export const TorrentFilesDocument = gql`
   })
   export class TorrentFilesGQL extends Apollo.Query<TorrentFilesQuery, TorrentFilesQueryVariables> {
     override document = TorrentFilesDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const TorrentMetricsDocument = gql`
+    query TorrentMetrics($input: TorrentMetricsQueryInput!) {
+  torrent {
+    metrics(input: $input) {
+      buckets {
+        source
+        updated
+        bucket
+        count
+      }
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class TorrentMetricsGQL extends Apollo.Query<TorrentMetricsQuery, TorrentMetricsQueryVariables> {
+    override document = TorrentMetricsDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

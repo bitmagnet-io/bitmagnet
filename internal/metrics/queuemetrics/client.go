@@ -1,16 +1,13 @@
-package metrics
+package queuemetrics
 
 import (
 	"context"
+	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"gorm.io/gorm"
 	"strings"
 	"time"
 )
-
-// BucketDuration represents the duration of bucketing for queue metrics
-// ENUM(minute, hour, day)
-type BucketDuration string
 
 type Bucket struct {
 	Queue           string
@@ -22,7 +19,7 @@ type Bucket struct {
 }
 
 type Request struct {
-	BucketDuration BucketDuration
+	BucketDuration metrics.BucketDuration
 	Statuses       []model.QueueJobStatus
 	Queues         []string
 	StartTime      time.Time
