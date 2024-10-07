@@ -32,6 +32,7 @@ import {
 import { MatTooltip } from '@angular/material/tooltip';
 import { MatButton } from '@angular/material/button';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { RouterLink } from '@angular/router';
 import { FilesizePipe } from '../pipes/filesize.pipe';
 import * as generated from '../graphql/generated';
 import normalizeTagInput from '../util/normalizeTagInput';
@@ -39,8 +40,7 @@ import { GraphQLService } from '../graphql/graphql.service';
 import { ErrorsService } from '../errors/errors.service';
 import { BreakpointsService } from '../layout/breakpoints.service';
 import { TimeAgoPipe } from '../dates/time-ago.pipe';
-import {TorrentFilesTableComponent} from "../torrent-files-table/torrent-files-table.component";
-import {RouterLink} from "@angular/router";
+import { TorrentFilesTableComponent } from '../torrent-files-table/torrent-files-table.component';
 
 @Component({
   selector: 'app-torrent-content',

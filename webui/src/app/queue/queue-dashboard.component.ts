@@ -1,13 +1,19 @@
-import {Component, inject, OnDestroy, OnInit} from '@angular/core';
-import {MatCard, MatCardContent, MatCardHeader} from "@angular/material/card";
-import {TranslocoDirective} from "@jsverse/transloco";
-import {MatIcon} from "@angular/material/icon";
-import {MatToolbar} from "@angular/material/toolbar";
-import {ActivatedRoute, EventType, Router, RouterLink, RouterLinkActive, RouterOutlet} from "@angular/router";
-import {EMPTY, Subscription} from "rxjs";
-import {MatAnchor} from "@angular/material/button";
-import {MatTabLink, MatTabNav, MatTabNavPanel} from "@angular/material/tabs";
-import {MatDivider} from "@angular/material/divider";
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { MatCard, MatCardContent, MatCardHeader } from '@angular/material/card';
+import { TranslocoDirective } from '@jsverse/transloco';
+import { MatIcon } from '@angular/material/icon';
+import { MatToolbar } from '@angular/material/toolbar';
+import {
+  ActivatedRoute,
+  EventType,
+  Router,
+  RouterLink,
+  RouterLinkActive,
+  RouterOutlet,
+} from '@angular/router';
+import { EMPTY, Subscription } from 'rxjs';
+import { MatAnchor } from '@angular/material/button';
+import { MatTabLink, MatTabNav, MatTabNavPanel } from '@angular/material/tabs';
 
 @Component({
   selector: 'app-queue-dashboard',
@@ -25,10 +31,10 @@ import {MatDivider} from "@angular/material/divider";
     RouterLinkActive,
     MatTabNav,
     MatTabLink,
-    MatTabNavPanel
+    MatTabNavPanel,
   ],
   templateUrl: './queue-dashboard.component.html',
-  styleUrl: './queue-dashboard.component.scss'
+  styleUrl: './queue-dashboard.component.scss',
 })
 export class QueueDashboardComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
@@ -37,26 +43,26 @@ export class QueueDashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.subscriptions.push(
-      this.route.url.subscribe(async () => {
+      this.route.url.subscribe(() => {
         if (!this.route.firstChild) {
-          await this.redirectVisualize();
+          this.redirectVisualize();
         }
         return EMPTY;
       }),
-      this.router.events.subscribe(async (event) => {
+      this.router.events.subscribe((event) => {
         if (
           event.type === EventType.NavigationEnd &&
           event.urlAfterRedirects === '/dashboard/queue'
         ) {
-          await this.redirectVisualize();
+          this.redirectVisualize();
         }
         return EMPTY;
       }),
     );
   }
 
-  private async redirectVisualize() {
-    await this.router.navigate(['visualize'], {
+  private redirectVisualize(): void {
+    void this.router.navigate(['visualize'], {
       relativeTo: this.route,
     });
   }

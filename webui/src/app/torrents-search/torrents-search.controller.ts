@@ -156,6 +156,7 @@ export class TorrentsSearchController {
     }));
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   activateFacet(def: FacetDefinition<any, any>) {
     this.update((ctrl) => ({
       ...ctrl,
@@ -166,6 +167,7 @@ export class TorrentsSearchController {
     }));
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   deactivateFacet(def: FacetDefinition<any, any>) {
     this.update((ctrl) => {
       const input = def.extractInput(ctrl.facets);
@@ -181,6 +183,7 @@ export class TorrentsSearchController {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   activateFilter(def: FacetDefinition<any, any>, filter: string) {
     this.update((ctrl) => {
       const input = def.extractInput(ctrl.facets);
@@ -189,12 +192,15 @@ export class TorrentsSearchController {
         page: 1,
         facets: def.patchInput(ctrl.facets, {
           ...input,
-          filter: Array.from(new Set([...(input.filter ?? []), filter])).sort(),
+          filter: Array.from(
+            new Set([...((input.filter as unknown[]) ?? []), filter]),
+          ).sort(),
         }),
       };
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   deactivateFilter(def: FacetDefinition<any, any>, filter: string) {
     this.update((ctrl) => {
       const input = def.extractInput(ctrl.facets);
@@ -277,11 +283,13 @@ export type FacetDefinition<T, _allowNull extends boolean = boolean> = {
   extractInput: (facets: TorrentSearchControls['facets']) => FacetInput<T>;
   patchInput: (
     facets: TorrentSearchControls['facets'],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     input: FacetInput<any>,
   ) => TorrentSearchControls['facets'];
   extractAggregations: (
     aggs: generated.TorrentContentSearchResult['aggregations'],
   ) => Array<Agg<T, _allowNull>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   resolveLabel: (agg: Agg<any, any>, t: TranslocoService) => string;
 };
 
@@ -308,7 +316,7 @@ export const torrentTagFacet: FacetDefinition<string, false> = {
     torrentTag: i,
   }),
   extractAggregations: (aggs) => aggs.torrentTag ?? [],
-  resolveLabel: (agg) => agg.value,
+  resolveLabel: (agg) => agg.value as string,
 };
 
 export const fileTypeFacet: FacetDefinition<generated.FileType, false> = {
@@ -369,7 +377,7 @@ export const videoResolutionFacet: FacetDefinition<
       ...agg,
       value: agg.value ?? null,
     })),
-  resolveLabel: (agg) => agg.value?.substr(1) ?? '?',
+  resolveLabel: (agg) => (agg.value as string | undefined)?.slice(1) ?? '?',
 };
 
 export const videoSourceFacet: FacetDefinition<generated.VideoSource, true> = {
@@ -385,9 +393,9 @@ export const videoSourceFacet: FacetDefinition<generated.VideoSource, true> = {
   extractAggregations: (aggs) =>
     (aggs.videoSource ?? []).map((agg) => ({
       ...agg,
-      value: agg.value ?? null,
+      value: (agg.value as generated.VideoSource | undefined) ?? null,
     })),
-  resolveLabel: (agg) => agg.value ?? '?',
+  resolveLabel: (agg) => (agg.value as string | undefined) ?? '?',
 };
 
 export const facets = [

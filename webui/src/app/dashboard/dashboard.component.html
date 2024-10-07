@@ -4,33 +4,42 @@
       #drawer
       class="drawer"
       [attr.role]="breakpoints.sizeAtLeast('Medium') ? 'navigation' : 'dialog'"
-      [mode]="breakpoints.sizeAtLeast('Medium') ? 'side' : 'over' "
+      [mode]="breakpoints.sizeAtLeast('Medium') ? 'side' : 'over'"
       [opened]="breakpoints.sizeAtLeast('Medium')"
     >
       <nav>
-      <ul>
-        <li><a
-          mat-button
-          routerLink="home"
-          routerLinkActive
-          #linkHome="routerLinkActive"
-          [class]="linkHome.isActive ? 'active' : ''"
-        ><mat-icon>dashboard</mat-icon>Home</a></li>
-        <li><a
-          mat-button
-          routerLink="torrents"
-          routerLinkActive
-          #linkTorrents="routerLinkActive"
-          [class]="linkTorrents.isActive ? 'active' : ''"
-        ><mat-icon svgIcon="queue" />Torrents</a></li>
-        <li><a
-          mat-button
-          routerLink="queues"
-          routerLinkActive
-          #linkQueues="routerLinkActive"
-          [class]="linkQueues.isActive ? 'active' : ''"
-        ><mat-icon svgIcon="queue" />Queues</a></li>
-      </ul>
+        <ul>
+          <li>
+            <a
+              mat-button
+              routerLink="/dashboard"
+              routerLinkActive
+              #linkHome="routerLinkActive"
+              [class]="linkHome.isActive ? 'active' : ''"
+              ><mat-icon>dashboard</mat-icon>Home</a
+            >
+          </li>
+          <li>
+            <a
+              mat-button
+              routerLink="torrents"
+              routerLinkActive
+              #linkTorrents="routerLinkActive"
+              [class]="linkTorrents.isActive ? 'active' : ''"
+              ><mat-icon svgIcon="queue" />Torrents</a
+            >
+          </li>
+          <li>
+            <a
+              mat-button
+              routerLink="queues"
+              routerLinkActive
+              #linkQueues="routerLinkActive"
+              [class]="linkQueues.isActive ? 'active' : ''"
+              ><mat-icon svgIcon="queue" />Queues</a
+            >
+          </li>
+        </ul>
       </nav>
     </mat-drawer>
     <mat-drawer-content>
@@ -47,7 +56,7 @@
           <mat-icon
             aria-label="Side nav toggle icon"
             fontSet="material-icons"
-          >{{
+            >{{
               drawer.opened ? "arrow_circle_left" : "arrow_circle_right"
             }}</mat-icon
           >

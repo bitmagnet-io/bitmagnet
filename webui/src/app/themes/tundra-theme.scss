@@ -135,15 +135,16 @@ $_rest: (
 $_primary: map.merge(map.get($_palettes, primary), $_rest);
 $_tertiary: map.merge(map.get($_palettes, tertiary), $_rest);
 
-$theme: map.merge(mat.define-theme(
-  (
-    color: (
-      theme-type: dark,
-      primary: $_primary,
-      tertiary: $_tertiary,
-    ),
-  )
-),
+$theme: map.merge(
+  mat.define-theme(
+    (
+      color: (
+        theme-type: dark,
+        primary: $_primary,
+        tertiary: $_tertiary,
+      ),
+    )
+  ),
   (
     success: (
       0: #000000,

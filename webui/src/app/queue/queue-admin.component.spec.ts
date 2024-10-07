@@ -8,9 +8,8 @@ describe('QueueAdminComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [QueueAdminComponent]
-    })
-    .compileComponents();
+      imports: [QueueAdminComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(QueueAdminComponent);
     component = fixture.componentInstance;

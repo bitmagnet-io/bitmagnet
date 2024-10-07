@@ -1,9 +1,15 @@
-import * as generated from "../graphql/generated";
-import {CollectionViewer, DataSource} from "@angular/cdk/collections";
-import {Apollo} from "apollo-angular";
-import {ErrorsService} from "../errors/errors.service";
-import {BehaviorSubject, catchError, EMPTY, Observable, Subscription} from "rxjs";
-import {map} from "rxjs/operators";
+import { CollectionViewer, DataSource } from '@angular/cdk/collections';
+import { Apollo } from 'apollo-angular';
+import {
+  BehaviorSubject,
+  catchError,
+  EMPTY,
+  Observable,
+  Subscription,
+} from 'rxjs';
+import { map } from 'rxjs/operators';
+import { ErrorsService } from '../errors/errors.service';
+import * as generated from '../graphql/generated';
 
 const emptyResult = {
   items: [],
@@ -12,13 +18,14 @@ const emptyResult = {
   aggregations: {
     queue: [],
     status: [],
-  }
-}
+  },
+};
 
-export interface ITorrentFilesDatasource extends DataSource<generated.TorrentFile> {
+export interface ITorrentFilesDatasource
+  extends DataSource<generated.TorrentFile> {
   loading$: Observable<boolean>;
   result$: Observable<generated.TorrentFilesQueryResult>;
-  result: generated.TorrentFilesQueryResult
+  result: generated.TorrentFilesQueryResult;
   items$: Observable<generated.TorrentFile[]>;
 }
 
@@ -59,9 +66,7 @@ export class TorrentFilesDatasource implements ITorrentFilesDatasource {
     this.resultSubject.complete();
   }
 
-  private loadResult(
-    variables: generated.TorrentFilesQueryVariables,
-  ): void {
+  private loadResult(variables: generated.TorrentFilesQueryVariables): void {
     if (this.currentSubscription) {
       this.currentSubscription.unsubscribe();
       this.currentSubscription = undefined;
@@ -70,14 +75,13 @@ export class TorrentFilesDatasource implements ITorrentFilesDatasource {
     const currentRequest = this.currentRequest.getValue() + 1;
     this.currentRequest.next(currentRequest);
     const result = this.apollo
-      .query<
-        generated.TorrentFilesQuery,
-        generated.TorrentFilesQueryVariables
-      >({
-        query: generated.TorrentFilesDocument,
-        variables,
-        fetchPolicy: 'no-cache',
-      })
+      .query<generated.TorrentFilesQuery, generated.TorrentFilesQueryVariables>(
+        {
+          query: generated.TorrentFilesDocument,
+          variables,
+          fetchPolicy: 'no-cache',
+        },
+      )
       .pipe(map((r) => r.data.torrent.files))
       .pipe(
         catchError((err: Error) => {
@@ -89,7 +93,6 @@ export class TorrentFilesDatasource implements ITorrentFilesDatasource {
       );
     this.currentSubscription = result.subscribe((r) => {
       if (currentRequest === this.currentRequest.getValue()) {
-        console.log(r)
         this.loadingSubject.next(false);
         this.resultSubject.next(r);
       }
@@ -101,7 +104,7 @@ export class TorrentFilesSingleDatasource implements ITorrentFilesDatasource {
   private file: generated.TorrentFile;
 
   loading$ = new BehaviorSubject(false).asObservable();
-  result: generated.TorrentFilesQueryResult
+  result: generated.TorrentFilesQueryResult;
   result$: Observable<generated.TorrentFilesQueryResult>;
   items$: Observable<generated.TorrentFile[]>;
 
@@ -115,13 +118,13 @@ export class TorrentFilesSingleDatasource implements ITorrentFilesDatasource {
       extension: torrent.extension,
       createdAt: torrent.createdAt,
       updatedAt: torrent.updatedAt,
-    }
+    };
     this.result = {
       hasNextPage: false,
       items: [this.file],
       totalCount: 1,
-    }
-    this.result$ = new BehaviorSubject(this.result).asObservable()
+    };
+    this.result$ = new BehaviorSubject(this.result).asObservable();
     this.items$ = new BehaviorSubject([this.file]).asObservable();
   }
 

@@ -7,20 +7,28 @@
           <h4>Options:</h4>
           <mat-checkbox
             [checked]="!apisDisabled"
-            (change)="localSearchDisabled = !$event.checked; apisDisabled = localSearchDisabled ? true : apisDisabled"
-          >Match content by local search</mat-checkbox>
+            (change)="
+              localSearchDisabled = !$event.checked;
+              apisDisabled = localSearchDisabled ? true : apisDisabled
+            "
+            >Match content by local search</mat-checkbox
+          >
           <mat-checkbox
             [checked]="!apisDisabled"
-            (change)="apisDisabled = !$event.checked; localSearchDisabled = apisDisabled ? localSearchDisabled : true"
-          >Match content by external API search</mat-checkbox>
+            (change)="
+              apisDisabled = !$event.checked;
+              localSearchDisabled = apisDisabled ? localSearchDisabled : true
+            "
+            >Match content by external API search</mat-checkbox
+          >
           <mat-checkbox
             [checked]="classifierRematch"
             (change)="classifierRematch = $event.checked"
-          >Force rematch of already matched content</mat-checkbox>
-          <mat-checkbox
-            [checked]="orphans"
-            (change)="orphans = $event.checked"
-          >Process orphaned torrents only</mat-checkbox>
+            >Force rematch of already matched content</mat-checkbox
+          >
+          <mat-checkbox [checked]="orphans" (change)="orphans = $event.checked"
+            >Process orphaned torrents only</mat-checkbox
+          >
         </section>
       } @else if (stage === "REQUESTING") {
         <mat-spinner></mat-spinner>
@@ -29,7 +37,14 @@
       }
     </mat-dialog-content>
     <mat-dialog-actions>
-      <button mat-stroked-button [disabled]="stage !== 'PENDING'" color="warning" (click)="handleEnqueue()">Enqueue Jobs</button>
+      <button
+        mat-stroked-button
+        [disabled]="stage !== 'PENDING'"
+        color="warning"
+        (click)="handleEnqueue()"
+      >
+        Enqueue Jobs
+      </button>
       <button mat-stroked-button (click)="dialogRef.close()">Close</button>
     </mat-dialog-actions>
   </mat-card>

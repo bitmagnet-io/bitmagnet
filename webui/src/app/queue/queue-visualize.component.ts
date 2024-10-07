@@ -17,7 +17,8 @@ import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
 import { AsyncPipe } from '@angular/common';
 import {
   MatAnchor,
-  MatButton, MatIconAnchor,
+  MatButton,
+  MatIconAnchor,
   MatIconButton,
   MatMiniFabButton,
 } from '@angular/material/button';

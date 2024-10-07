@@ -4,50 +4,46 @@
       #drawer
       class="drawer"
       [attr.role]="breakpoints.sizeAtLeast('Medium') ? 'navigation' : 'dialog'"
-      [mode]="breakpoints.sizeAtLeast('Medium') ? 'side' : 'over' "
+      [mode]="breakpoints.sizeAtLeast('Medium') ? 'side' : 'over'"
       [opened]="breakpoints.sizeAtLeast('Medium')"
     >
       @for (facet of facets$ | async; track facet.key) {
-          <mat-card>
-            <mat-card-header>
-              <mat-card-title>
-                {{ t("queue_facets." + facet.key) }}
-              </mat-card-title>
-            </mat-card-header>
-            @if (facet.filter?.length) {
-              <mat-card-content class="filtered">
-                @for (agg of facet.aggregations; track agg.value) {
-                  <mat-checkbox
-                    [checked]="facet.filter?.includes(agg.value)"
-                    (change)="
-                      $event.checked
-                        ? controller.activateFilter(facet, agg.value)
-                        : controller.deactivateFilter(facet, agg.value)
-                    "
-                  >
-                    {{ agg.label }}
-                    <small
-                    >{{ agg.count | number }}</small
-                    >
-                  </mat-checkbox>
-                }
-              </mat-card-content>
-            } @else {
-              <mat-card-content class="unfiltered">
-                @for (agg of facet.aggregations; track agg.value) {
-                  <mat-checkbox
-                    checked="true"
-                    (change)="controller.activateFilter(facet, agg.value)"
-                  >
-                    {{ agg.label }}
-                    <small
-                    >{{ agg.count | number }}</small
-                    >
-                  </mat-checkbox>
-                }
-              </mat-card-content>
-            }
-          </mat-card>
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>
+              {{ t("queue_facets." + facet.key) }}
+            </mat-card-title>
+          </mat-card-header>
+          @if (facet.filter?.length) {
+            <mat-card-content class="filtered">
+              @for (agg of facet.aggregations; track agg.value) {
+                <mat-checkbox
+                  [checked]="facet.filter?.includes(agg.value)"
+                  (change)="
+                    $event.checked
+                      ? controller.activateFilter(facet, agg.value)
+                      : controller.deactivateFilter(facet, agg.value)
+                  "
+                >
+                  {{ agg.label }}
+                  <small>{{ agg.count | number }}</small>
+                </mat-checkbox>
+              }
+            </mat-card-content>
+          } @else {
+            <mat-card-content class="unfiltered">
+              @for (agg of facet.aggregations; track agg.value) {
+                <mat-checkbox
+                  checked="true"
+                  (change)="controller.activateFilter(facet, agg.value)"
+                >
+                  {{ agg.label }}
+                  <small>{{ agg.count | number }}</small>
+                </mat-checkbox>
+              }
+            </mat-card-content>
+          }
+        </mat-card>
       }
     </mat-drawer>
     <mat-drawer-content>
@@ -62,12 +58,9 @@
             (click)="drawer.toggle()"
             [matTooltip]="t('torrents.toggle_drawer')"
           >
-            <mat-icon
-              fontSet="material-icons"
-            >{{
-                drawer.opened ? "arrow_circle_left" : "arrow_circle_right"
-              }}</mat-icon
-            >
+            <mat-icon fontSet="material-icons">{{
+              drawer.opened ? "arrow_circle_left" : "arrow_circle_right"
+            }}</mat-icon>
           </button>
         </div>
         <div class="form-field-container form-field-container-order-by">
@@ -90,8 +83,8 @@
             (click)="controller.toggleOrderByDirection()"
           >
             <mat-icon>{{
-                controls.orderBy.descending ? "arrow_downward" : "arrow_upward"
-              }}</mat-icon>
+              controls.orderBy.descending ? "arrow_downward" : "arrow_upward"
+            }}</mat-icon>
           </button>
         </div>
         <div
@@ -107,10 +100,7 @@
           </button>
         </div>
       </div>
-      <app-queue-jobs-table
-        [dataSource]="dataSource"
-        [selection]="selection"
-      />
+      <app-queue-jobs-table [dataSource]="dataSource" [selection]="selection" />
       <app-paginator
         (paging)="controller.handlePageEvent($event)"
         [page]="controls.page"

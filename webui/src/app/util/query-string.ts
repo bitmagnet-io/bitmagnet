@@ -17,13 +17,13 @@ export const stringParam = (
   key: string,
 ): string | undefined => {
   return typeof params[key] === 'string'
-    ? decodeURIComponent(params[key]) || undefined
+    ? decodeURIComponent(params[key] as string) || undefined
     : undefined;
 };
 
 export const intParam = (params: Params, key: string): number | undefined => {
-  if (params && params[key] && /^\d+$/.test(params[key])) {
-    return parseInt(params[key]);
+  if (params && params[key] && /^\d+$/.test(params[key] as string)) {
+    return parseInt(params[key] as string);
   }
   return undefined;
 };

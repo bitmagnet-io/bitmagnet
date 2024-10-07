@@ -8,9 +8,8 @@ describe('TorrentFilesTableComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TorrentFilesTableComponent]
-    })
-    .compileComponents();
+      imports: [TorrentFilesTableComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(TorrentFilesTableComponent);
     component = fixture.componentInstance;

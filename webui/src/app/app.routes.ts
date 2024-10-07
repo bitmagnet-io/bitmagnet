@@ -9,9 +9,7 @@ export const routes: Routes = [
   {
     path: 'torrents',
     loadComponent: () =>
-      import('./torrents/torrents.component').then(
-        (c) => c.TorrentsComponent,
-      ),
+      import('./torrents/torrents.component').then((c) => c.TorrentsComponent),
     children: [
       {
         path: '',
@@ -27,7 +25,7 @@ export const routes: Routes = [
             (c) => c.TorrentPermalinkComponent,
           ),
       },
-    ]
+    ],
   },
   {
     path: 'dashboard',
@@ -37,7 +35,7 @@ export const routes: Routes = [
       ),
     children: [
       {
-        path: 'home',
+        path: '',
         loadComponent: () =>
           import('./dashboard/dashboard-home.component').then(
             (c) => c.DashboardHomeComponent,
@@ -77,8 +75,8 @@ export const routes: Routes = [
               import('./queue/queue-admin.component').then(
                 (c) => c.QueueAdminComponent,
               ),
-          }
-        ]
+          },
+        ],
       },
     ],
   },

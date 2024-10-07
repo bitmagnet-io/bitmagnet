@@ -1,1 +1,1 @@
-export type DateType = Date | string | number
+export type DateType = Date | string | number;

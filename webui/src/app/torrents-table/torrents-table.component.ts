@@ -28,7 +28,7 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
-import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { TranslocoDirective } from '@jsverse/transloco';
 import { AsyncPipe } from '@angular/common';
 import { MatProgressBar } from '@angular/material/progress-bar';
 import { SelectionModel } from '@angular/cdk/collections';
@@ -117,7 +117,7 @@ export class TorrentsTableComponent implements OnInit {
       }
     });
     this.expandedId.subscribe((expandedId) => {
-      return this.router.navigate([], {
+      void this.router.navigate([], {
         relativeTo: this.route,
         queryParams: {
           expanded: expandedId ? encodeURIComponent(expandedId) : undefined,

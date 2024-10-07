@@ -104,7 +104,7 @@
         <ng-container
           >({{
             t("torrents.votes_count_n", {
-              count: torrentContent.content?.voteCount | number
+              count: torrentContent.content?.voteCount | number,
             })
           }})</ng-container
         >
@@ -134,7 +134,7 @@
     <mat-tab>
       <ng-template mat-tab-label>
         <mat-icon>file_present</mat-icon>
-        @if (breakpoints.sizeAtLeast('Medium')) {
+        @if (breakpoints.sizeAtLeast("Medium")) {
           <span class="label">{{ t("torrents.files") }}</span>
         }
         @if (filesCount(); as filesCount) {
@@ -147,9 +147,7 @@
           @if (torrentContent.torrent.filesStatus === "no_info") {
             <p>{{ t("torrents.files_no_info") }}</p>
           }
-          <app-torrent-files-table
-            [torrent]="torrentContent.torrent"
-            />
+          <app-torrent-files-table [torrent]="torrentContent.torrent" />
         </mat-card>
       </ng-template>
     </mat-tab>
@@ -157,7 +155,7 @@
     <mat-tab>
       <ng-template mat-tab-label>
         <mat-icon>sell</mat-icon>
-        @if (breakpoints.sizeAtLeast('Medium')) {
+        @if (breakpoints.sizeAtLeast("Medium")) {
           <span class="label">{{ t("torrents.edit_tags") }}</span>
         }
       </ng-template>
@@ -206,7 +204,7 @@
     <mat-tab>
       <ng-template mat-tab-label>
         <mat-icon>delete_forever</mat-icon>
-        @if (breakpoints.sizeAtLeast('Medium')) {
+        @if (breakpoints.sizeAtLeast("Medium")) {
           <span class="label">{{ t("torrents.delete") }}</span>
         }
       </ng-template>

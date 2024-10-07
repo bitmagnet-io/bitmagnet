@@ -13,9 +13,9 @@ import { MatCheckbox } from '@angular/material/checkbox';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { TranslocoDirective } from '@jsverse/transloco';
 import * as generated from '../graphql/generated';
+import { GraphQLModule } from '../graphql/graphql.module';
 import { availableQueueNames, statusNames } from './queue.constants';
 import { QueuePurgeJobsDialog } from './queue-purge-jobs-dialog.component';
-import {GraphQLModule} from "../graphql/graphql.module";
 
 @Component({
   selector: 'app-queue-enqueue-reprocess-torrents-batch-dialog',

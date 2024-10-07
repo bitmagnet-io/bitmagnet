@@ -1,9 +1,15 @@
-import {Apollo} from "apollo-angular";
-import {ErrorsService} from "../errors/errors.service";
-import {BehaviorSubject, catchError, EMPTY, Observable, Subscription} from "rxjs";
-import * as generated from "../graphql/generated";
-import {CollectionViewer, DataSource} from "@angular/cdk/collections";
-import {map} from "rxjs/operators";
+import { Apollo } from 'apollo-angular';
+import {
+  BehaviorSubject,
+  catchError,
+  EMPTY,
+  Observable,
+  Subscription,
+} from 'rxjs';
+import { CollectionViewer, DataSource } from '@angular/cdk/collections';
+import { map } from 'rxjs/operators';
+import * as generated from '../graphql/generated';
+import { ErrorsService } from '../errors/errors.service';
 
 const emptyResult = {
   items: [],
@@ -12,10 +18,10 @@ const emptyResult = {
   aggregations: {
     queue: [],
     status: [],
-  }
-}
+  },
+};
 
-export class QueueJobsDatasource implements DataSource<generated.QueueJob>{
+export class QueueJobsDatasource implements DataSource<generated.QueueJob> {
   private currentRequest = new BehaviorSubject(0);
   private currentSubscription?: Subscription;
 
@@ -23,25 +29,24 @@ export class QueueJobsDatasource implements DataSource<generated.QueueJob>{
   public loading$ = this.loadingSubject.asObservable();
 
   public result: generated.QueueJobsQueryResult = emptyResult;
-  private resultSubject =
-    new BehaviorSubject<generated.QueueJobsQueryResult>(this.result);
+  private resultSubject = new BehaviorSubject<generated.QueueJobsQueryResult>(
+    this.result,
+  );
   public result$ = this.resultSubject.asObservable();
 
   public items$ = this.resultSubject.pipe(map((result) => result.items));
 
-  private variables?: generated.QueueJobsQueryVariables
+  private variables?: generated.QueueJobsQueryVariables;
 
   constructor(
     private apollo: Apollo,
     private errorsService: ErrorsService,
     queryVariables: Observable<generated.QueueJobsQueryVariables>,
   ) {
-    queryVariables.subscribe(
-      (variables: generated.QueueJobsQueryVariables) => {
-        this.variables = variables;
-        this.loadResult(variables);
-      },
-    );
+    queryVariables.subscribe((variables: generated.QueueJobsQueryVariables) => {
+      this.variables = variables;
+      this.loadResult(variables);
+    });
     this.resultSubject.subscribe((result) => {
       this.result = result;
     });
@@ -61,9 +66,7 @@ export class QueueJobsDatasource implements DataSource<generated.QueueJob>{
     }
   }
 
-  private loadResult(
-    variables: generated.QueueJobsQueryVariables,
-  ): void {
+  private loadResult(variables: generated.QueueJobsQueryVariables): void {
     if (this.currentSubscription) {
       this.currentSubscription.unsubscribe();
       this.currentSubscription = undefined;
@@ -72,10 +75,7 @@ export class QueueJobsDatasource implements DataSource<generated.QueueJob>{
     const currentRequest = this.currentRequest.getValue() + 1;
     this.currentRequest.next(currentRequest);
     const result = this.apollo
-      .query<
-        generated.QueueJobsQuery,
-        generated.QueueJobsQueryVariables
-      >({
+      .query<generated.QueueJobsQuery, generated.QueueJobsQueryVariables>({
         query: generated.QueueJobsDocument,
         variables,
         fetchPolicy: 'no-cache',

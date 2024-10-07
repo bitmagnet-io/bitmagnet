@@ -1,4 +1,6 @@
-:host { display: none; }
+:host {
+  display: none;
+}
 
 .theme-emitter-color.background {
   color: var(--mat-app-background-color);

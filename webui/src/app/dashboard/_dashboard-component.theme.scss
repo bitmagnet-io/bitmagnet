@@ -4,7 +4,11 @@
   app-dashboard {
     mat-drawer nav {
       a {
-        --mdc-text-button-label-text-color: mat.get-theme-color($theme, secondary, 40);
+        --mdc-text-button-label-text-color: mat.get-theme-color(
+          $theme,
+          secondary,
+          40
+        );
         &.active {
           color: mat.get-theme-color($theme, secondary, 80);
           background-color: rgba(#fff, 0.1);

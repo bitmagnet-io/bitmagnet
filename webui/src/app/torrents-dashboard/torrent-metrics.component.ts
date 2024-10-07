@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy } from '@angular/core';
 import { Apollo } from 'apollo-angular';
 import {
   MatCard,
@@ -17,7 +17,8 @@ import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
 import { AsyncPipe } from '@angular/common';
 import {
   MatAnchor,
-  MatButton, MatIconAnchor,
+  MatButton,
+  MatIconAnchor,
   MatIconButton,
   MatMiniFabButton,
 } from '@angular/material/button';
@@ -37,11 +38,8 @@ import {
   resolutionNames,
   timeframeNames,
 } from './torrent-metrics.constants';
-import {TorrentMetricsController} from "./torrent-metrics.controller";
-import {TorrentChartAdapterTimeline} from "./torrent-chart-adapter.timeline";
-// import { QueueChartAdapterTotals } from './queue-chart-adapter.totals';
-// import { QueueMetricsController } from './queue-metrics.controller';
-// import { QueueChartAdapterTimeline } from './queue-chart-adapter.timeline';
+import { TorrentMetricsController } from './torrent-metrics.controller';
+import { TorrentChartAdapterTimeline } from './torrent-chart-adapter.timeline';
 
 @Component({
   selector: 'app-torrent-metrics',

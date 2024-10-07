@@ -1,10 +1,13 @@
 import { ChartConfiguration } from 'chart.js';
 import { inject, Injectable } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
+import { format as formatDate } from 'date-fns/format';
 import { ChartAdapter } from '../charting/types';
 import { ThemeBaseColor } from '../themes/theme-types';
 import { createThemeColor } from '../themes/theme-utils';
 import { ThemeInfoService } from '../themes/theme-info.service';
+import { resolveDateLocale } from '../dates/dates.locales';
+import { formatDuration } from '../dates/dates.utils';
 import { normalizeBucket } from './torrent-metrics.controller';
 import {
   durationSeconds,
@@ -12,9 +15,6 @@ import {
   timeframeLengths,
 } from './torrent-metrics.constants';
 import { BucketParams, EventName, Result } from './torrent-metrics.types';
-import {format as formatDate} from "date-fns/format";
-import {resolveDateLocale} from "../dates/dates.locales";
-import {formatDuration} from "../dates/dates.utils";
 
 const eventColors: Record<EventName, ThemeBaseColor> = {
   created: 'primary',
@@ -22,7 +22,9 @@ const eventColors: Record<EventName, ThemeBaseColor> = {
 };
 
 @Injectable({ providedIn: 'root' })
-export class TorrentChartAdapterTimeline implements ChartAdapter<Result, 'line'> {
+export class TorrentChartAdapterTimeline
+  implements ChartAdapter<Result, 'line'>
+{
   private themeInfo = inject(ThemeInfoService);
   private transloco = inject(TranslocoService);
 
@@ -41,13 +43,13 @@ export class TorrentChartAdapterTimeline implements ChartAdapter<Result, 'line'>
       ).sort();
       const now = new Date();
       const minBucket = Math.min(
-              nonEmptyBuckets[0],
-              normalizeBucket(
-                now.getTime() -
-                  1000 * timeframeLengths[result.params.buckets.timeframe],
-                result.params.buckets,
-              ).index,
-            );
+        nonEmptyBuckets[0],
+        normalizeBucket(
+          now.getTime() -
+            1000 * timeframeLengths[result.params.buckets.timeframe],
+          result.params.buckets,
+        ).index,
+      );
       const maxBucket = Math.max(
         nonEmptyBuckets[nonEmptyBuckets.length - 1],
         normalizeBucket(now, result.params.buckets).index,
@@ -64,8 +66,8 @@ export class TorrentChartAdapterTimeline implements ChartAdapter<Result, 'line'>
             const series = Array<number>();
             for (let i = minBucket; i <= maxBucket; i++) {
               series.push(
-                source.events?.eventBuckets?.[event]?.entries?.[`${i}`]?.count ??
-                  0,
+                source.events?.eventBuckets?.[event]?.entries?.[`${i}`]
+                  ?.count ?? 0,
               );
             }
             datasets.push({
@@ -143,52 +145,59 @@ export class TorrentChartAdapterTimeline implements ChartAdapter<Result, 'line'>
   }
 
   private formatBucketKey(params: BucketParams<false>, key: number): string {
-    let formatStr: string
+    let formatStr: string;
     switch (params.duration) {
-      case "day":
-        formatStr = "d LLL"
-        break
-      case "hour":
-        formatStr = "d LLL H:00"
-        break
-      case "minute":
-        formatStr = "H:mm"
-        break
+      case 'day':
+        formatStr = 'd LLL';
+        break;
+      case 'hour':
+        formatStr = 'd LLL H:00';
+        break;
+      case 'minute':
+        formatStr = 'H:mm';
+        break;
     }
-    return formatDate(1000 * durationSeconds[params.duration] * params.multiplier * key, formatStr, {
-      locale: resolveDateLocale(this.transloco.getActiveLang())
-    })
+    return formatDate(
+      1000 * durationSeconds[params.duration] * params.multiplier * key,
+      formatStr,
+      {
+        locale: resolveDateLocale(this.transloco.getActiveLang()),
+      },
+    );
   }
 
   private formatDuration(d: number | string): string {
-      if (typeof d === 'string') {
-        d = parseInt(d);
-      }
-      if (d === 0) {
-        return '0';
-      }
-      let seconds = d;
-      let minutes = 0;
-      let hours = 0;
-      let days = 0;
-      if (seconds >= 60) {
-        minutes = Math.floor(seconds / 60);
-        seconds = seconds % 60;
-        if (minutes >= 5) {
-          seconds = 0;
-          if (minutes >= 60) {
-            hours = Math.floor(minutes / 60);
-            minutes = minutes % 60;
-            if (hours >= 5) {
-              minutes = 0;
-              if (hours >= 24) {
-                days = Math.floor(hours / 24);
-                hours = hours % 24;
-              }
+    if (typeof d === 'string') {
+      d = parseInt(d);
+    }
+    if (d === 0) {
+      return '0';
+    }
+    let seconds = d;
+    let minutes = 0;
+    let hours = 0;
+    let days = 0;
+    if (seconds >= 60) {
+      minutes = Math.floor(seconds / 60);
+      seconds = seconds % 60;
+      if (minutes >= 5) {
+        seconds = 0;
+        if (minutes >= 60) {
+          hours = Math.floor(minutes / 60);
+          minutes = minutes % 60;
+          if (hours >= 5) {
+            minutes = 0;
+            if (hours >= 24) {
+              days = Math.floor(hours / 24);
+              hours = hours % 24;
             }
           }
         }
       }
-      return formatDuration({ days, hours, minutes, seconds }, this.transloco.getActiveLang());
     }
+    return formatDuration(
+      { days, hours, minutes, seconds },
+      this.transloco.getActiveLang(),
+    );
+  }
 }

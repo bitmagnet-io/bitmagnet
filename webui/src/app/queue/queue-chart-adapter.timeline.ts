@@ -1,10 +1,13 @@
 import { ChartConfiguration } from 'chart.js';
 import { inject, Injectable } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
+import { format as formatDate } from 'date-fns/format';
 import { ChartAdapter } from '../charting/types';
 import { ThemeBaseColor } from '../themes/theme-types';
 import { createThemeColor } from '../themes/theme-utils';
 import { ThemeInfoService } from '../themes/theme-info.service';
+import { resolveDateLocale } from '../dates/dates.locales';
+import { formatDuration } from '../dates/dates.utils';
 import { normalizeBucket } from './queue-metrics.controller';
 import {
   durationSeconds,
@@ -12,9 +15,6 @@ import {
   timeframeLengths,
 } from './queue.constants';
 import { BucketParams, EventName, Result } from './queue-metrics.types';
-import {format as formatDate} from "date-fns/format";
-import {resolveDateLocale} from "../dates/dates.locales";
-import {formatDuration} from "../dates/dates.utils";
 
 const eventColors: Record<EventName, ThemeBaseColor> = {
   created: 'primary',
@@ -187,52 +187,59 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, 'line'> {
   }
 
   private formatBucketKey(params: BucketParams<false>, key: number): string {
-    let formatStr: string
+    let formatStr: string;
     switch (params.duration) {
-      case "day":
-        formatStr = "d LLL"
-        break
-      case "hour":
-        formatStr = "d LLL H:00"
-        break
-      case "minute":
-        formatStr = "H:mm"
-        break
+      case 'day':
+        formatStr = 'd LLL';
+        break;
+      case 'hour':
+        formatStr = 'd LLL H:00';
+        break;
+      case 'minute':
+        formatStr = 'H:mm';
+        break;
     }
-    return formatDate(1000 * durationSeconds[params.duration] * params.multiplier * key, formatStr, {
-      locale: resolveDateLocale(this.transloco.getActiveLang())
-    })
+    return formatDate(
+      1000 * durationSeconds[params.duration] * params.multiplier * key,
+      formatStr,
+      {
+        locale: resolveDateLocale(this.transloco.getActiveLang()),
+      },
+    );
   }
 
   private formatDuration(d: number | string): string {
-      if (typeof d === 'string') {
-        d = parseInt(d);
-      }
-      if (d === 0) {
-        return '0';
-      }
-      let seconds = d;
-      let minutes = 0;
-      let hours = 0;
-      let days = 0;
-      if (seconds >= 60) {
-        minutes = Math.floor(seconds / 60);
-        seconds = seconds % 60;
-        if (minutes >= 5) {
-          seconds = 0;
-          if (minutes >= 60) {
-            hours = Math.floor(minutes / 60);
-            minutes = minutes % 60;
-            if (hours >= 5) {
-              minutes = 0;
-              if (hours >= 24) {
-                days = Math.floor(hours / 24);
-                hours = hours % 24;
-              }
+    if (typeof d === 'string') {
+      d = parseInt(d);
+    }
+    if (d === 0) {
+      return '0';
+    }
+    let seconds = d;
+    let minutes = 0;
+    let hours = 0;
+    let days = 0;
+    if (seconds >= 60) {
+      minutes = Math.floor(seconds / 60);
+      seconds = seconds % 60;
+      if (minutes >= 5) {
+        seconds = 0;
+        if (minutes >= 60) {
+          hours = Math.floor(minutes / 60);
+          minutes = minutes % 60;
+          if (hours >= 5) {
+            minutes = 0;
+            if (hours >= 24) {
+              days = Math.floor(hours / 24);
+              hours = hours % 24;
             }
           }
         }
       }
-      return formatDuration({ days, hours, minutes, seconds }, this.transloco.getActiveLang());
     }
+    return formatDuration(
+      { days, hours, minutes, seconds },
+      this.transloco.getActiveLang(),
+    );
+  }
 }

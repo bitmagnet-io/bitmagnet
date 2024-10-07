@@ -8,9 +8,8 @@ describe('QueueCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TorrentsDashboardComponent]
-    })
-    .compileComponents();
+      imports: [TorrentsDashboardComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(TorrentsDashboardComponent);
     component = fixture.componentInstance;

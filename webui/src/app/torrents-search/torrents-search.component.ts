@@ -134,6 +134,7 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
   contentTypes = contentTypeList;
   orderByOptions = orderByOptions;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   facets$: Observable<FacetInfo<any, any>[]>;
 
   allColumns = allColumns;
@@ -246,7 +247,7 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
           };
         });
       }),
-      this.controller.controls$.subscribe(async (ctrl) => {
+      this.controller.controls$.subscribe((ctrl) => {
         let page: number | undefined = ctrl.page;
         let limit: number | undefined = ctrl.limit;
         if (page === 1) {
@@ -255,7 +256,7 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
         if (limit === defaultLimit) {
           limit = undefined;
         }
-        await this.router.navigate([], {
+        void this.router.navigate([], {
           relativeTo: this.route,
           queryParams: {
             query: ctrl.queryString

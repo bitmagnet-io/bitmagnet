@@ -34,13 +34,15 @@ export class TorrentMetricsController {
   private paramsSubject: BehaviorSubject<Params>;
   public params$: Observable<Params>;
   private variablesSubject: BehaviorSubject<generated.TorrentMetricsQueryVariables>;
-  private rawResultSubject = new BehaviorSubject<generated.TorrentMetricsQuery>({
-    torrent: {
-      metrics: {
-        buckets: [],
+  private rawResultSubject = new BehaviorSubject<generated.TorrentMetricsQuery>(
+    {
+      torrent: {
+        metrics: {
+          buckets: [],
+        },
       },
     },
-  });
+  );
   private resultSubject = new BehaviorSubject<Result>(emptyResult);
   public result$ = this.resultSubject.asObservable();
   private loadingSubject = new BehaviorSubject(false);
@@ -129,7 +131,10 @@ export class TorrentMetricsController {
     }));
   }
 
-  setBucketDuration(duration: generated.MetricsBucketDuration, multiplier?: number) {
+  setBucketDuration(
+    duration: generated.MetricsBucketDuration,
+    multiplier?: number,
+  ) {
     this.updateParams((p) => ({
       ...p,
       buckets: {
@@ -176,13 +181,14 @@ export class TorrentMetricsController {
     clearTimeout(this.refreshTimeout);
     this.loadingSubject.next(true);
     return this.apollo
-      .query<generated.TorrentMetricsQuery, generated.TorrentMetricsQueryVariables>(
-        {
-          query: generated.TorrentMetricsDocument,
-          variables,
-          fetchPolicy: 'no-cache',
-        },
-      )
+      .query<
+        generated.TorrentMetricsQuery,
+        generated.TorrentMetricsQueryVariables
+      >({
+        query: generated.TorrentMetricsDocument,
+        variables,
+        fetchPolicy: 'no-cache',
+      })
       .pipe(
         map((r) => {
           if (r) {
@@ -213,9 +219,8 @@ const createVariables = (
       params.buckets.duration === 'AUTO' ? 'hour' : params.buckets.duration,
     sources: params.source ? [params.source] : undefined,
     startTime: new Date(
-            new Date().getTime() -
-              1000 * timeframeLengths[params.buckets.timeframe],
-          ).toISOString(),
+      new Date().getTime() - 1000 * timeframeLengths[params.buckets.timeframe],
+    ).toISOString(),
   },
 });
 
@@ -228,57 +233,54 @@ const createResult = (
   params: Params,
   rawResult: generated.TorrentMetricsQuery,
 ): Result => {
-  const { bucketParams, earliestBucket, latestBucket } = createBucketParams(
+  const { bucketParams, earliestBucket } = createBucketParams(
     params,
     rawResult,
   );
   const sources = Object.entries(
     rawResult.torrent.metrics.buckets.reduce<
-      Record<
-        string,
-        Partial<Record<EventName, EventBucketEntries>>
-      >
+      Record<string, Partial<Record<EventName, EventBucketEntries>>>
     >((acc, next) => {
       if (next.source !== (params.source ?? next.source)) {
         return acc;
       }
-        let bucket: NormalizedBucket | undefined = normalizeBucket(next.bucket, bucketParams);
-        if (earliestBucket && earliestBucket.index > bucket.index) {
-          bucket = undefined;
-        }
-        if (!bucket) {
-          return acc;
-        }
+      let bucket: NormalizedBucket | undefined = normalizeBucket(
+        next.bucket,
+        bucketParams,
+      );
+      if (earliestBucket && earliestBucket.index > bucket.index) {
+        bucket = undefined;
+      }
+      if (!bucket) {
+        return acc;
+      }
       const currentEventBuckets = acc[next.source] ?? [];
       return {
         ...acc,
-        [next.source]:
-          {
-            created: !next.updated
-              ? {
-                  ...currentEventBuckets.created,
-                  [bucket.key]: {
-                    count:
-                      next.count +
-                      (currentEventBuckets.created?.[bucket.key]?.count ??
-                        0),
-                    startTime: bucket.start,
-                  },
-                }
-              : currentEventBuckets.created,
-            updated: next.updated
-                ? {
-                    ...currentEventBuckets.updated,
-                    [bucket.key]: {
-                      count:
-                        next.count +
-                        (currentEventBuckets.updated?.[bucket.key]?.count ??
-                          0),
-                      startTime: bucket.start,
-                    },
-                  }
-                : currentEventBuckets.updated,
-          },
+        [next.source]: {
+          created: !next.updated
+            ? {
+                ...currentEventBuckets.created,
+                [bucket.key]: {
+                  count:
+                    next.count +
+                    (currentEventBuckets.created?.[bucket.key]?.count ?? 0),
+                  startTime: bucket.start,
+                },
+              }
+            : currentEventBuckets.created,
+          updated: next.updated
+            ? {
+                ...currentEventBuckets.updated,
+                [bucket.key]: {
+                  count:
+                    next.count +
+                    (currentEventBuckets.updated?.[bucket.key]?.count ?? 0),
+                  startTime: bucket.start,
+                },
+              }
+            : currentEventBuckets.updated,
+        },
       };
     }, {}),
   ).map(([source, eventBuckets]) => {
@@ -367,10 +369,13 @@ const createBucketParams = (
   const timeframe = params.buckets.timeframe;
   const now = new Date();
   const nowBucket = normalizeBucket(now, { duration, multiplier });
-  const startBucket = normalizeBucket(now.getTime() - 1000 * timeframeLengths[timeframe], {
-          duration,
-          multiplier,
-        });
+  const startBucket = normalizeBucket(
+    now.getTime() - 1000 * timeframeLengths[timeframe],
+    {
+      duration,
+      multiplier,
+    },
+  );
   const allBuckets = [
     startBucket,
     ...rawResult.torrent.metrics.buckets.flatMap((b) => [
@@ -396,10 +401,13 @@ const createBucketParams = (
       multiplier,
       timeframe,
     },
-    earliestBucket: normalizeBucket(now.getTime() - 1000 * timeframeLengths[timeframe], {
-            duration,
-            multiplier,
-          }),
+    earliestBucket: normalizeBucket(
+      now.getTime() - 1000 * timeframeLengths[timeframe],
+      {
+        duration,
+        multiplier,
+      },
+    ),
     latestBucket: normalizeBucket(
       Math.max(now.getTime(), maxBucket.start.getTime()),
       { duration, multiplier },

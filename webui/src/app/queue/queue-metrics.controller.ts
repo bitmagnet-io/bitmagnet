@@ -9,6 +9,7 @@ import { Apollo } from 'apollo-angular';
 import { map } from 'rxjs/operators';
 import * as generated from '../graphql/generated';
 import { ErrorsService } from '../errors/errors.service';
+import { durationToSeconds, parseDuration } from '../dates/parse-duration';
 import {
   autoRefreshIntervals,
   durationSeconds,
@@ -31,7 +32,6 @@ import {
   AutoRefreshInterval,
   BucketSpan,
 } from './queue-metrics.types';
-import {durationToSeconds, parseDuration} from "../dates/parse-duration";
 
 export class QueueMetricsController {
   private paramsSubject: BehaviorSubject<Params>;
@@ -132,7 +132,10 @@ export class QueueMetricsController {
     }));
   }
 
-  setBucketDuration(duration: generated.MetricsBucketDuration, multiplier?: number) {
+  setBucketDuration(
+    duration: generated.MetricsBucketDuration,
+    multiplier?: number,
+  ) {
     this.updateParams((p) => ({
       ...p,
       buckets: {

@@ -58,18 +58,18 @@ export class PaginatorComponent {
   }
 
   get pageCount(): number | null {
-    if (typeof this.totalLength !== "number") {
-      return null
+    if (typeof this.totalLength !== 'number') {
+      return null;
     }
     return Math.ceil(this.totalLength / this.pageSize);
   }
 
   get actuallyHasNextPage() {
-    if (typeof this.hasNextPage === "boolean") {
+    if (typeof this.hasNextPage === 'boolean') {
       return this.hasNextPage;
     }
-    if (typeof this.totalLength !== "number") {
-      return false
+    if (typeof this.totalLength !== 'number') {
+      return false;
     }
     return this.page * this.pageSize < this.totalLength;
   }

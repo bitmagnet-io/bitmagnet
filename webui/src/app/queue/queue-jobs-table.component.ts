@@ -1,25 +1,40 @@
-import {Component, EventEmitter, inject, Input, OnInit, Output} from '@angular/core';
-import {SelectionModel} from "@angular/cdk/collections";
-import {TranslocoDirective, TranslocoService} from "@jsverse/transloco";
-import {QueueJobsController} from "./queue-jobs.controller";
-import {QueueJobsDatasource} from "./queue-jobs.datasource";
-import {BehaviorSubject} from "rxjs";
-import * as generated from "../graphql/generated";
-import {AsyncPipe, DecimalPipe, SlicePipe} from "@angular/common";
+import {
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
+import { SelectionModel } from '@angular/cdk/collections';
+import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { BehaviorSubject } from 'rxjs';
+import { AsyncPipe, DecimalPipe, SlicePipe } from '@angular/common';
 import {
   MatCell,
   MatCellDef,
   MatColumnDef,
-  MatHeaderCell, MatHeaderCellDef,
+  MatHeaderCell,
+  MatHeaderCellDef,
   MatHeaderRow,
   MatHeaderRowDef,
-  MatRow, MatRowDef, MatTable
-} from "@angular/material/table";
-import {MatProgressBar} from "@angular/material/progress-bar";
-import {TimeAgoPipe} from "../dates/time-ago.pipe";
-import {MatTooltip} from "@angular/material/tooltip";
-import {CdkCopyToClipboard} from "@angular/cdk/clipboard";
-import {animate, state, style, transition, trigger} from "@angular/animations";
+  MatRow,
+  MatRowDef,
+  MatTable,
+} from '@angular/material/table';
+import { MatProgressBar } from '@angular/material/progress-bar';
+import { MatTooltip } from '@angular/material/tooltip';
+import { CdkCopyToClipboard } from '@angular/cdk/clipboard';
+import {
+  animate,
+  state,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
+import { TimeAgoPipe } from '../dates/time-ago.pipe';
+import * as generated from '../graphql/generated';
+import { QueueJobsDatasource } from './queue-jobs.datasource';
 
 @Component({
   selector: 'app-queue-jobs-table',
@@ -42,7 +57,7 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
     TranslocoDirective,
     MatTooltip,
     CdkCopyToClipboard,
-    MatHeaderCellDef
+    MatHeaderCellDef,
   ],
   templateUrl: './queue-jobs-table.component.html',
   styleUrl: './queue-jobs-table.component.scss',
@@ -120,4 +135,12 @@ export class QueueJobsTableComponent implements OnInit {
   }
 }
 
-const allColumns = ["id", "queue", "priority", "status", "error", "createdAt", "ranAt"];
+const allColumns = [
+  'id',
+  'queue',
+  'priority',
+  'status',
+  'error',
+  'createdAt',
+  'ranAt',
+];

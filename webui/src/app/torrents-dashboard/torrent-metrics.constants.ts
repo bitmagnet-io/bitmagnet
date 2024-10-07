@@ -1,9 +1,5 @@
 import * as generated from '../graphql/generated';
-import {
-  BucketParams,
-  Params,
-  Result,
-} from './torrent-metrics.types';
+import { BucketParams, Params, Result } from './torrent-metrics.types';
 
 export const defaultBucketParams: BucketParams = {
   duration: 'hour',
@@ -13,14 +9,12 @@ export const defaultBucketParams: BucketParams = {
 
 export const resolutionNames = ['day', 'hour', 'minute'] as const;
 
-export const durationSeconds: Record<
-  generated.MetricsBucketDuration,
-  number
-> = {
-  minute: 60,
-  hour: 60 * 60,
-  day: 60 * 60 * 24,
-};
+export const durationSeconds: Record<generated.MetricsBucketDuration, number> =
+  {
+    minute: 60,
+    hour: 60 * 60,
+    day: 60 * 60 * 24,
+  };
 
 export const emptyParams: Params = {
   buckets: defaultBucketParams,
