@@ -25,6 +25,12 @@
     }
   },
   "dashboard": {
+    "event": {
+      "created": "Created",
+      "processed": "Processed",
+      "updated": "Updated",
+      "failed": "Failed"
+    },
     "metrics": {
       "event": "Event",
       "resolution": "Resolution",
@@ -54,12 +60,23 @@
       "status": "Status",
       "total_counts_by_status": "Total counts by status"
     },
-    "refresh_interval": {
+    "interval": {
+      "all": "All",
+      "days": "Days",
+      "days_1": "1 day",
+      "hours": "Hours",
+      "hours_1": "1 hour",
+      "hours_6": "6 hours",
+      "hours_12": "12 hours",
+      "minutes": "Minutes",
       "minutes_1": "1 minute",
       "minutes_5": "5 minutes",
+      "minutes_15": "15 minutes",
+      "minutes_30": "30 minutes",
       "off": "Off",
       "seconds_10": "10 seconds",
-      "seconds_30": "30 seconds"
+      "seconds_30": "30 seconds",
+      "weeks_1": "1 week"
     }
   },
   "facets": {
@@ -240,6 +257,17 @@
     "new_tag": "New tag",
     "order_by": "Order by",
     "order_direction_toggle": "Toggle direction",
+    "ordering": {
+      "files_count": "Files count",
+      "info_hash": "Info hash",
+      "leechers": "Leechers",
+      "name": "Name",
+      "published_at": "Published at",
+      "relevance": "Relevance",
+      "seeders": "Seeders",
+      "size": "Size",
+      "updated_at": "Updated at"
+    },
     "original_release_date": "Original release date",
     "permalink": "Permalink",
     "poster": "Poster",

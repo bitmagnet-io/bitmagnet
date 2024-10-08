@@ -25,7 +25,7 @@
                   (valueChange)="queueMetricsController.setTimeframe($event)"
                 >
                   @for (name of timeframeNames; track name) {
-                    <mat-option [value]="name">{{ name }}</mat-option>
+                    <mat-option [value]="name">{{ t('dashboard.interval.'+name) }}</mat-option>
                   }
                 </mat-select>
               </mat-form-field>
@@ -137,7 +137,7 @@
                   "
                 >
                   @for (name of resolutionNames; track name) {
-                    <mat-option [value]="name">{{ name }}</mat-option>
+                    <mat-option [value]="name">{{ t('dashboard.interval.'+name+'s') }}</mat-option>
                   }
                 </mat-select>
               </mat-form-field>
@@ -315,7 +315,7 @@
                 >
                   <mat-option value="_all">All</mat-option>
                   @for (event of eventNames; track event) {
-                    <mat-option [value]="event">{{ event }}</mat-option>
+                    <mat-option [value]="event">{{ t('dashboard.event.'+event) }}</mat-option>
                   }
                 </mat-select>
               </mat-form-field>
@@ -399,7 +399,7 @@
                   "
                 >
                   @for (name of autoRefreshIntervalNames; track name) {
-                    <mat-option [value]="name">{{ t('dashboard.refresh_interval.'+name) }}</mat-option>
+                    <mat-option [value]="name">{{ t('dashboard.interval.'+name) }}</mat-option>
                   }
                 </mat-select>
               </mat-form-field>

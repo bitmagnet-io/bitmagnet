@@ -25,6 +25,12 @@
     }
   },
   "dashboard": {
+    "event": {
+      "created": "Erstellt",
+      "processed": "Verarbeitet",
+      "updated": "Aktualisiert",
+      "failed": "Fehlgeschlagen"
+    },
     "metrics": {
       "event": "Ereignis",
       "resolution": "Auflösung",
@@ -54,12 +60,23 @@
       "status": "Status",
       "total_counts_by_status": "Gesamtanzahl nach Status"
     },
-    "refresh_interval": {
+    "interval": {
+      "all": "Alle",
+      "days": "Tage",
+      "days_1": "1 Tag",
+      "hours": "Stunden",
+      "hours_1": "1 Stunde",
+      "hours_6": "6 Stunden",
+      "hours_12": "12 Stunden",
+      "minutes": "Minuten",
       "minutes_1": "1 Minute",
       "minutes_5": "5 Minuten",
+      "minutes_15": "15 Minuten",
+      "minutes_30": "30 Minuten",
       "off": "Aus",
       "seconds_10": "10 Sekunden",
-      "seconds_30": "30 Sekunden"
+      "seconds_30": "30 Sekunden",
+      "weeks_1": "1 Woche"
     }
   },
   "facets": {
@@ -240,6 +257,17 @@
     "new_tag": "Neuer Tag",
     "order_by": "Sortieren nach",
     "order_direction_toggle": "Richtung umschalten",
+    "ordering": {
+      "files_count": "Dateienanzahl",
+      "info_hash": "Info-Hash",
+      "leechers": "Leechers",
+      "name": "Name",
+      "published_at": "Veröffentlicht am",
+      "relevance": "Relevanz",
+      "seeders": "Seeders",
+      "size": "Größe",
+      "updated_at": "Aktualisiert am"
+    },
     "original_release_date": "Originales Veröffentlichungsdatum",
     "permalink": "Permalink",
     "poster": "Poster",

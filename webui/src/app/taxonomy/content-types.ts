@@ -53,7 +53,7 @@ export const contentTypeMap: Record<
   xxx: {
     singular: 'XXX',
     plural: 'XXX',
-    icon: '18_up_rating_outline',
+    icon: '18_up_rating',
   },
   null: {
     singular: 'Unknown',

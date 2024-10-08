@@ -25,6 +25,12 @@
     }
   },
   "dashboard": {
+    "event": {
+      "created": "已创建",
+      "processed": "已处理",
+      "updated": "已更新",
+      "failed": "失败"
+    },
     "metrics": {
       "event": "事件",
       "resolution": "分辨率",
@@ -54,12 +60,23 @@
       "status": "状态",
       "total_counts_by_status": "按状态统计总数"
     },
-    "refresh_interval": {
+    "interval": {
+      "all": "全部",
+      "days": "天",
+      "days_1": "1天",
+      "hours": "小时",
+      "hours_1": "1小时",
+      "hours_6": "6小时",
+      "hours_12": "12小时",
+      "minutes": "分钟",
       "minutes_1": "1分钟",
       "minutes_5": "5分钟",
+      "minutes_15": "15分钟",
+      "minutes_30": "30分钟",
       "off": "关闭",
       "seconds_10": "10秒",
-      "seconds_30": "30秒"
+      "seconds_30": "30秒",
+      "weeks_1": "1周"
     }
   },
   "facets": {
@@ -240,6 +257,17 @@
     "new_tag": "新标签",
     "order_by": "排序依据",
     "order_direction_toggle": "切换方向",
+    "ordering": {
+      "files_count": "文件数",
+      "info_hash": "信息哈希",
+      "leechers": "下载者",
+      "name": "名称",
+      "published_at": "发布于",
+      "relevance": "相关性",
+      "seeders": "上传者",
+      "size": "大小",
+      "updated_at": "更新于"
+    },
     "original_release_date": "原始发布日期",
     "permalink": "永久链接",
     "poster": "海报",

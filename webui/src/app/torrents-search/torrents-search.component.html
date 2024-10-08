@@ -165,7 +165,7 @@
               @for (option of orderByOptions; track option.field) {
                 @if (option.field != "relevance" || queryString.value) {
                   <mat-option [value]="option.field">
-                    {{ t("torrents.order_by_" + option.field) }}
+                    {{ t("torrents.ordering." + option.field) }}
                   </mat-option>
                 }
               }

@@ -14,6 +14,7 @@
               mat-button
               routerLink="/dashboard"
               routerLinkActive
+              [routerLinkActiveOptions]="{exact: true}"
               #linkHome="routerLinkActive"
               [class]="linkHome.isActive ? 'active' : ''"
               ><mat-icon>dashboard</mat-icon>{{t('routes.home')}}</a
