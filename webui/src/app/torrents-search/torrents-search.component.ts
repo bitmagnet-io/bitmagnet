@@ -203,12 +203,6 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
         );
       }),
     );
-    // a bit of a hack to force an update on language switch:
-    this.subscriptions.push(
-      this.transloco.events$.subscribe(() =>
-        this.controller.selectLanguage(this.transloco.getActiveLang()),
-      ),
-    );
   }
 
   ngOnInit(): void {
