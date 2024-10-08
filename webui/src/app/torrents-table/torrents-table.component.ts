@@ -102,12 +102,12 @@ export class TorrentsTableComponent implements OnInit {
   ngOnInit() {
     this.dataSource.items$.subscribe((items) => {
       this.items = items;
-      if (items.length) {
-        const expandedId = this.expandedId.getValue();
-        if (expandedId && !items.some(({ id }) => id === expandedId)) {
-          this.expandedId.next(null);
-        }
-      }
+      // if (items.length) {
+      //   const expandedId = this.expandedId.getValue();
+      //   if (expandedId && !items.some(({ id }) => id === expandedId)) {
+      //     this.expandedId.next(null);
+      //   }
+      // }
     });
     this.route.queryParams.subscribe((params) => {
       const expandedId = this.expandedId.getValue() ?? undefined;
