@@ -1,6 +1,6 @@
 #import "../fragments/TorrentContentSearchResult"
 
-query Health {
+query HealthCheck {
   health {
     status
     checks {
@@ -11,9 +11,11 @@ query Health {
     }
   }
   workers {
-    all {
-      key
-      started
+    listAll {
+      workers {
+        key
+        started
+      }
     }
   }
 }

@@ -27,7 +27,7 @@ type BudgetedCount = {
 export class TorrentsSearchDatasource
   implements DataSource<generated.TorrentContent>
 {
-  private query: generated.TorrentContentSearchQueryInput;
+  private input: generated.TorrentContentSearchQueryInput;
 
   private currentRequest = new BehaviorSubject(0);
   private currentSubscription?: Subscription;
@@ -94,10 +94,10 @@ export class TorrentsSearchDatasource
   ) {
     searchQueryVariables.subscribe(
       (variables: generated.TorrentContentSearchQueryVariables) => {
-        this.query = variables.query;
+        this.input = variables.input;
         this.loadResult({
-          query: {
-            ...variables.query,
+          input: {
+            ...variables.input,
             cached: true,
           },
         });
@@ -118,8 +118,8 @@ export class TorrentsSearchDatasource
 
   refresh() {
     this.loadResult({
-      query: {
-        ...this.query,
+      input: {
+        ...this.input,
         cached: false,
       },
     });

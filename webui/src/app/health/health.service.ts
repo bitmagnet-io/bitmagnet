@@ -63,8 +63,8 @@ export class HealthService {
 
   private watchQuery() {
     this.apollo
-      .watchQuery<generated.HealthQuery, generated.HealthQueryVariables>({
-        query: generated.HealthDocument,
+      .watchQuery<generated.HealthCheckQuery, generated.HealthCheckQueryVariables>({
+        query: generated.HealthCheckDocument,
         fetchPolicy: 'no-cache',
         pollInterval,
       })
@@ -79,7 +79,7 @@ export class HealthService {
               ...c,
               icon: icons[c.status],
             })),
-            workers: r.data.workers.all.map((w) => ({
+            workers: r.data.workers.listAll.workers.map((w) => ({
               ...w,
               icon: icons[w.started ? 'started' : 'inactive'],
             })),

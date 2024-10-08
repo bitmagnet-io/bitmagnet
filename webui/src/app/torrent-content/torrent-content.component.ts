@@ -110,7 +110,7 @@ export class TorrentContentComponent {
       }
       return graphQLService
         .torrentSuggestTags({
-          query: {
+          input: {
             prefix: value,
             exclusions: this.torrentContent.torrent.tagNames,
           },

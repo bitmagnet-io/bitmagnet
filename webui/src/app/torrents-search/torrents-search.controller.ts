@@ -31,7 +31,7 @@ export type TorrentSearchControls = {
 const controlsToQueryVariables = (
   ctrl: TorrentSearchControls,
 ): generated.TorrentContentSearchQueryVariables => ({
-  query: {
+  input: {
     queryString: ctrl.queryString,
     limit: ctrl.limit,
     page: ctrl.page,

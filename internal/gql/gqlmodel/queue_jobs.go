@@ -28,7 +28,7 @@ type QueueJobsQueryResult struct {
 	Aggregations gen.QueueJobsAggregations
 }
 
-func (r QueueQueryResult) Jobs(
+func (r QueueQuery) Jobs(
 	ctx context.Context,
 	query QueueJobsQueryInput,
 ) (QueueJobsQueryResult, error) {

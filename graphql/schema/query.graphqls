@@ -1,15 +1,15 @@
 type Query {
   version: String!
-  workers: WorkersQueryResult!
-  health: HealthQueryResult!
-  queue: QueueQueryResult!
+  workers: WorkersQuery!
+  health: HealthQuery!
+  queue: QueueQuery!
   torrent: TorrentQuery!
   torrentContent: TorrentContentQuery!
 }
 
 type TorrentQuery {
   files(input: TorrentFilesQueryInput!): TorrentFilesQueryResult!
-  suggestTags(query: SuggestTagsQueryInput): TorrentSuggestTagsResult!
+  suggestTags(input: SuggestTagsQueryInput): TorrentSuggestTagsResult!
   metrics(input: TorrentMetricsQueryInput!): TorrentMetricsQueryResult!
 }
 
@@ -29,7 +29,7 @@ type SuggestedTag {
 
 type TorrentContentQuery {
   search(
-    query: TorrentContentSearchQueryInput!
+    input: TorrentContentSearchQueryInput!
   ): TorrentContentSearchResult!
 }
 
@@ -38,8 +38,12 @@ type Worker {
   started: Boolean!
 }
 
-type WorkersQueryResult {
-  all: [Worker!]!
+type WorkersListAllQueryResult {
+  workers: [Worker!]!
+}
+
+type WorkersQuery {
+  listAll: WorkersListAllQueryResult!
 }
 
 enum HealthStatus {
@@ -56,7 +60,7 @@ type HealthCheck {
   error: String
 }
 
-type HealthQueryResult {
+type HealthQuery {
   status: HealthStatus!
   checks: [HealthCheck!]!
 }

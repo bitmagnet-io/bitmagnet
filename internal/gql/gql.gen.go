@@ -51,7 +51,7 @@ type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
 	QueueJob() QueueJobResolver
-	QueueQueryResult() QueueQueryResultResolver
+	QueueQuery() QueueQueryResolver
 	Torrent() TorrentResolver
 	TorrentMutation() TorrentMutationResolver
 	TorrentQuery() TorrentQueryResolver
@@ -135,7 +135,7 @@ type ComplexityRoot struct {
 		Timestamp func(childComplexity int) int
 	}
 
-	HealthQueryResult struct {
+	HealthQuery struct {
 		Checks func(childComplexity int) int
 		Status func(childComplexity int) int
 	}
@@ -227,7 +227,7 @@ type ComplexityRoot struct {
 		PurgeJobs                     func(childComplexity int, input manager.PurgeJobsRequest) int
 	}
 
-	QueueQueryResult struct {
+	QueueQuery struct {
 		Jobs    func(childComplexity int, input gqlmodel.QueueJobsQueryInput) int
 		Metrics func(childComplexity int, input gen.QueueMetricsQueryInput) int
 	}
@@ -307,7 +307,7 @@ type ComplexityRoot struct {
 	}
 
 	TorrentContentQuery struct {
-		Search func(childComplexity int, query gqlmodel.TorrentContentSearchQueryInput) int
+		Search func(childComplexity int, input gqlmodel.TorrentContentSearchQueryInput) int
 	}
 
 	TorrentContentSearchResult struct {
@@ -363,7 +363,7 @@ type ComplexityRoot struct {
 	TorrentQuery struct {
 		Files       func(childComplexity int, input gqlmodel.TorrentFilesQueryInput) int
 		Metrics     func(childComplexity int, input gen.TorrentMetricsQueryInput) int
-		SuggestTags func(childComplexity int, query *gen.SuggestTagsQueryInput) int
+		SuggestTags func(childComplexity int, input *gen.SuggestTagsQueryInput) int
 	}
 
 	TorrentSource struct {
@@ -411,8 +411,12 @@ type ComplexityRoot struct {
 		Started func(childComplexity int) int
 	}
 
-	WorkersQueryResult struct {
-		All func(childComplexity int) int
+	WorkersListAllQueryResult struct {
+		Workers func(childComplexity int) int
+	}
+
+	WorkersQuery struct {
+		ListAll func(childComplexity int) int
 	}
 }
 
@@ -425,17 +429,17 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Version(ctx context.Context) (string, error)
-	Workers(ctx context.Context) (gen.WorkersQueryResult, error)
-	Health(ctx context.Context) (gen.HealthQueryResult, error)
-	Queue(ctx context.Context) (gqlmodel.QueueQueryResult, error)
+	Workers(ctx context.Context) (gen.WorkersQuery, error)
+	Health(ctx context.Context) (gen.HealthQuery, error)
+	Queue(ctx context.Context) (gqlmodel.QueueQuery, error)
 	Torrent(ctx context.Context) (gqlmodel.TorrentQuery, error)
 	TorrentContent(ctx context.Context) (gqlmodel.TorrentContentQuery, error)
 }
 type QueueJobResolver interface {
 	RanAt(ctx context.Context, obj *model.QueueJob) (*time.Time, error)
 }
-type QueueQueryResultResolver interface {
-	Jobs(ctx context.Context, obj *gqlmodel.QueueQueryResult, input gqlmodel.QueueJobsQueryInput) (gqlmodel.QueueJobsQueryResult, error)
+type QueueQueryResolver interface {
+	Jobs(ctx context.Context, obj *gqlmodel.QueueQuery, input gqlmodel.QueueJobsQueryInput) (gqlmodel.QueueJobsQueryResult, error)
 }
 type TorrentResolver interface {
 	Sources(ctx context.Context, obj *model.Torrent) ([]gqlmodel.TorrentSource, error)
@@ -816,19 +820,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.HealthCheck.Timestamp(childComplexity), true
 
-	case "HealthQueryResult.checks":
-		if e.complexity.HealthQueryResult.Checks == nil {
+	case "HealthQuery.checks":
+		if e.complexity.HealthQuery.Checks == nil {
 			break
 		}
 
-		return e.complexity.HealthQueryResult.Checks(childComplexity), true
+		return e.complexity.HealthQuery.Checks(childComplexity), true
 
-	case "HealthQueryResult.status":
-		if e.complexity.HealthQueryResult.Status == nil {
+	case "HealthQuery.status":
+		if e.complexity.HealthQuery.Status == nil {
 			break
 		}
 
-		return e.complexity.HealthQueryResult.Status(childComplexity), true
+		return e.complexity.HealthQuery.Status(childComplexity), true
 
 	case "LanguageAgg.count":
 		if e.complexity.LanguageAgg.Count == nil {
@@ -1176,29 +1180,29 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.QueueMutation.PurgeJobs(childComplexity, args["input"].(manager.PurgeJobsRequest)), true
 
-	case "QueueQueryResult.jobs":
-		if e.complexity.QueueQueryResult.Jobs == nil {
+	case "QueueQuery.jobs":
+		if e.complexity.QueueQuery.Jobs == nil {
 			break
 		}
 
-		args, err := ec.field_QueueQueryResult_jobs_args(context.TODO(), rawArgs)
+		args, err := ec.field_QueueQuery_jobs_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.QueueQueryResult.Jobs(childComplexity, args["input"].(gqlmodel.QueueJobsQueryInput)), true
+		return e.complexity.QueueQuery.Jobs(childComplexity, args["input"].(gqlmodel.QueueJobsQueryInput)), true
 
-	case "QueueQueryResult.metrics":
-		if e.complexity.QueueQueryResult.Metrics == nil {
+	case "QueueQuery.metrics":
+		if e.complexity.QueueQuery.Metrics == nil {
 			break
 		}
 
-		args, err := ec.field_QueueQueryResult_metrics_args(context.TODO(), rawArgs)
+		args, err := ec.field_QueueQuery_metrics_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.QueueQueryResult.Metrics(childComplexity, args["input"].(gen.QueueMetricsQueryInput)), true
+		return e.complexity.QueueQuery.Metrics(childComplexity, args["input"].(gen.QueueMetricsQueryInput)), true
 
 	case "ReleaseYearAgg.count":
 		if e.complexity.ReleaseYearAgg.Count == nil {
@@ -1602,7 +1606,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.TorrentContentQuery.Search(childComplexity, args["query"].(gqlmodel.TorrentContentSearchQueryInput)), true
+		return e.complexity.TorrentContentQuery.Search(childComplexity, args["input"].(gqlmodel.TorrentContentSearchQueryInput)), true
 
 	case "TorrentContentSearchResult.aggregations":
 		if e.complexity.TorrentContentSearchResult.Aggregations == nil {
@@ -1861,7 +1865,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.TorrentQuery.SuggestTags(childComplexity, args["query"].(*gen.SuggestTagsQueryInput)), true
+		return e.complexity.TorrentQuery.SuggestTags(childComplexity, args["input"].(*gen.SuggestTagsQueryInput)), true
 
 	case "TorrentSource.importId":
 		if e.complexity.TorrentSource.ImportID == nil {
@@ -2031,12 +2035,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Worker.Started(childComplexity), true
 
-	case "WorkersQueryResult.all":
-		if e.complexity.WorkersQueryResult.All == nil {
+	case "WorkersListAllQueryResult.workers":
+		if e.complexity.WorkersListAllQueryResult.Workers == nil {
 			break
 		}
 
-		return e.complexity.WorkersQueryResult.All(childComplexity), true
+		return e.complexity.WorkersListAllQueryResult.Workers(childComplexity), true
+
+	case "WorkersQuery.listAll":
+		if e.complexity.WorkersQuery.ListAll == nil {
+			break
+		}
+
+		return e.complexity.WorkersQuery.ListAll(childComplexity), true
 
 	}
 	return 0, false
@@ -2530,16 +2541,16 @@ type TorrentMutation {
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/query.graphqls", Input: `type Query {
   version: String!
-  workers: WorkersQueryResult!
-  health: HealthQueryResult!
-  queue: QueueQueryResult!
+  workers: WorkersQuery!
+  health: HealthQuery!
+  queue: QueueQuery!
   torrent: TorrentQuery!
   torrentContent: TorrentContentQuery!
 }
 
 type TorrentQuery {
   files(input: TorrentFilesQueryInput!): TorrentFilesQueryResult!
-  suggestTags(query: SuggestTagsQueryInput): TorrentSuggestTagsResult!
+  suggestTags(input: SuggestTagsQueryInput): TorrentSuggestTagsResult!
   metrics(input: TorrentMetricsQueryInput!): TorrentMetricsQueryResult!
 }
 
@@ -2559,7 +2570,7 @@ type SuggestedTag {
 
 type TorrentContentQuery {
   search(
-    query: TorrentContentSearchQueryInput!
+    input: TorrentContentSearchQueryInput!
   ): TorrentContentSearchResult!
 }
 
@@ -2568,8 +2579,12 @@ type Worker {
   started: Boolean!
 }
 
-type WorkersQueryResult {
-  all: [Worker!]!
+type WorkersListAllQueryResult {
+  workers: [Worker!]!
+}
+
+type WorkersQuery {
+  listAll: WorkersListAllQueryResult!
 }
 
 enum HealthStatus {
@@ -2586,12 +2601,12 @@ type HealthCheck {
   error: String
 }
 
-type HealthQueryResult {
+type HealthQuery {
   status: HealthStatus!
   checks: [HealthCheck!]!
 }
 `, BuiltIn: false},
-	{Name: "../../graphql/schema/queue.graphqls", Input: `type QueueQueryResult {
+	{Name: "../../graphql/schema/queue.graphqls", Input: `type QueueQuery {
   jobs(input: QueueJobsQueryInput!): QueueJobsQueryResult!
   metrics(input: QueueMetricsQueryInput!): QueueMetricsQueryResult!
 }
@@ -2944,7 +2959,7 @@ func (ec *executionContext) field_QueueMutation_purgeJobs_args(ctx context.Conte
 	return args, nil
 }
 
-func (ec *executionContext) field_QueueQueryResult_jobs_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_QueueQuery_jobs_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 gqlmodel.QueueJobsQueryInput
@@ -2959,7 +2974,7 @@ func (ec *executionContext) field_QueueQueryResult_jobs_args(ctx context.Context
 	return args, nil
 }
 
-func (ec *executionContext) field_QueueQueryResult_metrics_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_QueueQuery_metrics_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 gen.QueueMetricsQueryInput
@@ -2978,14 +2993,14 @@ func (ec *executionContext) field_TorrentContentQuery_search_args(ctx context.Co
 	var err error
 	args := map[string]interface{}{}
 	var arg0 gqlmodel.TorrentContentSearchQueryInput
-	if tmp, ok := rawArgs["query"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("query"))
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNTorrentContentSearchQueryInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐTorrentContentSearchQueryInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["query"] = arg0
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -3110,14 +3125,14 @@ func (ec *executionContext) field_TorrentQuery_suggestTags_args(ctx context.Cont
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *gen.SuggestTagsQueryInput
-	if tmp, ok := rawArgs["query"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("query"))
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalOSuggestTagsQueryInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐSuggestTagsQueryInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["query"] = arg0
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -5351,8 +5366,8 @@ func (ec *executionContext) fieldContext_HealthCheck_error(ctx context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _HealthQueryResult_status(ctx context.Context, field graphql.CollectedField, obj *gen.HealthQueryResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_HealthQueryResult_status(ctx, field)
+func (ec *executionContext) _HealthQuery_status(ctx context.Context, field graphql.CollectedField, obj *gen.HealthQuery) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_HealthQuery_status(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5382,9 +5397,9 @@ func (ec *executionContext) _HealthQueryResult_status(ctx context.Context, field
 	return ec.marshalNHealthStatus2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐHealthStatus(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_HealthQueryResult_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_HealthQuery_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "HealthQueryResult",
+		Object:     "HealthQuery",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -5395,8 +5410,8 @@ func (ec *executionContext) fieldContext_HealthQueryResult_status(ctx context.Co
 	return fc, nil
 }
 
-func (ec *executionContext) _HealthQueryResult_checks(ctx context.Context, field graphql.CollectedField, obj *gen.HealthQueryResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_HealthQueryResult_checks(ctx, field)
+func (ec *executionContext) _HealthQuery_checks(ctx context.Context, field graphql.CollectedField, obj *gen.HealthQuery) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_HealthQuery_checks(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5426,9 +5441,9 @@ func (ec *executionContext) _HealthQueryResult_checks(ctx context.Context, field
 	return ec.marshalNHealthCheck2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐHealthCheckᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_HealthQueryResult_checks(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_HealthQuery_checks(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "HealthQueryResult",
+		Object:     "HealthQuery",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -5975,9 +5990,9 @@ func (ec *executionContext) _Query_workers(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(gen.WorkersQueryResult)
+	res := resTmp.(gen.WorkersQuery)
 	fc.Result = res
-	return ec.marshalNWorkersQueryResult2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐWorkersQueryResult(ctx, field.Selections, res)
+	return ec.marshalNWorkersQuery2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐWorkersQuery(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_workers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5988,10 +6003,10 @@ func (ec *executionContext) fieldContext_Query_workers(ctx context.Context, fiel
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "all":
-				return ec.fieldContext_WorkersQueryResult_all(ctx, field)
+			case "listAll":
+				return ec.fieldContext_WorkersQuery_listAll(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type WorkersQueryResult", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type WorkersQuery", field.Name)
 		},
 	}
 	return fc, nil
@@ -6023,9 +6038,9 @@ func (ec *executionContext) _Query_health(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(gen.HealthQueryResult)
+	res := resTmp.(gen.HealthQuery)
 	fc.Result = res
-	return ec.marshalNHealthQueryResult2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐHealthQueryResult(ctx, field.Selections, res)
+	return ec.marshalNHealthQuery2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐHealthQuery(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_health(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6037,11 +6052,11 @@ func (ec *executionContext) fieldContext_Query_health(ctx context.Context, field
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "status":
-				return ec.fieldContext_HealthQueryResult_status(ctx, field)
+				return ec.fieldContext_HealthQuery_status(ctx, field)
 			case "checks":
-				return ec.fieldContext_HealthQueryResult_checks(ctx, field)
+				return ec.fieldContext_HealthQuery_checks(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type HealthQueryResult", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type HealthQuery", field.Name)
 		},
 	}
 	return fc, nil
@@ -6073,9 +6088,9 @@ func (ec *executionContext) _Query_queue(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.(gqlmodel.QueueQueryResult)
+	res := resTmp.(gqlmodel.QueueQuery)
 	fc.Result = res
-	return ec.marshalNQueueQueryResult2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐQueueQueryResult(ctx, field.Selections, res)
+	return ec.marshalNQueueQuery2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐQueueQuery(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_queue(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6087,11 +6102,11 @@ func (ec *executionContext) fieldContext_Query_queue(ctx context.Context, field 
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "jobs":
-				return ec.fieldContext_QueueQueryResult_jobs(ctx, field)
+				return ec.fieldContext_QueueQuery_jobs(ctx, field)
 			case "metrics":
-				return ec.fieldContext_QueueQueryResult_metrics(ctx, field)
+				return ec.fieldContext_QueueQuery_metrics(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type QueueQueryResult", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type QueueQuery", field.Name)
 		},
 	}
 	return fc, nil
@@ -7789,8 +7804,8 @@ func (ec *executionContext) fieldContext_QueueMutation_enqueueReprocessTorrentsB
 	return fc, nil
 }
 
-func (ec *executionContext) _QueueQueryResult_jobs(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.QueueQueryResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_QueueQueryResult_jobs(ctx, field)
+func (ec *executionContext) _QueueQuery_jobs(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.QueueQuery) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueueQuery_jobs(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -7803,7 +7818,7 @@ func (ec *executionContext) _QueueQueryResult_jobs(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.QueueQueryResult().Jobs(rctx, obj, fc.Args["input"].(gqlmodel.QueueJobsQueryInput))
+		return ec.resolvers.QueueQuery().Jobs(rctx, obj, fc.Args["input"].(gqlmodel.QueueJobsQueryInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7820,9 +7835,9 @@ func (ec *executionContext) _QueueQueryResult_jobs(ctx context.Context, field gr
 	return ec.marshalNQueueJobsQueryResult2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐQueueJobsQueryResult(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_QueueQueryResult_jobs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_QueueQuery_jobs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "QueueQueryResult",
+		Object:     "QueueQuery",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
@@ -7847,15 +7862,15 @@ func (ec *executionContext) fieldContext_QueueQueryResult_jobs(ctx context.Conte
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_QueueQueryResult_jobs_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_QueueQuery_jobs_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _QueueQueryResult_metrics(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.QueueQueryResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_QueueQueryResult_metrics(ctx, field)
+func (ec *executionContext) _QueueQuery_metrics(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.QueueQuery) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_QueueQuery_metrics(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -7885,9 +7900,9 @@ func (ec *executionContext) _QueueQueryResult_metrics(ctx context.Context, field
 	return ec.marshalNQueueMetricsQueryResult2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueMetricsQueryResult(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_QueueQueryResult_metrics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_QueueQuery_metrics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "QueueQueryResult",
+		Object:     "QueueQuery",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: false,
@@ -7906,7 +7921,7 @@ func (ec *executionContext) fieldContext_QueueQueryResult_metrics(ctx context.Co
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_QueueQueryResult_metrics_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_QueueQuery_metrics_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -10504,7 +10519,7 @@ func (ec *executionContext) _TorrentContentQuery_search(ctx context.Context, fie
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Search(ctx, fc.Args["query"].(gqlmodel.TorrentContentSearchQueryInput))
+		return obj.Search(ctx, fc.Args["input"].(gqlmodel.TorrentContentSearchQueryInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -12022,7 +12037,7 @@ func (ec *executionContext) _TorrentQuery_suggestTags(ctx context.Context, field
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.SuggestTags(ctx, fc.Args["query"].(*gen.SuggestTagsQueryInput))
+		return obj.SuggestTags(ctx, fc.Args["input"].(*gen.SuggestTagsQueryInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -13173,8 +13188,8 @@ func (ec *executionContext) fieldContext_Worker_started(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _WorkersQueryResult_all(ctx context.Context, field graphql.CollectedField, obj *gen.WorkersQueryResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_WorkersQueryResult_all(ctx, field)
+func (ec *executionContext) _WorkersListAllQueryResult_workers(ctx context.Context, field graphql.CollectedField, obj *gen.WorkersListAllQueryResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_WorkersListAllQueryResult_workers(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -13187,7 +13202,7 @@ func (ec *executionContext) _WorkersQueryResult_all(ctx context.Context, field g
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.All, nil
+		return obj.Workers, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -13204,9 +13219,9 @@ func (ec *executionContext) _WorkersQueryResult_all(ctx context.Context, field g
 	return ec.marshalNWorker2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐWorkerᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_WorkersQueryResult_all(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_WorkersListAllQueryResult_workers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "WorkersQueryResult",
+		Object:     "WorkersListAllQueryResult",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -13218,6 +13233,54 @@ func (ec *executionContext) fieldContext_WorkersQueryResult_all(ctx context.Cont
 				return ec.fieldContext_Worker_started(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Worker", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _WorkersQuery_listAll(ctx context.Context, field graphql.CollectedField, obj *gen.WorkersQuery) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_WorkersQuery_listAll(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ListAll, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(gen.WorkersListAllQueryResult)
+	fc.Result = res
+	return ec.marshalNWorkersListAllQueryResult2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐWorkersListAllQueryResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_WorkersQuery_listAll(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "WorkersQuery",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "workers":
+				return ec.fieldContext_WorkersListAllQueryResult_workers(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type WorkersListAllQueryResult", field.Name)
 		},
 	}
 	return fc, nil
@@ -16642,24 +16705,24 @@ func (ec *executionContext) _HealthCheck(ctx context.Context, sel ast.SelectionS
 	return out
 }
 
-var healthQueryResultImplementors = []string{"HealthQueryResult"}
+var healthQueryImplementors = []string{"HealthQuery"}
 
-func (ec *executionContext) _HealthQueryResult(ctx context.Context, sel ast.SelectionSet, obj *gen.HealthQueryResult) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, healthQueryResultImplementors)
+func (ec *executionContext) _HealthQuery(ctx context.Context, sel ast.SelectionSet, obj *gen.HealthQuery) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, healthQueryImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("HealthQueryResult")
+			out.Values[i] = graphql.MarshalString("HealthQuery")
 		case "status":
-			out.Values[i] = ec._HealthQueryResult_status(ctx, field, obj)
+			out.Values[i] = ec._HealthQuery_status(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
 		case "checks":
-			out.Values[i] = ec._HealthQueryResult_checks(ctx, field, obj)
+			out.Values[i] = ec._HealthQuery_checks(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -17564,17 +17627,17 @@ func (ec *executionContext) _QueueMutation(ctx context.Context, sel ast.Selectio
 	return out
 }
 
-var queueQueryResultImplementors = []string{"QueueQueryResult"}
+var queueQueryImplementors = []string{"QueueQuery"}
 
-func (ec *executionContext) _QueueQueryResult(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.QueueQueryResult) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, queueQueryResultImplementors)
+func (ec *executionContext) _QueueQuery(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.QueueQuery) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, queueQueryImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("QueueQueryResult")
+			out.Values[i] = graphql.MarshalString("QueueQuery")
 		case "jobs":
 			field := field
 
@@ -17584,7 +17647,7 @@ func (ec *executionContext) _QueueQueryResult(ctx context.Context, sel ast.Selec
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._QueueQueryResult_jobs(ctx, field, obj)
+				res = ec._QueueQuery_jobs(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -17620,7 +17683,7 @@ func (ec *executionContext) _QueueQueryResult(ctx context.Context, sel ast.Selec
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._QueueQueryResult_metrics(ctx, field, obj)
+				res = ec._QueueQuery_metrics(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -19124,19 +19187,58 @@ func (ec *executionContext) _Worker(ctx context.Context, sel ast.SelectionSet, o
 	return out
 }
 
-var workersQueryResultImplementors = []string{"WorkersQueryResult"}
+var workersListAllQueryResultImplementors = []string{"WorkersListAllQueryResult"}
 
-func (ec *executionContext) _WorkersQueryResult(ctx context.Context, sel ast.SelectionSet, obj *gen.WorkersQueryResult) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, workersQueryResultImplementors)
+func (ec *executionContext) _WorkersListAllQueryResult(ctx context.Context, sel ast.SelectionSet, obj *gen.WorkersListAllQueryResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, workersListAllQueryResultImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("WorkersQueryResult")
-		case "all":
-			out.Values[i] = ec._WorkersQueryResult_all(ctx, field, obj)
+			out.Values[i] = graphql.MarshalString("WorkersListAllQueryResult")
+		case "workers":
+			out.Values[i] = ec._WorkersListAllQueryResult_workers(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var workersQueryImplementors = []string{"WorkersQuery"}
+
+func (ec *executionContext) _WorkersQuery(ctx context.Context, sel ast.SelectionSet, obj *gen.WorkersQuery) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, workersQueryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("WorkersQuery")
+		case "listAll":
+			out.Values[i] = ec._WorkersQuery_listAll(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -19809,8 +19911,8 @@ func (ec *executionContext) marshalNHealthCheck2ᚕgithubᚗcomᚋbitmagnetᚑio
 	return ret
 }
 
-func (ec *executionContext) marshalNHealthQueryResult2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐHealthQueryResult(ctx context.Context, sel ast.SelectionSet, v gen.HealthQueryResult) graphql.Marshaler {
-	return ec._HealthQueryResult(ctx, sel, &v)
+func (ec *executionContext) marshalNHealthQuery2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐHealthQuery(ctx context.Context, sel ast.SelectionSet, v gen.HealthQuery) graphql.Marshaler {
+	return ec._HealthQuery(ctx, sel, &v)
 }
 
 func (ec *executionContext) unmarshalNHealthStatus2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐHealthStatus(ctx context.Context, v interface{}) (gen.HealthStatus, error) {
@@ -20078,8 +20180,8 @@ func (ec *executionContext) unmarshalNQueuePurgeJobsInput2githubᚗcomᚋbitmagn
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNQueueQueryResult2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐQueueQueryResult(ctx context.Context, sel ast.SelectionSet, v gqlmodel.QueueQueryResult) graphql.Marshaler {
-	return ec._QueueQueryResult(ctx, sel, &v)
+func (ec *executionContext) marshalNQueueQuery2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐQueueQuery(ctx context.Context, sel ast.SelectionSet, v gqlmodel.QueueQuery) graphql.Marshaler {
+	return ec._QueueQuery(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNReleaseYearAgg2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐReleaseYearAgg(ctx context.Context, sel ast.SelectionSet, v gen.ReleaseYearAgg) graphql.Marshaler {
@@ -20576,8 +20678,12 @@ func (ec *executionContext) marshalNWorker2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbi
 	return ret
 }
 
-func (ec *executionContext) marshalNWorkersQueryResult2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐWorkersQueryResult(ctx context.Context, sel ast.SelectionSet, v gen.WorkersQueryResult) graphql.Marshaler {
-	return ec._WorkersQueryResult(ctx, sel, &v)
+func (ec *executionContext) marshalNWorkersListAllQueryResult2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐWorkersListAllQueryResult(ctx context.Context, sel ast.SelectionSet, v gen.WorkersListAllQueryResult) graphql.Marshaler {
+	return ec._WorkersListAllQueryResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNWorkersQuery2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐWorkersQuery(ctx context.Context, sel ast.SelectionSet, v gen.WorkersQuery) graphql.Marshaler {
+	return ec._WorkersQuery(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

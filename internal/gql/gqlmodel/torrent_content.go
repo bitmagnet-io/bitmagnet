@@ -133,21 +133,9 @@ func isPathSelectedCtx(ctx *graphql.OperationContext, selSet ast.SelectionSet, p
 	return false
 }
 
-func isPathSelected(ctx context.Context, first string, rest ...string) bool {
-	for _, f1 := range graphql.CollectFieldsCtx(ctx, nil) {
-		if f1.Name == first {
-			if len(rest) == 0 {
-				return true
-			}
-			return isPathSelectedCtx(graphql.GetOperationContext(ctx), f1.Selections, rest...)
-		}
-	}
-	return false
-}
-
 func (t TorrentContentQuery) Search(
 	ctx context.Context,
-	query TorrentContentSearchQueryInput,
+	input TorrentContentSearchQueryInput,
 ) (TorrentContentSearchResult, error) {
 	options := []q.Option{
 		q.DefaultOption(),
@@ -155,44 +143,44 @@ func (t TorrentContentQuery) Search(
 		search.HydrateTorrentContentContent(),
 		search.HydrateTorrentContentTorrent(),
 	}
-	options = append(options, query.Option())
-	hasQueryString := query.QueryString.Valid
-	if query.Facets != nil {
+	options = append(options, input.Option())
+	hasQueryString := input.QueryString.Valid
+	if input.Facets != nil {
 		var qFacets []q.Facet
-		if contentType, ok := query.Facets.ContentType.ValueOK(); ok {
+		if contentType, ok := input.Facets.ContentType.ValueOK(); ok {
 			qFacets = append(qFacets, torrentContentTypeFacet(*contentType))
 		}
-		if torrentSource, ok := query.Facets.TorrentSource.ValueOK(); ok {
+		if torrentSource, ok := input.Facets.TorrentSource.ValueOK(); ok {
 			qFacets = append(qFacets, torrentSourceFacet(*torrentSource))
 		}
-		if torrentTag, ok := query.Facets.TorrentTag.ValueOK(); ok {
+		if torrentTag, ok := input.Facets.TorrentTag.ValueOK(); ok {
 			qFacets = append(qFacets, torrentTagFacet(*torrentTag))
 		}
-		if torrentFileType, ok := query.Facets.TorrentFileType.ValueOK(); ok {
+		if torrentFileType, ok := input.Facets.TorrentFileType.ValueOK(); ok {
 			qFacets = append(qFacets, torrentFileTypeFacet(*torrentFileType))
 		}
-		if language, ok := query.Facets.Language.ValueOK(); ok {
+		if language, ok := input.Facets.Language.ValueOK(); ok {
 			qFacets = append(qFacets, languageFacet(*language))
 		}
-		if genre, ok := query.Facets.Genre.ValueOK(); ok {
+		if genre, ok := input.Facets.Genre.ValueOK(); ok {
 			qFacets = append(qFacets, genreFacet(*genre))
 		}
-		if releaseYear, ok := query.Facets.ReleaseYear.ValueOK(); ok {
+		if releaseYear, ok := input.Facets.ReleaseYear.ValueOK(); ok {
 			qFacets = append(qFacets, releaseYearFacet(*releaseYear))
 		}
-		if videoResolution, ok := query.Facets.VideoResolution.ValueOK(); ok {
+		if videoResolution, ok := input.Facets.VideoResolution.ValueOK(); ok {
 			qFacets = append(qFacets, videoResolutionFacet(*videoResolution))
 		}
-		if videoSource, ok := query.Facets.VideoSource.ValueOK(); ok {
+		if videoSource, ok := input.Facets.VideoSource.ValueOK(); ok {
 			qFacets = append(qFacets, videoSourceFacet(*videoSource))
 		}
 		options = append(options, q.WithFacet(qFacets...))
 	}
-	if infoHashes, ok := query.InfoHashes.ValueOK(); ok {
+	if infoHashes, ok := input.InfoHashes.ValueOK(); ok {
 		options = append(options, q.Where(search.TorrentContentInfoHashCriteria(infoHashes...)))
 	}
 	fullOrderBy := maps.NewInsertMap[search.TorrentContentOrderBy, search.OrderDirection]()
-	for _, ob := range query.OrderBy {
+	for _, ob := range input.OrderBy {
 		if ob.Field == gen.TorrentContentOrderByFieldRelevance && !hasQueryString {
 			continue
 		}

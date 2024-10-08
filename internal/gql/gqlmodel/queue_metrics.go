@@ -9,12 +9,12 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/manager"
 )
 
-type QueueQueryResult struct {
+type QueueQuery struct {
 	QueueJobSearch     search.QueueJobSearch
 	QueueMetricsClient queuemetrics.Client
 }
 
-func (q QueueQueryResult) Metrics(ctx context.Context, input gen.QueueMetricsQueryInput) (*gen.QueueMetricsQueryResult, error) {
+func (q QueueQuery) Metrics(ctx context.Context, input gen.QueueMetricsQueryInput) (*gen.QueueMetricsQueryResult, error) {
 	req := queuemetrics.Request{}
 	switch input.BucketDuration {
 	case gen.MetricsBucketDurationMinute:

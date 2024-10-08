@@ -57,7 +57,7 @@ export class TorrentPermalinkComponent implements OnInit {
         >({
           query: generated.TorrentContentSearchDocument,
           variables: {
-            query: {
+            input: {
               infoHashes: [params.get('infoHash') as string],
             },
           },

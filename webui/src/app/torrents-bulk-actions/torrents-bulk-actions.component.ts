@@ -204,7 +204,7 @@ export class TorrentsBulkActionsComponent implements OnInit {
   private updateSuggestedTags() {
     return this.graphQLService
       .torrentSuggestTags({
-        query: {
+        input: {
           prefix: this.newTagCtrl.value,
           exclusions: this.editedTags,
         },

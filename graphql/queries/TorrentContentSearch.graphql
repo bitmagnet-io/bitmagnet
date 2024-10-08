@@ -1,10 +1,10 @@
 #import "../fragments/TorrentContentSearchResult"
 
 query TorrentContentSearch(
-  $query: TorrentContentSearchQueryInput!
+  $input: TorrentContentSearchQueryInput!
 ) {
   torrentContent {
-    search(query: $query) {
+    search(input: $input) {
       ...TorrentContentSearchResult
     }
   }

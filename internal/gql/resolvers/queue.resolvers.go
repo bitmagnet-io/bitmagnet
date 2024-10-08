@@ -28,8 +28,8 @@ func (r *queueJobResolver) RanAt(ctx context.Context, obj *model.QueueJob) (*tim
 }
 
 // Jobs is the resolver for the jobs field.
-func (r *queueQueryResultResolver) Jobs(ctx context.Context, obj *gqlmodel.QueueQueryResult, input gqlmodel.QueueJobsQueryInput) (gqlmodel.QueueJobsQueryResult, error) {
-	return gqlmodel.QueueQueryResult{QueueJobSearch: r.Search}.Jobs(ctx, input)
+func (r *queueQueryResolver) Jobs(ctx context.Context, obj *gqlmodel.QueueQuery, input gqlmodel.QueueJobsQueryInput) (gqlmodel.QueueJobsQueryResult, error) {
+	return gqlmodel.QueueQuery{QueueJobSearch: r.Search}.Jobs(ctx, input)
 }
 
 // ClassifierRematch is the resolver for the classifierRematch field.
@@ -43,10 +43,8 @@ func (r *queueEnqueueReprocessTorrentsBatchInputResolver) ClassifierRematch(ctx 
 // QueueJob returns gql.QueueJobResolver implementation.
 func (r *Resolver) QueueJob() gql.QueueJobResolver { return &queueJobResolver{r} }
 
-// QueueQueryResult returns gql.QueueQueryResultResolver implementation.
-func (r *Resolver) QueueQueryResult() gql.QueueQueryResultResolver {
-	return &queueQueryResultResolver{r}
-}
+// QueueQuery returns gql.QueueQueryResolver implementation.
+func (r *Resolver) QueueQuery() gql.QueueQueryResolver { return &queueQueryResolver{r} }
 
 // QueueEnqueueReprocessTorrentsBatchInput returns gql.QueueEnqueueReprocessTorrentsBatchInputResolver implementation.
 func (r *Resolver) QueueEnqueueReprocessTorrentsBatchInput() gql.QueueEnqueueReprocessTorrentsBatchInputResolver {
@@ -54,5 +52,5 @@ func (r *Resolver) QueueEnqueueReprocessTorrentsBatchInput() gql.QueueEnqueueRep
 }
 
 type queueJobResolver struct{ *Resolver }
-type queueQueryResultResolver struct{ *Resolver }
+type queueQueryResolver struct{ *Resolver }
 type queueEnqueueReprocessTorrentsBatchInputResolver struct{ *Resolver }
