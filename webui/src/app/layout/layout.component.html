@@ -87,7 +87,11 @@
     </button>
     <mat-menu #languagesMenu="matMenu">
       @for (l of translateManager.availableLanguages; track l.id) {
-        <a mat-menu-item (click)="translateManager.setLanguage(l.id)">{{
+        <a mat-menu-item
+           (click)="translateManager.setLanguage(l.id)"
+           [matTooltip]="t('languages.'+l.id)"
+           matTooltipShowDelay="500"
+        >{{
           l.label
         }}</a>
       }

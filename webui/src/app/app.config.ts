@@ -26,20 +26,36 @@ export const appConfig: ApplicationConfig = {
             label: 'العربية',
           },
           {
-            id: 'en',
-            label: 'English',
+            id: 'de',
+            label: 'Deutsch',
           },
           {
-            id: 'fr',
-            label: 'Français',
+            id: 'en',
+            label: 'English',
           },
           {
             id: 'es',
             label: 'Español',
           },
           {
-            id: 'de',
-            label: 'Deutsch',
+            id: 'fr',
+            label: 'Français',
+          },
+          {
+            id: 'jp',
+            label: '日本語',
+          },
+          {
+            id: 'nl',
+            label: 'Nederlands',
+          },
+          {
+            id: 'ru',
+            label: 'Русский',
+          },
+          {
+            id: 'uk',
+            label: 'Українська',
           },
           {
             id: 'zh',
