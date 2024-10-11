@@ -28,9 +28,7 @@ type SuggestedTag {
 }
 
 type TorrentContentQuery {
-  search(
-    input: TorrentContentSearchQueryInput!
-  ): TorrentContentSearchResult!
+  search(input: TorrentContentSearchQueryInput!): TorrentContentSearchResult!
 }
 
 type Worker {

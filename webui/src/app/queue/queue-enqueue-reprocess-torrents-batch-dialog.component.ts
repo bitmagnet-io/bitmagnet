@@ -1,17 +1,17 @@
-import { Component, Inject, inject } from '@angular/core';
-import { Apollo } from 'apollo-angular';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import * as generated from '../graphql/generated';
-import { AppModule } from '../app.module';
-import { availableQueueNames, statusNames } from './queue.constants';
-import { QueuePurgeJobsDialogComponent } from './queue-purge-jobs-dialog.component';
+import { Component, Inject, inject } from "@angular/core";
+import { Apollo } from "apollo-angular";
+import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
+import * as generated from "../graphql/generated";
+import { AppModule } from "../app.module";
+import { availableQueueNames, statusNames } from "./queue.constants";
+import { QueuePurgeJobsDialogComponent } from "./queue-purge-jobs-dialog.component";
 
 @Component({
-  selector: 'app-queue-enqueue-reprocess-torrents-batch-dialog',
+  selector: "app-queue-enqueue-reprocess-torrents-batch-dialog",
   standalone: true,
   imports: [AppModule],
-  templateUrl: './queue-enqueue-reprocess-torrents-batch-dialog.component.html',
-  styleUrl: './queue-enqueue-reprocess-torrents-batch-dialog.component.scss',
+  templateUrl: "./queue-enqueue-reprocess-torrents-batch-dialog.component.html",
+  styleUrl: "./queue-enqueue-reprocess-torrents-batch-dialog.component.scss",
 })
 export class QueueEnqueueReprocessTorrentsBatchDialogComponent {
   apollo = inject(Apollo);
@@ -20,7 +20,7 @@ export class QueueEnqueueReprocessTorrentsBatchDialogComponent {
   protected readonly availableQueueNames = availableQueueNames;
   protected readonly statusNames = statusNames;
 
-  protected stage: 'PENDING' | 'REQUESTING' | 'DONE' = 'PENDING';
+  protected stage: "PENDING" | "REQUESTING" | "DONE" = "PENDING";
 
   @Inject(MAT_DIALOG_DATA) public data: { onEnqueued?: () => void };
 
@@ -31,10 +31,10 @@ export class QueueEnqueueReprocessTorrentsBatchDialogComponent {
   orphans = false;
 
   handleEnqueue() {
-    if (this.stage !== 'PENDING') {
+    if (this.stage !== "PENDING") {
       return;
     }
-    this.stage = 'REQUESTING';
+    this.stage = "REQUESTING";
     this.apollo
       .mutate<
         generated.QueueEnqueueReprocessTorrentsBatchMutation,
@@ -52,7 +52,7 @@ export class QueueEnqueueReprocessTorrentsBatchDialogComponent {
         },
       })
       .subscribe(() => {
-        this.stage = 'DONE';
+        this.stage = "DONE";
         this.data.onEnqueued?.();
       });
   }

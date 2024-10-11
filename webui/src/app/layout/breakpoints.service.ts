@@ -1,13 +1,13 @@
-import { inject, Injectable } from '@angular/core';
-import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { Observable } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
+import { inject, Injectable } from "@angular/core";
+import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
+import { Observable } from "rxjs";
+import { map, shareReplay } from "rxjs/operators";
 
-const sizes = ['XSmall', 'Small', 'Medium', 'Large', 'XLarge'] as const;
+const sizes = ["XSmall", "Small", "Medium", "Large", "XLarge"] as const;
 
 type Size = (typeof sizes)[number];
 
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class BreakpointsService {
   private breakpointObserver = inject(BreakpointObserver);
 
@@ -25,10 +25,10 @@ export class BreakpointsService {
     );
 
   size$: Observable<Size> = this.state.pipe(
-    map((st) => sizes.find((s) => st[Breakpoints[s]]) ?? 'Medium'),
+    map((st) => sizes.find((s) => st[Breakpoints[s]]) ?? "Medium"),
   );
 
-  size: Size = 'Medium';
+  size: Size = "Medium";
 
   constructor() {
     this.size$.subscribe((s) => {

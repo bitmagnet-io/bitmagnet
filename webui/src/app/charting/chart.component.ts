@@ -1,17 +1,17 @@
-import { Component, inject, Input, OnInit } from '@angular/core';
-import { BaseChartDirective } from 'ng2-charts';
-import { ChartConfiguration, ChartType } from 'chart.js';
-import { Observable } from 'rxjs';
-import { TranslocoService } from '@jsverse/transloco';
-import { ThemeInfoService } from '../themes/theme-info.service';
-import { ChartAdapter } from './types';
+import { Component, inject, Input, OnInit } from "@angular/core";
+import { BaseChartDirective } from "ng2-charts";
+import { ChartConfiguration, ChartType } from "chart.js";
+import { Observable } from "rxjs";
+import { TranslocoService } from "@jsverse/transloco";
+import { ThemeInfoService } from "../themes/theme-info.service";
+import { ChartAdapter } from "./types";
 
 @Component({
-  selector: 'app-chart',
+  selector: "app-chart",
   standalone: true,
   imports: [BaseChartDirective],
-  templateUrl: './chart.component.html',
-  styleUrl: './chart.component.scss',
+  templateUrl: "./chart.component.html",
+  styleUrl: "./chart.component.scss",
 })
 export class ChartComponent<Data = unknown, Type extends ChartType = ChartType>
   implements OnInit

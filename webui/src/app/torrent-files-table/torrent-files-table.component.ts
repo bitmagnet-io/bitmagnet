@@ -1,25 +1,25 @@
-import { Component, inject, Input, OnInit } from '@angular/core';
-import { Apollo } from 'apollo-angular';
-import { TranslocoService } from '@jsverse/transloco';
-import { TimeAgoPipe } from '../dates/time-ago.pipe';
-import * as generated from '../graphql/generated';
-import { ErrorsService } from '../errors/errors.service';
-import { PaginatorComponent } from '../paginator/paginator.component';
-import { QueueJobsTableComponent } from '../queue/queue-jobs-table.component';
-import { FilesizePipe } from '../pipes/filesize.pipe';
-import { AppModule } from '../app.module';
+import { Component, inject, Input, OnInit } from "@angular/core";
+import { Apollo } from "apollo-angular";
+import { TranslocoService } from "@jsverse/transloco";
+import { TimeAgoPipe } from "../dates/time-ago.pipe";
+import * as generated from "../graphql/generated";
+import { ErrorsService } from "../errors/errors.service";
+import { PaginatorComponent } from "../paginator/paginator.component";
+import { QueueJobsTableComponent } from "../queue/queue-jobs-table.component";
+import { FilesizePipe } from "../pipes/filesize.pipe";
+import { AppModule } from "../app.module";
 import {
   ITorrentFilesDatasource,
   TorrentFilesDatasource,
   TorrentFilesSingleDatasource,
-} from './torrent-files.datasource';
+} from "./torrent-files.datasource";
 import {
   TorrentFilesController,
   TorrentFilesControls,
-} from './torrent-files.controller';
+} from "./torrent-files.controller";
 
 @Component({
-  selector: 'app-torrent-files-table',
+  selector: "app-torrent-files-table",
   standalone: true,
   imports: [
     AppModule,
@@ -28,8 +28,8 @@ import {
     QueueJobsTableComponent,
     TimeAgoPipe,
   ],
-  templateUrl: './torrent-files-table.component.html',
-  styleUrl: './torrent-files-table.component.scss',
+  templateUrl: "./torrent-files-table.component.html",
+  styleUrl: "./torrent-files-table.component.scss",
 })
 export class TorrentFilesTableComponent implements OnInit {
   private apollo = inject(Apollo);
@@ -41,14 +41,14 @@ export class TorrentFilesTableComponent implements OnInit {
   protected controller: TorrentFilesController;
   protected dataSource: ITorrentFilesDatasource;
 
-  protected displayedColumns = ['index', 'path', 'type', 'size'];
+  protected displayedColumns = ["index", "path", "type", "size"];
 
   protected controls: TorrentFilesControls;
 
   ngOnInit() {
     this.controller = new TorrentFilesController(this.torrent.infoHash);
     this.dataSource =
-      this.torrent.filesStatus === 'single'
+      this.torrent.filesStatus === "single"
         ? new TorrentFilesSingleDatasource(this.torrent)
         : new TorrentFilesDatasource(
             this.apollo,

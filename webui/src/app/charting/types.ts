@@ -1,5 +1,5 @@
-import { ChartConfiguration, ChartType } from 'chart.js';
-import { ThemeColors } from '../themes/theme-types';
+import { ChartConfiguration, ChartType } from "chart.js";
+import { ThemeColors } from "../themes/theme-types";
 
 export type ChartDependencies = {
   colors: ThemeColors;

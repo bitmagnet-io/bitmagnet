@@ -1,20 +1,20 @@
-import { Component, Inject, inject } from '@angular/core';
-import { Apollo } from 'apollo-angular';
-import { MatCheckboxChange } from '@angular/material/checkbox';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { map } from 'rxjs/operators';
-import { catchError, EMPTY } from 'rxjs';
-import * as generated from '../graphql/generated';
-import { GraphQLModule } from '../graphql/graphql.module';
-import { AppModule } from '../app.module';
-import { availableQueueNames, statusNames } from './queue.constants';
+import { Component, Inject, inject } from "@angular/core";
+import { Apollo } from "apollo-angular";
+import { MatCheckboxChange } from "@angular/material/checkbox";
+import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
+import { map } from "rxjs/operators";
+import { catchError, EMPTY } from "rxjs";
+import * as generated from "../graphql/generated";
+import { GraphQLModule } from "../graphql/graphql.module";
+import { AppModule } from "../app.module";
+import { availableQueueNames, statusNames } from "./queue.constants";
 
 @Component({
-  selector: 'app-queue-purge-jobs-dialog',
+  selector: "app-queue-purge-jobs-dialog",
   standalone: true,
   imports: [AppModule, GraphQLModule],
-  templateUrl: './queue-purge-jobs-dialog.component.html',
-  styleUrl: './queue-purge-jobs-dialog.component.scss',
+  templateUrl: "./queue-purge-jobs-dialog.component.html",
+  styleUrl: "./queue-purge-jobs-dialog.component.scss",
 })
 export class QueuePurgeJobsDialogComponent {
   apollo = inject(Apollo);
@@ -26,14 +26,14 @@ export class QueuePurgeJobsDialogComponent {
   protected readonly availableQueueNames = availableQueueNames;
   protected readonly statusNames = statusNames;
 
-  protected stage: 'PENDING' | 'REQUESTING' | 'DONE' = 'PENDING';
+  protected stage: "PENDING" | "REQUESTING" | "DONE" = "PENDING";
 
   @Inject(MAT_DIALOG_DATA) public data: { onPurged?: () => void };
 
   protected error?: Error;
 
   handleQueueEvent(event: MatCheckboxChange) {
-    if (event.source.value === '_all') {
+    if (event.source.value === "_all") {
       this.queues = undefined;
       return;
     }
@@ -59,7 +59,7 @@ export class QueuePurgeJobsDialogComponent {
   }
 
   handleStatusEvent(event: MatCheckboxChange) {
-    if (event.source.value === '_all') {
+    if (event.source.value === "_all") {
       this.statuses = undefined;
       return;
     }
@@ -88,10 +88,10 @@ export class QueuePurgeJobsDialogComponent {
   }
 
   handlePurgeJobs() {
-    if (this.stage !== 'PENDING') {
+    if (this.stage !== "PENDING") {
       return;
     }
-    this.stage = 'REQUESTING';
+    this.stage = "REQUESTING";
     this.apollo
       .mutate<
         generated.QueuePurgeJobsMutation,
@@ -107,12 +107,12 @@ export class QueuePurgeJobsDialogComponent {
       })
       .pipe(
         catchError((err: Error) => {
-          this.stage = 'DONE';
+          this.stage = "DONE";
           this.error = err;
           return EMPTY;
         }),
         map(() => {
-          this.stage = 'DONE';
+          this.stage = "DONE";
           this.data.onPurged?.();
         }),
       )

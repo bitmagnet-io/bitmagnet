@@ -1,17 +1,17 @@
-import { DOCUMENT } from '@angular/common';
-import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { BrowserStorageService } from '../browser-storage/browser-storage.service';
+import { DOCUMENT } from "@angular/common";
+import { Injectable, inject } from "@angular/core";
+import { BehaviorSubject } from "rxjs";
+import { BrowserStorageService } from "../browser-storage/browser-storage.service";
 import {
   defaultDarkTheme,
   defaultLightTheme,
   ThemeKey,
   themes,
-} from './theme-registry';
+} from "./theme-registry";
 
-const LOCAL_STORAGE_KEY = 'bitmagnet-theme';
+const LOCAL_STORAGE_KEY = "bitmagnet-theme";
 
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class ThemeManager {
   private document = inject(DOCUMENT);
   private browserStorage = inject(BrowserStorageService);
@@ -25,7 +25,7 @@ export class ThemeManager {
 
   constructor() {
     this.setActiveTheme(this.getPreferredTheme());
-    this.windowMatchMediaPrefersDark()?.addEventListener('change', () => {
+    this.windowMatchMediaPrefersDark()?.addEventListener("change", () => {
       const storedTheme = this.getStoredTheme();
       if (!storedTheme) {
         this.setActiveTheme(this.getAutoTheme());
@@ -50,22 +50,22 @@ export class ThemeManager {
 
   setTheme = (theme: string) => {
     this.setActiveTheme(theme);
-    this.setStoredTheme(this.selectedTheme ?? 'auto');
+    this.setStoredTheme(this.selectedTheme ?? "auto");
   };
 
   private setActiveTheme = (theme: string) => {
-    if (theme === 'auto' || !(theme in themes)) {
+    if (theme === "auto" || !(theme in themes)) {
       theme = this.getAutoTheme();
       this.selectedTheme = undefined;
     } else {
       this.selectedTheme = theme as ThemeKey;
     }
-    this.document.documentElement.setAttribute('data-bitmagnet-theme', theme);
+    this.document.documentElement.setAttribute("data-bitmagnet-theme", theme);
     this.selectedThemeSubject.next(this.selectedTheme);
   };
 
-  private setStoredTheme = (theme: ThemeKey | 'auto') => {
-    if (theme === 'auto') {
+  private setStoredTheme = (theme: ThemeKey | "auto") => {
+    if (theme === "auto") {
       this.browserStorage.remove(LOCAL_STORAGE_KEY);
     } else {
       this.browserStorage.set(LOCAL_STORAGE_KEY, theme);
@@ -74,7 +74,7 @@ export class ThemeManager {
 
   private windowMatchMediaPrefersDark(): MediaQueryList | undefined {
     return this._window && this._window.matchMedia
-      ? this._window.matchMedia('(prefers-color-scheme: dark)')
+      ? this._window.matchMedia("(prefers-color-scheme: dark)")
       : undefined;
   }
 }

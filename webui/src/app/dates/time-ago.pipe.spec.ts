@@ -1,8 +1,8 @@
-import { TestBed } from '@angular/core/testing';
-import { appConfig } from '../app.config';
-import { TimeAgoPipe } from './time-ago.pipe';
+import { TestBed } from "@angular/core/testing";
+import { appConfig } from "../app.config";
+import { TimeAgoPipe } from "./time-ago.pipe";
 
-describe('TimeAgoPipe', () => {
+describe("TimeAgoPipe", () => {
   let pipe: TimeAgoPipe;
 
   beforeEach(async () => {
@@ -12,7 +12,7 @@ describe('TimeAgoPipe', () => {
     });
   });
 
-  it('create an instance', () => {
+  it("create an instance", () => {
     expect(pipe).toBeTruthy();
   });
 });

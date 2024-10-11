@@ -1,15 +1,15 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { inject } from '@angular/core';
-import { Apollo } from 'apollo-angular';
-import { Observable } from 'rxjs';
-import { appConfig } from '../app.config';
-import { TorrentsSearchDatasource } from '../torrents-search/torrents-search.datasource';
-import { ErrorsService } from '../errors/errors.service';
-import { AppModule } from '../app.module';
-import { TorrentsTableComponent } from './torrents-table.component';
+import { inject } from "@angular/core";
+import { Apollo } from "apollo-angular";
+import { Observable } from "rxjs";
+import { appConfig } from "../app.config";
+import { TorrentsSearchDatasource } from "../torrents-search/torrents-search.datasource";
+import { ErrorsService } from "../errors/errors.service";
+import { AppModule } from "../app.module";
+import { TorrentsTableComponent } from "./torrents-table.component";
 
-describe('TorrentsTableComponent', () => {
+describe("TorrentsTableComponent", () => {
   let component: TorrentsTableComponent;
   let fixture: ComponentFixture<TorrentsTableComponent>;
 
@@ -31,7 +31,7 @@ describe('TorrentsTableComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

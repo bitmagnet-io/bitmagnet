@@ -1,10 +1,10 @@
-import * as generated from '../graphql/generated';
+import * as generated from "../graphql/generated";
 import {
   BucketParams,
   Params,
   Result,
   StatusCounts,
-} from './queue-metrics.types';
+} from "./queue-metrics.types";
 
 export const emptyStatusCounts: StatusCounts = {
   pending: 0,
@@ -14,12 +14,12 @@ export const emptyStatusCounts: StatusCounts = {
 };
 
 export const defaultBucketParams: BucketParams = {
-  duration: 'hour',
+  duration: "hour",
   multiplier: 1,
-  timeframe: 'all',
+  timeframe: "all",
 };
 
-export const resolutionNames = ['day', 'hour', 'minute'] as const;
+export const resolutionNames = ["day", "hour", "minute"] as const;
 
 export const durationSeconds: Record<generated.MetricsBucketDuration, number> =
   {
@@ -30,7 +30,7 @@ export const durationSeconds: Record<generated.MetricsBucketDuration, number> =
 
 export const emptyParams: Params = {
   buckets: defaultBucketParams,
-  autoRefresh: 'off',
+  autoRefresh: "off",
 };
 
 export const emptyResult: Result = {
@@ -38,19 +38,19 @@ export const emptyResult: Result = {
   queues: [],
 };
 
-export const eventNames = ['created', 'processed', 'failed'] as const;
+export const eventNames = ["created", "processed", "failed"] as const;
 
-export const statusNames = ['pending', 'processed', 'retry', 'failed'] as const;
+export const statusNames = ["pending", "processed", "retry", "failed"] as const;
 
 export const timeframeNames = [
-  'minutes_15',
-  'minutes_30',
-  'hours_1',
-  'hours_6',
-  'hours_12',
-  'days_1',
-  'weeks_1',
-  'all',
+  "minutes_15",
+  "minutes_30",
+  "hours_1",
+  "hours_6",
+  "hours_12",
+  "days_1",
+  "weeks_1",
+  "all",
 ] as const;
 
 export const timeframeLengths: Record<(typeof timeframeNames)[number], number> =
@@ -65,14 +65,14 @@ export const timeframeLengths: Record<(typeof timeframeNames)[number], number> =
     all: Infinity,
   };
 
-export const availableQueueNames = ['process_torrent', 'process_torrent_batch'];
+export const availableQueueNames = ["process_torrent", "process_torrent_batch"];
 
 export const autoRefreshIntervalNames = [
-  'off',
-  'seconds_10',
-  'seconds_30',
-  'minutes_1',
-  'minutes_5',
+  "off",
+  "seconds_10",
+  "seconds_30",
+  "minutes_1",
+  "minutes_5",
 ] as const;
 
 export const autoRefreshIntervals: Record<

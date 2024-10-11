@@ -5,35 +5,35 @@ import {
   Input,
   OnInit,
   Output,
-} from '@angular/core';
-import { SelectionModel } from '@angular/cdk/collections';
-import { TranslocoService } from '@jsverse/transloco';
-import { BehaviorSubject } from 'rxjs';
+} from "@angular/core";
+import { SelectionModel } from "@angular/cdk/collections";
+import { TranslocoService } from "@jsverse/transloco";
+import { BehaviorSubject } from "rxjs";
 import {
   animate,
   state,
   style,
   transition,
   trigger,
-} from '@angular/animations';
-import { TimeAgoPipe } from '../dates/time-ago.pipe';
-import * as generated from '../graphql/generated';
-import { AppModule } from '../app.module';
-import { QueueJobsDatasource } from './queue-jobs.datasource';
+} from "@angular/animations";
+import { TimeAgoPipe } from "../dates/time-ago.pipe";
+import * as generated from "../graphql/generated";
+import { AppModule } from "../app.module";
+import { QueueJobsDatasource } from "./queue-jobs.datasource";
 
 @Component({
-  selector: 'app-queue-jobs-table',
+  selector: "app-queue-jobs-table",
   standalone: true,
   imports: [AppModule, TimeAgoPipe],
-  templateUrl: './queue-jobs-table.component.html',
-  styleUrl: './queue-jobs-table.component.scss',
+  templateUrl: "./queue-jobs-table.component.html",
+  styleUrl: "./queue-jobs-table.component.scss",
   animations: [
-    trigger('detailExpand', [
-      state('collapsed,void', style({ height: '0px', minHeight: '0' })),
-      state('expanded', style({ height: '*' })),
+    trigger("detailExpand", [
+      state("collapsed,void", style({ height: "0px", minHeight: "0" })),
+      state("expanded", style({ height: "*" })),
       transition(
-        'expanded <=> collapsed',
-        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
+        "expanded <=> collapsed",
+        animate("225ms cubic-bezier(0.4, 0.0, 0.2, 1)"),
       ),
     ]),
   ],
@@ -102,11 +102,11 @@ export class QueueJobsTableComponent implements OnInit {
 }
 
 const allColumns = [
-  'id',
-  'queue',
-  'priority',
-  'status',
-  'error',
-  'createdAt',
-  'ranAt',
+  "id",
+  "queue",
+  "priority",
+  "status",
+  "error",
+  "createdAt",
+  "ranAt",
 ];

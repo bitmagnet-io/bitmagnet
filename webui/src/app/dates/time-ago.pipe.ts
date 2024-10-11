@@ -1,10 +1,10 @@
-import { inject, Pipe, PipeTransform } from '@angular/core';
-import { TranslocoService } from '@jsverse/transloco';
-import { formatTimeAgo } from './dates.utils';
-import { DateType } from './dates.types';
+import { inject, Pipe, PipeTransform } from "@angular/core";
+import { TranslocoService } from "@jsverse/transloco";
+import { formatTimeAgo } from "./dates.utils";
+import { DateType } from "./dates.types";
 
 @Pipe({
-  name: 'timeAgo',
+  name: "timeAgo",
   standalone: true,
   pure: false,
 })

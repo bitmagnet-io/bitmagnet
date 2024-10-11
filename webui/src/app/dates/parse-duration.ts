@@ -7,26 +7,26 @@
  * The pattern used for parsing ISO8601 duration (PnYnMnWnDTnHnMnS).
  */
 // PnYnMnWnDTnHnMnS
-const numbers = '\\d+';
-const fractionalNumbers = ''.concat(numbers, '(?:[\\.,]').concat(numbers, ')?');
-const datePattern = '('
-  .concat(numbers, 'Y)?(')
-  .concat(numbers, 'M)?(')
-  .concat(numbers, 'W)?(')
-  .concat(numbers, 'D)?');
-const timePattern = 'T('
-  .concat(fractionalNumbers, 'H)?(')
-  .concat(fractionalNumbers, 'M)?(')
-  .concat(fractionalNumbers, 'S)?');
-const iso8601 = 'P(?:'.concat(datePattern, '(?:').concat(timePattern, ')?)');
+const numbers = "\\d+";
+const fractionalNumbers = "".concat(numbers, "(?:[\\.,]").concat(numbers, ")?");
+const datePattern = "("
+  .concat(numbers, "Y)?(")
+  .concat(numbers, "M)?(")
+  .concat(numbers, "W)?(")
+  .concat(numbers, "D)?");
+const timePattern = "T("
+  .concat(fractionalNumbers, "H)?(")
+  .concat(fractionalNumbers, "M)?(")
+  .concat(fractionalNumbers, "S)?");
+const iso8601 = "P(?:".concat(datePattern, "(?:").concat(timePattern, ")?)");
 const objMap = [
-  'years',
-  'months',
-  'weeks',
-  'days',
-  'hours',
-  'minutes',
-  'seconds',
+  "years",
+  "months",
+  "weeks",
+  "days",
+  "hours",
+  "minutes",
+  "seconds",
 ];
 
 export type Duration = {
@@ -56,9 +56,9 @@ export const durationPattern = new RegExp(iso8601);
 
 /** Parse PnYnMnDTnHnMnS format to object */
 export const parseDuration = function (durationString: string): Duration {
-  const matches = durationString.replace(/,/g, '.').match(durationPattern);
+  const matches = durationString.replace(/,/g, ".").match(durationPattern);
   if (!matches) {
-    throw new RangeError('invalid duration: '.concat(durationString));
+    throw new RangeError("invalid duration: ".concat(durationString));
   }
   // Slice away first entry in match-array (the input string)
   const slicedMatches = matches.slice(1);
@@ -67,18 +67,18 @@ export const parseDuration = function (durationString: string): Duration {
       return v != null;
     }).length === 0
   ) {
-    throw new RangeError('invalid duration: '.concat(durationString));
+    throw new RangeError("invalid duration: ".concat(durationString));
   }
   // Check only one fraction is used
   if (
     slicedMatches.filter(function (v) {
-      return /\./.test(v || '');
+      return /\./.test(v || "");
     }).length > 1
   ) {
-    throw new RangeError('only the smallest unit can be fractional');
+    throw new RangeError("only the smallest unit can be fractional");
   }
   return slicedMatches.reduce(function (prev, next, idx) {
-    Object.assign(prev, { [objMap[idx]]: parseFloat(next || '0') || 0 });
+    Object.assign(prev, { [objMap[idx]]: parseFloat(next || "0") || 0 });
     return prev;
   }, {}) as Duration;
 };

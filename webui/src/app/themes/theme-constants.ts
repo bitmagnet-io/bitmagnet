@@ -1,21 +1,21 @@
-import { ThemeColors, ThemeInfo } from './theme-types';
+import { ThemeColors, ThemeInfo } from "./theme-types";
 
 export const themeBaseColors = [
-  'primary',
-  'secondary',
-  'tertiary',
-  'neutral',
-  'neutral-variant',
-  'error',
-  'caution',
-  'success',
+  "primary",
+  "secondary",
+  "tertiary",
+  "neutral",
+  "neutral-variant",
+  "error",
+  "caution",
+  "success",
 ] as const;
 
 export const themeColorHues = [20, 40, 50, 60, 80] as const;
 
 export const themeColors = [
-  'background',
-  'foreground',
+  "background",
+  "foreground",
   ...themeBaseColors.flatMap((baseColor) =>
     themeColorHues.map(
       (
@@ -27,6 +27,6 @@ export const themeColors = [
 ] as const;
 
 export const emptyThemeInfo: ThemeInfo = {
-  type: 'light',
+  type: "light",
   colors: {} as ThemeColors,
 };

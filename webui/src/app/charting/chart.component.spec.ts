@@ -1,11 +1,11 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { appConfig } from '../app.config';
-import { QueueChartAdapterTotals } from '../queue/queue-chart-adapter.totals';
-import { Result } from '../queue/queue-metrics.types';
-import { ChartComponent } from './chart.component';
+import { appConfig } from "../app.config";
+import { QueueChartAdapterTotals } from "../queue/queue-chart-adapter.totals";
+import { Result } from "../queue/queue-metrics.types";
+import { ChartComponent } from "./chart.component";
 
-describe('QueueComponent', () => {
+describe("QueueComponent", () => {
   let component: ChartComponent<Result>;
   let fixture: ComponentFixture<ChartComponent<Result>>;
 
@@ -20,7 +20,7 @@ describe('QueueComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

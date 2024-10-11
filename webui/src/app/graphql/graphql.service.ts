@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
-import { Apollo } from 'apollo-angular';
-import * as generated from './generated';
+import { Injectable } from "@angular/core";
+import { map, Observable } from "rxjs";
+import { Apollo } from "apollo-angular";
+import * as generated from "./generated";
 
 @Injectable()
 export class GraphQLService {
@@ -83,4 +83,4 @@ export class GraphQLService {
   }
 }
 
-const fetchPolicy = 'no-cache';
+const fetchPolicy = "no-cache";

@@ -1,16 +1,16 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { Apollo } from 'apollo-angular';
-import { map } from 'rxjs';
-import * as generated from '../graphql/generated';
-import { GraphQLModule } from '../graphql/graphql.module';
-import { AppModule } from '../app.module';
+import { Component, inject, OnInit } from "@angular/core";
+import { Apollo } from "apollo-angular";
+import { map } from "rxjs";
+import * as generated from "../graphql/generated";
+import { GraphQLModule } from "../graphql/graphql.module";
+import { AppModule } from "../app.module";
 
-const defaultVersionName = 'v-unknown';
+const defaultVersionName = "v-unknown";
 
 @Component({
-  selector: 'app-version',
+  selector: "app-version",
   standalone: true,
-  templateUrl: './version.component.html',
+  templateUrl: "./version.component.html",
   imports: [AppModule, GraphQLModule],
 })
 export class VersionComponent implements OnInit {

@@ -1,4 +1,4 @@
-import { CollectionViewer, DataSource } from '@angular/cdk/collections';
+import { CollectionViewer, DataSource } from "@angular/cdk/collections";
 import {
   BehaviorSubject,
   catchError,
@@ -6,11 +6,11 @@ import {
   Observable,
   scan,
   Subscription,
-} from 'rxjs';
-import { map } from 'rxjs/operators';
-import { Apollo } from 'apollo-angular';
-import * as generated from '../graphql/generated';
-import { ErrorsService } from '../errors/errors.service';
+} from "rxjs";
+import { map } from "rxjs/operators";
+import { Apollo } from "apollo-angular";
+import * as generated from "../graphql/generated";
+import { ErrorsService } from "../errors/errors.service";
 
 export const emptyResult: generated.TorrentContentSearchResult = {
   items: [],
@@ -142,7 +142,7 @@ export class TorrentsSearchDatasource
       >({
         query: generated.TorrentContentSearchDocument,
         variables,
-        fetchPolicy: 'no-cache',
+        fetchPolicy: "no-cache",
       })
       .pipe(map((r) => r.data.torrentContent.search))
       .pipe(

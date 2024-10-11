@@ -1,37 +1,37 @@
-import { ChartConfiguration } from 'chart.js';
-import { inject, Injectable } from '@angular/core';
-import { TranslocoService } from '@jsverse/transloco';
-import { format as formatDate } from 'date-fns/format';
-import { ChartAdapter } from '../charting/types';
-import { ThemeBaseColor } from '../themes/theme-types';
-import { createThemeColor } from '../themes/theme-utils';
-import { ThemeInfoService } from '../themes/theme-info.service';
-import { resolveDateLocale } from '../dates/dates.locales';
-import { formatDuration } from '../dates/dates.utils';
-import { normalizeBucket } from './torrent-metrics.controller';
+import { ChartConfiguration } from "chart.js";
+import { inject, Injectable } from "@angular/core";
+import { TranslocoService } from "@jsverse/transloco";
+import { format as formatDate } from "date-fns/format";
+import { ChartAdapter } from "../charting/types";
+import { ThemeBaseColor } from "../themes/theme-types";
+import { createThemeColor } from "../themes/theme-utils";
+import { ThemeInfoService } from "../themes/theme-info.service";
+import { resolveDateLocale } from "../dates/dates.locales";
+import { formatDuration } from "../dates/dates.utils";
+import { normalizeBucket } from "./torrent-metrics.controller";
 import {
   durationSeconds,
   eventNames,
   timeframeLengths,
-} from './torrent-metrics.constants';
-import { BucketParams, EventName, Result } from './torrent-metrics.types';
+} from "./torrent-metrics.constants";
+import { BucketParams, EventName, Result } from "./torrent-metrics.types";
 
 const eventColors: Record<EventName, ThemeBaseColor> = {
-  created: 'primary',
-  updated: 'secondary',
+  created: "primary",
+  updated: "secondary",
 };
 
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class TorrentChartAdapterTimeline
-  implements ChartAdapter<Result, 'line'>
+  implements ChartAdapter<Result, "line">
 {
   private themeInfo = inject(ThemeInfoService);
   private transloco = inject(TranslocoService);
 
-  create(result?: Result): ChartConfiguration<'line'> {
+  create(result?: Result): ChartConfiguration<"line"> {
     const { colors } = this.themeInfo.info;
     const labels = Array<string>();
-    const datasets: ChartConfiguration<'line'>['data']['datasets'] = [];
+    const datasets: ChartConfiguration<"line">["data"]["datasets"] = [];
     if (result) {
       const nonEmptySources = result.sources.filter((q) => !q.isEmpty);
       const nonEmptyBuckets = Array.from(
@@ -71,8 +71,8 @@ export class TorrentChartAdapterTimeline
               );
             }
             datasets.push({
-              yAxisID: 'yCount',
-              label: [source.source, event].join('/'),
+              yAxisID: "yCount",
+              label: [source.source, event].join("/"),
               data: series,
               // fill: 'origin',
               // backgroundColor: 'rgba(148,159,177,0.2)',
@@ -91,7 +91,7 @@ export class TorrentChartAdapterTimeline
       }
     }
     return {
-      type: 'line',
+      type: "line",
       options: {
         animation: false,
         elements: {
@@ -101,7 +101,7 @@ export class TorrentChartAdapterTimeline
         },
         scales: {
           yCount: {
-            position: 'left',
+            position: "left",
             ticks: {
               callback: (v) =>
                 parseInt(v as string).toLocaleString(
@@ -147,14 +147,14 @@ export class TorrentChartAdapterTimeline
   private formatBucketKey(params: BucketParams<false>, key: number): string {
     let formatStr: string;
     switch (params.duration) {
-      case 'day':
-        formatStr = 'd LLL';
+      case "day":
+        formatStr = "d LLL";
         break;
-      case 'hour':
-        formatStr = 'd LLL H:00';
+      case "hour":
+        formatStr = "d LLL H:00";
         break;
-      case 'minute':
-        formatStr = 'H:mm';
+      case "minute":
+        formatStr = "H:mm";
         break;
     }
     return formatDate(
@@ -167,11 +167,11 @@ export class TorrentChartAdapterTimeline
   }
 
   private formatDuration(d: number | string): string {
-    if (typeof d === 'string') {
+    if (typeof d === "string") {
       d = parseInt(d);
     }
     if (d === 0) {
-      return '0';
+      return "0";
     }
     let seconds = d;
     let minutes = 0;

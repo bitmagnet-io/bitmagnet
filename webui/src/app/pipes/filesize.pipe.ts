@@ -1,9 +1,9 @@
-import { inject, Pipe, PipeTransform } from '@angular/core';
-import { filesize } from 'filesize';
-import { TranslocoService } from '@jsverse/transloco';
+import { inject, Pipe, PipeTransform } from "@angular/core";
+import { filesize } from "filesize";
+import { TranslocoService } from "@jsverse/transloco";
 
 @Pipe({
-  name: 'filesize',
+  name: "filesize",
   standalone: true,
   pure: false,
 })

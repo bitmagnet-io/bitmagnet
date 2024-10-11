@@ -9,7 +9,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"github.com/vektah/gqlparser/v2/ast"
 	"time"
 )
 
@@ -119,18 +118,6 @@ type TorrentContentSearchResult struct {
 	HasNextPage          bool
 	Items                []TorrentContent
 	Aggregations         gen.TorrentContentAggregations
-}
-
-func isPathSelectedCtx(ctx *graphql.OperationContext, selSet ast.SelectionSet, path ...string) bool {
-	for _, f := range graphql.CollectFields(ctx, selSet, nil) {
-		if f.Name == path[0] {
-			if len(path) == 1 {
-				return true
-			}
-			return isPathSelectedCtx(ctx, f.Selections, path[1:]...)
-		}
-	}
-	return false
 }
 
 func (t TorrentContentQuery) Search(

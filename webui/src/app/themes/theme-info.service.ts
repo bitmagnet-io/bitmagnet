@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { ThemeColors, ThemeInfo, ThemeType } from './theme-types';
-import { emptyThemeInfo } from './theme-constants';
+import { Injectable } from "@angular/core";
+import { BehaviorSubject } from "rxjs";
+import { ThemeColors, ThemeInfo, ThemeType } from "./theme-types";
+import { emptyThemeInfo } from "./theme-constants";
 
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class ThemeInfoService {
   private infoSubject = new BehaviorSubject<ThemeInfo>(emptyThemeInfo);
 
@@ -22,7 +22,7 @@ export class ThemeInfoService {
   }
 
   public get isDark(): boolean {
-    return this.type === 'dark';
+    return this.type === "dark";
   }
 
   public setInfo(info: ThemeInfo) {

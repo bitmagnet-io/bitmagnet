@@ -1,4 +1,4 @@
-import { Params } from '@angular/router';
+import { Params } from "@angular/router";
 
 export const stringListParam = (
   params: Params,
@@ -6,7 +6,7 @@ export const stringListParam = (
 ): string[] | undefined => {
   const str = stringParam(params, key);
   const list = str
-    ?.split(',')
+    ?.split(",")
     .map((str) => str.trim())
     .filter(Boolean);
   return list?.length ? Array.from(new Set(list)).sort() : undefined;
@@ -16,7 +16,7 @@ export const stringParam = (
   params: Params,
   key: string,
 ): string | undefined => {
-  return typeof params[key] === 'string'
+  return typeof params[key] === "string"
     ? decodeURIComponent(params[key] as string) || undefined
     : undefined;
 };

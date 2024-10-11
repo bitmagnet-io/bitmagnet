@@ -1,9 +1,9 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { appConfig } from '../app.config';
-import { TorrentPermalinkComponent } from './torrent-permalink.component';
+import { appConfig } from "../app.config";
+import { TorrentPermalinkComponent } from "./torrent-permalink.component";
 
-describe('TorrentPermalinkComponent', () => {
+describe("TorrentPermalinkComponent", () => {
   let component: TorrentPermalinkComponent;
   let fixture: ComponentFixture<TorrentPermalinkComponent>;
 
@@ -15,7 +15,7 @@ describe('TorrentPermalinkComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

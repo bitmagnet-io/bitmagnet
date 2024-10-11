@@ -4,37 +4,37 @@ import {
   inject,
   OnDestroy,
   OnInit,
-} from '@angular/core';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+} from "@angular/core";
+import { ActivatedRoute, Params, Router } from "@angular/router";
 import {
   BehaviorSubject,
   combineLatestWith,
   Observable,
   Subscription,
-} from 'rxjs';
-import { map } from 'rxjs/operators';
-import { TranslocoService } from '@jsverse/transloco';
-import { FormControl } from '@angular/forms';
-import { SelectionModel } from '@angular/cdk/collections';
-import { Apollo } from 'apollo-angular';
-import { ErrorsService } from '../errors/errors.service';
+} from "rxjs";
+import { map } from "rxjs/operators";
+import { TranslocoService } from "@jsverse/transloco";
+import { FormControl } from "@angular/forms";
+import { SelectionModel } from "@angular/cdk/collections";
+import { Apollo } from "apollo-angular";
+import { ErrorsService } from "../errors/errors.service";
 import {
   allColumns,
   compactColumns,
   TorrentsTableComponent,
-} from '../torrents-table/torrents-table.component';
-import { GraphQLModule } from '../graphql/graphql.module';
-import { PaginatorComponent } from '../paginator/paginator.component';
-import { contentTypeList, contentTypeMap } from '../taxonomy/content-types';
-import { BreakpointsService } from '../layout/breakpoints.service';
-import * as generated from '../graphql/generated';
-import { TorrentsBulkActionsComponent } from '../torrents-bulk-actions/torrents-bulk-actions.component';
-import { intParam, stringListParam, stringParam } from '../util/query-string';
-import { AppModule } from '../app.module';
+} from "../torrents-table/torrents-table.component";
+import { GraphQLModule } from "../graphql/graphql.module";
+import { PaginatorComponent } from "../paginator/paginator.component";
+import { contentTypeList, contentTypeMap } from "../taxonomy/content-types";
+import { BreakpointsService } from "../layout/breakpoints.service";
+import * as generated from "../graphql/generated";
+import { TorrentsBulkActionsComponent } from "../torrents-bulk-actions/torrents-bulk-actions.component";
+import { intParam, stringListParam, stringParam } from "../util/query-string";
+import { AppModule } from "../app.module";
 import {
   emptyResult,
   TorrentsSearchDatasource,
-} from './torrents-search.datasource';
+} from "./torrents-search.datasource";
 import {
   ContentTypeSelection,
   defaultOrderBy,
@@ -45,12 +45,12 @@ import {
   orderByOptions,
   TorrentSearchControls,
   TorrentsSearchController,
-} from './torrents-search.controller';
+} from "./torrents-search.controller";
 
 @Component({
-  selector: 'app-torrents-search',
-  templateUrl: './torrents-search.component.html',
-  styleUrl: './torrents-search.component.scss',
+  selector: "app-torrents-search",
+  templateUrl: "./torrents-search.component.html",
+  styleUrl: "./torrents-search.component.scss",
   standalone: true,
   imports: [
     AppModule,
@@ -84,7 +84,7 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
   allColumns = allColumns;
   compactColumns = compactColumns;
 
-  queryString = new FormControl('');
+  queryString = new FormControl("");
 
   result = emptyResult;
 
@@ -122,7 +122,7 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
             !f.contentTypes ||
             !!(
               controls.contentType &&
-              controls.contentType !== 'null' &&
+              controls.contentType !== "null" &&
               f.contentTypes.includes(controls.contentType)
             ),
           aggregations: f
@@ -152,26 +152,26 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.subscriptions.push(
       this.route.queryParams.subscribe((params) => {
-        const queryString = stringParam(params, 'query');
+        const queryString = stringParam(params, "query");
         this.queryString.setValue(queryString ?? null);
         this.controller.update((ctrl) => {
-          const activeFacets = stringListParam(params, 'facets');
+          const activeFacets = stringListParam(params, "facets");
           let orderBy = ctrl.orderBy;
           if (queryString) {
             if (queryString !== ctrl.queryString) {
               orderBy = defaultQueryOrderBy;
             }
-          } else if (orderBy.field === 'relevance') {
+          } else if (orderBy.field === "relevance") {
             orderBy = defaultOrderBy;
           }
           return {
             ...ctrl,
             queryString,
             orderBy,
-            contentType: contentTypeParam(params, 'content_type'),
-            limit: intParam(params, 'limit') ?? ctrl.limit,
-            page: intParam(params, 'page') ?? ctrl.page,
-            facets: facets.reduce<TorrentSearchControls['facets']>(
+            contentType: contentTypeParam(params, "content_type"),
+            limit: intParam(params, "limit") ?? ctrl.limit,
+            page: intParam(params, "page") ?? ctrl.page,
+            facets: facets.reduce<TorrentSearchControls["facets"]>(
               (acc, facet) => {
                 const active = activeFacets?.includes(facet.key) ?? false;
                 const filter = stringListParam(params, facet.key);
@@ -205,7 +205,7 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
             content_type: ctrl.contentType,
             ...flattenFacets(ctrl.facets),
           },
-          queryParamsHandling: 'merge',
+          queryParamsHandling: "merge",
         });
       }),
       this.selection.changed.subscribe((selection) => {
@@ -226,7 +226,7 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
 const defaultLimit = 20;
 
 const initControls: TorrentSearchControls = {
-  language: 'en',
+  language: "en",
   page: 1,
   limit: defaultLimit,
   contentType: null,
@@ -251,7 +251,7 @@ const contentTypeParam = (
 };
 
 const flattenFacets = (
-  ctrl: TorrentSearchControls['facets'],
+  ctrl: TorrentSearchControls["facets"],
 ): Record<string, unknown> => {
   const [activeFacets, filters] = facets.reduce<
     [string[], Record<string, string[]>]
@@ -275,11 +275,11 @@ const flattenFacets = (
     [[], {}],
   );
   return {
-    facets: activeFacets.length ? activeFacets.join(',') : undefined,
+    facets: activeFacets.length ? activeFacets.join(",") : undefined,
     ...Object.fromEntries(
       Object.entries(filters).map(([k, values]) => [
         k,
-        encodeURIComponent(values.join(',')),
+        encodeURIComponent(values.join(",")),
       ]),
     ),
   };

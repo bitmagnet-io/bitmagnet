@@ -5,22 +5,22 @@ import {
   Input,
   OnInit,
   Output,
-} from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { catchError, EMPTY, Observable, tap } from 'rxjs';
-import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import * as generated from '../graphql/generated';
-import { BreakpointsService } from '../layout/breakpoints.service';
-import { ErrorsService } from '../errors/errors.service';
-import { GraphQLService } from '../graphql/graphql.service';
-import { AppModule } from '../app.module';
+} from "@angular/core";
+import { FormControl } from "@angular/forms";
+import { catchError, EMPTY, Observable, tap } from "rxjs";
+import { COMMA, ENTER } from "@angular/cdk/keycodes";
+import * as generated from "../graphql/generated";
+import { BreakpointsService } from "../layout/breakpoints.service";
+import { ErrorsService } from "../errors/errors.service";
+import { GraphQLService } from "../graphql/graphql.service";
+import { AppModule } from "../app.module";
 
 @Component({
-  selector: 'app-torrents-bulk-actions',
+  selector: "app-torrents-bulk-actions",
   standalone: true,
   imports: [AppModule],
-  templateUrl: './torrents-bulk-actions.component.html',
-  styleUrl: './torrents-bulk-actions.component.scss',
+  templateUrl: "./torrents-bulk-actions.component.html",
+  styleUrl: "./torrents-bulk-actions.component.scss",
 })
 export class TorrentsBulkActionsComponent implements OnInit {
   private graphQLService = inject(GraphQLService);
@@ -33,7 +33,7 @@ export class TorrentsBulkActionsComponent implements OnInit {
 
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
   selectedTabIndex = 0;
-  newTagCtrl = new FormControl<string>('');
+  newTagCtrl = new FormControl<string>("");
   editedTags = Array<string>();
   suggestedTags = Array<string>();
   selectedItems = new Array<generated.TorrentContent>();
@@ -49,11 +49,11 @@ export class TorrentsBulkActionsComponent implements OnInit {
   }
 
   getSelectedMagnetLinks(): string {
-    return this.selectedItems.map((i) => i.torrent.magnetUri).join('\n');
+    return this.selectedItems.map((i) => i.torrent.magnetUri).join("\n");
   }
 
   getSelectedInfoHashes(): string {
-    return this.selectedItems.map((i) => i.infoHash).join('\n');
+    return this.selectedItems.map((i) => i.infoHash).join("\n");
   }
 
   addTag(tagName: string) {

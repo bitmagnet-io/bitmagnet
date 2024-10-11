@@ -1,4 +1,4 @@
-import { ThemeBaseColor, ThemeColor, ThemeColorHue } from './theme-types';
+import { ThemeBaseColor, ThemeColor, ThemeColorHue } from "./theme-types";
 
 export const createThemeColor = (
   base: ThemeBaseColor,

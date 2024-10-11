@@ -5,30 +5,30 @@ import {
   Input,
   OnInit,
   Output,
-} from '@angular/core';
+} from "@angular/core";
 import {
   animate,
   state,
   style,
   transition,
   trigger,
-} from '@angular/animations';
-import { SelectionModel } from '@angular/cdk/collections';
-import { BehaviorSubject } from 'rxjs';
-import { ActivatedRoute, Router } from '@angular/router';
-import { FilesizePipe } from '../pipes/filesize.pipe';
-import { TorrentContentComponent } from '../torrent-content/torrent-content.component';
-import { TimeAgoPipe } from '../dates/time-ago.pipe';
-import * as generated from '../graphql/generated';
-import { TorrentsSearchDatasource } from '../torrents-search/torrents-search.datasource';
-import { contentTypeInfo } from '../taxonomy/content-types';
-import { BreakpointsService } from '../layout/breakpoints.service';
-import { TorrentChipsComponent } from '../torrent-chips/torrent-chips.component';
-import { stringParam } from '../util/query-string';
-import { AppModule } from '../app.module';
+} from "@angular/animations";
+import { SelectionModel } from "@angular/cdk/collections";
+import { BehaviorSubject } from "rxjs";
+import { ActivatedRoute, Router } from "@angular/router";
+import { FilesizePipe } from "../pipes/filesize.pipe";
+import { TorrentContentComponent } from "../torrent-content/torrent-content.component";
+import { TimeAgoPipe } from "../dates/time-ago.pipe";
+import * as generated from "../graphql/generated";
+import { TorrentsSearchDatasource } from "../torrents-search/torrents-search.datasource";
+import { contentTypeInfo } from "../taxonomy/content-types";
+import { BreakpointsService } from "../layout/breakpoints.service";
+import { TorrentChipsComponent } from "../torrent-chips/torrent-chips.component";
+import { stringParam } from "../util/query-string";
+import { AppModule } from "../app.module";
 
 @Component({
-  selector: 'app-torrents-table',
+  selector: "app-torrents-table",
   standalone: true,
   imports: [
     AppModule,
@@ -37,15 +37,15 @@ import { AppModule } from '../app.module';
     TorrentChipsComponent,
     TorrentContentComponent,
   ],
-  templateUrl: './torrents-table.component.html',
-  styleUrl: './torrents-table.component.scss',
+  templateUrl: "./torrents-table.component.html",
+  styleUrl: "./torrents-table.component.scss",
   animations: [
-    trigger('detailExpand', [
-      state('collapsed,void', style({ height: '0px', minHeight: '0' })),
-      state('expanded', style({ height: '*' })),
+    trigger("detailExpand", [
+      state("collapsed,void", style({ height: "0px", minHeight: "0" })),
+      state("expanded", style({ height: "*" })),
       transition(
-        'expanded <=> collapsed',
-        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
+        "expanded <=> collapsed",
+        animate("225ms cubic-bezier(0.4, 0.0, 0.2, 1)"),
       ),
     ]),
   ],
@@ -79,7 +79,7 @@ export class TorrentsTableComponent implements OnInit {
     });
     this.route.queryParams.subscribe((params) => {
       const expandedId = this.expandedId.getValue() ?? undefined;
-      const nextExpandedId = stringParam(params, 'expanded');
+      const nextExpandedId = stringParam(params, "expanded");
       if (expandedId !== nextExpandedId) {
         this.expandedId.next(nextExpandedId ?? null);
       }
@@ -90,7 +90,7 @@ export class TorrentsTableComponent implements OnInit {
         queryParams: {
           expanded: expandedId ? encodeURIComponent(expandedId) : undefined,
         },
-        queryParamsHandling: 'merge',
+        queryParamsHandling: "merge",
       });
     });
   }
@@ -126,14 +126,14 @@ export class TorrentsTableComponent implements OnInit {
 }
 
 export const allColumns = [
-  'select',
-  'summary',
-  'size',
-  'publishedAt',
-  'peers',
-  'magnet',
+  "select",
+  "summary",
+  "size",
+  "publishedAt",
+  "peers",
+  "magnet",
 ] as const;
 
-export const compactColumns = ['select', 'summary', 'size', 'magnet'] as const;
+export const compactColumns = ["select", "summary", "size", "magnet"] as const;
 
 export type Column = (typeof allColumns)[number];

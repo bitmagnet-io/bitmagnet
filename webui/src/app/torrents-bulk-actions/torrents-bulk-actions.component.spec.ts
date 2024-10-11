@@ -1,9 +1,9 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { appConfig } from '../app.config';
-import { TorrentsBulkActionsComponent } from './torrents-bulk-actions.component';
+import { appConfig } from "../app.config";
+import { TorrentsBulkActionsComponent } from "./torrents-bulk-actions.component";
 
-describe('TorrentsBulkActionsComponent', () => {
+describe("TorrentsBulkActionsComponent", () => {
   let component: TorrentsBulkActionsComponent;
   let fixture: ComponentFixture<TorrentsBulkActionsComponent>;
 
@@ -15,7 +15,7 @@ describe('TorrentsBulkActionsComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

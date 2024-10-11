@@ -1,9 +1,9 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { appConfig } from '../app.config';
-import { TorrentsSearchComponent } from './torrents-search.component';
+import { appConfig } from "../app.config";
+import { TorrentsSearchComponent } from "./torrents-search.component";
 
-describe('TableComponent', () => {
+describe("TableComponent", () => {
   let component: TorrentsSearchComponent;
   let fixture: ComponentFixture<TorrentsSearchComponent>;
 
@@ -17,7 +17,7 @@ describe('TableComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should compile', () => {
+  it("should compile", () => {
     expect(component).toBeTruthy();
   });
 });

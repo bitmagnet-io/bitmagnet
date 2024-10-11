@@ -1,11 +1,11 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { DomSanitizer } from '@angular/platform-browser';
-import { MatIconRegistry } from '@angular/material/icon';
-import { appConfig } from '../app.config';
-import { DashboardComponent } from './dashboard.component';
+import { DomSanitizer } from "@angular/platform-browser";
+import { MatIconRegistry } from "@angular/material/icon";
+import { appConfig } from "../app.config";
+import { DashboardComponent } from "./dashboard.component";
 
-describe('DashboardComponent', () => {
+describe("DashboardComponent", () => {
   let component: DashboardComponent;
   let fixture: ComponentFixture<DashboardComponent>;
 
@@ -16,14 +16,14 @@ describe('DashboardComponent', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
     TestBed.inject(MatIconRegistry).addSvgIcon(
-      'queue',
+      "queue",
       TestBed.inject(DomSanitizer).bypassSecurityTrustResourceUrl(
-        '/fake/icon.svg',
+        "/fake/icon.svg",
       ),
     );
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

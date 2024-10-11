@@ -1,9 +1,9 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { appConfig } from '../app.config';
-import { PaginatorComponent } from './paginator.component';
+import { appConfig } from "../app.config";
+import { PaginatorComponent } from "./paginator.component";
 
-describe('PaginatorComponent', () => {
+describe("PaginatorComponent", () => {
   let component: PaginatorComponent;
   let fixture: ComponentFixture<PaginatorComponent>;
 
@@ -14,7 +14,7 @@ describe('PaginatorComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

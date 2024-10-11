@@ -1,9 +1,9 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { appConfig } from '../app.config';
-import { TorrentChipsComponent } from './torrent-chips.component';
+import { appConfig } from "../app.config";
+import { TorrentChipsComponent } from "./torrent-chips.component";
 
-describe('TorrentChipsComponent', () => {
+describe("TorrentChipsComponent", () => {
   let component: TorrentChipsComponent;
   let fixture: ComponentFixture<TorrentChipsComponent>;
 
@@ -15,7 +15,7 @@ describe('TorrentChipsComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

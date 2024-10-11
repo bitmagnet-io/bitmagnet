@@ -1,9 +1,9 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { appConfig } from '../app.config';
-import { TorrentsDashboardComponent } from './torrents-dashboard.component';
+import { appConfig } from "../app.config";
+import { TorrentsDashboardComponent } from "./torrents-dashboard.component";
 
-describe('QueueCardComponent', () => {
+describe("QueueCardComponent", () => {
   let component: TorrentsDashboardComponent;
   let fixture: ComponentFixture<TorrentsDashboardComponent>;
 
@@ -15,7 +15,7 @@ describe('QueueCardComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

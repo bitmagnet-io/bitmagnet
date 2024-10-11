@@ -1,36 +1,36 @@
-import { ChartConfiguration } from 'chart.js';
-import { inject, Injectable } from '@angular/core';
-import { TranslocoService } from '@jsverse/transloco';
-import { format as formatDate } from 'date-fns/format';
-import { ChartAdapter } from '../charting/types';
-import { ThemeBaseColor } from '../themes/theme-types';
-import { createThemeColor } from '../themes/theme-utils';
-import { ThemeInfoService } from '../themes/theme-info.service';
-import { resolveDateLocale } from '../dates/dates.locales';
-import { formatDuration } from '../dates/dates.utils';
-import { normalizeBucket } from './queue-metrics.controller';
+import { ChartConfiguration } from "chart.js";
+import { inject, Injectable } from "@angular/core";
+import { TranslocoService } from "@jsverse/transloco";
+import { format as formatDate } from "date-fns/format";
+import { ChartAdapter } from "../charting/types";
+import { ThemeBaseColor } from "../themes/theme-types";
+import { createThemeColor } from "../themes/theme-utils";
+import { ThemeInfoService } from "../themes/theme-info.service";
+import { resolveDateLocale } from "../dates/dates.locales";
+import { formatDuration } from "../dates/dates.utils";
+import { normalizeBucket } from "./queue-metrics.controller";
 import {
   durationSeconds,
   eventNames,
   timeframeLengths,
-} from './queue.constants';
-import { BucketParams, EventName, Result } from './queue-metrics.types';
+} from "./queue.constants";
+import { BucketParams, EventName, Result } from "./queue-metrics.types";
 
 const eventColors: Record<EventName, ThemeBaseColor> = {
-  created: 'primary',
-  processed: 'success',
-  failed: 'error',
+  created: "primary",
+  processed: "success",
+  failed: "error",
 };
 
-@Injectable({ providedIn: 'root' })
-export class QueueChartAdapterTimeline implements ChartAdapter<Result, 'line'> {
+@Injectable({ providedIn: "root" })
+export class QueueChartAdapterTimeline implements ChartAdapter<Result, "line"> {
   private themeInfo = inject(ThemeInfoService);
   private transloco = inject(TranslocoService);
 
-  create(result?: Result): ChartConfiguration<'line'> {
+  create(result?: Result): ChartConfiguration<"line"> {
     const { colors } = this.themeInfo.info;
     const labels = Array<string>();
-    const datasets: ChartConfiguration<'line'>['data']['datasets'] = [];
+    const datasets: ChartConfiguration<"line">["data"]["datasets"] = [];
     if (result) {
       const nonEmptyQueues = result.queues.filter((q) => !q.isEmpty);
       const nonEmptyBuckets = Array.from(
@@ -42,7 +42,7 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, 'line'> {
       ).sort();
       const now = new Date();
       const minBucket =
-        result.params.buckets.timeframe === 'all'
+        result.params.buckets.timeframe === "all"
           ? nonEmptyBuckets[0]
           : Math.min(
               nonEmptyBuckets[0],
@@ -73,8 +73,8 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, 'line'> {
               );
             }
             datasets.push({
-              yAxisID: 'yCount',
-              label: [queue.queue, event].join('/'),
+              yAxisID: "yCount",
+              label: [queue.queue, event].join("/"),
               data: series,
               // fill: 'origin',
               // backgroundColor: 'rgba(148,159,177,0.2)',
@@ -89,13 +89,13 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, 'line'> {
                 colors[createThemeColor(eventColors[event], 60)],
             });
           }
-          const latencyEvents = (['processed', 'failed'] as const).filter((e) =>
+          const latencyEvents = (["processed", "failed"] as const).filter((e) =>
             relevantEvents.includes(e),
           );
           if (latencyEvents.length) {
             const latencySeries = Array<number | null>();
             for (let i = minBucket; i <= maxBucket; i++) {
-              const result = (['processed', 'failed'] as const)
+              const result = (["processed", "failed"] as const)
                 .filter((e) => relevantEvents.includes(e))
                 .reduce<[number, number] | null>((acc, next) => {
                   const entry =
@@ -111,23 +111,23 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, 'line'> {
               latencySeries.push(result ? result[0] / result[1] : null);
             }
             datasets.push({
-              yAxisID: 'yLatency',
-              label: [queue.queue, 'latency'].join('/'),
+              yAxisID: "yLatency",
+              label: [queue.queue, "latency"].join("/"),
               data: latencySeries,
               // fill: 'origin',
               // backgroundColor: 'rgba(148,159,177,0.2)',
-              borderColor: colors['tertiary-50'],
+              borderColor: colors["tertiary-50"],
               // pointBackgroundColor: 'rgba(148,159,177,1)',
               // pointBorderColor: '#fff',
-              pointHoverBackgroundColor: colors['tertiary-80'],
-              pointHoverBorderColor: colors['tertiary-20'],
+              pointHoverBackgroundColor: colors["tertiary-80"],
+              pointHoverBorderColor: colors["tertiary-20"],
             });
           }
         }
       }
     }
     return {
-      type: 'line',
+      type: "line",
       options: {
         animation: false,
         elements: {
@@ -137,7 +137,7 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, 'line'> {
         },
         scales: {
           yCount: {
-            position: 'left',
+            position: "left",
             ticks: {
               callback: (v) =>
                 parseInt(v as string).toLocaleString(
@@ -146,7 +146,7 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, 'line'> {
             },
           },
           yLatency: {
-            position: 'right',
+            position: "right",
             ticks: {
               callback: this.formatDuration.bind(this),
             },
@@ -189,14 +189,14 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, 'line'> {
   private formatBucketKey(params: BucketParams<false>, key: number): string {
     let formatStr: string;
     switch (params.duration) {
-      case 'day':
-        formatStr = 'd LLL';
+      case "day":
+        formatStr = "d LLL";
         break;
-      case 'hour':
-        formatStr = 'd LLL H:00';
+      case "hour":
+        formatStr = "d LLL H:00";
         break;
-      case 'minute':
-        formatStr = 'H:mm';
+      case "minute":
+        formatStr = "H:mm";
         break;
     }
     return formatDate(
@@ -209,11 +209,11 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, 'line'> {
   }
 
   private formatDuration(d: number | string): string {
-    if (typeof d === 'string') {
+    if (typeof d === "string") {
       d = parseInt(d);
     }
     if (d === 0) {
-      return '0';
+      return "0";
     }
     let seconds = d;
     let minutes = 0;

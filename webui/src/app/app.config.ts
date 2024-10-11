@@ -1,69 +1,69 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { ApplicationConfig, provideZoneChangeDetection } from "@angular/core";
+import { provideRouter, withComponentInputBinding } from "@angular/router";
 
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
 import {
   provideHttpClient,
   withInterceptorsFromDi,
-} from '@angular/common/http';
-import { provideTransloco } from '@jsverse/transloco';
-import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
-import { routes } from './app.routes';
-import { TranslocoImportLoader } from './i18n/transloco.loader';
+} from "@angular/common/http";
+import { provideTransloco } from "@jsverse/transloco";
+import { provideCharts, withDefaultRegisterables } from "ng2-charts";
+import { routes } from "./app.routes";
+import { TranslocoImportLoader } from "./i18n/transloco.loader";
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withComponentInputBinding()),
-    provideAnimationsAsync('animations'),
+    provideAnimationsAsync("animations"),
     provideHttpClient(withInterceptorsFromDi()),
     provideHttpClient(),
     provideTransloco({
       config: {
         availableLangs: [
           {
-            id: 'ar',
-            label: 'العربية',
+            id: "ar",
+            label: "العربية",
           },
           {
-            id: 'de',
-            label: 'Deutsch',
+            id: "de",
+            label: "Deutsch",
           },
           {
-            id: 'en',
-            label: 'English',
+            id: "en",
+            label: "English",
           },
           {
-            id: 'es',
-            label: 'Español',
+            id: "es",
+            label: "Español",
           },
           {
-            id: 'fr',
-            label: 'Français',
+            id: "fr",
+            label: "Français",
           },
           {
-            id: 'ja',
-            label: '日本語',
+            id: "ja",
+            label: "日本語",
           },
           {
-            id: 'nl',
-            label: 'Nederlands',
+            id: "nl",
+            label: "Nederlands",
           },
           {
-            id: 'ru',
-            label: 'Русский',
+            id: "ru",
+            label: "Русский",
           },
           {
-            id: 'uk',
-            label: 'Українська',
+            id: "uk",
+            label: "Українська",
           },
           {
-            id: 'zh',
-            label: '中文',
+            id: "zh",
+            label: "中文",
           },
         ],
-        defaultLang: 'en',
-        fallbackLang: 'en',
+        defaultLang: "en",
+        fallbackLang: "en",
         missingHandler: {
           // It will use the first language set in the `fallbackLang` property
           useFallbackTranslation: true,

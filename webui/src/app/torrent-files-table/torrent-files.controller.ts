@@ -1,6 +1,6 @@
-import { BehaviorSubject, debounceTime, Observable } from 'rxjs';
-import * as generated from '../graphql/generated';
-import { PageEvent } from '../paginator/paginator.types';
+import { BehaviorSubject, debounceTime, Observable } from "rxjs";
+import * as generated from "../graphql/generated";
+import { PageEvent } from "../paginator/paginator.types";
 
 export class TorrentFilesController {
   private controlsSubject: BehaviorSubject<TorrentFilesControls>;

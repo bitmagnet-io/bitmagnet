@@ -1,23 +1,23 @@
-import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
-import { catchError, EMPTY, tap } from 'rxjs';
-import { FormControl } from '@angular/forms';
-import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { NgOptimizedImage } from '@angular/common';
-import { TranslocoService } from '@jsverse/transloco';
-import { FilesizePipe } from '../pipes/filesize.pipe';
-import * as generated from '../graphql/generated';
-import normalizeTagInput from '../util/normalizeTagInput';
-import { GraphQLService } from '../graphql/graphql.service';
-import { ErrorsService } from '../errors/errors.service';
-import { BreakpointsService } from '../layout/breakpoints.service';
-import { TimeAgoPipe } from '../dates/time-ago.pipe';
-import { TorrentFilesTableComponent } from '../torrent-files-table/torrent-files-table.component';
-import { AppModule } from '../app.module';
+import { Component, EventEmitter, inject, Input, Output } from "@angular/core";
+import { catchError, EMPTY, tap } from "rxjs";
+import { FormControl } from "@angular/forms";
+import { COMMA, ENTER } from "@angular/cdk/keycodes";
+import { NgOptimizedImage } from "@angular/common";
+import { TranslocoService } from "@jsverse/transloco";
+import { FilesizePipe } from "../pipes/filesize.pipe";
+import * as generated from "../graphql/generated";
+import normalizeTagInput from "../util/normalizeTagInput";
+import { GraphQLService } from "../graphql/graphql.service";
+import { ErrorsService } from "../errors/errors.service";
+import { BreakpointsService } from "../layout/breakpoints.service";
+import { TimeAgoPipe } from "../dates/time-ago.pipe";
+import { TorrentFilesTableComponent } from "../torrent-files-table/torrent-files-table.component";
+import { AppModule } from "../app.module";
 
 @Component({
-  selector: 'app-torrent-content',
-  templateUrl: './torrent-content.component.html',
-  styleUrl: './torrent-content.component.scss',
+  selector: "app-torrent-content",
+  templateUrl: "./torrent-content.component.html",
+  styleUrl: "./torrent-content.component.scss",
   standalone: true,
   imports: [
     AppModule,
@@ -38,7 +38,7 @@ export class TorrentContentComponent {
 
   @Output() updated = new EventEmitter<null>();
 
-  newTagCtrl = new FormControl<string>('');
+  newTagCtrl = new FormControl<string>("");
   private editedTags = Array<string>();
   public readonly suggestedTags = Array<string>();
   public selectedTabIndex = 0;
@@ -154,7 +154,7 @@ export class TorrentContentComponent {
   }
 
   filesCount(): number | undefined {
-    if (this.torrentContent.torrent.filesStatus === 'single') {
+    if (this.torrentContent.torrent.filesStatus === "single") {
       return 1;
     }
     return this.torrentContent.torrent.filesCount ?? undefined;

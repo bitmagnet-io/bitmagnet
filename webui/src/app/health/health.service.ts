@@ -1,22 +1,22 @@
-import { inject } from '@angular/core';
-import { Apollo } from 'apollo-angular';
-import { BehaviorSubject, map } from 'rxjs';
-import * as generated from '../graphql/generated';
+import { inject } from "@angular/core";
+import { Apollo } from "apollo-angular";
+import { BehaviorSubject, map } from "rxjs";
+import * as generated from "../graphql/generated";
 
 export type HealthStatus =
   | generated.HealthStatus
-  | 'started'
-  | 'error'
-  | 'degraded';
+  | "started"
+  | "error"
+  | "degraded";
 
 const icons: Record<HealthStatus, string> = {
-  error: 'error',
-  degraded: 'warning',
-  down: 'warning',
-  unknown: 'pending',
-  inactive: 'circle',
-  up: 'check_circle',
-  started: 'play_circle',
+  error: "error",
+  degraded: "warning",
+  down: "warning",
+  unknown: "pending",
+  inactive: "circle",
+  up: "check_circle",
+  started: "play_circle",
 };
 
 type Check = generated.HealthCheck & {
@@ -36,7 +36,7 @@ type Result = {
 };
 
 const initialResult: Result = {
-  status: 'unknown',
+  status: "unknown",
   checks: [],
   icon: icons.unknown,
   workers: [],
@@ -68,15 +68,15 @@ export class HealthService {
         generated.HealthCheckQueryVariables
       >({
         query: generated.HealthCheckDocument,
-        fetchPolicy: 'no-cache',
+        fetchPolicy: "no-cache",
         pollInterval,
       })
       .valueChanges.pipe(
         map(
           (r): Result => ({
             status:
-              r.data.health.status === 'down'
-                ? 'degraded'
+              r.data.health.status === "down"
+                ? "degraded"
                 : r.data.health.status,
             checks: r.data.health.checks.map((c) => ({
               ...c,
@@ -84,7 +84,7 @@ export class HealthService {
             })),
             workers: r.data.workers.listAll.workers.map((w) => ({
               ...w,
-              icon: icons[w.started ? 'started' : 'inactive'],
+              icon: icons[w.started ? "started" : "inactive"],
             })),
             icon: icons[r.data.health.status],
             error: null,
@@ -95,7 +95,7 @@ export class HealthService {
         next: (result) => this.resultSubject.next(result),
         error: (error: Error) => {
           this.resultSubject.next({
-            status: 'error',
+            status: "error",
             checks: [],
             workers: [],
             error,

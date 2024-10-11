@@ -4,15 +4,15 @@ import {
   Input,
   numberAttribute,
   Output,
-} from '@angular/core';
-import { AppModule } from '../app.module';
-import type { PageEvent } from './paginator.types';
+} from "@angular/core";
+import { AppModule } from "../app.module";
+import type { PageEvent } from "./paginator.types";
 
 @Component({
-  selector: 'app-paginator',
-  templateUrl: './paginator.component.html',
+  selector: "app-paginator",
+  templateUrl: "./paginator.component.html",
   standalone: true,
-  styleUrls: ['./paginator.component.scss'],
+  styleUrls: ["./paginator.component.scss"],
   imports: [AppModule],
 })
 export class PaginatorComponent {
@@ -36,7 +36,7 @@ export class PaginatorComponent {
   }
 
   get hasTotalLength() {
-    return typeof this.totalLength === 'number';
+    return typeof this.totalLength === "number";
   }
 
   get hasPreviousPage() {
@@ -44,17 +44,17 @@ export class PaginatorComponent {
   }
 
   get pageCount(): number | null {
-    if (typeof this.totalLength !== 'number') {
+    if (typeof this.totalLength !== "number") {
       return null;
     }
     return Math.ceil(this.totalLength / this.pageSize);
   }
 
   get actuallyHasNextPage() {
-    if (typeof this.hasNextPage === 'boolean') {
+    if (typeof this.hasNextPage === "boolean") {
       return this.hasNextPage;
     }
-    if (typeof this.totalLength !== 'number') {
+    if (typeof this.totalLength !== "number") {
       return false;
     }
     return this.page * this.pageSize < this.totalLength;

@@ -1,10 +1,10 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { appConfig } from '../app.config';
-import { HealthWidgetComponent } from './health-widget.component';
-import { HealthModule } from './health.module';
+import { appConfig } from "../app.config";
+import { HealthWidgetComponent } from "./health-widget.component";
+import { HealthModule } from "./health.module";
 
-describe('HealthComponent', () => {
+describe("HealthComponent", () => {
   let component: HealthWidgetComponent;
   let fixture: ComponentFixture<HealthWidgetComponent>;
 
@@ -19,7 +19,7 @@ describe('HealthComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

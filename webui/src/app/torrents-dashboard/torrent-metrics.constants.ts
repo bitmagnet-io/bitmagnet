@@ -1,13 +1,13 @@
-import * as generated from '../graphql/generated';
-import { BucketParams, Params, Result } from './torrent-metrics.types';
+import * as generated from "../graphql/generated";
+import { BucketParams, Params, Result } from "./torrent-metrics.types";
 
 export const defaultBucketParams: BucketParams = {
-  duration: 'hour',
+  duration: "hour",
   multiplier: 1,
-  timeframe: 'days_1',
+  timeframe: "days_1",
 };
 
-export const resolutionNames = ['day', 'hour', 'minute'] as const;
+export const resolutionNames = ["day", "hour", "minute"] as const;
 
 export const durationSeconds: Record<generated.MetricsBucketDuration, number> =
   {
@@ -18,7 +18,7 @@ export const durationSeconds: Record<generated.MetricsBucketDuration, number> =
 
 export const emptyParams: Params = {
   buckets: defaultBucketParams,
-  autoRefresh: 'off',
+  autoRefresh: "off",
 };
 
 export const emptyResult: Result = {
@@ -26,16 +26,16 @@ export const emptyResult: Result = {
   sources: [],
 };
 
-export const eventNames = ['created', 'updated'] as const;
+export const eventNames = ["created", "updated"] as const;
 
 export const timeframeNames = [
-  'minutes_15',
-  'minutes_30',
-  'hours_1',
-  'hours_6',
-  'hours_12',
-  'days_1',
-  'weeks_1',
+  "minutes_15",
+  "minutes_30",
+  "hours_1",
+  "hours_6",
+  "hours_12",
+  "days_1",
+  "weeks_1",
 ] as const;
 
 export const timeframeLengths: Record<(typeof timeframeNames)[number], number> =
@@ -50,11 +50,11 @@ export const timeframeLengths: Record<(typeof timeframeNames)[number], number> =
   };
 
 export const autoRefreshIntervalNames = [
-  'off',
-  'seconds_10',
-  'seconds_30',
-  'minutes_1',
-  'minutes_5',
+  "off",
+  "seconds_10",
+  "seconds_30",
+  "minutes_1",
+  "minutes_5",
 ] as const;
 
 export const autoRefreshIntervals: Record<

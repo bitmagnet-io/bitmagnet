@@ -1,17 +1,17 @@
-import * as generated from '../graphql/generated';
+import * as generated from "../graphql/generated";
 import {
   autoRefreshIntervalNames,
   eventNames,
   timeframeNames,
-} from './queue.constants';
+} from "./queue.constants";
 
 export type TimeframeName = (typeof timeframeNames)[number];
 
 export type BucketParams<_withAuto extends boolean = boolean> = {
   duration: _withAuto extends true
-    ? 'AUTO' | generated.MetricsBucketDuration
+    ? "AUTO" | generated.MetricsBucketDuration
     : generated.MetricsBucketDuration;
-  multiplier: _withAuto extends true ? 'AUTO' | number : number;
+  multiplier: _withAuto extends true ? "AUTO" | number : number;
   timeframe: TimeframeName;
 };
 

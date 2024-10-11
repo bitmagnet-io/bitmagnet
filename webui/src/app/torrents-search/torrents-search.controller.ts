@@ -1,14 +1,14 @@
-import { BehaviorSubject, debounceTime, Observable } from 'rxjs';
-import { TranslocoService } from '@jsverse/transloco';
-import * as generated from '../graphql/generated';
-import { PageEvent } from '../paginator/paginator.types';
+import { BehaviorSubject, debounceTime, Observable } from "rxjs";
+import { TranslocoService } from "@jsverse/transloco";
+import * as generated from "../graphql/generated";
+import { PageEvent } from "../paginator/paginator.types";
 
 type FacetInput<TValue = unknown> = {
   active: boolean;
   filter?: TValue[];
 };
 
-export type ContentTypeSelection = generated.ContentType | 'null' | null;
+export type ContentTypeSelection = generated.ContentType | "null" | null;
 
 export type TorrentSearchControls = {
   language: string;
@@ -42,7 +42,7 @@ const controlsToQueryVariables = (
       contentType: {
         aggregate: true,
         filter: ctrl.contentType
-          ? [ctrl.contentType === 'null' ? null : ctrl.contentType]
+          ? [ctrl.contentType === "null" ? null : ctrl.contentType]
           : undefined,
       },
       genre: ctrl.facets.genre.active
@@ -226,7 +226,7 @@ export class TorrentsSearchController {
         if (str !== ctrl.queryString) {
           orderBy = defaultQueryOrderBy;
         }
-      } else if (orderBy.field === 'relevance') {
+      } else if (orderBy.field === "relevance") {
         orderBy = defaultOrderBy;
       }
       return {
@@ -248,7 +248,7 @@ export class TorrentsSearchController {
     this.update((ctrl) => ({
       ...ctrl,
       orderBy:
-        orderBy.field !== 'relevance' || ctrl.queryString
+        orderBy.field !== "relevance" || ctrl.queryString
           ? orderBy
           : defaultOrderBy,
       page: 1,
@@ -280,22 +280,22 @@ export type FacetDefinition<T, _allowNull extends boolean = boolean> = {
   icon: string;
   contentTypes?: generated.ContentType[];
   allowNull: _allowNull;
-  extractInput: (facets: TorrentSearchControls['facets']) => FacetInput<T>;
+  extractInput: (facets: TorrentSearchControls["facets"]) => FacetInput<T>;
   patchInput: (
-    facets: TorrentSearchControls['facets'],
+    facets: TorrentSearchControls["facets"],
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     input: FacetInput<any>,
-  ) => TorrentSearchControls['facets'];
+  ) => TorrentSearchControls["facets"];
   extractAggregations: (
-    aggs: generated.TorrentContentSearchResult['aggregations'],
+    aggs: generated.TorrentContentSearchResult["aggregations"],
   ) => Array<Agg<T, _allowNull>>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   resolveLabel: (agg: Agg<any, any>, t: TranslocoService) => string;
 };
 
 export const torrentSourceFacet: FacetDefinition<string, false> = {
-  key: 'torrent_source',
-  icon: 'mediation',
+  key: "torrent_source",
+  icon: "mediation",
   allowNull: false,
   extractInput: (f) => f.torrentSource,
   patchInput: (f, i) => ({
@@ -307,8 +307,8 @@ export const torrentSourceFacet: FacetDefinition<string, false> = {
 };
 
 export const torrentTagFacet: FacetDefinition<string, false> = {
-  key: 'torrent_tag',
-  icon: 'sell',
+  key: "torrent_tag",
+  icon: "sell",
   allowNull: false,
   extractInput: (f) => f.torrentTag,
   patchInput: (f, i) => ({
@@ -320,8 +320,8 @@ export const torrentTagFacet: FacetDefinition<string, false> = {
 };
 
 export const fileTypeFacet: FacetDefinition<generated.FileType, false> = {
-  key: 'file_type',
-  icon: 'file_present',
+  key: "file_type",
+  icon: "file_present",
   allowNull: false,
   extractInput: (f) => f.fileType,
   patchInput: (f, i) => ({
@@ -333,8 +333,8 @@ export const fileTypeFacet: FacetDefinition<generated.FileType, false> = {
 };
 
 export const languageFacet: FacetDefinition<generated.Language, false> = {
-  key: 'language',
-  icon: 'translate',
+  key: "language",
+  icon: "translate",
   allowNull: false,
   extractInput: (f) => f.language,
   patchInput: (f, i) => ({
@@ -346,10 +346,10 @@ export const languageFacet: FacetDefinition<generated.Language, false> = {
 };
 
 export const genreFacet: FacetDefinition<string, false> = {
-  key: 'genre',
-  icon: 'theater_comedy',
+  key: "genre",
+  icon: "theater_comedy",
   allowNull: false,
-  contentTypes: ['movie', 'tv_show'],
+  contentTypes: ["movie", "tv_show"],
   extractInput: (f) => f.genre,
   patchInput: (f, i) => ({
     ...f,
@@ -363,10 +363,10 @@ export const videoResolutionFacet: FacetDefinition<
   generated.VideoResolution,
   true
 > = {
-  key: 'video_resolution',
-  icon: 'aspect_ratio',
+  key: "video_resolution",
+  icon: "aspect_ratio",
   allowNull: true,
-  contentTypes: ['movie', 'tv_show', 'xxx'],
+  contentTypes: ["movie", "tv_show", "xxx"],
   extractInput: (f) => f.videoResolution,
   patchInput: (f, i) => ({
     ...f,
@@ -377,14 +377,14 @@ export const videoResolutionFacet: FacetDefinition<
       ...agg,
       value: agg.value ?? null,
     })),
-  resolveLabel: (agg) => (agg.value as string | undefined)?.slice(1) ?? '?',
+  resolveLabel: (agg) => (agg.value as string | undefined)?.slice(1) ?? "?",
 };
 
 export const videoSourceFacet: FacetDefinition<generated.VideoSource, true> = {
-  key: 'video_source',
-  icon: 'album',
+  key: "video_source",
+  icon: "album",
   allowNull: true,
-  contentTypes: ['movie', 'tv_show', 'xxx'],
+  contentTypes: ["movie", "tv_show", "xxx"],
   extractInput: (f) => f.videoSource,
   patchInput: (f, i) => ({
     ...f,
@@ -395,7 +395,7 @@ export const videoSourceFacet: FacetDefinition<generated.VideoSource, true> = {
       ...agg,
       value: (agg.value as generated.VideoSource | undefined) ?? null,
     })),
-  resolveLabel: (agg) => (agg.value as string | undefined) ?? '?',
+  resolveLabel: (agg) => (agg.value as string | undefined) ?? "?",
 };
 
 export const facets = [
@@ -431,46 +431,46 @@ export type FacetInfo<
 
 export const orderByOptions: OrderBySelection[] = [
   {
-    field: 'relevance',
+    field: "relevance",
     descending: true,
   },
   {
-    field: 'published_at',
+    field: "published_at",
     descending: true,
   },
   {
-    field: 'updated_at',
+    field: "updated_at",
     descending: true,
   },
   {
-    field: 'size',
+    field: "size",
     descending: true,
   },
   {
-    field: 'files_count',
+    field: "files_count",
     descending: true,
   },
   {
-    field: 'seeders',
+    field: "seeders",
     descending: true,
   },
   {
-    field: 'leechers',
+    field: "leechers",
     descending: true,
   },
   {
-    field: 'name',
+    field: "name",
     descending: false,
   },
 ];
 
 export const defaultOrderBy = {
-  field: 'published_at' as const,
+  field: "published_at" as const,
   descending: true,
 };
 
 export const defaultQueryOrderBy = {
-  field: 'relevance' as const,
+  field: "relevance" as const,
   descending: true,
 };
 

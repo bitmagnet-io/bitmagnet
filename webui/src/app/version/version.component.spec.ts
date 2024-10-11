@@ -1,12 +1,12 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
 // import { AppModule } from 'src/app/app.module';
 // import { StatusModule } from '../status.module';
-import { GraphQLModule } from '../graphql/graphql.module';
-import { appConfig } from '../app.config';
-import { VersionComponent } from './version.component';
+import { GraphQLModule } from "../graphql/graphql.module";
+import { appConfig } from "../app.config";
+import { VersionComponent } from "./version.component";
 
-describe('VersionComponent', () => {
+describe("VersionComponent", () => {
   let component: VersionComponent;
   let fixture: ComponentFixture<VersionComponent>;
 
@@ -21,7 +21,7 @@ describe('VersionComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

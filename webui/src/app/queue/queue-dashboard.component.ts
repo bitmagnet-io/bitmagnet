@@ -1,14 +1,14 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, EventType, Router } from '@angular/router';
-import { EMPTY, Subscription } from 'rxjs';
-import { AppModule } from '../app.module';
+import { Component, inject, OnDestroy, OnInit } from "@angular/core";
+import { ActivatedRoute, EventType, Router } from "@angular/router";
+import { EMPTY, Subscription } from "rxjs";
+import { AppModule } from "../app.module";
 
 @Component({
-  selector: 'app-queue-dashboard',
+  selector: "app-queue-dashboard",
   standalone: true,
   imports: [AppModule],
-  templateUrl: './queue-dashboard.component.html',
-  styleUrl: './queue-dashboard.component.scss',
+  templateUrl: "./queue-dashboard.component.html",
+  styleUrl: "./queue-dashboard.component.scss",
 })
 export class QueueDashboardComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
@@ -26,7 +26,7 @@ export class QueueDashboardComponent implements OnInit, OnDestroy {
       this.router.events.subscribe((event) => {
         if (
           event.type === EventType.NavigationEnd &&
-          event.urlAfterRedirects === '/dashboard/queue'
+          event.urlAfterRedirects === "/dashboard/queue"
         ) {
           this.redirectVisualize();
         }
@@ -36,7 +36,7 @@ export class QueueDashboardComponent implements OnInit, OnDestroy {
   }
 
   private redirectVisualize(): void {
-    void this.router.navigate(['visualize'], {
+    void this.router.navigate(["visualize"], {
       relativeTo: this.route,
     });
   }

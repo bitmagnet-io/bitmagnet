@@ -1,7 +1,7 @@
-import { BehaviorSubject, debounceTime, Observable } from 'rxjs';
-import { TranslocoService } from '@jsverse/transloco';
-import * as generated from '../graphql/generated';
-import { PageEvent } from '../paginator/paginator.types';
+import { BehaviorSubject, debounceTime, Observable } from "rxjs";
+import { TranslocoService } from "@jsverse/transloco";
+import * as generated from "../graphql/generated";
+import { PageEvent } from "../paginator/paginator.types";
 
 export class QueueJobsController {
   private controlsSubject: BehaviorSubject<QueueJobsControls>;
@@ -110,10 +110,10 @@ const controlsToQueryVariables = (
     totalCount: true,
     orderBy: [
       ctrl.orderBy,
-      ...(ctrl.orderBy.field !== 'created_at'
+      ...(ctrl.orderBy.field !== "created_at"
         ? [
             {
-              field: 'created_at' as const,
+              field: "created_at" as const,
               descending: ctrl.orderBy.descending,
             },
           ]
@@ -141,15 +141,15 @@ type OrderBySelection = {
 
 export const orderByOptions: OrderBySelection[] = [
   {
-    field: 'created_at',
+    field: "created_at",
     descending: true,
   },
   {
-    field: 'ran_at',
+    field: "ran_at",
     descending: true,
   },
   {
-    field: 'priority',
+    field: "priority",
     descending: false,
   },
 ];
@@ -170,7 +170,7 @@ const initialControls: QueueJobsControls = {
   limit: 20,
   page: 1,
   orderBy: {
-    field: 'ran_at',
+    field: "ran_at",
     descending: true,
   },
   facets: {
@@ -191,21 +191,21 @@ export type Agg<T> = {
 
 export type FacetDefinition<T> = {
   key: string;
-  extractInput: (facets: QueueJobsControls['facets']) => FacetInput<T>;
+  extractInput: (facets: QueueJobsControls["facets"]) => FacetInput<T>;
   patchInput: (
-    facets: QueueJobsControls['facets'],
+    facets: QueueJobsControls["facets"],
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     input: FacetInput<any>,
-  ) => QueueJobsControls['facets'];
+  ) => QueueJobsControls["facets"];
   extractAggregations: (
-    aggs: generated.QueueJobsQueryResult['aggregations'],
+    aggs: generated.QueueJobsQueryResult["aggregations"],
   ) => Array<Agg<T>>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   resolveLabel: (agg: Agg<any>, t: TranslocoService) => string;
 };
 
 export const queueFacet: FacetDefinition<string> = {
-  key: 'queue',
+  key: "queue",
   extractInput: (f) => f.queue,
   patchInput: (f, i) => ({
     ...f,
@@ -216,14 +216,14 @@ export const queueFacet: FacetDefinition<string> = {
 };
 
 export const statusFacet: FacetDefinition<generated.QueueJobStatus> = {
-  key: 'status',
+  key: "status",
   extractInput: (f) => f.status,
   patchInput: (f, i) => ({
     ...f,
     status: i,
   }),
   extractAggregations: (aggs) => aggs.status ?? [],
-  resolveLabel: (agg, t) => t.translate('queue.statuses.' + agg.label),
+  resolveLabel: (agg, t) => t.translate("queue.statuses." + agg.label),
 };
 
 export const facets = [queueFacet, statusFacet];

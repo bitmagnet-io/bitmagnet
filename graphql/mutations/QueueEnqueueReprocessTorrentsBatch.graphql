@@ -1,4 +1,6 @@
-mutation QueueEnqueueReprocessTorrentsBatch($input: QueueEnqueueReprocessTorrentsBatchInput!) {
+mutation QueueEnqueueReprocessTorrentsBatch(
+  $input: QueueEnqueueReprocessTorrentsBatchInput!
+) {
   queue {
     enqueueReprocessTorrentsBatch(input: $input)
   }

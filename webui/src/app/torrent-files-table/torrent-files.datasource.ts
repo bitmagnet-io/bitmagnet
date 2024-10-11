@@ -1,15 +1,15 @@
-import { CollectionViewer, DataSource } from '@angular/cdk/collections';
-import { Apollo } from 'apollo-angular';
+import { CollectionViewer, DataSource } from "@angular/cdk/collections";
+import { Apollo } from "apollo-angular";
 import {
   BehaviorSubject,
   catchError,
   EMPTY,
   Observable,
   Subscription,
-} from 'rxjs';
-import { map } from 'rxjs/operators';
-import { ErrorsService } from '../errors/errors.service';
-import * as generated from '../graphql/generated';
+} from "rxjs";
+import { map } from "rxjs/operators";
+import { ErrorsService } from "../errors/errors.service";
+import * as generated from "../graphql/generated";
 
 const emptyResult = {
   items: [],
@@ -79,7 +79,7 @@ export class TorrentFilesDatasource implements ITorrentFilesDatasource {
         {
           query: generated.TorrentFilesDocument,
           variables,
-          fetchPolicy: 'no-cache',
+          fetchPolicy: "no-cache",
         },
       )
       .pipe(map((r) => r.data.torrent.files))

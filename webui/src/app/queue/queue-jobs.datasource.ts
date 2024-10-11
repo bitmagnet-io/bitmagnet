@@ -1,15 +1,15 @@
-import { Apollo } from 'apollo-angular';
+import { Apollo } from "apollo-angular";
 import {
   BehaviorSubject,
   catchError,
   EMPTY,
   Observable,
   Subscription,
-} from 'rxjs';
-import { CollectionViewer, DataSource } from '@angular/cdk/collections';
-import { map } from 'rxjs/operators';
-import * as generated from '../graphql/generated';
-import { ErrorsService } from '../errors/errors.service';
+} from "rxjs";
+import { CollectionViewer, DataSource } from "@angular/cdk/collections";
+import { map } from "rxjs/operators";
+import * as generated from "../graphql/generated";
+import { ErrorsService } from "../errors/errors.service";
 
 const emptyResult = {
   items: [],
@@ -78,7 +78,7 @@ export class QueueJobsDatasource implements DataSource<generated.QueueJob> {
       .query<generated.QueueJobsQuery, generated.QueueJobsQueryVariables>({
         query: generated.QueueJobsDocument,
         variables,
-        fetchPolicy: 'no-cache',
+        fetchPolicy: "no-cache",
       })
       .pipe(map((r) => r.data.queue.jobs))
       .pipe(

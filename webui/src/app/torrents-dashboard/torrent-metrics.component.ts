@@ -1,24 +1,24 @@
-import { Component, inject, OnDestroy } from '@angular/core';
-import { Apollo } from 'apollo-angular';
-import { GraphQLModule } from '../graphql/graphql.module';
-import { ChartComponent } from '../charting/chart.component';
-import { BreakpointsService } from '../layout/breakpoints.service';
-import { ErrorsService } from '../errors/errors.service';
-import { AppModule } from '../app.module';
+import { Component, inject, OnDestroy } from "@angular/core";
+import { Apollo } from "apollo-angular";
+import { GraphQLModule } from "../graphql/graphql.module";
+import { ChartComponent } from "../charting/chart.component";
+import { BreakpointsService } from "../layout/breakpoints.service";
+import { ErrorsService } from "../errors/errors.service";
+import { AppModule } from "../app.module";
 import {
   autoRefreshIntervalNames,
   eventNames,
   resolutionNames,
   timeframeNames,
-} from './torrent-metrics.constants';
-import { TorrentMetricsController } from './torrent-metrics.controller';
-import { TorrentChartAdapterTimeline } from './torrent-chart-adapter.timeline';
+} from "./torrent-metrics.constants";
+import { TorrentMetricsController } from "./torrent-metrics.controller";
+import { TorrentChartAdapterTimeline } from "./torrent-chart-adapter.timeline";
 
 @Component({
-  selector: 'app-torrent-metrics',
+  selector: "app-torrent-metrics",
   standalone: true,
-  templateUrl: './torrent-metrics.component.html',
-  styleUrl: './torrent-metrics.component.scss',
+  templateUrl: "./torrent-metrics.component.html",
+  styleUrl: "./torrent-metrics.component.scss",
   imports: [AppModule, ChartComponent, GraphQLModule],
 })
 export class TorrentMetricsComponent implements OnDestroy {
@@ -28,11 +28,11 @@ export class TorrentMetricsComponent implements OnDestroy {
     this.apollo,
     {
       buckets: {
-        duration: 'AUTO',
-        multiplier: 'AUTO',
-        timeframe: 'days_1',
+        duration: "AUTO",
+        multiplier: "AUTO",
+        timeframe: "days_1",
       },
-      autoRefresh: 'seconds_30',
+      autoRefresh: "seconds_30",
     },
     inject(ErrorsService),
   );
@@ -43,7 +43,7 @@ export class TorrentMetricsComponent implements OnDestroy {
   protected readonly autoRefreshIntervalNames = autoRefreshIntervalNames;
 
   ngOnDestroy() {
-    this.torrentMetricsController.setAutoRefreshInterval('off');
+    this.torrentMetricsController.setAutoRefreshInterval("off");
   }
 
   protected readonly eventNames = eventNames;
@@ -51,7 +51,7 @@ export class TorrentMetricsComponent implements OnDestroy {
   handleMultiplierEvent(event: Event) {
     const value = (event.currentTarget as HTMLInputElement).value;
     this.torrentMetricsController.setBucketMultiplier(
-      /^\d+$/.test(value) ? parseInt(value) : 'AUTO',
+      /^\d+$/.test(value) ? parseInt(value) : "AUTO",
     );
   }
 }

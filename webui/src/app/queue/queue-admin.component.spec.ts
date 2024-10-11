@@ -1,9 +1,9 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { appConfig } from '../app.config';
-import { QueueAdminComponent } from './queue-admin.component';
+import { appConfig } from "../app.config";
+import { QueueAdminComponent } from "./queue-admin.component";
 
-describe('QueueAdminComponent', () => {
+describe("QueueAdminComponent", () => {
   let component: QueueAdminComponent;
   let fixture: ComponentFixture<QueueAdminComponent>;
 
@@ -15,7 +15,7 @@ describe('QueueAdminComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

@@ -1,8 +1,8 @@
-import { Injectable } from '@angular/core';
-import { Translation, TranslocoLoader } from '@jsverse/transloco';
-import i18n from './translations';
+import { Injectable } from "@angular/core";
+import { Translation, TranslocoLoader } from "@jsverse/transloco";
+import i18n from "./translations";
 
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class TranslocoImportLoader implements TranslocoLoader {
   async getTranslation(lang: string) {
     if (lang in i18n) {
@@ -14,14 +14,14 @@ export class TranslocoImportLoader implements TranslocoLoader {
   }
 }
 
-const missingValues = ['__missing__', '__fallback__'];
+const missingValues = ["__missing__", "__fallback__"];
 
 const stripMissing = (tr: Translation): Translation =>
   Object.fromEntries(
     Object.entries(tr).flatMap(([k, v]) => {
-      if (typeof v === 'object') {
+      if (typeof v === "object") {
         v = stripMissing(v as Translation);
-      } else if (typeof v === 'string' && missingValues.includes(v)) {
+      } else if (typeof v === "string" && missingValues.includes(v)) {
         return [];
       }
       return [[k, v]];

@@ -2,9 +2,9 @@ import {
   formatDistanceToNow,
   formatDuration as fnsFormatDuration,
   Duration,
-} from 'date-fns';
-import { resolveDateLocale } from './dates.locales';
-import { DateType } from './dates.types';
+} from "date-fns";
+import { resolveDateLocale } from "./dates.locales";
+import { DateType } from "./dates.types";
 
 export const formatTimeAgo = (date: DateType, locale: string) =>
   formatDistanceToNow(date, {

@@ -1,11 +1,11 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component } from "@angular/core";
+import { RouterOutlet } from "@angular/router";
 
 @Component({
-  selector: 'app-torrents',
+  selector: "app-torrents",
   standalone: true,
   imports: [RouterOutlet],
-  templateUrl: './torrents.component.html',
-  styleUrl: './torrents.component.scss',
+  templateUrl: "./torrents.component.html",
+  styleUrl: "./torrents.component.scss",
 })
 export class TorrentsComponent {}

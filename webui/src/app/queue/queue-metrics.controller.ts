@@ -4,12 +4,12 @@ import {
   debounceTime,
   EMPTY,
   Observable,
-} from 'rxjs';
-import { Apollo } from 'apollo-angular';
-import { map } from 'rxjs/operators';
-import * as generated from '../graphql/generated';
-import { ErrorsService } from '../errors/errors.service';
-import { durationToSeconds, parseDuration } from '../dates/parse-duration';
+} from "rxjs";
+import { Apollo } from "apollo-angular";
+import { map } from "rxjs/operators";
+import * as generated from "../graphql/generated";
+import { ErrorsService } from "../errors/errors.service";
+import { durationToSeconds, parseDuration } from "../dates/parse-duration";
 import {
   autoRefreshIntervals,
   durationSeconds,
@@ -17,7 +17,7 @@ import {
   emptyResult,
   emptyStatusCounts,
   timeframeLengths,
-} from './queue.constants';
+} from "./queue.constants";
 import {
   BucketParams,
   EventName,
@@ -31,7 +31,7 @@ import {
   TimeframeName,
   AutoRefreshInterval,
   BucketSpan,
-} from './queue-metrics.types';
+} from "./queue-metrics.types";
 
 export class QueueMetricsController {
   private paramsSubject: BehaviorSubject<Params>;
@@ -98,8 +98,8 @@ export class QueueMetricsController {
 
   get bucketDuration(): generated.MetricsBucketDuration {
     const d = this.params.buckets.duration;
-    if (d === 'AUTO') {
-      return 'hour';
+    if (d === "AUTO") {
+      return "hour";
     }
     return d;
   }
@@ -141,12 +141,12 @@ export class QueueMetricsController {
       buckets: {
         ...p.buckets,
         duration,
-        multiplier: multiplier ?? 'AUTO',
+        multiplier: multiplier ?? "AUTO",
       },
     }));
   }
 
-  setBucketMultiplier(multiplier: number | 'AUTO') {
+  setBucketMultiplier(multiplier: number | "AUTO") {
     this.updateParams((p) => ({
       ...p,
       buckets: {
@@ -186,7 +186,7 @@ export class QueueMetricsController {
         {
           query: generated.QueueMetricsDocument,
           variables,
-          fetchPolicy: 'no-cache',
+          fetchPolicy: "no-cache",
         },
       )
       .pipe(
@@ -216,10 +216,10 @@ const createVariables = (
 ): generated.QueueMetricsQueryVariables => ({
   input: {
     bucketDuration:
-      params.buckets.duration === 'AUTO' ? 'hour' : params.buckets.duration,
+      params.buckets.duration === "AUTO" ? "hour" : params.buckets.duration,
     queues: params.queue ? [params.queue] : undefined,
     startTime:
-      params.buckets.timeframe === 'all'
+      params.buckets.timeframe === "all"
         ? undefined
         : new Date(
             new Date().getTime() -
@@ -253,13 +253,13 @@ const createResult = (
       }
       let createdAt: NormalizedBucket | undefined;
       let ranAt: NormalizedBucket | undefined;
-      if (params.event ?? 'created' === 'created') {
+      if (params.event ?? "created" === "created") {
         createdAt = normalizeBucket(next.createdAtBucket, bucketParams);
         if (earliestBucket && earliestBucket.index > createdAt.index) {
           createdAt = undefined;
         }
       }
-      if (next.ranAtBucket && params.event !== 'created') {
+      if (next.ranAtBucket && params.event !== "created") {
         ranAt = normalizeBucket(next.ranAtBucket, bucketParams);
         if (
           ranAt &&
@@ -272,7 +272,7 @@ const createResult = (
       if (
         next.queue !== params.queue &&
         !createdAt &&
-        (!ranAt || next.status === 'pending')
+        (!ranAt || next.status === "pending")
       ) {
         return acc;
       }
@@ -286,7 +286,7 @@ const createResult = (
       return {
         ...acc,
         [next.queue]: [
-          (next.status === 'pending' ? createdAt : ranAt)
+          (next.status === "pending" ? createdAt : ranAt)
             ? {
                 ...currentStatusCounts,
                 [next.status]: next.count + currentStatusCounts[next.status],
@@ -308,8 +308,8 @@ const createResult = (
               : currentEventBuckets.created,
             processed:
               ranAt &&
-              next.status === 'processed' &&
-              (params.event ?? 'processed' === 'processed')
+              next.status === "processed" &&
+              (params.event ?? "processed" === "processed")
                 ? {
                     ...currentEventBuckets.processed,
                     [ranAt.key]: {
@@ -326,8 +326,8 @@ const createResult = (
                 : currentEventBuckets.processed,
             failed:
               ranAt &&
-              next.status === 'failed' &&
-              (params.event ?? 'failed' === 'failed')
+              next.status === "failed" &&
+              (params.event ?? "failed" === "failed")
                 ? {
                     ...currentEventBuckets.failed,
                     [ranAt.key]: {
@@ -351,7 +351,7 @@ const createResult = (
     if (Object.keys(eventBuckets).length) {
       const bucketDates = Array<number>();
       const buckets: EventBuckets = fromEntries(
-        Array<EventName>('created', 'processed', 'failed').flatMap<
+        Array<EventName>("created", "processed", "failed").flatMap<
           [EventName, EventBucket]
         >((event): [EventName, EventBucket][] => {
           const entries = fromEntries(
@@ -426,14 +426,14 @@ const createBucketParams = (
   latestBucket: NormalizedBucket;
 } => {
   const duration =
-    params.buckets.duration === 'AUTO' ? 'hour' : params.buckets.duration;
+    params.buckets.duration === "AUTO" ? "hour" : params.buckets.duration;
   let multiplier =
-    params.buckets.multiplier === 'AUTO' ? 1 : params.buckets.multiplier;
+    params.buckets.multiplier === "AUTO" ? 1 : params.buckets.multiplier;
   const timeframe = params.buckets.timeframe;
   const now = new Date();
   const nowBucket = normalizeBucket(now, { duration, multiplier });
   const startBucket =
-    timeframe === 'all'
+    timeframe === "all"
       ? undefined
       : normalizeBucket(now.getTime() - 1000 * timeframeLengths[timeframe], {
           duration,
@@ -453,7 +453,7 @@ const createBucketParams = (
     .sort((a, b) => a.index - b.index);
   const minBucket = allBuckets[0];
   const maxBucket = allBuckets[allBuckets.length - 1];
-  if (params.buckets.multiplier === 'AUTO') {
+  if (params.buckets.multiplier === "AUTO") {
     const targetSpan = 20;
     const span = maxBucket.index - minBucket.index;
     multiplier = Math.min(
@@ -468,7 +468,7 @@ const createBucketParams = (
       timeframe,
     },
     earliestBucket:
-      timeframe === 'all'
+      timeframe === "all"
         ? undefined
         : normalizeBucket(now.getTime() - 1000 * timeframeLengths[timeframe], {
             duration,
@@ -489,7 +489,7 @@ type NormalizedBucket = {
 
 export const normalizeBucket = (
   rawDate: string | number | Date,
-  params: Pick<BucketParams<false>, 'duration' | 'multiplier'>,
+  params: Pick<BucketParams<false>, "duration" | "multiplier">,
 ): NormalizedBucket => {
   const date = new Date(rawDate);
   const msMultiplier =

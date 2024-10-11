@@ -1,12 +1,12 @@
-import { Component } from '@angular/core';
-import { AppModule } from '../app.module';
-import { TorrentMetricsComponent } from './torrent-metrics.component';
+import { Component } from "@angular/core";
+import { AppModule } from "../app.module";
+import { TorrentMetricsComponent } from "./torrent-metrics.component";
 
 @Component({
-  selector: 'app-torrents-dashboard',
+  selector: "app-torrents-dashboard",
   standalone: true,
   imports: [AppModule, TorrentMetricsComponent],
-  templateUrl: './torrents-dashboard.component.html',
-  styleUrl: './torrents-dashboard.component.scss',
+  templateUrl: "./torrents-dashboard.component.html",
+  styleUrl: "./torrents-dashboard.component.scss",
 })
 export class TorrentsDashboardComponent {}

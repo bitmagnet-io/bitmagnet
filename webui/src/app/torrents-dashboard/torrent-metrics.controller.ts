@@ -4,18 +4,18 @@ import {
   debounceTime,
   EMPTY,
   Observable,
-} from 'rxjs';
-import { Apollo } from 'apollo-angular';
-import { map } from 'rxjs/operators';
-import * as generated from '../graphql/generated';
-import { ErrorsService } from '../errors/errors.service';
+} from "rxjs";
+import { Apollo } from "apollo-angular";
+import { map } from "rxjs/operators";
+import * as generated from "../graphql/generated";
+import { ErrorsService } from "../errors/errors.service";
 import {
   autoRefreshIntervals,
   durationSeconds,
   emptyParams,
   emptyResult,
   timeframeLengths,
-} from './torrent-metrics.constants';
+} from "./torrent-metrics.constants";
 import {
   BucketParams,
   EventName,
@@ -28,7 +28,7 @@ import {
   TimeframeName,
   AutoRefreshInterval,
   BucketSpan,
-} from './torrent-metrics.types';
+} from "./torrent-metrics.types";
 
 export class TorrentMetricsController {
   private paramsSubject: BehaviorSubject<Params>;
@@ -97,8 +97,8 @@ export class TorrentMetricsController {
 
   get bucketDuration(): generated.MetricsBucketDuration {
     const d = this.params.buckets.duration;
-    if (d === 'AUTO') {
-      return 'hour';
+    if (d === "AUTO") {
+      return "hour";
     }
     return d;
   }
@@ -140,12 +140,12 @@ export class TorrentMetricsController {
       buckets: {
         ...p.buckets,
         duration,
-        multiplier: multiplier ?? 'AUTO',
+        multiplier: multiplier ?? "AUTO",
       },
     }));
   }
 
-  setBucketMultiplier(multiplier: number | 'AUTO') {
+  setBucketMultiplier(multiplier: number | "AUTO") {
     this.updateParams((p) => ({
       ...p,
       buckets: {
@@ -187,7 +187,7 @@ export class TorrentMetricsController {
       >({
         query: generated.TorrentMetricsDocument,
         variables,
-        fetchPolicy: 'no-cache',
+        fetchPolicy: "no-cache",
       })
       .pipe(
         map((r) => {
@@ -216,7 +216,7 @@ const createVariables = (
 ): generated.TorrentMetricsQueryVariables => ({
   input: {
     bucketDuration:
-      params.buckets.duration === 'AUTO' ? 'hour' : params.buckets.duration,
+      params.buckets.duration === "AUTO" ? "hour" : params.buckets.duration,
     sources: params.source ? [params.source] : undefined,
     startTime: new Date(
       new Date().getTime() - 1000 * timeframeLengths[params.buckets.timeframe],
@@ -289,7 +289,7 @@ const createResult = (
     if (Object.keys(eventBuckets).length) {
       const bucketDates = Array<number>();
       const buckets: EventBuckets = fromEntries(
-        Array<EventName>('created', 'updated').flatMap<
+        Array<EventName>("created", "updated").flatMap<
           [EventName, EventBucket]
         >((event): [EventName, EventBucket][] => {
           const entries = fromEntries(
@@ -363,9 +363,9 @@ const createBucketParams = (
   latestBucket: NormalizedBucket;
 } => {
   const duration =
-    params.buckets.duration === 'AUTO' ? 'hour' : params.buckets.duration;
+    params.buckets.duration === "AUTO" ? "hour" : params.buckets.duration;
   let multiplier =
-    params.buckets.multiplier === 'AUTO' ? 1 : params.buckets.multiplier;
+    params.buckets.multiplier === "AUTO" ? 1 : params.buckets.multiplier;
   const timeframe = params.buckets.timeframe;
   const now = new Date();
   const nowBucket = normalizeBucket(now, { duration, multiplier });
@@ -387,7 +387,7 @@ const createBucketParams = (
     .sort((a, b) => a.index - b.index);
   const minBucket = allBuckets[0];
   const maxBucket = allBuckets[allBuckets.length - 1];
-  if (params.buckets.multiplier === 'AUTO') {
+  if (params.buckets.multiplier === "AUTO") {
     const targetSpan = 20;
     const span = maxBucket.index - minBucket.index;
     multiplier = Math.min(
@@ -423,7 +423,7 @@ type NormalizedBucket = {
 
 export const normalizeBucket = (
   rawDate: string | number | Date,
-  params: Pick<BucketParams<false>, 'duration' | 'multiplier'>,
+  params: Pick<BucketParams<false>, "duration" | "multiplier">,
 ): NormalizedBucket => {
   const date = new Date(rawDate);
   const msMultiplier =

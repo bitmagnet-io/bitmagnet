@@ -93,7 +93,9 @@ input QueueEnqueueReprocessTorrentsBatchInput {
 
 type QueueMutation {
   purgeJobs(input: QueuePurgeJobsInput!): Void
-  enqueueReprocessTorrentsBatch(input: QueueEnqueueReprocessTorrentsBatchInput): Void
+  enqueueReprocessTorrentsBatch(
+    input: QueueEnqueueReprocessTorrentsBatchInput
+  ): Void
 }
 
 input QueuePurgeJobsInput {

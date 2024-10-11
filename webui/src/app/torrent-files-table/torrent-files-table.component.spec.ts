@@ -1,10 +1,10 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { appConfig } from '../app.config';
-import { AppModule } from '../app.module';
-import { TorrentFilesTableComponent } from './torrent-files-table.component';
+import { appConfig } from "../app.config";
+import { AppModule } from "../app.module";
+import { TorrentFilesTableComponent } from "./torrent-files-table.component";
 
-describe('TorrentFilesTableComponent', () => {
+describe("TorrentFilesTableComponent", () => {
   let component: TorrentFilesTableComponent;
   let fixture: ComponentFixture<TorrentFilesTableComponent>;
 
@@ -17,11 +17,11 @@ describe('TorrentFilesTableComponent', () => {
     fixture = TestBed.createComponent(TorrentFilesTableComponent);
     component = fixture.componentInstance;
     component.torrent = {
-      name: 'test',
-      infoHash: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-      magnetUri: 'magnet:?xt=urn:btih:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      name: "test",
+      infoHash: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      magnetUri: "magnet:?xt=urn:btih:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       size: 100,
-      filesStatus: 'single',
+      filesStatus: "single",
       hasFilesInfo: true,
       sources: [],
       tagNames: [],
@@ -31,7 +31,7 @@ describe('TorrentFilesTableComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

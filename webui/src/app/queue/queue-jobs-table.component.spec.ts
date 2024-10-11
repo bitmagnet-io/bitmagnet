@@ -1,15 +1,15 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { inject } from '@angular/core';
-import { Apollo } from 'apollo-angular';
-import { Observable } from 'rxjs';
-import { ErrorsService } from '../errors/errors.service';
-import { appConfig } from '../app.config';
-import { AppModule } from '../app.module';
-import { QueueJobsDatasource } from './queue-jobs.datasource';
-import { QueueJobsTableComponent } from './queue-jobs-table.component';
+import { inject } from "@angular/core";
+import { Apollo } from "apollo-angular";
+import { Observable } from "rxjs";
+import { ErrorsService } from "../errors/errors.service";
+import { appConfig } from "../app.config";
+import { AppModule } from "../app.module";
+import { QueueJobsDatasource } from "./queue-jobs.datasource";
+import { QueueJobsTableComponent } from "./queue-jobs-table.component";
 
-describe('QueueJobsTableComponent', () => {
+describe("QueueJobsTableComponent", () => {
   let component: QueueJobsTableComponent;
   let fixture: ComponentFixture<QueueJobsTableComponent>;
 
@@ -31,7 +31,7 @@ describe('QueueJobsTableComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

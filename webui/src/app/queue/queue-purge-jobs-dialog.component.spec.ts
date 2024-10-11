@@ -1,10 +1,10 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { MatDialogRef } from '@angular/material/dialog';
-import { appConfig } from '../app.config';
-import { QueuePurgeJobsDialogComponent } from './queue-purge-jobs-dialog.component';
+import { MatDialogRef } from "@angular/material/dialog";
+import { appConfig } from "../app.config";
+import { QueuePurgeJobsDialogComponent } from "./queue-purge-jobs-dialog.component";
 
-describe('QueuePurgeJobsDialogComponent', () => {
+describe("QueuePurgeJobsDialogComponent", () => {
   let component: QueuePurgeJobsDialogComponent;
   let fixture: ComponentFixture<QueuePurgeJobsDialogComponent>;
 
@@ -21,7 +21,7 @@ describe('QueuePurgeJobsDialogComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 });

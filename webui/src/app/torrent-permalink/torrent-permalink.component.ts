@@ -1,15 +1,15 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { Apollo } from 'apollo-angular';
-import * as generated from '../graphql/generated';
-import { TorrentContentComponent } from '../torrent-content/torrent-content.component';
-import { GraphQLModule } from '../graphql/graphql.module';
-import { contentTypeInfo } from '../taxonomy/content-types';
-import { TorrentChipsComponent } from '../torrent-chips/torrent-chips.component';
-import { AppModule } from '../app.module';
+import { Component, inject, OnInit } from "@angular/core";
+import { ActivatedRoute } from "@angular/router";
+import { Apollo } from "apollo-angular";
+import * as generated from "../graphql/generated";
+import { TorrentContentComponent } from "../torrent-content/torrent-content.component";
+import { GraphQLModule } from "../graphql/graphql.module";
+import { contentTypeInfo } from "../taxonomy/content-types";
+import { TorrentChipsComponent } from "../torrent-chips/torrent-chips.component";
+import { AppModule } from "../app.module";
 
 @Component({
-  selector: 'app-torrent-permalink',
+  selector: "app-torrent-permalink",
   standalone: true,
   imports: [
     AppModule,
@@ -17,8 +17,8 @@ import { AppModule } from '../app.module';
     TorrentContentComponent,
     TorrentChipsComponent,
   ],
-  templateUrl: './torrent-permalink.component.html',
-  styleUrl: './torrent-permalink.component.scss',
+  templateUrl: "./torrent-permalink.component.html",
+  styleUrl: "./torrent-permalink.component.scss",
 })
 export class TorrentPermalinkComponent implements OnInit {
   private route = inject(ActivatedRoute);
@@ -38,10 +38,10 @@ export class TorrentPermalinkComponent implements OnInit {
           query: generated.TorrentContentSearchDocument,
           variables: {
             input: {
-              infoHashes: [params.get('infoHash') as string],
+              infoHashes: [params.get("infoHash") as string],
             },
           },
-          fetchPolicy: 'no-cache',
+          fetchPolicy: "no-cache",
         })
         .subscribe((result) => {
           const items = result.data.torrentContent.search.items;
