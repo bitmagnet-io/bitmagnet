@@ -93,7 +93,7 @@ tasks:
   build-webui:
     dir: ./webui
     cmds:
-      - npm run build -- -c embedded
+      - npm run build
 
   build-docsite:
     dir: ./bitmagnet.io
