@@ -2569,9 +2569,7 @@ type SuggestedTag {
 }
 
 type TorrentContentQuery {
-  search(
-    input: TorrentContentSearchQueryInput!
-  ): TorrentContentSearchResult!
+  search(input: TorrentContentSearchQueryInput!): TorrentContentSearchResult!
 }
 
 type Worker {
@@ -2701,7 +2699,9 @@ input QueueEnqueueReprocessTorrentsBatchInput {
 
 type QueueMutation {
   purgeJobs(input: QueuePurgeJobsInput!): Void
-  enqueueReprocessTorrentsBatch(input: QueueEnqueueReprocessTorrentsBatchInput): Void
+  enqueueReprocessTorrentsBatch(
+    input: QueueEnqueueReprocessTorrentsBatchInput
+  ): Void
 }
 
 input QueuePurgeJobsInput {
