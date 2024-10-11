@@ -5,37 +5,24 @@ import { Injectable } from '@angular/core';
 import * as Apollo from 'apollo-angular';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
-export type Exact<T extends { [key: string]: unknown }> = {
-  [K in keyof T]: T[K];
-};
-export type MakeOptional<T, K extends keyof T> = Omit<T, K> & {
-  [SubKey in K]?: Maybe<T[SubKey]>;
-};
-export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & {
-  [SubKey in K]: Maybe<T[SubKey]>;
-};
-export type MakeEmpty<
-  T extends { [key: string]: unknown },
-  K extends keyof T,
-> = { [_ in K]?: never };
-export type Incremental<T> =
-  | T
-  | {
-      [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never;
-    };
+export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
+export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
+export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
+export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: { input: string; output: string };
-  String: { input: string; output: string };
-  Boolean: { input: boolean; output: boolean };
-  Int: { input: number; output: number };
-  Float: { input: number; output: number };
-  Date: { input: string; output: string };
-  DateTime: { input: string; output: string };
-  Duration: { input: string; output: string };
-  Hash20: { input: string; output: string };
-  Void: { input: void; output: void };
-  Year: { input: number; output: number };
+  ID: { input: string; output: string; }
+  String: { input: string; output: string; }
+  Boolean: { input: boolean; output: boolean; }
+  Int: { input: number; output: number; }
+  Float: { input: number; output: number; }
+  Date: { input: string; output: string; }
+  DateTime: { input: string; output: string; }
+  Duration: { input: string; output: string; }
+  Hash20: { input: string; output: string; }
+  Void: { input: void; output: void; }
+  Year: { input: number; output: number; }
 };
 
 export type Content = {
@@ -119,7 +106,9 @@ export type ExternalLink = {
   url: Scalars['String']['output'];
 };
 
-export type FacetLogic = 'and' | 'or';
+export type FacetLogic =
+  | 'and'
+  | 'or';
 
 export type FileType =
   | 'archive'
@@ -131,7 +120,11 @@ export type FileType =
   | 'subtitles'
   | 'video';
 
-export type FilesStatus = 'multi' | 'no_info' | 'over_threshold' | 'single';
+export type FilesStatus =
+  | 'multi'
+  | 'no_info'
+  | 'over_threshold'
+  | 'single';
 
 export type GenreAgg = {
   __typename?: 'GenreAgg';
@@ -161,7 +154,11 @@ export type HealthQuery = {
   status: HealthStatus;
 };
 
-export type HealthStatus = 'down' | 'inactive' | 'unknown' | 'up';
+export type HealthStatus =
+  | 'down'
+  | 'inactive'
+  | 'unknown'
+  | 'up';
 
 export type Language =
   | 'af'
@@ -252,7 +249,10 @@ export type MetadataSource = {
   name: Scalars['String']['output'];
 };
 
-export type MetricsBucketDuration = 'day' | 'hour' | 'minute';
+export type MetricsBucketDuration =
+  | 'day'
+  | 'hour'
+  | 'minute';
 
 export type Mutation = {
   __typename?: 'Mutation';
@@ -308,7 +308,11 @@ export type QueueJobQueueFacetInput = {
   filter?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
-export type QueueJobStatus = 'failed' | 'pending' | 'processed' | 'retry';
+export type QueueJobStatus =
+  | 'failed'
+  | 'pending'
+  | 'processed'
+  | 'retry';
 
 export type QueueJobStatusAgg = {
   __typename?: 'QueueJobStatusAgg';
@@ -333,7 +337,10 @@ export type QueueJobsFacetsInput = {
   status?: InputMaybe<QueueJobStatusFacetInput>;
 };
 
-export type QueueJobsOrderByField = 'created_at' | 'priority' | 'ran_at';
+export type QueueJobsOrderByField =
+  | 'created_at'
+  | 'priority'
+  | 'ran_at';
 
 export type QueueJobsOrderByInput = {
   descending?: InputMaybe<Scalars['Boolean']['input']>;
@@ -389,9 +396,11 @@ export type QueueMutation = {
   purgeJobs?: Maybe<Scalars['Void']['output']>;
 };
 
+
 export type QueueMutationEnqueueReprocessTorrentsBatchArgs = {
   input?: InputMaybe<QueueEnqueueReprocessTorrentsBatchInput>;
 };
+
 
 export type QueueMutationPurgeJobsArgs = {
   input: QueuePurgeJobsInput;
@@ -408,9 +417,11 @@ export type QueueQuery = {
   metrics: QueueMetricsQueryResult;
 };
 
+
 export type QueueQueryJobsArgs = {
   input: QueueJobsQueryInput;
 };
+
 
 export type QueueQueryMetricsArgs = {
   input: QueueMetricsQueryInput;
@@ -539,6 +550,7 @@ export type TorrentContentQuery = {
   search: TorrentContentSearchResult;
 };
 
+
 export type TorrentContentQuerySearchArgs = {
   input: TorrentContentSearchQueryInput;
 };
@@ -594,7 +606,11 @@ export type TorrentFileTypeFacetInput = {
   logic?: InputMaybe<FacetLogic>;
 };
 
-export type TorrentFilesOrderByField = 'extension' | 'index' | 'path' | 'size';
+export type TorrentFilesOrderByField =
+  | 'extension'
+  | 'index'
+  | 'path'
+  | 'size';
 
 export type TorrentFilesOrderByInput = {
   descending?: InputMaybe<Scalars['Boolean']['input']>;
@@ -647,19 +663,23 @@ export type TorrentMutation = {
   setTags?: Maybe<Scalars['Void']['output']>;
 };
 
+
 export type TorrentMutationDeleteArgs = {
   infoHashes: Array<Scalars['Hash20']['input']>;
 };
+
 
 export type TorrentMutationDeleteTagsArgs = {
   infoHashes?: InputMaybe<Array<Scalars['Hash20']['input']>>;
   tagNames?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
+
 export type TorrentMutationPutTagsArgs = {
   infoHashes: Array<Scalars['Hash20']['input']>;
   tagNames: Array<Scalars['String']['input']>;
 };
+
 
 export type TorrentMutationSetTagsArgs = {
   infoHashes: Array<Scalars['Hash20']['input']>;
@@ -673,13 +693,16 @@ export type TorrentQuery = {
   suggestTags: TorrentSuggestTagsResult;
 };
 
+
 export type TorrentQueryFilesArgs = {
   input: TorrentFilesQueryInput;
 };
 
+
 export type TorrentQueryMetricsArgs = {
   input: TorrentMetricsQueryInput;
 };
+
 
 export type TorrentQuerySuggestTagsArgs = {
   input?: InputMaybe<SuggestTagsQueryInput>;
@@ -727,7 +750,10 @@ export type TorrentTagFacetInput = {
   logic?: InputMaybe<FacetLogic>;
 };
 
-export type Video3d = 'V3D' | 'V3DOU' | 'V3DSBS';
+export type Video3d =
+  | 'V3D'
+  | 'V3DOU'
+  | 'V3DSBS';
 
 export type VideoCodec =
   | 'DivX'
@@ -809,1454 +835,641 @@ export type WorkersQuery = {
   listAll: WorkersListAllQueryResult;
 };
 
-export type ContentFragment = {
-  __typename?: 'Content';
-  type: ContentType;
-  source: string;
-  id: string;
-  title: string;
-  releaseDate?: string | null;
-  releaseYear?: number | null;
-  overview?: string | null;
-  runtime?: number | null;
-  voteAverage?: number | null;
-  voteCount?: number | null;
-  createdAt: string;
-  updatedAt: string;
-  metadataSource: { __typename?: 'MetadataSource'; key: string; name: string };
-  originalLanguage?: {
-    __typename?: 'LanguageInfo';
-    id: string;
-    name: string;
-  } | null;
-  attributes: Array<{
-    __typename?: 'ContentAttribute';
-    source: string;
-    key: string;
-    value: string;
-    createdAt: string;
-    updatedAt: string;
-    metadataSource: {
-      __typename?: 'MetadataSource';
-      key: string;
-      name: string;
-    };
-  }>;
-  collections: Array<{
-    __typename?: 'ContentCollection';
-    type: string;
-    source: string;
-    id: string;
-    name: string;
-    createdAt: string;
-    updatedAt: string;
-    metadataSource: {
-      __typename?: 'MetadataSource';
-      key: string;
-      name: string;
-    };
-  }>;
-  externalLinks: Array<{
-    __typename?: 'ExternalLink';
-    url: string;
-    metadataSource: {
-      __typename?: 'MetadataSource';
-      key: string;
-      name: string;
-    };
-  }>;
-};
+export type ContentFragment = { __typename?: 'Content', type: ContentType, source: string, id: string, title: string, releaseDate?: string | null, releaseYear?: number | null, overview?: string | null, runtime?: number | null, voteAverage?: number | null, voteCount?: number | null, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string }, originalLanguage?: { __typename?: 'LanguageInfo', id: string, name: string } | null, attributes: Array<{ __typename?: 'ContentAttribute', source: string, key: string, value: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, collections: Array<{ __typename?: 'ContentCollection', type: string, source: string, id: string, name: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, externalLinks: Array<{ __typename?: 'ExternalLink', url: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }> };
 
-export type QueueJobFragment = {
-  __typename?: 'QueueJob';
-  id: string;
-  queue: string;
-  status: QueueJobStatus;
-  payload: string;
-  priority: number;
-  retries: number;
-  maxRetries: number;
-  runAfter: string;
-  ranAt?: string | null;
-  error?: string | null;
-  createdAt: string;
-};
+export type QueueJobFragment = { __typename?: 'QueueJob', id: string, queue: string, status: QueueJobStatus, payload: string, priority: number, retries: number, maxRetries: number, runAfter: string, ranAt?: string | null, error?: string | null, createdAt: string };
 
-export type QueueJobsQueryResultFragment = {
-  __typename?: 'QueueJobsQueryResult';
-  totalCount: number;
-  hasNextPage?: boolean | null;
-  items: Array<{
-    __typename?: 'QueueJob';
-    id: string;
-    queue: string;
-    status: QueueJobStatus;
-    payload: string;
-    priority: number;
-    retries: number;
-    maxRetries: number;
-    runAfter: string;
-    ranAt?: string | null;
-    error?: string | null;
-    createdAt: string;
-  }>;
-  aggregations: {
-    __typename?: 'QueueJobsAggregations';
-    queue?: Array<{
-      __typename?: 'QueueJobQueueAgg';
-      value: string;
-      label: string;
-      count: number;
-    }> | null;
-    status?: Array<{
-      __typename?: 'QueueJobStatusAgg';
-      value: QueueJobStatus;
-      label: string;
-      count: number;
-    }> | null;
-  };
-};
+export type QueueJobsQueryResultFragment = { __typename?: 'QueueJobsQueryResult', totalCount: number, hasNextPage?: boolean | null, items: Array<{ __typename?: 'QueueJob', id: string, queue: string, status: QueueJobStatus, payload: string, priority: number, retries: number, maxRetries: number, runAfter: string, ranAt?: string | null, error?: string | null, createdAt: string }>, aggregations: { __typename?: 'QueueJobsAggregations', queue?: Array<{ __typename?: 'QueueJobQueueAgg', value: string, label: string, count: number }> | null, status?: Array<{ __typename?: 'QueueJobStatusAgg', value: QueueJobStatus, label: string, count: number }> | null } };
 
-export type TorrentFragment = {
-  __typename?: 'Torrent';
-  infoHash: string;
-  name: string;
-  size: number;
-  filesStatus: FilesStatus;
-  filesCount?: number | null;
-  hasFilesInfo: boolean;
-  singleFile?: boolean | null;
-  fileType?: FileType | null;
-  seeders?: number | null;
-  leechers?: number | null;
-  tagNames: Array<string>;
-  magnetUri: string;
-  createdAt: string;
-  updatedAt: string;
-  sources: Array<{ __typename?: 'TorrentSource'; key: string; name: string }>;
-};
+export type TorrentFragment = { __typename?: 'Torrent', infoHash: string, name: string, size: number, filesStatus: FilesStatus, filesCount?: number | null, hasFilesInfo: boolean, singleFile?: boolean | null, fileType?: FileType | null, seeders?: number | null, leechers?: number | null, tagNames: Array<string>, magnetUri: string, createdAt: string, updatedAt: string, sources: Array<{ __typename?: 'TorrentSource', key: string, name: string }> };
 
-export type TorrentContentFragment = {
-  __typename?: 'TorrentContent';
-  id: string;
-  infoHash: string;
-  contentType?: ContentType | null;
-  title: string;
-  video3d?: Video3d | null;
-  videoCodec?: VideoCodec | null;
-  videoModifier?: VideoModifier | null;
-  videoResolution?: VideoResolution | null;
-  videoSource?: VideoSource | null;
-  seeders?: number | null;
-  leechers?: number | null;
-  publishedAt: string;
-  createdAt: string;
-  updatedAt: string;
-  torrent: {
-    __typename?: 'Torrent';
-    infoHash: string;
-    name: string;
-    size: number;
-    filesStatus: FilesStatus;
-    filesCount?: number | null;
-    hasFilesInfo: boolean;
-    singleFile?: boolean | null;
-    fileType?: FileType | null;
-    seeders?: number | null;
-    leechers?: number | null;
-    tagNames: Array<string>;
-    magnetUri: string;
-    createdAt: string;
-    updatedAt: string;
-    sources: Array<{ __typename?: 'TorrentSource'; key: string; name: string }>;
-  };
-  content?: {
-    __typename?: 'Content';
-    type: ContentType;
-    source: string;
-    id: string;
-    title: string;
-    releaseDate?: string | null;
-    releaseYear?: number | null;
-    overview?: string | null;
-    runtime?: number | null;
-    voteAverage?: number | null;
-    voteCount?: number | null;
-    createdAt: string;
-    updatedAt: string;
-    metadataSource: {
-      __typename?: 'MetadataSource';
-      key: string;
-      name: string;
-    };
-    originalLanguage?: {
-      __typename?: 'LanguageInfo';
-      id: string;
-      name: string;
-    } | null;
-    attributes: Array<{
-      __typename?: 'ContentAttribute';
-      source: string;
-      key: string;
-      value: string;
-      createdAt: string;
-      updatedAt: string;
-      metadataSource: {
-        __typename?: 'MetadataSource';
-        key: string;
-        name: string;
-      };
-    }>;
-    collections: Array<{
-      __typename?: 'ContentCollection';
-      type: string;
-      source: string;
-      id: string;
-      name: string;
-      createdAt: string;
-      updatedAt: string;
-      metadataSource: {
-        __typename?: 'MetadataSource';
-        key: string;
-        name: string;
-      };
-    }>;
-    externalLinks: Array<{
-      __typename?: 'ExternalLink';
-      url: string;
-      metadataSource: {
-        __typename?: 'MetadataSource';
-        key: string;
-        name: string;
-      };
-    }>;
-  } | null;
-  languages?: Array<{
-    __typename?: 'LanguageInfo';
-    id: string;
-    name: string;
-  }> | null;
-  episodes?: {
-    __typename?: 'Episodes';
-    label: string;
-    seasons: Array<{
-      __typename?: 'Season';
-      season: number;
-      episodes?: Array<number> | null;
-    }>;
-  } | null;
-};
+export type TorrentContentFragment = { __typename?: 'TorrentContent', id: string, infoHash: string, contentType?: ContentType | null, title: string, video3d?: Video3d | null, videoCodec?: VideoCodec | null, videoModifier?: VideoModifier | null, videoResolution?: VideoResolution | null, videoSource?: VideoSource | null, seeders?: number | null, leechers?: number | null, publishedAt: string, createdAt: string, updatedAt: string, torrent: { __typename?: 'Torrent', infoHash: string, name: string, size: number, filesStatus: FilesStatus, filesCount?: number | null, hasFilesInfo: boolean, singleFile?: boolean | null, fileType?: FileType | null, seeders?: number | null, leechers?: number | null, tagNames: Array<string>, magnetUri: string, createdAt: string, updatedAt: string, sources: Array<{ __typename?: 'TorrentSource', key: string, name: string }> }, content?: { __typename?: 'Content', type: ContentType, source: string, id: string, title: string, releaseDate?: string | null, releaseYear?: number | null, overview?: string | null, runtime?: number | null, voteAverage?: number | null, voteCount?: number | null, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string }, originalLanguage?: { __typename?: 'LanguageInfo', id: string, name: string } | null, attributes: Array<{ __typename?: 'ContentAttribute', source: string, key: string, value: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, collections: Array<{ __typename?: 'ContentCollection', type: string, source: string, id: string, name: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, externalLinks: Array<{ __typename?: 'ExternalLink', url: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }> } | null, languages?: Array<{ __typename?: 'LanguageInfo', id: string, name: string }> | null, episodes?: { __typename?: 'Episodes', label: string, seasons: Array<{ __typename?: 'Season', season: number, episodes?: Array<number> | null }> } | null };
 
-export type TorrentContentSearchResultFragment = {
-  __typename?: 'TorrentContentSearchResult';
-  totalCount: number;
-  totalCountIsEstimate: boolean;
-  hasNextPage?: boolean | null;
-  items: Array<{
-    __typename?: 'TorrentContent';
-    id: string;
-    infoHash: string;
-    contentType?: ContentType | null;
-    title: string;
-    video3d?: Video3d | null;
-    videoCodec?: VideoCodec | null;
-    videoModifier?: VideoModifier | null;
-    videoResolution?: VideoResolution | null;
-    videoSource?: VideoSource | null;
-    seeders?: number | null;
-    leechers?: number | null;
-    publishedAt: string;
-    createdAt: string;
-    updatedAt: string;
-    torrent: {
-      __typename?: 'Torrent';
-      infoHash: string;
-      name: string;
-      size: number;
-      filesStatus: FilesStatus;
-      filesCount?: number | null;
-      hasFilesInfo: boolean;
-      singleFile?: boolean | null;
-      fileType?: FileType | null;
-      seeders?: number | null;
-      leechers?: number | null;
-      tagNames: Array<string>;
-      magnetUri: string;
-      createdAt: string;
-      updatedAt: string;
-      sources: Array<{
-        __typename?: 'TorrentSource';
-        key: string;
-        name: string;
-      }>;
-    };
-    content?: {
-      __typename?: 'Content';
-      type: ContentType;
-      source: string;
-      id: string;
-      title: string;
-      releaseDate?: string | null;
-      releaseYear?: number | null;
-      overview?: string | null;
-      runtime?: number | null;
-      voteAverage?: number | null;
-      voteCount?: number | null;
-      createdAt: string;
-      updatedAt: string;
-      metadataSource: {
-        __typename?: 'MetadataSource';
-        key: string;
-        name: string;
-      };
-      originalLanguage?: {
-        __typename?: 'LanguageInfo';
-        id: string;
-        name: string;
-      } | null;
-      attributes: Array<{
-        __typename?: 'ContentAttribute';
-        source: string;
-        key: string;
-        value: string;
-        createdAt: string;
-        updatedAt: string;
-        metadataSource: {
-          __typename?: 'MetadataSource';
-          key: string;
-          name: string;
-        };
-      }>;
-      collections: Array<{
-        __typename?: 'ContentCollection';
-        type: string;
-        source: string;
-        id: string;
-        name: string;
-        createdAt: string;
-        updatedAt: string;
-        metadataSource: {
-          __typename?: 'MetadataSource';
-          key: string;
-          name: string;
-        };
-      }>;
-      externalLinks: Array<{
-        __typename?: 'ExternalLink';
-        url: string;
-        metadataSource: {
-          __typename?: 'MetadataSource';
-          key: string;
-          name: string;
-        };
-      }>;
-    } | null;
-    languages?: Array<{
-      __typename?: 'LanguageInfo';
-      id: string;
-      name: string;
-    }> | null;
-    episodes?: {
-      __typename?: 'Episodes';
-      label: string;
-      seasons: Array<{
-        __typename?: 'Season';
-        season: number;
-        episodes?: Array<number> | null;
-      }>;
-    } | null;
-  }>;
-  aggregations: {
-    __typename?: 'TorrentContentAggregations';
-    contentType?: Array<{
-      __typename?: 'ContentTypeAgg';
-      value?: ContentType | null;
-      label: string;
-      count: number;
-      isEstimate: boolean;
-    }> | null;
-    torrentSource?: Array<{
-      __typename?: 'TorrentSourceAgg';
-      value: string;
-      label: string;
-      count: number;
-      isEstimate: boolean;
-    }> | null;
-    torrentTag?: Array<{
-      __typename?: 'TorrentTagAgg';
-      value: string;
-      label: string;
-      count: number;
-      isEstimate: boolean;
-    }> | null;
-    torrentFileType?: Array<{
-      __typename?: 'TorrentFileTypeAgg';
-      value: FileType;
-      label: string;
-      count: number;
-      isEstimate: boolean;
-    }> | null;
-    language?: Array<{
-      __typename?: 'LanguageAgg';
-      value: Language;
-      label: string;
-      count: number;
-      isEstimate: boolean;
-    }> | null;
-    genre?: Array<{
-      __typename?: 'GenreAgg';
-      value: string;
-      label: string;
-      count: number;
-      isEstimate: boolean;
-    }> | null;
-    releaseYear?: Array<{
-      __typename?: 'ReleaseYearAgg';
-      value?: number | null;
-      label: string;
-      count: number;
-      isEstimate: boolean;
-    }> | null;
-    videoResolution?: Array<{
-      __typename?: 'VideoResolutionAgg';
-      value?: VideoResolution | null;
-      label: string;
-      count: number;
-      isEstimate: boolean;
-    }> | null;
-    videoSource?: Array<{
-      __typename?: 'VideoSourceAgg';
-      value?: VideoSource | null;
-      label: string;
-      count: number;
-      isEstimate: boolean;
-    }> | null;
-  };
-};
+export type TorrentContentSearchResultFragment = { __typename?: 'TorrentContentSearchResult', totalCount: number, totalCountIsEstimate: boolean, hasNextPage?: boolean | null, items: Array<{ __typename?: 'TorrentContent', id: string, infoHash: string, contentType?: ContentType | null, title: string, video3d?: Video3d | null, videoCodec?: VideoCodec | null, videoModifier?: VideoModifier | null, videoResolution?: VideoResolution | null, videoSource?: VideoSource | null, seeders?: number | null, leechers?: number | null, publishedAt: string, createdAt: string, updatedAt: string, torrent: { __typename?: 'Torrent', infoHash: string, name: string, size: number, filesStatus: FilesStatus, filesCount?: number | null, hasFilesInfo: boolean, singleFile?: boolean | null, fileType?: FileType | null, seeders?: number | null, leechers?: number | null, tagNames: Array<string>, magnetUri: string, createdAt: string, updatedAt: string, sources: Array<{ __typename?: 'TorrentSource', key: string, name: string }> }, content?: { __typename?: 'Content', type: ContentType, source: string, id: string, title: string, releaseDate?: string | null, releaseYear?: number | null, overview?: string | null, runtime?: number | null, voteAverage?: number | null, voteCount?: number | null, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string }, originalLanguage?: { __typename?: 'LanguageInfo', id: string, name: string } | null, attributes: Array<{ __typename?: 'ContentAttribute', source: string, key: string, value: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, collections: Array<{ __typename?: 'ContentCollection', type: string, source: string, id: string, name: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, externalLinks: Array<{ __typename?: 'ExternalLink', url: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }> } | null, languages?: Array<{ __typename?: 'LanguageInfo', id: string, name: string }> | null, episodes?: { __typename?: 'Episodes', label: string, seasons: Array<{ __typename?: 'Season', season: number, episodes?: Array<number> | null }> } | null }>, aggregations: { __typename?: 'TorrentContentAggregations', contentType?: Array<{ __typename?: 'ContentTypeAgg', value?: ContentType | null, label: string, count: number, isEstimate: boolean }> | null, torrentSource?: Array<{ __typename?: 'TorrentSourceAgg', value: string, label: string, count: number, isEstimate: boolean }> | null, torrentTag?: Array<{ __typename?: 'TorrentTagAgg', value: string, label: string, count: number, isEstimate: boolean }> | null, torrentFileType?: Array<{ __typename?: 'TorrentFileTypeAgg', value: FileType, label: string, count: number, isEstimate: boolean }> | null, language?: Array<{ __typename?: 'LanguageAgg', value: Language, label: string, count: number, isEstimate: boolean }> | null, genre?: Array<{ __typename?: 'GenreAgg', value: string, label: string, count: number, isEstimate: boolean }> | null, releaseYear?: Array<{ __typename?: 'ReleaseYearAgg', value?: number | null, label: string, count: number, isEstimate: boolean }> | null, videoResolution?: Array<{ __typename?: 'VideoResolutionAgg', value?: VideoResolution | null, label: string, count: number, isEstimate: boolean }> | null, videoSource?: Array<{ __typename?: 'VideoSourceAgg', value?: VideoSource | null, label: string, count: number, isEstimate: boolean }> | null } };
 
-export type TorrentFileFragment = {
-  __typename?: 'TorrentFile';
-  infoHash: string;
-  index: number;
-  path: string;
-  size: number;
-  fileType?: FileType | null;
-  createdAt: string;
-  updatedAt: string;
-};
+export type TorrentFileFragment = { __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string };
 
-export type TorrentFilesQueryResultFragment = {
-  __typename?: 'TorrentFilesQueryResult';
-  totalCount: number;
-  hasNextPage?: boolean | null;
-  items: Array<{
-    __typename?: 'TorrentFile';
-    infoHash: string;
-    index: number;
-    path: string;
-    size: number;
-    fileType?: FileType | null;
-    createdAt: string;
-    updatedAt: string;
-  }>;
-};
+export type TorrentFilesQueryResultFragment = { __typename?: 'TorrentFilesQueryResult', totalCount: number, hasNextPage?: boolean | null, items: Array<{ __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string }> };
 
 export type QueueEnqueueReprocessTorrentsBatchMutationVariables = Exact<{
   input: QueueEnqueueReprocessTorrentsBatchInput;
 }>;
 
-export type QueueEnqueueReprocessTorrentsBatchMutation = {
-  __typename?: 'Mutation';
-  queue: {
-    __typename?: 'QueueMutation';
-    enqueueReprocessTorrentsBatch?: void | null;
-  };
-};
+
+export type QueueEnqueueReprocessTorrentsBatchMutation = { __typename?: 'Mutation', queue: { __typename?: 'QueueMutation', enqueueReprocessTorrentsBatch?: void | null } };
 
 export type QueuePurgeJobsMutationVariables = Exact<{
   input: QueuePurgeJobsInput;
 }>;
 
-export type QueuePurgeJobsMutation = {
-  __typename?: 'Mutation';
-  queue: { __typename?: 'QueueMutation'; purgeJobs?: void | null };
-};
+
+export type QueuePurgeJobsMutation = { __typename?: 'Mutation', queue: { __typename?: 'QueueMutation', purgeJobs?: void | null } };
 
 export type TorrentDeleteMutationVariables = Exact<{
   infoHashes: Array<Scalars['Hash20']['input']> | Scalars['Hash20']['input'];
 }>;
 
-export type TorrentDeleteMutation = {
-  __typename?: 'Mutation';
-  torrent: { __typename?: 'TorrentMutation'; delete?: void | null };
-};
+
+export type TorrentDeleteMutation = { __typename?: 'Mutation', torrent: { __typename?: 'TorrentMutation', delete?: void | null } };
 
 export type TorrentDeleteTagsMutationVariables = Exact<{
-  infoHashes?: InputMaybe<
-    Array<Scalars['Hash20']['input']> | Scalars['Hash20']['input']
-  >;
-  tagNames?: InputMaybe<
-    Array<Scalars['String']['input']> | Scalars['String']['input']
-  >;
+  infoHashes?: InputMaybe<Array<Scalars['Hash20']['input']> | Scalars['Hash20']['input']>;
+  tagNames?: InputMaybe<Array<Scalars['String']['input']> | Scalars['String']['input']>;
 }>;
 
-export type TorrentDeleteTagsMutation = {
-  __typename?: 'Mutation';
-  torrent: { __typename?: 'TorrentMutation'; deleteTags?: void | null };
-};
+
+export type TorrentDeleteTagsMutation = { __typename?: 'Mutation', torrent: { __typename?: 'TorrentMutation', deleteTags?: void | null } };
 
 export type TorrentPutTagsMutationVariables = Exact<{
   infoHashes: Array<Scalars['Hash20']['input']> | Scalars['Hash20']['input'];
   tagNames: Array<Scalars['String']['input']> | Scalars['String']['input'];
 }>;
 
-export type TorrentPutTagsMutation = {
-  __typename?: 'Mutation';
-  torrent: { __typename?: 'TorrentMutation'; putTags?: void | null };
-};
+
+export type TorrentPutTagsMutation = { __typename?: 'Mutation', torrent: { __typename?: 'TorrentMutation', putTags?: void | null } };
 
 export type TorrentSetTagsMutationVariables = Exact<{
   infoHashes: Array<Scalars['Hash20']['input']> | Scalars['Hash20']['input'];
   tagNames: Array<Scalars['String']['input']> | Scalars['String']['input'];
 }>;
 
-export type TorrentSetTagsMutation = {
-  __typename?: 'Mutation';
-  torrent: { __typename?: 'TorrentMutation'; setTags?: void | null };
-};
 
-export type HealthCheckQueryVariables = Exact<{ [key: string]: never }>;
+export type TorrentSetTagsMutation = { __typename?: 'Mutation', torrent: { __typename?: 'TorrentMutation', setTags?: void | null } };
 
-export type HealthCheckQuery = {
-  __typename?: 'Query';
-  health: {
-    __typename?: 'HealthQuery';
-    status: HealthStatus;
-    checks: Array<{
-      __typename?: 'HealthCheck';
-      key: string;
-      status: HealthStatus;
-      timestamp: string;
-      error?: string | null;
-    }>;
-  };
-  workers: {
-    __typename?: 'WorkersQuery';
-    listAll: {
-      __typename?: 'WorkersListAllQueryResult';
-      workers: Array<{ __typename?: 'Worker'; key: string; started: boolean }>;
-    };
-  };
-};
+export type HealthCheckQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type HealthCheckQuery = { __typename?: 'Query', health: { __typename?: 'HealthQuery', status: HealthStatus, checks: Array<{ __typename?: 'HealthCheck', key: string, status: HealthStatus, timestamp: string, error?: string | null }> }, workers: { __typename?: 'WorkersQuery', listAll: { __typename?: 'WorkersListAllQueryResult', workers: Array<{ __typename?: 'Worker', key: string, started: boolean }> } } };
 
 export type QueueJobsQueryVariables = Exact<{
   input: QueueJobsQueryInput;
 }>;
 
-export type QueueJobsQuery = {
-  __typename?: 'Query';
-  queue: {
-    __typename?: 'QueueQuery';
-    jobs: {
-      __typename?: 'QueueJobsQueryResult';
-      totalCount: number;
-      hasNextPage?: boolean | null;
-      items: Array<{
-        __typename?: 'QueueJob';
-        id: string;
-        queue: string;
-        status: QueueJobStatus;
-        payload: string;
-        priority: number;
-        retries: number;
-        maxRetries: number;
-        runAfter: string;
-        ranAt?: string | null;
-        error?: string | null;
-        createdAt: string;
-      }>;
-      aggregations: {
-        __typename?: 'QueueJobsAggregations';
-        queue?: Array<{
-          __typename?: 'QueueJobQueueAgg';
-          value: string;
-          label: string;
-          count: number;
-        }> | null;
-        status?: Array<{
-          __typename?: 'QueueJobStatusAgg';
-          value: QueueJobStatus;
-          label: string;
-          count: number;
-        }> | null;
-      };
-    };
-  };
-};
+
+export type QueueJobsQuery = { __typename?: 'Query', queue: { __typename?: 'QueueQuery', jobs: { __typename?: 'QueueJobsQueryResult', totalCount: number, hasNextPage?: boolean | null, items: Array<{ __typename?: 'QueueJob', id: string, queue: string, status: QueueJobStatus, payload: string, priority: number, retries: number, maxRetries: number, runAfter: string, ranAt?: string | null, error?: string | null, createdAt: string }>, aggregations: { __typename?: 'QueueJobsAggregations', queue?: Array<{ __typename?: 'QueueJobQueueAgg', value: string, label: string, count: number }> | null, status?: Array<{ __typename?: 'QueueJobStatusAgg', value: QueueJobStatus, label: string, count: number }> | null } } } };
 
 export type QueueMetricsQueryVariables = Exact<{
   input: QueueMetricsQueryInput;
 }>;
 
-export type QueueMetricsQuery = {
-  __typename?: 'Query';
-  queue: {
-    __typename?: 'QueueQuery';
-    metrics: {
-      __typename?: 'QueueMetricsQueryResult';
-      buckets: Array<{
-        __typename?: 'QueueMetricsBucket';
-        queue: string;
-        status: QueueJobStatus;
-        createdAtBucket: string;
-        ranAtBucket?: string | null;
-        count: number;
-        latency?: string | null;
-      }>;
-    };
-  };
-};
+
+export type QueueMetricsQuery = { __typename?: 'Query', queue: { __typename?: 'QueueQuery', metrics: { __typename?: 'QueueMetricsQueryResult', buckets: Array<{ __typename?: 'QueueMetricsBucket', queue: string, status: QueueJobStatus, createdAtBucket: string, ranAtBucket?: string | null, count: number, latency?: string | null }> } } };
 
 export type TorrentContentSearchQueryVariables = Exact<{
   input: TorrentContentSearchQueryInput;
 }>;
 
-export type TorrentContentSearchQuery = {
-  __typename?: 'Query';
-  torrentContent: {
-    __typename?: 'TorrentContentQuery';
-    search: {
-      __typename?: 'TorrentContentSearchResult';
-      totalCount: number;
-      totalCountIsEstimate: boolean;
-      hasNextPage?: boolean | null;
-      items: Array<{
-        __typename?: 'TorrentContent';
-        id: string;
-        infoHash: string;
-        contentType?: ContentType | null;
-        title: string;
-        video3d?: Video3d | null;
-        videoCodec?: VideoCodec | null;
-        videoModifier?: VideoModifier | null;
-        videoResolution?: VideoResolution | null;
-        videoSource?: VideoSource | null;
-        seeders?: number | null;
-        leechers?: number | null;
-        publishedAt: string;
-        createdAt: string;
-        updatedAt: string;
-        torrent: {
-          __typename?: 'Torrent';
-          infoHash: string;
-          name: string;
-          size: number;
-          filesStatus: FilesStatus;
-          filesCount?: number | null;
-          hasFilesInfo: boolean;
-          singleFile?: boolean | null;
-          fileType?: FileType | null;
-          seeders?: number | null;
-          leechers?: number | null;
-          tagNames: Array<string>;
-          magnetUri: string;
-          createdAt: string;
-          updatedAt: string;
-          sources: Array<{
-            __typename?: 'TorrentSource';
-            key: string;
-            name: string;
-          }>;
-        };
-        content?: {
-          __typename?: 'Content';
-          type: ContentType;
-          source: string;
-          id: string;
-          title: string;
-          releaseDate?: string | null;
-          releaseYear?: number | null;
-          overview?: string | null;
-          runtime?: number | null;
-          voteAverage?: number | null;
-          voteCount?: number | null;
-          createdAt: string;
-          updatedAt: string;
-          metadataSource: {
-            __typename?: 'MetadataSource';
-            key: string;
-            name: string;
-          };
-          originalLanguage?: {
-            __typename?: 'LanguageInfo';
-            id: string;
-            name: string;
-          } | null;
-          attributes: Array<{
-            __typename?: 'ContentAttribute';
-            source: string;
-            key: string;
-            value: string;
-            createdAt: string;
-            updatedAt: string;
-            metadataSource: {
-              __typename?: 'MetadataSource';
-              key: string;
-              name: string;
-            };
-          }>;
-          collections: Array<{
-            __typename?: 'ContentCollection';
-            type: string;
-            source: string;
-            id: string;
-            name: string;
-            createdAt: string;
-            updatedAt: string;
-            metadataSource: {
-              __typename?: 'MetadataSource';
-              key: string;
-              name: string;
-            };
-          }>;
-          externalLinks: Array<{
-            __typename?: 'ExternalLink';
-            url: string;
-            metadataSource: {
-              __typename?: 'MetadataSource';
-              key: string;
-              name: string;
-            };
-          }>;
-        } | null;
-        languages?: Array<{
-          __typename?: 'LanguageInfo';
-          id: string;
-          name: string;
-        }> | null;
-        episodes?: {
-          __typename?: 'Episodes';
-          label: string;
-          seasons: Array<{
-            __typename?: 'Season';
-            season: number;
-            episodes?: Array<number> | null;
-          }>;
-        } | null;
-      }>;
-      aggregations: {
-        __typename?: 'TorrentContentAggregations';
-        contentType?: Array<{
-          __typename?: 'ContentTypeAgg';
-          value?: ContentType | null;
-          label: string;
-          count: number;
-          isEstimate: boolean;
-        }> | null;
-        torrentSource?: Array<{
-          __typename?: 'TorrentSourceAgg';
-          value: string;
-          label: string;
-          count: number;
-          isEstimate: boolean;
-        }> | null;
-        torrentTag?: Array<{
-          __typename?: 'TorrentTagAgg';
-          value: string;
-          label: string;
-          count: number;
-          isEstimate: boolean;
-        }> | null;
-        torrentFileType?: Array<{
-          __typename?: 'TorrentFileTypeAgg';
-          value: FileType;
-          label: string;
-          count: number;
-          isEstimate: boolean;
-        }> | null;
-        language?: Array<{
-          __typename?: 'LanguageAgg';
-          value: Language;
-          label: string;
-          count: number;
-          isEstimate: boolean;
-        }> | null;
-        genre?: Array<{
-          __typename?: 'GenreAgg';
-          value: string;
-          label: string;
-          count: number;
-          isEstimate: boolean;
-        }> | null;
-        releaseYear?: Array<{
-          __typename?: 'ReleaseYearAgg';
-          value?: number | null;
-          label: string;
-          count: number;
-          isEstimate: boolean;
-        }> | null;
-        videoResolution?: Array<{
-          __typename?: 'VideoResolutionAgg';
-          value?: VideoResolution | null;
-          label: string;
-          count: number;
-          isEstimate: boolean;
-        }> | null;
-        videoSource?: Array<{
-          __typename?: 'VideoSourceAgg';
-          value?: VideoSource | null;
-          label: string;
-          count: number;
-          isEstimate: boolean;
-        }> | null;
-      };
-    };
-  };
-};
+
+export type TorrentContentSearchQuery = { __typename?: 'Query', torrentContent: { __typename?: 'TorrentContentQuery', search: { __typename?: 'TorrentContentSearchResult', totalCount: number, totalCountIsEstimate: boolean, hasNextPage?: boolean | null, items: Array<{ __typename?: 'TorrentContent', id: string, infoHash: string, contentType?: ContentType | null, title: string, video3d?: Video3d | null, videoCodec?: VideoCodec | null, videoModifier?: VideoModifier | null, videoResolution?: VideoResolution | null, videoSource?: VideoSource | null, seeders?: number | null, leechers?: number | null, publishedAt: string, createdAt: string, updatedAt: string, torrent: { __typename?: 'Torrent', infoHash: string, name: string, size: number, filesStatus: FilesStatus, filesCount?: number | null, hasFilesInfo: boolean, singleFile?: boolean | null, fileType?: FileType | null, seeders?: number | null, leechers?: number | null, tagNames: Array<string>, magnetUri: string, createdAt: string, updatedAt: string, sources: Array<{ __typename?: 'TorrentSource', key: string, name: string }> }, content?: { __typename?: 'Content', type: ContentType, source: string, id: string, title: string, releaseDate?: string | null, releaseYear?: number | null, overview?: string | null, runtime?: number | null, voteAverage?: number | null, voteCount?: number | null, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string }, originalLanguage?: { __typename?: 'LanguageInfo', id: string, name: string } | null, attributes: Array<{ __typename?: 'ContentAttribute', source: string, key: string, value: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, collections: Array<{ __typename?: 'ContentCollection', type: string, source: string, id: string, name: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, externalLinks: Array<{ __typename?: 'ExternalLink', url: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }> } | null, languages?: Array<{ __typename?: 'LanguageInfo', id: string, name: string }> | null, episodes?: { __typename?: 'Episodes', label: string, seasons: Array<{ __typename?: 'Season', season: number, episodes?: Array<number> | null }> } | null }>, aggregations: { __typename?: 'TorrentContentAggregations', contentType?: Array<{ __typename?: 'ContentTypeAgg', value?: ContentType | null, label: string, count: number, isEstimate: boolean }> | null, torrentSource?: Array<{ __typename?: 'TorrentSourceAgg', value: string, label: string, count: number, isEstimate: boolean }> | null, torrentTag?: Array<{ __typename?: 'TorrentTagAgg', value: string, label: string, count: number, isEstimate: boolean }> | null, torrentFileType?: Array<{ __typename?: 'TorrentFileTypeAgg', value: FileType, label: string, count: number, isEstimate: boolean }> | null, language?: Array<{ __typename?: 'LanguageAgg', value: Language, label: string, count: number, isEstimate: boolean }> | null, genre?: Array<{ __typename?: 'GenreAgg', value: string, label: string, count: number, isEstimate: boolean }> | null, releaseYear?: Array<{ __typename?: 'ReleaseYearAgg', value?: number | null, label: string, count: number, isEstimate: boolean }> | null, videoResolution?: Array<{ __typename?: 'VideoResolutionAgg', value?: VideoResolution | null, label: string, count: number, isEstimate: boolean }> | null, videoSource?: Array<{ __typename?: 'VideoSourceAgg', value?: VideoSource | null, label: string, count: number, isEstimate: boolean }> | null } } } };
 
 export type TorrentFilesQueryVariables = Exact<{
   input: TorrentFilesQueryInput;
 }>;
 
-export type TorrentFilesQuery = {
-  __typename?: 'Query';
-  torrent: {
-    __typename?: 'TorrentQuery';
-    files: {
-      __typename?: 'TorrentFilesQueryResult';
-      totalCount: number;
-      hasNextPage?: boolean | null;
-      items: Array<{
-        __typename?: 'TorrentFile';
-        infoHash: string;
-        index: number;
-        path: string;
-        size: number;
-        fileType?: FileType | null;
-        createdAt: string;
-        updatedAt: string;
-      }>;
-    };
-  };
-};
+
+export type TorrentFilesQuery = { __typename?: 'Query', torrent: { __typename?: 'TorrentQuery', files: { __typename?: 'TorrentFilesQueryResult', totalCount: number, hasNextPage?: boolean | null, items: Array<{ __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string }> } } };
 
 export type TorrentMetricsQueryVariables = Exact<{
   input: TorrentMetricsQueryInput;
 }>;
 
-export type TorrentMetricsQuery = {
-  __typename?: 'Query';
-  torrent: {
-    __typename?: 'TorrentQuery';
-    metrics: {
-      __typename?: 'TorrentMetricsQueryResult';
-      buckets: Array<{
-        __typename?: 'TorrentMetricsBucket';
-        source: string;
-        updated: boolean;
-        bucket: string;
-        count: number;
-      }>;
-    };
-  };
-};
+
+export type TorrentMetricsQuery = { __typename?: 'Query', torrent: { __typename?: 'TorrentQuery', metrics: { __typename?: 'TorrentMetricsQueryResult', buckets: Array<{ __typename?: 'TorrentMetricsBucket', source: string, updated: boolean, bucket: string, count: number }> } } };
 
 export type TorrentSuggestTagsQueryVariables = Exact<{
   input: SuggestTagsQueryInput;
 }>;
 
-export type TorrentSuggestTagsQuery = {
-  __typename?: 'Query';
-  torrent: {
-    __typename?: 'TorrentQuery';
-    suggestTags: {
-      __typename?: 'TorrentSuggestTagsResult';
-      suggestions: Array<{
-        __typename?: 'SuggestedTag';
-        name: string;
-        count: number;
-      }>;
-    };
-  };
-};
 
-export type VersionQueryVariables = Exact<{ [key: string]: never }>;
+export type TorrentSuggestTagsQuery = { __typename?: 'Query', torrent: { __typename?: 'TorrentQuery', suggestTags: { __typename?: 'TorrentSuggestTagsResult', suggestions: Array<{ __typename?: 'SuggestedTag', name: string, count: number }> } } };
 
-export type VersionQuery = { __typename?: 'Query'; version: string };
+export type VersionQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type VersionQuery = { __typename?: 'Query', version: string };
 
 export const QueueJobFragmentDoc = gql`
-  fragment QueueJob on QueueJob {
-    id
-    queue
-    status
-    payload
-    priority
-    retries
-    maxRetries
-    runAfter
-    ranAt
-    error
-    createdAt
-  }
-`;
+    fragment QueueJob on QueueJob {
+  id
+  queue
+  status
+  payload
+  priority
+  retries
+  maxRetries
+  runAfter
+  ranAt
+  error
+  createdAt
+}
+    `;
 export const QueueJobsQueryResultFragmentDoc = gql`
-  fragment QueueJobsQueryResult on QueueJobsQueryResult {
-    items {
-      ...QueueJob
+    fragment QueueJobsQueryResult on QueueJobsQueryResult {
+  items {
+    ...QueueJob
+  }
+  totalCount
+  hasNextPage
+  aggregations {
+    queue {
+      value
+      label
+      count
     }
-    totalCount
-    hasNextPage
-    aggregations {
-      queue {
-        value
-        label
-        count
-      }
-      status {
-        value
-        label
-        count
-      }
+    status {
+      value
+      label
+      count
     }
   }
-  ${QueueJobFragmentDoc}
-`;
+}
+    ${QueueJobFragmentDoc}`;
 export const TorrentFragmentDoc = gql`
-  fragment Torrent on Torrent {
-    infoHash
+    fragment Torrent on Torrent {
+  infoHash
+  name
+  size
+  filesStatus
+  filesCount
+  hasFilesInfo
+  singleFile
+  fileType
+  sources {
+    key
     name
-    size
-    filesStatus
-    filesCount
-    hasFilesInfo
-    singleFile
-    fileType
-    sources {
-      key
-      name
-    }
-    seeders
-    leechers
-    tagNames
-    magnetUri
-    createdAt
-    updatedAt
   }
-`;
+  seeders
+  leechers
+  tagNames
+  magnetUri
+  createdAt
+  updatedAt
+}
+    `;
 export const ContentFragmentDoc = gql`
-  fragment Content on Content {
-    type
-    source
+    fragment Content on Content {
+  type
+  source
+  id
+  metadataSource {
+    key
+    name
+  }
+  title
+  releaseDate
+  releaseYear
+  overview
+  runtime
+  voteAverage
+  voteCount
+  originalLanguage {
     id
+    name
+  }
+  attributes {
     metadataSource {
       key
       name
     }
-    title
-    releaseDate
-    releaseYear
-    overview
-    runtime
-    voteAverage
-    voteCount
-    originalLanguage {
-      id
-      name
-    }
-    attributes {
-      metadataSource {
-        key
-        name
-      }
-      source
+    source
+    key
+    value
+    createdAt
+    updatedAt
+  }
+  collections {
+    metadataSource {
       key
-      value
-      createdAt
-      updatedAt
-    }
-    collections {
-      metadataSource {
-        key
-        name
-      }
-      type
-      source
-      id
       name
-      createdAt
-      updatedAt
     }
-    externalLinks {
-      metadataSource {
-        key
-        name
-      }
-      url
-    }
-    createdAt
-    updatedAt
-  }
-`;
-export const TorrentContentFragmentDoc = gql`
-  fragment TorrentContent on TorrentContent {
+    type
+    source
     id
-    infoHash
-    contentType
-    title
-    torrent {
-      ...Torrent
-    }
-    content {
-      ...Content
-    }
-    languages {
-      id
+    name
+    createdAt
+    updatedAt
+  }
+  externalLinks {
+    metadataSource {
+      key
       name
     }
-    episodes {
-      label
-      seasons {
-        season
-        episodes
-      }
-    }
-    video3d
-    videoCodec
-    videoModifier
-    videoResolution
-    videoSource
-    seeders
-    leechers
-    publishedAt
-    createdAt
-    updatedAt
+    url
   }
-  ${TorrentFragmentDoc}
-  ${ContentFragmentDoc}
-`;
+  createdAt
+  updatedAt
+}
+    `;
+export const TorrentContentFragmentDoc = gql`
+    fragment TorrentContent on TorrentContent {
+  id
+  infoHash
+  contentType
+  title
+  torrent {
+    ...Torrent
+  }
+  content {
+    ...Content
+  }
+  languages {
+    id
+    name
+  }
+  episodes {
+    label
+    seasons {
+      season
+      episodes
+    }
+  }
+  video3d
+  videoCodec
+  videoModifier
+  videoResolution
+  videoSource
+  seeders
+  leechers
+  publishedAt
+  createdAt
+  updatedAt
+}
+    ${TorrentFragmentDoc}
+${ContentFragmentDoc}`;
 export const TorrentContentSearchResultFragmentDoc = gql`
-  fragment TorrentContentSearchResult on TorrentContentSearchResult {
-    items {
-      ...TorrentContent
+    fragment TorrentContentSearchResult on TorrentContentSearchResult {
+  items {
+    ...TorrentContent
+  }
+  totalCount
+  totalCountIsEstimate
+  hasNextPage
+  aggregations {
+    contentType {
+      value
+      label
+      count
+      isEstimate
     }
-    totalCount
-    totalCountIsEstimate
-    hasNextPage
-    aggregations {
-      contentType {
-        value
-        label
-        count
-        isEstimate
-      }
-      torrentSource {
-        value
-        label
-        count
-        isEstimate
-      }
-      torrentTag {
-        value
-        label
-        count
-        isEstimate
-      }
-      torrentFileType {
-        value
-        label
-        count
-        isEstimate
-      }
-      language {
-        value
-        label
-        count
-        isEstimate
-      }
-      genre {
-        value
-        label
-        count
-        isEstimate
-      }
-      releaseYear {
-        value
-        label
-        count
-        isEstimate
-      }
-      videoResolution {
-        value
-        label
-        count
-        isEstimate
-      }
-      videoSource {
-        value
-        label
-        count
-        isEstimate
-      }
+    torrentSource {
+      value
+      label
+      count
+      isEstimate
+    }
+    torrentTag {
+      value
+      label
+      count
+      isEstimate
+    }
+    torrentFileType {
+      value
+      label
+      count
+      isEstimate
+    }
+    language {
+      value
+      label
+      count
+      isEstimate
+    }
+    genre {
+      value
+      label
+      count
+      isEstimate
+    }
+    releaseYear {
+      value
+      label
+      count
+      isEstimate
+    }
+    videoResolution {
+      value
+      label
+      count
+      isEstimate
+    }
+    videoSource {
+      value
+      label
+      count
+      isEstimate
     }
   }
-  ${TorrentContentFragmentDoc}
-`;
+}
+    ${TorrentContentFragmentDoc}`;
 export const TorrentFileFragmentDoc = gql`
-  fragment TorrentFile on TorrentFile {
-    infoHash
-    index
-    path
-    size
-    fileType
-    createdAt
-    updatedAt
-  }
-`;
+    fragment TorrentFile on TorrentFile {
+  infoHash
+  index
+  path
+  size
+  fileType
+  createdAt
+  updatedAt
+}
+    `;
 export const TorrentFilesQueryResultFragmentDoc = gql`
-  fragment TorrentFilesQueryResult on TorrentFilesQueryResult {
-    items {
-      ...TorrentFile
-    }
-    totalCount
-    hasNextPage
+    fragment TorrentFilesQueryResult on TorrentFilesQueryResult {
+  items {
+    ...TorrentFile
   }
-  ${TorrentFileFragmentDoc}
-`;
+  totalCount
+  hasNextPage
+}
+    ${TorrentFileFragmentDoc}`;
 export const QueueEnqueueReprocessTorrentsBatchDocument = gql`
-  mutation QueueEnqueueReprocessTorrentsBatch(
-    $input: QueueEnqueueReprocessTorrentsBatchInput!
-  ) {
-    queue {
-      enqueueReprocessTorrentsBatch(input: $input)
-    }
-  }
-`;
-
-@Injectable({
-  providedIn: 'root',
-})
-export class QueueEnqueueReprocessTorrentsBatchGQL extends Apollo.Mutation<
-  QueueEnqueueReprocessTorrentsBatchMutation,
-  QueueEnqueueReprocessTorrentsBatchMutationVariables
-> {
-  override document = QueueEnqueueReprocessTorrentsBatchDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+    mutation QueueEnqueueReprocessTorrentsBatch($input: QueueEnqueueReprocessTorrentsBatchInput!) {
+  queue {
+    enqueueReprocessTorrentsBatch(input: $input)
   }
 }
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class QueueEnqueueReprocessTorrentsBatchGQL extends Apollo.Mutation<QueueEnqueueReprocessTorrentsBatchMutation, QueueEnqueueReprocessTorrentsBatchMutationVariables> {
+    override document = QueueEnqueueReprocessTorrentsBatchDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const QueuePurgeJobsDocument = gql`
-  mutation QueuePurgeJobs($input: QueuePurgeJobsInput!) {
-    queue {
-      purgeJobs(input: $input)
-    }
-  }
-`;
-
-@Injectable({
-  providedIn: 'root',
-})
-export class QueuePurgeJobsGQL extends Apollo.Mutation<
-  QueuePurgeJobsMutation,
-  QueuePurgeJobsMutationVariables
-> {
-  override document = QueuePurgeJobsDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+    mutation QueuePurgeJobs($input: QueuePurgeJobsInput!) {
+  queue {
+    purgeJobs(input: $input)
   }
 }
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class QueuePurgeJobsGQL extends Apollo.Mutation<QueuePurgeJobsMutation, QueuePurgeJobsMutationVariables> {
+    override document = QueuePurgeJobsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const TorrentDeleteDocument = gql`
-  mutation TorrentDelete($infoHashes: [Hash20!]!) {
-    torrent {
-      delete(infoHashes: $infoHashes)
-    }
-  }
-`;
-
-@Injectable({
-  providedIn: 'root',
-})
-export class TorrentDeleteGQL extends Apollo.Mutation<
-  TorrentDeleteMutation,
-  TorrentDeleteMutationVariables
-> {
-  override document = TorrentDeleteDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+    mutation TorrentDelete($infoHashes: [Hash20!]!) {
+  torrent {
+    delete(infoHashes: $infoHashes)
   }
 }
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class TorrentDeleteGQL extends Apollo.Mutation<TorrentDeleteMutation, TorrentDeleteMutationVariables> {
+    override document = TorrentDeleteDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const TorrentDeleteTagsDocument = gql`
-  mutation TorrentDeleteTags($infoHashes: [Hash20!], $tagNames: [String!]) {
-    torrent {
-      deleteTags(infoHashes: $infoHashes, tagNames: $tagNames)
-    }
-  }
-`;
-
-@Injectable({
-  providedIn: 'root',
-})
-export class TorrentDeleteTagsGQL extends Apollo.Mutation<
-  TorrentDeleteTagsMutation,
-  TorrentDeleteTagsMutationVariables
-> {
-  override document = TorrentDeleteTagsDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+    mutation TorrentDeleteTags($infoHashes: [Hash20!], $tagNames: [String!]) {
+  torrent {
+    deleteTags(infoHashes: $infoHashes, tagNames: $tagNames)
   }
 }
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class TorrentDeleteTagsGQL extends Apollo.Mutation<TorrentDeleteTagsMutation, TorrentDeleteTagsMutationVariables> {
+    override document = TorrentDeleteTagsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const TorrentPutTagsDocument = gql`
-  mutation TorrentPutTags($infoHashes: [Hash20!]!, $tagNames: [String!]!) {
-    torrent {
-      putTags(infoHashes: $infoHashes, tagNames: $tagNames)
-    }
-  }
-`;
-
-@Injectable({
-  providedIn: 'root',
-})
-export class TorrentPutTagsGQL extends Apollo.Mutation<
-  TorrentPutTagsMutation,
-  TorrentPutTagsMutationVariables
-> {
-  override document = TorrentPutTagsDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+    mutation TorrentPutTags($infoHashes: [Hash20!]!, $tagNames: [String!]!) {
+  torrent {
+    putTags(infoHashes: $infoHashes, tagNames: $tagNames)
   }
 }
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class TorrentPutTagsGQL extends Apollo.Mutation<TorrentPutTagsMutation, TorrentPutTagsMutationVariables> {
+    override document = TorrentPutTagsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const TorrentSetTagsDocument = gql`
-  mutation TorrentSetTags($infoHashes: [Hash20!]!, $tagNames: [String!]!) {
-    torrent {
-      setTags(infoHashes: $infoHashes, tagNames: $tagNames)
-    }
-  }
-`;
-
-@Injectable({
-  providedIn: 'root',
-})
-export class TorrentSetTagsGQL extends Apollo.Mutation<
-  TorrentSetTagsMutation,
-  TorrentSetTagsMutationVariables
-> {
-  override document = TorrentSetTagsDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
+    mutation TorrentSetTags($infoHashes: [Hash20!]!, $tagNames: [String!]!) {
+  torrent {
+    setTags(infoHashes: $infoHashes, tagNames: $tagNames)
   }
 }
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class TorrentSetTagsGQL extends Apollo.Mutation<TorrentSetTagsMutation, TorrentSetTagsMutationVariables> {
+    override document = TorrentSetTagsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const HealthCheckDocument = gql`
-  query HealthCheck {
-    health {
+    query HealthCheck {
+  health {
+    status
+    checks {
+      key
       status
-      checks {
+      timestamp
+      error
+    }
+  }
+  workers {
+    listAll {
+      workers {
         key
-        status
-        timestamp
-        error
+        started
       }
     }
-    workers {
-      listAll {
-        workers {
-          key
-          started
-        }
-      }
-    }
-  }
-`;
-
-@Injectable({
-  providedIn: 'root',
-})
-export class HealthCheckGQL extends Apollo.Query<
-  HealthCheckQuery,
-  HealthCheckQueryVariables
-> {
-  override document = HealthCheckDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
   }
 }
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class HealthCheckGQL extends Apollo.Query<HealthCheckQuery, HealthCheckQueryVariables> {
+    override document = HealthCheckDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const QueueJobsDocument = gql`
-  query QueueJobs($input: QueueJobsQueryInput!) {
-    queue {
-      jobs(input: $input) {
-        ...QueueJobsQueryResult
-      }
+    query QueueJobs($input: QueueJobsQueryInput!) {
+  queue {
+    jobs(input: $input) {
+      ...QueueJobsQueryResult
     }
   }
-  ${QueueJobsQueryResultFragmentDoc}
-`;
-
-@Injectable({
-  providedIn: 'root',
-})
-export class QueueJobsGQL extends Apollo.Query<
-  QueueJobsQuery,
-  QueueJobsQueryVariables
-> {
-  override document = QueueJobsDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
-  }
 }
+    ${QueueJobsQueryResultFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class QueueJobsGQL extends Apollo.Query<QueueJobsQuery, QueueJobsQueryVariables> {
+    override document = QueueJobsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const QueueMetricsDocument = gql`
-  query QueueMetrics($input: QueueMetricsQueryInput!) {
-    queue {
-      metrics(input: $input) {
-        buckets {
-          queue
-          status
-          createdAtBucket
-          ranAtBucket
-          count
-          latency
-        }
+    query QueueMetrics($input: QueueMetricsQueryInput!) {
+  queue {
+    metrics(input: $input) {
+      buckets {
+        queue
+        status
+        createdAtBucket
+        ranAtBucket
+        count
+        latency
       }
     }
   }
-`;
-
-@Injectable({
-  providedIn: 'root',
-})
-export class QueueMetricsGQL extends Apollo.Query<
-  QueueMetricsQuery,
-  QueueMetricsQueryVariables
-> {
-  override document = QueueMetricsDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
-  }
 }
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class QueueMetricsGQL extends Apollo.Query<QueueMetricsQuery, QueueMetricsQueryVariables> {
+    override document = QueueMetricsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const TorrentContentSearchDocument = gql`
-  query TorrentContentSearch($input: TorrentContentSearchQueryInput!) {
-    torrentContent {
-      search(input: $input) {
-        ...TorrentContentSearchResult
-      }
+    query TorrentContentSearch($input: TorrentContentSearchQueryInput!) {
+  torrentContent {
+    search(input: $input) {
+      ...TorrentContentSearchResult
     }
   }
-  ${TorrentContentSearchResultFragmentDoc}
-`;
-
-@Injectable({
-  providedIn: 'root',
-})
-export class TorrentContentSearchGQL extends Apollo.Query<
-  TorrentContentSearchQuery,
-  TorrentContentSearchQueryVariables
-> {
-  override document = TorrentContentSearchDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
-  }
 }
+    ${TorrentContentSearchResultFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class TorrentContentSearchGQL extends Apollo.Query<TorrentContentSearchQuery, TorrentContentSearchQueryVariables> {
+    override document = TorrentContentSearchDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const TorrentFilesDocument = gql`
-  query TorrentFiles($input: TorrentFilesQueryInput!) {
-    torrent {
-      files(input: $input) {
-        ...TorrentFilesQueryResult
-      }
+    query TorrentFiles($input: TorrentFilesQueryInput!) {
+  torrent {
+    files(input: $input) {
+      ...TorrentFilesQueryResult
     }
   }
-  ${TorrentFilesQueryResultFragmentDoc}
-`;
-
-@Injectable({
-  providedIn: 'root',
-})
-export class TorrentFilesGQL extends Apollo.Query<
-  TorrentFilesQuery,
-  TorrentFilesQueryVariables
-> {
-  override document = TorrentFilesDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
-  }
 }
+    ${TorrentFilesQueryResultFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class TorrentFilesGQL extends Apollo.Query<TorrentFilesQuery, TorrentFilesQueryVariables> {
+    override document = TorrentFilesDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const TorrentMetricsDocument = gql`
-  query TorrentMetrics($input: TorrentMetricsQueryInput!) {
-    torrent {
-      metrics(input: $input) {
-        buckets {
-          source
-          updated
-          bucket
-          count
-        }
+    query TorrentMetrics($input: TorrentMetricsQueryInput!) {
+  torrent {
+    metrics(input: $input) {
+      buckets {
+        source
+        updated
+        bucket
+        count
       }
     }
   }
-`;
-
-@Injectable({
-  providedIn: 'root',
-})
-export class TorrentMetricsGQL extends Apollo.Query<
-  TorrentMetricsQuery,
-  TorrentMetricsQueryVariables
-> {
-  override document = TorrentMetricsDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
-  }
 }
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class TorrentMetricsGQL extends Apollo.Query<TorrentMetricsQuery, TorrentMetricsQueryVariables> {
+    override document = TorrentMetricsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const TorrentSuggestTagsDocument = gql`
-  query TorrentSuggestTags($input: SuggestTagsQueryInput!) {
-    torrent {
-      suggestTags(input: $input) {
-        suggestions {
-          name
-          count
-        }
+    query TorrentSuggestTags($input: SuggestTagsQueryInput!) {
+  torrent {
+    suggestTags(input: $input) {
+      suggestions {
+        name
+        count
       }
     }
   }
-`;
-
-@Injectable({
-  providedIn: 'root',
-})
-export class TorrentSuggestTagsGQL extends Apollo.Query<
-  TorrentSuggestTagsQuery,
-  TorrentSuggestTagsQueryVariables
-> {
-  override document = TorrentSuggestTagsDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
-  }
 }
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class TorrentSuggestTagsGQL extends Apollo.Query<TorrentSuggestTagsQuery, TorrentSuggestTagsQueryVariables> {
+    override document = TorrentSuggestTagsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const VersionDocument = gql`
-  query Version {
-    version
-  }
-`;
-
-@Injectable({
-  providedIn: 'root',
-})
-export class VersionGQL extends Apollo.Query<
-  VersionQuery,
-  VersionQueryVariables
-> {
-  override document = VersionDocument;
-
-  constructor(apollo: Apollo.Apollo) {
-    super(apollo);
-  }
+    query Version {
+  version
 }
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class VersionGQL extends Apollo.Query<VersionQuery, VersionQueryVariables> {
+    override document = VersionDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
