@@ -37,7 +37,9 @@ jobs:
           nix develop --ignore-environment --command task install-webui
       - name: Run tests
         run: |
-          nix develop --ignore-environment --keep HOME . --command task test
+          nix develop --ignore-environment --keep HOME --keep CHROME_BIN . --command task test
+        env:
+          CHROME_BIN: google-chrome
 
   # This job runs all code generations and builds the WebUI, to check that everything is correctly committed
   generated:
