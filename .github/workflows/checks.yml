@@ -31,6 +31,7 @@ jobs:
       - uses: cachix/install-nix-action@v26
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: browser-actions/setup-chrome@v1
       - name: Install web UI
         run: |
           nix develop --ignore-environment --command task install-webui
