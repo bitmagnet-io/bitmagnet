@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { appConfig } from '../app.config';
 import { TorrentChipsComponent } from './torrent-chips.component';
-import {appConfig} from "../app.config";
 
 describe('TorrentChipsComponent', () => {
   let component: TorrentChipsComponent;

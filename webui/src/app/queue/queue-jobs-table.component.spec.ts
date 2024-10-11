@@ -1,13 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { inject } from '@angular/core';
+import { Apollo } from 'apollo-angular';
+import { Observable } from 'rxjs';
+import { ErrorsService } from '../errors/errors.service';
+import { appConfig } from '../app.config';
+import { AppModule } from '../app.module';
+import { QueueJobsDatasource } from './queue-jobs.datasource';
 import { QueueJobsTableComponent } from './queue-jobs-table.component';
-import {appConfig} from "../app.config";
-import {QueueJobsDatasource} from "./queue-jobs.datasource";
-import {inject} from "@angular/core";
-import {Apollo} from "apollo-angular";
-import {ErrorsService} from "../errors/errors.service";
-import {Observable} from "rxjs";
-import {AppModule} from "../app.module";
 
 describe('QueueJobsTableComponent', () => {
   let component: QueueJobsTableComponent;
@@ -22,8 +22,12 @@ describe('QueueJobsTableComponent', () => {
     fixture = TestBed.createComponent(QueueJobsTableComponent);
     component = fixture.componentInstance;
     TestBed.runInInjectionContext(() => {
-      component.dataSource = new QueueJobsDatasource(inject(Apollo), inject(ErrorsService), new Observable());
-    })
+      component.dataSource = new QueueJobsDatasource(
+        inject(Apollo),
+        inject(ErrorsService),
+        new Observable(),
+      );
+    });
     fixture.detectChanges();
   });
 

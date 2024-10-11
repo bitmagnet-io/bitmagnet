@@ -2,7 +2,6 @@ import { Component, Inject, inject } from '@angular/core';
 import { Apollo } from 'apollo-angular';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import * as generated from '../graphql/generated';
-import { GraphQLModule } from '../graphql/graphql.module';
 import { AppModule } from '../app.module';
 import { availableQueueNames, statusNames } from './queue.constants';
 import { QueuePurgeJobsDialogComponent } from './queue-purge-jobs-dialog.component';

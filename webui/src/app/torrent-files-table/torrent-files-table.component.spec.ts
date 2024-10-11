@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { appConfig } from '../app.config';
+import { AppModule } from '../app.module';
 import { TorrentFilesTableComponent } from './torrent-files-table.component';
-import {appConfig} from "../app.config";
-import {AppModule} from "../app.module";
 
 describe('TorrentFilesTableComponent', () => {
   let component: TorrentFilesTableComponent;

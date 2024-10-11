@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { appConfig } from '../app.config';
 import { TorrentsDashboardComponent } from './torrents-dashboard.component';
-import {appConfig} from "../app.config";
 
 describe('QueueCardComponent', () => {
   let component: TorrentsDashboardComponent;

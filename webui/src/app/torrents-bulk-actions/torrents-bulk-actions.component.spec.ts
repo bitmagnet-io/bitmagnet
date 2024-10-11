@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { appConfig } from '../app.config';
 import { TorrentsBulkActionsComponent } from './torrents-bulk-actions.component';
-import {appConfig} from "../app.config";
 
 describe('TorrentsBulkActionsComponent', () => {
   let component: TorrentsBulkActionsComponent;

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
+import { TranslocoModule } from '@jsverse/transloco';
 import { AppComponent } from './app.component';
-import {appConfig} from "./app.config";
-import {TranslocoModule} from "@jsverse/transloco";
+import { appConfig } from './app.config';
 
 describe('AppComponent', () => {
   beforeEach(async () => {

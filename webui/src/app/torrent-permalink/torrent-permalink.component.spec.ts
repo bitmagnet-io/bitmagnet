@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { appConfig } from '../app.config';
 import { TorrentPermalinkComponent } from './torrent-permalink.component';
-import {appConfig} from "../app.config";
 
 describe('TorrentPermalinkComponent', () => {
   let component: TorrentPermalinkComponent;

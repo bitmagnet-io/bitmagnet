@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { appConfig } from '../app.config';
 import { QueueAdminComponent } from './queue-admin.component';
-import {appConfig} from "../app.config";
 
 describe('QueueAdminComponent', () => {
   let component: QueueAdminComponent;

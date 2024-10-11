@@ -1,7 +1,7 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { appConfig } from '../app.config';
 import { DashboardHomeComponent } from './dashboard-home.component';
-import {appConfig} from "../app.config";
 
 describe('DashboardComponent', () => {
   let component: DashboardHomeComponent;

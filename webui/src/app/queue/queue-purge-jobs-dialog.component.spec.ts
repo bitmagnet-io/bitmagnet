@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { MatDialogRef } from '@angular/material/dialog';
+import { appConfig } from '../app.config';
 import { QueuePurgeJobsDialogComponent } from './queue-purge-jobs-dialog.component';
-import {appConfig} from "../app.config";
-import {MatDialogRef} from "@angular/material/dialog";
 
 describe('QueuePurgeJobsDialogComponent', () => {
   let component: QueuePurgeJobsDialogComponent;
@@ -12,8 +12,8 @@ describe('QueuePurgeJobsDialogComponent', () => {
     await TestBed.configureTestingModule({
       providers: [
         ...appConfig.providers,
-        {provide: MatDialogRef, useValue: {}}
-      ]
+        { provide: MatDialogRef, useValue: {} },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(QueuePurgeJobsDialogComponent);

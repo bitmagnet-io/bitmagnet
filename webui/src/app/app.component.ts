@@ -3,7 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { LayoutComponent } from './layout/layout.component';
-import {initializeIcons} from "./app.icons";
+import { initializeIcons } from './app.icons';
 
 @Component({
   selector: 'app-root',
@@ -14,10 +14,7 @@ import {initializeIcons} from "./app.icons";
 })
 export class AppComponent {
   title = 'bitmagnet';
-  constructor(
-    iconRegistry: MatIconRegistry,
-    domSanitizer: DomSanitizer,
-  ) {
+  constructor(iconRegistry: MatIconRegistry, domSanitizer: DomSanitizer) {
     initializeIcons(iconRegistry, domSanitizer);
   }
 }
