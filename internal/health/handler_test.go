@@ -4,10 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 	"time"
 
@@ -51,6 +49,8 @@ func (ck *resultWriterMock) Write(result *CheckerResult, statusCode int, w http.
 	return ck.Called(result, statusCode, w, r).Get(0).(error)
 }
 
+//var testTimestamp = time.Now()
+
 func doTestHandler(t *testing.T, statusCodeUp, statusCodeDown int, expectedStatus CheckerResult, expectedStatusCode int) {
 	// Arrange
 	response := httptest.NewRecorder()
@@ -71,11 +71,10 @@ func doTestHandler(t *testing.T, statusCodeUp, statusCodeDown int, expectedStatu
 	assert.Equal(t, response.Header().Get("content-type"), "application/json; charset=utf-8")
 	assert.Equal(t, response.Result().StatusCode, expectedStatusCode)
 
-	result := CheckerResult{}
-	_ = json.Unmarshal(response.Body.Bytes(), &result)
-	log.Printf("returned %+v, want %+v", result.Details, expectedStatus.Details)
-
-	assert.True(t, reflect.DeepEqual(result, expectedStatus))
+	bytes := response.Body.Bytes()
+	expectedBytes, err := json.Marshal(expectedStatus)
+	assert.NoError(t, err)
+	assert.Equal(t, string(expectedBytes), string(bytes))
 }
 
 func TestHandlerIfCheckFailThenRespondWithNotAvailable(t *testing.T) {
