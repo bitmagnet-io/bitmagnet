@@ -9,3 +9,9 @@ button {
 p {
   margin-top: 0;
 }
+
+::ng-deep .mdc-tab {
+  &[aria-labelledby="hidden"] {
+    display: none;
+  }
+}
