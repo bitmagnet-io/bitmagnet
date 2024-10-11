@@ -73,5 +73,7 @@ jobs:
           nix develop --ignore-environment . --command task build-webui
         env:
           POSTGRES_PASSWORD: postgres
+      - name: Debug 3rdpartylicenses
+        run: cat webui/dist/bitmagnet/3rdpartylicenses.txt
       - name: Check nothing changed
         run: git diff --exit-code
