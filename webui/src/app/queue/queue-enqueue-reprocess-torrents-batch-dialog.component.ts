@@ -1,36 +1,16 @@
 import { Component, Inject, inject } from '@angular/core';
 import { Apollo } from 'apollo-angular';
-import {
-  MAT_DIALOG_DATA,
-  MatDialogActions,
-  MatDialogContent,
-  MatDialogRef,
-  MatDialogTitle,
-} from '@angular/material/dialog';
-import { MatButton } from '@angular/material/button';
-import { MatCard } from '@angular/material/card';
-import { MatCheckbox } from '@angular/material/checkbox';
-import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { TranslocoDirective } from '@jsverse/transloco';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import * as generated from '../graphql/generated';
 import { GraphQLModule } from '../graphql/graphql.module';
+import { AppModule } from '../app.module';
 import { availableQueueNames, statusNames } from './queue.constants';
 import { QueuePurgeJobsDialog } from './queue-purge-jobs-dialog.component';
 
 @Component({
   selector: 'app-queue-enqueue-reprocess-torrents-batch-dialog',
   standalone: true,
-  imports: [
-    GraphQLModule,
-    MatButton,
-    MatCard,
-    MatCheckbox,
-    MatDialogActions,
-    MatDialogContent,
-    MatDialogTitle,
-    MatProgressSpinner,
-    TranslocoDirective,
-  ],
+  imports: [AppModule, GraphQLModule],
   templateUrl: './queue-enqueue-reprocess-torrents-batch-dialog.component.html',
   styleUrl: './queue-enqueue-reprocess-torrents-batch-dialog.component.scss',
 })

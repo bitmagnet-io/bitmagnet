@@ -7,24 +7,8 @@ import {
   Output,
 } from '@angular/core';
 import { SelectionModel } from '@angular/cdk/collections';
-import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { TranslocoService } from '@jsverse/transloco';
 import { BehaviorSubject } from 'rxjs';
-import { AsyncPipe, DecimalPipe, SlicePipe } from '@angular/common';
-import {
-  MatCell,
-  MatCellDef,
-  MatColumnDef,
-  MatHeaderCell,
-  MatHeaderCellDef,
-  MatHeaderRow,
-  MatHeaderRowDef,
-  MatRow,
-  MatRowDef,
-  MatTable,
-} from '@angular/material/table';
-import { MatProgressBar } from '@angular/material/progress-bar';
-import { MatTooltip } from '@angular/material/tooltip';
-import { CdkCopyToClipboard } from '@angular/cdk/clipboard';
 import {
   animate,
   state,
@@ -34,31 +18,13 @@ import {
 } from '@angular/animations';
 import { TimeAgoPipe } from '../dates/time-ago.pipe';
 import * as generated from '../graphql/generated';
+import { AppModule } from '../app.module';
 import { QueueJobsDatasource } from './queue-jobs.datasource';
 
 @Component({
   selector: 'app-queue-jobs-table',
   standalone: true,
-  imports: [
-    AsyncPipe,
-    DecimalPipe,
-    MatCell,
-    MatCellDef,
-    MatColumnDef,
-    MatHeaderCell,
-    MatHeaderRow,
-    MatHeaderRowDef,
-    MatProgressBar,
-    MatRow,
-    MatRowDef,
-    MatTable,
-    SlicePipe,
-    TimeAgoPipe,
-    TranslocoDirective,
-    MatTooltip,
-    CdkCopyToClipboard,
-    MatHeaderCellDef,
-  ],
+  imports: [AppModule, TimeAgoPipe],
   templateUrl: './queue-jobs-table.component.html',
   styleUrl: './queue-jobs-table.component.scss',
   animations: [

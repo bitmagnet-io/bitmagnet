@@ -1,38 +1,14 @@
 import { Component, inject } from '@angular/core';
 import { Apollo } from 'apollo-angular';
-import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { TranslocoService } from '@jsverse/transloco';
 import { SelectionModel } from '@angular/cdk/collections';
-import {
-  MatAnchor,
-  MatIconButton,
-  MatMiniFabButton,
-} from '@angular/material/button';
-import {
-  MatDrawer,
-  MatDrawerContainer,
-  MatDrawerContent,
-} from '@angular/material/sidenav';
-import { MatIcon } from '@angular/material/icon';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { MatTooltip } from '@angular/material/tooltip';
 import { combineLatestWith, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { AsyncPipe, DecimalPipe } from '@angular/common';
-import { MatCheckbox } from '@angular/material/checkbox';
-import {
-  MatExpansionPanel,
-  MatExpansionPanelHeader,
-  MatExpansionPanelTitle,
-} from '@angular/material/expansion';
-import { MatCardModule } from '@angular/material/card';
-import { MatProgressBar } from '@angular/material/progress-bar';
-import { MatFormField, MatLabel } from '@angular/material/form-field';
-import { MatOption } from '@angular/material/core';
-import { MatSelect } from '@angular/material/select';
 import { PaginatorComponent } from '../paginator/paginator.component';
 import { BreakpointsService } from '../layout/breakpoints.service';
 import { ErrorsService } from '../errors/errors.service';
 import { GraphQLModule } from '../graphql/graphql.module';
+import { AppModule } from '../app.module';
 import { QueueJobsTableComponent } from './queue-jobs-table.component';
 import { QueueJobsDatasource } from './queue-jobs.datasource';
 import {
@@ -47,33 +23,10 @@ import {
   selector: 'app-queue-jobs',
   standalone: true,
   imports: [
+    AppModule,
     GraphQLModule,
-    TranslocoDirective,
-    QueueJobsTableComponent,
-    MatAnchor,
-    MatDrawer,
-    MatDrawerContainer,
-    MatDrawerContent,
-    MatIcon,
-    MatIconButton,
-    RouterLink,
-    RouterLinkActive,
-    RouterOutlet,
-    MatTooltip,
-    AsyncPipe,
-    DecimalPipe,
-    MatCheckbox,
-    MatExpansionPanel,
-    MatExpansionPanelHeader,
-    MatExpansionPanelTitle,
-    MatCardModule,
-    MatProgressBar,
     PaginatorComponent,
-    MatFormField,
-    MatLabel,
-    MatOption,
-    MatSelect,
-    MatMiniFabButton,
+    QueueJobsTableComponent,
   ],
   templateUrl: './queue-jobs.component.html',
   styleUrl: './queue-jobs.component.scss',

@@ -16,7 +16,9 @@
         <mat-grid-tile [colspan]="1" [rowspan]="2">
           <mat-card class="form-timeframe">
             <mat-card-header>
-              <mat-card-title><h4>{{t('dashboard.metrics.timeframe')}}</h4></mat-card-title>
+              <mat-card-title
+                ><h4>{{ t("dashboard.metrics.timeframe") }}</h4></mat-card-title
+              >
             </mat-card-header>
             <mat-card-content>
               <mat-form-field subscriptSizing="dynamic">
@@ -25,7 +27,9 @@
                   (valueChange)="queueMetricsController.setTimeframe($event)"
                 >
                   @for (name of timeframeNames; track name) {
-                    <mat-option [value]="name">{{ t('dashboard.interval.'+name) }}</mat-option>
+                    <mat-option [value]="name">{{
+                      t("dashboard.interval." + name)
+                    }}</mat-option>
                   }
                 </mat-select>
               </mat-form-field>
@@ -105,7 +109,11 @@
         <mat-grid-tile [colspan]="1" [rowspan]="2">
           <mat-card class="form-resolution">
             <mat-card-header>
-              <mat-card-title><h4>{{t('dashboard.metrics.resolution')}}</h4></mat-card-title>
+              <mat-card-title
+                ><h4>
+                  {{ t("dashboard.metrics.resolution") }}
+                </h4></mat-card-title
+              >
             </mat-card-header>
             <mat-card-content>
               <mat-form-field
@@ -137,7 +145,9 @@
                   "
                 >
                   @for (name of resolutionNames; track name) {
-                    <mat-option [value]="name">{{ t('dashboard.interval.'+name+'s') }}</mat-option>
+                    <mat-option [value]="name">{{
+                      t("dashboard.interval." + name + "s")
+                    }}</mat-option>
                   }
                 </mat-select>
               </mat-form-field>
@@ -239,7 +249,7 @@
           <mat-card class="form-queues">
             <mat-card-header>
               <mat-card-title>
-                <h4>{{t('dashboard.queues.queue')}}</h4>
+                <h4>{{ t("dashboard.queues.queue") }}</h4>
               </mat-card-title>
             </mat-card-header>
             <mat-card-content>
@@ -252,7 +262,7 @@
                     )
                   "
                 >
-                  <mat-option value="_all">{{t('general.all')}}</mat-option>
+                  <mat-option value="_all">{{ t("general.all") }}</mat-option>
                   @for (queue of availableQueueNames; track queue) {
                     <mat-option [value]="queue">{{ queue }}</mat-option>
                   }
@@ -300,7 +310,7 @@
           <mat-card>
             <mat-card-header>
               <mat-card-title>
-                <h4>{{t('dashboard.metrics.event')}}</h4>
+                <h4>{{ t("dashboard.metrics.event") }}</h4>
               </mat-card-title>
             </mat-card-header>
             <mat-card-content>
@@ -315,7 +325,9 @@
                 >
                   <mat-option value="_all">All</mat-option>
                   @for (event of eventNames; track event) {
-                    <mat-option [value]="event">{{ t('dashboard.event.'+event) }}</mat-option>
+                    <mat-option [value]="event">{{
+                      t("dashboard.event." + event)
+                    }}</mat-option>
                   }
                 </mat-select>
               </mat-form-field>
@@ -387,7 +399,7 @@
           <mat-card class="form-refresh">
             <mat-card-header>
               <mat-card-title>
-                <h4>{{t('general.refresh')}}</h4>
+                <h4>{{ t("general.refresh") }}</h4>
               </mat-card-title>
             </mat-card-header>
             <mat-card-content>
@@ -399,7 +411,9 @@
                   "
                 >
                   @for (name of autoRefreshIntervalNames; track name) {
-                    <mat-option [value]="name">{{ t('dashboard.interval.'+name) }}</mat-option>
+                    <mat-option [value]="name">{{
+                      t("dashboard.interval." + name)
+                    }}</mat-option>
                   }
                 </mat-select>
               </mat-form-field>
@@ -432,7 +446,7 @@
           <mat-card>
             <mat-card-header>
               <mat-card-title>
-                <h4>{{t('dashboard.queues.total_counts_by_status')}}</h4>
+                <h4>{{ t("dashboard.queues.total_counts_by_status") }}</h4>
               </mat-card-title>
             </mat-card-header>
             <mat-card-content>
@@ -449,7 +463,7 @@
           <mat-card>
             <mat-card-header>
               <mat-card-title>
-                <h4>{{t('dashboard.metrics.throughput')}}</h4>
+                <h4>{{ t("dashboard.metrics.throughput") }}</h4>
               </mat-card-title>
             </mat-card-header>
             <mat-card-content>

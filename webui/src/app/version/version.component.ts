@@ -1,10 +1,9 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { MatTooltip } from '@angular/material/tooltip';
-import { TranslocoDirective } from '@jsverse/transloco';
 import { Apollo } from 'apollo-angular';
 import { map } from 'rxjs';
 import * as generated from '../graphql/generated';
 import { GraphQLModule } from '../graphql/graphql.module';
+import { AppModule } from '../app.module';
 
 const defaultVersionName = 'v-unknown';
 
@@ -12,7 +11,7 @@ const defaultVersionName = 'v-unknown';
   selector: 'app-version',
   standalone: true,
   templateUrl: './version.component.html',
-  imports: [GraphQLModule, MatTooltip, TranslocoDirective],
+  imports: [AppModule, GraphQLModule],
 })
 export class VersionComponent implements OnInit {
   private apollo = inject(Apollo);

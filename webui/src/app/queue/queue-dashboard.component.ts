@@ -1,38 +1,12 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { MatCard, MatCardContent, MatCardHeader } from '@angular/material/card';
-import { TranslocoDirective } from '@jsverse/transloco';
-import { MatIcon } from '@angular/material/icon';
-import { MatToolbar } from '@angular/material/toolbar';
-import {
-  ActivatedRoute,
-  EventType,
-  Router,
-  RouterLink,
-  RouterLinkActive,
-  RouterOutlet,
-} from '@angular/router';
+import { ActivatedRoute, EventType, Router } from '@angular/router';
 import { EMPTY, Subscription } from 'rxjs';
-import { MatAnchor } from '@angular/material/button';
-import { MatTabLink, MatTabNav, MatTabNavPanel } from '@angular/material/tabs';
+import { AppModule } from '../app.module';
 
 @Component({
   selector: 'app-queue-dashboard',
   standalone: true,
-  imports: [
-    MatCard,
-    MatCardHeader,
-    TranslocoDirective,
-    MatCardContent,
-    MatIcon,
-    MatToolbar,
-    RouterOutlet,
-    RouterLink,
-    MatAnchor,
-    RouterLinkActive,
-    MatTabNav,
-    MatTabLink,
-    MatTabNavPanel,
-  ],
+  imports: [AppModule],
   templateUrl: './queue-dashboard.component.html',
   styleUrl: './queue-dashboard.component.scss',
 })

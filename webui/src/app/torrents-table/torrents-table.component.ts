@@ -7,30 +7,12 @@ import {
   Output,
 } from '@angular/core';
 import {
-  MatCell,
-  MatCellDef,
-  MatColumnDef,
-  MatHeaderCell,
-  MatHeaderCellDef,
-  MatHeaderRow,
-  MatHeaderRowDef,
-  MatRow,
-  MatRowDef,
-  MatTable,
-} from '@angular/material/table';
-import { MatCheckbox } from '@angular/material/checkbox';
-import { MatIcon } from '@angular/material/icon';
-import { MatTooltip } from '@angular/material/tooltip';
-import {
   animate,
   state,
   style,
   transition,
   trigger,
 } from '@angular/animations';
-import { TranslocoDirective } from '@jsverse/transloco';
-import { AsyncPipe } from '@angular/common';
-import { MatProgressBar } from '@angular/material/progress-bar';
 import { SelectionModel } from '@angular/cdk/collections';
 import { BehaviorSubject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -43,31 +25,17 @@ import { contentTypeInfo } from '../taxonomy/content-types';
 import { BreakpointsService } from '../layout/breakpoints.service';
 import { TorrentChipsComponent } from '../torrent-chips/torrent-chips.component';
 import { stringParam } from '../util/query-string';
+import { AppModule } from '../app.module';
 
 @Component({
   selector: 'app-torrents-table',
   standalone: true,
   imports: [
-    MatTable,
-    MatColumnDef,
-    MatHeaderCell,
-    MatCheckbox,
-    MatHeaderCellDef,
-    MatCell,
-    MatCellDef,
-    MatIcon,
-    TimeAgoPipe,
-    MatTooltip,
-    MatHeaderRow,
-    MatRow,
-    MatRowDef,
-    MatHeaderRowDef,
-    TorrentContentComponent,
+    AppModule,
     FilesizePipe,
-    TranslocoDirective,
-    AsyncPipe,
-    MatProgressBar,
+    TimeAgoPipe,
     TorrentChipsComponent,
+    TorrentContentComponent,
   ],
   templateUrl: './torrents-table.component.html',
   styleUrl: './torrents-table.component.scss',

@@ -1,38 +1,9 @@
 import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { catchError, EMPTY, tap } from 'rxjs';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl } from '@angular/forms';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { AsyncPipe, DecimalPipe, NgOptimizedImage } from '@angular/common';
-import { CdkCopyToClipboard } from '@angular/cdk/clipboard';
-import { MatDivider } from '@angular/material/divider';
-import {
-  MatTab,
-  MatTabContent,
-  MatTabGroup,
-  MatTabLabel,
-} from '@angular/material/tabs';
-import { MatIcon } from '@angular/material/icon';
-import {
-  MatCard,
-  MatCardActions,
-  MatCardContent,
-} from '@angular/material/card';
-import { MatFormField } from '@angular/material/form-field';
-import {
-  MatChipGrid,
-  MatChipInput,
-  MatChipRemove,
-  MatChipRow,
-} from '@angular/material/chips';
-import {
-  MatAutocomplete,
-  MatAutocompleteTrigger,
-  MatOption,
-} from '@angular/material/autocomplete';
-import { MatTooltip } from '@angular/material/tooltip';
-import { MatButton } from '@angular/material/button';
-import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
-import { RouterLink } from '@angular/router';
+import { NgOptimizedImage } from '@angular/common';
+import { TranslocoService } from '@jsverse/transloco';
 import { FilesizePipe } from '../pipes/filesize.pipe';
 import * as generated from '../graphql/generated';
 import normalizeTagInput from '../util/normalizeTagInput';
@@ -41,6 +12,7 @@ import { ErrorsService } from '../errors/errors.service';
 import { BreakpointsService } from '../layout/breakpoints.service';
 import { TimeAgoPipe } from '../dates/time-ago.pipe';
 import { TorrentFilesTableComponent } from '../torrent-files-table/torrent-files-table.component';
+import { AppModule } from '../app.module';
 
 @Component({
   selector: 'app-torrent-content',
@@ -48,35 +20,11 @@ import { TorrentFilesTableComponent } from '../torrent-files-table/torrent-files
   styleUrl: './torrent-content.component.scss',
   standalone: true,
   imports: [
-    NgOptimizedImage,
-    CdkCopyToClipboard,
-    MatDivider,
-    MatTabGroup,
-    MatTab,
-    MatIcon,
-    DecimalPipe,
-    MatTabContent,
-    MatTabLabel,
-    MatCard,
-    MatFormField,
-    MatChipGrid,
-    MatChipRow,
-    ReactiveFormsModule,
-    MatAutocompleteTrigger,
-    MatChipInput,
-    MatAutocomplete,
-    MatOption,
-    MatCardContent,
-    MatCardActions,
-    MatTooltip,
-    MatButton,
+    AppModule,
     FilesizePipe,
-    TranslocoDirective,
-    AsyncPipe,
+    NgOptimizedImage,
     TimeAgoPipe,
-    MatChipRemove,
     TorrentFilesTableComponent,
-    RouterLink,
   ],
 })
 export class TorrentContentComponent {

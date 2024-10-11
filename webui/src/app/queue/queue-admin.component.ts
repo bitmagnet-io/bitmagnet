@@ -1,15 +1,13 @@
 import { Component, inject } from '@angular/core';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatAnchor } from '@angular/material/button';
-import { MatCard, MatCardContent } from '@angular/material/card';
+import { MatDialog } from '@angular/material/dialog';
+import { AppModule } from '../app.module';
 import { QueueEnqueueReprocessTorrentsBatchDialog } from './queue-enqueue-reprocess-torrents-batch-dialog.component';
 import { QueuePurgeJobsDialog } from './queue-purge-jobs-dialog.component';
-import {TranslocoDirective} from "@jsverse/transloco";
 
 @Component({
   selector: 'app-queue-admin',
   standalone: true,
-  imports: [MatDialogModule, MatAnchor, MatCardContent, MatCard, TranslocoDirective],
+  imports: [AppModule],
   templateUrl: './queue-admin.component.html',
   styleUrl: './queue-admin.component.scss',
 })

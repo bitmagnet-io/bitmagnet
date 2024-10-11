@@ -1,26 +1,13 @@
 import { Component, inject, Input, OnInit } from '@angular/core';
 import { Apollo } from 'apollo-angular';
-import { AsyncPipe, DecimalPipe, SlicePipe } from '@angular/common';
-import {
-  MatCell,
-  MatCellDef,
-  MatColumnDef,
-  MatHeaderCell,
-  MatHeaderCellDef,
-  MatHeaderRow,
-  MatHeaderRowDef,
-  MatRow,
-  MatRowDef,
-  MatTable,
-} from '@angular/material/table';
-import { MatProgressBar } from '@angular/material/progress-bar';
-import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { TranslocoService } from '@jsverse/transloco';
 import { TimeAgoPipe } from '../dates/time-ago.pipe';
 import * as generated from '../graphql/generated';
 import { ErrorsService } from '../errors/errors.service';
 import { PaginatorComponent } from '../paginator/paginator.component';
 import { QueueJobsTableComponent } from '../queue/queue-jobs-table.component';
 import { FilesizePipe } from '../pipes/filesize.pipe';
+import { AppModule } from '../app.module';
 import {
   ITorrentFilesDatasource,
   TorrentFilesDatasource,
@@ -35,25 +22,11 @@ import {
   selector: 'app-torrent-files-table',
   standalone: true,
   imports: [
-    AsyncPipe,
-    DecimalPipe,
-    MatCell,
-    MatCellDef,
-    MatColumnDef,
-    MatHeaderCell,
-    MatHeaderRow,
-    MatHeaderRowDef,
-    MatProgressBar,
-    MatRow,
-    MatRowDef,
-    MatTable,
-    SlicePipe,
-    TimeAgoPipe,
-    TranslocoDirective,
-    MatHeaderCellDef,
+    AppModule,
+    FilesizePipe,
     PaginatorComponent,
     QueueJobsTableComponent,
-    FilesizePipe,
+    TimeAgoPipe,
   ],
   templateUrl: './torrent-files-table.component.html',
   styleUrl: './torrent-files-table.component.scss',

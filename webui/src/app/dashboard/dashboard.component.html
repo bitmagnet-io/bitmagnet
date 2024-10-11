@@ -14,10 +14,10 @@
               mat-button
               routerLink="/dashboard"
               routerLinkActive
-              [routerLinkActiveOptions]="{exact: true}"
+              [routerLinkActiveOptions]="{ exact: true }"
               #linkHome="routerLinkActive"
               [class]="linkHome.isActive ? 'active' : ''"
-              ><mat-icon>dashboard</mat-icon>{{t('routes.home')}}</a
+              ><mat-icon>dashboard</mat-icon>{{ t("routes.home") }}</a
             >
           </li>
           <li>
@@ -27,7 +27,7 @@
               routerLinkActive
               #linkTorrents="routerLinkActive"
               [class]="linkTorrents.isActive ? 'active' : ''"
-              ><mat-icon svgIcon="queue" />{{ t('routes.torrents') }}</a
+              ><mat-icon svgIcon="queue" />{{ t("routes.torrents") }}</a
             >
           </li>
           <li>
@@ -37,7 +37,7 @@
               routerLinkActive
               #linkQueues="routerLinkActive"
               [class]="linkQueues.isActive ? 'active' : ''"
-              ><mat-icon svgIcon="queue" />{{ t('routes.queues') }}</a
+              ><mat-icon svgIcon="queue" />{{ t("routes.queues") }}</a
             >
           </li>
         </ul>

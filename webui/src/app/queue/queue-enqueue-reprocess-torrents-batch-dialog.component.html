@@ -1,6 +1,8 @@
 <ng-container *transloco="let t">
   <mat-card>
-    <h2 mat-dialog-title>{{t('dashboard.queues.enqueue_torrent_processing_batch')}}</h2>
+    <h2 mat-dialog-title>
+      {{ t("dashboard.queues.enqueue_torrent_processing_batch") }}
+    </h2>
     <mat-dialog-content>
       @if (stage === "PENDING") {
         <section>
@@ -10,7 +12,9 @@
               localSearchDisabled = !$event.checked;
               apisDisabled = localSearchDisabled ? true : apisDisabled
             "
-            >{{t('dashboard.queues.match_content_by_local_search')}}</mat-checkbox
+            >{{
+              t("dashboard.queues.match_content_by_local_search")
+            }}</mat-checkbox
           >
           <mat-checkbox
             [checked]="!apisDisabled"
@@ -18,21 +22,27 @@
               apisDisabled = !$event.checked;
               localSearchDisabled = apisDisabled ? localSearchDisabled : true
             "
-            >{{t('dashboard.queues.match_content_by_external_api_search')}}</mat-checkbox
+            >{{
+              t("dashboard.queues.match_content_by_external_api_search")
+            }}</mat-checkbox
           >
           <mat-checkbox
             [checked]="classifierRematch"
             (change)="classifierRematch = $event.checked"
-            >{{t('dashboard.queues.force_rematch')}}</mat-checkbox
+            >{{ t("dashboard.queues.force_rematch") }}</mat-checkbox
           >
-          <mat-checkbox [checked]="orphans" (change)="orphans = $event.checked"
-            >{{t('dashboard.queues.process_orphaned_torrents_only')}}</mat-checkbox
+          <mat-checkbox
+            [checked]="orphans"
+            (change)="orphans = $event.checked"
+            >{{
+              t("dashboard.queues.process_orphaned_torrents_only")
+            }}</mat-checkbox
           >
         </section>
       } @else if (stage === "REQUESTING") {
         <mat-spinner></mat-spinner>
       } @else if (stage === "DONE") {
-        <p>{{t('dashboard.queues.jobs_enqueued')}}</p>
+        <p>{{ t("dashboard.queues.jobs_enqueued") }}</p>
       }
     </mat-dialog-content>
     <mat-dialog-actions>
@@ -42,9 +52,11 @@
         color="warning"
         (click)="handleEnqueue()"
       >
-        {{t('dashboard.queues.enqueue_jobs')}}
+        {{ t("dashboard.queues.enqueue_jobs") }}
       </button>
-      <button mat-stroked-button (click)="dialogRef.close()">{{t('general.dismiss')}}</button>
+      <button mat-stroked-button (click)="dialogRef.close()">
+        {{ t("general.dismiss") }}
+      </button>
     </mat-dialog-actions>
   </mat-card>
 </ng-container>

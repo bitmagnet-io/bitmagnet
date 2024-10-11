@@ -1,6 +1,5 @@
 import { Component, inject, Input, OnInit } from '@angular/core';
 import { BaseChartDirective } from 'ng2-charts';
-import { MatButton } from '@angular/material/button';
 import { ChartConfiguration, ChartType } from 'chart.js';
 import { Observable } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
@@ -10,7 +9,7 @@ import { ChartAdapter } from './types';
 @Component({
   selector: 'app-chart',
   standalone: true,
-  imports: [BaseChartDirective, MatButton],
+  imports: [BaseChartDirective],
   templateUrl: './chart.component.html',
   styleUrl: './chart.component.scss',
 })

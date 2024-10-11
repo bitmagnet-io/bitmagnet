@@ -42,7 +42,7 @@ export const appConfig: ApplicationConfig = {
             label: 'Français',
           },
           {
-            id: 'jp',
+            id: 'ja',
             label: '日本語',
           },
           {

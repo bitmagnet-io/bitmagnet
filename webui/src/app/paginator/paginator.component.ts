@@ -5,31 +5,15 @@ import {
   numberAttribute,
   Output,
 } from '@angular/core';
-import { MatFormField, MatLabel } from '@angular/material/form-field';
-import { MatOption, MatSelect } from '@angular/material/select';
-import { DecimalPipe } from '@angular/common';
-import { MatIconButton } from '@angular/material/button';
-import { MatTooltip } from '@angular/material/tooltip';
-import { MatIcon } from '@angular/material/icon';
+import { AppModule } from '../app.module';
 import type { PageEvent } from './paginator.types';
-import {TranslocoDirective} from "@jsverse/transloco";
 
 @Component({
   selector: 'app-paginator',
   templateUrl: './paginator.component.html',
   standalone: true,
   styleUrls: ['./paginator.component.scss'],
-  imports: [
-    MatFormField,
-    MatSelect,
-    MatOption,
-    DecimalPipe,
-    MatIconButton,
-    MatTooltip,
-    MatIcon,
-    MatLabel,
-    TranslocoDirective,
-  ],
+  imports: [AppModule],
 })
 export class PaginatorComponent {
   @Input({ transform: numberAttribute }) page = 1;

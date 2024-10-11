@@ -63,7 +63,10 @@ export class HealthService {
 
   private watchQuery() {
     this.apollo
-      .watchQuery<generated.HealthCheckQuery, generated.HealthCheckQueryVariables>({
+      .watchQuery<
+        generated.HealthCheckQuery,
+        generated.HealthCheckQueryVariables
+      >({
         query: generated.HealthCheckDocument,
         fetchPolicy: 'no-cache',
         pollInterval,

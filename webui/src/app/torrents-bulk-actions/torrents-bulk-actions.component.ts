@@ -6,70 +6,19 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl } from '@angular/forms';
 import { catchError, EMPTY, Observable, tap } from 'rxjs';
-import {
-  MatTab,
-  MatTabContent,
-  MatTabGroup,
-  MatTabLabel,
-} from '@angular/material/tabs';
-import { MatIcon } from '@angular/material/icon';
-import {
-  MatCard,
-  MatCardActions,
-  MatCardContent,
-} from '@angular/material/card';
-import { MatFormField } from '@angular/material/form-field';
-import {
-  MatChipGrid,
-  MatChipInput,
-  MatChipRemove,
-  MatChipRow,
-} from '@angular/material/chips';
-import {
-  MatAutocomplete,
-  MatAutocompleteTrigger,
-  MatOption,
-} from '@angular/material/autocomplete';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { MatButton } from '@angular/material/button';
-import { MatTooltip } from '@angular/material/tooltip';
-import { AsyncPipe } from '@angular/common';
-import { TranslocoDirective } from '@jsverse/transloco';
-import { CdkCopyToClipboard } from '@angular/cdk/clipboard';
 import * as generated from '../graphql/generated';
 import { BreakpointsService } from '../layout/breakpoints.service';
 import { ErrorsService } from '../errors/errors.service';
 import { GraphQLService } from '../graphql/graphql.service';
+import { AppModule } from '../app.module';
 
 @Component({
   selector: 'app-torrents-bulk-actions',
   standalone: true,
-  imports: [
-    MatTabGroup,
-    MatTab,
-    MatTabLabel,
-    MatIcon,
-    MatTabContent,
-    MatCard,
-    MatFormField,
-    MatChipGrid,
-    MatChipRow,
-    ReactiveFormsModule,
-    MatAutocompleteTrigger,
-    MatChipInput,
-    MatAutocomplete,
-    MatOption,
-    MatCardActions,
-    MatButton,
-    MatTooltip,
-    MatCardContent,
-    AsyncPipe,
-    TranslocoDirective,
-    CdkCopyToClipboard,
-    MatChipRemove,
-  ],
+  imports: [AppModule],
   templateUrl: './torrents-bulk-actions.component.html',
   styleUrl: './torrents-bulk-actions.component.scss',
 })

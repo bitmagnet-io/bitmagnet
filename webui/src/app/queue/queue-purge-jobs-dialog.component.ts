@@ -1,52 +1,18 @@
 import { Component, Inject, inject } from '@angular/core';
 import { Apollo } from 'apollo-angular';
-import { TranslocoDirective } from '@jsverse/transloco';
-import {
-  MatCard,
-  MatCardActions,
-  MatCardContent,
-  MatCardHeader,
-  MatCardTitle,
-} from '@angular/material/card';
-import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
-import { MatLabel } from '@angular/material/form-field';
-import { MatCheckbox, MatCheckboxChange } from '@angular/material/checkbox';
-import {
-  MAT_DIALOG_DATA,
-  MatDialogActions,
-  MatDialogContent,
-  MatDialogRef,
-  MatDialogTitle,
-} from '@angular/material/dialog';
-import { MatButton } from '@angular/material/button';
-import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatCheckboxChange } from '@angular/material/checkbox';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { map } from 'rxjs/operators';
 import { catchError, EMPTY } from 'rxjs';
 import * as generated from '../graphql/generated';
 import { GraphQLModule } from '../graphql/graphql.module';
+import { AppModule } from '../app.module';
 import { availableQueueNames, statusNames } from './queue.constants';
 
 @Component({
   selector: 'app-queue-purge-jobs',
   standalone: true,
-  imports: [
-    GraphQLModule,
-    TranslocoDirective,
-    MatCardHeader,
-    MatCard,
-    MatCardTitle,
-    MatCardContent,
-    MatRadioGroup,
-    MatLabel,
-    MatRadioButton,
-    MatCheckbox,
-    MatCardActions,
-    MatButton,
-    MatProgressSpinner,
-    MatDialogTitle,
-    MatDialogContent,
-    MatDialogActions,
-  ],
+  imports: [AppModule, GraphQLModule],
   templateUrl: './queue-purge-jobs-dialog.component.html',
   styleUrl: './queue-purge-jobs-dialog.component.scss',
 })

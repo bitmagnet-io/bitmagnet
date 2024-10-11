@@ -5,24 +5,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { MatTableModule } from '@angular/material/table';
-import { MatSortModule } from '@angular/material/sort';
-import { AsyncPipe, DecimalPipe, KeyValuePipe } from '@angular/common';
-import { MatIcon } from '@angular/material/icon';
-import { MatIconButton, MatMiniFabButton } from '@angular/material/button';
-import { MatListItem, MatNavList } from '@angular/material/list';
-import {
-  MatDrawer,
-  MatDrawerContainer,
-  MatDrawerContent,
-} from '@angular/material/sidenav';
-import { MatToolbar } from '@angular/material/toolbar';
-import {
-  ActivatedRoute,
-  Params,
-  Router,
-  RouterLinkActive,
-} from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import {
   BehaviorSubject,
   combineLatestWith,
@@ -30,21 +13,9 @@ import {
   Subscription,
 } from 'rxjs';
 import { map } from 'rxjs/operators';
-import {
-  MatExpansionPanel,
-  MatExpansionPanelHeader,
-  MatExpansionPanelTitle,
-} from '@angular/material/expansion';
-import { MatRadioButton } from '@angular/material/radio';
-import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
-import { MatCheckbox } from '@angular/material/checkbox';
-import { MatFormField, MatLabel } from '@angular/material/form-field';
-import { MatInput } from '@angular/material/input';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { MatTooltip } from '@angular/material/tooltip';
-import { MatOption, MatSelect } from '@angular/material/select';
+import { TranslocoService } from '@jsverse/transloco';
+import { FormControl } from '@angular/forms';
 import { SelectionModel } from '@angular/cdk/collections';
-import { MatDivider } from '@angular/material/divider';
 import { Apollo } from 'apollo-angular';
 import { ErrorsService } from '../errors/errors.service';
 import {
@@ -59,6 +30,7 @@ import { BreakpointsService } from '../layout/breakpoints.service';
 import * as generated from '../graphql/generated';
 import { TorrentsBulkActionsComponent } from '../torrents-bulk-actions/torrents-bulk-actions.component';
 import { intParam, stringListParam, stringParam } from '../util/query-string';
+import { AppModule } from '../app.module';
 import {
   emptyResult,
   TorrentsSearchDatasource,
@@ -81,39 +53,11 @@ import {
   styleUrl: './torrents-search.component.scss',
   standalone: true,
   imports: [
-    MatTableModule,
-    MatSortModule,
-    AsyncPipe,
-    MatIcon,
-    MatIconButton,
-    MatLabel,
-    MatListItem,
-    MatNavList,
-    MatToolbar,
-    RouterLinkActive,
-    MatDrawerContainer,
-    MatDrawer,
-    MatDrawerContent,
-    TorrentsTableComponent,
+    AppModule,
     GraphQLModule,
     PaginatorComponent,
-    MatExpansionPanel,
-    MatExpansionPanelTitle,
-    MatExpansionPanelHeader,
-    DecimalPipe,
-    KeyValuePipe,
-    MatRadioButton,
-    TranslocoDirective,
-    MatCheckbox,
-    MatFormField,
-    MatInput,
-    ReactiveFormsModule,
-    MatTooltip,
-    MatSelect,
-    MatOption,
-    MatMiniFabButton,
-    MatDivider,
     TorrentsBulkActionsComponent,
+    TorrentsTableComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -1,37 +1,10 @@
 import { Component, inject, OnDestroy } from '@angular/core';
 import { Apollo } from 'apollo-angular';
-import {
-  MatCard,
-  MatCardActions,
-  MatCardContent,
-  MatCardFooter,
-  MatCardHeader,
-  MatCardTitle,
-} from '@angular/material/card';
-import { MatIcon } from '@angular/material/icon';
-import { TranslocoDirective } from '@jsverse/transloco';
-import { MatFormField, MatLabel } from '@angular/material/form-field';
-import { MatInput } from '@angular/material/input';
-import { MatOption, MatSelect } from '@angular/material/select';
-import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
-import { AsyncPipe } from '@angular/common';
-import {
-  MatAnchor,
-  MatButton,
-  MatIconAnchor,
-  MatIconButton,
-  MatMiniFabButton,
-} from '@angular/material/button';
-import { MatTooltip } from '@angular/material/tooltip';
-import { MatSlider, MatSliderThumb } from '@angular/material/slider';
-import { MatGridList, MatGridTile } from '@angular/material/grid-list';
-import { MatProgressBar } from '@angular/material/progress-bar';
-import { MatToolbar } from '@angular/material/toolbar';
-import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { GraphQLModule } from '../graphql/graphql.module';
 import { ChartComponent } from '../charting/chart.component';
 import { BreakpointsService } from '../layout/breakpoints.service';
 import { ErrorsService } from '../errors/errors.service';
+import { AppModule } from '../app.module';
 import {
   autoRefreshIntervalNames,
   eventNames,
@@ -46,41 +19,7 @@ import { TorrentChartAdapterTimeline } from './torrent-chart-adapter.timeline';
   standalone: true,
   templateUrl: './torrent-metrics.component.html',
   styleUrl: './torrent-metrics.component.scss',
-  imports: [
-    MatCardContent,
-    ChartComponent,
-    MatIcon,
-    MatCardTitle,
-    MatCardHeader,
-    MatCard,
-    GraphQLModule,
-    TranslocoDirective,
-    MatFormField,
-    MatLabel,
-    MatInput,
-    MatSelect,
-    MatOption,
-    MatRadioGroup,
-    MatRadioButton,
-    AsyncPipe,
-    MatMiniFabButton,
-    MatTooltip,
-    MatSlider,
-    MatSliderThumb,
-    MatIconButton,
-    MatGridList,
-    MatGridTile,
-    MatCardFooter,
-    MatCardActions,
-    MatProgressBar,
-    MatButton,
-    MatToolbar,
-    MatMenu,
-    MatMenuItem,
-    MatMenuTrigger,
-    MatAnchor,
-    MatIconAnchor,
-  ],
+  imports: [AppModule, ChartComponent, GraphQLModule],
 })
 export class TorrentMetricsComponent implements OnDestroy {
   breakpoints = inject(BreakpointsService);
