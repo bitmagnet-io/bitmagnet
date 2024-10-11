@@ -1,6 +1,7 @@
 import ar from './translations/ar.json';
 import de from './translations/de.json';
 import en from './translations/en.json';
+import es from './translations/es.json';
 import fr from './translations/fr.json';
 import jp from './translations/ja.json';
 import nl from './translations/nl.json';
@@ -12,6 +13,7 @@ export default {
   ar,
   de,
   en,
+  es,
   fr,
   jp,
   nl,

@@ -1,18 +1,22 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ChartComponent } from './chart.component';
+import {appConfig} from "../app.config";
+import {QueueChartAdapterTotals} from "../queue/queue-chart-adapter.totals";
+import {Result} from "../queue/queue-metrics.types";
 
 describe('QueueComponent', () => {
-  let component: ChartComponent;
-  let fixture: ComponentFixture<ChartComponent>;
+  let component: ChartComponent<Result>;
+  let fixture: ComponentFixture<ChartComponent<Result>>;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [ChartComponent],
-    }).compileComponents();
+    await TestBed.configureTestingModule(appConfig).compileComponents();
 
-    fixture = TestBed.createComponent(ChartComponent);
+    fixture = TestBed.createComponent(ChartComponent<Result>);
     component = fixture.componentInstance;
+    TestBed.runInInjectionContext(() => {
+      component.adapter = new QueueChartAdapterTotals()
+    })
     fixture.detectChanges();
   });
 

@@ -1,17 +1,22 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { QueuePurgeJobsDialog } from './queue-purge-jobs-dialog.component';
+import { QueuePurgeJobsDialogComponent } from './queue-purge-jobs-dialog.component';
+import {appConfig} from "../app.config";
+import {MatDialogRef} from "@angular/material/dialog";
 
-describe('QueuePurgeJobsComponent', () => {
-  let component: QueuePurgeJobsDialog;
-  let fixture: ComponentFixture<QueuePurgeJobsDialog>;
+describe('QueuePurgeJobsDialogComponent', () => {
+  let component: QueuePurgeJobsDialogComponent;
+  let fixture: ComponentFixture<QueuePurgeJobsDialogComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [QueuePurgeJobsDialog],
+      providers: [
+        ...appConfig.providers,
+        {provide: MatDialogRef, useValue: {}}
+      ]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(QueuePurgeJobsDialog);
+    fixture = TestBed.createComponent(QueuePurgeJobsDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

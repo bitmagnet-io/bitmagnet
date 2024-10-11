@@ -27,7 +27,7 @@ export class TorrentsBulkActionsComponent implements OnInit {
   private errorsService = inject(ErrorsService);
   breakpoints = inject(BreakpointsService);
 
-  @Input() selectedItems$: Observable<generated.TorrentContent[]>;
+  @Input() selectedItems$: Observable<generated.TorrentContent[]> = new Observable();
   @Output() updated = new EventEmitter<null>();
 
   readonly separatorKeysCodes = [ENTER, COMMA] as const;

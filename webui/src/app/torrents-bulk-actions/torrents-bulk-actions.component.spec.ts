@@ -1,15 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TorrentsBulkActionsComponent } from './torrents-bulk-actions.component';
+import {appConfig} from "../app.config";
 
 describe('TorrentsBulkActionsComponent', () => {
   let component: TorrentsBulkActionsComponent;
   let fixture: ComponentFixture<TorrentsBulkActionsComponent>;
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [TorrentsBulkActionsComponent],
-    }).compileComponents();
+    await TestBed.configureTestingModule(appConfig).compileComponents();
 
     fixture = TestBed.createComponent(TorrentsBulkActionsComponent);
     component = fixture.componentInstance;

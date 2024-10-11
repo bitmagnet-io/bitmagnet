@@ -1,17 +1,25 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { QueueEnqueueReprocessTorrentsBatchDialog } from './queue-enqueue-reprocess-torrents-batch-dialog.component';
+import { QueueEnqueueReprocessTorrentsBatchDialogComponent } from './queue-enqueue-reprocess-torrents-batch-dialog.component';
+import {appConfig} from "../app.config";
+import {AppModule} from "../app.module";
+import {DialogConfig, DialogRef} from "@angular/cdk/dialog";
+import {OverlayRef} from "@angular/cdk/overlay";
+import {MatDialogRef} from "@angular/material/dialog";
 
 describe('QueueEnqueueReprocessTorrentsBatchDialogComponent', () => {
-  let component: QueueEnqueueReprocessTorrentsBatchDialog;
-  let fixture: ComponentFixture<QueueEnqueueReprocessTorrentsBatchDialog>;
+  let component: QueueEnqueueReprocessTorrentsBatchDialogComponent;
+  let fixture: ComponentFixture<QueueEnqueueReprocessTorrentsBatchDialogComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [QueueEnqueueReprocessTorrentsBatchDialog],
+      providers: [
+        ...appConfig.providers,
+        {provide: MatDialogRef, useValue: {}}
+      ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(QueueEnqueueReprocessTorrentsBatchDialog);
+    fixture = TestBed.createComponent(QueueEnqueueReprocessTorrentsBatchDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

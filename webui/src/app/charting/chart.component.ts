@@ -19,7 +19,7 @@ export class ChartComponent<Data = unknown, Type extends ChartType = ChartType>
   private themeInfo = inject(ThemeInfoService);
   private transloco = inject(TranslocoService);
 
-  @Input() $data: Observable<Data>;
+  @Input() $data: Observable<Data> = new Observable();
   @Input() adapter: ChartAdapter<Data, Type>;
   @Input() width: number = 500;
   @Input() height: number = 500;

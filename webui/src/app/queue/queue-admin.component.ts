@@ -1,8 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { AppModule } from '../app.module';
-import { QueueEnqueueReprocessTorrentsBatchDialog } from './queue-enqueue-reprocess-torrents-batch-dialog.component';
-import { QueuePurgeJobsDialog } from './queue-purge-jobs-dialog.component';
+import { QueueEnqueueReprocessTorrentsBatchDialogComponent } from './queue-enqueue-reprocess-torrents-batch-dialog.component';
+import { QueuePurgeJobsDialogComponent } from './queue-purge-jobs-dialog.component';
 
 @Component({
   selector: 'app-queue-admin',
@@ -15,10 +15,10 @@ export class QueueAdminComponent {
   readonly dialog = inject(MatDialog);
 
   openDialogPurgeJobs() {
-    this.dialog.open(QueuePurgeJobsDialog);
+    this.dialog.open(QueuePurgeJobsDialogComponent);
   }
 
   openDialogEnqueueReprocessTorrentsBatch() {
-    this.dialog.open(QueueEnqueueReprocessTorrentsBatchDialog);
+    this.dialog.open(QueueEnqueueReprocessTorrentsBatchDialogComponent);
   }
 }

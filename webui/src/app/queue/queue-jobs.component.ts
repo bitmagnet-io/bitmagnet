@@ -24,7 +24,6 @@ import {
   standalone: true,
   imports: [
     AppModule,
-    GraphQLModule,
     PaginatorComponent,
     QueueJobsTableComponent,
   ],

@@ -10,15 +10,15 @@ import { AppModule } from '../app.module';
 import { availableQueueNames, statusNames } from './queue.constants';
 
 @Component({
-  selector: 'app-queue-purge-jobs',
+  selector: 'app-queue-purge-jobs-dialog',
   standalone: true,
   imports: [AppModule, GraphQLModule],
   templateUrl: './queue-purge-jobs-dialog.component.html',
   styleUrl: './queue-purge-jobs-dialog.component.scss',
 })
-export class QueuePurgeJobsDialog {
+export class QueuePurgeJobsDialogComponent {
   apollo = inject(Apollo);
-  readonly dialogRef = inject(MatDialogRef<QueuePurgeJobsDialog>);
+  readonly dialogRef = inject(MatDialogRef<QueuePurgeJobsDialogComponent>);
 
   queues?: string[];
   statuses?: generated.QueueJobStatus[];

@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HealthWidgetComponent } from './health-widget.component';
+import {appConfig} from "../app.config";
+import {HealthModule} from "./health.module";
 
 describe('HealthComponent', () => {
   let component: HealthWidgetComponent;
@@ -8,7 +10,8 @@ describe('HealthComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HealthWidgetComponent],
+      ...appConfig,
+      imports: [HealthModule]
     }).compileComponents();
 
     fixture = TestBed.createComponent(HealthWidgetComponent);

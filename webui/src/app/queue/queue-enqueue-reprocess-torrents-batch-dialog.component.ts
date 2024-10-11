@@ -5,18 +5,18 @@ import * as generated from '../graphql/generated';
 import { GraphQLModule } from '../graphql/graphql.module';
 import { AppModule } from '../app.module';
 import { availableQueueNames, statusNames } from './queue.constants';
-import { QueuePurgeJobsDialog } from './queue-purge-jobs-dialog.component';
+import { QueuePurgeJobsDialogComponent } from './queue-purge-jobs-dialog.component';
 
 @Component({
   selector: 'app-queue-enqueue-reprocess-torrents-batch-dialog',
   standalone: true,
-  imports: [AppModule, GraphQLModule],
+  imports: [AppModule],
   templateUrl: './queue-enqueue-reprocess-torrents-batch-dialog.component.html',
   styleUrl: './queue-enqueue-reprocess-torrents-batch-dialog.component.scss',
 })
-export class QueueEnqueueReprocessTorrentsBatchDialog {
+export class QueueEnqueueReprocessTorrentsBatchDialogComponent {
   apollo = inject(Apollo);
-  readonly dialogRef = inject(MatDialogRef<QueuePurgeJobsDialog>);
+  readonly dialogRef = inject(MatDialogRef<QueuePurgeJobsDialogComponent>);
 
   protected readonly availableQueueNames = availableQueueNames;
   protected readonly statusNames = statusNames;

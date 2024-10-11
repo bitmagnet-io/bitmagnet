@@ -25,11 +25,13 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { RouterModule } from '@angular/router';
 import { TranslocoModule } from '@jsverse/transloco';
+import {GraphQLModule} from "./graphql/graphql.module";
 
 @NgModule({
   exports: [
     ClipboardModule,
     CommonModule,
+    GraphQLModule,
     MatAutocompleteModule,
     MatButtonModule,
     MatCardModule,

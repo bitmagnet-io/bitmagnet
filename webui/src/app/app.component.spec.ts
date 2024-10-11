@@ -1,10 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
+import {appConfig} from "./app.config";
+import {TranslocoModule} from "@jsverse/transloco";
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppComponent],
+      ...appConfig,
+      imports: [AppComponent, TranslocoModule],
     }).compileComponents();
   });
 
@@ -18,14 +21,5 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     expect(app.title).toEqual('bitmagnet');
-  });
-
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain(
-      'Hello, bitmagnet',
-    );
   });
 });

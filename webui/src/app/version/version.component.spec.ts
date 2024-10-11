@@ -4,6 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 // import { StatusModule } from '../status.module';
 import { GraphQLModule } from '../graphql/graphql.module';
 import { VersionComponent } from './version.component';
+import {appConfig} from "../app.config";
 
 describe('VersionComponent', () => {
   let component: VersionComponent;
@@ -11,8 +12,8 @@ describe('VersionComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      ...appConfig,
       imports: [GraphQLModule],
-      declarations: [VersionComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(VersionComponent);
