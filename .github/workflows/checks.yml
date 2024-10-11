@@ -32,6 +32,8 @@ jobs:
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - uses: browser-actions/setup-chrome@v1
+        with:
+          install-chromedriver: true
       - name: Install web UI
         run: |
           nix develop --ignore-environment --command task install-webui
@@ -39,7 +41,7 @@ jobs:
         run: |
           nix develop --ignore-environment --keep PATH --keep HOME --keep CHROME_BIN . --command task test
         env:
-          CHROME_BIN: chrome
+          CHROME_BIN: chromedriver
 
   # This job runs all code generations and builds the WebUI, to check that everything is correctly committed
   generated:
