@@ -75,8 +75,7 @@ func NewHandler(checker Checker, options ...HandlerOption) http.HandlerFunc {
 		// Write HTTP response
 		disableResponseCache(w)
 		statusCode := mapHTTPStatusCode(result.Status, cfg.statusCodeUp, cfg.statusCodeDown)
-		//nolint:errcheck
-		cfg.resultWriter.Write(&result, statusCode, w, r)
+		_ = cfg.resultWriter.Write(&result, statusCode, w, r)
 	}
 }
 
