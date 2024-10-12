@@ -5,11 +5,11 @@
 @use "./app/health/health-widget-component.theme";
 @use "./app/layout/layout-component.theme";
 @use "./app/dashboard/dashboard-component.theme";
-@use "./app/queue/queue-visualize-component.theme";
+@use "./app/dashboard/queue/queue-visualize-component.theme";
 @use "./app/themes/theme-emitter-component.theme";
-@use "./app/torrent-content/torrent-content-component.theme";
-@use "./app/torrents-search/torrents-search-component.theme";
-@use "./app/torrents-table/torrents-table-component.theme";
+@use "app/torrents/torrent-content-component.theme";
+@use "app/torrents/torrents-search-component.theme";
+@use "app/torrents/torrents-table-component.theme";
 
 @use "app/themes/classic-theme";
 @use "app/themes/tundra-theme";

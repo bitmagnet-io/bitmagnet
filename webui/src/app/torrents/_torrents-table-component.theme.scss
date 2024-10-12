@@ -1,0 +1,9 @@
+@use "../../../node_modules/@angular/material/index" as mat;
+
+@mixin theme($theme) {
+  .mat-column-magnet {
+    .mat-icon {
+      fill: mat.get-theme-color($theme, primary, 60);
+    }
+  }
+}

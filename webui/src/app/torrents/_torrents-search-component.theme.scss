@@ -1,0 +1,47 @@
+@use "../../../node_modules/@angular/material/index" as mat;
+
+@mixin theme($theme) {
+  .drawer-scroll-wrapper {
+    background-color: rgba(
+      mat.get-theme-color($theme, primary-container),
+      0.75
+    );
+  }
+  .drawer-content {
+    @media (pointer: fine) {
+      &::-webkit-scrollbar-thumb {
+        background-color: mat.get-theme-color($theme, primary);
+      }
+    }
+  }
+  .panel-content-type {
+    li {
+      &.active {
+        color: mat.get-theme-color($theme, secondary);
+      }
+      &:hover:not(.active) {
+        color: mat.get-theme-color($theme, tertiary);
+      }
+    }
+  }
+  .filtered {
+    .mat-mdc-checkbox-checked {
+      .mat-internal-form-field {
+        color: mat.get-theme-color($theme, secondary);
+      }
+    }
+    .mat-mdc-checkbox:hover:not(.mat-mdc-checkbox-checked) {
+      .mat-internal-form-field {
+        color: mat.get-theme-color($theme, tertiary);
+      }
+    }
+  }
+  .unfiltered {
+    --mdc-checkbox-selected-icon-color: lightgray;
+    .mat-mdc-checkbox:hover {
+      .mat-internal-form-field {
+        color: mat.get-theme-color($theme, tertiary);
+      }
+    }
+  }
+}

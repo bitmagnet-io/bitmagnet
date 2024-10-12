@@ -14,14 +14,14 @@ export const routes: Routes = [
       {
         path: "",
         loadComponent: () =>
-          import("./torrents-search/torrents-search.component").then(
+          import("./torrents/torrents-search.component").then(
             (c) => c.TorrentsSearchComponent,
           ),
       },
       {
         path: "permalink/:infoHash",
         loadComponent: () =>
-          import("./torrent-permalink/torrent-permalink.component").then(
+          import("./torrents/torrent-permalink.component").then(
             (c) => c.TorrentPermalinkComponent,
           ),
       },
@@ -44,35 +44,35 @@ export const routes: Routes = [
       {
         path: "torrents",
         loadComponent: () =>
-          import("./torrents-dashboard/torrents-dashboard.component").then(
+          import("./dashboard/torrents/torrents-dashboard.component").then(
             (c) => c.TorrentsDashboardComponent,
           ),
       },
       {
         path: "queues",
         loadComponent: () =>
-          import("./queue/queue-dashboard.component").then(
+          import("./dashboard/queue/queue-dashboard.component").then(
             (c) => c.QueueDashboardComponent,
           ),
         children: [
           {
             path: "visualize",
             loadComponent: () =>
-              import("./queue/queue-visualize.component").then(
+              import("./dashboard/queue/queue-visualize.component").then(
                 (c) => c.QueueVisualizeComponent,
               ),
           },
           {
             path: "jobs",
             loadComponent: () =>
-              import("./queue/queue-jobs.component").then(
+              import("./dashboard/queue/queue-jobs.component").then(
                 (c) => c.QueueJobsComponent,
               ),
           },
           {
             path: "admin",
             loadComponent: () =>
-              import("./queue/queue-admin.component").then(
+              import("./dashboard/queue/queue-admin.component").then(
                 (c) => c.QueueAdminComponent,
               ),
           },
