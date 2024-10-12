@@ -27,6 +27,7 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.61
+          args: --timeout=10m
 
   test:
     runs-on: ubuntu-latest
