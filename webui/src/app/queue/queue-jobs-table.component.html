@@ -12,7 +12,7 @@
     class="table-results"
   >
     <ng-container matColumnDef="id">
-      <th mat-header-cell *matHeaderCellDef>{{ t("general.id") }}</th>
+      <th mat-header-cell *matHeaderCellDef>ID</th>
       <td
         mat-cell
         *matCellDef="let i"
@@ -111,7 +111,7 @@
           "
         >
           <p>
-            <strong>{{ t("general.id") }}:</strong>&nbsp;<span
+            <strong>ID:</strong>&nbsp;<span
               class="copy"
               [matTooltip]="t('torrents.copy_to_clipboard')"
               [cdkCopyToClipboard]="item(i).id"

@@ -95,17 +95,21 @@
               </section>
             } @else {
               <section class="unfiltered">
-                @for (agg of facet.aggregations; track agg.value) {
-                  <mat-checkbox
-                    checked="true"
-                    (change)="controller.activateFilter(facet, agg.value)"
-                  >
-                    {{ agg.label }}
-                    <small
-                      >{{ agg.isEstimate ? "~" : ""
-                      }}{{ agg.count | number }}</small
+                @if (facet.aggregations.length) {
+                  @for (agg of facet.aggregations; track agg.value) {
+                    <mat-checkbox
+                      checked="true"
+                      (change)="controller.activateFilter(facet, agg.value)"
                     >
-                  </mat-checkbox>
+                      {{ agg.label }}
+                      <small
+                      >{{ agg.isEstimate ? "~" : ""
+                        }}{{ agg.count | number }}</small
+                      >
+                    </mat-checkbox>
+                  }
+                } @else {
+                  {{t('general.none')}}
                 }
               </section>
             }
