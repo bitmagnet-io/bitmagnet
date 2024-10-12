@@ -67,12 +67,12 @@
     >
       <mat-icon>apparel</mat-icon>
     </button>
-    <mat-menu #themesMenu="matMenu">
+    <mat-menu #themesMenu="matMenu" class="layout-header-menu">
       @for (th of themeManager.themes; track th.key) {
         <a
           mat-menu-item
           (click)="themeManager.setTheme(th.key)"
-          [disabled]="th.key === themeManager.selectedTheme"
+          [class]="th.key === themeManager.selectedTheme ? 'active' : ''"
           ><mat-icon>{{ th.dark ? "dark_mode" : "light_mode" }}</mat-icon
           >{{ th.label }}</a
         >
@@ -85,13 +85,14 @@
     >
       <mat-icon>translate</mat-icon>
     </button>
-    <mat-menu #languagesMenu="matMenu">
+    <mat-menu #languagesMenu="matMenu" class="layout-header-menu">
       @for (l of translateManager.availableLanguages; track l.id) {
         <a
           mat-menu-item
           (click)="translateManager.setLanguage(l.id)"
           [matTooltip]="t('languages.' + l.id)"
           matTooltipShowDelay="500"
+          [class]="l.id === translateManager.getPreferredLanguage() ? 'active' : ''"
           >{{ l.label }}</a
         >
       }
@@ -103,7 +104,7 @@
     >
       <mat-icon svgIcon="external-link" />
     </button>
-    <mat-menu #externalLinksMenu="matMenu">
+    <mat-menu #externalLinksMenu="matMenu" class="layout-header-menu">
       <a mat-menu-item href="https://bitmagnet.io" target="_blank"
         >bitmagnet.io</a
       >

@@ -47,3 +47,9 @@
 .app-content {
   z-index: 1;
 }
+
+.layout-header-menu {
+  a.active {
+    font-weight: bold;
+  }
+}

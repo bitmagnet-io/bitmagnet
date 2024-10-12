@@ -38,7 +38,16 @@
       }
     }
   }
-  a {
-    color: mat.get-theme-color($theme, primary, 60);
+  .layout-header-menu {
+    a {
+      color: mat.get-theme-color($theme, primary, 60);
+      &.active {
+        @if mat.get-theme-type($theme) == dark {
+          color: mat.get-theme-color($theme, primary, 80);
+        } @else {
+          color: mat.get-theme-color($theme, primary, 40);
+        }
+      }
+    }
   }
 }
