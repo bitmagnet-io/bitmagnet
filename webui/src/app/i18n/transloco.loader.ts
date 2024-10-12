@@ -9,7 +9,7 @@ export class TranslocoImportLoader implements TranslocoLoader {
       const tr = i18n[lang as keyof typeof i18n] as Translation;
       return stripMissing(tr);
     } else {
-      return Promise.reject(`Translation not found: ${lang}`);
+      return Promise.reject(new Error(`Translation not found: ${lang}`));
     }
   }
 }

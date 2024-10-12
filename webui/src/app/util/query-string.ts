@@ -17,7 +17,7 @@ export const stringParam = (
   key: string,
 ): string | undefined => {
   return typeof params[key] === "string"
-    ? decodeURIComponent(params[key] as string) || undefined
+    ? decodeURIComponent(params[key]) || undefined
     : undefined;
 };
 

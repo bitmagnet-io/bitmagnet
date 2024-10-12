@@ -81,7 +81,9 @@ export class TorrentsBulkActionsComponent implements OnInit {
     if (!infoHashes.length) {
       return;
     }
-    this.newTagCtrl.value && this.addTag(this.newTagCtrl.value);
+    if (this.newTagCtrl.value) {
+      this.addTag(this.newTagCtrl.value);
+    }
     return this.graphQLService
       .torrentPutTags({
         infoHashes,
@@ -106,7 +108,9 @@ export class TorrentsBulkActionsComponent implements OnInit {
     if (!infoHashes.length) {
       return;
     }
-    this.newTagCtrl.value && this.addTag(this.newTagCtrl.value);
+    if (this.newTagCtrl.value) {
+      this.addTag(this.newTagCtrl.value);
+    }
     return this.graphQLService
       .torrentSetTags({
         infoHashes,
@@ -131,7 +135,9 @@ export class TorrentsBulkActionsComponent implements OnInit {
     if (!infoHashes.length) {
       return;
     }
-    this.newTagCtrl.value && this.addTag(this.newTagCtrl.value);
+    if (this.newTagCtrl.value) {
+      this.addTag(this.newTagCtrl.value);
+    }
     return this.graphQLService
       .torrentDeleteTags({
         infoHashes,

@@ -95,6 +95,7 @@ export class QueueJobsTableComponent implements OnInit {
   beautifyPayload(payload: string): string {
     try {
       return JSON.stringify(JSON.parse(payload), null, 2);
+      //eslint-disable-next-line  @typescript-eslint/no-unused-vars
     } catch (e) {
       return payload;
     }
