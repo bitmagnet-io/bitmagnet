@@ -22,6 +22,11 @@ jobs:
       - name: Run linters
         run: |
           nix develop --ignore-environment --keep HOME . --command task lint
+      # Adding golang-ci lint as a separate step as the Nix package is currently broken
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.61
 
   test:
     runs-on: ubuntu-latest
