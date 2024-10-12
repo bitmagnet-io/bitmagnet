@@ -42,6 +42,10 @@ export const appConfig: ApplicationConfig = {
             label: "Français",
           },
           {
+            id: "hi",
+            label: "हिन्दी",
+          },
+          {
             id: "ja",
             label: "日本語",
           },
@@ -50,8 +54,16 @@ export const appConfig: ApplicationConfig = {
             label: "Nederlands",
           },
           {
+            id: "pt",
+            label: "Português",
+          },
+          {
             id: "ru",
             label: "Русский",
+          },
+          {
+            id: "tr",
+            label: "Türkçe",
           },
           {
             id: "uk",
