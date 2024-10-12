@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 
-import { appConfig } from "../app.config";
+import { appConfig } from "../../app.config";
 import { QueueJobsComponent } from "./queue-jobs.component";
 
 describe("QueueJobsComponent", () => {

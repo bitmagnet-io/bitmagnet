@@ -2,11 +2,11 @@ import { Component, inject, OnInit } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { Apollo } from "apollo-angular";
 import * as generated from "../graphql/generated";
-import { TorrentContentComponent } from "./torrent-content.component";
 import { GraphQLModule } from "../graphql/graphql.module";
-import { contentTypeInfo } from "../taxonomy/content-types";
-import { TorrentChipsComponent } from "./torrent-chips.component";
 import { AppModule } from "../app.module";
+import { TorrentContentComponent } from "./torrent-content.component";
+import { contentTypeInfo } from "./content-types";
+import { TorrentChipsComponent } from "./torrent-chips.component";
 
 @Component({
   selector: "app-torrent-permalink",

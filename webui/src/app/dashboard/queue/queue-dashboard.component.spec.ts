@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 
 import { MatIconRegistry } from "@angular/material/icon";
 import { DomSanitizer } from "@angular/platform-browser";
-import { appConfig } from "../app.config";
+import { appConfig } from "../../app.config";
 import { QueueDashboardComponent } from "./queue-dashboard.component";
 
 describe("QueueCardComponent", () => {

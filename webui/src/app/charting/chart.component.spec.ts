@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 
 import { appConfig } from "../app.config";
-import { QueueChartAdapterTotals } from "../queue/queue-chart-adapter.totals";
-import { Result } from "../queue/queue-metrics.types";
+import { QueueChartAdapterTotals } from "../dashboard/queue/queue-chart-adapter.totals";
+import { Result } from "../dashboard/queue/queue-metrics.types";
 import { ChartComponent } from "./chart.component";
 
 describe("QueueComponent", () => {

@@ -92,7 +92,9 @@
           (click)="translateManager.setLanguage(l.id)"
           [matTooltip]="t('languages.' + l.id)"
           matTooltipShowDelay="500"
-          [class]="l.id === translateManager.getPreferredLanguage() ? 'active' : ''"
+          [class]="
+            l.id === translateManager.getPreferredLanguage() ? 'active' : ''
+          "
           >{{ l.label }}</a
         >
       }

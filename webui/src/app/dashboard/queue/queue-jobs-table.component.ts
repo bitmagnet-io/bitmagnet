@@ -16,7 +16,7 @@ import {
   transition,
   trigger,
 } from "@angular/animations";
-import { TimeAgoPipe } from "../../dates/time-ago.pipe";
+import { TimeAgoPipe } from "../../pipes/time-ago.pipe";
 import * as generated from "../../graphql/generated";
 import { AppModule } from "../../app.module";
 import { QueueJobsDatasource } from "./queue-jobs.datasource";

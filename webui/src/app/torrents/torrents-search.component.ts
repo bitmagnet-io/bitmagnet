@@ -18,19 +18,19 @@ import { FormControl } from "@angular/forms";
 import { SelectionModel } from "@angular/cdk/collections";
 import { Apollo } from "apollo-angular";
 import { ErrorsService } from "../errors/errors.service";
+import { GraphQLModule } from "../graphql/graphql.module";
+import { PaginatorComponent } from "../paginator/paginator.component";
+import { BreakpointsService } from "../layout/breakpoints.service";
+import * as generated from "../graphql/generated";
+import { intParam, stringListParam, stringParam } from "../util/query-string";
+import { AppModule } from "../app.module";
+import { TorrentsBulkActionsComponent } from "./torrents-bulk-actions.component";
+import { contentTypeList, contentTypeMap } from "./content-types";
 import {
   allColumns,
   compactColumns,
   TorrentsTableComponent,
 } from "./torrents-table.component";
-import { GraphQLModule } from "../graphql/graphql.module";
-import { PaginatorComponent } from "../paginator/paginator.component";
-import { contentTypeList, contentTypeMap } from "../taxonomy/content-types";
-import { BreakpointsService } from "../layout/breakpoints.service";
-import * as generated from "../graphql/generated";
-import { TorrentsBulkActionsComponent } from "./torrents-bulk-actions.component";
-import { intParam, stringListParam, stringParam } from "../util/query-string";
-import { AppModule } from "../app.module";
 import {
   emptyResult,
   TorrentsSearchDatasource,

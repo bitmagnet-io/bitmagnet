@@ -10,9 +10,9 @@ import normalizeTagInput from "../util/normalizeTagInput";
 import { GraphQLService } from "../graphql/graphql.service";
 import { ErrorsService } from "../errors/errors.service";
 import { BreakpointsService } from "../layout/breakpoints.service";
-import { TimeAgoPipe } from "../dates/time-ago.pipe";
-import { TorrentFilesTableComponent } from "./torrent-files-table.component";
+import { TimeAgoPipe } from "../pipes/time-ago.pipe";
 import { AppModule } from "../app.module";
+import { TorrentFilesTableComponent } from "./torrent-files-table.component";
 
 @Component({
   selector: "app-torrent-content",

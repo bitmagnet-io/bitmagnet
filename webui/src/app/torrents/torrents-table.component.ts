@@ -17,15 +17,15 @@ import { SelectionModel } from "@angular/cdk/collections";
 import { BehaviorSubject } from "rxjs";
 import { ActivatedRoute, Router } from "@angular/router";
 import { FilesizePipe } from "../pipes/filesize.pipe";
-import { TorrentContentComponent } from "./torrent-content.component";
-import { TimeAgoPipe } from "../dates/time-ago.pipe";
+import { TimeAgoPipe } from "../pipes/time-ago.pipe";
 import * as generated from "../graphql/generated";
-import { TorrentsSearchDatasource } from "./torrents-search.datasource";
-import { contentTypeInfo } from "../taxonomy/content-types";
 import { BreakpointsService } from "../layout/breakpoints.service";
-import { TorrentChipsComponent } from "./torrent-chips.component";
 import { stringParam } from "../util/query-string";
 import { AppModule } from "../app.module";
+import { TorrentsSearchDatasource } from "./torrents-search.datasource";
+import { contentTypeInfo } from "./content-types";
+import { TorrentChipsComponent } from "./torrent-chips.component";
+import { TorrentContentComponent } from "./torrent-content.component";
 
 @Component({
   selector: "app-torrents-table",

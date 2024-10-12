@@ -1,7 +1,7 @@
 import { inject, Pipe, PipeTransform } from "@angular/core";
 import { TranslocoService } from "@jsverse/transloco";
-import { formatTimeAgo } from "./dates.utils";
-import { DateType } from "./dates.types";
+import { formatTimeAgo } from "../dates/dates.utils";
+import { DateType } from "../dates/dates.types";
 
 @Pipe({
   name: "timeAgo",

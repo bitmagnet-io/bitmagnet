@@ -103,13 +103,13 @@
                     >
                       {{ agg.label }}
                       <small
-                      >{{ agg.isEstimate ? "~" : ""
+                        >{{ agg.isEstimate ? "~" : ""
                         }}{{ agg.count | number }}</small
                       >
                     </mat-checkbox>
                   }
                 } @else {
-                  {{t('general.none')}}
+                  {{ t("general.none") }}
                 }
               </section>
             }

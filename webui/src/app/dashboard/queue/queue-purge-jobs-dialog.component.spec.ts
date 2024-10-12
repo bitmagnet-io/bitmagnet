@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 
 import { MatDialogRef } from "@angular/material/dialog";
-import { appConfig } from "../app.config";
+import { appConfig } from "../../app.config";
 import { QueuePurgeJobsDialogComponent } from "./queue-purge-jobs-dialog.component";
 
 describe("QueuePurgeJobsDialogComponent", () => {
