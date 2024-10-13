@@ -90,7 +90,8 @@
         <a
           mat-menu-item
           (click)="translateManager.setLanguage(l.id)"
-          [matTooltip]="t('languages.' + l.id)"
+          [matTooltip]="l.id === translateManager.getPreferredLanguage() ? undefined : t('languages.' + l.id)"
+          matTooltipPosition="right"
           matTooltipShowDelay="500"
           [class]="
             l.id === translateManager.getPreferredLanguage() ? 'active' : ''
