@@ -20,6 +20,7 @@
         cursor: default;
         mat-icon {
           color: mat.get-theme-color($theme, primary, 40);
+          fill: mat.get-theme-color($theme, primary, 40);
         }
       }
       &:hover:not(.active) {

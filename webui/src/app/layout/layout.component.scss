@@ -41,6 +41,10 @@
     a {
       margin-right: 10px;
     }
+    mat-icon[ng-reflect-svg-icon="magnet"] {
+      margin-top: -4px;
+      overflow: visible;
+    }
   }
 }
 
