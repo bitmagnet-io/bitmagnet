@@ -16,7 +16,7 @@ $_palettes: (
     40: #4a529c,
     50: #5963b0,
     60: #6a75b6,
-    70: #7181C3,
+    70: #7181c3,
     80: #8591cd,
     90: #99a1d7,
     95: #adb1e1,
@@ -34,7 +34,7 @@ $_palettes: (
     40: #666628,
     50: #7a7a30,
     60: #8e8e39,
-    70: #A09F44,
+    70: #a09f44,
     80: #b3b355,
     90: #c7c766,
     95: #dbdb77,
@@ -186,12 +186,32 @@ $theme: map.merge(
 );
 
 @mixin theme-vars {
-  --mat-sidenav-content-background-color: #{mat.get-theme-color($theme, primary, 0)};
-  --mat-sidenav-container-background-color: #{mat.get-theme-color($theme, primary, 0)};
+  --mat-sidenav-content-background-color: #{mat.get-theme-color(
+      $theme,
+      primary,
+      0
+    )};
+  --mat-sidenav-container-background-color: #{mat.get-theme-color(
+      $theme,
+      primary,
+      0
+    )};
   --mat-app-background-color: #{mat.get-theme-color($theme, primary, 0)};
   --mat-app-background: #{mat.get-theme-color($theme, primary, 0)};
   --mat-table-background-color: #{mat.get-theme-color($theme, primary, 10)};
-  --mat-expansion-container-background-color: #{mat.get-theme-color($theme, primary, 10)};
-  --mdc-elevated-card-container-color: #{mat.get-theme-color($theme, primary, 10)};
-  --mat-toolbar-container-background-color: #{mat.get-theme-color($theme, primary, 20)};
+  --mat-expansion-container-background-color: #{mat.get-theme-color(
+      $theme,
+      primary,
+      10
+    )};
+  --mdc-elevated-card-container-color: #{mat.get-theme-color(
+      $theme,
+      primary,
+      10
+    )};
+  --mat-toolbar-container-background-color: #{mat.get-theme-color(
+      $theme,
+      primary,
+      20
+    )};
 }

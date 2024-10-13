@@ -188,22 +188,50 @@ $theme: map.merge(
 @mixin clean-theme-vars {
   --mat-app-background-color: #{mat.get-theme-color($theme, neutral, 98)};
   --mat-app-background: #{mat.get-theme-color($theme, neutral, 98)};
-  --mat-expansion-container-background-color: #{mat.get-theme-color($theme, neutral, 95)};
+  --mat-expansion-container-background-color: #{mat.get-theme-color(
+      $theme,
+      neutral,
+      95
+    )};
   --mat-expansion-container-shape: 2px;
   --mat-menu-container-color: #{mat.get-theme-color($theme, neutral, 95)};
-  --mat-sidenav-container-background-color: #{mat.get-theme-color($theme, neutral, 98)};
-  --mat-sidenav-content-background-color: #{mat.get-theme-color($theme, neutral, 98)};
+  --mat-sidenav-container-background-color: #{mat.get-theme-color(
+      $theme,
+      neutral,
+      98
+    )};
+  --mat-sidenav-content-background-color: #{mat.get-theme-color(
+      $theme,
+      neutral,
+      98
+    )};
   --mat-table-background-color: #{mat.get-theme-color($theme, neutral, 95)};
   --mdc-chip-container-shape-radius: 4px;
   --mdc-dialog-container-shape: 6px;
-  --mdc-elevated-card-container-color: #{mat.get-theme-color($theme, neutral, 95)};
+  --mdc-elevated-card-container-color: #{mat.get-theme-color(
+      $theme,
+      neutral,
+      95
+    )};
   --mdc-elevated-card-container-shape: 6px;
   --mdc-fab-small-container-color: #{mat.get-theme-color($theme, neutral, 90)};
   --mdc-fab-small-container-elevation-shadow: none;
   --mdc-fab-small-container-shape: 4px;
-  --mdc-fab-small-focus-container-elevation-shadow: 1px 1px 2px #{mat.get-theme-color($theme, neutral, 80)};
-  --mdc-fab-small-hover-container-elevation-shadow: 1px 1px 2px #{mat.get-theme-color($theme, neutral, 70)};
-  --mdc-filled-text-field-container-color: #{mat.get-theme-color($theme, neutral, 95)};
+  --mdc-fab-small-focus-container-elevation-shadow: 1px 1px 2px #{mat.get-theme-color(
+      $theme,
+      neutral,
+      80
+    )};
+  --mdc-fab-small-hover-container-elevation-shadow: 1px 1px 2px #{mat.get-theme-color(
+      $theme,
+      neutral,
+      70
+    )};
+  --mdc-filled-text-field-container-color: #{mat.get-theme-color(
+      $theme,
+      neutral,
+      95
+    )};
   --mdc-linear-progress-track-color: #{mat.get-theme-color($theme, neutral, 95)};
   --mdc-outlined-button-container-shape: 6px;
   --mdc-text-button-container-shape: 4px;
