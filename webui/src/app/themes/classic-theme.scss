@@ -210,9 +210,9 @@ $theme: map.merge(
   .mat-toolbar.toolbar-header {
     --mat-toolbar-container-text-color: var(--mat-app-text-color);
     background-color: mat.get-theme-color($theme, neutral, 95);
-    border-bottom-width: 1px;
     border-bottom-color: var(--mat-table-row-item-outline-color);
     border-bottom-style: solid;
+    border-bottom-width: 1px;
     a {
       color: var(--mat-app-text-color);
       &.active {
@@ -223,8 +223,8 @@ $theme: map.merge(
       }
     }
     .mat-icon {
-      fill: var(--mat-app-text-color);
       color: var(--mat-app-text-color);
+      fill: var(--mat-app-text-color);
     }
   }
   .mat-expansion-panel {

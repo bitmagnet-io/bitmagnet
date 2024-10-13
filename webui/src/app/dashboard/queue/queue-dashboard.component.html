@@ -1,6 +1,7 @@
 <ng-container *transloco="let t">
   <mat-card class="dashboard-card">
     <mat-card-header>
+      <mat-toolbar>
       <nav
         mat-tab-nav-bar
         [tabPanel]="tabPanel"
@@ -34,6 +35,7 @@
         >
       </nav>
       <mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
+      </mat-toolbar>
     </mat-card-header>
     <mat-card-content>
       <router-outlet #outlet />

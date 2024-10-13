@@ -2,15 +2,6 @@
 
 @mixin theme($theme) {
   .table-torrents {
-    tbody {
-      tr:not(.expanded-detail-row):hover {
-        @if mat.get-theme-type($theme) == dark {
-          background-color: rgba(#fff, 0.02);
-        } @else {
-          background-color: rgba(#000, 0.02);
-        }
-      }
-    }
     .mat-column-magnet {
       .mat-icon {
         @if mat.get-theme-type($theme) == dark {

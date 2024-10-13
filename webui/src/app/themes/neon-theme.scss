@@ -189,8 +189,27 @@ $theme: map.merge(
 );
 
 @mixin theme-vars {
-  --mat-sidenav-content-background-color: #000;
-  --mat-sidenav-container-background-color: #000;
-  --mat-app-background-color: #000;
-  --mat-app-background: #000;
+  --mat-app-background-color: #{mat.get-theme-color($theme, neutral, 4)};
+  --mat-app-background: #{mat.get-theme-color($theme, neutral, 4)};
+  --mat-expansion-container-background-color: #{mat.get-theme-color($theme, neutral, 10)};
+  --mat-sidenav-container-background-color: #{mat.get-theme-color($theme, neutral, 4)};
+  --mat-sidenav-content-background-color: #{mat.get-theme-color($theme, neutral, 4)};
+  --mat-table-background-color: #{mat.get-theme-color($theme, neutral, 10)};
+  --mdc-elevated-card-container-color: #{mat.get-theme-color($theme, neutral, 10)};
+  .mat-toolbar.toolbar-header {
+    --mat-toolbar-container-text-color: var(--mat-app-text-color);
+    a {
+      color: mat.get-theme-color($theme, neutral, 4);
+      &.active {
+        color: mat.get-theme-color($theme, neutral, 4);
+        &.mdc-button {
+          background-color: mat.get-theme-color($theme, neutral, 4);
+        }
+      }
+    }
+    .mat-icon {
+      color: mat.get-theme-color($theme, neutral, 4);
+      fill: mat.get-theme-color($theme, neutral, 4);
+    }
+  }
 }

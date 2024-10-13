@@ -6,12 +6,12 @@
     --mat-toolbar-container-text-color: #fff;
     h1 {
       cursor: default;
-      a {
-        color: #fff;
-      }
-      .mat-icon {
-        fill: #fff;
-      }
+    }
+    a {
+      color: #fff;
+    }
+    .mat-icon {
+      fill: #fff;
     }
     .mdc-button {
       &.active {
@@ -49,6 +49,22 @@
           color: mat.get-theme-color($theme, primary, 40);
           background-color: rgba(#000, 0.1);
         }
+      }
+    }
+  }
+  a {
+    @if mat.get-theme-type($theme) == dark {
+      color: mat.get-theme-color($theme, secondary, 80);
+    } @else {
+      color: mat.get-theme-color($theme, secondary, 50);
+    }
+  }
+  tbody {
+    tr:not(.expanded-detail-row):hover {
+      @if mat.get-theme-type($theme) == dark {
+        background-color: rgba(#fff, 0.02);
+      } @else {
+        background-color: rgba(#000, 0.02);
       }
     }
   }
