@@ -223,7 +223,7 @@ export const statusFacet: FacetDefinition<generated.QueueJobStatus> = {
     status: i,
   }),
   extractAggregations: (aggs) => aggs.status ?? [],
-  resolveLabel: (agg, t) => t.translate("queue.statuses." + agg.label),
+  resolveLabel: (agg, t) => t.translate("dashboard.queues." + agg.label),
 };
 
 export const facets = [queueFacet, statusFacet];

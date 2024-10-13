@@ -48,6 +48,7 @@
       "match_content_by_external_api_search": "Match content by external API search",
       "match_content_by_local_search": "Match content by local search",
       "payload": "Payload",
+      "pending": "Pending",
       "priority": "Priority",
       "process_orphaned_torrents_only": "Process orphaned torrents only",
       "processed": "Processed",
@@ -57,7 +58,7 @@
       "queue_purged": "Queue purged",
       "queues": "Queues",
       "ran_at": "Ran at",
-      "status": "Status",
+      "retry": "Retry",
       "total_counts_by_status": "Total counts by status"
     },
     "interval": {
@@ -84,6 +85,8 @@
     "file_type": "File Type",
     "genre": "Genre",
     "language": "Language",
+    "queue": "Queue",
+    "status": "Status",
     "torrent_source": "Torrent Source",
     "torrent_tag": "Torrent Tag",
     "video_resolution": "Video Resolution",

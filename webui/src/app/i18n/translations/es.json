@@ -4,7 +4,7 @@
       "all": "Todos",
       "audiobook": "Audiolibros",
       "comic": "Cómics",
-      "ebook": "E-Books",
+      "ebook": "E-Libros",
       "movie": "Películas",
       "music": "Música",
       "null": "Desconocido",
@@ -15,7 +15,7 @@
     "singular": {
       "audiobook": "Audiolibro",
       "comic": "Cómic",
-      "ebook": "E-Book",
+      "ebook": "E-Libro",
       "movie": "Película",
       "music": "Música",
       "null": "Desconocido",
@@ -48,6 +48,7 @@
       "match_content_by_external_api_search": "Coincidir contenido por búsqueda de API externa",
       "match_content_by_local_search": "Coincidir contenido por búsqueda local",
       "payload": "Carga útil",
+      "pending": "Pendiente",
       "priority": "Prioridad",
       "process_orphaned_torrents_only": "Procesar solo torrents huérfanos",
       "processed": "Procesado",
@@ -57,7 +58,7 @@
       "queue_purged": "Cola purgada",
       "queues": "Colas",
       "ran_at": "Ejecutado en",
-      "status": "Estado",
+      "retry": "Reintentar",
       "total_counts_by_status": "Recuento total por estado"
     },
     "interval": {
@@ -84,6 +85,8 @@
     "file_type": "Tipo de archivo",
     "genre": "Género",
     "language": "Idioma",
+    "queue": "Cola",
+    "status": "Estado",
     "torrent_source": "Fuente del torrent",
     "torrent_tag": "Etiqueta del torrent",
     "video_resolution": "Resolución de video",

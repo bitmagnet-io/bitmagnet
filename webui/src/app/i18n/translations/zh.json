@@ -48,6 +48,7 @@
       "match_content_by_external_api_search": "通过外部API搜索匹配内容",
       "match_content_by_local_search": "通过本地搜索匹配内容",
       "payload": "有效载荷",
+      "pending": "待处理",
       "priority": "优先级",
       "process_orphaned_torrents_only": "仅处理孤立的种子",
       "processed": "已处理",
@@ -57,7 +58,7 @@
       "queue_purged": "队列已清除",
       "queues": "队列",
       "ran_at": "运行于",
-      "status": "状态",
+      "retry": "重试",
       "total_counts_by_status": "按状态统计总数"
     },
     "interval": {
@@ -84,6 +85,8 @@
     "file_type": "文件类型",
     "genre": "类型",
     "language": "语言",
+    "queue": "队列",
+    "status": "状态",
     "torrent_source": "种子来源",
     "torrent_tag": "种子标签",
     "video_resolution": "视频分辨率",

@@ -48,6 +48,7 @@
       "match_content_by_external_api_search": "Зіставити контент через зовнішній API",
       "match_content_by_local_search": "Зіставити контент через локальний пошук",
       "payload": "Дані",
+      "pending": "В очікуванні",
       "priority": "Пріоритет",
       "process_orphaned_torrents_only": "Обробляти лише «сиротливі» торренти",
       "processed": "Оброблено",
@@ -57,7 +58,7 @@
       "queue_purged": "Черга очищена",
       "queues": "Черги",
       "ran_at": "Запущено о",
-      "status": "Статус",
+      "retry": "Повторити",
       "total_counts_by_status": "Загальна кількість за статусами"
     },
     "interval": {
@@ -84,6 +85,8 @@
     "file_type": "Тип файлу",
     "genre": "Жанр",
     "language": "Мова",
+    "queue": "Черга",
+    "status": "Статус",
     "torrent_source": "Джерело торрента",
     "torrent_tag": "Тег торрента",
     "video_resolution": "Роздільна здатність відео",

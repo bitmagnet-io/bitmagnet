@@ -48,6 +48,7 @@
       "match_content_by_external_api_search": "Сопоставить контент через внешний API",
       "match_content_by_local_search": "Сопоставить контент через локальный поиск",
       "payload": "Данные",
+      "pending": "В ожидании",
       "priority": "Приоритет",
       "process_orphaned_torrents_only": "Обрабатывать только «осиротевшие» торренты",
       "processed": "Обработано",
@@ -57,7 +58,7 @@
       "queue_purged": "Очередь очищена",
       "queues": "Очереди",
       "ran_at": "Выполнено в",
-      "status": "Статус",
+      "retry": "Повторить",
       "total_counts_by_status": "Общее количество по статусам"
     },
     "interval": {
@@ -84,6 +85,8 @@
     "file_type": "Тип файла",
     "genre": "Жанр",
     "language": "Язык",
+    "queue": "Очередь",
+    "status": "Статус",
     "torrent_source": "Источник торрента",
     "torrent_tag": "Тег торрента",
     "video_resolution": "Разрешение видео",

@@ -48,6 +48,7 @@
       "match_content_by_external_api_search": "Match inhoud via externe API-zoekopdracht",
       "match_content_by_local_search": "Match inhoud via lokale zoekopdracht",
       "payload": "Inhoud",
+      "pending": "In afwachting",
       "priority": "Prioriteit",
       "process_orphaned_torrents_only": "Verwerk alleen verweesde torrents",
       "processed": "Verwerkt",
@@ -57,7 +58,7 @@
       "queue_purged": "Wachtrij gewist",
       "queues": "Wachtrijen",
       "ran_at": "Uitgevoerd op",
-      "status": "Status",
+      "retry": "Opnieuw proberen",
       "total_counts_by_status": "Totaal aantal per status"
     },
     "interval": {
@@ -84,6 +85,8 @@
     "file_type": "Bestandstype",
     "genre": "Genre",
     "language": "Taal",
+    "queue": "Wachtrij",
+    "status": "Status",
     "torrent_source": "Torrentbron",
     "torrent_tag": "Torrenttag",
     "video_resolution": "Videoresolutie",

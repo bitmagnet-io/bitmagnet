@@ -48,6 +48,7 @@
       "match_content_by_external_api_search": "बाहरी API खोज से सामग्री का मिलान करें",
       "match_content_by_local_search": "स्थानीय खोज से सामग्री का मिलान करें",
       "payload": "पेलोड",
+      "pending": "बकाया",
       "priority": "प्राथमिकता",
       "process_orphaned_torrents_only": "केवल अनाथ टोरेंट्स को प्रोसेस करें",
       "processed": "प्रसंस्कृत",
@@ -57,7 +58,7 @@
       "queue_purged": "कतार को साफ़ किया गया",
       "queues": "कतारें",
       "ran_at": "चलाया गया समय",
-      "status": "स्थिति",
+      "retry": "पुनः प्रयास करें",
       "total_counts_by_status": "स्थिति द्वारा कुल गणना"
     },
     "interval": {
@@ -84,6 +85,8 @@
     "file_type": "फ़ाइल प्रकार",
     "genre": "शैली",
     "language": "भाषा",
+    "queue": "कतार",
+    "status": "स्थिति",
     "torrent_source": "टोरेंट स्रोत",
     "torrent_tag": "टोरेंट टैग",
     "video_resolution": "वीडियो रिज़ॉल्यूशन",

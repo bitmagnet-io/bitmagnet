@@ -4,7 +4,7 @@
       "all": "Tous",
       "audiobook": "Livres audio",
       "comic": "Bandes dessinées",
-      "ebook": "E-Books",
+      "ebook": "E-livres",
       "movie": "Films",
       "music": "Musique",
       "null": "Inconnu",
@@ -15,7 +15,7 @@
     "singular": {
       "audiobook": "Livre audio",
       "comic": "Bande dessinée",
-      "ebook": "E-Book",
+      "ebook": "E-livre",
       "movie": "Film",
       "music": "Musique",
       "null": "Inconnu",
@@ -48,6 +48,7 @@
       "match_content_by_external_api_search": "Apparier le contenu par recherche API externe",
       "match_content_by_local_search": "Apparier le contenu par recherche locale",
       "payload": "Charge utile",
+      "pending": "En attente",
       "priority": "Priorité",
       "process_orphaned_torrents_only": "Traiter uniquement les torrents orphelins",
       "processed": "Traité",
@@ -57,7 +58,7 @@
       "queue_purged": "File d'attente purgée",
       "queues": "Files d'attente",
       "ran_at": "Exécuté à",
-      "status": "Statut",
+      "retry": "Réessayer",
       "total_counts_by_status": "Totaux par statut"
     },
     "interval": {
@@ -84,6 +85,8 @@
     "file_type": "Type de fichier",
     "genre": "Genre",
     "language": "Langue",
+    "queue": "File d'attente",
+    "status": "Statut",
     "torrent_source": "Source du torrent",
     "torrent_tag": "Tag du torrent",
     "video_resolution": "Résolution vidéo",

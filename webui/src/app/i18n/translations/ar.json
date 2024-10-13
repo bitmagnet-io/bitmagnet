@@ -48,6 +48,7 @@
       "match_content_by_external_api_search": "مطابقة المحتوى من خلال البحث في API الخارجية",
       "match_content_by_local_search": "مطابقة المحتوى من خلال البحث المحلي",
       "payload": "الحمولة",
+      "pending": "قيد الانتظار",
       "priority": "الأولوية",
       "process_orphaned_torrents_only": "معالجة التورنت اليتيم فقط",
       "processed": "تمت المعالجة",
@@ -57,7 +58,7 @@
       "queue_purged": "تم تنظيف الطابور",
       "queues": "الطوابير",
       "ran_at": "تم التشغيل في",
-      "status": "الحالة",
+      "retry": "إعادة المحاولة",
       "total_counts_by_status": "إجمالي العد حسب الحالة"
     },
     "interval": {
@@ -84,6 +85,8 @@
     "file_type": "نوع الملف",
     "genre": "النوع",
     "language": "اللغة",
+    "queue": "الطابور",
+    "status": "الحالة",
     "torrent_source": "مصدر التورنت",
     "torrent_tag": "علامة التورنت",
     "video_resolution": "دقة الفيديو",

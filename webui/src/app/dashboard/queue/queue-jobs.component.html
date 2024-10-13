@@ -11,7 +11,7 @@
         <mat-card>
           <mat-card-header>
             <mat-card-title>
-              {{ t("queue_facets." + facet.key) }}
+              {{ t("facets." + facet.key) }}
             </mat-card-title>
           </mat-card-header>
           @if (facet.filter?.length) {
@@ -72,7 +72,7 @@
             >
               @for (option of orderByOptions; track option.field) {
                 <mat-option [value]="option.field">
-                  {{ t("queue_jobs.order_by_" + option.field) }}
+                  {{ t("dashboard.queues." + option.field) }}
                 </mat-option>
               }
             </mat-select>

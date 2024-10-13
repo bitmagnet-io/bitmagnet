@@ -48,6 +48,7 @@
       "match_content_by_external_api_search": "外部API検索でコンテンツを一致させる",
       "match_content_by_local_search": "ローカル検索でコンテンツを一致させる",
       "payload": "ペイロード",
+      "pending": "保留中",
       "priority": "優先順位",
       "process_orphaned_torrents_only": "孤立したトレントのみ処理する",
       "processed": "処理済み",
@@ -57,7 +58,7 @@
       "queue_purged": "キューがクリアされました",
       "queues": "キュー",
       "ran_at": "実行時刻",
-      "status": "ステータス",
+      "retry": "再試行",
       "total_counts_by_status": "ステータスごとの総数"
     },
     "interval": {
@@ -84,6 +85,8 @@
     "file_type": "ファイルタイプ",
     "genre": "ジャンル",
     "language": "言語",
+    "queue": "キュー",
+    "status": "ステータス",
     "torrent_source": "トレントソース",
     "torrent_tag": "トレントタグ",
     "video_resolution": "ビデオ解像度",

@@ -48,6 +48,7 @@
       "match_content_by_external_api_search": "Dış API aramasıyla içeriği eşleştir",
       "match_content_by_local_search": "Yerel aramayla içeriği eşleştir",
       "payload": "Veri Yükü",
+      "pending": "Beklemede",
       "priority": "Öncelik",
       "process_orphaned_torrents_only": "Sadece sahipsiz torrentleri işle",
       "processed": "İşlendi",
@@ -57,7 +58,7 @@
       "queue_purged": "Kuyruk Temizlendi",
       "queues": "Kuyruklar",
       "ran_at": "Çalıştırıldı",
-      "status": "Durum",
+      "retry": "Tekrar Dene",
       "total_counts_by_status": "Duruma Göre Toplam Sayılar"
     },
     "interval": {
@@ -84,6 +85,8 @@
     "file_type": "Dosya Türü",
     "genre": "Tür",
     "language": "Dil",
+    "queue": "Kuyruk",
+    "status": "Durum",
     "torrent_source": "Torrent Kaynağı",
     "torrent_tag": "Torrent Etiketi",
     "video_resolution": "Video Çözünürlüğü",
