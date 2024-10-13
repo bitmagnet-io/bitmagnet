@@ -7,39 +7,39 @@
 // Note: Color palettes are generated from primary: #607d8b, secondary: #4caf50
 $_palettes: (
   primary: (
-    0: #000000,
-    10: #001f2a,
-    20: #003546,
-    25: #004154,
-    30: #004d64,
-    35: #005a73,
-    40: #006783,
-    50: #0081a5,
-    60: #069dc7,
-    70: #40b8e3,
-    80: #65d3ff,
-    90: #bde9ff,
-    95: #e0f4ff,
-    98: #f4faff,
-    99: #fafcff,
+    0: #0d0f19,
+    10: #141726,
+    20: #222744,
+    25: #2b3056,
+    30: #3a4179,
+    35: #424a8a,
+    40: #4a529c,
+    50: #5963b0,
+    60: #6a75b6,
+    70: #7181C3,
+    80: #8591cd,
+    90: #99a1d7,
+    95: #adb1e1,
+    98: #c1c1eb,
+    99: #e0e3f5,
     100: #ffffff,
   ),
   secondary: (
-    0: #000000,
-    10: #002204,
-    20: #00390a,
-    25: #00460f,
-    30: #005313,
-    35: #006018,
-    40: #006e1c,
-    50: #22892f,
-    60: #41a447,
-    70: #5dc05e,
-    80: #78dc77,
-    90: #94f990,
-    95: #c8ffc0,
-    98: #ecffe4,
-    99: #f6fff0,
+    0: #1f1f0b,
+    10: #2d2d0f,
+    20: #3c3c13,
+    25: #464619,
+    30: #51511e,
+    35: #5b5b23,
+    40: #666628,
+    50: #7a7a30,
+    60: #8e8e39,
+    70: #A09F44,
+    80: #b3b355,
+    90: #c7c766,
+    95: #dbdb77,
+    98: #efef88,
+    99: #fafaa3,
     100: #ffffff,
   ),
   tertiary: (
@@ -184,3 +184,14 @@ $theme: map.merge(
     ),
   )
 );
+
+@mixin theme-vars {
+  --mat-sidenav-content-background-color: #{mat.get-theme-color($theme, primary, 0)};
+  --mat-sidenav-container-background-color: #{mat.get-theme-color($theme, primary, 0)};
+  --mat-app-background-color: #{mat.get-theme-color($theme, primary, 0)};
+  --mat-app-background: #{mat.get-theme-color($theme, primary, 0)};
+  --mat-table-background-color: #{mat.get-theme-color($theme, primary, 10)};
+  --mat-expansion-container-background-color: #{mat.get-theme-color($theme, primary, 10)};
+  --mdc-elevated-card-container-color: #{mat.get-theme-color($theme, primary, 10)};
+  --mat-toolbar-container-background-color: #{mat.get-theme-color($theme, primary, 20)};
+}

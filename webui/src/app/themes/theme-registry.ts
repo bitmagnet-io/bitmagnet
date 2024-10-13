@@ -14,6 +14,16 @@ const _themes = {
     label: "Classic",
     dark: false,
   },
+  clean: {
+    key: "clean" as const,
+    label: "Clean",
+    dark: false,
+  },
+  neon: {
+    key: "neon" as const,
+    label: "Neon",
+    dark: true,
+  },
   tundra: {
     key: "tundra" as const,
     label: "Tundra",

@@ -44,8 +44,10 @@
       &.active {
         @if mat.get-theme-type($theme) == dark {
           color: mat.get-theme-color($theme, primary, 80);
+          background-color: rgba(#fff, 0.1);
         } @else {
           color: mat.get-theme-color($theme, primary, 40);
+          background-color: rgba(#000, 0.1);
         }
       }
     }
