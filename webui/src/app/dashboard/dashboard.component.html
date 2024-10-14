@@ -23,21 +23,21 @@
           <li>
             <a
               mat-button
-              routerLink="torrents"
+              routerLink="queues"
               routerLinkActive
-              #linkTorrents="routerLinkActive"
-              [class]="linkTorrents.isActive ? 'active' : ''"
-              ><mat-icon svgIcon="magnet" />{{ t("routes.torrents") }}</a
+              #linkQueues="routerLinkActive"
+              [class]="linkQueues.isActive ? 'active' : ''"
+            ><mat-icon svgIcon="queue" />{{ t("routes.queues") }}</a
             >
           </li>
           <li>
             <a
               mat-button
-              routerLink="queues"
+              routerLink="torrents"
               routerLinkActive
-              #linkQueues="routerLinkActive"
-              [class]="linkQueues.isActive ? 'active' : ''"
-              ><mat-icon svgIcon="queue" />{{ t("routes.queues") }}</a
+              #linkTorrents="routerLinkActive"
+              [class]="linkTorrents.isActive ? 'active' : ''"
+              ><mat-icon svgIcon="magnet" />{{ t("routes.torrents") }}</a
             >
           </li>
         </ul>

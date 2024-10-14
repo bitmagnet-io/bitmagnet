@@ -42,13 +42,6 @@ export const routes: Routes = [
           ),
       },
       {
-        path: "torrents",
-        loadComponent: () =>
-          import("./dashboard/torrents/torrents-dashboard.component").then(
-            (c) => c.TorrentsDashboardComponent,
-          ),
-      },
-      {
         path: "queues",
         loadComponent: () =>
           import("./dashboard/queue/queue-dashboard.component").then(
@@ -77,6 +70,13 @@ export const routes: Routes = [
               ),
           },
         ],
+      },
+      {
+        path: "torrents",
+        loadComponent: () =>
+          import("./dashboard/torrents/torrents-dashboard.component").then(
+            (c) => c.TorrentsDashboardComponent,
+          ),
       },
     ],
   },
