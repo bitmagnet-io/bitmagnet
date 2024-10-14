@@ -46,8 +46,9 @@ tasks:
       - go run . classifier schema --format json > ./bitmagnet.io/schemas/classifier-0.1.json
 
   gen-webui-graphql:
+    dir: ./webui
     cmds:
-      - cd webui && npm run graphql:codegen
+      - npm run graphql:codegen
 
   i18n-extract:
     dir: ./webui
