@@ -53,9 +53,6 @@
         >
         <span
           class="title"
-          [matTooltip]="
-            item(i).title === item(i).torrent.name ? '' : item(i).torrent.name
-          "
           >{{ item(i).title }}</span
         >
         @if (item(i).title !== item(i).torrent.name) {
