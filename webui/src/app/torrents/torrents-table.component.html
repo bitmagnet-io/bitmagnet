@@ -51,10 +51,7 @@
             contentTypeInfo(item(i).contentType)?.icon ?? "question_mark"
           }}</mat-icon
         >
-        <span
-          class="title"
-          >{{ item(i).title }}</span
-        >
+        <span class="title">{{ item(i).title }}</span>
         @if (item(i).title !== item(i).torrent.name) {
           <p class="original-name">{{ item(i).torrent.name }}</p>
         }
