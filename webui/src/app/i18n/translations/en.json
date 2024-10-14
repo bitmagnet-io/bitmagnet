@@ -63,6 +63,7 @@
       "failed": "Failed",
       "force_rematch": "Force rematch of already matched content",
       "jobs_enqueued": "Jobs enqueued",
+      "latency": "Latency",
       "match_content_by_external_api_search": "Match content by external API search",
       "match_content_by_local_search": "Match content by local search",
       "payload": "Payload",

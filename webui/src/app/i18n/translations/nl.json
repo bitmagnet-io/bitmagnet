@@ -63,6 +63,7 @@
       "failed": "Mislukt",
       "force_rematch": "Forceer nieuwe match van al gematchte inhoud",
       "jobs_enqueued": "Taken in wachtrij gezet",
+      "latency": "Latentie",
       "match_content_by_external_api_search": "Match inhoud via externe API-zoekopdracht",
       "match_content_by_local_search": "Match inhoud via lokale zoekopdracht",
       "payload": "Inhoud",

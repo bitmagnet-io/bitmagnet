@@ -63,6 +63,7 @@
       "failed": "Fallido",
       "force_rematch": "Forzar nueva coincidencia de contenido ya coincidente",
       "jobs_enqueued": "Trabajos encolados",
+      "latency": "Latencia",
       "match_content_by_external_api_search": "Coincidir contenido por búsqueda de API externa",
       "match_content_by_local_search": "Coincidir contenido por búsqueda local",
       "payload": "Carga útil",

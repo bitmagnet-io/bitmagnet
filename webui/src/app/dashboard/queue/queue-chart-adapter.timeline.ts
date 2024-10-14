@@ -74,10 +74,11 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, "line"> {
             }
             datasets.push({
               yAxisID: "yCount",
-              label: [queue.queue, event].join("/"),
+              label:
+                queue.queue +
+                ": " +
+                this.transloco.translate("dashboard.queues." + event),
               data: series,
-              // fill: 'origin',
-              // backgroundColor: 'rgba(148,159,177,0.2)',
               borderColor: colors[createThemeColor(eventColors[event], 50)],
               pointBackgroundColor:
                 colors[createThemeColor(eventColors[event], 20)],
@@ -112,7 +113,10 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, "line"> {
             }
             datasets.push({
               yAxisID: "yLatency",
-              label: [queue.queue, "latency"].join("/"),
+              label:
+                queue.queue +
+                ": " +
+                this.transloco.translate("dashboard.queues.latency"),
               data: latencySeries,
               // fill: 'origin',
               // backgroundColor: 'rgba(148,159,177,0.2)',

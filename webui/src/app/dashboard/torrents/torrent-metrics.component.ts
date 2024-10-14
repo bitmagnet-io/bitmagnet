@@ -6,7 +6,8 @@ import { BreakpointsService } from "../../layout/breakpoints.service";
 import { ErrorsService } from "../../errors/errors.service";
 import { AppModule } from "../../app.module";
 import {
-  autoRefreshIntervalNames, defaultBucketParams,
+  autoRefreshIntervalNames,
+  defaultBucketParams,
   eventNames,
   resolutionNames,
   timeframeNames,

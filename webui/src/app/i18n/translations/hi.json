@@ -63,6 +63,7 @@
       "failed": "असफल",
       "force_rematch": "पहले से मेल खाई सामग्री को फिर से मिलाएं",
       "jobs_enqueued": "जॉब्स कतार में लगाई गईं",
+      "latency": "लेटेंसी",
       "match_content_by_external_api_search": "बाहरी API खोज से सामग्री का मिलान करें",
       "match_content_by_local_search": "स्थानीय खोज से सामग्री का मिलान करें",
       "payload": "पेलोड",

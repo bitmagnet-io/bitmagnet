@@ -63,6 +63,7 @@
       "failed": "Başarısız",
       "force_rematch": "Eşleşmiş içeriği yeniden eşleştir",
       "jobs_enqueued": "Kuyruğa Alınan İşler",
+      "latency": "Gecikme",
       "match_content_by_external_api_search": "Dış API aramasıyla içeriği eşleştir",
       "match_content_by_local_search": "Yerel aramayla içeriği eşleştir",
       "payload": "Veri Yükü",

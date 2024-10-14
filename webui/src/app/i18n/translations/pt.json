@@ -63,6 +63,7 @@
       "failed": "Falhou",
       "force_rematch": "Forçar nova correspondência de conteúdo já correspondido",
       "jobs_enqueued": "Trabalhos enfileirados",
+      "latency": "Latência",
       "match_content_by_external_api_search": "Correspondência de conteúdo por pesquisa de API externa",
       "match_content_by_local_search": "Correspondência de conteúdo por pesquisa local",
       "payload": "Carga útil",

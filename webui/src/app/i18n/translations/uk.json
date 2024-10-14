@@ -63,6 +63,7 @@
       "failed": "Помилка",
       "force_rematch": "Примусово повторно зіставити вже зіставлений контент",
       "jobs_enqueued": "Завдання додано в чергу",
+      "latency": "Затримка",
       "match_content_by_external_api_search": "Зіставити контент через зовнішній API",
       "match_content_by_local_search": "Зіставити контент через локальний пошук",
       "payload": "Дані",

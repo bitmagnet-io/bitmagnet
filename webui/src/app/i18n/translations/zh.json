@@ -63,6 +63,7 @@
       "failed": "失败",
       "force_rematch": "强制重新匹配已匹配的内容",
       "jobs_enqueued": "加入队列的任务",
+      "latency": "延迟",
       "match_content_by_external_api_search": "通过外部API搜索匹配内容",
       "match_content_by_local_search": "通过本地搜索匹配内容",
       "payload": "有效载荷",

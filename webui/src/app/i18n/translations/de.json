@@ -63,6 +63,7 @@
       "failed": "Fehlgeschlagen",
       "force_rematch": "Erneutes Zuordnen von bereits zugeordneten Inhalten erzwingen",
       "jobs_enqueued": "Jobs eingereiht",
+      "latency": "Latenz",
       "match_content_by_external_api_search": "Inhalte durch externe API-Suche zuordnen",
       "match_content_by_local_search": "Inhalte durch lokale Suche zuordnen",
       "payload": "Nutzlast",

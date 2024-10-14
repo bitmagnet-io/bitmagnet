@@ -431,8 +431,11 @@
           [value]="0"
         ></mat-progress-bar>
       </div>
-      <mat-grid-list [cols]="2" rowHeight="100px">
-        <mat-grid-tile [colspan]="1" [rowspan]="5">
+      <mat-grid-list
+        [cols]="breakpoints.sizeAtLeast('Large') ? 2 : 1"
+        rowHeight="100px"
+      >
+        <mat-grid-tile [colspan]="1" [rowspan]="6">
           <mat-card>
             <mat-card-header>
               <mat-card-title>
@@ -449,6 +452,7 @@
             </mat-card-content>
           </mat-card>
         </mat-grid-tile>
+        <mat-grid-tile [colspan]="1" [rowspan]="5"> </mat-grid-tile>
       </mat-grid-list>
     </mat-card-content>
   </mat-card>
