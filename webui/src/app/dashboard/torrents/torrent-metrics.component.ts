@@ -30,7 +30,7 @@ export class TorrentMetricsComponent implements OnDestroy {
       buckets: {
         duration: "AUTO",
         multiplier: "AUTO",
-        timeframe: "days_1",
+        timeframe: "hours_1",
       },
       autoRefresh: "seconds_30",
     },
