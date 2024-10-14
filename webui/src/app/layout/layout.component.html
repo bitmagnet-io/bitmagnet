@@ -32,20 +32,10 @@
       </nav>
     } @else {
       <h1>
-        <a routerLink="dashboard">
+        <a routerLink="/torrents">
           <mat-icon svgIcon="magnet"></mat-icon>
         </a>
       </h1>
-      <button
-        mat-icon-button
-        routerLink="torrents"
-        #linkTorrents="routerLinkActive"
-        routerLinkActive
-        [class]="linkTorrents.isActive ? 'active' : ''"
-        [matTooltip]="t('routes.torrents')"
-      >
-        <mat-icon>toc</mat-icon>
-      </button>
       <button
         mat-icon-button
         routerLink="dashboard"
