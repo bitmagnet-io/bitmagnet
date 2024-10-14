@@ -27,9 +27,27 @@
   "dashboard": {
     "event": {
       "created": "作成済み",
+      "failed": "失敗",
       "processed": "処理済み",
-      "updated": "更新済み",
-      "failed": "失敗"
+      "updated": "更新済み"
+    },
+    "interval": {
+      "all": "すべて",
+      "days": "日",
+      "days_1": "1日",
+      "hours": "時間",
+      "hours_1": "1時間",
+      "hours_12": "12時間",
+      "hours_6": "6時間",
+      "minutes": "分",
+      "minutes_1": "1分",
+      "minutes_15": "15分",
+      "minutes_30": "30分",
+      "minutes_5": "5分",
+      "off": "オフ",
+      "seconds_10": "10秒",
+      "seconds_30": "30秒",
+      "weeks_1": "1週間"
     },
     "metrics": {
       "event": "イベント",
@@ -60,24 +78,6 @@
       "ran_at": "実行時刻",
       "retry": "再試行",
       "total_counts_by_status": "ステータスごとの総数"
-    },
-    "interval": {
-      "all": "すべて",
-      "days": "日",
-      "days_1": "1日",
-      "hours": "時間",
-      "hours_1": "1時間",
-      "hours_6": "6時間",
-      "hours_12": "12時間",
-      "minutes": "分",
-      "minutes_1": "1分",
-      "minutes_5": "5分",
-      "minutes_15": "15分",
-      "minutes_30": "30分",
-      "off": "オフ",
-      "seconds_10": "10秒",
-      "seconds_30": "30秒",
-      "weeks_1": "1週間"
     }
   },
   "facets": {

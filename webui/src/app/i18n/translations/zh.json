@@ -27,9 +27,27 @@
   "dashboard": {
     "event": {
       "created": "已创建",
+      "failed": "失败",
       "processed": "已处理",
-      "updated": "已更新",
-      "failed": "失败"
+      "updated": "已更新"
+    },
+    "interval": {
+      "all": "全部",
+      "days": "天",
+      "days_1": "1天",
+      "hours": "小时",
+      "hours_1": "1小时",
+      "hours_12": "12小时",
+      "hours_6": "6小时",
+      "minutes": "分钟",
+      "minutes_1": "1分钟",
+      "minutes_15": "15分钟",
+      "minutes_30": "30分钟",
+      "minutes_5": "5分钟",
+      "off": "关闭",
+      "seconds_10": "10秒",
+      "seconds_30": "30秒",
+      "weeks_1": "1周"
     },
     "metrics": {
       "event": "事件",
@@ -60,24 +78,6 @@
       "ran_at": "运行于",
       "retry": "重试",
       "total_counts_by_status": "按状态统计总数"
-    },
-    "interval": {
-      "all": "全部",
-      "days": "天",
-      "days_1": "1天",
-      "hours": "小时",
-      "hours_1": "1小时",
-      "hours_6": "6小时",
-      "hours_12": "12小时",
-      "minutes": "分钟",
-      "minutes_1": "1分钟",
-      "minutes_5": "5分钟",
-      "minutes_15": "15分钟",
-      "minutes_30": "30分钟",
-      "off": "关闭",
-      "seconds_10": "10秒",
-      "seconds_30": "30秒",
-      "weeks_1": "1周"
     }
   },
   "facets": {

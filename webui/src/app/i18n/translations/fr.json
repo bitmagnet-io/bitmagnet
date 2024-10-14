@@ -27,9 +27,27 @@
   "dashboard": {
     "event": {
       "created": "Créé",
+      "failed": "Échoué",
       "processed": "Traité",
-      "updated": "Mis à jour",
-      "failed": "Échoué"
+      "updated": "Mis à jour"
+    },
+    "interval": {
+      "all": "Tous",
+      "days": "Jours",
+      "days_1": "1 jour",
+      "hours": "Heures",
+      "hours_1": "1 heure",
+      "hours_12": "12 heures",
+      "hours_6": "6 heures",
+      "minutes": "Minutes",
+      "minutes_1": "1 minute",
+      "minutes_15": "15 minutes",
+      "minutes_30": "30 minutes",
+      "minutes_5": "5 minutes",
+      "off": "Désactivé",
+      "seconds_10": "10 secondes",
+      "seconds_30": "30 secondes",
+      "weeks_1": "1 semaine"
     },
     "metrics": {
       "event": "Événement",
@@ -60,24 +78,6 @@
       "ran_at": "Exécuté à",
       "retry": "Réessayer",
       "total_counts_by_status": "Totaux par statut"
-    },
-    "interval": {
-      "all": "Tous",
-      "days": "Jours",
-      "days_1": "1 jour",
-      "hours": "Heures",
-      "hours_1": "1 heure",
-      "hours_6": "6 heures",
-      "hours_12": "12 heures",
-      "minutes": "Minutes",
-      "minutes_1": "1 minute",
-      "minutes_5": "5 minutes",
-      "minutes_15": "15 minutes",
-      "minutes_30": "30 minutes",
-      "off": "Désactivé",
-      "seconds_10": "10 secondes",
-      "seconds_30": "30 secondes",
-      "weeks_1": "1 semaine"
     }
   },
   "facets": {

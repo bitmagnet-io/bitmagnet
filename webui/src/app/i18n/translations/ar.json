@@ -27,9 +27,27 @@
   "dashboard": {
     "event": {
       "created": "تم الإنشاء",
+      "failed": "فشل",
       "processed": "تمت المعالجة",
-      "updated": "تم التحديث",
-      "failed": "فشل"
+      "updated": "تم التحديث"
+    },
+    "interval": {
+      "all": "الكل",
+      "days": "يوم",
+      "days_1": "يوم واحد",
+      "hours": "ساعة",
+      "hours_1": "ساعة واحدة",
+      "hours_12": "12 ساعة",
+      "hours_6": "6 ساعة",
+      "minutes": "دقيقة",
+      "minutes_1": "1 دقيقة",
+      "minutes_15": "15 دقائق",
+      "minutes_30": "30 دقائق",
+      "minutes_5": "5 دقائق",
+      "off": "إيقاف",
+      "seconds_10": "10 ثواني",
+      "seconds_30": "30 ثانية",
+      "weeks_1": "1 أسبوع"
     },
     "metrics": {
       "event": "حدث",
@@ -60,24 +78,6 @@
       "ran_at": "تم التشغيل في",
       "retry": "إعادة المحاولة",
       "total_counts_by_status": "إجمالي العد حسب الحالة"
-    },
-    "interval": {
-      "all": "الكل",
-      "days": "يوم",
-      "days_1": "يوم واحد",
-      "hours": "ساعة",
-      "hours_1": "ساعة واحدة",
-      "hours_6": "6 ساعة",
-      "hours_12": "12 ساعة",
-      "minutes": "دقيقة",
-      "minutes_1": "1 دقيقة",
-      "minutes_5": "5 دقائق",
-      "minutes_15": "15 دقائق",
-      "minutes_30": "30 دقائق",
-      "off": "إيقاف",
-      "seconds_10": "10 ثواني",
-      "seconds_30": "30 ثانية",
-      "weeks_1": "1 أسبوع"
     }
   },
   "facets": {

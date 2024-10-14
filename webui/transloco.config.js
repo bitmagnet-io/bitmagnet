@@ -16,8 +16,8 @@ module.exports = {
     "zh",
   ],
   keysManager: {
-    output: "app/i18n/translations",
-    translationsPath: "app/i18n/translations",
+    output: "src/app/i18n/translations",
+    translationsPath: "src/app/i18n/translations",
     addMissingKeys: true,
     emitErrorOnExtraKeys: true,
     unflat: true,

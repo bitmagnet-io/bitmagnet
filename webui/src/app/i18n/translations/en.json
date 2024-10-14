@@ -27,9 +27,27 @@
   "dashboard": {
     "event": {
       "created": "Created",
+      "failed": "Failed",
       "processed": "Processed",
-      "updated": "Updated",
-      "failed": "Failed"
+      "updated": "Updated"
+    },
+    "interval": {
+      "all": "All",
+      "days": "Days",
+      "days_1": "1 day",
+      "hours": "Hours",
+      "hours_1": "1 hour",
+      "hours_12": "12 hours",
+      "hours_6": "6 hours",
+      "minutes": "Minutes",
+      "minutes_1": "1 minute",
+      "minutes_15": "15 minutes",
+      "minutes_30": "30 minutes",
+      "minutes_5": "5 minutes",
+      "off": "Off",
+      "seconds_10": "10 seconds",
+      "seconds_30": "30 seconds",
+      "weeks_1": "1 week"
     },
     "metrics": {
       "event": "Event",
@@ -60,24 +78,6 @@
       "ran_at": "Ran at",
       "retry": "Retry",
       "total_counts_by_status": "Total counts by status"
-    },
-    "interval": {
-      "all": "All",
-      "days": "Days",
-      "days_1": "1 day",
-      "hours": "Hours",
-      "hours_1": "1 hour",
-      "hours_6": "6 hours",
-      "hours_12": "12 hours",
-      "minutes": "Minutes",
-      "minutes_1": "1 minute",
-      "minutes_5": "5 minutes",
-      "minutes_15": "15 minutes",
-      "minutes_30": "30 minutes",
-      "off": "Off",
-      "seconds_10": "10 seconds",
-      "seconds_30": "30 seconds",
-      "weeks_1": "1 week"
     }
   },
   "facets": {

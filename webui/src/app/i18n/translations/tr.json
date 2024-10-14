@@ -27,9 +27,27 @@
   "dashboard": {
     "event": {
       "created": "Oluşturuldu",
+      "failed": "Başarısız",
       "processed": "İşlendi",
-      "updated": "Güncellendi",
-      "failed": "Başarısız"
+      "updated": "Güncellendi"
+    },
+    "interval": {
+      "all": "Tümü",
+      "days": "Günler",
+      "days_1": "1 gün",
+      "hours": "Saatler",
+      "hours_1": "1 saat",
+      "hours_12": "12 saat",
+      "hours_6": "6 saat",
+      "minutes": "Dakikalar",
+      "minutes_1": "1 dakika",
+      "minutes_15": "15 dakika",
+      "minutes_30": "30 dakika",
+      "minutes_5": "5 dakika",
+      "off": "Kapalı",
+      "seconds_10": "10 saniye",
+      "seconds_30": "30 saniye",
+      "weeks_1": "1 hafta"
     },
     "metrics": {
       "event": "Olay",
@@ -60,24 +78,6 @@
       "ran_at": "Çalıştırıldı",
       "retry": "Tekrar Dene",
       "total_counts_by_status": "Duruma Göre Toplam Sayılar"
-    },
-    "interval": {
-      "all": "Tümü",
-      "days": "Günler",
-      "days_1": "1 gün",
-      "hours": "Saatler",
-      "hours_1": "1 saat",
-      "hours_6": "6 saat",
-      "hours_12": "12 saat",
-      "minutes": "Dakikalar",
-      "minutes_1": "1 dakika",
-      "minutes_5": "5 dakika",
-      "minutes_15": "15 dakika",
-      "minutes_30": "30 dakika",
-      "off": "Kapalı",
-      "seconds_10": "10 saniye",
-      "seconds_30": "30 saniye",
-      "weeks_1": "1 hafta"
     }
   },
   "facets": {

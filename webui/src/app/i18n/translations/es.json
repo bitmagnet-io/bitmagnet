@@ -27,9 +27,27 @@
   "dashboard": {
     "event": {
       "created": "Creado",
+      "failed": "Fallido",
       "processed": "Procesado",
-      "updated": "Actualizado",
-      "failed": "Fallido"
+      "updated": "Actualizado"
+    },
+    "interval": {
+      "all": "Todos",
+      "days": "Días",
+      "days_1": "1 día",
+      "hours": "Horas",
+      "hours_1": "1 hora",
+      "hours_12": "12 horas",
+      "hours_6": "6 horas",
+      "minutes": "Minutos",
+      "minutes_1": "1 minuto",
+      "minutes_15": "15 minutos",
+      "minutes_30": "30 minutos",
+      "minutes_5": "5 minutos",
+      "off": "Apagado",
+      "seconds_10": "10 segundos",
+      "seconds_30": "30 segundos",
+      "weeks_1": "1 semana"
     },
     "metrics": {
       "event": "Evento",
@@ -60,24 +78,6 @@
       "ran_at": "Ejecutado en",
       "retry": "Reintentar",
       "total_counts_by_status": "Recuento total por estado"
-    },
-    "interval": {
-      "all": "Todos",
-      "days": "Días",
-      "days_1": "1 día",
-      "hours": "Horas",
-      "hours_1": "1 hora",
-      "hours_6": "6 horas",
-      "hours_12": "12 horas",
-      "minutes": "Minutos",
-      "minutes_1": "1 minuto",
-      "minutes_5": "5 minutos",
-      "minutes_15": "15 minutos",
-      "minutes_30": "30 minutos",
-      "off": "Apagado",
-      "seconds_10": "10 segundos",
-      "seconds_30": "30 segundos",
-      "weeks_1": "1 semana"
     }
   },
   "facets": {

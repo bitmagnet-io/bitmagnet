@@ -27,9 +27,27 @@
   "dashboard": {
     "event": {
       "created": "Gemaakt",
+      "failed": "Mislukt",
       "processed": "Verwerkt",
-      "updated": "Bijgewerkt",
-      "failed": "Mislukt"
+      "updated": "Bijgewerkt"
+    },
+    "interval": {
+      "all": "Alle",
+      "days": "Dagen",
+      "days_1": "1 dag",
+      "hours": "Uren",
+      "hours_1": "1 uur",
+      "hours_12": "12 uur",
+      "hours_6": "6 uur",
+      "minutes": "Minuten",
+      "minutes_1": "1 minuut",
+      "minutes_15": "15 minuten",
+      "minutes_30": "30 minuten",
+      "minutes_5": "5 minuten",
+      "off": "Uit",
+      "seconds_10": "10 seconden",
+      "seconds_30": "30 seconden",
+      "weeks_1": "1 week"
     },
     "metrics": {
       "event": "Gebeurtenis",
@@ -60,24 +78,6 @@
       "ran_at": "Uitgevoerd op",
       "retry": "Opnieuw proberen",
       "total_counts_by_status": "Totaal aantal per status"
-    },
-    "interval": {
-      "all": "Alle",
-      "days": "Dagen",
-      "days_1": "1 dag",
-      "hours": "Uren",
-      "hours_1": "1 uur",
-      "hours_6": "6 uur",
-      "hours_12": "12 uur",
-      "minutes": "Minuten",
-      "minutes_1": "1 minuut",
-      "minutes_5": "5 minuten",
-      "minutes_15": "15 minuten",
-      "minutes_30": "30 minuten",
-      "off": "Uit",
-      "seconds_10": "10 seconden",
-      "seconds_30": "30 seconden",
-      "weeks_1": "1 week"
     }
   },
   "facets": {

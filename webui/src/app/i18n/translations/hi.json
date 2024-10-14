@@ -27,9 +27,27 @@
   "dashboard": {
     "event": {
       "created": "बनाया गया",
+      "failed": "असफल",
       "processed": "प्रसंस्कृत",
-      "updated": "अपडेट किया गया",
-      "failed": "असफल"
+      "updated": "अपडेट किया गया"
+    },
+    "interval": {
+      "all": "सभी",
+      "days": "दिन",
+      "days_1": "1 दिन",
+      "hours": "घंटे",
+      "hours_1": "1 घंटा",
+      "hours_12": "12 घंटे",
+      "hours_6": "6 घंटे",
+      "minutes": "मिनट",
+      "minutes_1": "1 मिनट",
+      "minutes_15": "15 मिनट",
+      "minutes_30": "30 मिनट",
+      "minutes_5": "5 मिनट",
+      "off": "बंद",
+      "seconds_10": "10 सेकंड",
+      "seconds_30": "30 सेकंड",
+      "weeks_1": "1 सप्ताह"
     },
     "metrics": {
       "event": "घटना",
@@ -60,24 +78,6 @@
       "ran_at": "चलाया गया समय",
       "retry": "पुनः प्रयास करें",
       "total_counts_by_status": "स्थिति द्वारा कुल गणना"
-    },
-    "interval": {
-      "all": "सभी",
-      "days": "दिन",
-      "days_1": "1 दिन",
-      "hours": "घंटे",
-      "hours_1": "1 घंटा",
-      "hours_6": "6 घंटे",
-      "hours_12": "12 घंटे",
-      "minutes": "मिनट",
-      "minutes_1": "1 मिनट",
-      "minutes_5": "5 मिनट",
-      "minutes_15": "15 मिनट",
-      "minutes_30": "30 मिनट",
-      "off": "बंद",
-      "seconds_10": "10 सेकंड",
-      "seconds_30": "30 सेकंड",
-      "weeks_1": "1 सप्ताह"
     }
   },
   "facets": {
