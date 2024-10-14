@@ -11,7 +11,8 @@ import * as generated from "../../graphql/generated";
 import { ErrorsService } from "../../errors/errors.service";
 import {
   autoRefreshIntervals,
-  emptyParams, emptyRawResult,
+  emptyParams,
+  emptyRawResult,
   emptyResult,
   timeframeLengths,
 } from "./torrent-metrics.constants";
@@ -22,13 +23,15 @@ import {
   TimeframeName,
   AutoRefreshInterval,
 } from "./torrent-metrics.types";
-import {createResult} from "./torrent-metrics.utils";
+import { createResult } from "./torrent-metrics.utils";
 
 export class TorrentMetricsController {
   private paramsSubject: BehaviorSubject<Params>;
   public params$: Observable<Params>;
   private variablesSubject: BehaviorSubject<generated.TorrentMetricsQueryVariables>;
-  private rawResultSubject = new BehaviorSubject<generated.TorrentMetricsQuery>(emptyRawResult);
+  private rawResultSubject = new BehaviorSubject<generated.TorrentMetricsQuery>(
+    emptyRawResult,
+  );
   private resultSubject = new BehaviorSubject<Result>(emptyResult);
   public result$ = this.resultSubject.asObservable();
   private loadingSubject = new BehaviorSubject(false);

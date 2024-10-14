@@ -386,6 +386,12 @@ ${$x}`,Kx=Je`
         count
       }
     }
+    listSources {
+      sources {
+        key
+        name
+      }
+    }
   }
 }
     `;var jf=Je`

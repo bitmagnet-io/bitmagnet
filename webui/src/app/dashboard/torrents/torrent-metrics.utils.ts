@@ -1,3 +1,4 @@
+import * as generated from "../../graphql/generated";
 import {
   BucketParams,
   BucketSpan,
@@ -7,10 +8,9 @@ import {
   EventName,
   Params,
   Result,
-  TorrentEvents
+  TorrentEvents,
 } from "./torrent-metrics.types";
-import * as generated from "../../graphql/generated";
-import {durationSeconds, timeframeLengths} from "./torrent-metrics.constants";
+import { durationSeconds, timeframeLengths } from "./torrent-metrics.constants";
 
 export const createResult = (
   params: Params,
@@ -43,25 +43,25 @@ export const createResult = (
         [next.source]: {
           created: !next.updated
             ? {
-              ...currentEventBuckets.created,
-              [bucket.key]: {
-                count:
-                  next.count +
-                  (currentEventBuckets.created?.[bucket.key]?.count ?? 0),
-                startTime: bucket.start,
-              },
-            }
+                ...currentEventBuckets.created,
+                [bucket.key]: {
+                  count:
+                    next.count +
+                    (currentEventBuckets.created?.[bucket.key]?.count ?? 0),
+                  startTime: bucket.start,
+                },
+              }
             : currentEventBuckets.created,
           updated: next.updated
             ? {
-              ...currentEventBuckets.updated,
-              [bucket.key]: {
-                count:
-                  next.count +
-                  (currentEventBuckets.updated?.[bucket.key]?.count ?? 0),
-                startTime: bucket.start,
-              },
-            }
+                ...currentEventBuckets.updated,
+                [bucket.key]: {
+                  count:
+                    next.count +
+                    (currentEventBuckets.updated?.[bucket.key]?.count ?? 0),
+                  startTime: bucket.start,
+                },
+              }
             : currentEventBuckets.updated,
         },
       };
@@ -137,7 +137,7 @@ export const createResult = (
     availableSources: rawResult.torrent.listSources.sources.map((s) => ({
       key: s.key,
       name: s.name,
-    }))
+    })),
   };
 };
 

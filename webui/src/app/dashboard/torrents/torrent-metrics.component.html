@@ -265,8 +265,14 @@
                   "
                 >
                   <mat-option value="_all">All</mat-option>
-                  @for (source of (torrentMetricsController.result$ | async)?.availableSources; track source.key) {
-                    <mat-option [value]="source.key">{{ source.name }}</mat-option>
+                  @for (
+                    source of (torrentMetricsController.result$ | async)
+                      ?.availableSources;
+                    track source.key
+                  ) {
+                    <mat-option [value]="source.key">{{
+                      source.name
+                    }}</mat-option>
                   }
                 </mat-select>
               </mat-form-field>

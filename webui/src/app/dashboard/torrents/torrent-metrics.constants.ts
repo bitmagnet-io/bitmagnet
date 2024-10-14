@@ -1,6 +1,6 @@
 import * as generated from "../../graphql/generated";
 import { BucketParams, Params, Result } from "./torrent-metrics.types";
-import {createResult} from "./torrent-metrics.utils";
+import { createResult } from "./torrent-metrics.utils";
 
 export const defaultBucketParams: BucketParams = {
   duration: "hour",
@@ -22,20 +22,21 @@ export const emptyParams: Params = {
   autoRefresh: "off",
 };
 
-export const emptyRawResult: generated.TorrentMetricsQuery =
-    {
-      torrent: {
-        metrics: {
-          buckets: [],
+export const emptyRawResult: generated.TorrentMetricsQuery = {
+  torrent: {
+    metrics: {
+      buckets: [],
+    },
+    listSources: {
+      sources: [
+        {
+          key: "dht",
+          name: "DHT",
         },
-        listSources: {
-          sources: [{
-            key: "dht",
-            name: "DHT"
-          }],
-        }
-      },
-    };
+      ],
+    },
+  },
+};
 
 export const eventNames = ["created", "updated"] as const;
 
@@ -79,4 +80,4 @@ export const autoRefreshIntervals: Record<
   minutes_5: 60 * 5,
 };
 
-export const emptyResult: Result = createResult(emptyParams, emptyRawResult)
+export const emptyResult: Result = createResult(emptyParams, emptyRawResult);

@@ -7,14 +7,13 @@ import { ThemeBaseColor } from "../../themes/theme-types";
 import { createThemeColor } from "../../themes/theme-utils";
 import { ThemeInfoService } from "../../themes/theme-info.service";
 import { resolveDateLocale } from "../../dates/dates.locales";
-import { formatDuration } from "../../dates/dates.utils";
 import {
   durationSeconds,
   eventNames,
   timeframeLengths,
 } from "./torrent-metrics.constants";
 import { BucketParams, EventName, Result } from "./torrent-metrics.types";
-import {normalizeBucket} from "./torrent-metrics.utils";
+import { normalizeBucket } from "./torrent-metrics.utils";
 
 const eventColors: Record<EventName, ThemeBaseColor> = {
   created: "primary",
@@ -74,8 +73,6 @@ export class TorrentChartAdapterTimeline
               yAxisID: "yCount",
               label: [source.source, event].join("/"),
               data: series,
-              // fill: 'origin',
-              // backgroundColor: 'rgba(148,159,177,0.2)',
               borderColor: colors[createThemeColor(eventColors[event], 50)],
               pointBackgroundColor:
                 colors[createThemeColor(eventColors[event], 20)],
@@ -109,20 +106,6 @@ export class TorrentChartAdapterTimeline
                 ),
             },
           },
-          // x: {
-          //   ticks: {
-          //     stepSize: 5
-          //   }
-          // }
-          // y1: {
-          //   position: 'right',
-          //   grid: {
-          //     color: 'rgba(255,0,0,0.3)',
-          //   },
-          //   ticks: {
-          //     color: 'red',
-          //   },
-          // },
         },
         plugins: {
           legend: {
@@ -131,10 +114,6 @@ export class TorrentChartAdapterTimeline
           decimation: {
             enabled: true,
           },
-          // datalabels: {
-          //   anchor: 'end',
-          //   align: 'end',
-          // },
         },
       },
       data: {
@@ -163,41 +142,6 @@ export class TorrentChartAdapterTimeline
       {
         locale: resolveDateLocale(this.transloco.getActiveLang()),
       },
-    );
-  }
-
-  private formatDuration(d: number | string): string {
-    if (typeof d === "string") {
-      d = parseInt(d);
-    }
-    if (d === 0) {
-      return "0";
-    }
-    let seconds = d;
-    let minutes = 0;
-    let hours = 0;
-    let days = 0;
-    if (seconds >= 60) {
-      minutes = Math.floor(seconds / 60);
-      seconds = seconds % 60;
-      if (minutes >= 5) {
-        seconds = 0;
-        if (minutes >= 60) {
-          hours = Math.floor(minutes / 60);
-          minutes = minutes % 60;
-          if (hours >= 5) {
-            minutes = 0;
-            if (hours >= 24) {
-              days = Math.floor(hours / 24);
-              hours = hours % 24;
-            }
-          }
-        }
-      }
-    }
-    return formatDuration(
-      { days, hours, minutes, seconds },
-      this.transloco.getActiveLang(),
     );
   }
 }
