@@ -1,0 +1,150 @@
+<ng-container *transloco="let t">
+  <mat-toolbar class="toolbar-header">
+    @if (breakpoints.sizeAtLeast("Medium")) {
+      <h1>
+        <a routerLink="torrents">
+          <mat-icon svgIcon="magnet"></mat-icon>
+          <span class="name">bitmagnet</span>
+          <app-version />
+        </a>
+      </h1>
+      <nav>
+        <a
+          mat-button
+          routerLink="torrents"
+          #linkTorrents="routerLinkActive"
+          routerLinkActive
+          [class]="linkTorrents.isActive ? 'active' : ''"
+        >
+          <mat-icon svgIcon="magnet" />
+          {{ t("routes.torrents") }}
+        </a>
+        <a
+          mat-button
+          routerLink="dashboard"
+          #linkDashboard="routerLinkActive"
+          routerLinkActive
+          [class]="linkDashboard.isActive ? 'active' : ''"
+        >
+          <mat-icon>dashboard</mat-icon>
+          {{ t("routes.dashboard") }}
+        </a>
+      </nav>
+    } @else {
+      <h1>
+        <a routerLink="/torrents">
+          <mat-icon svgIcon="magnet"></mat-icon>
+        </a>
+      </h1>
+      <button
+        mat-icon-button
+        routerLink="dashboard"
+        #linkDashboard="routerLinkActive"
+        routerLinkActive
+        [class]="linkDashboard.isActive ? 'active' : ''"
+        [matTooltip]="t('routes.dashboard')"
+      >
+        <mat-icon>dashboard</mat-icon>
+      </button>
+    }
+    <span class="spacer"></span>
+    <app-health-widget />
+    <button
+      mat-icon-button
+      aria-label="Theme"
+      [matMenuTriggerFor]="themesMenu"
+      [matTooltip]="t('layout.change_theme')"
+    >
+      <mat-icon>apparel</mat-icon>
+    </button>
+    <mat-menu #themesMenu="matMenu" class="layout-header-menu">
+      @for (th of themeManager.themes; track th.key) {
+        <a
+          mat-menu-item
+          (click)="themeManager.setTheme(th.key)"
+          [class]="th.key === themeManager.selectedTheme ? 'active' : ''"
+          ><mat-icon>{{ th.dark ? "dark_mode" : "light_mode" }}</mat-icon
+          >{{ th.label }}</a
+        >
+      }
+    </mat-menu>
+    <button
+      mat-icon-button
+      [matMenuTriggerFor]="languagesMenu"
+      [matTooltip]="t('layout.translate')"
+    >
+      <mat-icon>translate</mat-icon>
+    </button>
+    <mat-menu #languagesMenu="matMenu" class="layout-header-menu">
+      @for (l of translateManager.availableLanguages; track l.id) {
+        <a
+          mat-menu-item
+          (click)="translateManager.setLanguage(l.id)"
+          [matTooltip]="
+            l.id === translateManager.getPreferredLanguage()
+              ? undefined
+              : t('languages.' + l.id)
+          "
+          matTooltipPosition="right"
+          matTooltipShowDelay="500"
+          [class]="
+            l.id === translateManager.getPreferredLanguage() ? 'active' : ''
+          "
+          >{{ l.label }}</a
+        >
+      }
+    </mat-menu>
+    <button
+      mat-icon-button
+      [matTooltip]="t('layout.external_links')"
+      [matMenuTriggerFor]="externalLinksMenu"
+    >
+      <mat-icon svgIcon="external-link" />
+    </button>
+    <mat-menu #externalLinksMenu="matMenu" class="layout-header-menu">
+      <a mat-menu-item href="https://bitmagnet.io" target="_blank"
+        >bitmagnet.io</a
+      >
+      <a mat-menu-item href="https://discord.gg/6mFNszX8qM" target="_blank">{{
+        t("layout.bitmagnet_on_service", { service: "Discord" })
+      }}</a>
+      <a
+        mat-menu-item
+        href="https://github.com/bitmagnet-io/bitmagnet"
+        target="_blank"
+        >{{ t("layout.bitmagnet_on_service", { service: "GitHub" }) }}</a
+      >
+      <a
+        mat-menu-item
+        href="https://opencollective.com/bitmagnet"
+        target="_blank"
+        >{{
+          t("layout.bitmagnet_on_service", { service: "OpenCollective" })
+        }}</a
+      >
+    </mat-menu>
+    @if (!breakpoints.sizeAtLeast("Medium")) {
+      <a
+        mat-icon-button
+        class="button-sponsor"
+        href="https://opencollective.com/bitmagnet"
+        target="_blank"
+        [matTooltip]="t('layout.sponsor')"
+        ><mat-icon>favorite</mat-icon></a
+      >
+    } @else {
+      <a
+        mat-button
+        class="button-sponsor"
+        href="https://opencollective.com/bitmagnet"
+        target="_blank"
+        [matTooltip]="t('layout.support_bitmagnet')"
+        ><mat-icon>favorite</mat-icon>{{ t("layout.sponsor") }}</a
+      >
+    }
+  </mat-toolbar>
+  <div class="app-content">
+    <ng-content></ng-content>
+  </div>
+  <app-theme-emitter />
+</ng-container>

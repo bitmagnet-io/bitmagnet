@@ -1,0 +1,28 @@
+.torrent-permalink {
+  max-width: 900px;
+  margin: 20px auto;
+  mat-card-title {
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      padding-right: 80px;
+    }
+    .magnet-link {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+    }
+  }
+  .mat-mdc-card-avatar {
+    font-size: 44px;
+    margin-top: -10px;
+    border-radius: 0;
+    overflow: visible;
+  }
+  mat-card-subtitle {
+    margin: 16px 0 14px -56px;
+    font-size: 6px;
+  }
+}

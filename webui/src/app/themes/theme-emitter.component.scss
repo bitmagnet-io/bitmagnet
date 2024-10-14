@@ -1,0 +1,11 @@
+:host {
+  display: none;
+}
+
+.theme-emitter-color.background {
+  color: var(--mat-app-background-color);
+}
+
+.theme-emitter-color.foreground {
+  color: var(--mat-app-text-color);
+}

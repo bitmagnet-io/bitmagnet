@@ -1,0 +1,24 @@
+mat-card-header {
+  flex-wrap: wrap;
+  h2 {
+    font-size: 18px;
+    margin: 0 60px 0 48px;
+    height: 48px;
+    line-height: 48px;
+    mat-icon {
+      position: relative;
+      top: 6px;
+      margin-right: 14px;
+      line-height: 1.25rem;
+    }
+  }
+  nav {
+    flex: 0 0 100%;
+    a {
+      margin-top: 2px;
+      mat-icon {
+        margin-right: 12px;
+      }
+    }
+  }
+}

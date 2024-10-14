@@ -46,12 +46,19 @@ tasks:
       - go run . classifier schema --format json > ./bitmagnet.io/schemas/classifier-0.1.json
 
   gen-webui-graphql:
+    dir: ./webui
     cmds:
-      - cd webui && npm run graphql:codegen
+      - npm run graphql:codegen
+
+  i18n-extract:
+    dir: ./webui
+    cmds:
+      - npm run i18n:extract
 
   lint:
     cmds:
-      - task lint-golangci
+      # Removing golang-ci lint as the Nix package is currently broken
+      # - task lint-golangci
       - task lint-webui
       - task lint-prettier
 
@@ -93,7 +100,7 @@ tasks:
   build-webui:
     dir: ./webui
     cmds:
-      - npm run build -- -c embedded
+      - npm run build
 
   build-docsite:
     dir: ./bitmagnet.io

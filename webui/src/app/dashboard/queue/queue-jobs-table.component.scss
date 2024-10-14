@@ -1,0 +1,46 @@
+.item-detail {
+  > :first-child {
+    padding-top: 20px;
+  }
+  > :last-child {
+    margin-bottom: 20px;
+  }
+}
+
+tr:not(.expanded-detail-row) td {
+  cursor: pointer;
+}
+
+tr.expanded-detail-row {
+  height: 0;
+  h5 {
+    margin: 0;
+    padding-top: 8px;
+  }
+  p {
+    margin: 0;
+    padding-top: 8px;
+    padding-bottom: 4px;
+  }
+  span.copy {
+    cursor: crosshair;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+  }
+}
+
+pre {
+  opacity: 0;
+  max-height: 200px;
+  max-width: 100px;
+  overflow: scroll;
+  background: rgba(#777, 0.2);
+  padding: 10px;
+}
+
+.expanded-detail-row.expanded {
+  pre {
+    opacity: 1;
+    max-width: 1200px;
+  }
+}

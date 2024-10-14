@@ -1,13 +1,12 @@
 package webui
 
 import (
-	"fmt"
+	"errors"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/webui"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"io"
 	"io/fs"
 	"net/http"
 )
@@ -40,32 +39,26 @@ func (b *builder) Key() string {
 
 func (b *builder) Apply(e *gin.Engine) error {
 	webuiFS := webui.StaticFS()
-	appRoot, appRootErr := fs.Sub(webuiFS, "dist/bitmagnet")
+	appRoot, appRootErr := fs.Sub(webuiFS, "dist/bitmagnet/browser")
 	if appRootErr != nil {
-		b.logger.Errorf("the webui app root directory is missing; run `ng build` within the `webui` folder: %v", appRootErr)
+		b.logger.Errorf("the webui app root directory is missing; run `npm run build` within the `webui` folder: %v", appRootErr)
 		return nil
 	}
-	appRootFS := http.FS(appRoot)
-	if walkErr := fs.WalkDir(appRoot, ".", func(path string, d fs.DirEntry, _ error) error {
-		if !d.IsDir() {
-			e.StaticFileFS(fmt.Sprintf("/%s", path), fmt.Sprintf("./%s", path), appRootFS)
-		}
-		return nil
-	}); walkErr != nil {
-		return fmt.Errorf("failed to walk app root: %w", walkErr)
-	}
-	// serving index.html from "/" using e.StaticFileFS seems to result in a redirect loop:
-	index, indexErr := appRootFS.Open("index.html")
-	if indexErr != nil {
-		return fmt.Errorf("failed to open index.html: %w", indexErr)
-	}
-	indexBytes, indexBytesErr := io.ReadAll(index)
-	if indexBytesErr != nil {
-		return fmt.Errorf("failed to read index.html: %w", indexBytesErr)
-	}
+	e.StaticFS("/webui", wrappedFs{http.FS(appRoot)})
 	e.GET("/", func(c *gin.Context) {
-		c.Header("Content-Type", "text/html")
-		_, _ = c.Writer.Write(indexBytes)
+		c.Redirect(301, "/webui")
 	})
 	return nil
+}
+
+type wrappedFs struct {
+	http.FileSystem
+}
+
+func (w wrappedFs) Open(name string) (http.File, error) {
+	f, err := w.FileSystem.Open(name)
+	if err != nil && errors.Is(err, fs.ErrNotExist) {
+		return w.FileSystem.Open("/index.html")
+	}
+	return f, err
 }

@@ -82,7 +82,7 @@ func TestWith_Query(t *testing.T) {
 				db = tt.operation(db)
 			}
 			if db.Error != nil {
-				t.Errorf(db.Error.Error())
+				t.Error(db.Error.Error())
 			}
 		})
 	}

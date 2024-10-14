@@ -22,6 +22,12 @@ jobs:
       - name: Run linters
         run: |
           nix develop --ignore-environment --keep HOME . --command task lint
+      # Adding golang-ci lint as a separate step as the Nix package is currently broken
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.61
+          args: --timeout=10m
 
   test:
     runs-on: ubuntu-latest
@@ -65,13 +71,15 @@ jobs:
       - uses: cachix/install-nix-action@v26
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Install web UI, apply database migrations, generate code and build web app
+      - name: Install web UI, apply database migrations, generate code, extract translations and build web app
         run: |
           nix develop --ignore-environment --command task install-webui
           nix develop --ignore-environment --keep HOME --keep POSTGRES_PASSWORD . --command task migrate
           nix develop --ignore-environment --keep HOME --keep POSTGRES_PASSWORD . --command task gen
+          nix develop --ignore-environment . --command task i18n-extract
           nix develop --ignore-environment . --command task build-webui
         env:
           POSTGRES_PASSWORD: postgres
       - name: Check nothing changed
-        run: git diff --exit-code
+        # excluding the 3rdpartylicenses file in a horrible hack:
+        run: git diff --exit-code -- . ':(exclude)webui/dist/bitmagnet/3rdpartylicenses.txt'

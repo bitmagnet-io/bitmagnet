@@ -1,9 +1,9 @@
 module github.com/bitmagnet-io/bitmagnet
 
-go 1.22
+go 1.23
 
 require (
-	github.com/99designs/gqlgen v0.17.45
+	github.com/99designs/gqlgen v0.17.55
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/abice/go-enum v0.6.0
 	github.com/adrg/xdg v0.4.0
@@ -18,10 +18,9 @@ require (
 	github.com/go-playground/validator/v10 v10.20.0
 	github.com/go-resty/resty/v2 v2.12.0
 	github.com/google/cel-go v0.20.1
-	github.com/grafana/pyroscope-go/godeltaprof v0.1.7
+	github.com/grafana/pyroscope-go/godeltaprof v0.1.8
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/hedhyw/rex v0.6.0
-	github.com/hellofresh/health-go/v5 v5.5.3
 	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgx/v5 v5.5.5
 	github.com/jedib0t/go-pretty/v6 v6.5.8
@@ -35,17 +34,17 @@ require (
 	github.com/rs/cors/wrapper/gin v0.0.0-20240429123903-3d336ea9b505
 	github.com/stretchr/testify v1.9.0
 	github.com/tylertreat/BoomFilters v0.0.0-20210315201527-1a82519a3e43
-	github.com/urfave/cli/v2 v2.27.2
-	github.com/vektah/gqlparser/v2 v2.5.14
-	github.com/vektra/mockery/v2 v2.43.0
+	github.com/urfave/cli/v2 v2.27.4
+	github.com/vektah/gqlparser/v2 v2.5.17
+	github.com/vektra/mockery/v2 v2.46.2
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/fx v1.21.1
 	go.uber.org/zap v1.27.0
-	golang.org/x/sync v0.7.0
-	golang.org/x/sys v0.19.0
-	golang.org/x/text v0.14.0
+	golang.org/x/sync v0.8.0
+	golang.org/x/sys v0.25.0
+	golang.org/x/text v0.18.0
 	golang.org/x/time v0.5.0
-	google.golang.org/protobuf v1.34.0
+	google.golang.org/protobuf v1.35.1
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.5.6
 	gorm.io/driver/postgres v1.5.7
@@ -137,7 +136,7 @@ require (
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sethvargo/go-retry v0.2.4 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
-	github.com/sosodev/duration v1.3.0 // indirect
+	github.com/sosodev/duration v1.3.1 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
@@ -151,18 +150,16 @@ require (
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
-	github.com/xrash/smetrics v0.0.0-20240312152122-5f08fbb34913 // indirect
-	go.opentelemetry.io/otel v1.26.0 // indirect
-	go.opentelemetry.io/otel/trace v1.26.0 // indirect
+	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	go.uber.org/dig v1.17.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.7.0 // indirect
-	golang.org/x/crypto v0.22.0 // indirect
+	golang.org/x/crypto v0.27.0 // indirect
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f // indirect
-	golang.org/x/mod v0.17.0 // indirect
-	golang.org/x/net v0.24.0 // indirect
-	golang.org/x/term v0.19.0 // indirect
-	golang.org/x/tools v0.20.0 // indirect
+	golang.org/x/mod v0.20.0 // indirect
+	golang.org/x/net v0.29.0 // indirect
+	golang.org/x/term v0.24.0 // indirect
+	golang.org/x/tools v0.24.0 // indirect
 	golang.org/x/tools/cmd/cover v0.1.0-deprecated // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240429193739-8cf5692501f6 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240429193739-8cf5692501f6 // indirect

@@ -1,0 +1,14 @@
+query QueueMetrics($input: QueueMetricsQueryInput!) {
+  queue {
+    metrics(input: $input) {
+      buckets {
+        queue
+        status
+        createdAtBucket
+        ranAtBucket
+        count
+        latency
+      }
+    }
+  }
+}

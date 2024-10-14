@@ -1,5 +1,0 @@
-query SystemQuery {
-  system {
-    version
-  }
-}

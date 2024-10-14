@@ -85,3 +85,17 @@ When referring to CLI commands in the rest of the documentation, for simplicity 
 ```sh
 bitmagnet --help
 ```
+
+## Starting **bitmagnet**
+
+**bitmagnet** runs as multiple worker processes that can be started either individually or all at once. To start all workers, run:
+
+```sh
+bitmagnet worker run --all
+```
+
+Alternatively, specify individual workers to start:
+
+```sh
+bitmagnet worker run --keys=http_server,queue_server,dht_crawler
+```

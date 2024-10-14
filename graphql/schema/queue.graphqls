@@ -1,0 +1,104 @@
+type QueueQuery {
+  jobs(input: QueueJobsQueryInput!): QueueJobsQueryResult!
+  metrics(input: QueueMetricsQueryInput!): QueueMetricsQueryResult!
+}
+
+input QueueJobsQueryInput {
+  queues: [String!]
+  statuses: [QueueJobStatus!]
+  limit: Int
+  page: Int
+  offset: Int
+  totalCount: Boolean
+  hasNextPage: Boolean
+  facets: QueueJobsFacetsInput
+  orderBy: [QueueJobsOrderByInput!]
+}
+
+input QueueJobQueueFacetInput {
+  aggregate: Boolean
+  filter: [String!]
+}
+
+input QueueJobStatusFacetInput {
+  aggregate: Boolean
+  filter: [QueueJobStatus!]
+}
+
+input QueueJobsFacetsInput {
+  status: QueueJobStatusFacetInput
+  queue: QueueJobQueueFacetInput
+}
+
+input QueueJobsOrderByInput {
+  field: QueueJobsOrderByField!
+  descending: Boolean
+}
+
+type QueueJob {
+  id: ID!
+  queue: String!
+  status: QueueJobStatus!
+  payload: String!
+  priority: Int!
+  retries: Int!
+  maxRetries: Int!
+  runAfter: DateTime!
+  ranAt: DateTime
+  error: String
+  createdAt: DateTime!
+}
+
+type QueueJobsQueryResult {
+  totalCount: Int!
+  hasNextPage: Boolean
+  items: [QueueJob!]!
+  aggregations: QueueJobsAggregations!
+}
+
+type QueueJobQueueAgg {
+  value: String!
+  label: String!
+  count: Int!
+}
+
+type QueueJobStatusAgg {
+  value: QueueJobStatus!
+  label: String!
+  count: Int!
+}
+
+type QueueJobsAggregations {
+  queue: [QueueJobQueueAgg!]
+  status: [QueueJobStatusAgg!]
+}
+
+enum QueueJobStatus {
+  pending
+  retry
+  failed
+  processed
+}
+
+input QueueEnqueueReprocessTorrentsBatchInput {
+  batchSize: Int
+  chunkSize: Int
+  contentTypes: [ContentType]
+  orphans: Boolean
+  classifierRematch: Boolean
+  classifierWorkflow: String
+  apisDisabled: Boolean
+  localSearchDisabled: Boolean
+}
+
+type QueueMutation {
+  purgeJobs(input: QueuePurgeJobsInput!): Void
+  enqueueReprocessTorrentsBatch(
+    input: QueueEnqueueReprocessTorrentsBatchInput
+  ): Void
+}
+
+input QueuePurgeJobsInput {
+  queues: [String!]
+  statuses: [QueueJobStatus!]
+}

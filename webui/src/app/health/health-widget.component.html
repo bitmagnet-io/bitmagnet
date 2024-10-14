@@ -1,0 +1,35 @@
+<ng-container *transloco="let t">
+  <button
+    mat-icon-button
+    [class]="'health-icon ' + 'health-icon-' + health.result.status"
+    [matTooltip]="
+      t('health.bitmagnet_is_status', {
+        status: t('health.statuses.' + health.result.status)
+      })
+    "
+    (click)="dialog.open(healthDialog)"
+  >
+    <mat-icon>{{ health.result.icon }}</mat-icon>
+  </button>
+  <ng-template #healthDialog>
+    <h2 matDialogTitle>
+      {{ t("health.summary") }}:
+      {{
+        t("health.bitmagnet_is_status", {
+          status: t(
+            "health.statuses." +
+              (health.result.error ? "down" : health.result.status)
+          )
+        })
+      }}
+    </h2>
+    <mat-dialog-content>
+      <app-health-summary></app-health-summary>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+      <button mat-button matDialogClose color="primary">
+        {{ t("general.dismiss") }}
+      </button>
+    </mat-dialog-actions>
+  </ng-template>
+</ng-container>

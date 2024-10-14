@@ -1,7 +1,74 @@
+// Custom Theming for Angular Material
+// For more information: https://material.angular.io/guide/theming
+@use "@angular/material" as mat;
+@use "sass:map";
+// Plus imports for other components in your app.
+@use "./app/health/health-widget-component.theme";
+@use "./app/layout/layout-component.theme";
+@use "./app/dashboard/dashboard-component.theme";
+@use "./app/dashboard/queue/queue-visualize-component.theme";
+@use "./app/themes/theme-emitter-component.theme";
+@use "app/torrents/torrents-search-component.theme";
+@use "app/torrents/torrents-table-component.theme";
+
+@use "app/themes/classic-theme";
+@use "app/themes/neon-theme";
+@use "app/themes/tundra-theme";
+
 @import "@fontsource/roboto";
 @import "@fontsource/material-icons";
 @import "@fontsource/material-icons-outlined";
 @import "@fontsource/material-symbols-outlined";
+
+// Include the common styles for Angular Material. We include this here so that you only
+// have to load a single css file for Angular Material in your app.
+// Be sure that you only ever include this mixin once!
+@include mat.core();
+
+@mixin app-component-themes($theme) {
+  @include health-widget-component.theme($theme);
+  @include layout-component.theme($theme);
+  @include dashboard-component.theme($theme);
+  @include queue-visualize-component.theme($theme);
+  @include theme-emitter-component.theme($theme);
+  @include torrents-search-component.theme($theme);
+  @include torrents-table-component.theme($theme);
+}
+
+//.mat-toolbar.toolbar-header {
+//  background-color: mat.get-theme-color($theme, primary, 40);
+//  --mat-toolbar-container-text-color: #fff;
+
+// Include theme styles for core and each component used in your app.
+// Alternatively, you can import and @include the theme mixins for each component
+// that you are using.
+html {
+  @include mat.core-theme(classic-theme.$theme);
+  @include mat.all-component-themes(classic-theme.$theme);
+  @include app-component-themes(classic-theme.$theme);
+  //--mat-toolbar-container-text-color: #fff;
+  &[data-bitmagnet-theme="clean"] {
+    @include classic-theme.clean-theme-vars;
+  }
+  &[data-bitmagnet-theme="neon"] {
+    @include mat.all-component-colors(neon-theme.$theme);
+    @include app-component-themes(neon-theme.$theme);
+    @include neon-theme.theme-vars;
+  }
+  &[data-bitmagnet-theme="tundra"] {
+    @include mat.all-component-colors(tundra-theme.$theme);
+    @include app-component-themes(tundra-theme.$theme);
+    @include tundra-theme.theme-vars;
+  }
+}
+
+// Comment out the line below if you want to use the pre-defined typography utility classes.
+// For more information: https://material.angular.io/guide/typography#using-typography-styles-in-your-application.
+//@include mat.typography-hierarchy(classic-theme.$theme);
+
+// Comment out the line below if you want to use the deprecated `color` inputs.
+// @include mat.color-variants-backwards-compatibility(classic-theme.$theme);
+/* You can add global styles to this file, and also import other style files */
 
 html,
 body {
@@ -49,4 +116,28 @@ body {
 .material-symbols-outlined {
   font-family: "Material Symbols Outlined";
   @include mat-icon;
+}
+
+.mat-icon {
+  fill: var(--mat-icon-color);
+}
+
+.spacer {
+  display: inline-flex;
+  flex: 1 1 auto;
+}
+.drawer-container {
+  min-height: 100vh;
+}
+
+.drawer {
+  width: 340px;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+mat-drawer-content {
+  padding-right: 16px;
+  overflow: visible;
+  padding-bottom: 20px;
 }

@@ -7,15 +7,9 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-//go:generate go run github.com/abice/go-enum --marshal --names --nocase --nocomments --sql --sqlnullstr --values -f order_torrent_content.go
-
 // TorrentContentOrderBy represents sort orders for torrent content search results
-// ENUM(Relevance, PublishedAt, UpdatedAt, Size, Files, Seeders, Leechers, Name, InfoHash)
+// ENUM(relevance, published_at, updated_at, size, files_count, seeders, leechers, name, info_hash)
 type TorrentContentOrderBy string
-
-// OrderDirection represents sort order directions
-// ENUM(Ascending, Descending)
-type OrderDirection string
 
 func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderByColumn {
 	desc := direction == OrderDirectionDescending
@@ -37,7 +31,16 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderB
 					Name:  "published_at",
 				},
 				Desc: desc,
-			}}}
+			},
+		}, {
+			OrderByColumn: clause.OrderByColumn{
+				Column: clause.Column{
+					Table: model.TableNameTorrentContent,
+					Name:  "info_hash",
+				},
+				Desc: desc,
+			},
+		}}
 	case TorrentContentOrderByUpdatedAt:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{
@@ -46,7 +49,15 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderB
 					Name:  "updated_at",
 				},
 				Desc: desc,
-			}}}
+			}}, {
+			OrderByColumn: clause.OrderByColumn{
+				Column: clause.Column{
+					Table: model.TableNameTorrentContent,
+					Name:  "info_hash",
+				},
+				Desc: desc,
+			},
+		}}
 	case TorrentContentOrderBySize:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{
@@ -55,8 +66,16 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderB
 					Name:  "size",
 				},
 				Desc: desc,
-			}}}
-	case TorrentContentOrderByFiles:
+			}}, {
+			OrderByColumn: clause.OrderByColumn{
+				Column: clause.Column{
+					Table: model.TableNameTorrentContent,
+					Name:  "info_hash",
+				},
+				Desc: desc,
+			},
+		}}
+	case TorrentContentOrderByFilesCount:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
@@ -64,13 +83,29 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderB
 					Raw:  true,
 				},
 				Desc: desc,
-			}}}
+			}}, {
+			OrderByColumn: clause.OrderByColumn{
+				Column: clause.Column{
+					Table: model.TableNameTorrentContent,
+					Name:  "info_hash",
+				},
+				Desc: desc,
+			},
+		}}
 	case TorrentContentOrderBySeeders:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
 					Name: "coalesce(" + model.TableNameTorrentContent + ".seeders, -1)",
 					Raw:  true,
+				},
+				Desc: desc,
+			},
+		}, {
+			OrderByColumn: clause.OrderByColumn{
+				Column: clause.Column{
+					Table: model.TableNameTorrentContent,
+					Name:  "info_hash",
 				},
 				Desc: desc,
 			},
@@ -81,6 +116,14 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderB
 				Column: clause.Column{
 					Name: "coalesce(" + model.TableNameTorrentContent + ".leechers, -1)",
 					Raw:  true,
+				},
+				Desc: desc,
+			},
+		}, {
+			OrderByColumn: clause.OrderByColumn{
+				Column: clause.Column{
+					Table: model.TableNameTorrentContent,
+					Name:  "info_hash",
 				},
 				Desc: desc,
 			},
@@ -103,7 +146,8 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderB
 					Name:  "info_hash",
 				},
 				Desc: desc,
-			}}}
+			},
+		}}
 	default:
 		return []query.OrderByColumn{}
 	}

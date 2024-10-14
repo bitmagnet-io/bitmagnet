@@ -25,7 +25,7 @@ func NewQueueJob(queue string, payload any, opts ...QueueJobOption) (QueueJob, e
 		Status:           QueueJobStatusPending,
 		Payload:          payloadStr,
 		RunAfter:         time.Now(),
-		ArchivalDuration: Duration(24 * time.Hour),
+		ArchivalDuration: Duration(7 * 24 * time.Hour),
 	}
 	for _, opt := range opts {
 		opt(&j)

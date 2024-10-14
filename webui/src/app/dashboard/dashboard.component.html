@@ -1,0 +1,69 @@
+<ng-container *transloco="let t">
+  <mat-drawer-container class="drawer-container">
+    <mat-drawer
+      #drawer
+      class="drawer"
+      [attr.role]="breakpoints.sizeAtLeast('Medium') ? 'navigation' : 'dialog'"
+      [mode]="breakpoints.sizeAtLeast('Medium') ? 'side' : 'over'"
+      [opened]="breakpoints.sizeAtLeast('Medium')"
+    >
+      <nav>
+        <ul>
+          <li>
+            <a
+              mat-button
+              routerLink="/dashboard"
+              routerLinkActive
+              [routerLinkActiveOptions]="{ exact: true }"
+              #linkHome="routerLinkActive"
+              [class]="linkHome.isActive ? 'active' : ''"
+              ><mat-icon>dashboard</mat-icon>{{ t("routes.home") }}</a
+            >
+          </li>
+          <li>
+            <a
+              mat-button
+              routerLink="queues"
+              routerLinkActive
+              #linkQueues="routerLinkActive"
+              [class]="linkQueues.isActive ? 'active' : ''"
+              ><mat-icon svgIcon="queue" />{{ t("routes.queues") }}</a
+            >
+          </li>
+          <li>
+            <a
+              mat-button
+              routerLink="torrents"
+              routerLinkActive
+              #linkTorrents="routerLinkActive"
+              [class]="linkTorrents.isActive ? 'active' : ''"
+              ><mat-icon svgIcon="magnet" />{{ t("routes.torrents") }}</a
+            >
+          </li>
+        </ul>
+      </nav>
+    </mat-drawer>
+    <mat-drawer-content>
+      <div
+        class="form-field-container button-container button-container-toggle-drawer"
+      >
+        <button
+          type="button"
+          class="button-toggle-drawer"
+          mat-icon-button
+          (click)="drawer.toggle()"
+          [matTooltip]="t('torrents.toggle_drawer')"
+        >
+          <mat-icon
+            aria-label="Side nav toggle icon"
+            fontSet="material-icons"
+            >{{
+              drawer.opened ? "arrow_circle_left" : "arrow_circle_right"
+            }}</mat-icon
+          >
+        </button>
+      </div>
+      <router-outlet #outlet />
+    </mat-drawer-content>
+  </mat-drawer-container>
+</ng-container>

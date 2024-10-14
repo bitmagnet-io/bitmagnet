@@ -1,0 +1,36 @@
+@use "@angular/material" as mat;
+@use "sass:map";
+
+$base-colors: (
+  "primary": primary,
+  "secondary": secondary,
+  "tertiary": tertiary,
+  "neutral": neutral,
+  "neutral-variant": neutral-variant,
+  "error": error,
+);
+$hues: 20, 40, 50, 60, 80;
+
+@mixin theme($theme) {
+  .theme-emitter-color.success-50 {
+    color: map.get(map.get($theme, "success"), 50);
+  }
+  .theme-emitter-color.caution-50 {
+    color: map.get($theme, caution, 50);
+  }
+  @each $key, $color in $base-colors {
+    @each $hue in $hues {
+      .theme-emitter-color.#{$key}-#{$hue} {
+        color: mat.get-theme-color($theme, $color, $hue);
+      }
+    }
+  }
+  .theme-emitter-lightdark {
+    @if mat.get-theme-type($theme) == dark {
+      color: #000;
+    }
+    else {
+      color: #fff;
+    }
+  }
+}

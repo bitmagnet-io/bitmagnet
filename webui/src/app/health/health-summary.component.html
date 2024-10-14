@@ -1,0 +1,52 @@
+<ng-container *transloco="let t">
+  @if (health.result.error) {
+    <p>{{ t("health.check_failed_with_error") }}: {{ health.result.error }}</p>
+  } @else {
+    <table class="table-health">
+      <thead>
+        <tr>
+          <th></th>
+          <th>{{ t("health.component") }}</th>
+          <th>{{ t("general.status") }}</th>
+          @if (health.result.status === "down") {
+            <th>{{ t("general.error") }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (check of health.result.checks; track check.key) {
+          <tr>
+            <td class="td-icon">
+              <mat-icon>{{ check.icon }}</mat-icon>
+            </td>
+            <th scope="row">{{ t("health.components." + check.key) }}</th>
+            <td>{{ t("health.statuses." + check.status) }}</td>
+            @if (health.result.status === "down") {
+              <td>{{ check.error }}</td>
+            }
+          </tr>
+        }
+        @for (worker of health.result.workers; track worker.key) {
+          <tr>
+            <td class="td-icon">
+              <mat-icon>{{ worker.icon }}</mat-icon>
+            </td>
+            <th scope="row">
+              {{ t("health.worker") }}: {{ t("health.workers." + worker.key) }}
+            </th>
+            <td>
+              {{
+                t(
+                  "health.statuses." + (worker.started ? "started" : "inactive")
+                )
+              }}
+            </td>
+            @if (health.result.status === "down") {
+              <td></td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</ng-container>

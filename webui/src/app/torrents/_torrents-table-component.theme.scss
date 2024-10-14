@@ -1,0 +1,15 @@
+@use "../../../node_modules/@angular/material/index" as mat;
+
+@mixin theme($theme) {
+  .table-torrents {
+    .mat-column-magnet {
+      .mat-icon {
+        @if mat.get-theme-type($theme) == dark {
+          fill: mat.get-theme-color($theme, primary, 60);
+        } @else {
+          fill: mat.get-theme-color($theme, primary, 40);
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" version="1.1" fill="none" stroke="currentColor"
+     stroke-linecap="round" stroke-linejoin="round" stroke-width="1">
+  <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+  <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+  <g id="SVGRepo_iconCarrier">
+    <rect height="4.5" width="3" y="1.75" x="3.25"></rect>
+    <path d="m9.75 6.25h3m-3-4.5h1.5v4"></path>
+    <rect height="4.5" width="3" y="9.75" x="9.75"></rect>
+    <path d="m3.25 14.25h3m-3-4.5h1.5v4"></path>
+  </g>
+</svg>

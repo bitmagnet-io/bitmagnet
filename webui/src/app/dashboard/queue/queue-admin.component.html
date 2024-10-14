@@ -1,0 +1,18 @@
+<ng-container *transloco="let t">
+  <mat-card>
+    <mat-card-content>
+      <ul>
+        <li>
+          <a mat-button (click)="openDialogPurgeJobs()">{{
+            t("dashboard.queues.purge_queue_jobs")
+          }}</a>
+        </li>
+        <li>
+          <a mat-button (click)="openDialogEnqueueReprocessTorrentsBatch()">{{
+            t("dashboard.queues.enqueue_torrent_processing_batch")
+          }}</a>
+        </li>
+      </ul>
+    </mat-card-content>
+  </mat-card>
+</ng-container>

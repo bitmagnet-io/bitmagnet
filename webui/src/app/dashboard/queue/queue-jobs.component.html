@@ -1,0 +1,115 @@
+<ng-container *transloco="let t">
+  <mat-drawer-container class="drawer-container">
+    <mat-drawer
+      #drawer
+      class="drawer"
+      [attr.role]="breakpoints.sizeAtLeast('Medium') ? 'navigation' : 'dialog'"
+      [mode]="breakpoints.sizeAtLeast('Medium') ? 'side' : 'over'"
+      [opened]="breakpoints.sizeAtLeast('Medium')"
+    >
+      @for (facet of facets$ | async; track facet.key) {
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>
+              {{ t("facets." + facet.key) }}
+            </mat-card-title>
+          </mat-card-header>
+          @if (facet.filter?.length) {
+            <mat-card-content class="filtered">
+              @for (agg of facet.aggregations; track agg.value) {
+                <mat-checkbox
+                  [checked]="facet.filter?.includes(agg.value)"
+                  (change)="
+                    $event.checked
+                      ? controller.activateFilter(facet, agg.value)
+                      : controller.deactivateFilter(facet, agg.value)
+                  "
+                >
+                  {{ agg.label }}
+                  <small>{{ agg.count | number }}</small>
+                </mat-checkbox>
+              }
+            </mat-card-content>
+          } @else {
+            <mat-card-content class="unfiltered">
+              @for (agg of facet.aggregations; track agg.value) {
+                <mat-checkbox
+                  checked="true"
+                  (change)="controller.activateFilter(facet, agg.value)"
+                >
+                  {{ agg.label }}
+                  <small>{{ agg.count | number }}</small>
+                </mat-checkbox>
+              }
+            </mat-card-content>
+          }
+        </mat-card>
+      }
+    </mat-drawer>
+    <mat-drawer-content>
+      <div class="query-form">
+        <div
+          class="form-field-container button-container button-container-toggle-drawer"
+        >
+          <button
+            type="button"
+            class="button-toggle-drawer"
+            mat-icon-button
+            (click)="drawer.toggle()"
+            [matTooltip]="t('torrents.toggle_drawer')"
+          >
+            <mat-icon fontSet="material-icons">{{
+              drawer.opened ? "arrow_circle_left" : "arrow_circle_right"
+            }}</mat-icon>
+          </button>
+        </div>
+        <div class="form-field-container form-field-container-order-by">
+          <mat-form-field subscriptSizing="dynamic">
+            <mat-label>{{ t("torrents.order_by") }}</mat-label>
+            <mat-select
+              [value]="controls.orderBy.field"
+              (valueChange)="controller.selectOrderBy($event)"
+            >
+              @for (option of orderByOptions; track option.field) {
+                <mat-option [value]="option.field">
+                  {{ t("dashboard.queues." + option.field) }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <button
+            mat-icon-button
+            [matTooltip]="t('torrents.order_direction_toggle')"
+            (click)="controller.toggleOrderByDirection()"
+          >
+            <mat-icon>{{
+              controls.orderBy.descending ? "arrow_downward" : "arrow_upward"
+            }}</mat-icon>
+          </button>
+        </div>
+        <div
+          class="form-field-container button-container button-container-refresh"
+        >
+          <button
+            mat-mini-fab
+            [matTooltip]="t('torrents.refresh')"
+            color="primary"
+            (click)="dataSource.refresh()"
+          >
+            <mat-icon>sync</mat-icon>
+          </button>
+        </div>
+      </div>
+      <app-queue-jobs-table [dataSource]="dataSource" [selection]="selection" />
+      <app-paginator
+        (paging)="controller.handlePageEvent($event)"
+        [page]="controls.page"
+        [pageSize]="controls.limit"
+        [pageLength]="dataSource.result.items.length"
+        [totalLength]="dataSource.result.totalCount"
+        [totalIsEstimate]="false"
+        [showLastPage]="true"
+      />
+    </mat-drawer-content>
+  </mat-drawer-container>
+</ng-container>

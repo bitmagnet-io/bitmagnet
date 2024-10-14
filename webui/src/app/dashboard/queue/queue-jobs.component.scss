@@ -1,0 +1,47 @@
+.drawer {
+  width: 220px;
+}
+
+//.button-toggle-drawer {
+//  position: absolute;
+//  left: 5px;
+//  top: 6px;
+//}
+
+.query-form {
+  padding-top: 20px;
+  padding-bottom: 10px;
+  position: relative;
+  clear: both;
+  display: flex;
+  flex-wrap: wrap;
+  .form-field-container {
+    display: inline-flex;
+    flex-direction: column;
+    position: relative;
+    margin-left: 20px;
+    padding-bottom: 20px;
+    button {
+      top: 8px;
+    }
+    &.form-field-container-order-by {
+      padding-right: 40px;
+      button {
+        position: absolute;
+        right: 0;
+      }
+    }
+    &.button-container-toggle-drawer {
+      margin-left: 5px;
+    }
+  }
+  .button-container-toggle-direction {
+    margin-left: 4px;
+  }
+}
+
+app-paginator {
+  float: right;
+  padding-top: 14px;
+  padding-bottom: 20px;
+}

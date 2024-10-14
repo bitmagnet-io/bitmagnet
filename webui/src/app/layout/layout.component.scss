@@ -1,0 +1,59 @@
+.mat-toolbar.toolbar-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  --mat-toolbar-title-text-size: 22px;
+  --mat-toolbar-standard-height: 56px;
+  --mat-icon-color: #fff;
+  padding: 0 20px;
+  h1 {
+    margin-top: -2px;
+    //margin-left: 20px;
+    margin-right: 20px;
+    a {
+      text-decoration: none;
+    }
+    mat-icon {
+      position: relative;
+      top: 4px;
+    }
+    .name {
+      margin-left: 10px;
+      margin-right: 16px;
+    }
+    app-version {
+      font-size: 13px;
+    }
+  }
+  .mdc-button {
+    margin-left: 6px;
+    --mdc-text-button-label-text-weight: bold;
+    --mat-text-button-horizontal-padding: 12px;
+    --mdc-text-button-container-height: 30px;
+  }
+  --mdc-text-button-label-text-size: 15px;
+  nav {
+    position: absolute;
+    left: 340px;
+    top: 0;
+    height: 56px;
+    padding-top: 14px;
+    a {
+      margin-right: 10px;
+    }
+    mat-icon[data-mat-icon-name="magnet"] {
+      margin-top: -5px;
+      overflow: visible;
+    }
+  }
+}
+
+.app-content {
+  z-index: 1;
+}
+
+.layout-header-menu {
+  a.active {
+    font-weight: bold;
+  }
+}

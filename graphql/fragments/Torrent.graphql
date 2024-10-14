@@ -9,9 +9,6 @@ fragment Torrent on Torrent {
   hasFilesInfo
   singleFile
   fileType
-  files {
-    ...TorrentFile
-  }
   sources {
     key
     name

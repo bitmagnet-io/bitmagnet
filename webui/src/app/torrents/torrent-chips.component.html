@@ -1,0 +1,40 @@
+<ng-container *transloco="let t">
+  <mat-chip-set>
+    @for (tagName of torrentContent.torrent.tagNames; track tagName) {
+      <mat-chip class="chip-primary">
+        <mat-icon matChipAvatar>sell</mat-icon>
+        {{ tagName }}
+      </mat-chip>
+    }
+    @if (torrentContent.languages; as languages) {
+      <mat-chip>
+        <mat-icon matChipAvatar>translate</mat-icon>
+        @for (l of languages; let j = $index; track l.id) {
+          {{ t("languages." + l.id) + (j < languages!.length - 1 ? ", " : "") }}
+        }
+      </mat-chip>
+    }
+    @if (torrentContent.video3d?.slice(1); as video3d) {
+      <mat-chip>{{ video3d }}</mat-chip>
+    }
+    @if (torrentContent.videoResolution?.slice(1); as videoResolution) {
+      <mat-chip
+        ><mat-icon matChipAvatar>aspect_ratio</mat-icon
+        >{{ videoResolution }}</mat-chip
+      >
+    }
+    @if (torrentContent.videoSource; as videoSource) {
+      <mat-chip
+        ><mat-icon matChipAvatar>album</mat-icon>{{ videoSource }}</mat-chip
+      >
+    }
+    @if (torrentContent.videoCodec; as videoCodec) {
+      <mat-chip
+        ><mat-icon matChipAvatar svgIcon="binary" />{{ videoCodec }}</mat-chip
+      >
+    }
+    @if (torrentContent.videoModifier; as videoModifier) {
+      <mat-chip>{{ videoModifier }}</mat-chip>
+    }
+  </mat-chip-set>
+</ng-container>

@@ -1,0 +1,17 @@
+mat-tab-group {
+  padding-left: 10px;
+}
+
+button {
+  margin-right: 10px;
+}
+
+p {
+  margin-top: 0;
+}
+
+::ng-deep .mdc-tab {
+  &[aria-labelledby="hidden"] {
+    display: none;
+  }
+}

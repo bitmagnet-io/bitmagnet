@@ -1,0 +1,44 @@
+enum MetricsBucketDuration {
+  minute
+  hour
+  day
+}
+
+type QueueMetricsBucket {
+  queue: String!
+  status: QueueJobStatus!
+  createdAtBucket: DateTime!
+  ranAtBucket: DateTime
+  count: Int!
+  latency: Duration
+}
+
+type QueueMetricsQueryResult {
+  buckets: [QueueMetricsBucket!]!
+}
+
+input QueueMetricsQueryInput {
+  bucketDuration: MetricsBucketDuration!
+  statuses: [QueueJobStatus!]
+  queues: [String!]
+  startTime: DateTime
+  endTime: DateTime
+}
+
+type TorrentMetricsBucket {
+  source: String!
+  bucket: DateTime!
+  updated: Boolean!
+  count: Int!
+}
+
+type TorrentMetricsQueryResult {
+  buckets: [TorrentMetricsBucket!]!
+}
+
+input TorrentMetricsQueryInput {
+  bucketDuration: MetricsBucketDuration!
+  sources: [String!]
+  startTime: DateTime
+  endTime: DateTime
+}

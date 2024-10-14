@@ -1,6 +1,6 @@
-query TorrentSuggestTags($query: SuggestTagsQueryInput!) {
+query TorrentSuggestTags($input: SuggestTagsQueryInput!) {
   torrent {
-    suggestTags(query: $query) {
+    suggestTags(input: $input) {
       suggestions {
         name
         count

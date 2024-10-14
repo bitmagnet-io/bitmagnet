@@ -35,6 +35,12 @@ func (p MessageParams) ApisDisabled() bool {
 }
 
 func NewQueueJob(msg MessageParams, options ...model.QueueJobOption) (model.QueueJob, error) {
+	if msg.BatchSize == 0 {
+		msg.BatchSize = 100
+	}
+	if msg.ChunkSize == 0 {
+		msg.ChunkSize = 10_000
+	}
 	return model.NewQueueJob(
 		MessageName,
 		msg,

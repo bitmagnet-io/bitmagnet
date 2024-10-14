@@ -134,6 +134,32 @@ func videoSourceFacet(input gen.VideoSourceFacetInput) q.Facet {
 	return facet(input.Aggregate, graphql.Omittable[*model.FacetLogic]{}, input.Filter, search.VideoSourceFacet)
 }
 
+func queueJobQueueFacet(input gen.QueueJobQueueFacetInput) q.Facet {
+	var filter graphql.Omittable[[]*string]
+	if f, ok := input.Filter.ValueOK(); ok {
+		filterValues := make([]*string, 0, len(f))
+		for _, v := range f {
+			vv := v
+			filterValues = append(filterValues, &vv)
+		}
+		filter = graphql.OmittableOf[[]*string](filterValues)
+	}
+	return facet(input.Aggregate, graphql.Omittable[*model.FacetLogic]{}, filter, search.QueueJobQueueFacet)
+}
+
+func queueJobStatusFacet(input gen.QueueJobStatusFacetInput) q.Facet {
+	var filter graphql.Omittable[[]*model.QueueJobStatus]
+	if f, ok := input.Filter.ValueOK(); ok {
+		filterValues := make([]*model.QueueJobStatus, 0, len(f))
+		for _, v := range f {
+			vv := v
+			filterValues = append(filterValues, &vv)
+		}
+		filter = graphql.OmittableOf[[]*model.QueueJobStatus](filterValues)
+	}
+	return facet(input.Aggregate, graphql.Omittable[*model.FacetLogic]{}, filter, search.QueueJobStatusFacet)
+}
+
 func aggs[T any, Agg comparable](
 	items q.AggregationItems,
 	parse func(string) (T, error),
@@ -218,5 +244,17 @@ func videoResolutionAggs(items q.AggregationItems) ([]gen.VideoResolutionAgg, er
 func videoSourceAggs(items q.AggregationItems) ([]gen.VideoSourceAgg, error) {
 	return aggs(items, model.ParseVideoSource, func(value *model.VideoSource, label string, count uint, isEstimate bool) gen.VideoSourceAgg {
 		return gen.VideoSourceAgg{Value: value, Label: label, Count: int(count), IsEstimate: isEstimate}
+	})
+}
+
+func queueJobQueueAggs(items q.AggregationItems) ([]gen.QueueJobQueueAgg, error) {
+	return aggs(items, func(s string) (string, error) { return s, nil }, func(value *string, label string, count uint, isEstimate bool) gen.QueueJobQueueAgg {
+		return gen.QueueJobQueueAgg{Value: *value, Label: label, Count: int(count)}
+	})
+}
+
+func queueJobStatusAggs(items q.AggregationItems) ([]gen.QueueJobStatusAgg, error) {
+	return aggs(items, model.ParseQueueJobStatus, func(value *model.QueueJobStatus, label string, count uint, isEstimate bool) gen.QueueJobStatusAgg {
+		return gen.QueueJobStatusAgg{Value: *value, Label: label, Count: int(count)}
 	})
 }

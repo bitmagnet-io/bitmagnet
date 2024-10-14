@@ -1,0 +1,12 @@
+<ng-container *transloco="let t">
+  <mat-card class="dashboard-card">
+    <mat-card-header>
+      <mat-toolbar>
+        <h2><mat-icon svgIcon="magnet" />{{ t("routes.torrents") }}</h2>
+      </mat-toolbar>
+    </mat-card-header>
+    <mat-card-content>
+      <app-torrent-metrics />
+    </mat-card-content>
+  </mat-card>
+</ng-container>

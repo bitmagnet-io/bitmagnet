@@ -1,12 +1,8 @@
 #import "../fragments/TorrentContentSearchResult"
 
-query TorrentContentSearch(
-  $query: SearchQueryInput
-  $facets: TorrentContentFacetsInput
-  $orderBy: [TorrentContentOrderByInput!]
-) {
+query TorrentContentSearch($input: TorrentContentSearchQueryInput!) {
   torrentContent {
-    search(query: $query, facets: $facets, orderBy: $orderBy) {
+    search(input: $input) {
       ...TorrentContentSearchResult
     }
   }

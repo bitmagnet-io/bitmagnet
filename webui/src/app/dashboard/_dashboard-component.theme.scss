@@ -1,0 +1,23 @@
+@use "@angular/material" as mat;
+
+@mixin theme($theme) {
+  app-dashboard {
+    mat-drawer nav {
+      a {
+        --mdc-text-button-label-text-color: mat.get-theme-color(
+          $theme,
+          secondary,
+          40
+        );
+        &.active {
+          color: mat.get-theme-color($theme, secondary, 80);
+          @if mat.get-theme-type($theme) == dark {
+            background-color: rgba(#fff, 0.1);
+          } @else {
+            background-color: rgba(#000, 0.1);
+          }
+        }
+      }
+    }
+  }
+}

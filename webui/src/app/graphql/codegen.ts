@@ -24,9 +24,11 @@ const config: CodegenConfig = {
         enumsAsTypes: true,
         skipTypename: false,
         strictScalars: true,
+        // namingConvention: 'keep',
         scalars: {
           Date: "string",
           DateTime: "string",
+          Duration: "string",
           Hash20: "string",
           Void: "void",
           Year: "number",

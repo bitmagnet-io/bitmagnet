@@ -1,0 +1,14 @@
+@use "@angular/material" as mat;
+
+@mixin theme($theme) {
+  app-queue-visualize {
+    button.selected {
+      @if mat.get-theme-type($theme) == dark {
+        background-color: mat.get-theme-color($theme, primary, 10);
+      } @else {
+        background-color: mat.get-theme-color($theme, secondary, 95);
+        color: mat.get-theme-color($theme, secondary, 40);
+      }
+    }
+  }
+}

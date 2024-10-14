@@ -1,0 +1,30 @@
+mat-drawer nav {
+  padding-top: 12px;
+  --mat-text-button-icon-spacing: 14px;
+  ul {
+    list-style-type: none;
+    padding-left: 0;
+    a {
+      width: 100%;
+      font-size: var(--mat-expansion-container-text-size);
+      justify-content: flex-start;
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 6px;
+    }
+  }
+}
+
+mat-drawer-content {
+  .button-container-toggle-drawer {
+    position: absolute;
+    left: 20px;
+    top: 28px;
+    z-index: 100;
+  }
+}
+
+.drawer {
+  width: 220px;
+}

@@ -1,0 +1,22 @@
+<ng-container *transloco="let t">
+  <mat-card class="dashboard-card dashboard-card-health">
+    <mat-card-header>
+      <mat-card-title>
+        <h3>
+          <mat-icon>{{ health.result.icon }}</mat-icon>
+          {{
+            t("health.bitmagnet_is_status", {
+              status: t(
+                "health.statuses." +
+                  (health.result.error ? "down" : health.result.status)
+              )
+            })
+          }}
+        </h3>
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="dashboard-card-content">
+      <app-health-summary></app-health-summary>
+    </mat-card-content>
+  </mat-card>
+</ng-container>

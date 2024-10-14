@@ -1,0 +1,168 @@
+input TorrentContentSearchQueryInput {
+  queryString: String
+  limit: Int
+  page: Int
+  offset: Int
+  totalCount: Boolean
+  """
+  hasNextPage if true, the search result will include the hasNextPage field, indicating if there are more results to fetch
+  """
+  hasNextPage: Boolean
+  infoHashes: [Hash20!]
+  facets: TorrentContentFacetsInput
+  orderBy: [TorrentContentOrderByInput!]
+  cached: Boolean
+  aggregationBudget: Float
+}
+
+input ContentTypeFacetInput {
+  aggregate: Boolean
+  filter: [ContentType]
+}
+
+input TorrentSourceFacetInput {
+  aggregate: Boolean
+  logic: FacetLogic
+  filter: [String!]
+}
+
+input TorrentTagFacetInput {
+  aggregate: Boolean
+  logic: FacetLogic
+  filter: [String!]
+}
+
+input TorrentFileTypeFacetInput {
+  aggregate: Boolean
+  logic: FacetLogic
+  filter: [FileType!]
+}
+
+input LanguageFacetInput {
+  aggregate: Boolean
+  filter: [Language!]
+}
+
+input GenreFacetInput {
+  aggregate: Boolean
+  logic: FacetLogic
+  filter: [String!]
+}
+
+input ReleaseYearFacetInput {
+  aggregate: Boolean
+  filter: [Year]
+}
+
+input VideoResolutionFacetInput {
+  aggregate: Boolean
+  filter: [VideoResolution]
+}
+
+input VideoSourceFacetInput {
+  aggregate: Boolean
+  filter: [VideoSource]
+}
+
+input TorrentContentFacetsInput {
+  contentType: ContentTypeFacetInput
+  torrentSource: TorrentSourceFacetInput
+  torrentTag: TorrentTagFacetInput
+  torrentFileType: TorrentFileTypeFacetInput
+  language: LanguageFacetInput
+  genre: GenreFacetInput
+  releaseYear: ReleaseYearFacetInput
+  videoResolution: VideoResolutionFacetInput
+  videoSource: VideoSourceFacetInput
+}
+
+type ContentTypeAgg {
+  value: ContentType
+  label: String!
+  count: Int!
+  isEstimate: Boolean!
+}
+
+type TorrentSourceAgg {
+  value: String!
+  label: String!
+  count: Int!
+  isEstimate: Boolean!
+}
+
+type TorrentTagAgg {
+  value: String!
+  label: String!
+  count: Int!
+  isEstimate: Boolean!
+}
+
+type TorrentFileTypeAgg {
+  value: FileType!
+  label: String!
+  count: Int!
+  isEstimate: Boolean!
+}
+
+type LanguageAgg {
+  value: Language!
+  label: String!
+  count: Int!
+  isEstimate: Boolean!
+}
+
+type GenreAgg {
+  value: String!
+  label: String!
+  count: Int!
+  isEstimate: Boolean!
+}
+
+type ReleaseYearAgg {
+  value: Year
+  label: String!
+  count: Int!
+  isEstimate: Boolean!
+}
+
+type VideoResolutionAgg {
+  value: VideoResolution
+  label: String!
+  count: Int!
+  isEstimate: Boolean!
+}
+
+type VideoSourceAgg {
+  value: VideoSource
+  label: String!
+  count: Int!
+  isEstimate: Boolean!
+}
+
+type TorrentContentAggregations {
+  contentType: [ContentTypeAgg!]
+  torrentSource: [TorrentSourceAgg!]
+  torrentTag: [TorrentTagAgg!]
+  torrentFileType: [TorrentFileTypeAgg!]
+  language: [LanguageAgg!]
+  genre: [GenreAgg!]
+  releaseYear: [ReleaseYearAgg!]
+  videoResolution: [VideoResolutionAgg!]
+  videoSource: [VideoSourceAgg!]
+}
+
+type TorrentContentSearchResult {
+  totalCount: Int!
+  totalCountIsEstimate: Boolean!
+  """
+  hasNextPage is true if there are more results to fetch
+  """
+  hasNextPage: Boolean
+  items: [TorrentContent!]!
+  aggregations: TorrentContentAggregations!
+}
+
+input TorrentContentOrderByInput {
+  field: TorrentContentOrderByField!
+  descending: Boolean
+}

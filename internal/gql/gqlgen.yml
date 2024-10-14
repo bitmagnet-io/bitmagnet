@@ -110,6 +110,9 @@ models:
   DateTime:
     model:
       - github.com/99designs/gqlgen/graphql.Time
+  Duration:
+    model:
+      - github.com/99designs/gqlgen/graphql.Duration
   Hash20:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/protocol.ID
@@ -153,6 +156,9 @@ models:
   TorrentContentResult:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/database/search.TorrentContentResult
+  TorrentFilesQueryResult:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/database/search.TorrentFilesResult
   TorrentSuggestTagsResult:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/database/search.TorrentSuggestTagsResult
@@ -162,3 +168,15 @@ models:
   FacetAggregationInput:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/database/query.FacetAggregationConfig
+  QueueMetricsBucket:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/metrics/queuemetrics.Bucket
+  QueuePurgeJobsInput:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/queue/manager.PurgeJobsRequest
+  QueueEnqueueReprocessTorrentsBatchInput:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/queue/manager.EnqueueReprocessTorrentsBatchRequest
+  TorrentMetricsBucket:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics.Bucket

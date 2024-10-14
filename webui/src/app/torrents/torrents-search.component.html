@@ -1,0 +1,226 @@
+<ng-container *transloco="let t">
+  <mat-drawer-container class="drawer-container">
+    <mat-drawer
+      #drawer
+      class="drawer"
+      [attr.role]="breakpoints.sizeAtLeast('Medium') ? 'navigation' : 'dialog'"
+      [mode]="breakpoints.sizeAtLeast('Medium') ? 'side' : 'over'"
+      [opened]="breakpoints.sizeAtLeast('Medium')"
+    >
+      <mat-expansion-panel
+        class="panel-content-type"
+        [expanded]="breakpoints.sizeAtLeast('Medium')"
+      >
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon>interests</mat-icon> {{ t("facets.content_type") }}
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <section>
+          <nav>
+            <ul>
+              <li
+                (click)="controller.selectContentType(null)"
+                [class]="controls.contentType === null ? 'active' : ''"
+              >
+                <mat-icon fontSet="material-icons">emergency</mat-icon
+                >{{ t("content_types.plural.all") }}
+                @if (dataSource.overallTotalCount$ | async; as count) {
+                  <small
+                    >{{ count.isEstimate ? "~" : ""
+                    }}{{ count.count | number }}</small
+                  >
+                }
+              </li>
+              @for (ct of contentTypes; track ct.key) {
+                @if (
+                  ct.key === "null" ||
+                  (dataSource.availableContentTypes$ | async)?.includes(ct.key)
+                ) {
+                  <li
+                    (click)="controller.selectContentType(ct.key)"
+                    [class]="controls.contentType === ct.key ? 'active' : ''"
+                  >
+                    <mat-icon>{{ ct.icon }}</mat-icon>
+                    {{ t("content_types.plural." + ct.key) }}
+                    @if (
+                      (dataSource.contentTypeCounts$ | async)?.[ct.key];
+                      as agg
+                    ) {
+                      <small
+                        >{{ agg.isEstimate ? "~" : ""
+                        }}{{ agg.count | number }}</small
+                      >
+                    } @else {
+                      <small>0</small>
+                    }
+                  </li>
+                }
+              }
+            </ul>
+          </nav>
+        </section>
+      </mat-expansion-panel>
+      @for (facet of facets$ | async; track facet.key) {
+        @if (facet.relevant) {
+          <mat-expansion-panel
+            [expanded]="facet.active"
+            (opened)="controller.activateFacet(facet)"
+            (closed)="controller.deactivateFacet(facet)"
+          >
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon>{{ facet.icon }}</mat-icon>
+                {{ t("facets." + facet.key) }}
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            @if (facet.filter?.length) {
+              <section class="filtered">
+                @for (agg of facet.aggregations; track agg.value) {
+                  <mat-checkbox
+                    [checked]="facet.filter?.includes(agg.value)"
+                    (change)="
+                      $event.checked
+                        ? controller.activateFilter(facet, agg.value)
+                        : controller.deactivateFilter(facet, agg.value)
+                    "
+                  >
+                    {{ agg.label }}
+                    <small
+                      >{{ agg.isEstimate ? "~" : ""
+                      }}{{ agg.count | number }}</small
+                    >
+                  </mat-checkbox>
+                }
+              </section>
+            } @else {
+              <section class="unfiltered">
+                @if (facet.aggregations.length) {
+                  @for (agg of facet.aggregations; track agg.value) {
+                    <mat-checkbox
+                      checked="true"
+                      (change)="controller.activateFilter(facet, agg.value)"
+                    >
+                      {{ agg.label }}
+                      <small
+                        >{{ agg.isEstimate ? "~" : ""
+                        }}{{ agg.count | number }}</small
+                      >
+                    </mat-checkbox>
+                  }
+                } @else {
+                  {{ t("general.none") }}
+                }
+              </section>
+            }
+          </mat-expansion-panel>
+        }
+      }
+    </mat-drawer>
+    <mat-drawer-content>
+      <div class="search-form">
+        <div
+          class="form-field-container button-container button-container-toggle-drawer"
+        >
+          <button
+            type="button"
+            class="button-toggle-drawer"
+            mat-icon-button
+            (click)="drawer.toggle()"
+            [matTooltip]="t('torrents.toggle_drawer')"
+          >
+            <mat-icon
+              aria-label="Side nav toggle icon"
+              fontSet="material-icons"
+              >{{
+                drawer.opened ? "arrow_circle_left" : "arrow_circle_right"
+              }}</mat-icon
+            >
+          </button>
+        </div>
+        <div class="form-field-container form-field-container-search-query">
+          <mat-form-field subscriptSizing="dynamic">
+            <!--        todo: fix ios enter-->
+            <input
+              matInput
+              [placeholder]="t('torrents.search')"
+              [formControl]="queryString"
+              autocapitalize="none"
+              (keyup.enter)="controller.setQueryString(queryString.value)"
+            />
+            @if (queryString.value) {
+              <button
+                mat-icon-button
+                [matTooltip]="t('torrents.clear_search')"
+                (click)="queryString.reset(); controller.setQueryString(null)"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            }
+          </mat-form-field>
+        </div>
+        <div class="form-field-container form-field-container-order-by">
+          <mat-form-field subscriptSizing="dynamic">
+            <mat-label>{{ t("torrents.order_by") }}</mat-label>
+            <mat-select
+              [value]="controls.orderBy.field"
+              (valueChange)="controller.selectOrderBy($event)"
+            >
+              @for (option of orderByOptions; track option.field) {
+                @if (option.field != "relevance" || queryString.value) {
+                  <mat-option [value]="option.field">
+                    {{ t("torrents.ordering." + option.field) }}
+                  </mat-option>
+                }
+              }
+            </mat-select>
+          </mat-form-field>
+          <button
+            mat-icon-button
+            [matTooltip]="t('torrents.order_direction_toggle')"
+            (click)="controller.toggleOrderByDirection()"
+          >
+            <mat-icon>{{
+              controls.orderBy.descending ? "arrow_downward" : "arrow_upward"
+            }}</mat-icon>
+          </button>
+        </div>
+        <div
+          class="form-field-container button-container button-container-refresh"
+        >
+          <button
+            mat-mini-fab
+            [matTooltip]="t('torrents.refresh')"
+            color="primary"
+            (click)="dataSource.refresh()"
+          >
+            <mat-icon>sync</mat-icon>
+          </button>
+        </div>
+      </div>
+      <mat-divider />
+      <app-torrents-bulk-actions
+        [selectedItems$]="selectedItems$"
+        (updated)="dataSource.refresh()"
+      />
+      <mat-divider />
+      <app-torrents-table
+        [dataSource]="dataSource"
+        [displayedColumns]="
+          breakpoints.sizeAtLeast('Medium') ? allColumns : compactColumns
+        "
+        [selection]="selection"
+        (updated)="dataSource.refresh()"
+      />
+      <app-paginator
+        (paging)="controller.handlePageEvent($event)"
+        [page]="controls.page"
+        [pageSize]="controls.limit"
+        [pageLength]="dataSource.result.items.length"
+        [totalLength]="dataSource.result.totalCount"
+        [totalIsEstimate]="dataSource.result.totalCountIsEstimate"
+        [hasNextPage]="dataSource.result.hasNextPage"
+      />
+    </mat-drawer-content>
+  </mat-drawer-container>
+</ng-container>

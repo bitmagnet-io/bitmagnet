@@ -1,0 +1,72 @@
+@use "@angular/material" as mat;
+
+@mixin theme($theme) {
+  .mat-toolbar.toolbar-header {
+    background-color: mat.get-theme-color($theme, primary, 40);
+    --mat-toolbar-container-text-color: #fff;
+    h1 {
+      cursor: default;
+    }
+    a {
+      color: #fff;
+    }
+    .mat-icon {
+      fill: #fff;
+    }
+    .mdc-button {
+      &.active {
+        color: mat.get-theme-color($theme, primary, 40);
+        background-color: rgba(#fff, 0.8);
+        cursor: default;
+        mat-icon {
+          color: mat.get-theme-color($theme, primary, 40);
+          fill: mat.get-theme-color($theme, primary, 40);
+        }
+      }
+      &:hover:not(.active) {
+        background-color: rgba(#fff, 0.2);
+      }
+      &.button-sponsor {
+        margin-left: 20px;
+      }
+    }
+    .mdc-icon-button {
+      .mat-icon {
+        fill: #fff;
+      }
+      &:hover {
+        background-color: rgba(#fff, 0.2);
+      }
+    }
+  }
+  .layout-header-menu {
+    a {
+      color: mat.get-theme-color($theme, primary, 60);
+      &.active {
+        @if mat.get-theme-type($theme) == dark {
+          color: mat.get-theme-color($theme, primary, 80);
+          background-color: rgba(#fff, 0.1);
+        } @else {
+          color: mat.get-theme-color($theme, primary, 40);
+          background-color: rgba(#000, 0.1);
+        }
+      }
+    }
+  }
+  a {
+    @if mat.get-theme-type($theme) == dark {
+      color: mat.get-theme-color($theme, secondary, 80);
+    } @else {
+      color: mat.get-theme-color($theme, secondary, 50);
+    }
+  }
+  tbody {
+    tr:not(.expanded-detail-row):hover {
+      @if mat.get-theme-type($theme) == dark {
+        background-color: rgba(#fff, 0.02);
+      } @else {
+        background-color: rgba(#000, 0.02);
+      }
+    }
+  }
+}

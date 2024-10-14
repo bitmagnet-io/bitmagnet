@@ -1,11 +1,17 @@
 type Query {
+  version: String!
+  workers: WorkersQuery!
+  health: HealthQuery!
+  queue: QueueQuery!
   torrent: TorrentQuery!
   torrentContent: TorrentContentQuery!
-  system: SystemQuery!
 }
 
 type TorrentQuery {
-  suggestTags(query: SuggestTagsQueryInput): TorrentSuggestTagsResult!
+  files(input: TorrentFilesQueryInput!): TorrentFilesQueryResult!
+  listSources: TorrentListSourcesResult!
+  suggestTags(input: SuggestTagsQueryInput): TorrentSuggestTagsResult!
+  metrics(input: TorrentMetricsQueryInput!): TorrentMetricsQueryResult!
 }
 
 input SuggestTagsQueryInput {
@@ -17,19 +23,47 @@ type TorrentSuggestTagsResult {
   suggestions: [SuggestedTag!]!
 }
 
+type TorrentListSourcesResult {
+  sources: [TorrentSource!]!
+}
+
 type SuggestedTag {
   name: String!
   count: Int!
 }
 
 type TorrentContentQuery {
-  search(
-    query: SearchQueryInput
-    facets: TorrentContentFacetsInput
-    orderBy: [TorrentContentOrderByInput!]
-  ): TorrentContentSearchResult!
+  search(input: TorrentContentSearchQueryInput!): TorrentContentSearchResult!
 }
 
-type SystemQuery {
-  version: String!
+type Worker {
+  key: String!
+  started: Boolean!
+}
+
+type WorkersListAllQueryResult {
+  workers: [Worker!]!
+}
+
+type WorkersQuery {
+  listAll: WorkersListAllQueryResult!
+}
+
+enum HealthStatus {
+  unknown
+  inactive
+  up
+  down
+}
+
+type HealthCheck {
+  key: String!
+  status: HealthStatus!
+  timestamp: DateTime!
+  error: String
+}
+
+type HealthQuery {
+  status: HealthStatus!
+  checks: [HealthCheck!]!
 }

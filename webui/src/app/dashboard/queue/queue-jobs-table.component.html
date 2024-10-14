@@ -1,0 +1,163 @@
+<ng-container *transloco="let t">
+  <div class="progress-bar-container">
+    <mat-progress-bar
+      [mode]="(dataSource.loading$ | async) ? 'indeterminate' : 'determinate'"
+      [value]="0"
+    ></mat-progress-bar>
+  </div>
+  <table
+    mat-table
+    [dataSource]="dataSource"
+    [multiTemplateDataRows]="true"
+    class="table-results"
+  >
+    <ng-container matColumnDef="id">
+      <th mat-header-cell *matHeaderCellDef>ID</th>
+      <td
+        mat-cell
+        *matCellDef="let i"
+        (click)="toggleQueueJobId(i.id); $event.stopPropagation()"
+      >
+        {{ item(i).id }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="queue">
+      <th mat-header-cell *matHeaderCellDef>
+        {{ t("dashboard.queues.queue") }}
+      </th>
+      <td
+        mat-cell
+        *matCellDef="let i"
+        (click)="toggleQueueJobId(i.id); $event.stopPropagation()"
+      >
+        {{ item(i).queue }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="priority">
+      <th mat-header-cell *matHeaderCellDef>
+        {{ t("dashboard.queues.priority") }}
+      </th>
+      <td
+        mat-cell
+        *matCellDef="let i"
+        (click)="toggleQueueJobId(i.id); $event.stopPropagation()"
+      >
+        {{ item(i).priority | number }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>
+        {{ t("general.status") }}
+      </th>
+      <td
+        mat-cell
+        *matCellDef="let i"
+        (click)="toggleQueueJobId(i.id); $event.stopPropagation()"
+      >
+        {{ item(i).status }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="error">
+      <th mat-header-cell *matHeaderCellDef>{{ t("general.error") }}</th>
+      <td
+        mat-cell
+        *matCellDef="let i"
+        (click)="toggleQueueJobId(i.id); $event.stopPropagation()"
+      >
+        @if (i.error) {
+          {{ (item(i).error | slice: 0 : 20) + "..." }}
+        }
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="createdAt">
+      <th mat-header-cell *matHeaderCellDef style="text-align: center">
+        {{ t("dashboard.queues.created_at") }}
+      </th>
+      <td
+        mat-cell
+        *matCellDef="let i"
+        (click)="toggleQueueJobId(i.id); $event.stopPropagation()"
+      >
+        {{ item(i).createdAt | timeAgo }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="ranAt">
+      <th mat-header-cell *matHeaderCellDef style="text-align: center">
+        {{ t("dashboard.queues.ran_at") }}
+      </th>
+      <td
+        mat-cell
+        *matCellDef="let i"
+        (click)="toggleQueueJobId(i.id); $event.stopPropagation()"
+      >
+        @if (i.ranAt; as ranAt) {
+          {{ ranAt | timeAgo }}
+        }
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="expandedDetail">
+      <td mat-cell *matCellDef="let i" [attr.colspan]="displayedColumns.length">
+        <div
+          class="item-detail"
+          [@detailExpand]="
+            expandedId.getValue() === i.id ? 'expanded' : 'collapsed'
+          "
+        >
+          <p>
+            <strong>ID:</strong>&nbsp;<span
+              class="copy"
+              [matTooltip]="t('torrents.copy_to_clipboard')"
+              [cdkCopyToClipboard]="item(i).id"
+              >{{ item(i).id }}</span
+            >
+          </p>
+          <h5>
+            <span
+              class="copy"
+              [matTooltip]="t('torrents.copy_to_clipboard')"
+              [cdkCopyToClipboard]="item(i).payload"
+              >{{ t("dashboard.queues.payload") }}:</span
+            >
+          </h5>
+          <pre class="payload">{{ beautifyPayload(item(i).payload) }}</pre>
+          @if (item(i).error; as error) {
+            <h5>
+              <span
+                class="copy"
+                [matTooltip]="t('torrents.copy_to_clipboard')"
+                [cdkCopyToClipboard]="error!"
+                >{{ t("general.error") }}:</span
+              >
+            </h5>
+            <pre class="payload">{{ error }}</pre>
+          }
+        </div>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr
+      mat-row
+      *matRowDef="let i; columns: displayedColumns"
+      [class]="
+        'summary-row ' +
+        (i.id === expandedId.getValue() ? 'expanded' : 'collapsed')
+      "
+    ></tr>
+    <tr
+      mat-row
+      *matRowDef="let i; columns: ['expandedDetail']"
+      [class]="
+        'expanded-detail-row ' +
+        (i.id === expandedId.getValue() ? 'expanded' : 'collapsed')
+      "
+    ></tr>
+  </table>
+</ng-container>

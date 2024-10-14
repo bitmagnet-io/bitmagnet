@@ -7,21 +7,6 @@ import * as generated from "./generated";
 export class GraphQLService {
   constructor(private readonly apollo: Apollo) {}
 
-  torrentContentSearch(
-    input: generated.TorrentContentSearchQueryVariables,
-  ): Observable<generated.TorrentContentSearchResult> {
-    return this.apollo
-      .query<
-        generated.TorrentContentSearchQuery,
-        generated.TorrentContentSearchQueryVariables
-      >({
-        query: generated.TorrentContentSearchDocument,
-        variables: input,
-        fetchPolicy,
-      })
-      .pipe(map((r) => r.data.torrentContent.search));
-  }
-
   torrentDelete(
     input: generated.TorrentDeleteMutationVariables,
   ): Observable<void> {
@@ -95,15 +80,6 @@ export class GraphQLService {
         fetchPolicy,
       })
       .pipe(map((r) => r.data.torrent.suggestTags));
-  }
-
-  systemQuery(): Observable<generated.SystemQuery> {
-    return this.apollo
-      .query<generated.SystemQueryQuery, generated.SystemQueryQueryVariables>({
-        query: generated.SystemQueryDocument,
-        fetchPolicy,
-      })
-      .pipe(map((r) => r.data.system));
   }
 }
 

@@ -1,0 +1,9 @@
+#import "../fragments/QueueJobsQueryResult"
+
+query QueueJobs($input: QueueJobsQueryInput!) {
+  queue {
+    jobs(input: $input) {
+      ...QueueJobsQueryResult
+    }
+  }
+}

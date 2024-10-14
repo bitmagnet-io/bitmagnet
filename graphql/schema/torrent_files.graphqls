@@ -1,0 +1,21 @@
+input TorrentFilesQueryInput {
+  limit: Int
+  page: Int
+  offset: Int
+  totalCount: Boolean
+  hasNextPage: Boolean
+  infoHashes: [Hash20!]
+  orderBy: [TorrentFilesOrderByInput!]
+  cached: Boolean
+}
+
+input TorrentFilesOrderByInput {
+  field: TorrentFilesOrderByField!
+  descending: Boolean
+}
+
+type TorrentFilesQueryResult {
+  totalCount: Int!
+  hasNextPage: Boolean
+  items: [TorrentFile!]!
+}

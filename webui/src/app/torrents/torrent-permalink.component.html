@@ -1,0 +1,38 @@
+<ng-container *transloco="let t">
+  @if (loading) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  } @else if (!found) {
+    <p>Not found!</p>
+  } @else {
+    <mat-card class="torrent-permalink">
+      <mat-card-header>
+        <mat-icon
+          matCardAvatar
+          [matTooltip]="
+            t(
+              'content_types.singular.' + (torrentContent.contentType ?? 'null')
+            )
+          "
+          >{{
+            contentTypeInfo(torrentContent.contentType)?.icon ?? "question_mark"
+          }}</mat-icon
+        >
+        <mat-card-title>
+          <h2>{{ torrentContent.torrent.name }}</h2>
+          <a class="magnet-link" href="{{ torrentContent.torrent.magnetUri }}"
+            ><mat-icon svgIcon="magnet"></mat-icon
+          ></a>
+        </mat-card-title>
+        <mat-card-subtitle>
+          <app-torrent-chips [torrentContent]="torrentContent" />
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <app-torrent-content
+          [torrentContent]="torrentContent"
+          [heading]="false"
+        />
+      </mat-card-content>
+    </mat-card>
+  }
+</ng-container>

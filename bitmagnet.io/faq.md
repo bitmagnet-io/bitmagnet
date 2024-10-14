@@ -24,22 +24,17 @@ As a rough guide, you should allow around 300MB RAM for BitMagnet, and at least 
 
 ## I've started **bitmagnet** for the first time and am not seeing torrents right away, is something wrong?
 
-If everything is working, **bitmagnet** should begin showing torrents in the web UI within a maximum of 10 minutes (which is its cache TTL). The round blue refresh button in the web UI is a cache buster - use it to see new torrent content in real time. Bear in mind that when a torrent is inserted into the database, a background queue job must run before it will become available in the UI. If you're importing thousands or millions of torrents, it might therefore take a while for everything to show. Check the next question if you're still not seeing torrents.
+If everything is working, **bitmagnet** should begin showing torrents in the web UI within a maximum of 10 minutes (which is its cache TTL). The refresh button at the top of the torrent listing is a cache buster - use it to see new torrent content in real time. Bear in mind that when a torrent is inserted into the database, a background queue job must run before it will become available in the UI. If you're importing thousands or millions of torrents, it might therefore take a while for everything to show. Check the next question if you're still not seeing torrents.
 
 ## **bitmagnet** isn't finding any new torrents, what's wrong?
 
-{: .highlight }
-If **bitmagnet** isn't finding new torrents, it probably isn't due to a problem with the software - many people are using it successfully. You may have a networking or firewall issue, or a VPN misconfiguration preventing you from connecting to the DHT. Additionally, the TMDB API is blocked in certain countries; if you are in an affected country you may need to either disable the TMDB integration with the `tmdb.enabled` configuration key, or use a VPN.
+If **bitmagnet** isn't finding new torrents, it probably isn't due to a problem with the software - many people are using it successfully. You may have a networking or firewall issue, or a VPN misconfiguration preventing you from connecting to the DHT. Additionally, the TMDB API is blocked in certain countries; if you are in an affected country you may need to either disable the TMDB integration with the `tmdb.enabled` configuration key, or use a VPN. Configuring a personal TMDB API key (or disabling TMDB) will make the queue run a **lot** faster.
 
-Here are some things to check if you're not seeing any new torrents:
+**bitmagnet** now shows its health status in the main toolbar: It will show a tick for health, a cross for unhealthy or sometimes 3 dots for pending. Click on it to open the health dialog and check that all workers are running and healthy. The dashboard can be used to monitor queue throughput. On the queues dashboard, the following would indicate a problem:
 
-- Press the round blue refresh button in the UI.
-- Visit the metrics endpoint at `/metrics` and check the following metrics:
-  - `bitmagnet_dht_crawler_persisted_total`: If you see a positive number for this, the DHT crawler is working and has found torrents.
-  - If torrents are being persisted but you still don't see them in the UI, then check:`bitmagnet_queue_jobs_total{queue="process_torrent",status="processed"}`: If you see a positive number here, then the queue worker is running and processing jobs. If you see `status="failed"` or `status="retry"`, but no `status="processed"`, then something is wrong.
-  - If no torrents are being persisted, check: `bitmagnet_dht_server_query_success_total` and `bitmagnet_dht_server_query_error_total`. Having some DHT query errors is completely normal, but if you see no successful queries then something is wrong.
-- If any of the above metrics are missing, you can assume their value is zero.
-- If the metrics confirm a problem, check the logs for errors.
+- A high number of pending jobs, and the number of processed jobs not increasing over time
+- A high number of failed jobs
+- No new jobs being created over time
 
 ## Why doesn't **bitmagnet** show me exactly how many torrents it has indexed?
 
@@ -51,7 +46,7 @@ This will depend on a number of factors, including your hardware and network con
 
 ## How can I see exactly how many torrents **bitmagnet** has crawled in the current session?
 
-Visit the metrics endpoint at `/metrics` and check the metric `bitmagnet_dht_crawler_persisted_total`. `{entity="Torrent"}` corresponds to newly crawled torrents, and `{entity="TorrentsTorrentSource"}` corresponds to torrents that were rediscovered and had their seeders/leechers count, and last-seen-on date updated.
+The new dashboard shows throughput of the crawler and job queue. Alternatively, visit the metrics endpoint at `/metrics` and check the metric `bitmagnet_dht_crawler_persisted_total`. `{entity="Torrent"}` corresponds to newly crawled torrents, and `{entity="TorrentsTorrentSource"}` corresponds to torrents that were rediscovered and had their seeders/leechers count, and last-seen-on date updated.
 
 ## How are the seeders/leechers numbers determined for torrents crawled from the DHT?
 
@@ -68,6 +63,10 @@ No. The DHT crawler works by sampling random info hashes from the network, and w
 ## I'm seeing a lot of torrents in the "Unknown" category, that are clearly of a particular content type - what's wrong?
 
 **bitmagnet** is in early development, and improving the classifier will be an ongoing effort. When new versions are released, you can follow the [reclassify turorial](/tutorials/reprocess-reclassify.html) to reclassify torrents. If you'd like to [improve or customize the classifier](/guides/classifier.html), this is also possible.
+
+## How can I make **bitmagnet** automatically delete torrents I'm not interested in?
+
+A better question would be: why bother? Disk space is inexpensive in the quantities required by **bitmagnet**, and searching is easier than deleting. Nevertheless this is one of the most commonly asked questions, and it is possible to do this by [customizing the classifier](/guides/classifier.html). Please consider the wastage of resources and load on the network created by deleting what you've crawled. Also remember that the classifier isn't perfect: for example, enabling deletion of XXX content will also delete anything that has been mis-identified as XXX by the classifier, preventing you from finding it in future - for example because it contains a rude word. If you are deleting a large proportion of what you're crawling, you are almost certainly deleting over-zealously and you should consider just using one of the many indexer sites instead.
 
 ## Can I run multiple **bitmagnet** instances pointing to the same database?
 

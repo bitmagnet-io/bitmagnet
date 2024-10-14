@@ -1,0 +1,55 @@
+.actions {
+  width: 210px;
+  padding-top: 12px;
+  --mdc-icon-button-state-layer-size: 32px;
+  mat-icon {
+    font-size: 22px;
+  }
+  button {
+    margin-right: 0;
+  }
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 10px;
+}
+
+mat-grid-tile mat-card {
+  width: 100%;
+  mat-card-content {
+    min-width: 190px;
+  }
+  h4 {
+    margin-bottom: 16px;
+    font-size: 18px;
+  }
+}
+
+mat-form-field {
+  width: 186px;
+}
+
+.form-resolution {
+  .actions {
+    margin-left: -2px;
+  }
+  .form-input-multiplier {
+    width: 60px;
+    margin-right: 10px;
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      /* display: none; <- Crashes Chrome on hover */
+      -webkit-appearance: none;
+      margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield; /* Firefox */
+    }
+  }
+  .form-select-duration {
+    width: 116px;
+  }
+}

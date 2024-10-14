@@ -1,15 +1,15 @@
 import { TestBed } from "@angular/core/testing";
-import { RouterTestingModule } from "@angular/router/testing";
+import { TranslocoModule } from "@jsverse/transloco";
 import { AppComponent } from "./app.component";
-import { AppModule } from "./app.module";
+import { appConfig } from "./app.config";
 
 describe("AppComponent", () => {
-  beforeEach(() =>
-    TestBed.configureTestingModule({
-      imports: [RouterTestingModule, AppModule],
-      declarations: [AppComponent],
-    }),
-  );
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      ...appConfig,
+      imports: [AppComponent, TranslocoModule],
+    }).compileComponents();
+  });
 
   it("should create the app", () => {
     const fixture = TestBed.createComponent(AppComponent);
@@ -17,7 +17,7 @@ describe("AppComponent", () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'bitmagnet'`, () => {
+  it(`should have the 'bitmagnet' title`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     expect(app.title).toEqual("bitmagnet");
