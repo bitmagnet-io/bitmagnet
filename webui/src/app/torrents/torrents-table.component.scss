@@ -25,12 +25,18 @@ td.mat-column-summary {
   padding-bottom: 8px;
   .title {
     line-height: 30px;
+    overflow: hidden;
+    margin-right: 20px;
+    font-weight: bold;
+  }
+  .original-name {
+    margin: 2px 0 8px 34px;
+  }
+  .title,
+  .original-name {
     white-space: pre-wrap;
     word-break: break-word;
     overflow-wrap: break-word;
-    max-width: 200px;
-    overflow: hidden;
-    margin-right: 20px;
   }
   > .mat-icon {
     display: inline-block;

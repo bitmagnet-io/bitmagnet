@@ -58,6 +58,9 @@
           "
           >{{ item(i).title }}</span
         >
+        @if (item(i).title !== item(i).torrent.name) {
+          <p class="original-name">{{ item(i).torrent.name }}</p>
+        }
         <app-torrent-chips [torrentContent]="i" />
       </td>
     </ng-container>
