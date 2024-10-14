@@ -49,6 +49,11 @@ tasks:
     cmds:
       - cd webui && npm run graphql:codegen
 
+  i18n-extract:
+    dir: ./webui
+    cmds:
+      - npm run i18n:extract
+
   lint:
     cmds:
       # Removing golang-ci lint as the Nix package is currently broken
