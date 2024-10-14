@@ -25,32 +25,37 @@ type Params struct {
 type Result struct {
 	fx.Out
 	Server            lazy.Lazy[Server]
-	AppHook           fx.Hook              `group:"app_hooks"`
-	QueryDuration     prometheus.Collector `group:"prometheus_collectors"`
-	QuerySuccessTotal prometheus.Collector `group:"prometheus_collectors"`
-	QueryErrorTotal   prometheus.Collector `group:"prometheus_collectors"`
-	QueryConcurrency  prometheus.Collector `group:"prometheus_collectors"`
+	LastResponses     *concurrency.AtomicValue[LastResponses] `name:"dht_server_last_responses"`
+	AppHook           fx.Hook                                 `group:"app_hooks"`
+	QueryDuration     prometheus.Collector                    `group:"prometheus_collectors"`
+	QuerySuccessTotal prometheus.Collector                    `group:"prometheus_collectors"`
+	QueryErrorTotal   prometheus.Collector                    `group:"prometheus_collectors"`
+	QueryConcurrency  prometheus.Collector                    `group:"prometheus_collectors"`
 }
 
 const namespace = "bitmagnet"
 const subsystem = "dht_server"
 
 func New(p Params) Result {
+	lastResponses := &concurrency.AtomicValue[LastResponses]{}
 	collector := newPrometheusCollector()
 	ls := lazy.New(func() (Server, error) {
 		s := queryLimiter{
 			server: prometheusServerWrapper{
 				prometheusCollector: collector,
-				server: &server{
-					stopped:          make(chan struct{}),
-					localAddr:        netip.AddrPortFrom(netip.IPv4Unspecified(), p.Config.Port),
-					socket:           NewSocket(),
-					queries:          make(map[string]chan dht.RecvMsg),
-					queryTimeout:     p.Config.QueryTimeout,
-					responder:        p.Responder,
-					responderTimeout: time.Second * 5,
-					idIssuer:         &variantIdIssuer{},
-					logger:           p.Logger.Named(subsystem),
+				server: healthCollector{
+					baseServer: &server{
+						stopped:          make(chan struct{}),
+						localAddr:        netip.AddrPortFrom(netip.IPv4Unspecified(), p.Config.Port),
+						socket:           NewSocket(),
+						queries:          make(map[string]chan dht.RecvMsg),
+						queryTimeout:     p.Config.QueryTimeout,
+						responder:        p.Responder,
+						responderTimeout: time.Second * 5,
+						idIssuer:         &variantIdIssuer{},
+						logger:           p.Logger.Named(subsystem),
+					},
+					lastResponses: lastResponses,
 				},
 			},
 			queryLimiter: concurrency.NewKeyedLimiter(rate.Every(time.Second), 4, 1000, time.Second*20),
@@ -70,6 +75,7 @@ func New(p Params) Result {
 				})
 			},
 		},
+		LastResponses:     lastResponses,
 		QueryDuration:     collector.queryDuration,
 		QuerySuccessTotal: collector.querySuccessTotal,
 		QueryErrorTotal:   collector.queryErrorTotal,
