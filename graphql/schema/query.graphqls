@@ -9,6 +9,7 @@ type Query {
 
 type TorrentQuery {
   files(input: TorrentFilesQueryInput!): TorrentFilesQueryResult!
+  listSources: TorrentListSourcesResult!
   suggestTags(input: SuggestTagsQueryInput): TorrentSuggestTagsResult!
   metrics(input: TorrentMetricsQueryInput!): TorrentMetricsQueryResult!
 }
@@ -20,6 +21,10 @@ input SuggestTagsQueryInput {
 
 type TorrentSuggestTagsResult {
   suggestions: [SuggestedTag!]!
+}
+
+type TorrentListSourcesResult {
+  sources: [TorrentSource!]!
 }
 
 type SuggestedTag {

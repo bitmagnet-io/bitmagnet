@@ -182,6 +182,10 @@ type TorrentFilesOrderByInput struct {
 	Descending graphql.Omittable[*bool] `json:"descending,omitempty"`
 }
 
+type TorrentListSourcesResult struct {
+	Sources []model.TorrentSource `json:"sources"`
+}
+
 type TorrentMetricsQueryInput struct {
 	BucketDuration MetricsBucketDuration         `json:"bucketDuration"`
 	Sources        graphql.Omittable[[]string]   `json:"sources,omitempty"`

@@ -8,5 +8,11 @@ query TorrentMetrics($input: TorrentMetricsQueryInput!) {
         count
       }
     }
+    listSources {
+      sources {
+        key
+        name
+      }
+    }
   }
 }

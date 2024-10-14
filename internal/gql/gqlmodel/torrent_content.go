@@ -83,7 +83,7 @@ func NewTorrentContentFromResultItem(item search.TorrentContentResultItem) Torre
 	return c
 }
 
-type TorrentSource struct {
+type TorrentSourceInfo struct {
 	Key      string
 	Name     string
 	ImportID model.NullString
@@ -91,10 +91,10 @@ type TorrentSource struct {
 	Leechers model.NullUint
 }
 
-func TorrentSourcesFromTorrent(t model.Torrent) []TorrentSource {
-	var sources []TorrentSource
+func TorrentSourceInfosFromTorrent(t model.Torrent) []TorrentSourceInfo {
+	var sources []TorrentSourceInfo
 	for _, s := range t.Sources {
-		sources = append(sources, TorrentSource{
+		sources = append(sources, TorrentSourceInfo{
 			Key:      s.Source,
 			Name:     s.TorrentSource.Name,
 			ImportID: s.ImportID,

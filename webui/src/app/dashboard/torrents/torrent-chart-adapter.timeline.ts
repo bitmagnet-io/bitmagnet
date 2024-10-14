@@ -8,13 +8,13 @@ import { createThemeColor } from "../../themes/theme-utils";
 import { ThemeInfoService } from "../../themes/theme-info.service";
 import { resolveDateLocale } from "../../dates/dates.locales";
 import { formatDuration } from "../../dates/dates.utils";
-import { normalizeBucket } from "./torrent-metrics.controller";
 import {
   durationSeconds,
   eventNames,
   timeframeLengths,
 } from "./torrent-metrics.constants";
 import { BucketParams, EventName, Result } from "./torrent-metrics.types";
+import {normalizeBucket} from "./torrent-metrics.utils";
 
 const eventColors: Record<EventName, ThemeBaseColor> = {
   created: "primary",
@@ -33,7 +33,7 @@ export class TorrentChartAdapterTimeline
     const labels = Array<string>();
     const datasets: ChartConfiguration<"line">["data"]["datasets"] = [];
     if (result) {
-      const nonEmptySources = result.sources.filter((q) => !q.isEmpty);
+      const nonEmptySources = result.sourceSummaries.filter((q) => !q.isEmpty);
       const nonEmptyBuckets = Array.from(
         new Set(
           nonEmptySources.flatMap((q) =>

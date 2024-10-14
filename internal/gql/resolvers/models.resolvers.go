@@ -22,8 +22,8 @@ func (r *contentResolver) OriginalLanguage(ctx context.Context, obj *model.Conte
 }
 
 // Sources is the resolver for the sources field.
-func (r *torrentResolver) Sources(ctx context.Context, obj *model.Torrent) ([]gqlmodel.TorrentSource, error) {
-	return gqlmodel.TorrentSourcesFromTorrent(*obj), nil
+func (r *torrentResolver) Sources(ctx context.Context, obj *model.Torrent) ([]gqlmodel.TorrentSourceInfo, error) {
+	return gqlmodel.TorrentSourceInfosFromTorrent(*obj), nil
 }
 
 // Content returns gql.ContentResolver implementation.

@@ -58,5 +58,6 @@ export type SourceSummary<IsEmpty extends boolean = boolean> = {
 export type Result = {
   params: Params<false>;
   bucketSpan?: BucketSpan;
-  sources: SourceSummary[];
+  sourceSummaries: SourceSummary[];
+  availableSources: generated.TorrentSource[];
 };
