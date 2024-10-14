@@ -198,6 +198,7 @@ $theme: map.merge(
     )};
   --mat-app-background-color: #{mat.get-theme-color($theme, primary, 0)};
   --mat-app-background: #{mat.get-theme-color($theme, primary, 0)};
+  --mat-fab-small-foreground-color: var(--mat-app-text-color);
   --mat-table-background-color: #{mat.get-theme-color($theme, primary, 10)};
   --mat-expansion-container-background-color: #{mat.get-theme-color(
       $theme,
