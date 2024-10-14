@@ -52,13 +52,15 @@
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *matRowDef="let i; columns: displayedColumns"></tr>
   </table>
-  <app-paginator
-    (paging)="controller.handlePageEvent($event)"
-    [page]="controls.page"
-    [pageSize]="controls.limit"
-    [pageLength]="dataSource.result.items.length"
-    [totalLength]="dataSource.result.totalCount"
-    [totalIsEstimate]="false"
-    [showLastPage]="true"
-  />
+  @if (dataSource.result.totalCount > 10) {
+    <app-paginator
+      (paging)="controller.handlePageEvent($event)"
+      [page]="controls.page"
+      [pageSize]="controls.limit"
+      [pageLength]="dataSource.result.items.length"
+      [totalLength]="dataSource.result.totalCount"
+      [totalIsEstimate]="false"
+      [showLastPage]="true"
+    />
+  }
 </ng-container>
