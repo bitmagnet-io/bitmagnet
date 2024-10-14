@@ -3,9 +3,9 @@ import { BucketParams, Params, Result } from "./torrent-metrics.types";
 import { createResult } from "./torrent-metrics.utils";
 
 export const defaultBucketParams: BucketParams = {
-  duration: "hour",
+  duration: "minute",
   multiplier: 1,
-  timeframe: "days_1",
+  timeframe: "hours_1",
 };
 
 export const resolutionNames = ["day", "hour", "minute"] as const;

@@ -6,7 +6,7 @@ import { BreakpointsService } from "../../layout/breakpoints.service";
 import { ErrorsService } from "../../errors/errors.service";
 import { AppModule } from "../../app.module";
 import {
-  autoRefreshIntervalNames,
+  autoRefreshIntervalNames, defaultBucketParams,
   eventNames,
   resolutionNames,
   timeframeNames,
@@ -27,11 +27,7 @@ export class TorrentMetricsComponent implements OnDestroy {
   torrentMetricsController = new TorrentMetricsController(
     this.apollo,
     {
-      buckets: {
-        duration: "AUTO",
-        multiplier: "AUTO",
-        timeframe: "hours_1",
-      },
+      buckets: defaultBucketParams,
       autoRefresh: "seconds_30",
     },
     inject(ErrorsService),
