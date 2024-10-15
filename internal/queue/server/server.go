@@ -184,7 +184,11 @@ func (h *serverHandler) handleJob(ctx context.Context, conds ...gen.Condition) (
 				h.query.QueueJob.Status.In(string(model.QueueJobStatusPending), string(model.QueueJobStatusRetry)),
 				h.query.QueueJob.RunAfter.Lte(time.Now()),
 			)...,
-		).Order(h.query.QueueJob.Priority, h.query.QueueJob.RunAfter).Clauses(clause.Locking{
+		).Order(
+			h.query.QueueJob.Status.Eq(string(model.QueueJobStatusRetry)),
+			h.query.QueueJob.Priority,
+			h.query.QueueJob.RunAfter,
+		).Clauses(clause.Locking{
 			Strength: "UPDATE",
 			Options:  "SKIP LOCKED",
 		}).First()
