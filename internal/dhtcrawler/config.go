@@ -1,7 +1,6 @@
 package dhtcrawler
 
 import (
-	adht "github.com/anacrolix/dht/v2"
 	"time"
 )
 
@@ -25,10 +24,19 @@ type Config struct {
 func NewDefaultConfig() Config {
 	return Config{
 		ScalingFactor:                10,
-		BootstrapNodes:               adht.DefaultGlobalBootstrapHostPorts,
+		BootstrapNodes:               defaultBootstrapNodes,
 		ReseedBootstrapNodesInterval: time.Minute,
 		SaveFilesThreshold:           100,
 		SavePieces:                   false,
 		RescrapeThreshold:            time.Hour * 24 * 30,
 	}
+}
+
+var defaultBootstrapNodes = []string{
+	"router.utorrent.com:6881",
+	"router.bittorrent.com:6881",
+	"dht.transmissionbt.com:6881",
+	"dht.aelitis.com:6881",     // Vuze
+	"router.silotis.us:6881",   // IPv6
+	"dht.libtorrent.org:25401", // @arvidn's
 }
