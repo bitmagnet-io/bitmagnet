@@ -14,6 +14,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"golang.org/x/sync/semaphore"
 	"gorm.io/gen/field"
+	"gorm.io/gorm/clause"
 )
 
 type Processor interface {
@@ -139,7 +140,9 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		if republishJobErr != nil {
 			return errors.Join(append(errs, republishJobErr)...)
 		}
-		if err := c.dao.QueueJob.WithContext(ctx).Create(&republishJob); err != nil {
+		if err := c.dao.QueueJob.WithContext(ctx).Clauses(clause.OnConflict{
+			DoNothing: true,
+		}).Create(&republishJob); err != nil {
 			return errors.Join(append(errs, err)...)
 		}
 	}
