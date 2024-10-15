@@ -32,7 +32,7 @@ func New(p Params) (Result, error) {
 	waitGroup := &sync.WaitGroup{}
 	lazyPool := lazy.New(func() (*pgxpool.Pool, error) {
 		ctx, cancel := context.WithCancel(context.Background())
-		pl, plErr := pgxpool.New(ctx, p.Config.DSN())
+		pl, plErr := pgxpool.New(ctx, p.Config.CreateDSN())
 		if plErr != nil {
 			cancel()
 			return nil, plErr

@@ -10,6 +10,7 @@ nav_order: 2
 **bitmagnet** exposes quite a few configuration options. You shouldn't have to worry about most of them, but they are available for tinkering. If you're using the [example docker-compose file]({% link setup/installation.md %}#docker) then things _should_ "just work". I'll only cover only some of the more important options here:
 
 - `postgres.host`, `postgres.name` `postgres.user` `postgres.password` (default: `localhost`, `bitmagnet`, `postgres`, _empty_): Set these values to configure connection to your Postgres database.
+- `postgres.dsn`: Alternatively a Postgres Data Source Name (DSN) can be specified. If specified, all other `postgres.*` options are ignored.
 - `tmdb.api_key`: This is quite an important one, please [see below](#obtaining-a-tmdb-api-key) for more details.
 - `tmdb.enabled` (default: `true`): Specify `false` to disable the TMDB API integration.
 - `dht_crawler.save_files_threshold` (default: `100`): Some torrents contain many thousands of files, which impacts performance and uses a lot of database disk space. This parameter sets a maximum limit for the number of files saved by the crawler with each torrent.
