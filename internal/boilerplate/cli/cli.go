@@ -50,7 +50,12 @@ func New(p Params) (Result, error) {
 	p.Lifecycle.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go (func() {
-				if err := app.RunContext(context.Background(), p.Args); err != nil {
+				// the following hack fixes a weird bug where the CLI does not terminate when calling with just --help
+				args := p.Args
+				if len(args) == 2 && (args[1] == "-h" || args[1] == "--help") {
+					args = []string{args[0]}
+				}
+				if err := app.RunContext(context.Background(), args); err != nil {
 					panic(err)
 				}
 			})()
