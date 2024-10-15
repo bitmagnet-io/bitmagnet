@@ -6,6 +6,7 @@ services:
     container_name: bitmagnet
     image: ghcr.io/bitmagnet-io/bitmagnet:latest
     volumes:
+      - ./config:/root/.config/bitmagnet
       # Mount data folder (currently only used for logs when file rotation is enabled):
       - ./data/bitmagnet:/root/.local/share/bitmagnet
     restart: unless-stopped

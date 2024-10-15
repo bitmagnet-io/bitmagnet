@@ -27,6 +27,8 @@ services:
       - POSTGRES_HOST=postgres
       - POSTGRES_PASSWORD=postgres
     #      - TMDB_API_KEY=your_api_key
+    volumes:
+      - ./config:/root/.config/bitmagnet
     command:
       - worker
       - run
