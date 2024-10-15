@@ -19,8 +19,12 @@
   }
   @if (size) {
     <p class="size">
-      <strong>{{ t("torrents.size") }}:</strong>
-      {{ torrentContent.torrent.size | filesize }}
+      <strong>{{ t("torrents.size") }}:</strong>&nbsp;
+      <span
+        class="filesize"
+        [matTooltip]="torrentContent.torrent.size | filesize: 10"
+        >{{ torrentContent.torrent.size | filesize }}</span
+      >
     </p>
   }
   @if (published) {

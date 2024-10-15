@@ -90,3 +90,8 @@ tr.mat-mdc-row.expanded {
 .cdk-column-peers {
   white-space: nowrap;
 }
+
+span.filesize {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
