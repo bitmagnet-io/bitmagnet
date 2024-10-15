@@ -72,6 +72,7 @@ HTTP_SERVER_CORS_ALLOWED_ORIGINS=https://example1.com,https://example2.com \
 In order of precedence, configuration values will be read from:
 
 - Environment variables
+- The comma-separated list of config file paths specified in the `EXTRA_CONFIG_FILES` environment variable
 - `config.yml` in the current working directory
 - `config.yml` in the [XDG-compliant](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html) config location for the current user (for example on MacOS this is `~/Library/Application Support/bitmagnet/config.yml`)
 - Default values
