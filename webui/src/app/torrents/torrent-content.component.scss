@@ -57,6 +57,11 @@ h2 {
   }
 }
 
+span.filesize {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
 ::ng-deep .mdc-tab {
   &[aria-labelledby="hidden"] {
     display: none;

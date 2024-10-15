@@ -10,7 +10,7 @@ import { TranslocoService } from "@jsverse/transloco";
 export class FilesizePipe implements PipeTransform {
   transloco = inject(TranslocoService);
 
-  transform(value: number): string {
-    return filesize(value, { locale: this.transloco.getActiveLang(), base: 2 });
+  transform(value: number, base: 2 | 10 = 2): string {
+    return filesize(value, { locale: this.transloco.getActiveLang(), base });
   }
 }
