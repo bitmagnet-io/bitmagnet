@@ -3,16 +3,20 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 	"sync"
+	"time"
 )
 
 type Params struct {
 	fx.In
 	Config Config
+	Logger *zap.SugaredLogger
 }
 
 type Result struct {
@@ -28,7 +32,15 @@ func New(p Params) (Result, error) {
 	waitGroup := &sync.WaitGroup{}
 	lazyPool := lazy.New(func() (*pgxpool.Pool, error) {
 		ctx, cancel := context.WithCancel(context.Background())
-		pl, err := pgxpool.New(ctx, p.Config.DSN())
+		pl, plErr := pgxpool.New(ctx, p.Config.CreateDSN())
+		if plErr != nil {
+			cancel()
+			return nil, plErr
+		}
+		if pingErr := waitForPing(ctx, p.Logger, pl); pingErr != nil {
+			cancel()
+			return nil, pingErr
+		}
 		go func() {
 			<-stopped
 			// wait for services to be finished with the pool before closing
@@ -36,7 +48,7 @@ func New(p Params) (Result, error) {
 			cancel()
 			pl.Close()
 		}()
-		return pl, err
+		return pl, nil
 	})
 	return Result{
 		PgxPool: lazyPool,
@@ -55,4 +67,31 @@ func New(p Params) (Result, error) {
 			},
 		},
 	}, nil
+}
+
+func waitForPing(ctx context.Context, logger *zap.SugaredLogger, pool *pgxpool.Pool) error {
+	i := 0
+	var err error
+	for {
+		if ctx.Err() != nil {
+			err = ctx.Err()
+			break
+		}
+		err = pool.Ping(ctx)
+		if err == nil {
+			return nil
+		}
+		i++
+		if i > 10 {
+			break
+		}
+		select {
+		case <-ctx.Done():
+			break
+		case <-time.After(time.Second):
+			logger.Warnw("failed to ping database, retrying...", "error", err)
+			break
+		}
+	}
+	return fmt.Errorf("timed out waiting for ping: %w", err)
 }
