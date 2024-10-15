@@ -7,33 +7,33 @@ import (
 	"gorm.io/gen/field"
 )
 
-const Video3dFacetKey = "video_3d"
+const Video3DFacetKey = "video_3d"
 
 func video3dField(q *dao.Query) field.Field {
-	return q.TorrentContent.Video3d
+	return q.TorrentContent.Video3D
 }
 
-func Video3dFacet(options ...query.FacetOption) query.Facet {
-	return video3dFacet{torrentContentAttributeFacet[model.Video3d]{
+func Video3DFacet(options ...query.FacetOption) query.Facet {
+	return video3dFacet{torrentContentAttributeFacet[model.Video3D]{
 		FacetConfig: query.NewFacetConfig(
 			append([]query.FacetOption{
-				query.FacetHasKey(Video3dFacetKey),
+				query.FacetHasKey(Video3DFacetKey),
 				query.FacetHasLabel("Video 3D"),
 				query.FacetUsesOrLogic(),
 				query.FacetTriggersCte(),
 			}, options...)...,
 		),
 		field: video3dField,
-		parse: model.ParseVideo3d,
+		parse: model.ParseVideo3D,
 	}}
 }
 
 type video3dFacet struct {
-	torrentContentAttributeFacet[model.Video3d]
+	torrentContentAttributeFacet[model.Video3D]
 }
 
 func (f video3dFacet) Values(query.FacetContext) (map[string]string, error) {
-	v3ds := model.Video3dValues()
+	v3ds := model.Video3DValues()
 	values := make(map[string]string, len(v3ds))
 	for _, vr := range v3ds {
 		values[vr.String()] = vr.Label()

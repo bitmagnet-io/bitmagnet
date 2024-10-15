@@ -36,7 +36,7 @@ type ContentAttributes struct {
 	VideoResolution model.NullVideoResolution
 	VideoSource     model.NullVideoSource
 	VideoCodec      model.NullVideoCodec
-	Video3d         model.NullVideo3d
+	Video3D         model.NullVideo3D
 	VideoModifier   model.NullVideoModifier
 	ReleaseGroup    model.NullString
 }
@@ -67,8 +67,8 @@ func (a *ContentAttributes) Merge(other ContentAttributes) {
 	if !a.VideoCodec.Valid {
 		a.VideoCodec = other.VideoCodec
 	}
-	if !a.Video3d.Valid {
-		a.Video3d = other.Video3d
+	if !a.Video3D.Valid {
+		a.Video3D = other.Video3D
 	}
 	if !a.VideoModifier.Valid {
 		a.VideoModifier = other.VideoModifier
@@ -94,8 +94,8 @@ func (a *ContentAttributes) ApplyHint(h model.TorrentHint) {
 	if h.VideoCodec.Valid {
 		a.VideoCodec = h.VideoCodec
 	}
-	if h.Video3d.Valid {
-		a.Video3d = h.Video3d
+	if h.Video3D.Valid {
+		a.Video3D = h.Video3D
 	}
 	if h.VideoModifier.Valid {
 		a.VideoModifier = h.VideoModifier
@@ -109,6 +109,6 @@ func (a *ContentAttributes) InferVideoAttributes(input string) {
 	a.VideoResolution = model.InferVideoResolution(input)
 	a.VideoSource = model.InferVideoSource(input)
 	a.VideoCodec, a.ReleaseGroup = model.InferVideoCodecAndReleaseGroup(input)
-	a.Video3d = model.InferVideo3d(input)
+	a.Video3D = model.InferVideo3D(input)
 	a.VideoModifier = model.InferVideoModifier(input)
 }

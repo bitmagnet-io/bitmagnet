@@ -4,21 +4,21 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/keywords"
 )
 
-// Video3d represents the 3D type of a video
+// Video3D represents the 3D type of a video
 // ENUM(V3D, V3DSBS, V3DOU)
-type Video3d string
+type Video3D string
 
-func (v Video3d) Label() string {
+func (v Video3D) Label() string {
 	return v.String()[1:]
 }
 
-var video3dRegex = keywords.MustNewRegexFromKeywords(namesToLower(removeEnumPrefixes(Video3dNames()...)...)...)
+var video3dRegex = keywords.MustNewRegexFromKeywords(namesToLower(removeEnumPrefixes(Video3DNames()...)...)...)
 
-func InferVideo3d(input string) NullVideo3d {
+func InferVideo3D(input string) NullVideo3D {
 	if match := video3dRegex.FindStringSubmatch(input); match != nil {
-		if parsed, parseErr := ParseVideo3d("V" + match[1]); parseErr == nil {
-			return NewNullVideo3d(parsed)
+		if parsed, parseErr := ParseVideo3D("V" + match[1]); parseErr == nil {
+			return NewNullVideo3D(parsed)
 		}
 	}
-	return NullVideo3d{}
+	return NullVideo3D{}
 }

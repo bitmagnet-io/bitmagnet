@@ -142,10 +142,10 @@ models:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/model.VideoCodec
       - github.com/bitmagnet-io/bitmagnet/internal/model.NullVideoCodec
-  Video3d:
+  Video3D:
     model:
-      - github.com/bitmagnet-io/bitmagnet/internal/model.Video3d
-      - github.com/bitmagnet-io/bitmagnet/internal/model.NullVideo3d
+      - github.com/bitmagnet-io/bitmagnet/internal/model.Video3D
+      - github.com/bitmagnet-io/bitmagnet/internal/model.NullVideo3D
   VideoModifier:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/model.VideoModifier
