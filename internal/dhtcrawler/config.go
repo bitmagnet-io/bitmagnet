@@ -32,6 +32,7 @@ func NewDefaultConfig() Config {
 	}
 }
 
+// https://github.com/anacrolix/dht/blob/92b36a3fa7a37a15e08684337b47d8d0fb322ab6/dht.go#L106
 var defaultBootstrapNodes = []string{
 	"router.utorrent.com:6881",
 	"router.bittorrent.com:6881",
