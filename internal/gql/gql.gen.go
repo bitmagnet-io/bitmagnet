@@ -287,7 +287,7 @@ type ComplexityRoot struct {
 		Title           func(childComplexity int) int
 		Torrent         func(childComplexity int) int
 		UpdatedAt       func(childComplexity int) int
-		Video3d         func(childComplexity int) int
+		Video3D         func(childComplexity int) int
 		VideoCodec      func(childComplexity int) int
 		VideoModifier   func(childComplexity int) int
 		VideoResolution func(childComplexity int) int
@@ -1509,11 +1509,11 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		return e.complexity.TorrentContent.UpdatedAt(childComplexity), true
 
 	case "TorrentContent.video3d":
-		if e.complexity.TorrentContent.Video3d == nil {
+		if e.complexity.TorrentContent.Video3D == nil {
 			break
 		}
 
-		return e.complexity.TorrentContent.Video3d(childComplexity), true
+		return e.complexity.TorrentContent.Video3D(childComplexity), true
 
 	case "TorrentContent.videoCodec":
 		if e.complexity.TorrentContent.VideoCodec == nil {
@@ -2316,7 +2316,7 @@ enum Language {
   zu
 }
 
-enum Video3d {
+enum Video3D {
   V3D
   V3DSBS
   V3DOU
@@ -2493,7 +2493,7 @@ type TorrentContent {
   videoResolution: VideoResolution
   videoSource: VideoSource
   videoCodec: VideoCodec
-  video3d: Video3d
+  video3d: Video3D
   videoModifier: VideoModifier
   releaseGroup: String
   seeders: Int
@@ -10082,7 +10082,7 @@ func (ec *executionContext) _TorrentContent_video3d(ctx context.Context, field g
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Video3d, nil
+		return obj.Video3D, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10091,9 +10091,9 @@ func (ec *executionContext) _TorrentContent_video3d(ctx context.Context, field g
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(model.NullVideo3d)
+	res := resTmp.(model.NullVideo3D)
 	fc.Result = res
-	return ec.marshalOVideo3d2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullVideo3d(ctx, field.Selections, res)
+	return ec.marshalOVideo3D2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullVideo3D(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_TorrentContent_video3d(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -10103,7 +10103,7 @@ func (ec *executionContext) fieldContext_TorrentContent_video3d(_ context.Contex
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Video3d does not have child fields")
+			return nil, errors.New("field of type Video3D does not have child fields")
 		},
 	}
 	return fc, nil
@@ -23027,13 +23027,13 @@ func (ec *executionContext) unmarshalOTorrentTagFacetInput2ᚖgithubᚗcomᚋbit
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOVideo3d2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullVideo3d(ctx context.Context, v interface{}) (model.NullVideo3d, error) {
-	var res model.NullVideo3d
+func (ec *executionContext) unmarshalOVideo3D2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullVideo3D(ctx context.Context, v interface{}) (model.NullVideo3D, error) {
+	var res model.NullVideo3D
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOVideo3d2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullVideo3d(ctx context.Context, sel ast.SelectionSet, v model.NullVideo3d) graphql.Marshaler {
+func (ec *executionContext) marshalOVideo3D2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullVideo3D(ctx context.Context, sel ast.SelectionSet, v model.NullVideo3D) graphql.Marshaler {
 	return v
 }
 

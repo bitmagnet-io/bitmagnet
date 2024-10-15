@@ -16,76 +16,76 @@ import (
 )
 
 const (
-	Video3dV3D    Video3d = "V3D"
-	Video3dV3DSBS Video3d = "V3DSBS"
-	Video3dV3DOU  Video3d = "V3DOU"
+	Video3DV3D    Video3D = "V3D"
+	Video3DV3DSBS Video3D = "V3DSBS"
+	Video3DV3DOU  Video3D = "V3DOU"
 )
 
-var ErrInvalidVideo3d = fmt.Errorf("not a valid Video3d, try [%s]", strings.Join(_Video3dNames, ", "))
+var ErrInvalidVideo3D = fmt.Errorf("not a valid Video3D, try [%s]", strings.Join(_Video3DNames, ", "))
 
-var _Video3dNames = []string{
-	string(Video3dV3D),
-	string(Video3dV3DSBS),
-	string(Video3dV3DOU),
+var _Video3DNames = []string{
+	string(Video3DV3D),
+	string(Video3DV3DSBS),
+	string(Video3DV3DOU),
 }
 
-// Video3dNames returns a list of possible string values of Video3d.
-func Video3dNames() []string {
-	tmp := make([]string, len(_Video3dNames))
-	copy(tmp, _Video3dNames)
+// Video3DNames returns a list of possible string values of Video3D.
+func Video3DNames() []string {
+	tmp := make([]string, len(_Video3DNames))
+	copy(tmp, _Video3DNames)
 	return tmp
 }
 
-// Video3dValues returns a list of the values for Video3d
-func Video3dValues() []Video3d {
-	return []Video3d{
-		Video3dV3D,
-		Video3dV3DSBS,
-		Video3dV3DOU,
+// Video3DValues returns a list of the values for Video3D
+func Video3DValues() []Video3D {
+	return []Video3D{
+		Video3DV3D,
+		Video3DV3DSBS,
+		Video3DV3DOU,
 	}
 }
 
 // String implements the Stringer interface.
-func (x Video3d) String() string {
+func (x Video3D) String() string {
 	return string(x)
 }
 
 // IsValid provides a quick way to determine if the typed value is
 // part of the allowed enumerated values
-func (x Video3d) IsValid() bool {
-	_, err := ParseVideo3d(string(x))
+func (x Video3D) IsValid() bool {
+	_, err := ParseVideo3D(string(x))
 	return err == nil
 }
 
-var _Video3dValue = map[string]Video3d{
-	"V3D":    Video3dV3D,
-	"v3d":    Video3dV3D,
-	"V3DSBS": Video3dV3DSBS,
-	"v3dsbs": Video3dV3DSBS,
-	"V3DOU":  Video3dV3DOU,
-	"v3dou":  Video3dV3DOU,
+var _Video3DValue = map[string]Video3D{
+	"V3D":    Video3DV3D,
+	"v3d":    Video3DV3D,
+	"V3DSBS": Video3DV3DSBS,
+	"v3dsbs": Video3DV3DSBS,
+	"V3DOU":  Video3DV3DOU,
+	"v3dou":  Video3DV3DOU,
 }
 
-// ParseVideo3d attempts to convert a string to a Video3d.
-func ParseVideo3d(name string) (Video3d, error) {
-	if x, ok := _Video3dValue[name]; ok {
+// ParseVideo3D attempts to convert a string to a Video3D.
+func ParseVideo3D(name string) (Video3D, error) {
+	if x, ok := _Video3DValue[name]; ok {
 		return x, nil
 	}
 	// Case insensitive parse, do a separate lookup to prevent unnecessary cost of lowercasing a string if we don't need to.
-	if x, ok := _Video3dValue[strings.ToLower(name)]; ok {
+	if x, ok := _Video3DValue[strings.ToLower(name)]; ok {
 		return x, nil
 	}
-	return Video3d(""), fmt.Errorf("%s is %w", name, ErrInvalidVideo3d)
+	return Video3D(""), fmt.Errorf("%s is %w", name, ErrInvalidVideo3D)
 }
 
 // MarshalText implements the text marshaller method.
-func (x Video3d) MarshalText() ([]byte, error) {
+func (x Video3D) MarshalText() ([]byte, error) {
 	return []byte(string(x)), nil
 }
 
 // UnmarshalText implements the text unmarshaller method.
-func (x *Video3d) UnmarshalText(text []byte) error {
-	tmp, err := ParseVideo3d(string(text))
+func (x *Video3D) UnmarshalText(text []byte) error {
+	tmp, err := ParseVideo3D(string(text))
 	if err != nil {
 		return err
 	}
@@ -93,12 +93,12 @@ func (x *Video3d) UnmarshalText(text []byte) error {
 	return nil
 }
 
-var errVideo3dNilPtr = errors.New("value pointer is nil") // one per type for package clashes
+var errVideo3DNilPtr = errors.New("value pointer is nil") // one per type for package clashes
 
 // Scan implements the Scanner interface.
-func (x *Video3d) Scan(value interface{}) (err error) {
+func (x *Video3D) Scan(value interface{}) (err error) {
 	if value == nil {
-		*x = Video3d("")
+		*x = Video3D("")
 		return
 	}
 
@@ -106,76 +106,76 @@ func (x *Video3d) Scan(value interface{}) (err error) {
 	// driver.Value values at the top of the list for expediency
 	switch v := value.(type) {
 	case string:
-		*x, err = ParseVideo3d(v)
+		*x, err = ParseVideo3D(v)
 	case []byte:
-		*x, err = ParseVideo3d(string(v))
-	case Video3d:
+		*x, err = ParseVideo3D(string(v))
+	case Video3D:
 		*x = v
-	case *Video3d:
+	case *Video3D:
 		if v == nil {
-			return errVideo3dNilPtr
+			return errVideo3DNilPtr
 		}
 		*x = *v
 	case *string:
 		if v == nil {
-			return errVideo3dNilPtr
+			return errVideo3DNilPtr
 		}
-		*x, err = ParseVideo3d(*v)
+		*x, err = ParseVideo3D(*v)
 	default:
-		return errors.New("invalid type for Video3d")
+		return errors.New("invalid type for Video3D")
 	}
 
 	return
 }
 
 // Value implements the driver Valuer interface.
-func (x Video3d) Value() (driver.Value, error) {
+func (x Video3D) Value() (driver.Value, error) {
 	return x.String(), nil
 }
 
-type NullVideo3d struct {
-	Video3d Video3d
+type NullVideo3D struct {
+	Video3D Video3D
 	Valid   bool
 	Set     bool
 }
 
-func NewNullVideo3d(val interface{}) (x NullVideo3d) {
+func NewNullVideo3D(val interface{}) (x NullVideo3D) {
 	err := x.Scan(val) // yes, we ignore this error, it will just be an invalid value.
 	_ = err            // make any errcheck linters happy
 	return
 }
 
 // Scan implements the Scanner interface.
-func (x *NullVideo3d) Scan(value interface{}) (err error) {
+func (x *NullVideo3D) Scan(value interface{}) (err error) {
 	if value == nil {
-		x.Video3d, x.Valid = Video3d(""), false
+		x.Video3D, x.Valid = Video3D(""), false
 		return
 	}
 
-	err = x.Video3d.Scan(value)
+	err = x.Video3D.Scan(value)
 	x.Valid = (err == nil)
 	return
 }
 
 // Value implements the driver Valuer interface.
-func (x NullVideo3d) Value() (driver.Value, error) {
+func (x NullVideo3D) Value() (driver.Value, error) {
 	if !x.Valid {
 		return nil, nil
 	}
-	return x.Video3d.String(), nil
+	return x.Video3D.String(), nil
 }
 
-// MarshalJSON correctly serializes a NullVideo3d to JSON.
-func (n NullVideo3d) MarshalJSON() ([]byte, error) {
+// MarshalJSON correctly serializes a NullVideo3D to JSON.
+func (n NullVideo3D) MarshalJSON() ([]byte, error) {
 	const nullStr = "null"
 	if n.Valid {
-		return json.Marshal(n.Video3d)
+		return json.Marshal(n.Video3D)
 	}
 	return []byte(nullStr), nil
 }
 
-// UnmarshalJSON correctly deserializes a NullVideo3d from JSON.
-func (n *NullVideo3d) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON correctly deserializes a NullVideo3D from JSON.
+func (n *NullVideo3D) UnmarshalJSON(b []byte) error {
 	n.Set = true
 	var x interface{}
 	err := json.Unmarshal(b, &x)
@@ -186,16 +186,16 @@ func (n *NullVideo3d) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-// MarshalGQL correctly serializes a NullVideo3d to GraphQL.
-func (n NullVideo3d) MarshalGQL(w io.Writer) {
+// MarshalGQL correctly serializes a NullVideo3D to GraphQL.
+func (n NullVideo3D) MarshalGQL(w io.Writer) {
 	bytes, err := json.Marshal(n)
 	if err == nil {
 		_, _ = w.Write(bytes)
 	}
 }
 
-// UnmarshalGQL correctly deserializes a NullVideo3d from GraphQL.
-func (n *NullVideo3d) UnmarshalGQL(v any) error {
+// UnmarshalGQL correctly deserializes a NullVideo3D from GraphQL.
+func (n *NullVideo3D) UnmarshalGQL(v any) error {
 	if v == nil {
 		return nil
 	}

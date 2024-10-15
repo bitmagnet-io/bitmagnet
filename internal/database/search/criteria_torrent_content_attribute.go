@@ -11,7 +11,7 @@ import (
 
 var VideoResolutionCriteria = torrentContentAttributeCriteria[model.VideoResolution](videoResolutionField)
 
-var Video3dCriteria = torrentContentAttributeCriteria[model.Video3d](video3dField)
+var Video3DCriteria = torrentContentAttributeCriteria[model.Video3D](video3dField)
 
 func torrentContentAttributeCriteria[T attribute](getFld func(*dao.Query) field.Field) func(...T) query.Criteria {
 	return func(values ...T) query.Criteria {

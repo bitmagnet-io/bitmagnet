@@ -37,7 +37,7 @@ func newTorrentContent(db *gorm.DB, opts ...gen.DOOption) torrentContent {
 	_torrentContent.VideoResolution = field.NewField(tableName, "video_resolution")
 	_torrentContent.VideoSource = field.NewField(tableName, "video_source")
 	_torrentContent.VideoCodec = field.NewField(tableName, "video_codec")
-	_torrentContent.Video3d = field.NewField(tableName, "video_3d")
+	_torrentContent.Video3D = field.NewField(tableName, "video_3d")
 	_torrentContent.VideoModifier = field.NewField(tableName, "video_modifier")
 	_torrentContent.ReleaseGroup = field.NewField(tableName, "release_group")
 	_torrentContent.CreatedAt = field.NewTime(tableName, "created_at")
@@ -148,7 +148,7 @@ type torrentContent struct {
 	VideoResolution field.Field
 	VideoSource     field.Field
 	VideoCodec      field.Field
-	Video3d         field.Field
+	Video3D         field.Field
 	VideoModifier   field.Field
 	ReleaseGroup    field.Field
 	CreatedAt       field.Time
@@ -188,7 +188,7 @@ func (t *torrentContent) updateTableName(table string) *torrentContent {
 	t.VideoResolution = field.NewField(table, "video_resolution")
 	t.VideoSource = field.NewField(table, "video_source")
 	t.VideoCodec = field.NewField(table, "video_codec")
-	t.Video3d = field.NewField(table, "video_3d")
+	t.Video3D = field.NewField(table, "video_3d")
 	t.VideoModifier = field.NewField(table, "video_modifier")
 	t.ReleaseGroup = field.NewField(table, "release_group")
 	t.CreatedAt = field.NewTime(table, "created_at")
@@ -226,7 +226,7 @@ func (t *torrentContent) fillFieldMap() {
 	t.fieldMap["video_resolution"] = t.VideoResolution
 	t.fieldMap["video_source"] = t.VideoSource
 	t.fieldMap["video_codec"] = t.VideoCodec
-	t.fieldMap["video_3d"] = t.Video3d
+	t.fieldMap["video_3d"] = t.Video3D
 	t.fieldMap["video_modifier"] = t.VideoModifier
 	t.fieldMap["release_group"] = t.ReleaseGroup
 	t.fieldMap["created_at"] = t.CreatedAt

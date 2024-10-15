@@ -25,7 +25,7 @@ type TorrentHint struct {
 	VideoResolution NullVideoResolution `gorm:"column:video_resolution" json:"videoResolution"`
 	VideoSource     NullVideoSource     `gorm:"column:video_source" json:"videoSource"`
 	VideoCodec      NullVideoCodec      `gorm:"column:video_codec" json:"videoCodec"`
-	Video3d         NullVideo3d         `gorm:"column:video_3d" json:"video3D"`
+	Video3D         NullVideo3D         `gorm:"column:video_3d" json:"video3D"`
 	VideoModifier   NullVideoModifier   `gorm:"column:video_modifier" json:"videoModifier"`
 	ReleaseGroup    NullString          `gorm:"column:release_group" json:"releaseGroup"`
 	CreatedAt       time.Time           `gorm:"column:created_at;not null;<-:create" json:"createdAt"`

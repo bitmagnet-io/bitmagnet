@@ -28,7 +28,7 @@ type TorrentContent struct {
 	VideoResolution model.NullVideoResolution
 	VideoSource     model.NullVideoSource
 	VideoCodec      model.NullVideoCodec
-	Video3d         model.NullVideo3d
+	Video3D         model.NullVideo3D
 	VideoModifier   model.NullVideoModifier
 	ReleaseGroup    model.NullString
 	SearchString    string
@@ -57,7 +57,7 @@ func NewTorrentContentFromResultItem(item search.TorrentContentResultItem) Torre
 		VideoResolution: item.VideoResolution,
 		VideoSource:     item.VideoSource,
 		VideoCodec:      item.VideoCodec,
-		Video3d:         item.Video3d,
+		Video3D:         item.Video3D,
 		VideoModifier:   item.VideoModifier,
 		ReleaseGroup:    item.ReleaseGroup,
 		Seeders:         item.Seeders,

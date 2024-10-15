@@ -69,7 +69,7 @@ func (tc *TorrentContent) UpdateTsv() {
 	if tc.VideoCodec.Valid {
 		tsv.AddText(tc.VideoCodec.VideoCodec.String(), fts.TsvectorWeightC)
 	}
-	if tc.Video3d.Valid {
+	if tc.Video3D.Valid {
 		tsv.AddText("3D", fts.TsvectorWeightC)
 	}
 	if tc.VideoModifier.Valid {

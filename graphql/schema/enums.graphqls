@@ -98,7 +98,7 @@ enum Language {
   zu
 }
 
-enum Video3d {
+enum Video3D {
   V3D
   V3DSBS
   V3DOU

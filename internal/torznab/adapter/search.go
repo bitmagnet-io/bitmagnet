@@ -79,10 +79,10 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 			} else if torznab.CategoryMoviesUHD.ID == cat {
 				catCriteria = append(catCriteria, search.VideoResolutionCriteria(model.VideoResolutionV2160p))
 			} else if torznab.CategoryMovies3D.ID == cat {
-				catCriteria = append(catCriteria, search.Video3dCriteria(
-					model.Video3dV3D,
-					model.Video3dV3DSBS,
-					model.Video3dV3DOU,
+				catCriteria = append(catCriteria, search.Video3DCriteria(
+					model.Video3DV3D,
+					model.Video3DV3DSBS,
+					model.Video3DV3DOU,
 				))
 			}
 		} else if torznab.CategoryTV.Has(cat) {

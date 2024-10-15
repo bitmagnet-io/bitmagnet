@@ -57,7 +57,7 @@ type TorrentContent {
   videoResolution: VideoResolution
   videoSource: VideoSource
   videoCodec: VideoCodec
-  video3d: Video3d
+  video3d: Video3D
   videoModifier: VideoModifier
   releaseGroup: String
   seeders: Int
