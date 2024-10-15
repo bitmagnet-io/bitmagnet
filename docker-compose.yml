@@ -6,6 +6,9 @@ services:
     container_name: bitmagnet
     image: ghcr.io/bitmagnet-io/bitmagnet:latest
     volumes:
+      # Optionally mount config and classifier files:
+      # - ./config.yml:/config.yml
+      # - ./classifier.yml:/classifier.yml
       # Mount data folder (currently only used for logs when file rotation is enabled):
       - ./data/bitmagnet:/root/.local/share/bitmagnet
     restart: unless-stopped
