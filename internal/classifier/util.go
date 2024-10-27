@@ -7,7 +7,7 @@ import (
 
 const levenshteinThreshold = 5
 
-func levenshteinCheck(target string, candidates []string, threshold uint) bool {
+func levenshteinCheck(target string, candidates []string, threshold uint) (bool, int) {
 	normTarget := regex.NormalizeString(target)
 	triedCandidates := make(map[string]struct{}, len(candidates))
 	for _, candidate := range candidates {
@@ -15,10 +15,11 @@ func levenshteinCheck(target string, candidates []string, threshold uint) bool {
 		if _, ok := triedCandidates[normCandidate]; ok {
 			continue
 		}
-		if levenshtein.ComputeDistance(normTarget, normCandidate) <= int(threshold) {
-			return true
+		distance := levenshtein.ComputeDistance(normTarget, normCandidate)
+		if distance <= int(threshold) {
+			return true, distance
 		}
 		triedCandidates[normCandidate] = struct{}{}
 	}
-	return false
+	return false, -1
 }

@@ -16,7 +16,7 @@
         default = pkgs.mkShell {
           packages = with pkgs; [
             bundler
-            go_1_22
+            go_1_23
             go-task
             golangci-lint
             jekyll

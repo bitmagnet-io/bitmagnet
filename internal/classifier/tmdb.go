@@ -2,6 +2,7 @@ package classifier
 
 import (
 	"errors"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
@@ -19,10 +20,19 @@ func (c executionContext) tmdb_searchMovie(title string, year model.Year) (model
 	if searchErr != nil {
 		return model.Content{}, searchErr
 	}
-	for _, item := range searchResult.Results {
-		if levenshteinCheck(title, []string{item.Title, item.OriginalTitle}, levenshteinThreshold) {
-			return c.tmdb_getMovieByTmbdId(item.ID)
+
+	minDistance := 1000
+	bestMatch := -1
+	for i, item := range searchResult.Results {
+		pass, distance := levenshteinCheck(title, []string{item.Title, item.OriginalTitle}, levenshteinThreshold)
+		if pass && distance < minDistance {
+			minDistance = distance
+			bestMatch = i
 		}
+	}
+
+	if bestMatch != -1 {
+		return c.tmdb_getMovieByTmbdId(searchResult.Results[bestMatch].ID)
 	}
 	return model.Content{}, classification.ErrUnmatched
 }
@@ -39,10 +49,19 @@ func (c executionContext) tmdb_searchTvShow(title string, year model.Year) (mode
 	if searchErr != nil {
 		return model.Content{}, searchErr
 	}
-	for _, item := range searchResult.Results {
-		if levenshteinCheck(title, []string{item.Name, item.OriginalName}, levenshteinThreshold) {
-			return c.tmdb_getTvShowByTmbdId(item.ID)
+
+	minDistance := 1000
+	bestMatch := -1
+	for i, item := range searchResult.Results {
+		pass, distance := levenshteinCheck(title, []string{item.Name, item.OriginalName}, levenshteinThreshold)
+		if pass && distance < minDistance {
+			minDistance = distance
+			bestMatch = i
 		}
+	}
+	if bestMatch != -1 {
+		return c.tmdb_getTvShowByTmbdId(searchResult.Results[bestMatch].ID)
+
 	}
 	return model.Content{}, classification.ErrUnmatched
 }
