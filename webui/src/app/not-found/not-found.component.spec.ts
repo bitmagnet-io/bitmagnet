@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 
+import { appConfig } from "../app.config";
 import { NotFoundComponent } from "./not-found.component";
-import {appConfig} from "../app.config";
 
 describe("NotFoundComponent", () => {
   let component: NotFoundComponent;
