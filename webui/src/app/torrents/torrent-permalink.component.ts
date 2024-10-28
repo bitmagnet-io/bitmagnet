@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from "@angular/core";
-import { ActivatedRoute } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { Apollo } from "apollo-angular";
 import * as generated from "../graphql/generated";
 import { GraphQLModule } from "../graphql/graphql.module";
@@ -22,14 +22,18 @@ import { TorrentChipsComponent } from "./torrent-chips.component";
 })
 export class TorrentPermalinkComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private apollo = inject(Apollo);
   loading = true;
-  found = false;
   torrentContent: generated.TorrentContent;
 
   ngOnInit() {
     this.loading = true;
     this.route.paramMap.subscribe((params) => {
+      const infoHash = params.get("infoHash");
+      if (typeof infoHash !== "string" || !/^[0-9a-f]{40}$/.test(infoHash)) {
+        return this.notFound();
+      }
       this.apollo
         .query<
           generated.TorrentContentSearchQuery,
@@ -38,17 +42,25 @@ export class TorrentPermalinkComponent implements OnInit {
           query: generated.TorrentContentSearchDocument,
           variables: {
             input: {
-              infoHashes: [params.get("infoHash") as string],
+              infoHashes: [infoHash],
             },
           },
           fetchPolicy: "no-cache",
         })
         .subscribe((result) => {
           const items = result.data.torrentContent.search.items;
+          if (items.length === 0) {
+            return this.notFound();
+          }
           this.torrentContent = items[0];
-          this.found = items.length > 0;
           this.loading = false;
         });
+    });
+  }
+
+  private notFound() {
+    void this.router.navigate(["/not-found"], {
+      skipLocationChange: true,
     });
   }
 

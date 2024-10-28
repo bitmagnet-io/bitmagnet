@@ -19,7 +19,7 @@
           t("paginator.x_to_y_of_z", {
             x: (firstItemIndex | number),
             y: (lastItemIndex | number),
-            z: (totalLength | number)
+            z: (totalIsEstimate ? "~" : "") + (totalLength | number)
           })
         }}
       } @else {
