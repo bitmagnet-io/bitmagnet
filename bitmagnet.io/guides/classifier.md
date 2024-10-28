@@ -34,7 +34,7 @@ The classifier is declared in YAML format. The application includes a [core clas
 
 **bitmagnet** will attempt to load classifier source code from all the following locations. Any discovered classifier source will be merged with other sources in the following order of precedence:
 
-- [the core classifier](https://github.com/bitmagnet-io/bitmagnet/blob/main/internal/classifier/classifier.core.yaml)
+- [the core classifier](https://github.com/bitmagnet-io/bitmagnet/blob/main/internal/classifier/classifier.core.yml)
 - `classifier.yml` in the [XDG-compliant](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html) config location for the current user (for example on MacOS this is `~/Library/Application Support/bitmagnet/classifier.yml`)
 - `classifier.yml` in the current working directory
 - [Classifier configuration](#configuration)
