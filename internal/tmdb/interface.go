@@ -55,25 +55,27 @@ type SearchTvRequest struct {
 	Year             model.Year
 }
 
+type SearchTvResult struct {
+	OriginalName     string   `json:"original_name"`
+	ID               int64    `json:"id"`
+	Name             string   `json:"name"`
+	VoteCount        int64    `json:"vote_count"`
+	VoteAverage      float32  `json:"vote_average"`
+	PosterPath       string   `json:"poster_path"`
+	FirstAirDate     string   `json:"first_air_date"`
+	Popularity       float32  `json:"popularity"`
+	GenreIDs         []int64  `json:"genre_ids"`
+	OriginalLanguage string   `json:"original_language"`
+	BackdropPath     string   `json:"backdrop_path"`
+	Overview         string   `json:"overview"`
+	OriginCountry    []string `json:"origin_country"`
+}
+
 type SearchTvResponse struct {
-	Page         int64 `json:"page"`
-	TotalResults int64 `json:"total_results"`
-	TotalPages   int64 `json:"total_pages"`
-	Results      []struct {
-		OriginalName     string   `json:"original_name"`
-		ID               int64    `json:"id"`
-		Name             string   `json:"name"`
-		VoteCount        int64    `json:"vote_count"`
-		VoteAverage      float32  `json:"vote_average"`
-		PosterPath       string   `json:"poster_path"`
-		FirstAirDate     string   `json:"first_air_date"`
-		Popularity       float32  `json:"popularity"`
-		GenreIDs         []int64  `json:"genre_ids"`
-		OriginalLanguage string   `json:"original_language"`
-		BackdropPath     string   `json:"backdrop_path"`
-		Overview         string   `json:"overview"`
-		OriginCountry    []string `json:"origin_country"`
-	} `json:"results"`
+	Page         int64            `json:"page"`
+	TotalResults int64            `json:"total_results"`
+	TotalPages   int64            `json:"total_pages"`
+	Results      []SearchTvResult `json:"results"`
 }
 
 type MovieDetailsRequest struct {
