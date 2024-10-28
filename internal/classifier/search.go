@@ -72,24 +72,19 @@ func (l localSearch) ContentBySearch(ctx context.Context, ct model.ContentType, 
 	if searchErr != nil {
 		return model.Content{}, searchErr
 	}
-	var content *model.Content
-	minDistance := 1000
-	bestMatch := -1
-	for i, item := range result.Items {
-		candidates := []string{item.Title}
-		if item.OriginalTitle.Valid {
-			candidates = append(candidates, item.OriginalTitle.String)
-		}
-		pass, distance := levenshteinCheck(baseTitle, candidates, levenshteinThreshold)
-		if pass && distance < minDistance {
-			minDistance = distance
-			bestMatch = i
-		}
-	}
-	if bestMatch == -1 {
+	if bestMatch, ok := levenshteinFindBestMatch[search.ContentResultItem](
+		baseTitle,
+		result.Items,
+		func(item search.ContentResultItem) []string {
+			candidates := []string{item.Title}
+			if item.OriginalTitle.Valid {
+				candidates = append(candidates, item.OriginalTitle.String)
+			}
+			return candidates
+		},
+	); !ok {
 		return model.Content{}, classification.ErrUnmatched
+	} else {
+		return bestMatch.Content, nil
 	}
-	c := result.Items[bestMatch].Content
-	content = &c
-	return *content, nil
 }

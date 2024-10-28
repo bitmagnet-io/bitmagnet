@@ -2,7 +2,6 @@ package classifier
 
 import (
 	"errors"
-
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
@@ -21,20 +20,17 @@ func (c executionContext) tmdb_searchMovie(title string, year model.Year) (model
 		return model.Content{}, searchErr
 	}
 
-	minDistance := 1000
-	bestMatch := -1
-	for i, item := range searchResult.Results {
-		pass, distance := levenshteinCheck(title, []string{item.Title, item.OriginalTitle}, levenshteinThreshold)
-		if pass && distance < minDistance {
-			minDistance = distance
-			bestMatch = i
-		}
+	if bestMatch, ok := levenshteinFindBestMatch[tmdb.SearchMovieResult](
+		title,
+		searchResult.Results,
+		func(item tmdb.SearchMovieResult) []string {
+			return []string{item.Title, item.OriginalTitle}
+		},
+	); !ok {
+		return model.Content{}, classification.ErrUnmatched
+	} else {
+		return c.tmdb_getMovieByTmbdId(bestMatch.ID)
 	}
-
-	if bestMatch != -1 {
-		return c.tmdb_getMovieByTmbdId(searchResult.Results[bestMatch].ID)
-	}
-	return model.Content{}, classification.ErrUnmatched
 }
 
 func (c executionContext) tmdb_searchTvShow(title string, year model.Year) (model.Content, error) {
@@ -50,20 +46,17 @@ func (c executionContext) tmdb_searchTvShow(title string, year model.Year) (mode
 		return model.Content{}, searchErr
 	}
 
-	minDistance := 1000
-	bestMatch := -1
-	for i, item := range searchResult.Results {
-		pass, distance := levenshteinCheck(title, []string{item.Name, item.OriginalName}, levenshteinThreshold)
-		if pass && distance < minDistance {
-			minDistance = distance
-			bestMatch = i
-		}
+	if bestMatch, ok := levenshteinFindBestMatch[tmdb.SearchTvResult](
+		title,
+		searchResult.Results,
+		func(item tmdb.SearchTvResult) []string {
+			return []string{item.Name, item.OriginalName}
+		},
+	); !ok {
+		return model.Content{}, classification.ErrUnmatched
+	} else {
+		return c.tmdb_getTvShowByTmbdId(bestMatch.ID)
 	}
-	if bestMatch != -1 {
-		return c.tmdb_getTvShowByTmbdId(searchResult.Results[bestMatch].ID)
-
-	}
-	return model.Content{}, classification.ErrUnmatched
 }
 
 func (c executionContext) tmdb_getMovieByTmbdId(id int64) (movie model.Content, err error) {
