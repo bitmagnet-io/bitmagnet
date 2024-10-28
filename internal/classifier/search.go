@@ -3,6 +3,7 @@ package classifier
 import (
 	"context"
 	"fmt"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
@@ -57,7 +58,7 @@ func (l localSearch) ContentBySearch(ctx context.Context, ct model.ContentType, 
 		query.Where(search.ContentTypeCriteria(ct)),
 		query.QueryString(fmt.Sprintf("\"%s\"", baseTitle)),
 		query.OrderByQueryStringRank(),
-		query.Limit(5),
+		query.Limit(10), // best match is not in first 5 results
 		search.ContentDefaultPreload(),
 		search.ContentDefaultHydrate(),
 	}
@@ -72,19 +73,23 @@ func (l localSearch) ContentBySearch(ctx context.Context, ct model.ContentType, 
 		return model.Content{}, searchErr
 	}
 	var content *model.Content
-	for _, item := range result.Items {
+	minDistance := 1000
+	bestMatch := -1
+	for i, item := range result.Items {
 		candidates := []string{item.Title}
 		if item.OriginalTitle.Valid {
 			candidates = append(candidates, item.OriginalTitle.String)
 		}
-		if levenshteinCheck(baseTitle, candidates, levenshteinThreshold) {
-			c := item.Content
-			content = &c
-			break
+		pass, distance := levenshteinCheck(baseTitle, candidates, levenshteinThreshold)
+		if pass && distance < minDistance {
+			minDistance = distance
+			bestMatch = i
 		}
 	}
-	if content == nil {
+	if bestMatch == -1 {
 		return model.Content{}, classification.ErrUnmatched
 	}
+	c := result.Items[bestMatch].Content
+	content = &c
 	return *content, nil
 }
