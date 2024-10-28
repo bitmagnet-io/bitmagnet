@@ -3,6 +3,7 @@ package classifier
 import (
 	"context"
 	"fmt"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
@@ -57,7 +58,7 @@ func (l localSearch) ContentBySearch(ctx context.Context, ct model.ContentType, 
 		query.Where(search.ContentTypeCriteria(ct)),
 		query.QueryString(fmt.Sprintf("\"%s\"", baseTitle)),
 		query.OrderByQueryStringRank(),
-		query.Limit(5),
+		query.Limit(10),
 		search.ContentDefaultPreload(),
 		search.ContentDefaultHydrate(),
 	}
@@ -71,20 +72,19 @@ func (l localSearch) ContentBySearch(ctx context.Context, ct model.ContentType, 
 	if searchErr != nil {
 		return model.Content{}, searchErr
 	}
-	var content *model.Content
-	for _, item := range result.Items {
-		candidates := []string{item.Title}
-		if item.OriginalTitle.Valid {
-			candidates = append(candidates, item.OriginalTitle.String)
-		}
-		if levenshteinCheck(baseTitle, candidates, levenshteinThreshold) {
-			c := item.Content
-			content = &c
-			break
-		}
-	}
-	if content == nil {
+	if bestMatch, ok := levenshteinFindBestMatch[search.ContentResultItem](
+		baseTitle,
+		result.Items,
+		func(item search.ContentResultItem) []string {
+			candidates := []string{item.Title}
+			if item.OriginalTitle.Valid {
+				candidates = append(candidates, item.OriginalTitle.String)
+			}
+			return candidates
+		},
+	); !ok {
 		return model.Content{}, classification.ErrUnmatched
+	} else {
+		return bestMatch.Content, nil
 	}
-	return *content, nil
 }
