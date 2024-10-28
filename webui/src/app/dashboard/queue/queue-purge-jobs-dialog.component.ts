@@ -113,7 +113,7 @@ export class QueuePurgeJobsDialogComponent {
         }),
         map(() => {
           this.stage = "DONE";
-          this.data.onPurged?.();
+          this.data?.onPurged?.();
         }),
       )
       .subscribe();
