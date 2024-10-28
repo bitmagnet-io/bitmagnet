@@ -58,7 +58,7 @@ func (l localSearch) ContentBySearch(ctx context.Context, ct model.ContentType, 
 		query.Where(search.ContentTypeCriteria(ct)),
 		query.QueryString(fmt.Sprintf("\"%s\"", baseTitle)),
 		query.OrderByQueryStringRank(),
-		query.Limit(10), // best match is not in first 5 results
+		query.Limit(10),
 		search.ContentDefaultPreload(),
 		search.ContentDefaultHydrate(),
 	}
