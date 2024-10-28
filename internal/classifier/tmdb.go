@@ -19,12 +19,18 @@ func (c executionContext) tmdb_searchMovie(title string, year model.Year) (model
 	if searchErr != nil {
 		return model.Content{}, searchErr
 	}
-	for _, item := range searchResult.Results {
-		if levenshteinCheck(title, []string{item.Title, item.OriginalTitle}, levenshteinThreshold) {
-			return c.tmdb_getMovieByTmbdId(item.ID)
-		}
+
+	if bestMatch, ok := levenshteinFindBestMatch[tmdb.SearchMovieResult](
+		title,
+		searchResult.Results,
+		func(item tmdb.SearchMovieResult) []string {
+			return []string{item.Title, item.OriginalTitle}
+		},
+	); !ok {
+		return model.Content{}, classification.ErrUnmatched
+	} else {
+		return c.tmdb_getMovieByTmbdId(bestMatch.ID)
 	}
-	return model.Content{}, classification.ErrUnmatched
 }
 
 func (c executionContext) tmdb_searchTvShow(title string, year model.Year) (model.Content, error) {
@@ -39,12 +45,18 @@ func (c executionContext) tmdb_searchTvShow(title string, year model.Year) (mode
 	if searchErr != nil {
 		return model.Content{}, searchErr
 	}
-	for _, item := range searchResult.Results {
-		if levenshteinCheck(title, []string{item.Name, item.OriginalName}, levenshteinThreshold) {
-			return c.tmdb_getTvShowByTmbdId(item.ID)
-		}
+
+	if bestMatch, ok := levenshteinFindBestMatch[tmdb.SearchTvResult](
+		title,
+		searchResult.Results,
+		func(item tmdb.SearchTvResult) []string {
+			return []string{item.Name, item.OriginalName}
+		},
+	); !ok {
+		return model.Content{}, classification.ErrUnmatched
+	} else {
+		return c.tmdb_getTvShowByTmbdId(bestMatch.ID)
 	}
-	return model.Content{}, classification.ErrUnmatched
 }
 
 func (c executionContext) tmdb_getMovieByTmbdId(id int64) (movie model.Content, err error) {
