@@ -221,6 +221,7 @@
     "next_page": "Volgende pagina",
     "previous_page": "Vorige pagina",
     "x_to_y": "{{x}} tot {{y}}",
+    "x_to_y_of_y": "__missing__",
     "x_to_y_of_z": "{{x}} tot {{y}} van {{z}}"
   },
   "routes": {
@@ -286,6 +287,15 @@
     "size": "Grootte",
     "source": "Torrentbron",
     "summary": "Samenvatting",
+    "tags": {
+      "delete": "Tags verwijderen",
+      "delete_tip": "Tags verwijderen van de geselecteerde torrents",
+      "placeholder": "Tag...",
+      "put": "Tags plaatsen",
+      "put_tip": "Tags toevoegen aan de geselecteerde torrents",
+      "set": "Tags instellen",
+      "set_tip": "Tags van de geselecteerde torrents vervangen"
+    },
     "title": "Titel",
     "toggle_drawer": "Zijpaneel in-/uitschakelen",
     "votes_count_n": "{{count}} stemmen"

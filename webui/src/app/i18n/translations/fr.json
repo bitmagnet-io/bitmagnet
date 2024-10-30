@@ -287,6 +287,15 @@
     "size": "Taille",
     "source": "Source du torrent",
     "summary": "Résumé",
+    "tags": {
+      "delete": "Supprimer les tags",
+      "delete_tip": "Supprimer les tags des torrents sélectionnés",
+      "placeholder": "Tag...",
+      "put": "Mettre des tags",
+      "put_tip": "Ajouter des tags aux torrents sélectionnés",
+      "set": "Définir des tags",
+      "set_tip": "Remplacer les tags des torrents sélectionnés"
+    },
     "title": "Titre",
     "toggle_drawer": "Basculer le tiroir",
     "votes_count_n": "{{count}} votes"

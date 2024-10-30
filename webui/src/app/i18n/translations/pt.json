@@ -221,6 +221,7 @@
     "next_page": "Próxima página",
     "previous_page": "Página anterior",
     "x_to_y": "{{x}} a {{y}}",
+    "x_to_y_of_y": "__missing__",
     "x_to_y_of_z": "{{x}} a {{y}} de {{z}}"
   },
   "routes": {
@@ -286,6 +287,15 @@
     "size": "Tamanho",
     "source": "Fonte do torrent",
     "summary": "Resumo",
+    "tags": {
+      "delete": "Excluir tags",
+      "delete_tip": "Remover tags dos torrents selecionados",
+      "placeholder": "Tag...",
+      "put": "Colocar tags",
+      "put_tip": "Adicionar tags aos torrents selecionados",
+      "set": "Definir tags",
+      "set_tip": "Substituir tags dos torrents selecionados"
+    },
     "title": "Título",
     "toggle_drawer": "Alternar gaveta",
     "votes_count_n": "{{count}} votos"

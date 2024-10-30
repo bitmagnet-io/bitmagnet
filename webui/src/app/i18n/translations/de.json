@@ -287,6 +287,15 @@
     "size": "Größe",
     "source": "Torrent-Quelle",
     "summary": "Zusammenfassung",
+    "tags": {
+      "delete": "Tags löschen",
+      "delete_tip": "Tags aus den ausgewählten Torrents entfernen",
+      "placeholder": "Tag...",
+      "put": "Tags setzen",
+      "put_tip": "Tags zu den ausgewählten Torrents hinzufügen",
+      "set": "Tags setzen",
+      "set_tip": "Tags der ausgewählten Torrents ersetzen"
+    },
     "title": "Titel",
     "toggle_drawer": "Schublade umschalten",
     "votes_count_n": "{{count}} Stimmen"

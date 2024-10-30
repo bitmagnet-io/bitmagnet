@@ -221,6 +221,7 @@
     "next_page": "Sonraki Sayfa",
     "previous_page": "Önceki Sayfa",
     "x_to_y": "{{x}} - {{y}} arası",
+    "x_to_y_of_y": "__missing__",
     "x_to_y_of_z": "{{x}} ile {{y}} arası, toplam {{z}}"
   },
   "routes": {
@@ -286,6 +287,15 @@
     "size": "Boyut",
     "source": "Torrent Kaynağı",
     "summary": "Özet",
+    "tags": {
+      "delete": "Etiketleri sil",
+      "delete_tip": "Seçili torrentlerden etiketleri kaldır",
+      "placeholder": "Etiket...",
+      "put": "Etiket koy",
+      "put_tip": "Seçili torrentlere etiket ekle",
+      "set": "Etiketleri ayarla",
+      "set_tip": "Seçili torrentlerin etiketlerini değiştir"
+    },
     "title": "Başlık",
     "toggle_drawer": "Çekmeceyi Aç/Kapat",
     "votes_count_n": "{{count}} oy"
