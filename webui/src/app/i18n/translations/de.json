@@ -241,6 +241,8 @@
     "delete_action_cannot_be_undone": "Diese Aktion kann nicht rückgängig gemacht werden",
     "delete_are_you_sure": "Sind Sie sicher, dass Sie diesen Torrent löschen möchten?",
     "deselect_all": "Alle abwählen",
+    "download": "Herunterladen",
+    "download_confirm": "Möchten Sie die ausgewählten Torrents wirklich herunterladen?",
     "edit_tags": "Tags bearbeiten",
     "episodes": "Episoden",
     "external_links": "Externe Links",

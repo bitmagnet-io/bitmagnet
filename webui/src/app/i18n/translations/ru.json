@@ -241,6 +241,8 @@
     "delete_action_cannot_be_undone": "Это действие нельзя отменить",
     "delete_are_you_sure": "Вы уверены, что хотите удалить этот торрент?",
     "deselect_all": "Снять выделение",
+    "download": "Скачать",
+    "download_confirm": "Вы уверены, что хотите скачать выбранные торренты?",
     "edit_tags": "Редактировать теги",
     "episodes": "Эпизоды",
     "external_links": "Внешние ссылки",

@@ -241,6 +241,8 @@
     "delete_action_cannot_be_undone": "此操作无法撤销",
     "delete_are_you_sure": "您确定要删除此种子吗？",
     "deselect_all": "取消全选",
+    "download": "下载",
+    "download_confirm": "您确定要下载选定的种子吗？",
     "edit_tags": "编辑标签",
     "episodes": "剧集",
     "external_links": "外部链接",

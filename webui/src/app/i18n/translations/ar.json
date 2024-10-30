@@ -241,6 +241,8 @@
     "delete_action_cannot_be_undone": "لا يمكن التراجع عن هذا الإجراء",
     "delete_are_you_sure": "هل أنت متأكد أنك تريد حذف هذا التورنت؟",
     "deselect_all": "إلغاء تحديد الكل",
+    "download": "تنزيل",
+    "download_confirm": "هل أنت متأكد من أنك تريد تنزيل ملفات التورنت المحددة؟",
     "edit_tags": "تحرير العلامات",
     "episodes": "الحلقات",
     "external_links": "روابط خارجية",

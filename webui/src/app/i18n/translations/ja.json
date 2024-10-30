@@ -241,6 +241,8 @@
     "delete_action_cannot_be_undone": "この操作は元に戻せません",
     "delete_are_you_sure": "このトレントを削除してもよろしいですか？",
     "deselect_all": "すべての選択を解除",
+    "download": "ダウンロード",
+    "download_confirm": "選択したトレントをダウンロードしてもよろしいですか?",
     "edit_tags": "タグを編集",
     "episodes": "エピソード",
     "external_links": "外部リンク",

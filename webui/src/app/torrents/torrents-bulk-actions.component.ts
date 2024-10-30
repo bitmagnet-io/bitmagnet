@@ -47,7 +47,6 @@ export class TorrentsBulkActionsComponent implements OnInit {
     this.graphQLService.downloadClientEnabledQuery().subscribe({
       next: (enabled: boolean) => {
         this.downloadEnabled = enabled;
-        this.errorsService.addError(`hello: ${enabled}`);
       },
     });
   }
