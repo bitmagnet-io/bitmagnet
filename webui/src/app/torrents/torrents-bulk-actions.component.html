@@ -66,7 +66,7 @@
               }
             </mat-chip-grid>
             <input
-              placeholder="Tag..."
+              placeholder="{{ t('torrents.tags.placeholder') }}"
               [formControl]="newTagCtrl"
               [matAutocomplete]="auto"
               [matChipInputFor]="chipGrid"
@@ -89,9 +89,9 @@
               color="primary"
               [disabled]="!selectedItems.length"
               (click)="setTags()"
-              matTooltip="Replace tags of the selected torrents"
+              matTooltip="{{ t('torrents.tags.set_tip') }}"
             >
-              Set tags
+              {{ t("torrents.tags.set") }}
             </button>
             <button
               mat-stroked-button
@@ -101,9 +101,9 @@
                 (!editedTags.length && !newTagCtrl.value)
               "
               (click)="putTags()"
-              matTooltip="Add tags to the selected torrents"
+              matTooltip="{{ t('torrents.tags.put_tip') }}"
             >
-              Put tags
+              {{ t("torrents.tags.put") }}
             </button>
             <button
               mat-stroked-button
@@ -113,9 +113,9 @@
                 (!editedTags.length && !newTagCtrl.value)
               "
               (click)="deleteTags()"
-              matTooltip="Remove tags from the selected torrents"
+              matTooltip="{{ t('torrents.tags.delete_tip') }}"
             >
-              Delete tags
+              {{ t("torrents.tags.delete") }}
             </button>
           </mat-card-actions>
         </mat-card>
@@ -134,10 +134,8 @@
         <mat-card>
           <mat-card-content>
             <p>
-              <strong
-                >Are you sure you want to delete the selected torrents?</strong
-              >
-              <br />This action cannot be undone.
+              <strong>{{ t("torrents.delete_are_you_sure") }}</strong>
+              <br />{{ t("torrents.delete_action_cannot_be_undone") }}.
             </p>
           </mat-card-content>
           <mat-card-actions class="button-row">
@@ -147,7 +145,7 @@
               [disabled]="!selectedItems.length"
               (click)="deleteTorrents()"
             >
-              <mat-icon>delete_forever</mat-icon>Delete
+              <mat-icon>delete_forever</mat-icon>{{ t("torrents.delete") }}
             </button>
           </mat-card-actions>
         </mat-card>
