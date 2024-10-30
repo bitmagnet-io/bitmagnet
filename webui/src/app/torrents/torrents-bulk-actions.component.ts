@@ -38,9 +38,17 @@ export class TorrentsBulkActionsComponent implements OnInit {
   suggestedTags = Array<string>();
   selectedItems = new Array<generated.TorrentContent>();
 
+  downloadEnabled = false;
+
   ngOnInit() {
     this.selectedItems$.subscribe((items) => {
       this.selectedItems = items;
+    });
+    this.graphQLService.downloadClientEnabledQuery().subscribe({
+      next: (enabled: boolean) => {
+        this.downloadEnabled = enabled;
+        this.errorsService.addError(`hello: ${enabled}`);
+      },
     });
   }
 
@@ -185,6 +193,26 @@ export class TorrentsBulkActionsComponent implements OnInit {
         catchError((err: Error) => {
           this.errorsService.addError(
             `Error deleting torrents: ${err.message}`,
+          );
+          return EMPTY;
+        }),
+      )
+      .pipe(
+        tap(() => {
+          this.updated.emit();
+        }),
+      )
+      .subscribe();
+  }
+
+  downloadTorrents() {
+    const infoHashes = this.selectedItems.map(({ infoHash }) => infoHash);
+    this.graphQLService
+      .clientDownload({ infoHashes })
+      .pipe(
+        catchError((err: Error) => {
+          this.errorsService.addError(
+            `Error downloading torrents: ${err.message}`,
           );
           return EMPTY;
         }),

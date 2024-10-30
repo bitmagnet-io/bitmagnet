@@ -13,6 +13,7 @@ type DownloadClient struct {
 }
 
 type Config struct {
+	Enabled         bool
 	Transmission    DownloadClient
 	Qbittorrent     DownloadClient
 	DownloadClient  gen.ClientID
@@ -22,6 +23,7 @@ type Config struct {
 
 func NewDefaultConfig() Config {
 	cfg := Config{
+		Enabled: false,
 		Transmission: DownloadClient{
 			Host: "localhost",
 			Port: "9091",

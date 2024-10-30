@@ -153,6 +153,40 @@
         </mat-card>
       </ng-template>
     </mat-tab>
+    <div *ngIf="downloadEnabled">
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>download_for_offline</mat-icon>
+          @if (breakpoints.sizeAtLeast("Medium")) {
+            <span class="label">Download</span>
+          }
+        </ng-template>
+
+        <ng-template matTabContent>
+          <mat-card>
+            <mat-card-content>
+              <p>
+                <strong
+                  >Are you sure you want to download the selected
+                  torrents?</strong
+                >
+              </p>
+            </mat-card-content>
+            <mat-card-actions class="button-row">
+              <button
+                mat-stroked-button
+                color="warn"
+                [disabled]="!selectedItems.length"
+                (click)="downloadTorrents()"
+              >
+                <mat-icon>download_for_offline</mat-icon>Download
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        </ng-template>
+      </mat-tab>
+    </div>
+
     @if (selectedTabIndex > 0) {
       <mat-tab>
         <ng-template mat-tab-label>

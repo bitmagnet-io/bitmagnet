@@ -1,7 +1,7 @@
 type Mutation {
   torrent: TorrentMutation!
   queue: QueueMutation!
-  client: ClientMutation!
+  downloadclient: DownloadClientMutation!
 }
 
 type TorrentMutation {
@@ -11,6 +11,6 @@ type TorrentMutation {
   deleteTags(infoHashes: [Hash20!], tagNames: [String!]): Void
 }
 
-type ClientMutation {
+type DownloadClientMutation {
   download(infoHashes: [Hash20!]): Void
 }

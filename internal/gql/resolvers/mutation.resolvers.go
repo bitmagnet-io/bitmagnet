@@ -14,7 +14,7 @@ import (
 )
 
 // Download is the resolver for the download field.
-func (r *clientMutationResolver) Download(ctx context.Context, obj *gqlmodel.ClientMutation, infoHashes []protocol.ID) (*string, error) {
+func (r *downloadClientMutationResolver) Download(ctx context.Context, obj *gqlmodel.DownloadClientMutation, infoHashes []protocol.ID) (*string, error) {
 	c := client.New(&r.ClientConfig, r.Search)
 	err := c.AddInfoHashes(ctx,
 		client.AddInfoHashesRequest{
@@ -35,9 +35,9 @@ func (r *mutationResolver) Queue(ctx context.Context) (gqlmodel.QueueMutation, e
 	return gqlmodel.QueueMutation{QueueManager: r.QueueManager}, nil
 }
 
-// Client is the resolver for the client field.
-func (r *mutationResolver) Client(ctx context.Context) (gqlmodel.ClientMutation, error) {
-	return gqlmodel.ClientMutation{}, nil
+// Downloadclient is the resolver for the downloadclient field.
+func (r *mutationResolver) Downloadclient(ctx context.Context) (gqlmodel.DownloadClientMutation, error) {
+	return gqlmodel.DownloadClientMutation{}, nil
 }
 
 // Delete is the resolver for the delete field.
@@ -61,8 +61,10 @@ func (r *torrentMutationResolver) DeleteTags(ctx context.Context, obj *gqlmodel.
 	return nil, r.Dao.TorrentTag.Delete(ctx, infoHashes, tagNames)
 }
 
-// ClientMutation returns gql.ClientMutationResolver implementation.
-func (r *Resolver) ClientMutation() gql.ClientMutationResolver { return &clientMutationResolver{r} }
+// DownloadClientMutation returns gql.DownloadClientMutationResolver implementation.
+func (r *Resolver) DownloadClientMutation() gql.DownloadClientMutationResolver {
+	return &downloadClientMutationResolver{r}
+}
 
 // Mutation returns gql.MutationResolver implementation.
 func (r *Resolver) Mutation() gql.MutationResolver { return &mutationResolver{r} }
@@ -70,6 +72,6 @@ func (r *Resolver) Mutation() gql.MutationResolver { return &mutationResolver{r}
 // TorrentMutation returns gql.TorrentMutationResolver implementation.
 func (r *Resolver) TorrentMutation() gql.TorrentMutationResolver { return &torrentMutationResolver{r} }
 
-type clientMutationResolver struct{ *Resolver }
+type downloadClientMutationResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type torrentMutationResolver struct{ *Resolver }

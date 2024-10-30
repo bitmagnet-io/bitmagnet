@@ -171,8 +171,7 @@ enum QueueJobsOrderByField {
   priority
 }
 
-
 enum ClientID {
-    Transmission
-    QBittorrent
+  Transmission
+  QBittorrent
 }
