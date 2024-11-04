@@ -7,6 +7,7 @@ import (
 	q "github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
+	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
@@ -15,11 +16,11 @@ type AddInfoHashesRequest struct {
 	InfoHashes []protocol.ID
 }
 
-type content = search.TorrentContentResultItem
+type content = []search.TorrentContentResultItem
 
 type clientWorker interface {
 	AddInfoHashes(ctx context.Context, req AddInfoHashesRequest) error
-	download(ctx context.Context, content *content, category string) error
+	download(ctx context.Context, content *content) error
 }
 
 type commonClient struct {
@@ -36,6 +37,14 @@ func New(cfg *Config, search search.Search) commonClient {
 
 	return cc
 
+}
+
+func (c commonClient) downloadCategory(contentType model.ContentType) string {
+	category := c.config.Categories[contentType]
+	if category == "" {
+		category = c.config.DefaultCategory
+	}
+	return category
 }
 
 func (c commonClient) AddInfoHashes(ctx context.Context, req AddInfoHashesRequest) error {
@@ -63,17 +72,5 @@ func (c commonClient) AddInfoHashes(ctx context.Context, req AddInfoHashesReques
 		return err
 	}
 
-	for _, cr := range sr.Items {
-		category := c.config.Categories[cr.Content.Type]
-		if category == "" {
-			category = c.config.DefaultCategory
-		}
-		err = c.client.download(ctx, &cr, category)
-		if err != nil {
-			return err
-		}
-
-	}
-
-	return nil
+	return c.client.download(ctx, &sr.Items)
 }

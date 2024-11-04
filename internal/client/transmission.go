@@ -12,7 +12,7 @@ type transmissionClient struct {
 	commonClient
 }
 
-func (c transmissionClient) download(ctx context.Context, content *content, category string) error {
+func (c transmissionClient) download(ctx context.Context, content *content) error {
 
 	endpoint, err := url.Parse(fmt.Sprintf("http://%v:%v/transmission/rpc", c.config.Transmission.Host, c.config.Transmission.Port))
 	if err != nil {
@@ -27,14 +27,21 @@ func (c transmissionClient) download(ctx context.Context, content *content, cate
 	if err != nil {
 		return err
 	}
+	for _, item := range *content {
+		category := c.downloadCategory(item.Content.Type)
 
-	dir := *settings.DownloadDir + "/" + category
+		dir := *settings.DownloadDir + "/" + category
 
-	magnet := content.Torrent.MagnetUri()
-	_, err = tbt.TorrentAdd(ctx, transmissionrpc.TorrentAddPayload{
-		Filename:    &magnet,
-		DownloadDir: &dir,
-	})
-	return err
+		magnet := item.Torrent.MagnetUri()
+		_, err = tbt.TorrentAdd(ctx, transmissionrpc.TorrentAddPayload{
+			Filename:    &magnet,
+			DownloadDir: &dir,
+		})
+
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 
 }
