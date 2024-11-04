@@ -5,6 +5,7 @@ type Query {
   queue: QueueQuery!
   torrent: TorrentQuery!
   torrentContent: TorrentContentQuery!
+  downloadClient: DownloadClientConfigQuery!
 }
 
 type TorrentQuery {
@@ -66,4 +67,8 @@ type HealthCheck {
 type HealthQuery {
   status: HealthStatus!
   checks: [HealthCheck!]!
+}
+
+type DownloadClientConfigQuery {
+  enabled: Boolean!
 }

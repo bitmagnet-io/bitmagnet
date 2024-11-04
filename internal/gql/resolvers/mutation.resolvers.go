@@ -7,10 +7,23 @@ package resolvers
 import (
 	"context"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/client"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
+
+// Download is the resolver for the download field.
+func (r *downloadClientMutationResolver) Download(ctx context.Context, obj *gqlmodel.DownloadClientMutation, infoHashes []protocol.ID) (*string, error) {
+	c := client.New(&r.ClientConfig, r.Search)
+	err := c.AddInfoHashes(ctx,
+		client.AddInfoHashesRequest{
+			ClientID:   r.ClientConfig.DownloadClient,
+			InfoHashes: infoHashes,
+		})
+
+	return nil, err
+}
 
 // Torrent is the resolver for the torrent field.
 func (r *mutationResolver) Torrent(ctx context.Context) (gqlmodel.TorrentMutation, error) {
@@ -20,6 +33,11 @@ func (r *mutationResolver) Torrent(ctx context.Context) (gqlmodel.TorrentMutatio
 // Queue is the resolver for the queue field.
 func (r *mutationResolver) Queue(ctx context.Context) (gqlmodel.QueueMutation, error) {
 	return gqlmodel.QueueMutation{QueueManager: r.QueueManager}, nil
+}
+
+// Downloadclient is the resolver for the downloadclient field.
+func (r *mutationResolver) Downloadclient(ctx context.Context) (gqlmodel.DownloadClientMutation, error) {
+	return gqlmodel.DownloadClientMutation{}, nil
 }
 
 // Delete is the resolver for the delete field.
@@ -43,11 +61,17 @@ func (r *torrentMutationResolver) DeleteTags(ctx context.Context, obj *gqlmodel.
 	return nil, r.Dao.TorrentTag.Delete(ctx, infoHashes, tagNames)
 }
 
+// DownloadClientMutation returns gql.DownloadClientMutationResolver implementation.
+func (r *Resolver) DownloadClientMutation() gql.DownloadClientMutationResolver {
+	return &downloadClientMutationResolver{r}
+}
+
 // Mutation returns gql.MutationResolver implementation.
 func (r *Resolver) Mutation() gql.MutationResolver { return &mutationResolver{r} }
 
 // TorrentMutation returns gql.TorrentMutationResolver implementation.
 func (r *Resolver) TorrentMutation() gql.TorrentMutationResolver { return &torrentMutationResolver{r} }
 
+type downloadClientMutationResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type torrentMutationResolver struct{ *Resolver }

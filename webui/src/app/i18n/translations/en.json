@@ -241,6 +241,8 @@
     "delete_action_cannot_be_undone": "This action cannot be undone",
     "delete_are_you_sure": "Are you sure you want to delete this torrent?",
     "deselect_all": "Deselect All",
+    "download": "Download",
+    "download_confirm": "Are you sure you want to download the selected torrents?",
     "edit_tags": "Edit tags",
     "episodes": "Episodes",
     "external_links": "External links",
@@ -287,6 +289,15 @@
     "size": "Size",
     "source": "Torrent Source",
     "summary": "Summary",
+    "tags": {
+      "delete": "Delete tags",
+      "delete_tip": "Remove tags from the selected torrents",
+      "placeholder": "Tag...",
+      "put": "Put tags",
+      "put_tip": "Add tags to the selected torrents",
+      "set": "Set tags",
+      "set_tip": "Replace tags of the selected torrents"
+    },
     "title": "Title",
     "toggle_drawer": "Toggle Drawer",
     "votes_count_n": "{{count}} votes"

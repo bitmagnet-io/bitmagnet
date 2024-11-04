@@ -221,6 +221,7 @@
     "next_page": "次のページ",
     "previous_page": "前のページ",
     "x_to_y": "{{x}} から {{y}} まで",
+    "x_to_y_of_y": "__missing__",
     "x_to_y_of_z": "{{x}} から {{y}} までの {{z}}"
   },
   "routes": {
@@ -240,6 +241,8 @@
     "delete_action_cannot_be_undone": "この操作は元に戻せません",
     "delete_are_you_sure": "このトレントを削除してもよろしいですか？",
     "deselect_all": "すべての選択を解除",
+    "download": "ダウンロード",
+    "download_confirm": "選択したトレントをダウンロードしてもよろしいですか?",
     "edit_tags": "タグを編集",
     "episodes": "エピソード",
     "external_links": "外部リンク",
@@ -286,6 +289,15 @@
     "size": "サイズ",
     "source": "トレントソース",
     "summary": "概要",
+    "tags": {
+      "delete": "タグを削除",
+      "delete_tip": "選択したトレントからタグを削除",
+      "placeholder": "タグ...",
+      "put": "タグを付ける",
+      "put_tip": "選択したトレントにタグを追加する",
+      "set": "タグを設定する",
+      "set_tip": "選択したトレントのタグを置き換える"
+    },
     "title": "タイトル",
     "toggle_drawer": "引き出しを切り替え",
     "votes_count_n": "{{count}} 票"

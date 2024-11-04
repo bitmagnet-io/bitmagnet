@@ -241,6 +241,8 @@
     "delete_action_cannot_be_undone": "此操作无法撤销",
     "delete_are_you_sure": "您确定要删除此种子吗？",
     "deselect_all": "取消全选",
+    "download": "下载",
+    "download_confirm": "您确定要下载选定的种子吗？",
     "edit_tags": "编辑标签",
     "episodes": "剧集",
     "external_links": "外部链接",
@@ -287,6 +289,15 @@
     "size": "大小",
     "source": "种子来源",
     "summary": "摘要",
+    "tags": {
+      "delete": "删除标签",
+      "delete_tip": "从选定的种子中删除标签",
+      "placeholder": "标签...",
+      "put": "添加标签",
+      "put_tip": "为选定的种子添加标签",
+      "set": "设置标签",
+      "set_tip": "替换选定种子的标签"
+    },
     "title": "标题",
     "toggle_drawer": "切换抽屉",
     "votes_count_n": "{{count}}票"

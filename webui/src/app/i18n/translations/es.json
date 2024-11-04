@@ -241,6 +241,8 @@
     "delete_action_cannot_be_undone": "Esta acción no se puede deshacer",
     "delete_are_you_sure": "¿Está seguro de que desea eliminar este torrent?",
     "deselect_all": "Deseleccionar todo",
+    "download": "Descargar",
+    "download_confirm": "¿Estás seguro de que deseas descargar los torrents seleccionados?",
     "edit_tags": "Editar etiquetas",
     "episodes": "Episodios",
     "external_links": "Enlaces externos",
@@ -287,6 +289,15 @@
     "size": "Tamaño",
     "source": "Fuente del torrent",
     "summary": "Resumen",
+    "tags": {
+      "delete": "Eliminar etiquetas",
+      "delete_tip": "Eliminar etiquetas de los torrents seleccionados",
+      "placeholder": "Etiqueta...",
+      "put": "Poner etiquetas",
+      "put_tip": "Añadir etiquetas a los torrents seleccionados",
+      "set": "Establecer etiquetas",
+      "set_tip": "Reemplazar etiquetas de los torrents seleccionados"
+    },
     "title": "Título",
     "toggle_drawer": "Alternar cajón",
     "votes_count_n": "{{count}} votos"

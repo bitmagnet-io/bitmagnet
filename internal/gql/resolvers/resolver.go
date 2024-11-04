@@ -2,6 +2,7 @@ package resolvers
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/worker"
+	"github.com/bitmagnet-io/bitmagnet/internal/client"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
@@ -22,4 +23,5 @@ type Resolver struct {
 	QueueMetricsClient   queuemetrics.Client
 	QueueManager         manager.Manager
 	TorrentMetricsClient torrentmetrics.Client
+	ClientConfig         client.Config
 }
