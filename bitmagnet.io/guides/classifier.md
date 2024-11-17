@@ -28,7 +28,7 @@ After a torrent is crawled or imported, some further processing must be done to 
 
 **bitmagnet**'s classifier is powered by a [Domain Specific Language](https://en.wikipedia.org/wiki/Domain-specific_language). The aim of this is to provide a high level of customisability, along with transparency into the classification process which will hopefully aid collaboration on improvements to the core classifier logic.
 
-The classifier is declared in YAML format. The application includes a [core classifier](https://github.com/bitmagnet-io/bitmagnet/blob/main/internal/classifier/classifier.core.yaml) that can be configured, extended or completely replaced with a custom classifier. This page documents the required format.
+The classifier is declared in YAML format. The application includes a [core classifier](https://github.com/bitmagnet-io/bitmagnet/blob/main/internal/classifier/classifier.core.yml) that can be configured, extended or completely replaced with a custom classifier. This page documents the required format.
 
 ## Source precedence
 
