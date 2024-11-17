@@ -221,7 +221,6 @@
     "next_page": "Следующая страница",
     "previous_page": "Предыдущая страница",
     "x_to_y": "{{x}} до {{y}}",
-    "x_to_y_of_y": "__missing__",
     "x_to_y_of_z": "{{x}} до {{y}} из {{z}}"
   },
   "routes": {

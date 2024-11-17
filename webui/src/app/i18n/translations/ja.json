@@ -221,7 +221,6 @@
     "next_page": "次のページ",
     "previous_page": "前のページ",
     "x_to_y": "{{x}} から {{y}} まで",
-    "x_to_y_of_y": "__missing__",
     "x_to_y_of_z": "{{x}} から {{y}} までの {{z}}"
   },
   "routes": {

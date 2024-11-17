@@ -221,7 +221,6 @@
     "next_page": "Nächste Seite",
     "previous_page": "Vorherige Seite",
     "x_to_y": "{{x}} bis {{y}}",
-    "x_to_y_of_y": "__fehlend__",
     "x_to_y_of_z": "{{x}} bis {{y}} von {{z}}"
   },
   "routes": {

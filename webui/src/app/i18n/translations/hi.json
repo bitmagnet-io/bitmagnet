@@ -221,7 +221,6 @@
     "next_page": "अगला पृष्ठ",
     "previous_page": "पिछला पृष्ठ",
     "x_to_y": "{{x}} से {{y}} तक",
-    "x_to_y_of_y": "__missing__",
     "x_to_y_of_z": "{{x}} से {{y}} तक {{z}} में"
   },
   "routes": {

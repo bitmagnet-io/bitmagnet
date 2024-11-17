@@ -221,7 +221,6 @@
     "next_page": "下一页",
     "previous_page": "上一页",
     "x_to_y": "{{x}}到{{y}}",
-    "x_to_y_of_y": "__缺失__",
     "x_to_y_of_z": "{{x}}到{{y}}，共{{z}}"
   },
   "routes": {
