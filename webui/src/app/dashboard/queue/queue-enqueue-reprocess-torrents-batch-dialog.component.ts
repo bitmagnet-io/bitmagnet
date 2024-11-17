@@ -24,6 +24,7 @@ export class QueueEnqueueReprocessTorrentsBatchDialogComponent {
 
   @Inject(MAT_DIALOG_DATA) public data: { onEnqueued?: () => void };
 
+  purge = true;
   apisDisabled = true;
   localSearchDisabled = true;
   classifierRematch = false;
@@ -43,6 +44,7 @@ export class QueueEnqueueReprocessTorrentsBatchDialogComponent {
         mutation: generated.QueueEnqueueReprocessTorrentsBatchDocument,
         variables: {
           input: {
+            purge: this.purge,
             apisDisabled: this.apisDisabled,
             localSearchDisabled: this.localSearchDisabled,
             classifierRematch: this.classifierRematch,

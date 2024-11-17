@@ -279,6 +279,7 @@ export type QueueEnqueueReprocessTorrentsBatchInput = {
   contentTypes?: InputMaybe<Array<InputMaybe<ContentType>>>;
   localSearchDisabled?: InputMaybe<Scalars['Boolean']['input']>;
   orphans?: InputMaybe<Scalars['Boolean']['input']>;
+  purge?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type QueueJob = {

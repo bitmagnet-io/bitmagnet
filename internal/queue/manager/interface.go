@@ -13,6 +13,7 @@ type PurgeJobsRequest struct {
 }
 
 type EnqueueReprocessTorrentsBatchRequest struct {
+	Purge               bool
 	BatchSize           uint
 	ChunkSize           uint
 	ContentTypes        []model.NullContentType
