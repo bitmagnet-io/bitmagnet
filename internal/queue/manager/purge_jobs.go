@@ -6,6 +6,10 @@ import (
 )
 
 func (m manager) PurgeJobs(ctx context.Context, req PurgeJobsRequest) error {
+	if len(req.Queues) == 0 && len(req.Statuses) == 0 {
+		_, err := m.db.WithContext(ctx).Raw("TRUNCATE TABLE queue_jobs;").Rows()
+		return err
+	}
 	q := m.dao.QueueJob.WithContext(ctx)
 	where := false
 	if len(req.Queues) > 0 {

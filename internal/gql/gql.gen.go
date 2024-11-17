@@ -2735,6 +2735,7 @@ enum QueueJobStatus {
 }
 
 input QueueEnqueueReprocessTorrentsBatchInput {
+  purge: Boolean
   batchSize: Int
   chunkSize: Int
   contentTypes: [ContentType]
@@ -15720,13 +15721,20 @@ func (ec *executionContext) unmarshalInputQueueEnqueueReprocessTorrentsBatchInpu
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"batchSize", "chunkSize", "contentTypes", "orphans", "classifierRematch", "classifierWorkflow", "apisDisabled", "localSearchDisabled"}
+	fieldsInOrder := [...]string{"purge", "batchSize", "chunkSize", "contentTypes", "orphans", "classifierRematch", "classifierWorkflow", "apisDisabled", "localSearchDisabled"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "purge":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("purge"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Purge = data
 		case "batchSize":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("batchSize"))
 			data, err := ec.unmarshalOInt2uint(ctx, v)

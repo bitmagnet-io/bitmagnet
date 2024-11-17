@@ -1,6 +1,6 @@
 <ng-container *transloco="let t">
   <mat-card>
-    <h2 mat-dialog-title>Purge Queue Jobs</h2>
+    <h2 mat-dialog-title>{{ t("dashboard.queues.purge_queue_jobs") }}</h2>
     <mat-dialog-content>
       @if (stage === "PENDING") {
         <section>
@@ -21,19 +21,19 @@
           }
         </section>
         <section>
-          <h4>Statuses:</h4>
+          <h4>{{ t("general.status") }}:</h4>
           <mat-checkbox
             value="_all"
             [checked]="statuses === undefined"
             (change)="handleStatusEvent($event)"
-            >All</mat-checkbox
+            >{{ t("general.all") }}</mat-checkbox
           >
           @for (status of statusNames; track status) {
             <mat-checkbox
               [value]="status"
               [checked]="statuses?.includes(status)"
               (change)="handleStatusEvent($event)"
-              >{{ status }}</mat-checkbox
+              >{{ t("general.status") }}</mat-checkbox
             >
           }
         </section>
