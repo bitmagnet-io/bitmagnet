@@ -6,6 +6,10 @@
     <mat-dialog-content>
       @if (stage === "PENDING") {
         <section>
+          <mat-checkbox [checked]="purge" (change)="purge = $event.checked">{{
+            t("dashboard.queues.purge_queue_jobs")
+          }}</mat-checkbox
+          ><br />
           <mat-checkbox
             [checked]="!apisDisabled"
             (change)="
@@ -15,7 +19,7 @@
             >{{
               t("dashboard.queues.match_content_by_local_search")
             }}</mat-checkbox
-          >
+          ><br />
           <mat-checkbox
             [checked]="!apisDisabled"
             (change)="
@@ -25,12 +29,12 @@
             >{{
               t("dashboard.queues.match_content_by_external_api_search")
             }}</mat-checkbox
-          >
+          ><br />
           <mat-checkbox
             [checked]="classifierRematch"
             (change)="classifierRematch = $event.checked"
             >{{ t("dashboard.queues.force_rematch") }}</mat-checkbox
-          >
+          ><br />
           <mat-checkbox
             [checked]="orphans"
             (change)="orphans = $event.checked"
