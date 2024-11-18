@@ -221,7 +221,6 @@
     "next_page": "Página siguiente",
     "previous_page": "Página anterior",
     "x_to_y": "{{x}} a {{y}}",
-    "x_to_y_of_y": "__faltante__",
     "x_to_y_of_z": "{{x}} a {{y}} de {{z}}"
   },
   "routes": {
@@ -287,6 +286,15 @@
     "size": "Tamaño",
     "source": "Fuente del torrent",
     "summary": "Resumen",
+    "tags": {
+      "delete": "Eliminar etiquetas",
+      "delete_tip": "Eliminar etiquetas de los torrents seleccionados",
+      "placeholder": "Etiqueta...",
+      "put": "Poner etiquetas",
+      "put_tip": "Añadir etiquetas a los torrents seleccionados",
+      "set": "Establecer etiquetas",
+      "set_tip": "Reemplazar etiquetas de los torrents seleccionados"
+    },
     "title": "Título",
     "toggle_drawer": "Alternar cajón",
     "votes_count_n": "{{count}} votos"
