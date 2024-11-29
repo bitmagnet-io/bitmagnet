@@ -2,7 +2,6 @@ package manager
 
 import (
 	"context"
-	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
 
 func (m manager) PurgeJobs(ctx context.Context, req PurgeJobsRequest) error {
@@ -11,10 +10,8 @@ func (m manager) PurgeJobs(ctx context.Context, req PurgeJobsRequest) error {
 		return err
 	}
 	q := m.dao.QueueJob.WithContext(ctx)
-	where := false
 	if len(req.Queues) > 0 {
 		q = q.Where(m.dao.QueueJob.Queue.In(req.Queues...))
-		where = true
 	}
 	if len(req.Statuses) > 0 {
 		statuses := make([]string, len(req.Statuses))
@@ -22,11 +19,7 @@ func (m manager) PurgeJobs(ctx context.Context, req PurgeJobsRequest) error {
 			statuses[i] = string(s)
 		}
 		q = q.Where(m.dao.QueueJob.Status.In(statuses...))
-		where = true
 	}
-	db := q.UnderlyingDB()
-	if !where {
-		db = db.Where("true")
-	}
-	return db.Delete(&model.QueueJob{}).Error
+	_, err := q.Delete()
+	return err
 }
