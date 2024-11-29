@@ -219,6 +219,7 @@
     "items_per_page": "Items per page",
     "last_page": "Last page",
     "next_page": "Next page",
+    "page_x": "Page {{x}}",
     "previous_page": "Previous page",
     "x_to_y": "{{x}} to {{y}}",
     "x_to_y_of_z": "{{x}} to {{y}} of {{z}}"

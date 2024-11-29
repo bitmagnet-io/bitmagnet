@@ -1,4 +1,7 @@
 <ng-container *transloco="let t">
+  <app-document-title
+    [parts]="[t('routes.visualize'), t('routes.queues'), t('routes.dashboard')]"
+  />
   <mat-card>
     <mat-card-content>
       <mat-grid-list
