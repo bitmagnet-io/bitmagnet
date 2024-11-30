@@ -25,6 +25,7 @@ import * as generated from "../graphql/generated";
 import { intParam, stringListParam, stringParam } from "../util/query-string";
 import { AppModule } from "../app.module";
 import { DocumentTitleComponent } from "../layout/document-title.component";
+import { IntEstimatePipe } from "../pipes/int-estimate.pipe";
 import { TorrentsBulkActionsComponent } from "./torrents-bulk-actions.component";
 import { contentTypeList, contentTypeMap } from "./content-types";
 import {
@@ -60,6 +61,7 @@ import {
     PaginatorComponent,
     TorrentsBulkActionsComponent,
     TorrentsTableComponent,
+    IntEstimatePipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
