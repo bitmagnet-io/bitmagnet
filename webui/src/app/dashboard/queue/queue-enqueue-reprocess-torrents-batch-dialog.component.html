@@ -37,11 +37,30 @@
           ><br />
           <mat-checkbox
             [checked]="orphans"
-            (change)="orphans = $event.checked"
+            (change)="
+              orphans = $event.checked;
+              contentTypes = $event.checked ? ['all'] : contentTypes
+            "
             >{{
               t("dashboard.queues.process_orphaned_torrents_only")
             }}</mat-checkbox
           >
+          <br />
+          <mat-form-field class="select-content-types">
+            <mat-label>{{ t("facets.content_type") }}</mat-label>
+            <mat-select
+              (selectionChange)="onContentTypeSelectionChange($event)"
+              [value]="contentTypes"
+              multiple
+            >
+              <mat-option value="all">{{ t("general.all") }}</mat-option>
+              @for (contentType of allContentTypes; track contentType.key) {
+                <mat-option [value]="contentType.key">
+                  {{ t("content_types.plural." + contentType.key) }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
         </section>
       } @else if (stage === "REQUESTING") {
         <mat-spinner></mat-spinner>
