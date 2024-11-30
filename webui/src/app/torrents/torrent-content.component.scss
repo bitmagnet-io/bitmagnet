@@ -39,6 +39,10 @@ h2 {
   tr:hover td {
     background-color: whitesmoke;
   }
+  scrollbar-width: none;
+  ::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .form-edit-tags {

@@ -69,14 +69,11 @@
       }
     </mat-dialog-content>
     <mat-dialog-actions>
-      <button
-        mat-stroked-button
-        [disabled]="stage !== 'PENDING'"
-        color="warning"
-        (click)="handleEnqueue()"
-      >
-        {{ t("dashboard.queues.enqueue_jobs") }}
-      </button>
+      @if (stage === "PENDING") {
+        <button mat-stroked-button color="warning" (click)="handleEnqueue()">
+          {{ t("dashboard.queues.enqueue_jobs") }}
+        </button>
+      }
       <button mat-stroked-button (click)="dialogRef.close()">
         {{ t("general.dismiss") }}
       </button>

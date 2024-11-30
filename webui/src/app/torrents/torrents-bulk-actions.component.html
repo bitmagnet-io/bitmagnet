@@ -25,6 +25,7 @@
             <button
               mat-stroked-button
               [disabled]="!selectedItems.length"
+              [matTooltip]="t('torrents.copy_to_clipboard')"
               [cdkCopyToClipboard]="getSelectedMagnetLinks()"
             >
               <mat-icon svgIcon="magnet" />{{ t("torrents.magnet_links") }}
@@ -32,6 +33,7 @@
             <button
               mat-stroked-button
               [disabled]="!selectedItems.length"
+              [matTooltip]="t('torrents.copy_to_clipboard')"
               [cdkCopyToClipboard]="getSelectedInfoHashes()"
             >
               <mat-icon>tag</mat-icon>{{ t("torrents.info_hashes") }}
@@ -141,7 +143,7 @@
           <mat-card-actions class="button-row">
             <button
               mat-stroked-button
-              color="warn"
+              color="warning"
               [disabled]="!selectedItems.length"
               (click)="deleteTorrents()"
             >
