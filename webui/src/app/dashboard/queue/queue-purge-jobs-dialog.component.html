@@ -33,7 +33,7 @@
               [value]="status"
               [checked]="statuses?.includes(status)"
               (change)="handleStatusEvent($event)"
-              >{{ t("general.status") }}</mat-checkbox
+              >{{ t("dashboard.queues." + status) }}</mat-checkbox
             >
           }
         </section>
