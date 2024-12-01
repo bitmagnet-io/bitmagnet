@@ -101,10 +101,7 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
   private subscriptions = Array<Subscription>();
 
   constructor() {
-    this.controls = {
-      ...initControls,
-      language: this.transloco.getActiveLang(),
-    };
+    this.controls = initControls;
     this.controller = new TorrentsSearchController(this.controls);
     this.dataSource = new TorrentsSearchDatasource(
       this.apollo,
@@ -232,7 +229,6 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
 const defaultLimit = 20;
 
 const initControls: TorrentSearchControls = {
-  language: "en",
   page: 1,
   limit: defaultLimit,
   contentType: null,

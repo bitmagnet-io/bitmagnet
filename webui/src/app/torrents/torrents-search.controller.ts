@@ -11,7 +11,6 @@ type FacetInput<TValue = unknown> = {
 export type ContentTypeSelection = generated.ContentType | "null" | null;
 
 export type TorrentSearchControls = {
-  language: string;
   limit: number;
   page: number;
   queryString?: string;
@@ -124,13 +123,6 @@ export class TorrentsSearchController {
     if (JSON.stringify(ctrl) !== JSON.stringify(next)) {
       this.controlsSubject.next(next);
     }
-  }
-
-  selectLanguage(lang: string) {
-    this.update((ctrl) => ({
-      ...ctrl,
-      language: lang,
-    }));
   }
 
   selectContentType(ct: ContentTypeSelection) {
