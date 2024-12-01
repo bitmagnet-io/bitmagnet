@@ -196,5 +196,8 @@ func (n *NullFacetLogic) UnmarshalGQL(v any) error {
 	if !ok {
 		return errors.New("value is not a string")
 	}
-	return n.UnmarshalJSON([]byte(str))
+	if str == "null" {
+		return nil
+	}
+	return n.UnmarshalJSON([]byte("\"" + str + "\""))
 }

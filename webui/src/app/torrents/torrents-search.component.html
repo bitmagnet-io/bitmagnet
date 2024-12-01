@@ -36,10 +36,9 @@
                 <mat-icon fontSet="material-icons">emergency</mat-icon
                 >{{ t("content_types.plural.all") }}
                 @if (dataSource.overallTotalCount$ | async; as count) {
-                  <small
-                    >{{ count.isEstimate ? "~" : ""
-                    }}{{ count.count | number }}</small
-                  >
+                  <small>
+                    {{ count.count | intEstimate: count.isEstimate }}
+                  </small>
                 }
               </li>
               @for (ct of contentTypes; track ct.key) {
@@ -57,10 +56,9 @@
                       (dataSource.contentTypeCounts$ | async)?.[ct.key];
                       as agg
                     ) {
-                      <small
-                        >{{ agg.isEstimate ? "~" : ""
-                        }}{{ agg.count | number }}</small
-                      >
+                      <small>{{
+                        agg.count | intEstimate: agg.isEstimate
+                      }}</small>
                     } @else {
                       <small>0</small>
                     }
@@ -96,10 +94,7 @@
                     "
                   >
                     {{ agg.label }}
-                    <small
-                      >{{ agg.isEstimate ? "~" : ""
-                      }}{{ agg.count | number }}</small
-                    >
+                    <small>{{ agg.count | intEstimate: agg.isEstimate }}</small>
                   </mat-checkbox>
                 }
               </section>
@@ -112,10 +107,9 @@
                       (change)="controller.activateFilter(facet, agg.value)"
                     >
                       {{ agg.label }}
-                      <small
-                        >{{ agg.isEstimate ? "~" : ""
-                        }}{{ agg.count | number }}</small
-                      >
+                      <small>{{
+                        agg.count | intEstimate: agg.isEstimate
+                      }}</small>
                     </mat-checkbox>
                   }
                 } @else {
