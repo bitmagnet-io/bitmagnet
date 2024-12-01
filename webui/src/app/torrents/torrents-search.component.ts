@@ -178,7 +178,9 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
             facets: facets.reduce<TorrentSearchControls["facets"]>(
               (acc, facet) => {
                 const active = activeFacets?.includes(facet.key) ?? false;
-                const filter = stringListParam(params, facet.key);
+                const filter = active
+                  ? stringListParam(params, facet.key)
+                  : undefined;
                 return facet.patchInput(acc, {
                   active,
                   filter,
@@ -209,7 +211,7 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
             content_type: ctrl.contentType,
             ...flattenFacets(ctrl.facets),
           },
-          queryParamsHandling: "merge",
+          queryParamsHandling: "replace",
         });
       }),
       this.selection.changed.subscribe((selection) => {
