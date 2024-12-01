@@ -5,6 +5,7 @@
       "audiobook": "Sesli Kitaplar",
       "comic": "Çizgi Romanlar",
       "ebook": "E-Kitaplar",
+      "game": "Oyunlar",
       "movie": "Filmler",
       "music": "Müzik",
       "null": "Bilinmiyor",
@@ -16,6 +17,7 @@
       "audiobook": "Sesli Kitap",
       "comic": "Çizgi Roman",
       "ebook": "E-Kitap",
+      "game": "Oyun",
       "movie": "Film",
       "music": "Müzik",
       "null": "Bilinmiyor",
@@ -219,6 +221,7 @@
     "items_per_page": "Sayfa başına öğe",
     "last_page": "Son Sayfa",
     "next_page": "Sonraki Sayfa",
+    "page_x": "{{x}}. Sayfa",
     "previous_page": "Önceki Sayfa",
     "x_to_y": "{{x}} - {{y}} arası",
     "x_to_y_of_z": "{{x}} ile {{y}} arası, toplam {{z}}"

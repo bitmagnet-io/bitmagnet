@@ -5,6 +5,7 @@
       "audiobook": "Livres audio",
       "comic": "Bandes dessinées",
       "ebook": "E-livres",
+      "game": "Jeux",
       "movie": "Films",
       "music": "Musique",
       "null": "Inconnu",
@@ -16,6 +17,7 @@
       "audiobook": "Livre audio",
       "comic": "Bande dessinée",
       "ebook": "E-livre",
+      "game": "Jeu",
       "movie": "Film",
       "music": "Musique",
       "null": "Inconnu",
@@ -58,7 +60,7 @@
     "queues": {
       "created": "Créé",
       "created_at": "Créé à",
-      "enqueue_jobs": "mettre les taches en file d'attente",
+      "enqueue_jobs": "Mettre les taches en file d'attente",
       "enqueue_torrent_processing_batch": "Mettre le traitement des torrents en file d'attente",
       "failed": "Échoué",
       "force_rematch": "Forcer le rematch du contenu déjà apparié",
@@ -219,6 +221,7 @@
     "items_per_page": "Articles par page",
     "last_page": "Dernière page",
     "next_page": "Page suivante",
+    "page_x": "Page {{x}}",
     "previous_page": "Page précédente",
     "x_to_y": "{{x}} à {{y}}",
     "x_to_y_of_z": "{{x}} à {{y}} sur {{z}}"

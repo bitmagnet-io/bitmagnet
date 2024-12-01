@@ -8,6 +8,7 @@ import { PaginatorComponent } from "../../paginator/paginator.component";
 import { BreakpointsService } from "../../layout/breakpoints.service";
 import { ErrorsService } from "../../errors/errors.service";
 import { AppModule } from "../../app.module";
+import { DocumentTitleComponent } from "../../layout/document-title.component";
 import { QueueJobsTableComponent } from "./queue-jobs-table.component";
 import { QueueJobsDatasource } from "./queue-jobs.datasource";
 import {
@@ -21,7 +22,12 @@ import {
 @Component({
   selector: "app-queue-jobs",
   standalone: true,
-  imports: [AppModule, PaginatorComponent, QueueJobsTableComponent],
+  imports: [
+    AppModule,
+    PaginatorComponent,
+    QueueJobsTableComponent,
+    DocumentTitleComponent,
+  ],
   templateUrl: "./queue-jobs.component.html",
   styleUrl: "./queue-jobs.component.scss",
 })

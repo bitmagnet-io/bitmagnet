@@ -5,6 +5,7 @@
       "audiobook": "オーディオブック",
       "comic": "コミック",
       "ebook": "電子書籍",
+      "game": "ゲーム",
       "movie": "映画",
       "music": "音楽",
       "null": "不明",
@@ -16,6 +17,7 @@
       "audiobook": "オーディオブック",
       "comic": "コミック",
       "ebook": "電子書籍",
+      "game": "ゲーム",
       "movie": "映画",
       "music": "音楽",
       "null": "不明",
@@ -219,6 +221,7 @@
     "items_per_page": "ページあたりの項目数",
     "last_page": "最後のページ",
     "next_page": "次のページ",
+    "page_x": "ページ {{x}}",
     "previous_page": "前のページ",
     "x_to_y": "{{x}} から {{y}} まで",
     "x_to_y_of_z": "{{x}} から {{y}} までの {{z}}"

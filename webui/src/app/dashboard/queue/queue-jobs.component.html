@@ -1,4 +1,7 @@
 <ng-container *transloco="let t">
+  <app-document-title
+    [parts]="[t('routes.jobs'), t('routes.queues'), t('routes.dashboard')]"
+  />
   <mat-drawer-container class="drawer-container">
     <mat-drawer
       #drawer

@@ -1,5 +1,8 @@
 <ng-container *transloco="let t">
-  @if (loading) {
+  <app-document-title
+    [parts]="[torrentContent?.title, t('torrents.permalink')]"
+  />
+  @if (!torrentContent) {
     <mat-progress-bar mode="indeterminate"></mat-progress-bar>
   } @else {
     <mat-card class="torrent-permalink">

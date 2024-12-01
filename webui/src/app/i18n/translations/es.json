@@ -5,6 +5,7 @@
       "audiobook": "Audiolibros",
       "comic": "Cómics",
       "ebook": "E-Libros",
+      "game": "Juegos",
       "movie": "Películas",
       "music": "Música",
       "null": "Desconocido",
@@ -16,6 +17,7 @@
       "audiobook": "Audiolibro",
       "comic": "Cómic",
       "ebook": "E-Libro",
+      "game": "Juego",
       "movie": "Película",
       "music": "Música",
       "null": "Desconocido",
@@ -219,6 +221,7 @@
     "items_per_page": "Elementos por página",
     "last_page": "Última página",
     "next_page": "Página siguiente",
+    "page_x": "Página {{x}}",
     "previous_page": "Página anterior",
     "x_to_y": "{{x}} a {{y}}",
     "x_to_y_of_z": "{{x}} a {{y}} de {{z}}"

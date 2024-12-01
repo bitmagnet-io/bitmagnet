@@ -5,6 +5,7 @@
       "audiobook": "有声书",
       "comic": "漫画",
       "ebook": "电子书",
+      "game": "游戏",
       "movie": "电影",
       "music": "音乐",
       "null": "未知",
@@ -16,6 +17,7 @@
       "audiobook": "有声书",
       "comic": "漫画",
       "ebook": "电子书",
+      "game": "游戏",
       "movie": "电影",
       "music": "音乐",
       "null": "未知",
@@ -219,6 +221,7 @@
     "items_per_page": "每页项目数",
     "last_page": "最后一页",
     "next_page": "下一页",
+    "page_x": "第{{x}}页",
     "previous_page": "上一页",
     "x_to_y": "{{x}}到{{y}}",
     "x_to_y_of_z": "{{x}}到{{y}}，共{{z}}"
