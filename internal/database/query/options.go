@@ -125,6 +125,18 @@ func OrderByQueryStringRank() Option {
 	}
 }
 
+func OrderByPublishedAt() Option {
+	return func(ctx OptionBuilder) (OptionBuilder, error) {
+		return ctx.OrderBy(OrderByColumn{
+			OrderByColumn: clause.OrderByColumn{
+				Column:  clause.Column{Name: "published_at"},
+				Desc:    true,
+				Reorder: true,
+			},
+		}), nil
+	}
+}
+
 func WithFacet(facets ...Facet) Option {
 	return func(ctx OptionBuilder) (OptionBuilder, error) {
 		return ctx.Facet(facets...), nil
