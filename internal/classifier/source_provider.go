@@ -1,10 +1,11 @@
 package classifier
 
 import (
+	"os"
+
 	"github.com/adrg/xdg"
 	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
 	"gopkg.in/yaml.v3"
-	"os"
 )
 
 func newSourceProvider(config Config, tmdbConfig tmdb.Config) sourceProvider {
@@ -42,6 +43,14 @@ func (m mergeSourceProvider) source() (Source, error) {
 			source = merged
 		}
 	}
+	for _, plugin := range source.Plugins {
+		data, err := plugin.Source.source()
+		if err != nil {
+			return source, err
+		}
+		source.Flags[plugin.Flag] = plugin.Source.any(data)
+	}
+
 	return source, nil
 }
 

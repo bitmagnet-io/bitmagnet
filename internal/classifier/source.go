@@ -7,6 +7,7 @@ type Source struct {
 	Flags           Flags           `json:"flags"`
 	Keywords        keywordGroups   `json:"keywords"`
 	Extensions      extensionGroups `json:"extensions"`
+	Plugins         pluginGroups    `json:"plugins,omitempty"`
 }
 
 func (s Source) merge(other Source) (Source, error) {
@@ -20,6 +21,7 @@ func (s Source) merge(other Source) (Source, error) {
 		Keywords:        s.Keywords.merge(other.Keywords),
 		Extensions:      s.Extensions.merge(other.Extensions),
 		Workflows:       s.Workflows.merge(other.Workflows),
+		Plugins:         s.Plugins.merge(other.Plugins),
 	}, nil
 }
 
@@ -78,6 +80,30 @@ func (s workflowSources) merge(other workflowSources) workflowSources {
 	}
 	for k, v := range other {
 		result[k] = v
+	}
+	return result
+}
+
+type pluginSource struct {
+	Url    string  `json:"url"`
+	ApiKey *string `json:"apikey,omitempty"`
+	Start  *string `json:"start,omitempy"`
+	End    *string `json:"end,omitempy"`
+	Days   *int    `json:"days,omitempty"`
+}
+
+type pluginGroups []struct {
+	Source pluginSource `json:"source"`
+	Flag   string       `json:"flag"`
+}
+
+func (s pluginGroups) merge(other pluginGroups) pluginGroups {
+	var result pluginGroups
+	for _, v := range s {
+		result = append(result, v)
+	}
+	for _, v := range other {
+		result = append(result, v)
 	}
 	return result
 }
