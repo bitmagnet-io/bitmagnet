@@ -71,7 +71,10 @@ export class TorrentChartAdapterTimeline
             }
             datasets.push({
               yAxisID: "yCount",
-              label: [source.source, event].join("/"),
+              label: [
+                source.source,
+                this.transloco.translate("dashboard.queues." + event),
+              ].join("/"),
               data: series,
               borderColor: colors[createThemeColor(eventColors[event], 50)],
               pointBackgroundColor:

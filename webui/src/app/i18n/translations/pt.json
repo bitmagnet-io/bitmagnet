@@ -55,7 +55,8 @@
       "event": "Evento",
       "resolution": "Resolução",
       "throughput": "Taxa de transferência",
-      "timeframe": "Intervalo de tempo"
+      "timeframe": "Intervalo de tempo",
+      "toggle_chart_legend": "Alternar legenda"
     },
     "queues": {
       "created": "Criado",
@@ -80,6 +81,7 @@
       "queues": "Filas",
       "ran_at": "Executado em",
       "retry": "Tentar novamente",
+      "updated": "Atualizado",
       "total_counts_by_status": "Contagens totais por status"
     }
   },

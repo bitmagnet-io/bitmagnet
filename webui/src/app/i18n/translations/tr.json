@@ -55,7 +55,8 @@
       "event": "Olay",
       "resolution": "Çözünürlük",
       "throughput": "Verim",
-      "timeframe": "Zaman Dilimi"
+      "timeframe": "Zaman Dilimi",
+      "toggle_chart_legend": "Göstergeyi aç/kapat"
     },
     "queues": {
       "created": "Oluşturuldu",
@@ -80,6 +81,7 @@
       "queues": "Kuyruklar",
       "ran_at": "Çalıştırıldı",
       "retry": "Tekrar Dene",
+      "updated": "Güncellendi",
       "total_counts_by_status": "Duruma Göre Toplam Sayılar"
     }
   },

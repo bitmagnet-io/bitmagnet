@@ -55,7 +55,8 @@
       "event": "Подія",
       "resolution": "Роздільна здатність",
       "throughput": "Пропускна здатність",
-      "timeframe": "Проміжок часу"
+      "timeframe": "Проміжок часу",
+      "toggle_chart_legend": "Перемкнути легенду"
     },
     "queues": {
       "created": "Створено",
@@ -80,6 +81,7 @@
       "queues": "Черги",
       "ran_at": "Запущено о",
       "retry": "Повторити",
+      "updated": "Оновлено",
       "total_counts_by_status": "Загальна кількість за статусами"
     }
   },

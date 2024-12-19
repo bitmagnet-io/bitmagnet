@@ -55,7 +55,8 @@
       "event": "Evento",
       "resolution": "Resolución",
       "throughput": "Rendimiento",
-      "timeframe": "Periodo de tiempo"
+      "timeframe": "Periodo de tiempo",
+      "toggle_chart_legend": "Alternar leyenda"
     },
     "queues": {
       "created": "Creado",
@@ -80,6 +81,7 @@
       "queues": "Colas",
       "ran_at": "Ejecutado en",
       "retry": "Reintentar",
+      "updated": "Actualizado",
       "total_counts_by_status": "Recuento total por estado"
     }
   },

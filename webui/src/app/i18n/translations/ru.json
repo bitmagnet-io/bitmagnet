@@ -55,7 +55,8 @@
       "event": "Событие",
       "resolution": "Разрешение",
       "throughput": "Пропускная способность",
-      "timeframe": "Период времени"
+      "timeframe": "Период времени",
+      "toggle_chart_legend": "Переключить легенду"
     },
     "queues": {
       "created": "Создано",
@@ -80,6 +81,7 @@
       "queues": "Очереди",
       "ran_at": "Выполнено в",
       "retry": "Повторить",
+      "updated": "Обновлено",
       "total_counts_by_status": "Общее количество по статусам"
     }
   },

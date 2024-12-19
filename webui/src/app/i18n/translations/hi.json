@@ -55,7 +55,8 @@
       "event": "घटना",
       "resolution": "रिज़ॉल्यूशन",
       "throughput": "थ्रूपुट",
-      "timeframe": "समय सीमा"
+      "timeframe": "समय सीमा",
+      "toggle_chart_legend": "लेजेंड टॉगल करें"
     },
     "queues": {
       "created": "बनाया गया",
@@ -80,6 +81,7 @@
       "queues": "कतारें",
       "ran_at": "चलाया गया समय",
       "retry": "पुनः प्रयास करें",
+      "updated": "अद्यतन",
       "total_counts_by_status": "स्थिति द्वारा कुल गणना"
     }
   },

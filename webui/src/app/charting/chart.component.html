@@ -1,11 +1,42 @@
-<div class="app-chart">
-  <canvas
-    baseChart
-    [data]="chartConfig.data"
-    [options]="chartConfig.options"
-    [type]="chartConfig.type"
-    [height]="height"
-    [width]="width"
-  >
-  </canvas>
-</div>
+<ng-container *transloco="let t">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <button
+          type="button"
+          [class]="this.chartShowLegend ? 'selected' : 'deselected'"
+          (click)="this.toggleLegend()"
+          mat-icon-button
+          [matTooltip]="t('dashboard.metrics.toggle_chart_legend')"
+        >
+          <mat-icon
+            aria-label="Toggle legend"
+            fontSet="material-icons"
+            class="icon-header"
+            >legend_toggle</mat-icon
+          >
+        </button>
+        <h4>
+          {{ title }}
+        </h4>
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div
+        [class]="
+          breakpoints.sizeAtLeast('Large') ? 'app-chart' : 'app-chart-small'
+        "
+      >
+        <canvas
+          baseChart
+          [data]="chartConfig.data"
+          [options]="chartConfig.options"
+          [type]="chartConfig.type"
+          [height]="height"
+          [width]="width"
+        >
+        </canvas>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</ng-container>

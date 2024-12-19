@@ -55,7 +55,8 @@
       "event": "حدث",
       "resolution": "الدقة",
       "throughput": "معدل النقل",
-      "timeframe": "الإطار الزمني"
+      "timeframe": "الإطار الزمني",
+      "toggle_chart_legend": "تبديل وسيلة الإيضاح"
     },
     "queues": {
       "created": "تم الإنشاء",
@@ -80,6 +81,7 @@
       "queues": "الطوابير",
       "ran_at": "تم التشغيل في",
       "retry": "إعادة المحاولة",
+      "updated": "تم التحديث",
       "total_counts_by_status": "إجمالي العد حسب الحالة"
     }
   },

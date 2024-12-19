@@ -1,4 +1,21 @@
 .app-chart {
   position: relative;
-  height: 35vh;
+  min-height: 30vh;
+  width: 35vw;
+}
+
+.app-chart-small {
+  position: relative;
+  width: calc(40vw + 100px);
+}
+
+button {
+  vertical-align: middle;
+}
+
+h4 {
+  margin: 0;
+  display: inline;
+  vertical-align: middle;
+  font-size: 18px;
 }

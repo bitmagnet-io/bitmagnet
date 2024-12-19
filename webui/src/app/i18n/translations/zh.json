@@ -55,7 +55,8 @@
       "event": "事件",
       "resolution": "分辨率",
       "throughput": "吞吐量",
-      "timeframe": "时间范围"
+      "timeframe": "时间范围",
+      "toggle_chart_legend": "切换图例"
     },
     "queues": {
       "created": "已创建",
@@ -80,6 +81,7 @@
       "queues": "队列",
       "ran_at": "运行于",
       "retry": "重试",
+      "updated": "更新",
       "total_counts_by_status": "按状态统计总数"
     }
   },

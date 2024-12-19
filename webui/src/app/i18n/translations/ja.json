@@ -55,7 +55,8 @@
       "event": "イベント",
       "resolution": "解像度",
       "throughput": "スループット",
-      "timeframe": "期間"
+      "timeframe": "期間",
+      "toggle_chart_legend": "トグル凡例"
     },
     "queues": {
       "created": "作成済み",
@@ -80,6 +81,7 @@
       "queues": "キュー",
       "ran_at": "実行時刻",
       "retry": "再試行",
+      "updated": "更新",
       "total_counts_by_status": "ステータスごとの総数"
     }
   },

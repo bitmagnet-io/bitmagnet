@@ -55,7 +55,8 @@
       "event": "Event",
       "resolution": "Resolution",
       "throughput": "Throughput",
-      "timeframe": "Timeframe"
+      "timeframe": "Timeframe",
+      "toggle_chart_legend": "Toggle legend"
     },
     "queues": {
       "created": "Created",
@@ -80,6 +81,7 @@
       "queues": "Queues",
       "ran_at": "Ran at",
       "retry": "Retry",
+      "updated": "Updated",
       "total_counts_by_status": "Total counts by status"
     }
   },

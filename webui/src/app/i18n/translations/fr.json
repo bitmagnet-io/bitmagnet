@@ -55,7 +55,8 @@
       "event": "Événement",
       "resolution": "Résolution",
       "throughput": "Débit",
-      "timeframe": "Période"
+      "timeframe": "Période",
+      "toggle_chart_legend": "Basculer la légende"
     },
     "queues": {
       "created": "Créé",
@@ -80,6 +81,7 @@
       "queues": "Files d'attente",
       "ran_at": "Exécuté à",
       "retry": "Réessayer",
+      "updated": "Mis à jour",
       "total_counts_by_status": "Totaux par statut"
     }
   },

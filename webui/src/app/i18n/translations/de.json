@@ -55,7 +55,8 @@
       "event": "Ereignis",
       "resolution": "Auflösung",
       "throughput": "Durchsatz",
-      "timeframe": "Zeitrahmen"
+      "timeframe": "Zeitrahmen",
+      "toggle_chart_legend": "Legende umschalten"
     },
     "queues": {
       "created": "Erstellt",
@@ -80,6 +81,7 @@
       "queues": "Warteschlangen",
       "ran_at": "Ausgeführt am",
       "retry": "Erneut versuchen",
+      "updated": "Aktualisiert",
       "total_counts_by_status": "Gesamtanzahl nach Status"
     }
   },
