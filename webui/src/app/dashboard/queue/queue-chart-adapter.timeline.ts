@@ -177,6 +177,15 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, "line"> {
           decimation: {
             enabled: true,
           },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                return context.dataset.yAxisID === "yCount"
+                  ? context.formattedValue
+                  : this.formatDuration(context.parsed.y);
+              },
+            },
+          },
           // datalabels: {
           //   anchor: 'end',
           //   align: 'end',
@@ -241,6 +250,7 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, "line"> {
         }
       }
     }
+    seconds = Math.round(seconds * 100) / 100;
     return formatDuration(
       { days, hours, minutes, seconds },
       this.transloco.getActiveLang(),
