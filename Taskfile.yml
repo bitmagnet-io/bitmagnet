@@ -116,9 +116,9 @@ tasks:
   serve-webui:
     dir: ./webui
     cmds:
-      - ng serve --host {{.HOST}} --port {{.PORT}}
+      - node_modules/.bin/ng serve --host {{.HOST}} --port {{.PORT}}
     vars:
-      HOST: localhost
+      HOST: 0.0.0.0
       PORT: 3334
 
   serve-docsite:
