@@ -20,7 +20,7 @@
             go-task
             golangci-lint
             jekyll
-            nodejs_22
+            nodejs_23
             nodePackages.prettier
             protobuf
             protoc-gen-go
