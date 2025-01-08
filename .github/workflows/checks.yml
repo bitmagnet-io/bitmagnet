@@ -30,7 +30,8 @@ jobs:
           args: --timeout=10m
 
   test:
-    runs-on: ubuntu-latest
+    # The Ubuntu image has been downgraded and pinned for the `test` and `generated` jobs as they are broken on 24.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,7 +47,7 @@ jobs:
 
   # This job runs all code generations and builds the WebUI, to check that everything is correctly committed
   generated:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     services:
       # Label used to access the service container
       postgres:
