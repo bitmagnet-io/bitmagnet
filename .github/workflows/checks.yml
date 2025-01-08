@@ -46,7 +46,7 @@ jobs:
 
   # This job runs all code generations and builds the WebUI, to check that everything is correctly committed
   generated:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     services:
       # Label used to access the service container
       postgres:
