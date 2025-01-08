@@ -11,7 +11,6 @@
     flake-utils.lib.eachDefaultSystem (system: let
     pkgs = import nixpkgs {
       system = system;
-      config.allowUnfree = true;
     };
     in {
       formatter = pkgs.alejandra;
@@ -19,6 +18,7 @@
         default = pkgs.mkShell {
           packages = with pkgs; [
             bundler
+            chromium
             go
             go-task
             golangci-lint
@@ -28,9 +28,7 @@
             protobuf
             protoc-gen-go
             ruby
-          ] ++ (if stdenv.isLinux then [
-#            google-chrome
-          ] else []);
+          ];
         };
       };
     });
