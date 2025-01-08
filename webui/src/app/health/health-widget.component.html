@@ -4,7 +4,7 @@
     [class]="'health-icon ' + 'health-icon-' + health.result.status"
     [matTooltip]="
       t('health.bitmagnet_is_status', {
-        status: t('health.statuses.' + health.result.status)
+        status: t('health.statuses.' + health.result.status),
       })
     "
     (click)="dialog.open(healthDialog)"
@@ -19,7 +19,7 @@
           status: t(
             "health.statuses." +
               (health.result.error ? "down" : health.result.status)
-          )
+          ),
         })
       }}
     </h2>
