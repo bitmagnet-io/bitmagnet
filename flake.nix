@@ -20,6 +20,7 @@
             go-task
             golangci-lint
             jekyll
+            # note: nodejs_22 is broken for GitHub Actions
             nodejs_23
             nodePackages.prettier
             protobuf
