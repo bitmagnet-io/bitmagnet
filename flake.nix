@@ -29,7 +29,7 @@
             protoc-gen-go
             ruby
           ] ++ (if stdenv.isLinux then [
-            google-chrome
+#            google-chrome
           ] else []);
         };
       };
