@@ -9,7 +9,7 @@ on:
 
 jobs:
   lint:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,7 +46,7 @@ jobs:
 
   # This job runs all code generations and builds the WebUI, to check that everything is correctly committed
   generated:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     services:
       # Label used to access the service container
       postgres:
