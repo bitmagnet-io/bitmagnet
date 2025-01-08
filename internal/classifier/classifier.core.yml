@@ -14,7 +14,7 @@ workflows:
             - if_else:
                 condition:
                   and:
-                    - "torrent.files.map(f, f.fileType == fileType.audio ? f.size : - f.size).sum() > 50*mb"
+                    - "torrent.files.map(f, f.extension in extensions.audio ? f.size : - f.size).sum() > 50*mb"
                     - or:
                         - "torrent.baseName.matches(keywords.audiobook)"
                         - "torrent.files.filter(f, f.extension in extensions.audiobook).size() > 0"
@@ -40,19 +40,22 @@ workflows:
                     - "torrent.files.map(f, f.extension in extensions.music ? f.size : - f.size).sum() > 0"
                     - and:
                         - "torrent.baseName.matches(keywords.music)"
-                        - "torrent.files.map(f, f.fileType == fileType.audio ? f.size : - f.size).sum() > 0"
+                        - "torrent.files.map(f, f.extension in extensions.audio ? f.size : - f.size).sum() > 0"
                 if_action:
                   set_content_type: music
                 else_action: unmatched
             # match software:
             - if_else:
-                condition: "torrent.files.map(f, f.fileType == fileType.software ? f.size : - f.size).sum() > 0"
+                condition: "torrent.files.map(f, f.extension in extensions.software ? f.size : - f.size).sum() > 0"
                 if_action:
                   set_content_type: software
                 else_action: unmatched
             # match xxx:
             - if_else:
-                condition: "([torrent.baseName] + torrent.files.map(f, f.basePath)).join(' ').matches(keywords.xxx)"
+                condition:
+                  and:
+                    - "torrent.files.map(f, (f.extension in extensions.video || f.extension in extensions.image) ? f.size : - f.size).sum() > 0"
+                    - "([torrent.baseName] + torrent.files.map(f, f.basePath)).join(' ').matches(keywords.xxx)"
                 if_action:
                   set_content_type: xxx
                 else_action: unmatched
@@ -78,7 +81,7 @@ workflows:
         condition:
           or:
             - "result.contentType in [contentType.movie, contentType.tv_show]"
-            - "torrent.files.map(f, f.fileType == fileType.video ? f.size : - f.size).sum() > 100*mb"
+            - "torrent.files.map(f, f.extension in extensions.video ? f.size : - f.size).sum() > 100*mb"
         if_action:
           find_match:
             # parse video-related attributes from the torrent name;
@@ -105,6 +108,16 @@ workflows:
             - "flags.delete_xxx && result.contentType == contentType.xxx"
         if_action: delete
 extensions:
+  audio:
+    - mp3
+    - wav
+    - flac
+    - aac
+    - ogg
+    - m4a
+    - m4b
+    - mid
+    - dsf
   audiobook:
     - m4b
   comic:
@@ -128,6 +141,18 @@ extensions:
     - odt
     - pdf
     - rtf
+  image:
+    - jpg
+    - jpeg
+    - png
+    - gif
+    - bmp
+    - svg
+    - dds
+    - psd
+    - tif
+    - tiff
+    - ico
   music:
     - ape
     - dsf
@@ -149,6 +174,19 @@ extensions:
     - pkg
     - rpm
     - sh
+  video:
+    - mp4
+    - mkv
+    - avi
+    - iso
+    - mov
+    - wmv
+    - flv
+    - m4v
+    - mpg
+    - mpeg
+    - ts
+    - vob
 keywords:
   audiobook:
     - audiobooks?
