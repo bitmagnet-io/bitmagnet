@@ -89,7 +89,7 @@ tasks:
     cmds:
       - npm test
     env:
-      CHROME_BIN: chromium
+      CHROME_BIN: google-chrome
 
   migrate:
     cmds:

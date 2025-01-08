@@ -9,7 +9,10 @@
     ...
   }:
     flake-utils.lib.eachDefaultSystem (system: let
-      pkgs = nixpkgs.legacyPackages.${system};
+    pkgs = import nixpkgs {
+      system = system;
+      config.allowUnfree = true;
+    };
     in {
       formatter = pkgs.alejandra;
       devShells = {
@@ -20,14 +23,13 @@
             go-task
             golangci-lint
             jekyll
-            # note: nodejs_22 is broken for GitHub Actions
-            nodejs_23
+            nodejs_22
             nodePackages.prettier
             protobuf
             protoc-gen-go
             ruby
           ] ++ (if stdenv.isLinux then [
-            chromium
+            google-chrome
           ] else []);
         };
       };
