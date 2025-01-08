@@ -1,5 +1,6 @@
 ---
 title: Backup, Restore & Merge
+description: How to backup, restore, merge and share bitmagnet databases
 parent: Guides
 layout: default
 nav_order: 7

@@ -1,5 +1,6 @@
 ---
 title: Classifier
+description: Understanding and customizing bitmagnet's classifier
 parent: Guides
 layout: default
 nav_order: 4
