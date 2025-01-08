@@ -30,6 +30,7 @@ jobs:
           args: --timeout=10m
 
   test:
+    # The Ubuntu image has been downgraded and pinned for the `test` and `generated` jobs as they are broken on 24.04
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
