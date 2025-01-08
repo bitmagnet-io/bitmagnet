@@ -18,7 +18,6 @@
         default = pkgs.mkShell {
           packages = with pkgs; [
             bundler
-            chromium
             go
             go-task
             golangci-lint
@@ -28,7 +27,9 @@
             protobuf
             protoc-gen-go
             ruby
-          ];
+          ] ++ (if stdenv.isLinux then [
+            chromium
+          ] else []);
         };
       };
     });
