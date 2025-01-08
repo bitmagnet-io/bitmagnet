@@ -40,7 +40,7 @@ jobs:
       matrix:
         language:
           - "go"
-          - 'javascript-typescript'
+          - "javascript-typescript"
           - "ruby"
         # CodeQL supports [ 'c-cpp', 'csharp', 'go', 'java-kotlin', 'javascript-typescript', 'python', 'ruby', 'swift' ]
         # Use only 'java-kotlin' to analyze code written in Java, Kotlin or both
