@@ -29,7 +29,6 @@ If everything is working, **bitmagnet** should begin showing torrents in the web
 
 ## **bitmagnet** isn't finding any new torrents, what's wrong?
 
-
 {: .warning-title }
 
 > Important
@@ -37,7 +36,6 @@ If everything is working, **bitmagnet** should begin showing torrents in the web
 > **bitmagnet** is known to work well on Linux and MacOS; if it isn't finding new torrents when running on these platforms, this is probably due to a misconfiguration, rather than a bug in the software.
 >
 > Note that some Windows users have reported issues: if you are having issues on Windows, then for now it's advisable to run the software on Linux or MacOS instead.
-
 
 **bitmagnet** now shows its health status in the main toolbar: It will show a tick for health, a cross for unhealthy or sometimes 3 dots for pending. Click on it to open the health dialog and check that all workers are running and healthy.
 
