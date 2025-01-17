@@ -3,12 +3,13 @@ package adapter
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab"
-	"strconv"
-	"strings"
 )
 
 func (a adapter) Search(ctx context.Context, req torznab.SearchRequest) (torznab.SearchResult, error) {
@@ -228,7 +229,7 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 		}
 		if leechers := item.Torrent.Leechers(); leechers.Valid {
 			attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
-				AttrName:  torznab.AttrPeers,
+				AttrName:  torznab.AttrLeechers,
 				AttrValue: strconv.Itoa(int(leechers.Uint)),
 			})
 		}
@@ -286,6 +287,7 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 			Title:    item.Torrent.Name,
 			Size:     item.Torrent.Size,
 			Category: category,
+			Comments: req.PermaLinkBase + item.InfoHash.String(),
 			GUID:     item.InfoHash.String(),
 			PubDate:  torznab.RssDate(item.PublishedAt),
 			Enclosure: torznab.SearchResultItemEnclosure{

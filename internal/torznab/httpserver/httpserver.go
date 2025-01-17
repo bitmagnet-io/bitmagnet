@@ -3,14 +3,15 @@ package httpserver
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
-	"strconv"
-	"strings"
 )
 
 type Params struct {
@@ -66,6 +67,13 @@ func (b builder) Apply(e *gin.Engine) error {
 			} else {
 				writeInternalError(err)
 			}
+		}
+		permaLinkBase := func(c *gin.Context) string {
+			scheme := "http"
+			if c.Request.TLS != nil {
+				scheme = "https"
+			}
+			return scheme + "://" + c.Request.Host + "/webui/torrents/permalink/"
 		}
 		tp := c.Query(torznab.ParamType)
 		if tp == "" {
@@ -127,15 +135,16 @@ func (b builder) Apply(e *gin.Engine) error {
 			offset.Uint = uint(intOffset)
 		}
 		result, searchErr := client.Search(c, torznab.SearchRequest{
-			Query:   c.Query(torznab.ParamQuery),
-			Type:    tp,
-			Cats:    cats,
-			ImdbId:  imdbId,
-			TmdbId:  tmdbId,
-			Season:  season,
-			Episode: episode,
-			Limit:   limit,
-			Offset:  offset,
+			Query:         c.Query(torznab.ParamQuery),
+			Type:          tp,
+			Cats:          cats,
+			ImdbId:        imdbId,
+			TmdbId:        tmdbId,
+			Season:        season,
+			Episode:       episode,
+			Limit:         limit,
+			Offset:        offset,
+			PermaLinkBase: permaLinkBase(c),
 		})
 		if searchErr != nil {
 			writeErr(fmt.Errorf("failed to search: %w", searchErr))
