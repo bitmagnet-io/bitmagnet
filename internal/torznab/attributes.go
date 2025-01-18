@@ -19,4 +19,5 @@ const (
 	AttrResolution = "resolution"
 	AttrTeam       = "team"
 	AttrImdb       = "imdb"
+	AttrTmdb       = "tmdb"
 )
