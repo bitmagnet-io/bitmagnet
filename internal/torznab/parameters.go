@@ -11,3 +11,10 @@ const (
 	ParamLimit   = "limit"
 	ParamOffset  = "offset"
 )
+
+const (
+	ProfileItemOrderBy        = "order_by"
+	ProfileItemOrderDirection = "order_direction"
+	ProfileItemTags           = "tags"
+	ProfileDefault            = "default"
+)
