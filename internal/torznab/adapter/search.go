@@ -229,6 +229,12 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 				AttrValue: strconv.Itoa(int(seeders.Uint)),
 			})
 		}
+		if leechers.Valid {
+			attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
+				AttrName:  torznab.AttrLeechers,
+				AttrValue: strconv.Itoa(int(leechers.Uint)),
+			})
+		}
 		if leechers.Valid && seeders.Valid {
 			attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 				AttrName:  torznab.AttrPeers,
