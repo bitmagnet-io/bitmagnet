@@ -5,17 +5,16 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab/adapter"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab/httpserver"
-	"github.com/bitmagnet-io/bitmagnet/internal/torznab/settings"
 	"go.uber.org/fx"
 )
 
 func New() fx.Option {
 	return fx.Module(
 		"torznab",
-		configfx.NewConfigModule[torznab.Config]("torznab", torznab.NewDefaultConfig()),
+		configfx.NewConfigModule[torznab.UntypedConfig]("torznab", torznab.NewDefaultUntypedConfig()),
 		fx.Provide(
 			adapter.New,
-			settings.New,
+			torznab.New,
 			httpserver.New,
 		),
 	)

@@ -10,15 +10,14 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab"
-	"github.com/bitmagnet-io/bitmagnet/internal/torznab/settings"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 )
 
 type Params struct {
 	fx.In
-	Client   lazy.Lazy[torznab.Client]
-	Settings lazy.Lazy[*settings.Settings]
+	Client lazy.Lazy[torznab.Client]
+	Config lazy.Lazy[*torznab.Config]
 }
 
 type Result struct {
@@ -29,15 +28,15 @@ type Result struct {
 func New(p Params) Result {
 	return Result{
 		Option: builder{
-			client:   p.Client,
-			settings: p.Settings,
+			client: p.Client,
+			config: p.Config,
 		},
 	}
 }
 
 type builder struct {
-	client   lazy.Lazy[torznab.Client]
-	settings lazy.Lazy[*settings.Settings]
+	client lazy.Lazy[torznab.Client]
+	config lazy.Lazy[*torznab.Config]
 }
 
 func (builder) Key() string {
@@ -45,9 +44,8 @@ func (builder) Key() string {
 }
 
 type torznabworker struct {
-	client torznab.Client
-	// settings *settings.Settings
-	profile  settings.Profile
+	client   torznab.Client
+	profile  torznab.Profile
 	hostname *string
 }
 
@@ -170,12 +168,12 @@ func (w torznabworker) get(c *gin.Context) {
 
 }
 
-func (w torznabworker) getDefault(profile settings.Profile) gin.HandlerFunc {
+func (w torznabworker) getDefault(profile torznab.Profile) gin.HandlerFunc {
 	w.profile = profile
 	return gin.HandlerFunc(w.get)
 }
 
-func (w torznabworker) getWithProfile(profiles map[string]settings.Profile) gin.HandlerFunc {
+func (w torznabworker) getWithProfile(profiles map[string]torznab.Profile) gin.HandlerFunc {
 	handler := func(c *gin.Context) {
 		profileName := c.Param("profile")
 		profile, ok := profiles[profileName]
@@ -198,16 +196,16 @@ func (b builder) Apply(e *gin.Engine) error {
 	if err != nil {
 		return err
 	}
-	settings, err := b.settings.Get()
+	config, err := b.config.Get()
 	if err != nil {
 		return err
 	}
 	worker := torznabworker{
 		client:   client,
-		hostname: settings.Hostname,
+		hostname: config.Hostname,
 	}
 
-	e.GET("/torznab/api/*any", worker.getDefault(settings.Profiles[torznab.ProfileDefault]))
-	e.GET("/torznab/:profile/*any", worker.getWithProfile(settings.Profiles))
+	e.GET("/torznab/api/*any", worker.getDefault(config.Profiles[torznab.ProfileDefault]))
+	e.GET("/torznab/:profile/*any", worker.getWithProfile(config.Profiles))
 	return nil
 }
