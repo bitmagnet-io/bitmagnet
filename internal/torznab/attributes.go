@@ -8,7 +8,7 @@ const (
 	AttrSize        = "size"
 	AttrPublishDate = "publishdate"
 	AttrSeeders     = "seeders"
-	AttrPeers       = "peers"
+	AttrLeechers    = "leechers"
 	// AttrFiles is the number of files in the torrent
 	AttrFiles   = "files"
 	AttrYear    = "year"
