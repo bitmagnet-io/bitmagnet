@@ -207,7 +207,7 @@ func (b builder) Apply(e *gin.Engine) error {
 		hostname: settings.Hostname,
 	}
 
-	e.GET("/torznab/*any", worker.getDefault(settings.Profiles[torznab.ProfileDefault]))
-	e.GET("/torznabv2/:profile/*any", worker.getWithProfile(settings.Profiles))
+	e.GET("/torznab/api/*any", worker.getDefault(settings.Profiles[torznab.ProfileDefault]))
+	e.GET("/torznab/:profile/*any", worker.getWithProfile(settings.Profiles))
 	return nil
 }
