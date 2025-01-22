@@ -221,16 +221,18 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 				AttrValue: item.PublishedAt.Format(torznab.RssDateDefaultFormat),
 			},
 		}
-		if seeders := item.Torrent.Seeders(); seeders.Valid {
+		seeders := item.Torrent.Seeders()
+		leechers := item.Torrent.Leechers()
+		if seeders.Valid {
 			attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 				AttrName:  torznab.AttrSeeders,
 				AttrValue: strconv.Itoa(int(seeders.Uint)),
 			})
 		}
-		if leechers := item.Torrent.Leechers(); leechers.Valid {
+		if leechers.Valid && seeders.Valid {
 			attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
-				AttrName:  torznab.AttrLeechers,
-				AttrValue: strconv.Itoa(int(leechers.Uint)),
+				AttrName:  torznab.AttrPeers,
+				AttrValue: strconv.Itoa(int(leechers.Uint) + int(seeders.Uint)),
 			})
 		}
 		if len(item.Torrent.Files) > 0 {
