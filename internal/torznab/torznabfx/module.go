@@ -11,10 +11,9 @@ import (
 func New() fx.Option {
 	return fx.Module(
 		"torznab",
-		configfx.NewConfigModule[torznab.UntypedConfig]("torznab", torznab.NewDefaultUntypedConfig()),
+		configfx.NewConfigModule[torznab.Config]("torznab", torznab.NewDefaultConfig()),
 		fx.Provide(
 			adapter.New,
-			torznab.New,
 			httpserver.New,
 		),
 	)

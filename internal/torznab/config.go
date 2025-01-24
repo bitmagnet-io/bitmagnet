@@ -1,87 +1,66 @@
 package torznab
 
 import (
-	"encoding/json"
+	"reflect"
 	"strings"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
-	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 type Profile struct {
+	Name           string
 	OrderBy        search.TorrentContentOrderBy
 	OrderDirection search.OrderDirection
 	Tags           []string
 }
 
 type Config struct {
-	Hostname *string
-	Profiles map[string]Profile
+	// Profiles       []Profile          // config framework does not support stuct,slice,struct,item+
+	// Profiles       map[string]Profile // config framework does not support struct,map[string],struct,item+
+	DefaultProfile Profile
+	Profile0       Profile
+	Profile1       Profile
+	Profile2       Profile
+	Profile3       Profile
+	Profile4       Profile
+	Hostname       string
 }
 
-type UntypedConfig struct {
-	Hostname *string
-	Profiles map[string]map[string]string
-}
-
-func NewDefaultUntypedConfig() UntypedConfig {
-	return UntypedConfig{}
-}
-
-type Params struct {
-	fx.In
-	UntypedConfig UntypedConfig
-	Log           *zap.SugaredLogger
-}
-
-type Result struct {
-	fx.Out
-	Profiles lazy.Lazy[*Config]
-}
-
-// lazy validation of strongly typed config
-func New(p Params) Result {
-	return Result{
-		Profiles: lazy.New[*Config](func() (*Config, error) {
-			// make sure default profile has been defined.
-			_, ok := p.UntypedConfig.Profiles[ProfileDefault]
-			if !ok {
-				p.UntypedConfig.Profiles[ProfileDefault] = make(map[string]string, 0)
-			}
-			config := Config{
-				Hostname: p.UntypedConfig.Hostname,
-				Profiles: make(map[string]Profile, len(p.UntypedConfig.Profiles)),
-			}
-			for name, profile := range p.UntypedConfig.Profiles {
-				orderbyRaw, ok := profile[ProfileItemOrderBy]
-				if !ok {
-					orderbyRaw = string(search.TorrentContentOrderByRelevance)
-				}
-				orderby, err := search.ParseTorrentContentOrderBy(orderbyRaw)
-				if err != nil {
-					return nil, err
-				}
-				dirRaw, ok := profile[ProfileItemOrderDirection]
-				if !ok {
-					dirRaw = string(search.OrderDirectionDescending)
-				}
-				dir, err := search.ParseOrderDirection(dirRaw)
-				if err != nil {
-					return nil, err
-				}
-				tags := make([]string, 0)
-				csvTags, ok := profile[ProfileItemTags]
-				if ok && len(csvTags) > 0 {
-					tags = strings.Split(csvTags, ",")
-				}
-				config.Profiles[name] = Profile{OrderBy: orderby, OrderDirection: dir, Tags: tags}
-
-			}
-			log, _ := json.MarshalIndent(config, "", "  ")
-			p.Log.Infof("torznab profiles:\n%s\n", log)
-			return &config, nil
-		}),
+func defaultProfile(name string) Profile {
+	return Profile{
+		Name:           name,
+		OrderBy:        search.TorrentContentOrderByRelevance,
+		OrderDirection: search.OrderDirectionDescending,
 	}
+}
+
+func NewDefaultConfig() Config {
+	config := Config{}
+	// create a default profile for each Profile defined in Config struct
+	configValue := reflect.ValueOf(config)
+	for i := 0; i < configValue.Type().NumField(); i++ {
+		field := configValue.Type().Field(i)
+		if field.Type == reflect.ValueOf(Profile{}).Type() {
+			reflect.ValueOf(&config).Elem().FieldByName(field.Name).Set(
+				reflect.ValueOf(defaultProfile(strings.ToLower(field.Name))),
+			)
+		}
+	}
+	return config
+
+}
+
+func (configPtr *Config) Map() map[string]Profile {
+	configValue := reflect.ValueOf(*configPtr)
+	// this will create an allocation larger than required
+	configMap := make(map[string]Profile, configValue.Type().NumField())
+	for i := 0; i < configValue.Type().NumField(); i++ {
+		field := configValue.Type().Field(i)
+		if field.Type == reflect.ValueOf(Profile{}).Type() {
+			profile := reflect.ValueOf(configPtr).Elem().Field(i).Interface().(Profile)
+			configMap[profile.Name] = profile
+		}
+	}
+
+	return configMap
 }

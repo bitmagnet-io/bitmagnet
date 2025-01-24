@@ -17,7 +17,7 @@ import (
 type Params struct {
 	fx.In
 	Client lazy.Lazy[torznab.Client]
-	Config lazy.Lazy[*torznab.Config]
+	Config torznab.Config
 }
 
 type Result struct {
@@ -36,7 +36,7 @@ func New(p Params) Result {
 
 type builder struct {
 	client lazy.Lazy[torznab.Client]
-	config lazy.Lazy[*torznab.Config]
+	config torznab.Config
 }
 
 func (builder) Key() string {
@@ -46,7 +46,7 @@ func (builder) Key() string {
 type torznabworker struct {
 	client   torznab.Client
 	profile  torznab.Profile
-	hostname *string
+	hostname string
 }
 
 func (w torznabworker) writeInternalError(c *gin.Context, err error) {
@@ -75,8 +75,8 @@ func (w torznabworker) writeErr(c *gin.Context, err error) {
 }
 
 func (w torznabworker) permaLinkBase(c *gin.Context) string {
-	if w.hostname != nil {
-		return *w.hostname
+	if w.hostname != "" {
+		return w.hostname
 	}
 	scheme := "http"
 	if c.Request.TLS != nil {
@@ -196,16 +196,12 @@ func (b builder) Apply(e *gin.Engine) error {
 	if err != nil {
 		return err
 	}
-	config, err := b.config.Get()
-	if err != nil {
-		return err
-	}
 	worker := torznabworker{
 		client:   client,
-		hostname: config.Hostname,
+		hostname: b.config.Hostname,
 	}
 
-	e.GET("/torznab/api/*any", worker.getDefault(config.Profiles[torznab.ProfileDefault]))
-	e.GET("/torznab/:profile/*any", worker.getWithProfile(config.Profiles))
+	e.GET("/torznab/api/*any", worker.getDefault(b.config.DefaultProfile))
+	e.GET("/torznab/:profile/*any", worker.getWithProfile(b.config.Map()))
 	return nil
 }
