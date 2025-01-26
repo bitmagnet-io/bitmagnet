@@ -14,7 +14,7 @@ func TestConfig(t *testing.T) {
 	type Nested struct {
 		NestedKey           string `validate:"uppercase"`
 		NestedKeyFromConfig string
-		NestedKeyFromEnv    int `validate:"min=1,max=10"`
+		IntWithValidation   int `validate:"min=1,max=10"`
 		IntSlice            []int
 		DB                  int
 	}
@@ -23,6 +23,7 @@ func TestConfig(t *testing.T) {
 		Bar         int
 		Nested      Nested
 		StringSlice []string
+		StructSlice []Nested
 		Duration    time.Duration
 		Duration2   time.Duration
 	}
@@ -42,7 +43,7 @@ func TestConfig(t *testing.T) {
 				Target: func() (configresolver.Resolver, error) {
 					return configresolver.NewEnv(map[string]string{
 						"TEST_DURATION":                   "2s",
-						"TEST_NESTED_NESTED_KEY_FROM_ENV": "2",
+						"TEST_NESTED_INT_WITH_VALIDATION": "2",
 						"TEST_NESTED_DB":                  "3",
 					}, configresolver.WithPriority(-10)), nil
 				},
@@ -51,16 +52,16 @@ func TestConfig(t *testing.T) {
 		fx.Provide(
 			fx.Annotated{
 				Group: "config_resolvers",
-				Target: func() (configresolver.Resolver, error) {
-					return configresolver.NewFromYamlFile("./test_config.yaml", false)
+				Target: func(val *validator.Validate) (configresolver.Resolver, error) {
+					return configresolver.NewFromYamlFile("./test_config.yaml", false, val)
 				},
 			},
 		),
 		fx.Provide(
 			fx.Annotated{
 				Group: "config_resolvers",
-				Target: func() (configresolver.Resolver, error) {
-					return configresolver.NewFromYamlFile("./missing.yaml", true)
+				Target: func(val *validator.Validate) (configresolver.Resolver, error) {
+					return configresolver.NewFromYamlFile("./missing.yaml", true, val)
 				},
 			},
 		),
@@ -76,9 +77,19 @@ func TestConfig(t *testing.T) {
 				Nested: Nested{
 					NestedKey:           "NESTED",
 					NestedKeyFromConfig: "from_config",
-					NestedKeyFromEnv:    2,
+					IntWithValidation:   2,
 					IntSlice:            []int{1, 2, 3},
 					DB:                  3,
+				},
+				StructSlice: []Nested{
+					{
+						NestedKey:         "FOO",
+						IntWithValidation: 1,
+					},
+					{
+						NestedKey:         "BAR",
+						IntWithValidation: 2,
+					},
 				},
 			}, cfg)
 			shutdownErr := shutdowner.Shutdown()

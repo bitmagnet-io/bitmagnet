@@ -10,3 +10,8 @@ test:
       - 1
       - 2
       - 3
+  struct_slice:
+    - nested_key: FOO
+      int_with_validation: 1
+    - nested_key: BAR
+      int_with_validation: 2
