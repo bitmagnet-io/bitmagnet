@@ -42,10 +42,10 @@ func NewDefaultConfig() Config {
 }
 
 func (c *Config) Map() map[string]Profile {
-	configMap := make(map[string]Profile, len(c.Profiles))
+	profileMap := make(map[string]Profile, len(c.Profiles))
 	for _, profile := range c.Profiles {
-		configMap[profile.Name] = profile.completeProfile()
+		profileMap[profile.Name] = profile.completeProfile()
 	}
 
-	return configMap
+	return profileMap
 }
