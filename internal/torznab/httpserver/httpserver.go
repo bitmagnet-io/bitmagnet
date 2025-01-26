@@ -44,9 +44,8 @@ func (builder) Key() string {
 }
 
 type torznabworker struct {
-	client   torznab.Client
-	profile  torznab.Profile
-	hostname string
+	client  torznab.Client
+	profile torznab.Profile
 }
 
 func (w torznabworker) writeInternalError(c *gin.Context, err error) {
@@ -74,15 +73,8 @@ func (w torznabworker) writeErr(c *gin.Context, err error) {
 	}
 }
 
-func (w torznabworker) permaLinkBase(c *gin.Context) string {
-	if w.hostname != "" {
-		return w.hostname
-	}
-	scheme := "http"
-	if c.Request.TLS != nil {
-		scheme = "https"
-	}
-	return scheme + "://" + c.Request.Host + "/webui/torrents/permalink/"
+func (w torznabworker) permaLinkBase() string {
+	return "/webui/torrents/permalink/"
 }
 
 func (w torznabworker) get(c *gin.Context) {
@@ -158,7 +150,7 @@ func (w torznabworker) get(c *gin.Context) {
 		OrderBy:        w.profile.OrderBy,
 		OrderDirection: w.profile.OrderDirection,
 		Tags:           w.profile.Tags,
-		PermaLinkBase:  w.permaLinkBase(c),
+		PermaLinkBase:  w.permaLinkBase(),
 	})
 	if searchErr != nil {
 		w.writeErr(c, fmt.Errorf("failed to search: %w", searchErr))
@@ -197,8 +189,7 @@ func (b builder) Apply(e *gin.Engine) error {
 		return err
 	}
 	worker := torznabworker{
-		client:   client,
-		hostname: b.config.Hostname,
+		client: client,
 	}
 
 	e.GET("/torznab/api/*any", worker.getDefault(b.config.DefaultProfile))
