@@ -3,12 +3,13 @@ package adapter
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab"
-	"strconv"
-	"strings"
 )
 
 func (a adapter) Search(ctx context.Context, req torznab.SearchRequest) (torznab.SearchResult, error) {
@@ -220,16 +221,24 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 				AttrValue: item.PublishedAt.Format(torznab.RssDateDefaultFormat),
 			},
 		}
-		if seeders := item.Torrent.Seeders(); seeders.Valid {
+		seeders := item.Torrent.Seeders()
+		leechers := item.Torrent.Leechers()
+		if seeders.Valid {
 			attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 				AttrName:  torznab.AttrSeeders,
 				AttrValue: strconv.Itoa(int(seeders.Uint)),
 			})
 		}
-		if leechers := item.Torrent.Leechers(); leechers.Valid {
+		if leechers.Valid {
+			attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
+				AttrName:  torznab.AttrLeechers,
+				AttrValue: strconv.Itoa(int(leechers.Uint)),
+			})
+		}
+		if leechers.Valid && seeders.Valid {
 			attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 				AttrName:  torznab.AttrPeers,
-				AttrValue: strconv.Itoa(int(leechers.Uint)),
+				AttrValue: strconv.Itoa(int(leechers.Uint) + int(seeders.Uint)),
 			})
 		}
 		if len(item.Torrent.Files) > 0 {

@@ -20,6 +20,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      gluetun:
+        condition: service_healthy
     command:
       - worker
       - run
