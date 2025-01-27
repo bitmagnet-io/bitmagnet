@@ -221,6 +221,12 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 				AttrValue: item.PublishedAt.Format(torznab.RssDateDefaultFormat),
 			},
 		}
+		if item.ContentID.Valid {
+			attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
+				AttrName:  torznab.AttrTmdb,
+				AttrValue: item.ContentID.String,
+			})
+		}
 		seeders := item.Torrent.Seeders()
 		leechers := item.Torrent.Leechers()
 		if seeders.Valid {
