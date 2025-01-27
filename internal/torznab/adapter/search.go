@@ -59,7 +59,11 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 		}
 	}
 	if r.Query != "" {
-		options = append(options, query.QueryString(r.Query), query.OrderBy(r.OrderBy.Clauses(r.OrderDirection)...))
+		order := search.TorrentContentOrderByRelevance
+		if r.Profile.DisableOrderByRelevance {
+			order = search.TorrentContentOrderByPublishedAt
+		}
+		options = append(options, query.QueryString(r.Query), query.OrderBy(order.Clauses(search.OrderDirectionDescending)...))
 	}
 	var catsCriteria []query.Criteria
 	for _, cat := range r.Cats {
@@ -169,8 +173,8 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 		options = append(options, query.Offset(r.Offset.Uint))
 	}
 
-	if len(r.Tags) > 0 {
-		options = append(options, query.Where(search.TorrentTagCriteria(r.Tags...)))
+	if len(r.Profile.Tags) > 0 {
+		options = append(options, query.Where(search.TorrentTagCriteria(r.Profile.Tags...)))
 	}
 	return options, nil
 }

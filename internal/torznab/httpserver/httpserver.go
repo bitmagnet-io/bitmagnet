@@ -12,12 +12,14 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 type Params struct {
 	fx.In
 	Client lazy.Lazy[torznab.Client]
 	Config torznab.Config
+	Log    *zap.SugaredLogger
 }
 
 type Result struct {
@@ -30,6 +32,7 @@ func New(p Params) Result {
 		Option: builder{
 			client: p.Client,
 			config: p.Config,
+			log:    p.Log,
 		},
 	}
 }
@@ -37,6 +40,7 @@ func New(p Params) Result {
 type builder struct {
 	client lazy.Lazy[torznab.Client]
 	config torznab.Config
+	log    *zap.SugaredLogger
 }
 
 func (builder) Key() string {
@@ -46,6 +50,7 @@ func (builder) Key() string {
 type torznabworker struct {
 	client  torznab.Client
 	profile torznab.Profile
+	log     *zap.SugaredLogger
 }
 
 func (w torznabworker) writeInternalError(c *gin.Context, err error) {
@@ -73,11 +78,10 @@ func (w torznabworker) writeErr(c *gin.Context, err error) {
 	}
 }
 
-func (w torznabworker) permaLinkBase() string {
-	return "/webui/torrents/permalink/"
-}
-
 func (w torznabworker) get(c *gin.Context) {
+	if w.profile.LogRequest {
+		w.log.Infof("[%s] %s", c.ClientIP(), c.Request.URL.RawQuery)
+	}
 	tp := c.Query(torznab.ParamType)
 	if tp == "" {
 		w.writeErr(c, torznab.Error{
@@ -138,19 +142,16 @@ func (w torznabworker) get(c *gin.Context) {
 		offset.Uint = uint(intOffset)
 	}
 	result, searchErr := w.client.Search(c, torznab.SearchRequest{
-		Query:          c.Query(torznab.ParamQuery),
-		Type:           tp,
-		Cats:           cats,
-		ImdbId:         imdbId,
-		TmdbId:         tmdbId,
-		Season:         season,
-		Episode:        episode,
-		Limit:          limit,
-		Offset:         offset,
-		OrderBy:        w.profile.OrderBy,
-		OrderDirection: w.profile.OrderDirection,
-		Tags:           w.profile.Tags,
-		PermaLinkBase:  w.permaLinkBase(),
+		Query:   c.Query(torznab.ParamQuery),
+		Type:    tp,
+		Cats:    cats,
+		ImdbId:  imdbId,
+		TmdbId:  tmdbId,
+		Season:  season,
+		Episode: episode,
+		Limit:   limit,
+		Offset:  offset,
+		Profile: w.profile,
 	})
 	if searchErr != nil {
 		w.writeErr(c, fmt.Errorf("failed to search: %w", searchErr))
@@ -167,12 +168,11 @@ func (w torznabworker) getDefault(profile torznab.Profile) gin.HandlerFunc {
 
 func (w torznabworker) getWithProfile(profiles map[string]torznab.Profile) gin.HandlerFunc {
 	handler := func(c *gin.Context) {
-		profileName := c.Param("profile")
-		profile, ok := profiles[profileName]
+		profile, ok := profiles[c.Param("profile")]
 		if !ok {
 			w.writeErr(c, torznab.Error{
 				Code:        200,
-				Description: fmt.Sprintf("profile not found (%s)", profileName),
+				Description: fmt.Sprintf("profile not found (%s)", c.Param("profile")),
 			})
 			return
 		}
@@ -190,6 +190,7 @@ func (b builder) Apply(e *gin.Engine) error {
 	}
 	worker := torznabworker{
 		client: client,
+		log:    b.log,
 	}
 
 	e.GET("/torznab/api/*any", worker.getDefault(b.config.DefaultProfile))

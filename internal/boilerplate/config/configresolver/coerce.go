@@ -6,23 +6,15 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 )
 
 var durationType = reflect.TypeOf(time.Duration(0))
-var orderByType = reflect.TypeOf(search.TorrentContentOrderByRelevance)
-var orderDirectionType = reflect.TypeOf(search.OrderDirectionDescending)
 
 func coerceStringValue(stringValue string, valueType reflect.Type) (interface{}, error) {
 	// todo Fill this out
 	switch valueType {
 	case durationType:
 		return time.ParseDuration(stringValue)
-	case orderByType:
-		return search.ParseTorrentContentOrderBy(stringValue)
-	case orderDirectionType:
-		return search.ParseOrderDirection(stringValue)
 	}
 	switch valueType.Kind() {
 	case reflect.String:
