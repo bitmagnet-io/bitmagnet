@@ -1,14 +1,15 @@
 package model
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
-	"github.com/facette/natsort"
-	"gorm.io/gorm"
 	"net/url"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
+	"github.com/facette/natsort"
+	"gorm.io/gorm"
 )
 
 func (t *Torrent) AfterFind(tx *gorm.DB) error {
@@ -74,6 +75,10 @@ func (t Torrent) MagnetUri() string {
 	return "magnet:?xt=urn:btih:" + t.InfoHash.String() +
 		"&dn=" + url.QueryEscape(t.Name) +
 		"&xl=" + strconv.FormatUint(uint64(t.Size), 10)
+}
+
+func (t Torrent) PermaLink() string {
+	return "/webui/torrents/permalink/" + t.InfoHash.String()
 }
 
 // HasFilesInfo returns true if we know about the files in this torrent.
