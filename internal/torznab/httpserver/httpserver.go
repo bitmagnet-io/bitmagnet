@@ -80,7 +80,7 @@ func (w torznabworker) writeErr(c *gin.Context, err error) {
 
 func (w torznabworker) get(c *gin.Context) {
 	if w.profile.LogRequest {
-		w.log.Infof("[%s] %s", c.ClientIP(), c.Request.URL.RawQuery)
+		w.log.Infof("[%s] [%s] %s", c.ClientIP(), c.Request.URL.Path, c.Request.URL.RawQuery)
 	}
 	tp := c.Query(torznab.ParamType)
 	if tp == "" {
