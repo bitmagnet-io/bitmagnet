@@ -3,9 +3,10 @@ package classifier
 import (
 	_ "embed"
 	"encoding/json"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/xeipuuv/gojsonschema"
-	"testing"
 )
 
 //go:embed json-schema.draft-07.json
@@ -24,7 +25,7 @@ func TestJsonSchema(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, metaResult.Valid())
 
-	coreClassifier, err := yamlSourceProvider{rawSourceProvider: coreSourceProvider{}}.source()
+	coreClassifier, err := coreSourceProvider{}.provider().source()
 	assert.NoError(t, err)
 	coreClassifierJson, err := json.Marshal(coreClassifier)
 	assert.NoError(t, err)

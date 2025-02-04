@@ -3,6 +3,8 @@ package classifier
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	classifier_mocks "github.com/bitmagnet-io/bitmagnet/internal/classifier/mocks"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
@@ -10,7 +12,6 @@ import (
 	tmdb_mocks "github.com/bitmagnet-io/bitmagnet/internal/tmdb/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
 )
 
 func TestClassifier(t *testing.T) {
@@ -195,7 +196,7 @@ func TestClassifier(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("torrent: %s", tc.torrent.Name), func(t *testing.T) {
 			mocks := newTestClassifierMocks(t)
-			source, sourceErr := yamlSourceProvider{rawSourceProvider: coreSourceProvider{}}.source()
+			source, sourceErr := coreSourceProvider{}.provider().source()
 			if sourceErr != nil {
 				t.Fatal(sourceErr)
 				return
