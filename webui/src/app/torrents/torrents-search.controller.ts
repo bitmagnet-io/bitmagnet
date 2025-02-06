@@ -474,7 +474,7 @@ export const defaultQueryOrderBy = {
   descending: true,
 };
 
-type OrderBySelection = {
+export type OrderBySelection = {
   field: generated.TorrentContentOrderByField;
   descending: boolean;
 };
@@ -483,3 +483,12 @@ const matchesContentType = (
   selection: ContentTypeSelection,
   cts?: generated.ContentType[],
 ) => !cts || (selection && cts.includes(selection as generated.ContentType));
+
+export const isDefaultOrdering = (ctrl: TorrentSearchControls): boolean => {
+  if (!ctrl.orderBy.descending) {
+    return false;
+  }
+  return (
+    ctrl.orderBy.field === (ctrl.queryString ? "relevance" : "published_at")
+  );
+};

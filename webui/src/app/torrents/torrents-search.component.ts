@@ -40,11 +40,12 @@ import {
 import {
   ContentTypeSelection,
   defaultOrderBy,
-  defaultQueryOrderBy,
   FacetInfo,
   facets,
   inactiveFacet,
+  isDefaultOrdering,
   orderByOptions,
+  OrderBySelection,
   TorrentSearchControls,
   TorrentsSearchController,
 } from "./torrents-search.controller";
@@ -160,19 +161,11 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
         this.queryString.setValue(queryString ?? null);
         this.controller.update((ctrl) => {
           const activeFacets = stringListParam(params, "facets");
-          let orderBy = ctrl.orderBy;
-          if (queryString) {
-            if (queryString !== ctrl.queryString) {
-              orderBy = defaultQueryOrderBy;
-            }
-          } else if (orderBy.field === "relevance") {
-            orderBy = defaultOrderBy;
-          }
           return {
             ...ctrl,
             queryString,
-            orderBy,
-            contentType: contentTypeParam(params, "content_type"),
+            orderBy: orderByParam(params, !!queryString),
+            contentType: contentTypeParam(params),
             limit: intParam(params, "limit") ?? ctrl.limit,
             page: intParam(params, "page") ?? ctrl.page,
             facets: facets.reduce<TorrentSearchControls["facets"]>(
@@ -198,6 +191,11 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
         if (limit === defaultLimit) {
           limit = undefined;
         }
+        const orderBy = isDefaultOrdering(ctrl) ? undefined : ctrl.orderBy;
+        let desc: string | undefined;
+        if (orderBy) {
+          desc = orderBy.descending ? "1" : "0";
+        }
         void this.router.navigate([], {
           relativeTo: this.route,
           queryParams: {
@@ -207,9 +205,11 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
             page,
             limit,
             content_type: ctrl.contentType,
+            order: orderBy?.field,
+            desc,
             ...flattenFacets(ctrl.facets),
           },
-          queryParamsHandling: "merge",
+          queryParamsHandling: "replace",
         });
       }),
       this.selection.changed.subscribe((selection) => {
@@ -246,12 +246,32 @@ const initControls: TorrentSearchControls = {
   },
 };
 
-const contentTypeParam = (
-  params: Params,
-  key: string,
-): ContentTypeSelection => {
-  const str = stringParam(params, key);
+const contentTypeParam = (params: Params): ContentTypeSelection => {
+  const str = stringParam(params, "content_type");
   return str && str in contentTypeMap ? (str as ContentTypeSelection) : null;
+};
+
+const orderByParam = (params: Params, hasQuery: boolean): OrderBySelection => {
+  let desc: boolean | null = null;
+  const strDesc = stringParam(params, "desc");
+  if (strDesc === "1") {
+    desc = true;
+  } else if (strDesc === "0") {
+    desc = false;
+  }
+  let field = stringParam(params, "order");
+  for (const opt of orderByOptions) {
+    if (opt.field === field) {
+      return {
+        field,
+        descending: desc ?? opt.descending,
+      };
+    }
+  }
+  return {
+    field: hasQuery ? "relevance" : "published_at",
+    descending: desc ?? true,
+  };
 };
 
 const flattenFacets = (
