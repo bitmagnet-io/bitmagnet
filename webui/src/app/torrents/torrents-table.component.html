@@ -16,8 +16,8 @@
       <th mat-header-cell *matHeaderCellDef>
         <mat-checkbox
           (change)="toggleAllRows()"
-          [checked]="selection.hasValue() && isAllSelected()"
-          [indeterminate]="selection.hasValue() && !isAllSelected()"
+          [checked]="multiSelection.hasValue() && isAllSelected()"
+          [indeterminate]="multiSelection.hasValue() && !isAllSelected()"
           [matTooltip]="
             isAllSelected()
               ? t('torrents.deselect_all')
@@ -29,8 +29,8 @@
       <td mat-cell *matCellDef="let i">
         <mat-checkbox
           (click)="$event.stopPropagation()"
-          (change)="$event ? selection.toggle(item(i).infoHash) : null"
-          [checked]="selection.isSelected(item(i).infoHash)"
+          (change)="$event ? multiSelection.toggle(item(i).infoHash) : null"
+          [checked]="multiSelection.isSelected(item(i).infoHash)"
         >
         </mat-checkbox>
       </td>
@@ -41,7 +41,7 @@
       <td
         mat-cell
         *matCellDef="let i"
-        (click)="toggleTorrentContentId(i.id); $event.stopPropagation()"
+        (click)="toggleSelectedTorrent(i.infoHash); $event.stopPropagation()"
       >
         <mat-icon
           [matTooltip]="
@@ -111,16 +111,26 @@
         <div
           class="item-detail"
           [@detailExpand]="
-            expandedId.getValue() === i.id ? 'expanded' : 'collapsed'
+            (controller.selection$ | async)?.infoHash == i.infoHash
+              ? 'expanded'
+              : 'collapsed'
           "
         >
-          <app-torrent-content
-            [torrentContent]="i"
-            [size]="false"
-            [published]="breakpoints.sizeAtLeast('Medium')"
-            [peers]="breakpoints.sizeAtLeast('Medium')"
-            (updated)="updated.emit(item(i).infoHash)"
-          />
+          <mat-card class="torrent-permalink">
+            <mat-card-content>
+              <app-torrent-content
+                [torrentContent]="i"
+                [size]="false"
+                [published]="breakpoints.sizeAtLeast('Medium')"
+                [peers]="breakpoints.sizeAtLeast('Medium')"
+                [selectedTab]="(controller.selection$ | async)?.tab"
+                (updated)="updated.emit(item(i).infoHash)"
+                (tabSelected)="
+                  controller.selectTorrent(i.infoHash, $event ? $event : null)
+                "
+              />
+            </mat-card-content>
+          </mat-card>
         </div>
       </td>
     </ng-container>
@@ -130,8 +140,9 @@
       mat-row
       *matRowDef="let i; columns: displayedColumns"
       [class]="
-        'summary-row ' +
-        (i.id === expandedId.getValue() ? 'expanded' : 'collapsed')
+        'summary-row ' + (controller.selection$ | async)?.infoHash == i.infoHash
+          ? 'expanded'
+          : 'collapsed'
       "
     ></tr>
     <tr

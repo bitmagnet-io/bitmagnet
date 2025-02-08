@@ -3,15 +3,35 @@ import { TranslocoService } from "@jsverse/transloco";
 import * as generated from "../graphql/generated";
 import { PageEvent } from "../paginator/paginator.types";
 
-type FacetInput<TValue = unknown> = {
+export type FacetInput<TValue = unknown> = {
   active: boolean;
   filter?: TValue[];
 };
 
 export type ContentTypeSelection = generated.ContentType | "null" | null;
 
+export const torrentTabNames = ["files", "tags", "delete"] as const;
+
+export type TorrentTab = (typeof torrentTabNames)[number];
+
+export type TorrentTabSelection = TorrentTab | undefined;
+
+export type TorrentSelection = {
+  infoHash: string;
+  tab: TorrentTabSelection;
+};
+
+const compareTorrentSelection = (
+  a?: TorrentSelection,
+  b?: TorrentSelection,
+): boolean => {
+  if (a && b) {
+    return a.infoHash === b.infoHash && a.tab === b.tab;
+  }
+  return a === b;
+};
+
 export type TorrentSearchControls = {
-  language: string;
   limit: number;
   page: number;
   queryString?: string;
@@ -26,6 +46,7 @@ export type TorrentSearchControls = {
     videoResolution: FacetInput<generated.VideoResolution>;
     videoSource: FacetInput<generated.VideoSource>;
   };
+  selectedTorrent?: TorrentSelection;
 };
 
 const controlsToQueryVariables = (
@@ -102,6 +123,9 @@ export class TorrentsSearchController {
   private paramsSubject: BehaviorSubject<generated.TorrentContentSearchQueryVariables>;
   params$: Observable<generated.TorrentContentSearchQueryVariables>;
 
+  private selectionSubject: BehaviorSubject<TorrentSelection | undefined>;
+  selection$: Observable<TorrentSelection | undefined>;
+
   constructor(initialControls: TorrentSearchControls) {
     this.controlsSubject = new BehaviorSubject(initialControls);
     this.controls$ = this.controlsSubject.asObservable();
@@ -109,11 +133,25 @@ export class TorrentsSearchController {
       controlsToQueryVariables(initialControls),
     );
     this.params$ = this.paramsSubject.asObservable();
+    this.selectionSubject = new BehaviorSubject(
+      initialControls.selectedTorrent,
+    );
+    this.selection$ = this.selectionSubject.asObservable();
     this.controls$.pipe(debounceTime(100)).subscribe((ctrl) => {
-      const currentParams = this.paramsSubject.getValue();
       const nextParams = controlsToQueryVariables(ctrl);
-      if (JSON.stringify(currentParams) !== JSON.stringify(nextParams)) {
+      if (
+        JSON.stringify(this.paramsSubject.getValue()) !==
+        JSON.stringify(nextParams)
+      ) {
         this.paramsSubject.next(nextParams);
+      }
+      if (
+        !compareTorrentSelection(
+          this.selectionSubject.getValue(),
+          ctrl.selectedTorrent,
+        )
+      ) {
+        this.selectionSubject.next(ctrl.selectedTorrent);
       }
     });
   }
@@ -126,11 +164,21 @@ export class TorrentsSearchController {
     }
   }
 
-  selectLanguage(lang: string) {
-    this.update((ctrl) => ({
-      ...ctrl,
-      language: lang,
-    }));
+  selectTorrent(infoHash: string, tab?: TorrentTabSelection | null) {
+    this.update((ctrl) => {
+      if (tab === undefined) {
+        tab = ctrl.selectedTorrent?.tab;
+      } else if (tab === null) {
+        tab = undefined;
+      }
+      return {
+        ...ctrl,
+        selectedTorrent: {
+          infoHash,
+          tab,
+        },
+      };
+    });
   }
 
   selectContentType(ct: ContentTypeSelection) {

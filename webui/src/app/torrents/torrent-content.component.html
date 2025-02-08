@@ -130,7 +130,7 @@
   <mat-tab-group
     animationDuration="0"
     [selectedIndex]="selectedTabIndex"
-    (focusChange)="selectTab($event.index == 4 ? 0 : $event.index)"
+    (focusChange)="selectTabIndex($event.index)"
     [mat-stretch-tabs]="false"
   >
     <mat-tab aria-labelledby="hidden"></mat-tab>
@@ -164,44 +164,10 @@
         }
       </ng-template>
       <ng-template matTabContent>
-        <mat-card>
-          <mat-form-field class="form-edit-tags" subscriptSizing="dynamic">
-            <mat-chip-grid #chipGrid>
-              @for (
-                tagName of torrentContent.torrent.tagNames;
-                let j = $index;
-                track tagName
-              ) {
-                <mat-chip-row
-                  [editable]="true"
-                  (edited)="renameTag(tagName, $event.value)"
-                  (removed)="deleteTag(tagName)"
-                >
-                  {{ tagName }}
-                  <mat-icon matChipRemove>cancel</mat-icon>
-                </mat-chip-row>
-              }
-            </mat-chip-grid>
-            <input
-              [placeholder]="t('torrents.new_tag')"
-              [formControl]="newTagCtrl"
-              [matAutocomplete]="auto"
-              [matChipInputFor]="chipGrid"
-              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-              (matChipInputTokenEnd)="$event.value && addTag($event.value)"
-              [value]="newTagCtrl.value"
-              autocapitalize="none"
-            />
-            <mat-autocomplete
-              #auto="matAutocomplete"
-              (optionSelected)="addTag($event.option.viewValue)"
-            >
-              @for (tagName of suggestedTags; track tagName) {
-                <mat-option [value]="tagName">{{ tagName }}</mat-option>
-              }
-            </mat-autocomplete>
-          </mat-form-field>
-        </mat-card>
+        <app-torrent-edit-tags
+          [torrentContent]="torrentContent"
+          (updated)="updated.emit(null)"
+        ></app-torrent-edit-tags>
       </ng-template>
     </mat-tab>
 
