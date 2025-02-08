@@ -38,7 +38,7 @@ export class TorrentEditTagsComponent implements OnInit {
 
   @Output() updated = new EventEmitter<null>();
 
-  constructor() {
+  ngOnInit() {
     this.newTagCtrl.valueChanges.subscribe((value) => {
       if (value) {
         value = normalizeTagInput(value);
@@ -62,9 +62,6 @@ export class TorrentEditTagsComponent implements OnInit {
         )
         .subscribe();
     });
-  }
-
-  ngOnInit() {
     this.editedTags = this.torrentContent.torrent.tagNames;
     this.newTagCtrl.reset();
   }
