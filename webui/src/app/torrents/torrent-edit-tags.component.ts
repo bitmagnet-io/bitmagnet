@@ -6,15 +6,15 @@ import {
   OnInit,
   Output,
 } from "@angular/core";
-import * as generated from "../graphql/generated";
-import { AppModule } from "../app.module";
 import { FormControl } from "@angular/forms";
 import { TranslocoService } from "@jsverse/transloco";
+import { catchError, EMPTY, tap } from "rxjs";
+import { COMMA, ENTER } from "@angular/cdk/keycodes";
+import * as generated from "../graphql/generated";
+import { AppModule } from "../app.module";
 import { GraphQLService } from "../graphql/graphql.service";
 import { ErrorsService } from "../errors/errors.service";
 import normalizeTagInput from "../util/normalizeTagInput";
-import { catchError, EMPTY, tap } from "rxjs";
-import { COMMA, ENTER } from "@angular/cdk/keycodes";
 
 @Component({
   selector: "app-torrent-edit-tags",

@@ -279,7 +279,7 @@ const orderByParam = (params: Params, hasQuery: boolean): OrderBySelection => {
   } else if (strDesc === "0") {
     desc = false;
   }
-  let field = stringParam(params, "order");
+  const field = stringParam(params, "order");
   for (const opt of orderByOptions) {
     if (opt.field === field) {
       return {

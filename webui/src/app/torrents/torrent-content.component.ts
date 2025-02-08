@@ -1,10 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  inject,
-  Input,
-  Output,
-} from "@angular/core";
+import { Component, EventEmitter, inject, Input, Output } from "@angular/core";
 import { catchError, EMPTY, tap } from "rxjs";
 import { NgOptimizedImage } from "@angular/common";
 import { TranslocoService } from "@jsverse/transloco";
