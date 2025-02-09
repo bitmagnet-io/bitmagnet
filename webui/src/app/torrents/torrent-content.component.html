@@ -173,6 +173,21 @@
 
     <mat-tab>
       <ng-template mat-tab-label>
+        <mat-icon>cycle</mat-icon>
+        @if (breakpoints.sizeAtLeast("Medium")) {
+          <span class="label">{{ t("torrents.reprocess.reprocess") }}</span>
+        }
+      </ng-template>
+      <ng-template matTabContent>
+        <app-torrent-reprocess
+          [infoHashes]="[torrentContent.infoHash]"
+          (updated)="updated.emit(null)"
+        ></app-torrent-reprocess>
+      </ng-template>
+    </mat-tab>
+
+    <mat-tab>
+      <ng-template mat-tab-label>
         <mat-icon>delete_forever</mat-icon>
         @if (breakpoints.sizeAtLeast("Medium")) {
           <span class="label">{{ t("torrents.delete") }}</span>

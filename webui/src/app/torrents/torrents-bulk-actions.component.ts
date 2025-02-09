@@ -14,11 +14,12 @@ import { BreakpointsService } from "../layout/breakpoints.service";
 import { ErrorsService } from "../errors/errors.service";
 import { GraphQLService } from "../graphql/graphql.service";
 import { AppModule } from "../app.module";
+import { TorrentReprocessComponent } from "./torrent-reprocess.component";
 
 @Component({
   selector: "app-torrents-bulk-actions",
   standalone: true,
-  imports: [AppModule],
+  imports: [AppModule, TorrentReprocessComponent],
   templateUrl: "./torrents-bulk-actions.component.html",
   styleUrl: "./torrents-bulk-actions.component.scss",
 })
@@ -42,6 +43,7 @@ export class TorrentsBulkActionsComponent implements OnInit {
     this.selectedItems$.subscribe((items) => {
       this.selectedItems = items;
     });
+    this.newTagCtrl.reset();
   }
 
   selectTab(index: number): void {
@@ -52,8 +54,12 @@ export class TorrentsBulkActionsComponent implements OnInit {
     return this.selectedItems.map((i) => i.torrent.magnetUri).join("\n");
   }
 
-  getSelectedInfoHashes(): string {
-    return this.selectedItems.map((i) => i.infoHash).join("\n");
+  getSelectedInfoHashes(): string[] {
+    return this.selectedItems.map((i) => i.infoHash);
+  }
+
+  getSelectedInfoHashesLines(): string {
+    return this.getSelectedInfoHashes().join("\n");
   }
 
   addTag(tagName: string) {

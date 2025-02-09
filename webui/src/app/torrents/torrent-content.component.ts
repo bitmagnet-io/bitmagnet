@@ -16,6 +16,7 @@ import {
   torrentTabNames,
   TorrentTabSelection,
 } from "./torrents-search.controller";
+import { TorrentReprocessComponent } from "./torrent-reprocess.component";
 
 @Component({
   selector: "app-torrent-content",
@@ -29,6 +30,7 @@ import {
     TimeAgoPipe,
     TorrentEditTagsComponent,
     TorrentFilesTableComponent,
+    TorrentReprocessComponent,
   ],
 })
 export class TorrentContentComponent {

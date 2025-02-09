@@ -282,6 +282,12 @@
     "published": "प्रकाशित",
     "rating": "रेटिंग",
     "refresh": "परिणाम ताज़ा करें",
+    "reprocess": {
+      "force_rematch": "पहले से मेल खाई सामग्री को फिर से मिलाएं",
+      "match_content_by_external_api_search": "बाहरी API खोज से सामग्री का मिलान करें",
+      "match_content_by_local_search": "स्थानीय खोज से सामग्री का मिलान करें",
+      "reprocess": "पुनः प्रक्रिया करें"
+    },
     "s_l": "S / L",
     "search": "खोज",
     "seeders": "सीडर्स",

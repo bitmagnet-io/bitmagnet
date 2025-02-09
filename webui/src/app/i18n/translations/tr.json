@@ -282,6 +282,12 @@
     "published": "Yayınlandı",
     "rating": "Puan",
     "refresh": "Sonuçları Yenile",
+    "reprocess": {
+      "force_rematch": "Zaten eşleşen içeriği yeniden eşleştir",
+      "match_content_by_external_api_search": "Dış API aramasıyla içeriği eşleştir",
+      "match_content_by_local_search": "Yerel aramayla içeriği eşleştir",
+      "reprocess": "Yeniden işle"
+    },
     "s_l": "S / L",
     "search": "Ara",
     "seeders": "Seeders",

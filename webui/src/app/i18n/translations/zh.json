@@ -282,6 +282,12 @@
     "published": "已发布",
     "rating": "评分",
     "refresh": "刷新结果",
+    "reprocess": {
+      "force_rematch": "强制重新匹配已匹配的内容",
+      "match_content_by_external_api_search": "通过外部API搜索匹配内容",
+      "match_content_by_local_search": "通过本地搜索匹配内容",
+      "reprocess": "重新处理"
+    },
     "s_l": "S / L",
     "search": "搜索",
     "seeders": "上传者",

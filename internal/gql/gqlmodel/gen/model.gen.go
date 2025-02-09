@@ -12,6 +12,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/queuemetrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
 type ContentTypeAgg struct {
@@ -195,6 +196,14 @@ type TorrentMetricsQueryInput struct {
 
 type TorrentMetricsQueryResult struct {
 	Buckets []torrentmetrics.Bucket `json:"buckets"`
+}
+
+type TorrentReprocessInput struct {
+	InfoHashes          []protocol.ID              `json:"infoHashes"`
+	ClassifierRematch   graphql.Omittable[*bool]   `json:"classifierRematch,omitempty"`
+	ClassifierWorkflow  graphql.Omittable[*string] `json:"classifierWorkflow,omitempty"`
+	ApisDisabled        graphql.Omittable[*bool]   `json:"apisDisabled,omitempty"`
+	LocalSearchDisabled graphql.Omittable[*bool]   `json:"localSearchDisabled,omitempty"`
 }
 
 type TorrentSourceAgg struct {

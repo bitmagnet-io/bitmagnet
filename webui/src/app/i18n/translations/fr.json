@@ -282,6 +282,12 @@
     "published": "Publié",
     "rating": "Évaluation",
     "refresh": "Rafraîchir les résultats",
+    "reprocess": {
+      "force_rematch": "Forcer le rematch du contenu déjà apparié",
+      "match_content_by_external_api_search": "Apparier le contenu par recherche API externe",
+      "match_content_by_local_search": "Apparier le contenu par recherche locale",
+      "reprocess": "Retraitement"
+    },
     "s_l": "S / L",
     "search": "Rechercher",
     "seeders": "Seeders",

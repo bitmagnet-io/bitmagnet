@@ -282,6 +282,12 @@
     "published": "公開済み",
     "rating": "評価",
     "refresh": "結果を更新",
+    "reprocess": {
+      "force_rematch": "既に一致したコンテンツを強制的に再一致させる",
+      "match_content_by_external_api_search": "外部API検索でコンテンツを一致させる",
+      "match_content_by_local_search": "ローカル検索でコンテンツを一致させる",
+      "reprocess": "再処理"
+    },
     "s_l": "S / L",
     "search": "検索",
     "seeders": "シーダー",
