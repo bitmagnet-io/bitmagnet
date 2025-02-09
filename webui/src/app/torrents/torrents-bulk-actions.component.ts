@@ -38,10 +38,12 @@ export class TorrentsBulkActionsComponent implements OnInit {
   editedTags = Array<string>();
   suggestedTags = Array<string>();
   selectedItems = new Array<generated.TorrentContent>();
+  selectedInfoHashes = new Array<string>();
 
   ngOnInit() {
     this.selectedItems$.subscribe((items) => {
       this.selectedItems = items;
+      this.selectedInfoHashes = items.map((i) => i.infoHash);
     });
     this.newTagCtrl.reset();
   }
@@ -54,12 +56,8 @@ export class TorrentsBulkActionsComponent implements OnInit {
     return this.selectedItems.map((i) => i.torrent.magnetUri).join("\n");
   }
 
-  getSelectedInfoHashes(): string[] {
-    return this.selectedItems.map((i) => i.infoHash);
-  }
-
   getSelectedInfoHashesLines(): string {
-    return this.getSelectedInfoHashes().join("\n");
+    return this.selectedInfoHashes.join("\n");
   }
 
   addTag(tagName: string) {

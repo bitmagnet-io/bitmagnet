@@ -134,7 +134,7 @@
 
       <ng-template matTabContent>
         <app-torrent-reprocess
-          [infoHashes]="getSelectedInfoHashes()"
+          [infoHashes]="selectedInfoHashes"
           (updated)="updated.emit(null)"
         />
       </ng-template>
