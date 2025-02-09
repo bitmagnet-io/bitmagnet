@@ -288,7 +288,7 @@ func (e HealthStatus) String() string {
 	return string(e)
 }
 
-func (e *HealthStatus) UnmarshalGQL(v interface{}) error {
+func (e *HealthStatus) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -331,7 +331,7 @@ func (e MetricsBucketDuration) String() string {
 	return string(e)
 }
 
-func (e *MetricsBucketDuration) UnmarshalGQL(v interface{}) error {
+func (e *MetricsBucketDuration) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -374,7 +374,7 @@ func (e QueueJobsOrderByField) String() string {
 	return string(e)
 }
 
-func (e *QueueJobsOrderByField) UnmarshalGQL(v interface{}) error {
+func (e *QueueJobsOrderByField) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -429,7 +429,7 @@ func (e TorrentContentOrderByField) String() string {
 	return string(e)
 }
 
-func (e *TorrentContentOrderByField) UnmarshalGQL(v interface{}) error {
+func (e *TorrentContentOrderByField) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -474,7 +474,7 @@ func (e TorrentFilesOrderByField) String() string {
 	return string(e)
 }
 
-func (e *TorrentFilesOrderByField) UnmarshalGQL(v interface{}) error {
+func (e *TorrentFilesOrderByField) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")

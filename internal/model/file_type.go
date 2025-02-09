@@ -109,6 +109,7 @@ var extensionToFileTypeMap = map[string]FileType{
 	"m4v":  FileTypeVideo,
 	"mpg":  FileTypeVideo,
 	"mpeg": FileTypeVideo,
+	"ts":   FileTypeVideo,
 	"vob":  FileTypeVideo,
 }
 

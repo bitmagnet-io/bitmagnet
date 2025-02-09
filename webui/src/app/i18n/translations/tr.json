@@ -55,7 +55,8 @@
       "event": "Olay",
       "resolution": "Çözünürlük",
       "throughput": "Verim",
-      "timeframe": "Zaman Dilimi"
+      "timeframe": "Zaman Dilimi",
+      "toggle_legend": "Efsaneyi Değiştir"
     },
     "queues": {
       "created": "Oluşturuldu",

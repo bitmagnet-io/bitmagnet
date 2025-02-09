@@ -55,7 +55,8 @@
       "event": "Подія",
       "resolution": "Роздільна здатність",
       "throughput": "Пропускна здатність",
-      "timeframe": "Проміжок часу"
+      "timeframe": "Проміжок часу",
+      "toggle_legend": "Перемкнути легенду"
     },
     "queues": {
       "created": "Створено",

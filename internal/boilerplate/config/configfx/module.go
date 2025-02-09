@@ -4,6 +4,7 @@ import (
 	"github.com/adrg/xdg"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/config"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/config/configresolver"
+	"github.com/go-playground/validator/v10"
 	"go.uber.org/fx"
 	"os"
 	"strings"
@@ -23,10 +24,11 @@ func New() fx.Option {
 			fx.Provide(
 				fx.Annotated{
 					Group: "config_resolvers",
-					Target: func() (configresolver.Resolver, error) {
+					Target: func(val *validator.Validate) (configresolver.Resolver, error) {
 						return configresolver.NewFromYamlFile(
 							file,
 							false,
+							val,
 							configresolver.WithPriority(-i),
 						)
 					},
@@ -48,10 +50,11 @@ func New() fx.Option {
 		fx.Provide(
 			fx.Annotated{
 				Group: "config_resolvers",
-				Target: func() (configresolver.Resolver, error) {
+				Target: func(val *validator.Validate) (configresolver.Resolver, error) {
 					return configresolver.NewFromYamlFile(
 						"./config.yml",
 						true,
+						val,
 						configresolver.WithPriority(10),
 					)
 				},
@@ -63,10 +66,11 @@ func New() fx.Option {
 			fx.Provide(
 				fx.Annotated{
 					Group: "config_resolvers",
-					Target: func() (configresolver.Resolver, error) {
+					Target: func(val *validator.Validate) (configresolver.Resolver, error) {
 						return configresolver.NewFromYamlFile(
 							configFilePath,
 							true,
+							val,
 							configresolver.WithPriority(20),
 						)
 					},

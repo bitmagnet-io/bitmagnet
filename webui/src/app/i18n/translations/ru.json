@@ -55,7 +55,8 @@
       "event": "Событие",
       "resolution": "Разрешение",
       "throughput": "Пропускная способность",
-      "timeframe": "Период времени"
+      "timeframe": "Период времени",
+      "toggle_legend": "Переключить легенду"
     },
     "queues": {
       "created": "Создано",

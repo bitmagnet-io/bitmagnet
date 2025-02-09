@@ -88,6 +88,8 @@ tasks:
     dir: ./webui
     cmds:
       - npm test
+    env:
+      CHROME_BIN: chromium
 
   migrate:
     cmds:

@@ -19,14 +19,14 @@
           t("paginator.x_to_y_of_z", {
             x: (firstItemIndex | number),
             y: (lastItemIndex | number),
-            z: totalLength ?? 0 | intEstimate: totalIsEstimate
+            z: totalLength ?? 0 | intEstimate: totalIsEstimate,
           })
         }}
       } @else {
         {{
           t("paginator.x_to_y", {
             x: (firstItemIndex | number),
-            y: (lastItemIndex | number)
+            y: (lastItemIndex | number),
           })
         }}
       }
