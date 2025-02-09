@@ -220,6 +220,10 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 				AttrName:  torznab.AttrPublishDate,
 				AttrValue: item.PublishedAt.Format(torznab.RssDateDefaultFormat),
 			},
+			{
+				AttrName:  torznab.AttrCoverUrl,
+				AttrValue: item.Torrent.PermaLink(),
+			},
 		}
 		seeders := item.Torrent.Seeders()
 		leechers := item.Torrent.Leechers()
@@ -297,6 +301,8 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 			Category: category,
 			GUID:     item.InfoHash.String(),
 			PubDate:  torznab.RssDate(item.PublishedAt),
+			Comments: item.Torrent.PermaLink(),
+			Link:     item.Torrent.PermaLink(),
 			Enclosure: torznab.SearchResultItemEnclosure{
 				URL:    item.Torrent.MagnetUri(),
 				Type:   "application/x-bittorrent;x-scheme-handler/magnet",
