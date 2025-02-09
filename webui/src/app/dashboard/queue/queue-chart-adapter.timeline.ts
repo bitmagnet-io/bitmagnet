@@ -167,6 +167,15 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, "line"> {
           decimation: {
             enabled: true,
           },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                return context.dataset.yAxisID === "yCount"
+                  ? context.formattedValue
+                  : this.formatDuration(context.parsed.y);
+              },
+            },
+          },
         },
       },
       data: {
