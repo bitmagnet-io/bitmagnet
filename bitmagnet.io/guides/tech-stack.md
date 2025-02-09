@@ -1,5 +1,6 @@
 ---
 title: Tech Stack
+description: The technology stack used in bitmagnet
 parent: Guides
 layout: default
 nav_order: 10

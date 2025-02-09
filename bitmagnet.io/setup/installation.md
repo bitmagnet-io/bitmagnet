@@ -1,5 +1,6 @@
 ---
 title: Installation
+description: Installation instructions for bitmagnet
 parent: Setup
 layout: default
 nav_order: 1

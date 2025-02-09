@@ -11,7 +11,8 @@ redirect_from:
 
 **bitmagnet** exposes functionality on a number of endpoints:
 
-- `/` - Main web user interface
+- `/` - Redirects to `/webui`
+- `/webui` - Main web user interface
 - `/graphql` - GraphQL API including the GraphiQL browser interface
 - `/torznab/*` - Torznab API for integration compatible applications
 - `/import` - Import API for adding new content to the library (see [the importing guide](/guides/import.html))

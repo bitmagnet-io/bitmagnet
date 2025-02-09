@@ -1,5 +1,6 @@
 ---
 title: Import
+description: Importing torrents into bitmagnet
 parent: Guides
 layout: default
 nav_order: 6

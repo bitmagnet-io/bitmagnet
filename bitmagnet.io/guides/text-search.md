@@ -1,5 +1,6 @@
 ---
 title: Text Search
+description: Using bitmagnet's text search
 parent: Guides
 layout: default
 nav_order: 2

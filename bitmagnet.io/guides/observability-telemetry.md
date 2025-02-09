@@ -1,5 +1,6 @@
 ---
 title: Observability & Telemetry
+description: Observability & Telemetry features in bitmagnet
 parent: Guides
 layout: default
 nav_order: 9
