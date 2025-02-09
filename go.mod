@@ -17,6 +17,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-playground/validator/v10 v10.23.0
 	github.com/go-resty/resty/v2 v2.16.2
+	github.com/go-viper/mapstructure/v2 v2.2.1
 	github.com/google/cel-go v0.22.1
 	github.com/grafana/pyroscope-go/godeltaprof v0.1.8
 	github.com/hashicorp/golang-lru/v2 v2.0.7
@@ -26,7 +27,6 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.6.5
 	github.com/joho/godotenv v1.5.1
 	github.com/mgdigital/gorm-cache/v2 v2.0.0-20230912113927-f2a8dd92a386
-	github.com/mitchellh/mapstructure v1.5.0
 	github.com/mozillazg/go-unidecode v0.2.0
 	github.com/pressly/goose/v3 v3.24.1
 	github.com/prometheus/client_golang v1.20.5
@@ -36,7 +36,7 @@ require (
 	github.com/tylertreat/BoomFilters v0.0.0-20210315201527-1a82519a3e43
 	github.com/urfave/cli/v2 v2.27.5
 	github.com/vektah/gqlparser/v2 v2.5.21
-	github.com/vektra/mockery/v2 v2.50.4
+	github.com/vektra/mockery/v2 v2.52.1
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/fx v1.23.0
 	go.uber.org/zap v1.27.0
@@ -90,7 +90,6 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
-	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/goccy/go-json v0.10.4 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
@@ -121,6 +120,7 @@ require (
 	github.com/minio/sha256-simd v1.0.1 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect

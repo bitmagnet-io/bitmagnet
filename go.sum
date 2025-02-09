@@ -518,6 +518,8 @@ github.com/vektah/gqlparser/v2 v2.5.21 h1:Zw1rG2dr1pRR4wqwbVq4d6+xk2f4ut/yo+hwr4
 github.com/vektah/gqlparser/v2 v2.5.21/go.mod h1:xMl+ta8a5M1Yo1A1Iwt/k7gSpscwSnHZdw7tfhEGfTM=
 github.com/vektra/mockery/v2 v2.50.4 h1:tD2ndcn1bVD63r4bbTQ3d6ucOUdUYRQAcUq5LZHIzwQ=
 github.com/vektra/mockery/v2 v2.50.4/go.mod h1:xO2DeYemEPC2tCzIZ+a1tifZ/7Laf/Chxg3vlc+oDsI=
+github.com/vektra/mockery/v2 v2.52.1 h1:ejpWJSsInVNsFUvaAX4szecrpYxErN+Ny5X+0RXBP+s=
+github.com/vektra/mockery/v2 v2.52.1/go.mod h1:ZJeus9igl4Uf8FGLwXZgtCnp2XUDFD9Mkipi7nsObq0=
 github.com/willf/bitset v1.1.9/go.mod h1:RjeCKbqT1RxIR/KWY6phxZiaY1IyutSBfGjNPySAYV4=
 github.com/willf/bitset v1.1.10/go.mod h1:RjeCKbqT1RxIR/KWY6phxZiaY1IyutSBfGjNPySAYV4=
 github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f/go.mod h1:N2zxlSyiKSe5eX1tZViRH5QA0qijqEDrYZiPEAiq3wU=

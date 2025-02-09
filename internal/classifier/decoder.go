@@ -1,8 +1,8 @@
 package classifier
 
 import (
-	"github.com/iancoleman/strcase"
-	"github.com/mitchellh/mapstructure"
+	"github.com/go-viper/mapstructure/v2"
+
 )
 
 func newDecoder[T any](target *T) (*mapstructure.Decoder, error) {
