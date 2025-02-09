@@ -61,11 +61,11 @@ tr.mat-mdc-row.expanded {
   td {
     border-bottom: 0;
   }
-  + .expanded-detail-row {
-    > td {
-      padding-bottom: 10px;
-    }
-  }
+}
+
+app-torrent-content {
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 
 .mat-column-magnet {

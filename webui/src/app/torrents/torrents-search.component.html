@@ -210,10 +210,11 @@
       <mat-divider />
       <app-torrents-table
         [dataSource]="dataSource"
+        [controller]="controller"
         [displayedColumns]="
           breakpoints.sizeAtLeast('Medium') ? allColumns : compactColumns
         "
-        [selection]="selection"
+        [multiSelection]="multiSelection"
         (updated)="dataSource.refresh()"
       />
       <app-paginator
