@@ -55,7 +55,8 @@
       "event": "حدث",
       "resolution": "الدقة",
       "throughput": "معدل النقل",
-      "timeframe": "الإطار الزمني"
+      "timeframe": "الإطار الزمني",
+      "toggle_legend": "تبديل الأسطورة"
     },
     "queues": {
       "created": "تم الإنشاء",

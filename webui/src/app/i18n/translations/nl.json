@@ -55,7 +55,8 @@
       "event": "Gebeurtenis",
       "resolution": "Resolutie",
       "throughput": "Doorvoer",
-      "timeframe": "Tijdsperiode"
+      "timeframe": "Tijdsperiode",
+      "toggle_legend": "Legenda in-/uitschakelen"
     },
     "queues": {
       "created": "Gemaakt",

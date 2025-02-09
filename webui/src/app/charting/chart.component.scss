@@ -1,0 +1,10 @@
+.icon-toggle-legend {
+  cursor: pointer;
+  position: relative;
+  top: 4px;
+  margin-right: 8px;
+  opacity: 0.6;
+  &.icon-toggle-legend-active {
+    opacity: 1;
+  }
+}

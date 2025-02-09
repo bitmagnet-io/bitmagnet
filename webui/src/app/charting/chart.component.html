@@ -1,9 +1,30 @@
-<canvas
-  baseChart
-  [data]="chartConfig.data"
-  [options]="chartConfig.options"
-  [type]="chartConfig.type"
-  [height]="height"
-  [width]="width"
->
-</canvas>
+<ng-container *transloco="let t">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <h4>
+          <mat-icon
+            [matTooltip]="t('dashboard.metrics.toggle_legend')"
+            [class]="
+              'icon-toggle-legend ' +
+              (legend ? 'icon-toggle-legend-active' : '')
+            "
+            (click)="toggleLegend()"
+            >legend_toggle</mat-icon
+          >{{ title }}
+        </h4>
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <canvas
+        baseChart
+        [data]="chartConfig.data"
+        [options]="chartConfig.options"
+        [type]="chartConfig.type"
+        [height]="height"
+        [width]="width"
+      >
+      </canvas>
+    </mat-card-content>
+  </mat-card>
+</ng-container>

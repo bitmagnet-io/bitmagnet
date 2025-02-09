@@ -55,7 +55,8 @@
       "event": "घटना",
       "resolution": "रिज़ॉल्यूशन",
       "throughput": "थ्रूपुट",
-      "timeframe": "समय सीमा"
+      "timeframe": "समय सीमा",
+      "toggle_legend": "लीजेंड टॉगल करें"
     },
     "queues": {
       "created": "बनाया गया",

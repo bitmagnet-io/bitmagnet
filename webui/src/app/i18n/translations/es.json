@@ -55,7 +55,8 @@
       "event": "Evento",
       "resolution": "Resolución",
       "throughput": "Rendimiento",
-      "timeframe": "Periodo de tiempo"
+      "timeframe": "Periodo de tiempo",
+      "toggle_legend": "Alternar leyenda"
     },
     "queues": {
       "created": "Creado",
