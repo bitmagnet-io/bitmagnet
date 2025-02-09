@@ -55,7 +55,8 @@
       "event": "Evento",
       "resolution": "Resolução",
       "throughput": "Taxa de transferência",
-      "timeframe": "Intervalo de tempo"
+      "timeframe": "Intervalo de tempo",
+      "toggle_legend": "Alternar legenda"
     },
     "queues": {
       "created": "Criado",

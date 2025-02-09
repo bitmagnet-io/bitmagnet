@@ -55,7 +55,8 @@
       "event": "Ereignis",
       "resolution": "Auflösung",
       "throughput": "Durchsatz",
-      "timeframe": "Zeitrahmen"
+      "timeframe": "Zeitrahmen",
+      "toggle_legend": "Legende umschalten"
     },
     "queues": {
       "created": "Erstellt",

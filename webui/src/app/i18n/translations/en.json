@@ -55,7 +55,8 @@
       "event": "Event",
       "resolution": "Resolution",
       "throughput": "Throughput",
-      "timeframe": "Timeframe"
+      "timeframe": "Timeframe",
+      "toggle_legend": "Toggle legend"
     },
     "queues": {
       "created": "Created",

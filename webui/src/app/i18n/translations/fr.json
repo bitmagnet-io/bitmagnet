@@ -55,7 +55,8 @@
       "event": "Événement",
       "resolution": "Résolution",
       "throughput": "Débit",
-      "timeframe": "Période"
+      "timeframe": "Période",
+      "toggle_legend": "Basculer la légende"
     },
     "queues": {
       "created": "Créé",

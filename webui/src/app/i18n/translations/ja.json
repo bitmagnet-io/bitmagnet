@@ -55,7 +55,8 @@
       "event": "イベント",
       "resolution": "解像度",
       "throughput": "スループット",
-      "timeframe": "期間"
+      "timeframe": "期間",
+      "toggle_legend": "凡例を切り替え"
     },
     "queues": {
       "created": "作成済み",

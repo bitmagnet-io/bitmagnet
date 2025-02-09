@@ -2,7 +2,7 @@ import { ChartConfiguration } from "chart.js";
 import { inject, Injectable } from "@angular/core";
 import { TranslocoService } from "@jsverse/transloco";
 import { format as formatDate } from "date-fns/format";
-import { ChartAdapter } from "../../charting/types";
+import { ChartAdapter, FactoryParams } from "../../charting/types";
 import { ThemeBaseColor } from "../../themes/theme-types";
 import { createThemeColor } from "../../themes/theme-utils";
 import { ThemeInfoService } from "../../themes/theme-info.service";
@@ -27,7 +27,10 @@ export class TorrentChartAdapterTimeline
   private themeInfo = inject(ThemeInfoService);
   private transloco = inject(TranslocoService);
 
-  create(result?: Result): ChartConfiguration<"line"> {
+  create(
+    result: Result | undefined,
+    params: FactoryParams,
+  ): ChartConfiguration<"line"> {
     const { colors } = this.themeInfo.info;
     const labels = Array<string>();
     const datasets: ChartConfiguration<"line">["data"]["datasets"] = [];
@@ -91,6 +94,7 @@ export class TorrentChartAdapterTimeline
       type: "line",
       options: {
         animation: false,
+        responsive: true,
         elements: {
           line: {
             tension: 0.5,
@@ -109,7 +113,7 @@ export class TorrentChartAdapterTimeline
         },
         plugins: {
           legend: {
-            display: true,
+            display: params.legend,
           },
           decimation: {
             enabled: true,
