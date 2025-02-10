@@ -16,4 +16,5 @@ type SearchRequest struct {
 	Extended bool
 	Limit    model.NullUint
 	Offset   model.NullUint
+	Profile  Profile
 }
