@@ -16,15 +16,21 @@
       </mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <canvas
-        baseChart
-        [data]="chartConfig.data"
-        [options]="chartConfig.options"
-        [type]="chartConfig.type"
-        [height]="height"
-        [width]="width"
+      <div
+        [class]="
+          breakpoints.sizeAtLeast('Large') ? 'app-chart' : 'app-chart-small'
+        "
       >
-      </canvas>
+        <canvas
+          baseChart
+          [data]="chartConfig.data"
+          [options]="chartConfig.options"
+          [type]="chartConfig.type"
+          [height]="height"
+          [width]="width"
+        >
+        </canvas>
+      </div>
     </mat-card-content>
   </mat-card>
 </ng-container>
