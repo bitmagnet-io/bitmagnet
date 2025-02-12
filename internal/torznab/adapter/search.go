@@ -65,7 +65,7 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 	for _, cat := range r.Cats {
 		var catCriteria []query.Criteria
 		if torznab.CategoryMovies.Has(cat) {
-			if r.Type != torznab.FunctionMovie {
+			if r.Type != torznab.FunctionMovie || torznab.CategoryMovies.ID == cat {
 				catCriteria = append(catCriteria, search.TorrentContentTypeCriteria(model.ContentTypeMovie))
 			}
 			if torznab.CategoryMoviesSD.ID == cat {
@@ -87,7 +87,7 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 				))
 			}
 		} else if torznab.CategoryTV.Has(cat) {
-			if r.Type != torznab.FunctionTv {
+			if r.Type != torznab.FunctionTv || torznab.CategoryTV.ID == cat {
 				catCriteria = append(catCriteria, search.TorrentContentTypeCriteria(model.ContentTypeTvShow))
 			}
 			if torznab.CategoryTVSD.ID == cat {
