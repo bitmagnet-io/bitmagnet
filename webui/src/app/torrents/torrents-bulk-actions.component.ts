@@ -14,11 +14,12 @@ import { BreakpointsService } from "../layout/breakpoints.service";
 import { ErrorsService } from "../errors/errors.service";
 import { GraphQLService } from "../graphql/graphql.service";
 import { AppModule } from "../app.module";
+import { TorrentReprocessComponent } from "./torrent-reprocess.component";
 
 @Component({
   selector: "app-torrents-bulk-actions",
   standalone: true,
-  imports: [AppModule],
+  imports: [AppModule, TorrentReprocessComponent],
   templateUrl: "./torrents-bulk-actions.component.html",
   styleUrl: "./torrents-bulk-actions.component.scss",
 })
@@ -37,11 +38,14 @@ export class TorrentsBulkActionsComponent implements OnInit {
   editedTags = Array<string>();
   suggestedTags = Array<string>();
   selectedItems = new Array<generated.TorrentContent>();
+  selectedInfoHashes = new Array<string>();
 
   ngOnInit() {
     this.selectedItems$.subscribe((items) => {
       this.selectedItems = items;
+      this.selectedInfoHashes = items.map((i) => i.infoHash);
     });
+    this.newTagCtrl.reset();
   }
 
   selectTab(index: number): void {
@@ -52,8 +56,8 @@ export class TorrentsBulkActionsComponent implements OnInit {
     return this.selectedItems.map((i) => i.torrent.magnetUri).join("\n");
   }
 
-  getSelectedInfoHashes(): string {
-    return this.selectedItems.map((i) => i.infoHash).join("\n");
+  getSelectedInfoHashesLines(): string {
+    return this.selectedInfoHashes.join("\n");
   }
 
   addTag(tagName: string) {

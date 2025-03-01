@@ -2,14 +2,6 @@
   height: 10px;
 }
 
-tr.expanded-detail-row td {
-  border-bottom-width: 0;
-}
-
-tr.expanded + tr.expanded-detail-row td {
-  border-bottom-width: 1px;
-}
-
 th,
 td {
   &.cdk-column-select {
