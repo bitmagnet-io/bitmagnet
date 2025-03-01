@@ -237,6 +237,7 @@
     "visualize": "Görselleştir"
   },
   "torrents": {
+    "classification": "Sınıflandırma",
     "clear_search": "Aramayı Temizle",
     "copy": "Kopyala",
     "copy_to_clipboard": "Panoya Kopyala",

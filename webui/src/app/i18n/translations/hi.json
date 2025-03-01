@@ -237,6 +237,7 @@
     "visualize": "दृश्य करें"
   },
   "torrents": {
+    "classification": "वर्गीकरण",
     "clear_search": "खोज साफ़ करें",
     "copy": "कॉपी करें",
     "copy_to_clipboard": "क्लिपबोर्ड में कॉपी करें",

@@ -237,6 +237,7 @@
     "visualize": "Visualisieren"
   },
   "torrents": {
+    "classification": "Klassifizierung",
     "clear_search": "Suche löschen",
     "copy": "Kopieren",
     "copy_to_clipboard": "In die Zwischenablage kopieren",

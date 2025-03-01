@@ -237,6 +237,7 @@
     "visualize": "可视化"
   },
   "torrents": {
+    "classification": "分类",
     "clear_search": "清除搜索",
     "copy": "复制",
     "copy_to_clipboard": "复制到剪贴板",

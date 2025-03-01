@@ -237,6 +237,7 @@
     "visualize": "Визуализация"
   },
   "torrents": {
+    "classification": "Классификация",
     "clear_search": "Очистить поиск",
     "copy": "Копировать",
     "copy_to_clipboard": "Копировать в буфер обмена",

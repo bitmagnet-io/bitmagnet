@@ -237,6 +237,7 @@
     "visualize": "可視化"
   },
   "torrents": {
+    "classification": "分類",
     "clear_search": "検索をクリア",
     "copy": "コピー",
     "copy_to_clipboard": "クリップボードにコピー",

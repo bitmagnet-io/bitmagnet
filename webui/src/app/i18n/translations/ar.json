@@ -237,6 +237,7 @@
     "visualize": "تصور"
   },
   "torrents": {
+    "classification": "التصنيف",
     "clear_search": "مسح البحث",
     "copy": "نسخ",
     "copy_to_clipboard": "نسخ إلى الحافظة",
