@@ -109,7 +109,7 @@
   },
   "general": {
     "all": "Tous",
-    "dismiss": "Rejeter",
+    "dismiss": "Fermer",
     "error": "Erreur",
     "none": "Aucun",
     "page_not_found": "Page non trouvée",
@@ -125,7 +125,7 @@
       "postgres": "Postgres",
       "tmdb": "TMDB"
     },
-    "dismiss": "Rejeter",
+    "dismiss": "Fermer",
     "error": "Erreur",
     "status": "Statut",
     "statuses": {
