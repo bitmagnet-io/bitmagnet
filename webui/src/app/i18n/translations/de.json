@@ -237,6 +237,7 @@
     "visualize": "Visualisieren"
   },
   "torrents": {
+    "classification": "Klassifizierung",
     "clear_search": "Suche löschen",
     "copy": "Kopieren",
     "copy_to_clipboard": "In die Zwischenablage kopieren",
@@ -282,6 +283,12 @@
     "published": "Veröffentlicht",
     "rating": "Bewertung",
     "refresh": "Ergebnisse aktualisieren",
+    "reprocess": {
+      "force_rematch": "Erneutes Zuordnen von bereits zugeordneten Inhalten erzwingen",
+      "match_content_by_external_api_search": "Inhalte durch externe API-Suche zuordnen",
+      "match_content_by_local_search": "Inhalte durch lokale Suche zuordnen",
+      "reprocess": "Erneut verarbeiten"
+    },
     "s_l": "S / L",
     "search": "Suche",
     "seeders": "Seeders",
