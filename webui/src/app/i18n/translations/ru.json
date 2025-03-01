@@ -237,6 +237,7 @@
     "visualize": "Визуализация"
   },
   "torrents": {
+    "classification": "Классификация",
     "clear_search": "Очистить поиск",
     "copy": "Копировать",
     "copy_to_clipboard": "Копировать в буфер обмена",
@@ -282,6 +283,12 @@
     "published": "Опубликовано",
     "rating": "Рейтинг",
     "refresh": "Обновить результаты",
+    "reprocess": {
+      "force_rematch": "Принудительное повторное сопоставление уже сопоставленного контента",
+      "match_content_by_external_api_search": "Сопоставить контент через внешний API",
+      "match_content_by_local_search": "Сопоставить контент через локальный поиск",
+      "reprocess": "Переработать"
+    },
     "s_l": "S / L",
     "search": "Поиск",
     "seeders": "Сидеры",
