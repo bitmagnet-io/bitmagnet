@@ -8,3 +8,12 @@
     opacity: 1;
   }
 }
+
+.app-chart {
+  position: relative;
+}
+
+.app-chart-small {
+  position: relative;
+  width: calc(40vw + 100px);
+}
