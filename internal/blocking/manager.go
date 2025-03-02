@@ -82,8 +82,7 @@ func (m *manager) flush(ctx context.Context) error {
 	}
 
 	tx, err := m.pool.BeginTx(ctx, pgx.TxOptions{
-		AccessMode:     pgx.ReadWrite,
-		DeferrableMode: pgx.Deferrable,
+		AccessMode: pgx.ReadWrite,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
