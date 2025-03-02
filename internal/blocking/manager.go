@@ -32,7 +32,7 @@ type manager struct {
 func (m *manager) Filter(ctx context.Context, hashes []protocol.ID) ([]protocol.ID, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	if m.filter.Cells() == 0 || m.shouldFlush() {
+	if m.lastFlushedAt.IsZero() || m.shouldFlush() {
 		if flushErr := m.flush(ctx); flushErr != nil {
 			return nil, flushErr
 		}
@@ -91,9 +91,11 @@ func (m *manager) flush(ctx context.Context) error {
 		_ = tx.Rollback(ctx)
 	}()
 
-	_, err = tx.Exec(ctx, "delete from torrents where info_hash = any($1)", hashes)
-	if err != nil {
-		return fmt.Errorf("error deleting from torrents table: %w", err)
+	if len(hashes) > 0 {
+		_, err = tx.Exec(ctx, "delete from torrents where info_hash = any($1)", hashes)
+		if err != nil {
+			return fmt.Errorf("error deleting from torrents table: %w", err)
+		}
 	}
 
 	bf := bloom.NewDefaultStableBloomFilter()
