@@ -666,6 +666,7 @@ export type TorrentMutation = {
   delete?: Maybe<Scalars['Void']['output']>;
   deleteTags?: Maybe<Scalars['Void']['output']>;
   putTags?: Maybe<Scalars['Void']['output']>;
+  reprocess?: Maybe<Scalars['Void']['output']>;
   setTags?: Maybe<Scalars['Void']['output']>;
 };
 
@@ -684,6 +685,11 @@ export type TorrentMutationDeleteTagsArgs = {
 export type TorrentMutationPutTagsArgs = {
   infoHashes: Array<Scalars['Hash20']['input']>;
   tagNames: Array<Scalars['String']['input']>;
+};
+
+
+export type TorrentMutationReprocessArgs = {
+  input: TorrentReprocessInput;
 };
 
 
@@ -713,6 +719,14 @@ export type TorrentQueryMetricsArgs = {
 
 export type TorrentQuerySuggestTagsArgs = {
   input?: InputMaybe<SuggestTagsQueryInput>;
+};
+
+export type TorrentReprocessInput = {
+  apisDisabled?: InputMaybe<Scalars['Boolean']['input']>;
+  classifierRematch?: InputMaybe<Scalars['Boolean']['input']>;
+  classifierWorkflow?: InputMaybe<Scalars['String']['input']>;
+  infoHashes: Array<Scalars['Hash20']['input']>;
+  localSearchDisabled?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type TorrentSource = {
@@ -900,6 +914,13 @@ export type TorrentPutTagsMutationVariables = Exact<{
 
 
 export type TorrentPutTagsMutation = { __typename?: 'Mutation', torrent: { __typename?: 'TorrentMutation', putTags?: void | null } };
+
+export type TorrentReprocessMutationVariables = Exact<{
+  input: TorrentReprocessInput;
+}>;
+
+
+export type TorrentReprocessMutation = { __typename?: 'Mutation', torrent: { __typename?: 'TorrentMutation', reprocess?: void | null } };
 
 export type TorrentSetTagsMutationVariables = Exact<{
   infoHashes: Array<Scalars['Hash20']['input']> | Scalars['Hash20']['input'];
@@ -1280,6 +1301,24 @@ export const TorrentPutTagsDocument = gql`
   })
   export class TorrentPutTagsGQL extends Apollo.Mutation<TorrentPutTagsMutation, TorrentPutTagsMutationVariables> {
     override document = TorrentPutTagsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const TorrentReprocessDocument = gql`
+    mutation TorrentReprocess($input: TorrentReprocessInput!) {
+  torrent {
+    reprocess(input: $input)
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class TorrentReprocessGQL extends Apollo.Mutation<TorrentReprocessMutation, TorrentReprocessMutationVariables> {
+    override document = TorrentReprocessDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

@@ -1,5 +1,6 @@
 ---
 title: Configuration
+description: Configuration options for bitmagnet
 parent: Setup
 layout: default
 nav_order: 2
