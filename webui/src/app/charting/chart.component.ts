@@ -18,6 +18,7 @@ import {
 import { MatIcon } from "@angular/material/icon";
 import { MatTooltip } from "@angular/material/tooltip";
 import { ThemeInfoService } from "../themes/theme-info.service";
+import { BreakpointsService } from "../layout/breakpoints.service";
 import { ChartAdapter } from "./types";
 
 @Component({
@@ -42,6 +43,7 @@ export class ChartComponent<Data = unknown, Type extends ChartType = ChartType>
   private themeInfo = inject(ThemeInfoService);
   private transloco = inject(TranslocoService);
   private hiddenDatasets = new Map<string, boolean>();
+  breakpoints = inject(BreakpointsService);
 
   @Input() title: string;
   @Input() $data: Observable<Data> = new Observable();
