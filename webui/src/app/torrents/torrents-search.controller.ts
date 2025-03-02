@@ -10,7 +10,12 @@ export type FacetInput<TValue = unknown> = {
 
 export type ContentTypeSelection = generated.ContentType | "null" | null;
 
-export const torrentTabNames = ["files", "tags", "delete"] as const;
+export const torrentTabNames = [
+  "files",
+  "tags",
+  "reprocess",
+  "delete",
+] as const;
 
 export type TorrentTab = (typeof torrentTabNames)[number];
 

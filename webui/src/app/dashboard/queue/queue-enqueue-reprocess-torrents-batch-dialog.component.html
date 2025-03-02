@@ -11,29 +11,26 @@
           }}</mat-checkbox
           ><br />
           <mat-checkbox
-            [checked]="!apisDisabled"
+            [checked]="!localSearchDisabled"
             (change)="
               localSearchDisabled = !$event.checked;
-              apisDisabled = localSearchDisabled ? true : apisDisabled
+              apisDisabled = !$event.checked ? true : apisDisabled
             "
             >{{
-              t("dashboard.queues.match_content_by_local_search")
+              t("torrents.reprocess.match_content_by_local_search")
             }}</mat-checkbox
           ><br />
           <mat-checkbox
             [checked]="!apisDisabled"
-            (change)="
-              apisDisabled = !$event.checked;
-              localSearchDisabled = apisDisabled ? localSearchDisabled : true
-            "
+            (change)="apisDisabled = !$event.checked"
             >{{
-              t("dashboard.queues.match_content_by_external_api_search")
+              t("torrents.reprocess.match_content_by_external_api_search")
             }}</mat-checkbox
           ><br />
           <mat-checkbox
             [checked]="classifierRematch"
             (change)="classifierRematch = $event.checked"
-            >{{ t("dashboard.queues.force_rematch") }}</mat-checkbox
+            >{{ t("torrents.reprocess.force_rematch") }}</mat-checkbox
           ><br />
           <mat-checkbox
             [checked]="orphans"

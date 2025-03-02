@@ -7,6 +7,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/queuemetrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/manager"
 )
 
@@ -22,4 +23,5 @@ type Resolver struct {
 	QueueMetricsClient   queuemetrics.Client
 	QueueManager         manager.Manager
 	TorrentMetricsClient torrentmetrics.Client
+	Processor            processor.Processor
 }
