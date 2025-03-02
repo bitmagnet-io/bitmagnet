@@ -32,7 +32,7 @@ type manager struct {
 func (m *manager) Filter(ctx context.Context, hashes []protocol.ID) ([]protocol.ID, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	if m.lastFlushedAt.IsZero() || m.shouldFlush() {
+	if m.filter == nil || m.shouldFlush() {
 		if flushErr := m.flush(ctx); flushErr != nil {
 			return nil, flushErr
 		}
