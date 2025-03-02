@@ -285,6 +285,12 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 				AttrValue: item.ReleaseGroup.String,
 			})
 		}
+		if tmdbid, ok := item.Content.Identifier("tmdb"); ok {
+			attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
+				AttrName:  torznab.AttrTmdb,
+				AttrValue: tmdbid,
+			})
+		}
 		if imdbId, ok := item.Content.Identifier("imdb"); ok {
 			attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 				AttrName:  torznab.AttrImdb,
