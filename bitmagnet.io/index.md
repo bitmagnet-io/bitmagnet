@@ -34,17 +34,15 @@ This means that **bitmagnet** is not reliant on any external trackers or torrent
 - [x] [An import facility for ingesting torrents from any source, for example the RARBG backup](/guides/import.html)
 - [x] A torrent search engine
 - [x] A GraphQL API: currently this provides a single search query; there is also an embedded GraphQL playground at `/graphql`
-- [x] A web user interface implemented in Angular: currently this is a simple single-page application providing a user interface for search queries via the GraphQL API
+- [x] A responsive, multilingual web user interface implemented in Angular
 - [x] [A Torznab-compatible endpoint for integration with the Serverr stack](/guides/servarr-integration.html)
 - [x] A WebUI dashboard for monitoring and administration
 
 ### High priority features not yet implemented
 
 - [ ] Authentication, API keys, access levels etc.
-- [ ] An admin API, and in general a more complete GraphQL API
 - [ ] Saved searches for content of particular interest, enabling custom feeds in addition to the following feature
 - [ ] Bi-directional integration with the [Prowlarr indexer proxy](https://prowlarr.com/): Currently **bitmagnet** can be added as an indexer in Prowlarr; bi-directional integration would allow **bitmagnet** to crawl content from any indexer configured in Prowlarr, unlocking many new sources of content
-- [ ] More documentation and more tests!
 
 ### Pipe dream features
 

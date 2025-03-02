@@ -13,6 +13,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/queuemetrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/manager"
 	"go.uber.org/fx"
 )
@@ -63,6 +64,10 @@ func New() fx.Option {
 						if err != nil {
 							return nil, err
 						}
+						pr, err := p.Processor.Get()
+						if err != nil {
+							return nil, err
+						}
 						return &resolvers.Resolver{
 							Dao:                  d,
 							Search:               s,
@@ -70,6 +75,7 @@ func New() fx.Option {
 							QueueMetricsClient:   qmc,
 							QueueManager:         qm,
 							TorrentMetricsClient: tm,
+							Processor:            pr,
 						}, nil
 					}),
 				}
@@ -96,6 +102,7 @@ type Params struct {
 	QueueMetricsClient   lazy.Lazy[queuemetrics.Client]
 	QueueManager         lazy.Lazy[manager.Manager]
 	TorrentMetricsClient lazy.Lazy[torrentmetrics.Client]
+	Processor            lazy.Lazy[processor.Processor]
 }
 
 type Result struct {

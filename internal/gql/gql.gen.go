@@ -361,6 +361,7 @@ type ComplexityRoot struct {
 		Delete     func(childComplexity int, infoHashes []protocol.ID) int
 		DeleteTags func(childComplexity int, infoHashes []protocol.ID, tagNames []string) int
 		PutTags    func(childComplexity int, infoHashes []protocol.ID, tagNames []string) int
+		Reprocess  func(childComplexity int, input gen.TorrentReprocessInput) int
 		SetTags    func(childComplexity int, infoHashes []protocol.ID, tagNames []string) int
 	}
 
@@ -459,6 +460,7 @@ type TorrentMutationResolver interface {
 	PutTags(ctx context.Context, obj *gqlmodel.TorrentMutation, infoHashes []protocol.ID, tagNames []string) (*string, error)
 	SetTags(ctx context.Context, obj *gqlmodel.TorrentMutation, infoHashes []protocol.ID, tagNames []string) (*string, error)
 	DeleteTags(ctx context.Context, obj *gqlmodel.TorrentMutation, infoHashes []protocol.ID, tagNames []string) (*string, error)
+	Reprocess(ctx context.Context, obj *gqlmodel.TorrentMutation, input gen.TorrentReprocessInput) (*string, error)
 }
 type TorrentQueryResolver interface {
 	Files(ctx context.Context, obj *gqlmodel.TorrentQuery, input gqlmodel.TorrentFilesQueryInput) (query.GenericResult[model.TorrentFile], error)
@@ -1836,6 +1838,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TorrentMutation.PutTags(childComplexity, args["infoHashes"].([]protocol.ID), args["tagNames"].([]string)), true
 
+	case "TorrentMutation.reprocess":
+		if e.complexity.TorrentMutation.Reprocess == nil {
+			break
+		}
+
+		args, err := ec.field_TorrentMutation_reprocess_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.TorrentMutation.Reprocess(childComplexity, args["input"].(gen.TorrentReprocessInput)), true
+
 	case "TorrentMutation.setTags":
 		if e.complexity.TorrentMutation.SetTags == nil {
 			break
@@ -2115,6 +2129,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputTorrentFilesOrderByInput,
 		ec.unmarshalInputTorrentFilesQueryInput,
 		ec.unmarshalInputTorrentMetricsQueryInput,
+		ec.unmarshalInputTorrentReprocessInput,
 		ec.unmarshalInputTorrentSourceFacetInput,
 		ec.unmarshalInputTorrentTagFacetInput,
 		ec.unmarshalInputVideoResolutionFacetInput,
@@ -2580,6 +2595,15 @@ type TorrentMutation {
   putTags(infoHashes: [Hash20!]!, tagNames: [String!]!): Void
   setTags(infoHashes: [Hash20!]!, tagNames: [String!]!): Void
   deleteTags(infoHashes: [Hash20!], tagNames: [String!]): Void
+  reprocess(input: TorrentReprocessInput!): Void
+}
+
+input TorrentReprocessInput {
+  infoHashes: [Hash20!]!
+  classifierRematch: Boolean
+  classifierWorkflow: String
+  apisDisabled: Boolean
+  localSearchDisabled: Boolean
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/query.graphqls", Input: `type Query {
@@ -3258,6 +3282,34 @@ func (ec *executionContext) field_TorrentMutation_putTags_argsTagNames(
 	}
 
 	var zeroVal []string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_TorrentMutation_reprocess_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_TorrentMutation_reprocess_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_TorrentMutation_reprocess_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (gen.TorrentReprocessInput, error) {
+	if _, ok := rawArgs["input"]; !ok {
+		var zeroVal gen.TorrentReprocessInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNTorrentReprocessInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentReprocessInput(ctx, tmp)
+	}
+
+	var zeroVal gen.TorrentReprocessInput
 	return zeroVal, nil
 }
 
@@ -6205,6 +6257,8 @@ func (ec *executionContext) fieldContext_Mutation_torrent(_ context.Context, fie
 				return ec.fieldContext_TorrentMutation_setTags(ctx, field)
 			case "deleteTags":
 				return ec.fieldContext_TorrentMutation_deleteTags(ctx, field)
+			case "reprocess":
+				return ec.fieldContext_TorrentMutation_reprocess(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TorrentMutation", field.Name)
 		},
@@ -12356,6 +12410,58 @@ func (ec *executionContext) fieldContext_TorrentMutation_deleteTags(ctx context.
 	return fc, nil
 }
 
+func (ec *executionContext) _TorrentMutation_reprocess(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.TorrentMutation) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TorrentMutation_reprocess(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.TorrentMutation().Reprocess(rctx, obj, fc.Args["input"].(gen.TorrentReprocessInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOVoid2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TorrentMutation_reprocess(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TorrentMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Void does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_TorrentMutation_reprocess_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _TorrentQuery_files(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.TorrentQuery) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_TorrentQuery_files(ctx, field)
 	if err != nil {
@@ -16752,6 +16858,61 @@ func (ec *executionContext) unmarshalInputTorrentMetricsQueryInput(ctx context.C
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputTorrentReprocessInput(ctx context.Context, obj any) (gen.TorrentReprocessInput, error) {
+	var it gen.TorrentReprocessInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"infoHashes", "classifierRematch", "classifierWorkflow", "apisDisabled", "localSearchDisabled"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "infoHashes":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("infoHashes"))
+			data, err := ec.unmarshalNHash202ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋprotocolᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.InfoHashes = data
+		case "classifierRematch":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("classifierRematch"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClassifierRematch = graphql.OmittableOf(data)
+		case "classifierWorkflow":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("classifierWorkflow"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClassifierWorkflow = graphql.OmittableOf(data)
+		case "apisDisabled":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("apisDisabled"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ApisDisabled = graphql.OmittableOf(data)
+		case "localSearchDisabled":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("localSearchDisabled"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LocalSearchDisabled = graphql.OmittableOf(data)
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputTorrentSourceFacetInput(ctx context.Context, obj any) (gen.TorrentSourceFacetInput, error) {
 	var it gen.TorrentSourceFacetInput
 	asMap := map[string]any{}
@@ -19435,6 +19596,39 @@ func (ec *executionContext) _TorrentMutation(ctx context.Context, sel ast.Select
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "reprocess":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TorrentMutation_reprocess(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -21409,6 +21603,11 @@ func (ec *executionContext) marshalNTorrentMutation2githubᚗcomᚋbitmagnetᚑi
 
 func (ec *executionContext) marshalNTorrentQuery2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐTorrentQuery(ctx context.Context, sel ast.SelectionSet, v gqlmodel.TorrentQuery) graphql.Marshaler {
 	return ec._TorrentQuery(ctx, sel, &v)
+}
+
+func (ec *executionContext) unmarshalNTorrentReprocessInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentReprocessInput(ctx context.Context, v any) (gen.TorrentReprocessInput, error) {
+	res, err := ec.unmarshalInputTorrentReprocessInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNTorrentSource2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐTorrentSource(ctx context.Context, sel ast.SelectionSet, v model.TorrentSource) graphql.Marshaler {
