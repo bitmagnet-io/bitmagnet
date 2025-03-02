@@ -2,7 +2,6 @@ package blocking
 
 import (
 	"context"
-	"github.com/bitmagnet-io/bitmagnet/internal/bloom"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -32,7 +31,6 @@ func New(params Params) Result {
 		params.PgxPoolWait.Add(1)
 		return &manager{
 			pool:          pool,
-			filter:        bloom.NewDefaultStableBloomFilter(),
 			buffer:        make(map[protocol.ID]struct{}, 1000),
 			maxBufferSize: 1000,
 			maxFlushWait:  time.Minute * 5,
