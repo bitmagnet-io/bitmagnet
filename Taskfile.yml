@@ -120,7 +120,7 @@ tasks:
     cmds:
       - npm start -- --host {{.HOST}} --port {{.PORT}}
     vars:
-      HOST: localhost
+      HOST: 0.0.0.0
       PORT: 3334
 
   serve-docsite:
