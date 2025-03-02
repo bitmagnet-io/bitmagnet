@@ -1,5 +1,6 @@
 ---
 title: Servarr Integration
+description: Integrating bitmagnet with applications from the Servarr stack
 parent: Guides
 layout: default
 nav_order: 8
