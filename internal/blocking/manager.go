@@ -149,10 +149,13 @@ func (m *manager) flush(ctx context.Context) error {
 	if !found {
 		_, err = tx.Exec(ctx, "INSERT INTO bloom_filters (key, oid, created_at, updated_at) VALUES ($1, $2, $3, $4)", blockedTorrentsBloomFilterKey, oid, now, now)
 		if err != nil {
-			return fmt.Errorf("error saving bloom filter record: %w", err)
+			return fmt.Errorf("error saving new bloom filter record: %w", err)
 		}
 	} else if !nullOid.Valid {
 		_, err = tx.Exec(ctx, "UPDATE bloom_filters SET oid = $1, updated_at = $2 WHERE key = $3", oid, now, blockedTorrentsBloomFilterKey)
+		if err != nil {
+			return fmt.Errorf("error updating bloom filter record: %w", err)
+		}
 	}
 
 	err = tx.Commit(ctx)
