@@ -28,9 +28,9 @@ func newBloomFilter(db *gorm.DB, opts ...gen.DOOption) bloomFilter {
 	tableName := _bloomFilter.bloomFilterDo.TableName()
 	_bloomFilter.ALL = field.NewAsterisk(tableName)
 	_bloomFilter.Key = field.NewString(tableName, "key")
-	_bloomFilter.Filter = field.NewField(tableName, "bytes")
 	_bloomFilter.CreatedAt = field.NewTime(tableName, "created_at")
 	_bloomFilter.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_bloomFilter.Oid = field.NewString(tableName, "oid")
 
 	_bloomFilter.fillFieldMap()
 
@@ -42,9 +42,9 @@ type bloomFilter struct {
 
 	ALL       field.Asterisk
 	Key       field.String
-	Filter    field.Field
 	CreatedAt field.Time
 	UpdatedAt field.Time
+	Oid       field.String
 
 	fieldMap map[string]field.Expr
 }
@@ -62,9 +62,9 @@ func (b bloomFilter) As(alias string) *bloomFilter {
 func (b *bloomFilter) updateTableName(table string) *bloomFilter {
 	b.ALL = field.NewAsterisk(table)
 	b.Key = field.NewString(table, "key")
-	b.Filter = field.NewField(table, "bytes")
 	b.CreatedAt = field.NewTime(table, "created_at")
 	b.UpdatedAt = field.NewTime(table, "updated_at")
+	b.Oid = field.NewString(table, "oid")
 
 	b.fillFieldMap()
 
@@ -83,9 +83,9 @@ func (b *bloomFilter) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 func (b *bloomFilter) fillFieldMap() {
 	b.fieldMap = make(map[string]field.Expr, 4)
 	b.fieldMap["key"] = b.Key
-	b.fieldMap["bytes"] = b.Filter
 	b.fieldMap["created_at"] = b.CreatedAt
 	b.fieldMap["updated_at"] = b.UpdatedAt
+	b.fieldMap["oid"] = b.Oid
 }
 
 func (b bloomFilter) clone(db *gorm.DB) bloomFilter {

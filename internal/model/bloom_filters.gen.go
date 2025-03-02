@@ -6,18 +6,16 @@ package model
 
 import (
 	"time"
-
-	"github.com/bitmagnet-io/bitmagnet/internal/bloom"
 )
 
 const TableNameBloomFilter = "bloom_filters"
 
 // BloomFilter mapped from table <bloom_filters>
 type BloomFilter struct {
-	Key       string                  `gorm:"column:key;primaryKey" json:"key"`
-	Filter    bloom.StableBloomFilter `gorm:"column:bytes;not null" json:"bytes"`
-	CreatedAt time.Time               `gorm:"column:created_at;not null;<-:create" json:"createdAt"`
-	UpdatedAt time.Time               `gorm:"column:updated_at;not null" json:"updatedAt"`
+	Key       string    `gorm:"column:key;primaryKey" json:"key"`
+	CreatedAt time.Time `gorm:"column:created_at;not null;<-:create" json:"createdAt"`
+	UpdatedAt time.Time `gorm:"column:updated_at;not null" json:"updatedAt"`
+	Oid       string    `gorm:"column:oid" json:"oid"`
 }
 
 // TableName BloomFilter's table name
