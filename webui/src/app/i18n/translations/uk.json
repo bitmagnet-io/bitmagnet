@@ -237,6 +237,7 @@
     "visualize": "Візуалізувати"
   },
   "torrents": {
+    "classification": "Класифікація",
     "clear_search": "Очистити пошук",
     "copy": "Копіювати",
     "copy_to_clipboard": "Копіювати в буфер обміну",
@@ -282,6 +283,12 @@
     "published": "Опубліковано",
     "rating": "Рейтинг",
     "refresh": "Оновити результати",
+    "reprocess": {
+      "force_rematch": "Примусово повторно зіставити вже зіставлений контент",
+      "match_content_by_external_api_search": "Зіставити контент через зовнішній API",
+      "match_content_by_local_search": "Зіставити контент через локальний пошук",
+      "reprocess": "Переробити"
+    },
     "s_l": "S / L",
     "search": "Пошук",
     "seeders": "Сідери",

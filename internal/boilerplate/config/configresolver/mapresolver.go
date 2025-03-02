@@ -3,8 +3,8 @@ package configresolver
 import (
 	"fmt"
 	"github.com/go-playground/validator/v10"
+	"github.com/go-viper/mapstructure/v2"
 	"github.com/iancoleman/strcase"
-	"github.com/mitchellh/mapstructure"
 	"reflect"
 )
 
