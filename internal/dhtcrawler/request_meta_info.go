@@ -44,7 +44,7 @@ func (c *crawler) doRequestMetaInfo(
 			continue
 		}
 		if banErr := c.banningChecker.Check(res.Info); banErr != nil {
-			_ = c.blockingManager.Block(ctx, []protocol.ID{hash})
+			_ = c.blockingManager.Block(ctx, []protocol.ID{hash}, false)
 			return metainforequester.Response{}, banErr
 		}
 		return res, nil

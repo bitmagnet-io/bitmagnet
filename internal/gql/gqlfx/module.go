@@ -2,6 +2,7 @@ package gqlfx
 
 import (
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/worker"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
@@ -68,6 +69,10 @@ func New() fx.Option {
 						if err != nil {
 							return nil, err
 						}
+						bm, err := p.BlockingManager.Get()
+						if err != nil {
+							return nil, err
+						}
 						return &resolvers.Resolver{
 							Dao:                  d,
 							Search:               s,
@@ -76,6 +81,7 @@ func New() fx.Option {
 							QueueManager:         qm,
 							TorrentMetricsClient: tm,
 							Processor:            pr,
+							BlockingManager:      bm,
 						}, nil
 					}),
 				}
@@ -103,6 +109,7 @@ type Params struct {
 	QueueManager         lazy.Lazy[manager.Manager]
 	TorrentMetricsClient lazy.Lazy[torrentmetrics.Client]
 	Processor            lazy.Lazy[processor.Processor]
+	BlockingManager      lazy.Lazy[blocking.Manager]
 }
 
 type Result struct {

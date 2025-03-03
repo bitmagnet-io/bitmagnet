@@ -27,7 +27,7 @@ func (r *mutationResolver) Queue(ctx context.Context) (gqlmodel.QueueMutation, e
 
 // Delete is the resolver for the delete field.
 func (r *torrentMutationResolver) Delete(ctx context.Context, obj *gqlmodel.TorrentMutation, infoHashes []protocol.ID) (*string, error) {
-	_, err := r.Dao.DeleteAndBlockTorrents(ctx, infoHashes)
+	err := r.BlockingManager.Block(ctx, infoHashes, true)
 	return nil, err
 }
 
