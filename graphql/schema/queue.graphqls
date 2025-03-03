@@ -81,6 +81,7 @@ enum QueueJobStatus {
 }
 
 input QueueEnqueueReprocessTorrentsBatchInput {
+  purge: Boolean
   batchSize: Int
   chunkSize: Int
   contentTypes: [ContentType]

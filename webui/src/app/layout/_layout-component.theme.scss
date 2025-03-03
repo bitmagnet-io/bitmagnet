@@ -69,4 +69,23 @@
       }
     }
   }
+  button.mat-warning {
+    background-color: mat.get-theme-color($theme, error, 40);
+    &:hover:not(.mat-mdc-button-disabled) {
+      background-color: mat.get-theme-color($theme, error, 50);
+    }
+    mat-icon,
+    .mdc-button__label {
+      color: #fff;
+      fill: #fff;
+    }
+    &.mat-mdc-button-disabled {
+      background-color: mat.get-theme-color($theme, error, 10);
+      mat-icon,
+      .mdc-button__label {
+        color: #777;
+        fill: #777;
+      }
+    }
+  }
 }

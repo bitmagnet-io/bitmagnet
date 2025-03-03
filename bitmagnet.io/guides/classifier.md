@@ -1,5 +1,6 @@
 ---
 title: Classifier
+description: Understanding and customizing bitmagnet's classifier
 parent: Guides
 layout: default
 nav_order: 4
@@ -28,7 +29,7 @@ After a torrent is crawled or imported, some further processing must be done to 
 
 **bitmagnet**'s classifier is powered by a [Domain Specific Language](https://en.wikipedia.org/wiki/Domain-specific_language). The aim of this is to provide a high level of customisability, along with transparency into the classification process which will hopefully aid collaboration on improvements to the core classifier logic.
 
-The classifier is declared in YAML format. The application includes a [core classifier](https://github.com/bitmagnet-io/bitmagnet/blob/main/internal/classifier/classifier.core.yaml) that can be configured, extended or completely replaced with a custom classifier. This page documents the required format.
+The classifier is declared in YAML format. The application includes a [core classifier](https://github.com/bitmagnet-io/bitmagnet/blob/main/internal/classifier/classifier.core.yml) that can be configured, extended or completely replaced with a custom classifier. This page documents the required format.
 
 ## Source precedence
 
@@ -284,19 +285,9 @@ TMDB_ENABLED=false \ # disable the TMDB API integration
 
 The classifier source is compiled on initial load, and all structural and syntax errors should be caught at compile time. If there are errors in your classifier source, **bitmagnet** should exit with an error message indicating the location of the problem.
 
-## Testing on individual torrents
+## Reclassify torrents
 
-You can test the classifier on an individual torrent or torrents using the `bitmagnet process` CLI command:
-
-```sh
-bitmagnet process --infoHash=aaaaaaaaaaaaaaaaaaaa --infoHash=bbbbbbbbbbbbbbbbbbbb
-```
-
-{% include callout_cli.md %}
-
-## Reclassify all torrents
-
-Read how to [reclassify all torrents](/guides/reprocess-reclassify.html).
+Read how to [reclassify torrents](/guides/reprocess-reclassify.html).
 
 ## Practical use cases and examples
 

@@ -4,7 +4,7 @@
     class="tab-group-bulk-actions"
     [selectedIndex]="selectedTabIndex"
     (focusChange)="
-      selectTab($event.index == (downloadEnabled ? 5 : 4) ? 0 : $event.index)
+      selectTab($event.index == (downloadEnabled ? 6 : 5) ? 0 : $event.index)
     "
     [mat-stretch-tabs]="false"
   >
@@ -27,6 +27,7 @@
             <button
               mat-stroked-button
               [disabled]="!selectedItems.length"
+              [matTooltip]="t('torrents.copy_to_clipboard')"
               [cdkCopyToClipboard]="getSelectedMagnetLinks()"
             >
               <mat-icon svgIcon="magnet" />{{ t("torrents.magnet_links") }}
@@ -34,7 +35,8 @@
             <button
               mat-stroked-button
               [disabled]="!selectedItems.length"
-              [cdkCopyToClipboard]="getSelectedInfoHashes()"
+              [matTooltip]="t('torrents.copy_to_clipboard')"
+              [cdkCopyToClipboard]="getSelectedInfoHashesLines()"
             >
               <mat-icon>tag</mat-icon>{{ t("torrents.info_hashes") }}
             </button>
@@ -126,6 +128,22 @@
 
     <mat-tab>
       <ng-template mat-tab-label>
+        <mat-icon>category</mat-icon>
+        @if (breakpoints.sizeAtLeast("Medium")) {
+          <span class="label">{{ t("torrents.classification") }}</span>
+        }
+      </ng-template>
+
+      <ng-template matTabContent>
+        <app-torrent-reprocess
+          [infoHashes]="selectedInfoHashes"
+          (updated)="updated.emit(null)"
+        />
+      </ng-template>
+    </mat-tab>
+
+    <mat-tab>
+      <ng-template mat-tab-label>
         <mat-icon>delete_forever</mat-icon>
         @if (breakpoints.sizeAtLeast("Medium")) {
           <span class="label">{{ t("torrents.delete") }}</span>
@@ -143,7 +161,7 @@
           <mat-card-actions class="button-row">
             <button
               mat-stroked-button
-              color="warn"
+              color="warning"
               [disabled]="!selectedItems.length"
               (click)="deleteTorrents()"
             >

@@ -12,6 +12,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/queuemetrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
 type ContentTypeAgg struct {
@@ -201,6 +202,14 @@ type TorrentMetricsQueryResult struct {
 	Buckets []torrentmetrics.Bucket `json:"buckets"`
 }
 
+type TorrentReprocessInput struct {
+	InfoHashes          []protocol.ID              `json:"infoHashes"`
+	ClassifierRematch   graphql.Omittable[*bool]   `json:"classifierRematch,omitempty"`
+	ClassifierWorkflow  graphql.Omittable[*string] `json:"classifierWorkflow,omitempty"`
+	ApisDisabled        graphql.Omittable[*bool]   `json:"apisDisabled,omitempty"`
+	LocalSearchDisabled graphql.Omittable[*bool]   `json:"localSearchDisabled,omitempty"`
+}
+
 type TorrentSourceAgg struct {
 	Value      string `json:"value"`
 	Label      string `json:"label"`
@@ -333,7 +342,7 @@ func (e HealthStatus) String() string {
 	return string(e)
 }
 
-func (e *HealthStatus) UnmarshalGQL(v interface{}) error {
+func (e *HealthStatus) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -376,7 +385,7 @@ func (e MetricsBucketDuration) String() string {
 	return string(e)
 }
 
-func (e *MetricsBucketDuration) UnmarshalGQL(v interface{}) error {
+func (e *MetricsBucketDuration) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -419,7 +428,7 @@ func (e QueueJobsOrderByField) String() string {
 	return string(e)
 }
 
-func (e *QueueJobsOrderByField) UnmarshalGQL(v interface{}) error {
+func (e *QueueJobsOrderByField) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -474,7 +483,7 @@ func (e TorrentContentOrderByField) String() string {
 	return string(e)
 }
 
-func (e *TorrentContentOrderByField) UnmarshalGQL(v interface{}) error {
+func (e *TorrentContentOrderByField) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -519,7 +528,7 @@ func (e TorrentFilesOrderByField) String() string {
 	return string(e)
 }
 
-func (e *TorrentFilesOrderByField) UnmarshalGQL(v interface{}) error {
+func (e *TorrentFilesOrderByField) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")

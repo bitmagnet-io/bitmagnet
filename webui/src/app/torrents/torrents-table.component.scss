@@ -2,14 +2,6 @@
   height: 10px;
 }
 
-tr.expanded-detail-row td {
-  border-bottom-width: 0;
-}
-
-tr.expanded + tr.expanded-detail-row td {
-  border-bottom-width: 1px;
-}
-
 th,
 td {
   &.cdk-column-select {
@@ -61,11 +53,11 @@ tr.mat-mdc-row.expanded {
   td {
     border-bottom: 0;
   }
-  + .expanded-detail-row {
-    > td {
-      padding-bottom: 10px;
-    }
-  }
+}
+
+app-torrent-content {
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 
 .mat-column-magnet {
@@ -94,4 +86,5 @@ tr.mat-mdc-row.expanded {
 span.filesize {
   text-decoration: underline;
   text-decoration-style: dotted;
+  cursor: default;
 }

@@ -6,6 +6,7 @@ import {
   Output,
 } from "@angular/core";
 import { AppModule } from "../app.module";
+import { IntEstimatePipe } from "../pipes/int-estimate.pipe";
 import type { PageEvent } from "./paginator.types";
 
 @Component({
@@ -13,7 +14,7 @@ import type { PageEvent } from "./paginator.types";
   templateUrl: "./paginator.component.html",
   standalone: true,
   styleUrls: ["./paginator.component.scss"],
-  imports: [AppModule],
+  imports: [AppModule, IntEstimatePipe],
 })
 export class PaginatorComponent {
   @Input({ transform: numberAttribute }) page = 1;

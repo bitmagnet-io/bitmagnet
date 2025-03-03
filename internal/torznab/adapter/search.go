@@ -3,12 +3,13 @@ package adapter
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab"
-	"strconv"
-	"strings"
 )
 
 func (a adapter) Search(ctx context.Context, req torznab.SearchRequest) (torznab.SearchResult, error) {
@@ -64,7 +65,7 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 	for _, cat := range r.Cats {
 		var catCriteria []query.Criteria
 		if torznab.CategoryMovies.Has(cat) {
-			if r.Type != torznab.FunctionMovie {
+			if r.Type != torznab.FunctionMovie || torznab.CategoryMovies.ID == cat {
 				catCriteria = append(catCriteria, search.TorrentContentTypeCriteria(model.ContentTypeMovie))
 			}
 			if torznab.CategoryMoviesSD.ID == cat {
@@ -86,7 +87,7 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 				))
 			}
 		} else if torznab.CategoryTV.Has(cat) {
-			if r.Type != torznab.FunctionTv {
+			if r.Type != torznab.FunctionTv || torznab.CategoryTV.ID == cat {
 				catCriteria = append(catCriteria, search.TorrentContentTypeCriteria(model.ContentTypeTvShow))
 			}
 			if torznab.CategoryTVSD.ID == cat {
@@ -220,16 +221,24 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 				AttrValue: item.PublishedAt.Format(torznab.RssDateDefaultFormat),
 			},
 		}
-		if seeders := item.Torrent.Seeders(); seeders.Valid {
+		seeders := item.Torrent.Seeders()
+		leechers := item.Torrent.Leechers()
+		if seeders.Valid {
 			attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 				AttrName:  torznab.AttrSeeders,
 				AttrValue: strconv.Itoa(int(seeders.Uint)),
 			})
 		}
-		if leechers := item.Torrent.Leechers(); leechers.Valid {
+		if leechers.Valid {
+			attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
+				AttrName:  torznab.AttrLeechers,
+				AttrValue: strconv.Itoa(int(leechers.Uint)),
+			})
+		}
+		if leechers.Valid && seeders.Valid {
 			attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 				AttrName:  torznab.AttrPeers,
-				AttrValue: strconv.Itoa(int(leechers.Uint)),
+				AttrValue: strconv.Itoa(int(leechers.Uint) + int(seeders.Uint)),
 			})
 		}
 		if len(item.Torrent.Files) > 0 {
@@ -274,6 +283,12 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 			attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 				AttrName:  torznab.AttrTeam,
 				AttrValue: item.ReleaseGroup.String,
+			})
+		}
+		if tmdbid, ok := item.Content.Identifier("tmdb"); ok {
+			attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
+				AttrName:  torznab.AttrTmdb,
+				AttrValue: tmdbid,
 			})
 		}
 		if imdbId, ok := item.Content.Identifier("imdb"); ok {

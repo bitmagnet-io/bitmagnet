@@ -5,6 +5,7 @@
       "audiobook": "有声书",
       "comic": "漫画",
       "ebook": "电子书",
+      "game": "游戏",
       "movie": "电影",
       "music": "音乐",
       "null": "未知",
@@ -16,6 +17,7 @@
       "audiobook": "有声书",
       "comic": "漫画",
       "ebook": "电子书",
+      "game": "游戏",
       "movie": "电影",
       "music": "音乐",
       "null": "未知",
@@ -53,7 +55,8 @@
       "event": "事件",
       "resolution": "分辨率",
       "throughput": "吞吐量",
-      "timeframe": "时间范围"
+      "timeframe": "时间范围",
+      "toggle_legend": "切换图例"
     },
     "queues": {
       "created": "已创建",
@@ -219,9 +222,9 @@
     "items_per_page": "每页项目数",
     "last_page": "最后一页",
     "next_page": "下一页",
+    "page_x": "第{{x}}页",
     "previous_page": "上一页",
     "x_to_y": "{{x}}到{{y}}",
-    "x_to_y_of_y": "__缺失__",
     "x_to_y_of_z": "{{x}}到{{y}}，共{{z}}"
   },
   "routes": {
@@ -234,6 +237,7 @@
     "visualize": "可视化"
   },
   "torrents": {
+    "classification": "分类",
     "clear_search": "清除搜索",
     "copy": "复制",
     "copy_to_clipboard": "复制到剪贴板",
@@ -281,6 +285,12 @@
     "published": "已发布",
     "rating": "评分",
     "refresh": "刷新结果",
+    "reprocess": {
+      "force_rematch": "强制重新匹配已匹配的内容",
+      "match_content_by_external_api_search": "通过外部API搜索匹配内容",
+      "match_content_by_local_search": "通过本地搜索匹配内容",
+      "reprocess": "重新处理"
+    },
     "s_l": "S / L",
     "search": "搜索",
     "seeders": "上传者",

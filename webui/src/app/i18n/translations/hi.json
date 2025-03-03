@@ -5,6 +5,7 @@
       "audiobook": "ऑडियोबुक्स",
       "comic": "कॉमिक्स",
       "ebook": "ई-बुक्स",
+      "game": "गेम्स",
       "movie": "फ़िल्में",
       "music": "संगीत",
       "null": "अज्ञात",
@@ -16,6 +17,7 @@
       "audiobook": "ऑडियोबुक",
       "comic": "कॉमिक",
       "ebook": "ई-बुक",
+      "game": "गेम",
       "movie": "फ़िल्म",
       "music": "संगीत",
       "null": "अज्ञात",
@@ -53,7 +55,8 @@
       "event": "घटना",
       "resolution": "रिज़ॉल्यूशन",
       "throughput": "थ्रूपुट",
-      "timeframe": "समय सीमा"
+      "timeframe": "समय सीमा",
+      "toggle_legend": "लीजेंड टॉगल करें"
     },
     "queues": {
       "created": "बनाया गया",
@@ -219,6 +222,7 @@
     "items_per_page": "प्रति पृष्ठ आइटम",
     "last_page": "अंतिम पृष्ठ",
     "next_page": "अगला पृष्ठ",
+    "page_x": "पृष्ठ {{x}}",
     "previous_page": "पिछला पृष्ठ",
     "x_to_y": "{{x}} से {{y}} तक",
     "x_to_y_of_y": "__missing__",
@@ -234,6 +238,7 @@
     "visualize": "दृश्य करें"
   },
   "torrents": {
+    "classification": "वर्गीकरण",
     "clear_search": "खोज साफ़ करें",
     "copy": "कॉपी करें",
     "copy_to_clipboard": "क्लिपबोर्ड में कॉपी करें",
@@ -281,6 +286,12 @@
     "published": "प्रकाशित",
     "rating": "रेटिंग",
     "refresh": "परिणाम ताज़ा करें",
+    "reprocess": {
+      "force_rematch": "पहले से मेल खाई सामग्री को फिर से मिलाएं",
+      "match_content_by_external_api_search": "बाहरी API खोज से सामग्री का मिलान करें",
+      "match_content_by_local_search": "स्थानीय खोज से सामग्री का मिलान करें",
+      "reprocess": "पुनः प्रक्रिया करें"
+    },
     "s_l": "S / L",
     "search": "खोज",
     "seeders": "सीडर्स",

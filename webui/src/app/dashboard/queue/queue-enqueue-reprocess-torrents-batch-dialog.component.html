@@ -6,38 +6,58 @@
     <mat-dialog-content>
       @if (stage === "PENDING") {
         <section>
+          <mat-checkbox [checked]="purge" (change)="purge = $event.checked">{{
+            t("dashboard.queues.purge_queue_jobs")
+          }}</mat-checkbox
+          ><br />
           <mat-checkbox
-            [checked]="!apisDisabled"
+            [checked]="!localSearchDisabled"
             (change)="
               localSearchDisabled = !$event.checked;
-              apisDisabled = localSearchDisabled ? true : apisDisabled
+              apisDisabled = !$event.checked ? true : apisDisabled
             "
             >{{
-              t("dashboard.queues.match_content_by_local_search")
+              t("torrents.reprocess.match_content_by_local_search")
             }}</mat-checkbox
-          >
+          ><br />
           <mat-checkbox
             [checked]="!apisDisabled"
-            (change)="
-              apisDisabled = !$event.checked;
-              localSearchDisabled = apisDisabled ? localSearchDisabled : true
-            "
+            (change)="apisDisabled = !$event.checked"
             >{{
-              t("dashboard.queues.match_content_by_external_api_search")
+              t("torrents.reprocess.match_content_by_external_api_search")
             }}</mat-checkbox
-          >
+          ><br />
           <mat-checkbox
             [checked]="classifierRematch"
             (change)="classifierRematch = $event.checked"
-            >{{ t("dashboard.queues.force_rematch") }}</mat-checkbox
-          >
+            >{{ t("torrents.reprocess.force_rematch") }}</mat-checkbox
+          ><br />
           <mat-checkbox
             [checked]="orphans"
-            (change)="orphans = $event.checked"
+            (change)="
+              orphans = $event.checked;
+              contentTypes = $event.checked ? ['all'] : contentTypes
+            "
             >{{
               t("dashboard.queues.process_orphaned_torrents_only")
             }}</mat-checkbox
           >
+          <br />
+          <mat-form-field class="select-content-types">
+            <mat-label>{{ t("facets.content_type") }}</mat-label>
+            <mat-select
+              (selectionChange)="onContentTypeSelectionChange($event)"
+              [value]="contentTypes"
+              multiple
+            >
+              <mat-option value="all">{{ t("general.all") }}</mat-option>
+              @for (contentType of allContentTypes; track contentType.key) {
+                <mat-option [value]="contentType.key">
+                  {{ t("content_types.plural." + contentType.key) }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
         </section>
       } @else if (stage === "REQUESTING") {
         <mat-spinner></mat-spinner>
@@ -46,14 +66,11 @@
       }
     </mat-dialog-content>
     <mat-dialog-actions>
-      <button
-        mat-stroked-button
-        [disabled]="stage !== 'PENDING'"
-        color="warning"
-        (click)="handleEnqueue()"
-      >
-        {{ t("dashboard.queues.enqueue_jobs") }}
-      </button>
+      @if (stage === "PENDING") {
+        <button mat-stroked-button color="warning" (click)="handleEnqueue()">
+          {{ t("dashboard.queues.enqueue_jobs") }}
+        </button>
+      }
       <button mat-stroked-button (click)="dialogRef.close()">
         {{ t("general.dismiss") }}
       </button>

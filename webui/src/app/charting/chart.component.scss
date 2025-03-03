@@ -1,0 +1,19 @@
+.icon-toggle-legend {
+  cursor: pointer;
+  position: relative;
+  top: 4px;
+  margin-right: 8px;
+  opacity: 0.6;
+  &.icon-toggle-legend-active {
+    opacity: 1;
+  }
+}
+
+.app-chart {
+  position: relative;
+}
+
+.app-chart-small {
+  position: relative;
+  width: calc(40vw + 100px);
+}

@@ -2,21 +2,25 @@ package configresolver
 
 import (
 	"fmt"
+	"github.com/go-playground/validator/v10"
+	"github.com/go-viper/mapstructure/v2"
+	"github.com/iancoleman/strcase"
 	"reflect"
 )
 
 type mapResolver struct {
 	baseResolver
-	m map[string]interface{}
+	validator *validator.Validate
+	m         map[string]interface{}
 }
 
-func NewMap(m map[string]interface{}, options ...Option) Resolver {
-	r := &mapResolver{m: m}
+func NewMap(m map[string]interface{}, val *validator.Validate, options ...Option) Resolver {
+	r := &mapResolver{m: m, validator: val}
 	r.applyOptions(append([]Option{WithKey("map")}, options...)...)
 	return r
 }
 
-func (r mapResolver) Resolve(path []string, valueType reflect.Type) (interface{}, bool, error) {
+func (r mapResolver) Resolve(path []string, valueType reflect.Type) (any, bool, error) {
 	if len(path) == 0 {
 		return r.m, true, nil
 	}
@@ -41,9 +45,41 @@ func (r mapResolver) Resolve(path []string, valueType reflect.Type) (interface{}
 					return nil, true, fmt.Errorf("error coercing config map path '%s' with value '%s' to type %v: %w", currentPath, strV, valueType, coerceErr)
 				}
 				return coerced, true, nil
+			} else if sliceV, sliceOk := rawV.([]interface{}); sliceOk {
+				resolvedSlice, err := r.resolveSlice(currentPath, sliceV, valueType)
+				return resolvedSlice, true, err
 			}
 			return rawV, true, nil
 		}
 	}
 	return nil, false, nil
+}
+
+func (r mapResolver) resolveSlice(currentPath []string, sliceV []any, valueType reflect.Type) (any, error) {
+	if valueType.Kind() != reflect.Slice {
+		return nil, fmt.Errorf("received slice at path '%s', expected %s", currentPath, valueType.String())
+	}
+	var resolvedSlice []any
+	for _, sliceItem := range sliceV {
+		resolvedValue := reflect.New(valueType.Elem())
+		decoder, decoderErr := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+			Result: resolvedValue.Interface(),
+			MatchName: func(mapKey, fieldName string) bool {
+				return mapKey == strcase.ToSnake(fieldName)
+			},
+		})
+		if decoderErr != nil {
+			return nil, decoderErr
+		}
+		if decodeErr := decoder.Decode(sliceItem); decodeErr != nil {
+			return nil, decodeErr
+		}
+		if valueType.Elem().Kind() == reflect.Struct {
+			if validateErr := r.validator.Struct(resolvedValue.Interface()); validateErr != nil {
+				return nil, validateErr
+			}
+		}
+		resolvedSlice = append(resolvedSlice, reflect.Indirect(resolvedValue).Interface())
+	}
+	return resolvedSlice, nil
 }

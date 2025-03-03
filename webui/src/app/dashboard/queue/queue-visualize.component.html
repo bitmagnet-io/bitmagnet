@@ -1,4 +1,7 @@
 <ng-container *transloco="let t">
+  <app-document-title
+    [parts]="[t('routes.visualize'), t('routes.queues'), t('routes.dashboard')]"
+  />
   <mat-card>
     <mat-card-content>
       <mat-grid-list
@@ -443,38 +446,22 @@
         rowHeight="100px"
       >
         <mat-grid-tile [colspan]="1" [rowspan]="5">
-          <mat-card>
-            <mat-card-header>
-              <mat-card-title>
-                <h4>{{ t("dashboard.queues.total_counts_by_status") }}</h4>
-              </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <app-chart
-                [adapter]="totals"
-                [$data]="queueMetricsController.result$"
-                [height]="400"
-                [width]="550"
-              />
-            </mat-card-content>
-          </mat-card>
+          <app-chart
+            [title]="t('dashboard.queues.total_counts_by_status')"
+            [adapter]="totals"
+            [$data]="queueMetricsController.result$"
+            [height]="400"
+            [width]="550"
+          />
         </mat-grid-tile>
         <mat-grid-tile [colspan]="1" [rowspan]="5">
-          <mat-card>
-            <mat-card-header>
-              <mat-card-title>
-                <h4>{{ t("dashboard.metrics.throughput") }}</h4>
-              </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <app-chart
-                [adapter]="timeline"
-                [$data]="queueMetricsController.result$"
-                [height]="400"
-                [width]="550"
-              />
-            </mat-card-content>
-          </mat-card>
+          <app-chart
+            [title]="t('dashboard.metrics.throughput')"
+            [adapter]="timeline"
+            [$data]="queueMetricsController.result$"
+            [height]="400"
+            [width]="550"
+          />
         </mat-grid-tile>
       </mat-grid-list>
     </mat-card-content>

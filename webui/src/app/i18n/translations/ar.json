@@ -5,6 +5,7 @@
       "audiobook": "الكتب الصوتية",
       "comic": "القصص المصورة",
       "ebook": "الكتب الإلكترونية",
+      "game": "الألعاب",
       "movie": "الأفلام",
       "music": "الموسيقى",
       "null": "غير معروف",
@@ -16,6 +17,7 @@
       "audiobook": "كتاب صوتي",
       "comic": "قصة مصورة",
       "ebook": "كتاب إلكتروني",
+      "game": "لعبة",
       "movie": "فيلم",
       "music": "موسيقى",
       "null": "غير معروف",
@@ -53,7 +55,8 @@
       "event": "حدث",
       "resolution": "الدقة",
       "throughput": "معدل النقل",
-      "timeframe": "الإطار الزمني"
+      "timeframe": "الإطار الزمني",
+      "toggle_legend": "تبديل الأسطورة"
     },
     "queues": {
       "created": "تم الإنشاء",
@@ -219,9 +222,9 @@
     "items_per_page": "العناصر لكل صفحة",
     "last_page": "الصفحة الأخيرة",
     "next_page": "الصفحة التالية",
+    "page_x": "الصفحة {{x}}",
     "previous_page": "الصفحة السابقة",
     "x_to_y": "{{x}} إلى {{y}}",
-    "x_to_y_of_y": "__مفقود__",
     "x_to_y_of_z": "{{x}} إلى {{y}} من {{z}}"
   },
   "routes": {
@@ -234,6 +237,7 @@
     "visualize": "تصور"
   },
   "torrents": {
+    "classification": "التصنيف",
     "clear_search": "مسح البحث",
     "copy": "نسخ",
     "copy_to_clipboard": "نسخ إلى الحافظة",
@@ -281,6 +285,12 @@
     "published": "منشور",
     "rating": "التقييم",
     "refresh": "تحديث النتائج",
+    "reprocess": {
+      "force_rematch": "فرض إعادة المطابقة للمحتوى المطابق بالفعل",
+      "match_content_by_external_api_search": "مطابقة المحتوى من خلال البحث في API الخارجية",
+      "match_content_by_local_search": "مطابقة المحتوى من خلال البحث المحلي",
+      "reprocess": "إعادة المعالجة"
+    },
     "s_l": "S / L",
     "search": "بحث",
     "seeders": "الباذرون",

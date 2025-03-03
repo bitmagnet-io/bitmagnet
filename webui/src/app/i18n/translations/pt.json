@@ -5,6 +5,7 @@
       "audiobook": "Audiolivros",
       "comic": "Quadrinhos",
       "ebook": "E-books",
+      "game": "Jogos",
       "movie": "Filmes",
       "music": "Música",
       "null": "Desconhecido",
@@ -16,6 +17,7 @@
       "audiobook": "Audiolivro",
       "comic": "Quadrinho",
       "ebook": "E-book",
+      "game": "Jogo",
       "movie": "Filme",
       "music": "Música",
       "null": "Desconhecido",
@@ -53,7 +55,8 @@
       "event": "Evento",
       "resolution": "Resolução",
       "throughput": "Taxa de transferência",
-      "timeframe": "Intervalo de tempo"
+      "timeframe": "Intervalo de tempo",
+      "toggle_legend": "Alternar legenda"
     },
     "queues": {
       "created": "Criado",
@@ -219,6 +222,7 @@
     "items_per_page": "Itens por página",
     "last_page": "Última página",
     "next_page": "Próxima página",
+    "page_x": "Página {{x}}",
     "previous_page": "Página anterior",
     "x_to_y": "{{x}} a {{y}}",
     "x_to_y_of_y": "__missing__",
@@ -234,6 +238,7 @@
     "visualize": "Visualizar"
   },
   "torrents": {
+    "classification": "Classificação",
     "clear_search": "Limpar Pesquisa",
     "copy": "Copiar",
     "copy_to_clipboard": "Copiar para a área de transferência",
@@ -281,6 +286,12 @@
     "published": "Publicado",
     "rating": "Classificação",
     "refresh": "Atualizar resultados",
+    "reprocess": {
+      "force_rematch": "Forçar nova correspondência de conteúdo já correspondido",
+      "match_content_by_external_api_search": "Corresponder conteúdo por pesquisa de API externa",
+      "match_content_by_local_search": "Corresponder conteúdo por pesquisa local",
+      "reprocess": "Reprocessar"
+    },
     "s_l": "S / L",
     "search": "Buscar",
     "seeders": "Seeders",

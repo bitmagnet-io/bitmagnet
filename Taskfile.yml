@@ -107,6 +107,8 @@ tasks:
     dir: ./webui
     cmds:
       - npm test
+    env:
+      CHROME_BIN: chromium
 
   migrate:
     cmds:
@@ -135,7 +137,7 @@ tasks:
   serve-webui:
     dir: ./webui
     cmds:
-      - ng serve --host {{.HOST}} --port {{.PORT}}
+      - npm start -- --host {{.HOST}} --port {{.PORT}}
     vars:
       HOST: localhost
       PORT: 3334

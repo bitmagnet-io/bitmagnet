@@ -5,6 +5,7 @@
       "audiobook": "Hörbücher",
       "comic": "Comics",
       "ebook": "E-Bücher",
+      "game": "Spiele",
       "movie": "Filme",
       "music": "Musik",
       "null": "Unbekannt",
@@ -16,6 +17,7 @@
       "audiobook": "Hörbuch",
       "comic": "Comic",
       "ebook": "E-Buch",
+      "game": "Spiel",
       "movie": "Film",
       "music": "Musik",
       "null": "Unbekannt",
@@ -53,7 +55,8 @@
       "event": "Ereignis",
       "resolution": "Auflösung",
       "throughput": "Durchsatz",
-      "timeframe": "Zeitrahmen"
+      "timeframe": "Zeitrahmen",
+      "toggle_legend": "Legende umschalten"
     },
     "queues": {
       "created": "Erstellt",
@@ -219,9 +222,9 @@
     "items_per_page": "Artikel pro Seite",
     "last_page": "Letzte Seite",
     "next_page": "Nächste Seite",
+    "page_x": "Seite {{x}}",
     "previous_page": "Vorherige Seite",
     "x_to_y": "{{x}} bis {{y}}",
-    "x_to_y_of_y": "__fehlend__",
     "x_to_y_of_z": "{{x}} bis {{y}} von {{z}}"
   },
   "routes": {
@@ -234,6 +237,7 @@
     "visualize": "Visualisieren"
   },
   "torrents": {
+    "classification": "Klassifizierung",
     "clear_search": "Suche löschen",
     "copy": "Kopieren",
     "copy_to_clipboard": "In die Zwischenablage kopieren",
@@ -281,6 +285,12 @@
     "published": "Veröffentlicht",
     "rating": "Bewertung",
     "refresh": "Ergebnisse aktualisieren",
+    "reprocess": {
+      "force_rematch": "Erneutes Zuordnen von bereits zugeordneten Inhalten erzwingen",
+      "match_content_by_external_api_search": "Inhalte durch externe API-Suche zuordnen",
+      "match_content_by_local_search": "Inhalte durch lokale Suche zuordnen",
+      "reprocess": "Erneut verarbeiten"
+    },
     "s_l": "S / L",
     "search": "Suche",
     "seeders": "Seeders",

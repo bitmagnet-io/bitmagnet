@@ -1,7 +1,7 @@
 import { ChartConfiguration } from "chart.js";
 import { inject, Injectable } from "@angular/core";
 import { TranslocoService } from "@jsverse/transloco";
-import { ChartAdapter } from "../../charting/types";
+import { ChartAdapter, FactoryParams } from "../../charting/types";
 import * as generated from "../../graphql/generated";
 import { ThemeBaseColor } from "../../themes/theme-types";
 import { QueueJobStatus } from "../../graphql/generated";
@@ -22,7 +22,10 @@ export class QueueChartAdapterTotals implements ChartAdapter<Result> {
   private themeInfo = inject(ThemeInfoService);
   private transloco = inject(TranslocoService);
 
-  create(result?: Result): ChartConfiguration<"bar"> {
+  create(
+    result: Result | undefined,
+    params: FactoryParams,
+  ): ChartConfiguration<"bar"> {
     const { colors } = this.themeInfo.info;
     const labels = Array<string>();
     const datasets: ChartConfiguration<"bar">["data"]["datasets"] = [];
@@ -65,6 +68,7 @@ export class QueueChartAdapterTotals implements ChartAdapter<Result> {
       type: "bar",
       options: {
         animation: false,
+        responsive: true,
         scales: {
           x: {
             ticks: {
@@ -79,7 +83,7 @@ export class QueueChartAdapterTotals implements ChartAdapter<Result> {
         indexAxis: "y",
         plugins: {
           legend: {
-            display: true,
+            display: params.legend,
           },
         },
       },

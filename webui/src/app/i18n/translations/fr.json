@@ -5,6 +5,7 @@
       "audiobook": "Livres audio",
       "comic": "Bandes dessinées",
       "ebook": "E-livres",
+      "game": "Jeux",
       "movie": "Films",
       "music": "Musique",
       "null": "Inconnu",
@@ -16,6 +17,7 @@
       "audiobook": "Livre audio",
       "comic": "Bande dessinée",
       "ebook": "E-livre",
+      "game": "Jeu",
       "movie": "Film",
       "music": "Musique",
       "null": "Inconnu",
@@ -53,16 +55,17 @@
       "event": "Événement",
       "resolution": "Résolution",
       "throughput": "Débit",
-      "timeframe": "Période"
+      "timeframe": "Période",
+      "toggle_legend": "Basculer la légende"
     },
     "queues": {
       "created": "Créé",
       "created_at": "Créé à",
-      "enqueue_jobs": "Enfilez les tâches",
-      "enqueue_torrent_processing_batch": "Enfilez le traitement des torrents",
+      "enqueue_jobs": "Mettre les taches en file d'attente",
+      "enqueue_torrent_processing_batch": "Mettre le traitement des torrents en file d'attente",
       "failed": "Échoué",
       "force_rematch": "Forcer le rematch du contenu déjà apparié",
-      "jobs_enqueued": "Tâches enfilées",
+      "jobs_enqueued": "Tâches en attente",
       "latency": "Latence",
       "match_content_by_external_api_search": "Apparier le contenu par recherche API externe",
       "match_content_by_local_search": "Apparier le contenu par recherche locale",
@@ -106,7 +109,7 @@
   },
   "general": {
     "all": "Tous",
-    "dismiss": "Rejeter",
+    "dismiss": "Fermer",
     "error": "Erreur",
     "none": "Aucun",
     "page_not_found": "Page non trouvée",
@@ -122,7 +125,7 @@
       "postgres": "Postgres",
       "tmdb": "TMDB"
     },
-    "dismiss": "Rejeter",
+    "dismiss": "Fermer",
     "error": "Erreur",
     "status": "Statut",
     "statuses": {
@@ -219,10 +222,10 @@
     "items_per_page": "Articles par page",
     "last_page": "Dernière page",
     "next_page": "Page suivante",
+    "page_x": "Page {{x}}",
     "previous_page": "Page précédente",
     "x_to_y": "{{x}} à {{y}}",
-    "x_to_y_of_y": "__manquant__",
-    "x_to_y_of_z": "{{x}} à {{y}} de {{z}}"
+    "x_to_y_of_z": "{{x}} à {{y}} sur {{z}}"
   },
   "routes": {
     "admin": "Admin",
@@ -234,6 +237,7 @@
     "visualize": "Visualiser"
   },
   "torrents": {
+    "classification": "Classification",
     "clear_search": "Effacer la recherche",
     "copy": "Copier",
     "copy_to_clipboard": "Copier dans le presse-papiers",
@@ -263,7 +267,7 @@
     "magnet_links": "Liens Magnet",
     "new_tag": "Nouveau tag",
     "order_by": "Trier par",
-    "order_direction_toggle": "Basculer la direction",
+    "order_direction_toggle": "Inverser le sens",
     "ordering": {
       "files_count": "Nombre de fichiers",
       "info_hash": "Hash d'info",
@@ -281,6 +285,12 @@
     "published": "Publié",
     "rating": "Évaluation",
     "refresh": "Rafraîchir les résultats",
+    "reprocess": {
+      "force_rematch": "Forcer le rematch du contenu déjà apparié",
+      "match_content_by_external_api_search": "Apparier le contenu par recherche API externe",
+      "match_content_by_local_search": "Apparier le contenu par recherche locale",
+      "reprocess": "Retraitement"
+    },
     "s_l": "S / L",
     "search": "Rechercher",
     "seeders": "Seeders",

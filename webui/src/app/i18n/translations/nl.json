@@ -5,6 +5,7 @@
       "audiobook": "Audioboeken",
       "comic": "Strips",
       "ebook": "E-Boeken",
+      "game": "Spellen",
       "movie": "Films",
       "music": "Muziek",
       "null": "Onbekend",
@@ -16,6 +17,7 @@
       "audiobook": "Audioboek",
       "comic": "Strip",
       "ebook": "E-Book",
+      "game": "Spel",
       "movie": "Film",
       "music": "Muziek",
       "null": "Onbekend",
@@ -53,7 +55,8 @@
       "event": "Gebeurtenis",
       "resolution": "Resolutie",
       "throughput": "Doorvoer",
-      "timeframe": "Tijdsperiode"
+      "timeframe": "Tijdsperiode",
+      "toggle_legend": "Legenda in-/uitschakelen"
     },
     "queues": {
       "created": "Gemaakt",
@@ -219,6 +222,7 @@
     "items_per_page": "Items per pagina",
     "last_page": "Laatste pagina",
     "next_page": "Volgende pagina",
+    "page_x": "Pagina {{x}}",
     "previous_page": "Vorige pagina",
     "x_to_y": "{{x}} tot {{y}}",
     "x_to_y_of_y": "__missing__",
@@ -234,6 +238,7 @@
     "visualize": "Visualiseren"
   },
   "torrents": {
+    "classification": "Classificatie",
     "clear_search": "Zoekopdracht wissen",
     "copy": "Kopiëren",
     "copy_to_clipboard": "Kopiëren naar klembord",
@@ -281,6 +286,12 @@
     "published": "Gepubliceerd",
     "rating": "Beoordeling",
     "refresh": "Vernieuw resultaten",
+    "reprocess": {
+      "force_rematch": "Forceer nieuwe match van al gematchte inhoud",
+      "match_content_by_external_api_search": "Match inhoud via externe API-zoekopdracht",
+      "match_content_by_local_search": "Match inhoud via lokale zoekopdracht",
+      "reprocess": "Opnieuw verwerken"
+    },
     "s_l": "S / L",
     "search": "Zoeken",
     "seeders": "Seeders",

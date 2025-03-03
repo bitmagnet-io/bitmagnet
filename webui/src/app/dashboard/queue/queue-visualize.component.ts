@@ -5,6 +5,7 @@ import { ChartComponent } from "../../charting/chart.component";
 import { BreakpointsService } from "../../layout/breakpoints.service";
 import { ErrorsService } from "../../errors/errors.service";
 import { AppModule } from "../../app.module";
+import { DocumentTitleComponent } from "../../layout/document-title.component";
 import {
   autoRefreshIntervalNames,
   availableQueueNames,
@@ -22,7 +23,13 @@ import { QueueChartAdapterTimeline } from "./queue-chart-adapter.timeline";
   standalone: true,
   templateUrl: "./queue-visualize.component.html",
   styleUrl: "./queue-visualize.component.scss",
-  imports: [AppModule, ChartComponent, GraphQLModule, QueueModule],
+  imports: [
+    AppModule,
+    ChartComponent,
+    GraphQLModule,
+    QueueModule,
+    DocumentTitleComponent,
+  ],
 })
 export class QueueVisualizeComponent implements OnInit, OnDestroy {
   breakpoints = inject(BreakpointsService);
