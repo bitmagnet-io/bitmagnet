@@ -372,6 +372,7 @@ type ComplexityRoot struct {
 		Delete     func(childComplexity int, infoHashes []protocol.ID) int
 		DeleteTags func(childComplexity int, infoHashes []protocol.ID, tagNames []string) int
 		PutTags    func(childComplexity int, infoHashes []protocol.ID, tagNames []string) int
+		Reprocess  func(childComplexity int, input gen.TorrentReprocessInput) int
 		SetTags    func(childComplexity int, infoHashes []protocol.ID, tagNames []string) int
 	}
 
@@ -475,6 +476,7 @@ type TorrentMutationResolver interface {
 	PutTags(ctx context.Context, obj *gqlmodel.TorrentMutation, infoHashes []protocol.ID, tagNames []string) (*string, error)
 	SetTags(ctx context.Context, obj *gqlmodel.TorrentMutation, infoHashes []protocol.ID, tagNames []string) (*string, error)
 	DeleteTags(ctx context.Context, obj *gqlmodel.TorrentMutation, infoHashes []protocol.ID, tagNames []string) (*string, error)
+	Reprocess(ctx context.Context, obj *gqlmodel.TorrentMutation, input gen.TorrentReprocessInput) (*string, error)
 }
 type TorrentQueryResolver interface {
 	Files(ctx context.Context, obj *gqlmodel.TorrentQuery, input gqlmodel.TorrentFilesQueryInput) (query.GenericResult[model.TorrentFile], error)
@@ -498,7 +500,7 @@ func (e *executableSchema) Schema() *ast.Schema {
 	return parsedSchema
 }
 
-func (e *executableSchema) Complexity(typeName, field string, childComplexity int, rawArgs map[string]interface{}) (int, bool) {
+func (e *executableSchema) Complexity(typeName, field string, childComplexity int, rawArgs map[string]any) (int, bool) {
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
@@ -1885,6 +1887,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TorrentMutation.PutTags(childComplexity, args["infoHashes"].([]protocol.ID), args["tagNames"].([]string)), true
 
+	case "TorrentMutation.reprocess":
+		if e.complexity.TorrentMutation.Reprocess == nil {
+			break
+		}
+
+		args, err := ec.field_TorrentMutation_reprocess_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.TorrentMutation.Reprocess(childComplexity, args["input"].(gen.TorrentReprocessInput)), true
+
 	case "TorrentMutation.setTags":
 		if e.complexity.TorrentMutation.SetTags == nil {
 			break
@@ -2141,8 +2155,8 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 }
 
 func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
-	rc := graphql.GetOperationContext(ctx)
-	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
+	opCtx := graphql.GetOperationContext(ctx)
+	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputContentTypeFacetInput,
 		ec.unmarshalInputGenreFacetInput,
@@ -2164,6 +2178,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputTorrentFilesOrderByInput,
 		ec.unmarshalInputTorrentFilesQueryInput,
 		ec.unmarshalInputTorrentMetricsQueryInput,
+		ec.unmarshalInputTorrentReprocessInput,
 		ec.unmarshalInputTorrentSourceFacetInput,
 		ec.unmarshalInputTorrentTagFacetInput,
 		ec.unmarshalInputVideoResolutionFacetInput,
@@ -2171,7 +2186,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	)
 	first := true
 
-	switch rc.Operation.Operation {
+	switch opCtx.Operation.Operation {
 	case ast.Query:
 		return func(ctx context.Context) *graphql.Response {
 			var response graphql.Response
@@ -2179,7 +2194,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			if first {
 				first = false
 				ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
-				data = ec._Query(ctx, rc.Operation.SelectionSet)
+				data = ec._Query(ctx, opCtx.Operation.SelectionSet)
 			} else {
 				if atomic.LoadInt32(&ec.pendingDeferred) > 0 {
 					result := <-ec.deferredResults
@@ -2209,7 +2224,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			}
 			first = false
 			ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
-			data := ec._Mutation(ctx, rc.Operation.SelectionSet)
+			data := ec._Mutation(ctx, opCtx.Operation.SelectionSet)
 			var buf bytes.Buffer
 			data.MarshalGQL(&buf)
 
@@ -2438,11 +2453,11 @@ enum QueueJobsOrderByField {
   priority
 }
 
-
 enum ClientID {
-    Transmission
-    QBittorrent
-}`, BuiltIn: false},
+  Transmission
+  QBittorrent
+}
+`, BuiltIn: false},
 	{Name: "../../graphql/schema/metrics.graphqls", Input: `enum MetricsBucketDuration {
   minute
   hour
@@ -2635,6 +2650,15 @@ type TorrentMutation {
   putTags(infoHashes: [Hash20!]!, tagNames: [String!]!): Void
   setTags(infoHashes: [Hash20!]!, tagNames: [String!]!): Void
   deleteTags(infoHashes: [Hash20!], tagNames: [String!]): Void
+  reprocess(input: TorrentReprocessInput!): Void
+}
+
+input TorrentReprocessInput {
+  infoHashes: [Hash20!]!
+  classifierRematch: Boolean
+  classifierWorkflow: String
+  apisDisabled: Boolean
+  localSearchDisabled: Boolean
 }
 
 type DownloadClientMutation {
@@ -2799,6 +2823,7 @@ enum QueueJobStatus {
 }
 
 input QueueEnqueueReprocessTorrentsBatchInput {
+  purge: Boolean
   batchSize: Int
   chunkSize: Int
   contentTypes: [ContentType]
@@ -3026,9 +3051,9 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) field_DownloadClientMutation_download_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_DownloadClientMutation_download_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field_DownloadClientMutation_download_argsInfoHashes(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -3038,13 +3063,9 @@ func (ec *executionContext) field_DownloadClientMutation_download_args(ctx conte
 }
 func (ec *executionContext) field_DownloadClientMutation_download_argsInfoHashes(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) ([]protocol.ID, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["infoHashes"]
-	if !ok {
+	if _, ok := rawArgs["infoHashes"]; !ok {
 		var zeroVal []protocol.ID
 		return zeroVal, nil
 	}
@@ -3058,9 +3079,9 @@ func (ec *executionContext) field_DownloadClientMutation_download_argsInfoHashes
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field_Query___type_argsName(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -3070,13 +3091,9 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 }
 func (ec *executionContext) field_Query___type_argsName(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (string, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["name"]
-	if !ok {
+	if _, ok := rawArgs["name"]; !ok {
 		var zeroVal string
 		return zeroVal, nil
 	}
@@ -3090,9 +3107,9 @@ func (ec *executionContext) field_Query___type_argsName(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_QueueMutation_enqueueReprocessTorrentsBatch_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_QueueMutation_enqueueReprocessTorrentsBatch_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field_QueueMutation_enqueueReprocessTorrentsBatch_argsInput(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -3102,13 +3119,9 @@ func (ec *executionContext) field_QueueMutation_enqueueReprocessTorrentsBatch_ar
 }
 func (ec *executionContext) field_QueueMutation_enqueueReprocessTorrentsBatch_argsInput(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (manager.EnqueueReprocessTorrentsBatchRequest, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["input"]
-	if !ok {
+	if _, ok := rawArgs["input"]; !ok {
 		var zeroVal manager.EnqueueReprocessTorrentsBatchRequest
 		return zeroVal, nil
 	}
@@ -3122,9 +3135,9 @@ func (ec *executionContext) field_QueueMutation_enqueueReprocessTorrentsBatch_ar
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_QueueMutation_purgeJobs_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_QueueMutation_purgeJobs_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field_QueueMutation_purgeJobs_argsInput(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -3134,13 +3147,9 @@ func (ec *executionContext) field_QueueMutation_purgeJobs_args(ctx context.Conte
 }
 func (ec *executionContext) field_QueueMutation_purgeJobs_argsInput(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (manager.PurgeJobsRequest, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["input"]
-	if !ok {
+	if _, ok := rawArgs["input"]; !ok {
 		var zeroVal manager.PurgeJobsRequest
 		return zeroVal, nil
 	}
@@ -3154,9 +3163,9 @@ func (ec *executionContext) field_QueueMutation_purgeJobs_argsInput(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_QueueQuery_jobs_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_QueueQuery_jobs_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field_QueueQuery_jobs_argsInput(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -3166,13 +3175,9 @@ func (ec *executionContext) field_QueueQuery_jobs_args(ctx context.Context, rawA
 }
 func (ec *executionContext) field_QueueQuery_jobs_argsInput(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (gqlmodel.QueueJobsQueryInput, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["input"]
-	if !ok {
+	if _, ok := rawArgs["input"]; !ok {
 		var zeroVal gqlmodel.QueueJobsQueryInput
 		return zeroVal, nil
 	}
@@ -3186,9 +3191,9 @@ func (ec *executionContext) field_QueueQuery_jobs_argsInput(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_QueueQuery_metrics_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_QueueQuery_metrics_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field_QueueQuery_metrics_argsInput(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -3198,13 +3203,9 @@ func (ec *executionContext) field_QueueQuery_metrics_args(ctx context.Context, r
 }
 func (ec *executionContext) field_QueueQuery_metrics_argsInput(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (gen.QueueMetricsQueryInput, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["input"]
-	if !ok {
+	if _, ok := rawArgs["input"]; !ok {
 		var zeroVal gen.QueueMetricsQueryInput
 		return zeroVal, nil
 	}
@@ -3218,9 +3219,9 @@ func (ec *executionContext) field_QueueQuery_metrics_argsInput(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_TorrentContentQuery_search_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_TorrentContentQuery_search_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field_TorrentContentQuery_search_argsInput(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -3230,13 +3231,9 @@ func (ec *executionContext) field_TorrentContentQuery_search_args(ctx context.Co
 }
 func (ec *executionContext) field_TorrentContentQuery_search_argsInput(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (gqlmodel.TorrentContentSearchQueryInput, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["input"]
-	if !ok {
+	if _, ok := rawArgs["input"]; !ok {
 		var zeroVal gqlmodel.TorrentContentSearchQueryInput
 		return zeroVal, nil
 	}
@@ -3250,9 +3247,9 @@ func (ec *executionContext) field_TorrentContentQuery_search_argsInput(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_TorrentMutation_deleteTags_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_TorrentMutation_deleteTags_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field_TorrentMutation_deleteTags_argsInfoHashes(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -3267,13 +3264,9 @@ func (ec *executionContext) field_TorrentMutation_deleteTags_args(ctx context.Co
 }
 func (ec *executionContext) field_TorrentMutation_deleteTags_argsInfoHashes(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) ([]protocol.ID, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["infoHashes"]
-	if !ok {
+	if _, ok := rawArgs["infoHashes"]; !ok {
 		var zeroVal []protocol.ID
 		return zeroVal, nil
 	}
@@ -3289,13 +3282,9 @@ func (ec *executionContext) field_TorrentMutation_deleteTags_argsInfoHashes(
 
 func (ec *executionContext) field_TorrentMutation_deleteTags_argsTagNames(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) ([]string, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["tagNames"]
-	if !ok {
+	if _, ok := rawArgs["tagNames"]; !ok {
 		var zeroVal []string
 		return zeroVal, nil
 	}
@@ -3309,9 +3298,9 @@ func (ec *executionContext) field_TorrentMutation_deleteTags_argsTagNames(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_TorrentMutation_delete_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_TorrentMutation_delete_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field_TorrentMutation_delete_argsInfoHashes(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -3321,13 +3310,9 @@ func (ec *executionContext) field_TorrentMutation_delete_args(ctx context.Contex
 }
 func (ec *executionContext) field_TorrentMutation_delete_argsInfoHashes(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) ([]protocol.ID, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["infoHashes"]
-	if !ok {
+	if _, ok := rawArgs["infoHashes"]; !ok {
 		var zeroVal []protocol.ID
 		return zeroVal, nil
 	}
@@ -3341,9 +3326,9 @@ func (ec *executionContext) field_TorrentMutation_delete_argsInfoHashes(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_TorrentMutation_putTags_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_TorrentMutation_putTags_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field_TorrentMutation_putTags_argsInfoHashes(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -3358,13 +3343,9 @@ func (ec *executionContext) field_TorrentMutation_putTags_args(ctx context.Conte
 }
 func (ec *executionContext) field_TorrentMutation_putTags_argsInfoHashes(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) ([]protocol.ID, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["infoHashes"]
-	if !ok {
+	if _, ok := rawArgs["infoHashes"]; !ok {
 		var zeroVal []protocol.ID
 		return zeroVal, nil
 	}
@@ -3380,13 +3361,9 @@ func (ec *executionContext) field_TorrentMutation_putTags_argsInfoHashes(
 
 func (ec *executionContext) field_TorrentMutation_putTags_argsTagNames(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) ([]string, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["tagNames"]
-	if !ok {
+	if _, ok := rawArgs["tagNames"]; !ok {
 		var zeroVal []string
 		return zeroVal, nil
 	}
@@ -3400,9 +3377,37 @@ func (ec *executionContext) field_TorrentMutation_putTags_argsTagNames(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_TorrentMutation_setTags_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_TorrentMutation_reprocess_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
+	arg0, err := ec.field_TorrentMutation_reprocess_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_TorrentMutation_reprocess_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (gen.TorrentReprocessInput, error) {
+	if _, ok := rawArgs["input"]; !ok {
+		var zeroVal gen.TorrentReprocessInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNTorrentReprocessInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentReprocessInput(ctx, tmp)
+	}
+
+	var zeroVal gen.TorrentReprocessInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_TorrentMutation_setTags_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
 	arg0, err := ec.field_TorrentMutation_setTags_argsInfoHashes(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -3417,13 +3422,9 @@ func (ec *executionContext) field_TorrentMutation_setTags_args(ctx context.Conte
 }
 func (ec *executionContext) field_TorrentMutation_setTags_argsInfoHashes(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) ([]protocol.ID, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["infoHashes"]
-	if !ok {
+	if _, ok := rawArgs["infoHashes"]; !ok {
 		var zeroVal []protocol.ID
 		return zeroVal, nil
 	}
@@ -3439,13 +3440,9 @@ func (ec *executionContext) field_TorrentMutation_setTags_argsInfoHashes(
 
 func (ec *executionContext) field_TorrentMutation_setTags_argsTagNames(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) ([]string, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["tagNames"]
-	if !ok {
+	if _, ok := rawArgs["tagNames"]; !ok {
 		var zeroVal []string
 		return zeroVal, nil
 	}
@@ -3459,9 +3456,9 @@ func (ec *executionContext) field_TorrentMutation_setTags_argsTagNames(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_TorrentQuery_files_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_TorrentQuery_files_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field_TorrentQuery_files_argsInput(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -3471,13 +3468,9 @@ func (ec *executionContext) field_TorrentQuery_files_args(ctx context.Context, r
 }
 func (ec *executionContext) field_TorrentQuery_files_argsInput(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (gqlmodel.TorrentFilesQueryInput, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["input"]
-	if !ok {
+	if _, ok := rawArgs["input"]; !ok {
 		var zeroVal gqlmodel.TorrentFilesQueryInput
 		return zeroVal, nil
 	}
@@ -3491,9 +3484,9 @@ func (ec *executionContext) field_TorrentQuery_files_argsInput(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_TorrentQuery_metrics_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_TorrentQuery_metrics_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field_TorrentQuery_metrics_argsInput(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -3503,13 +3496,9 @@ func (ec *executionContext) field_TorrentQuery_metrics_args(ctx context.Context,
 }
 func (ec *executionContext) field_TorrentQuery_metrics_argsInput(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (gen.TorrentMetricsQueryInput, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["input"]
-	if !ok {
+	if _, ok := rawArgs["input"]; !ok {
 		var zeroVal gen.TorrentMetricsQueryInput
 		return zeroVal, nil
 	}
@@ -3523,9 +3512,9 @@ func (ec *executionContext) field_TorrentQuery_metrics_argsInput(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_TorrentQuery_suggestTags_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_TorrentQuery_suggestTags_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field_TorrentQuery_suggestTags_argsInput(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -3535,13 +3524,9 @@ func (ec *executionContext) field_TorrentQuery_suggestTags_args(ctx context.Cont
 }
 func (ec *executionContext) field_TorrentQuery_suggestTags_argsInput(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (*gen.SuggestTagsQueryInput, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["input"]
-	if !ok {
+	if _, ok := rawArgs["input"]; !ok {
 		var zeroVal *gen.SuggestTagsQueryInput
 		return zeroVal, nil
 	}
@@ -3555,9 +3540,65 @@ func (ec *executionContext) field_TorrentQuery_suggestTags_argsInput(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field___Type_enumValues_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field___Directive_args_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
+	arg0, err := ec.field___Directive_args_argsIncludeDeprecated(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["includeDeprecated"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field___Directive_args_argsIncludeDeprecated(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*bool, error) {
+	if _, ok := rawArgs["includeDeprecated"]; !ok {
+		var zeroVal *bool
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("includeDeprecated"))
+	if tmp, ok := rawArgs["includeDeprecated"]; ok {
+		return ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+	}
+
+	var zeroVal *bool
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field___Field_args_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field___Field_args_argsIncludeDeprecated(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["includeDeprecated"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field___Field_args_argsIncludeDeprecated(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*bool, error) {
+	if _, ok := rawArgs["includeDeprecated"]; !ok {
+		var zeroVal *bool
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("includeDeprecated"))
+	if tmp, ok := rawArgs["includeDeprecated"]; ok {
+		return ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+	}
+
+	var zeroVal *bool
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field___Type_enumValues_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
 	arg0, err := ec.field___Type_enumValues_argsIncludeDeprecated(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -3567,13 +3608,9 @@ func (ec *executionContext) field___Type_enumValues_args(ctx context.Context, ra
 }
 func (ec *executionContext) field___Type_enumValues_argsIncludeDeprecated(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (bool, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["includeDeprecated"]
-	if !ok {
+	if _, ok := rawArgs["includeDeprecated"]; !ok {
 		var zeroVal bool
 		return zeroVal, nil
 	}
@@ -3587,9 +3624,9 @@ func (ec *executionContext) field___Type_enumValues_argsIncludeDeprecated(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field___Type_fields_argsIncludeDeprecated(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -3599,13 +3636,9 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 }
 func (ec *executionContext) field___Type_fields_argsIncludeDeprecated(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (bool, error) {
-	// We won't call the directive if the argument is null.
-	// Set call_argument_directives_with_null to true to call directives
-	// even if the argument is null.
-	_, ok := rawArgs["includeDeprecated"]
-	if !ok {
+	if _, ok := rawArgs["includeDeprecated"]; !ok {
 		var zeroVal bool
 		return zeroVal, nil
 	}
@@ -3639,7 +3672,7 @@ func (ec *executionContext) _Content_type(ctx context.Context, field graphql.Col
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Type, nil
 	})
@@ -3683,7 +3716,7 @@ func (ec *executionContext) _Content_source(ctx context.Context, field graphql.C
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Source, nil
 	})
@@ -3727,7 +3760,7 @@ func (ec *executionContext) _Content_id(ctx context.Context, field graphql.Colle
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ID, nil
 	})
@@ -3771,7 +3804,7 @@ func (ec *executionContext) _Content_title(ctx context.Context, field graphql.Co
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Title, nil
 	})
@@ -3815,7 +3848,7 @@ func (ec *executionContext) _Content_releaseDate(ctx context.Context, field grap
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ReleaseDate, nil
 	})
@@ -3856,7 +3889,7 @@ func (ec *executionContext) _Content_releaseYear(ctx context.Context, field grap
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ReleaseYear, nil
 	})
@@ -3897,7 +3930,7 @@ func (ec *executionContext) _Content_adult(ctx context.Context, field graphql.Co
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Adult, nil
 	})
@@ -3938,7 +3971,7 @@ func (ec *executionContext) _Content_originalLanguage(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Content().OriginalLanguage(rctx, obj)
 	})
@@ -3985,7 +4018,7 @@ func (ec *executionContext) _Content_originalTitle(ctx context.Context, field gr
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.OriginalTitle, nil
 	})
@@ -4026,7 +4059,7 @@ func (ec *executionContext) _Content_overview(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Overview, nil
 	})
@@ -4067,7 +4100,7 @@ func (ec *executionContext) _Content_runtime(ctx context.Context, field graphql.
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Runtime, nil
 	})
@@ -4108,7 +4141,7 @@ func (ec *executionContext) _Content_popularity(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Popularity, nil
 	})
@@ -4149,7 +4182,7 @@ func (ec *executionContext) _Content_voteAverage(ctx context.Context, field grap
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.VoteAverage, nil
 	})
@@ -4190,7 +4223,7 @@ func (ec *executionContext) _Content_voteCount(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.VoteCount, nil
 	})
@@ -4231,7 +4264,7 @@ func (ec *executionContext) _Content_attributes(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Attributes, nil
 	})
@@ -4289,7 +4322,7 @@ func (ec *executionContext) _Content_collections(ctx context.Context, field grap
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Collections, nil
 	})
@@ -4349,7 +4382,7 @@ func (ec *executionContext) _Content_metadataSource(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.MetadataSource, nil
 	})
@@ -4399,7 +4432,7 @@ func (ec *executionContext) _Content_externalLinks(ctx context.Context, field gr
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ExternalLinks(), nil
 	})
@@ -4449,7 +4482,7 @@ func (ec *executionContext) _Content_createdAt(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.CreatedAt, nil
 	})
@@ -4493,7 +4526,7 @@ func (ec *executionContext) _Content_updatedAt(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.UpdatedAt, nil
 	})
@@ -4537,7 +4570,7 @@ func (ec *executionContext) _ContentAttribute_source(ctx context.Context, field 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Source, nil
 	})
@@ -4581,7 +4614,7 @@ func (ec *executionContext) _ContentAttribute_key(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Key, nil
 	})
@@ -4625,7 +4658,7 @@ func (ec *executionContext) _ContentAttribute_value(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Value, nil
 	})
@@ -4669,7 +4702,7 @@ func (ec *executionContext) _ContentAttribute_metadataSource(ctx context.Context
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.MetadataSource, nil
 	})
@@ -4719,7 +4752,7 @@ func (ec *executionContext) _ContentAttribute_createdAt(ctx context.Context, fie
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.CreatedAt, nil
 	})
@@ -4763,7 +4796,7 @@ func (ec *executionContext) _ContentAttribute_updatedAt(ctx context.Context, fie
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.UpdatedAt, nil
 	})
@@ -4807,7 +4840,7 @@ func (ec *executionContext) _ContentCollection_type(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Type, nil
 	})
@@ -4851,7 +4884,7 @@ func (ec *executionContext) _ContentCollection_source(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Source, nil
 	})
@@ -4895,7 +4928,7 @@ func (ec *executionContext) _ContentCollection_id(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ID, nil
 	})
@@ -4939,7 +4972,7 @@ func (ec *executionContext) _ContentCollection_name(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Name, nil
 	})
@@ -4983,7 +5016,7 @@ func (ec *executionContext) _ContentCollection_metadataSource(ctx context.Contex
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.MetadataSource, nil
 	})
@@ -5033,7 +5066,7 @@ func (ec *executionContext) _ContentCollection_createdAt(ctx context.Context, fi
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.CreatedAt, nil
 	})
@@ -5077,7 +5110,7 @@ func (ec *executionContext) _ContentCollection_updatedAt(ctx context.Context, fi
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.UpdatedAt, nil
 	})
@@ -5121,7 +5154,7 @@ func (ec *executionContext) _ContentTypeAgg_value(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Value, nil
 	})
@@ -5162,7 +5195,7 @@ func (ec *executionContext) _ContentTypeAgg_label(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Label, nil
 	})
@@ -5206,7 +5239,7 @@ func (ec *executionContext) _ContentTypeAgg_count(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Count, nil
 	})
@@ -5250,7 +5283,7 @@ func (ec *executionContext) _ContentTypeAgg_isEstimate(ctx context.Context, fiel
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IsEstimate, nil
 	})
@@ -5294,7 +5327,7 @@ func (ec *executionContext) _DownloadClientConfigQuery_enabled(ctx context.Conte
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Enabled, nil
 	})
@@ -5338,7 +5371,7 @@ func (ec *executionContext) _DownloadClientMutation_download(ctx context.Context
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.DownloadClientMutation().Download(rctx, obj, fc.Args["infoHashes"].([]protocol.ID))
 	})
@@ -5390,7 +5423,7 @@ func (ec *executionContext) _Episodes_label(ctx context.Context, field graphql.C
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Label, nil
 	})
@@ -5434,7 +5467,7 @@ func (ec *executionContext) _Episodes_seasons(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Seasons, nil
 	})
@@ -5484,7 +5517,7 @@ func (ec *executionContext) _ExternalLink_metadataSource(ctx context.Context, fi
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.MetadataSource, nil
 	})
@@ -5534,7 +5567,7 @@ func (ec *executionContext) _ExternalLink_url(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Url, nil
 	})
@@ -5578,7 +5611,7 @@ func (ec *executionContext) _GenreAgg_value(ctx context.Context, field graphql.C
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Value, nil
 	})
@@ -5622,7 +5655,7 @@ func (ec *executionContext) _GenreAgg_label(ctx context.Context, field graphql.C
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Label, nil
 	})
@@ -5666,7 +5699,7 @@ func (ec *executionContext) _GenreAgg_count(ctx context.Context, field graphql.C
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Count, nil
 	})
@@ -5710,7 +5743,7 @@ func (ec *executionContext) _GenreAgg_isEstimate(ctx context.Context, field grap
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IsEstimate, nil
 	})
@@ -5754,7 +5787,7 @@ func (ec *executionContext) _HealthCheck_key(ctx context.Context, field graphql.
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Key, nil
 	})
@@ -5798,7 +5831,7 @@ func (ec *executionContext) _HealthCheck_status(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Status, nil
 	})
@@ -5842,7 +5875,7 @@ func (ec *executionContext) _HealthCheck_timestamp(ctx context.Context, field gr
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Timestamp, nil
 	})
@@ -5886,7 +5919,7 @@ func (ec *executionContext) _HealthCheck_error(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Error, nil
 	})
@@ -5927,7 +5960,7 @@ func (ec *executionContext) _HealthQuery_status(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Status, nil
 	})
@@ -5971,7 +6004,7 @@ func (ec *executionContext) _HealthQuery_checks(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Checks, nil
 	})
@@ -6025,7 +6058,7 @@ func (ec *executionContext) _LanguageAgg_value(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Value, nil
 	})
@@ -6069,7 +6102,7 @@ func (ec *executionContext) _LanguageAgg_label(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Label, nil
 	})
@@ -6113,7 +6146,7 @@ func (ec *executionContext) _LanguageAgg_count(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Count, nil
 	})
@@ -6157,7 +6190,7 @@ func (ec *executionContext) _LanguageAgg_isEstimate(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IsEstimate, nil
 	})
@@ -6201,7 +6234,7 @@ func (ec *executionContext) _LanguageInfo_id(ctx context.Context, field graphql.
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Id(), nil
 	})
@@ -6245,7 +6278,7 @@ func (ec *executionContext) _LanguageInfo_name(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Name(), nil
 	})
@@ -6289,7 +6322,7 @@ func (ec *executionContext) _MetadataSource_key(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Key, nil
 	})
@@ -6333,7 +6366,7 @@ func (ec *executionContext) _MetadataSource_name(ctx context.Context, field grap
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Name, nil
 	})
@@ -6377,7 +6410,7 @@ func (ec *executionContext) _Mutation_torrent(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().Torrent(rctx)
 	})
@@ -6412,6 +6445,8 @@ func (ec *executionContext) fieldContext_Mutation_torrent(_ context.Context, fie
 				return ec.fieldContext_TorrentMutation_setTags(ctx, field)
 			case "deleteTags":
 				return ec.fieldContext_TorrentMutation_deleteTags(ctx, field)
+			case "reprocess":
+				return ec.fieldContext_TorrentMutation_reprocess(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TorrentMutation", field.Name)
 		},
@@ -6431,7 +6466,7 @@ func (ec *executionContext) _Mutation_queue(ctx context.Context, field graphql.C
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().Queue(rctx)
 	})
@@ -6481,7 +6516,7 @@ func (ec *executionContext) _Mutation_downloadclient(ctx context.Context, field 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().Downloadclient(rctx)
 	})
@@ -6529,7 +6564,7 @@ func (ec *executionContext) _Query_version(ctx context.Context, field graphql.Co
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Query().Version(rctx)
 	})
@@ -6573,7 +6608,7 @@ func (ec *executionContext) _Query_workers(ctx context.Context, field graphql.Co
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Query().Workers(rctx)
 	})
@@ -6621,7 +6656,7 @@ func (ec *executionContext) _Query_health(ctx context.Context, field graphql.Col
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Query().Health(rctx)
 	})
@@ -6671,7 +6706,7 @@ func (ec *executionContext) _Query_queue(ctx context.Context, field graphql.Coll
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Query().Queue(rctx)
 	})
@@ -6721,7 +6756,7 @@ func (ec *executionContext) _Query_torrent(ctx context.Context, field graphql.Co
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Query().Torrent(rctx)
 	})
@@ -6775,7 +6810,7 @@ func (ec *executionContext) _Query_torrentContent(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Query().TorrentContent(rctx)
 	})
@@ -6823,7 +6858,7 @@ func (ec *executionContext) _Query_downloadClient(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Query().DownloadClient(rctx)
 	})
@@ -6871,7 +6906,7 @@ func (ec *executionContext) _Query___type(ctx context.Context, field graphql.Col
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.introspectType(fc.Args["name"].(string))
 	})
@@ -6915,6 +6950,8 @@ func (ec *executionContext) fieldContext_Query___type(ctx context.Context, field
 				return ec.fieldContext___Type_ofType(ctx, field)
 			case "specifiedByURL":
 				return ec.fieldContext___Type_specifiedByURL(ctx, field)
+			case "isOneOf":
+				return ec.fieldContext___Type_isOneOf(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
 		},
@@ -6945,7 +6982,7 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.introspectSchema()
 	})
@@ -7000,7 +7037,7 @@ func (ec *executionContext) _QueueJob_id(ctx context.Context, field graphql.Coll
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ID, nil
 	})
@@ -7044,7 +7081,7 @@ func (ec *executionContext) _QueueJob_queue(ctx context.Context, field graphql.C
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Queue, nil
 	})
@@ -7088,7 +7125,7 @@ func (ec *executionContext) _QueueJob_status(ctx context.Context, field graphql.
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Status, nil
 	})
@@ -7132,7 +7169,7 @@ func (ec *executionContext) _QueueJob_payload(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Payload, nil
 	})
@@ -7176,7 +7213,7 @@ func (ec *executionContext) _QueueJob_priority(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Priority, nil
 	})
@@ -7220,7 +7257,7 @@ func (ec *executionContext) _QueueJob_retries(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Retries, nil
 	})
@@ -7264,7 +7301,7 @@ func (ec *executionContext) _QueueJob_maxRetries(ctx context.Context, field grap
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.MaxRetries, nil
 	})
@@ -7308,7 +7345,7 @@ func (ec *executionContext) _QueueJob_runAfter(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.RunAfter, nil
 	})
@@ -7352,7 +7389,7 @@ func (ec *executionContext) _QueueJob_ranAt(ctx context.Context, field graphql.C
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.QueueJob().RanAt(rctx, obj)
 	})
@@ -7393,7 +7430,7 @@ func (ec *executionContext) _QueueJob_error(ctx context.Context, field graphql.C
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Error, nil
 	})
@@ -7434,7 +7471,7 @@ func (ec *executionContext) _QueueJob_createdAt(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.CreatedAt, nil
 	})
@@ -7478,7 +7515,7 @@ func (ec *executionContext) _QueueJobQueueAgg_value(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Value, nil
 	})
@@ -7522,7 +7559,7 @@ func (ec *executionContext) _QueueJobQueueAgg_label(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Label, nil
 	})
@@ -7566,7 +7603,7 @@ func (ec *executionContext) _QueueJobQueueAgg_count(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Count, nil
 	})
@@ -7610,7 +7647,7 @@ func (ec *executionContext) _QueueJobStatusAgg_value(ctx context.Context, field 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Value, nil
 	})
@@ -7654,7 +7691,7 @@ func (ec *executionContext) _QueueJobStatusAgg_label(ctx context.Context, field 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Label, nil
 	})
@@ -7698,7 +7735,7 @@ func (ec *executionContext) _QueueJobStatusAgg_count(ctx context.Context, field 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Count, nil
 	})
@@ -7742,7 +7779,7 @@ func (ec *executionContext) _QueueJobsAggregations_queue(ctx context.Context, fi
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Queue, nil
 	})
@@ -7791,7 +7828,7 @@ func (ec *executionContext) _QueueJobsAggregations_status(ctx context.Context, f
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Status, nil
 	})
@@ -7840,7 +7877,7 @@ func (ec *executionContext) _QueueJobsQueryResult_totalCount(ctx context.Context
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.TotalCount, nil
 	})
@@ -7884,7 +7921,7 @@ func (ec *executionContext) _QueueJobsQueryResult_hasNextPage(ctx context.Contex
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.HasNextPage, nil
 	})
@@ -7925,7 +7962,7 @@ func (ec *executionContext) _QueueJobsQueryResult_items(ctx context.Context, fie
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Items, nil
 	})
@@ -7993,7 +8030,7 @@ func (ec *executionContext) _QueueJobsQueryResult_aggregations(ctx context.Conte
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Aggregations, nil
 	})
@@ -8043,7 +8080,7 @@ func (ec *executionContext) _QueueMetricsBucket_queue(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Queue, nil
 	})
@@ -8087,7 +8124,7 @@ func (ec *executionContext) _QueueMetricsBucket_status(ctx context.Context, fiel
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Status, nil
 	})
@@ -8131,7 +8168,7 @@ func (ec *executionContext) _QueueMetricsBucket_createdAtBucket(ctx context.Cont
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.CreatedAtBucket, nil
 	})
@@ -8175,7 +8212,7 @@ func (ec *executionContext) _QueueMetricsBucket_ranAtBucket(ctx context.Context,
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.RanAtBucket, nil
 	})
@@ -8216,7 +8253,7 @@ func (ec *executionContext) _QueueMetricsBucket_count(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Count, nil
 	})
@@ -8260,7 +8297,7 @@ func (ec *executionContext) _QueueMetricsBucket_latency(ctx context.Context, fie
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Latency, nil
 	})
@@ -8301,7 +8338,7 @@ func (ec *executionContext) _QueueMetricsQueryResult_buckets(ctx context.Context
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Buckets, nil
 	})
@@ -8359,7 +8396,7 @@ func (ec *executionContext) _QueueMutation_purgeJobs(ctx context.Context, field 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.PurgeJobs(ctx, fc.Args["input"].(manager.PurgeJobsRequest))
 	})
@@ -8411,7 +8448,7 @@ func (ec *executionContext) _QueueMutation_enqueueReprocessTorrentsBatch(ctx con
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.EnqueueReprocessTorrentsBatch(ctx, fc.Args["input"].(manager.EnqueueReprocessTorrentsBatchRequest))
 	})
@@ -8463,7 +8500,7 @@ func (ec *executionContext) _QueueQuery_jobs(ctx context.Context, field graphql.
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.QueueQuery().Jobs(rctx, obj, fc.Args["input"].(gqlmodel.QueueJobsQueryInput))
 	})
@@ -8528,7 +8565,7 @@ func (ec *executionContext) _QueueQuery_metrics(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Metrics(ctx, fc.Args["input"].(gen.QueueMetricsQueryInput))
 	})
@@ -8587,7 +8624,7 @@ func (ec *executionContext) _ReleaseYearAgg_value(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Value, nil
 	})
@@ -8628,7 +8665,7 @@ func (ec *executionContext) _ReleaseYearAgg_label(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Label, nil
 	})
@@ -8672,7 +8709,7 @@ func (ec *executionContext) _ReleaseYearAgg_count(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Count, nil
 	})
@@ -8716,7 +8753,7 @@ func (ec *executionContext) _ReleaseYearAgg_isEstimate(ctx context.Context, fiel
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IsEstimate, nil
 	})
@@ -8760,7 +8797,7 @@ func (ec *executionContext) _Season_season(ctx context.Context, field graphql.Co
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Season, nil
 	})
@@ -8804,7 +8841,7 @@ func (ec *executionContext) _Season_episodes(ctx context.Context, field graphql.
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Episodes, nil
 	})
@@ -8845,7 +8882,7 @@ func (ec *executionContext) _SuggestedTag_name(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Name, nil
 	})
@@ -8889,7 +8926,7 @@ func (ec *executionContext) _SuggestedTag_count(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Count, nil
 	})
@@ -8933,7 +8970,7 @@ func (ec *executionContext) _Torrent_infoHash(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.InfoHash, nil
 	})
@@ -8977,7 +9014,7 @@ func (ec *executionContext) _Torrent_name(ctx context.Context, field graphql.Col
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Name, nil
 	})
@@ -9021,7 +9058,7 @@ func (ec *executionContext) _Torrent_size(ctx context.Context, field graphql.Col
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Size, nil
 	})
@@ -9065,7 +9102,7 @@ func (ec *executionContext) _Torrent_hasFilesInfo(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.HasFilesInfo(), nil
 	})
@@ -9109,7 +9146,7 @@ func (ec *executionContext) _Torrent_singleFile(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.SingleFile(), nil
 	})
@@ -9150,7 +9187,7 @@ func (ec *executionContext) _Torrent_extension(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Extension, nil
 	})
@@ -9191,7 +9228,7 @@ func (ec *executionContext) _Torrent_filesStatus(ctx context.Context, field grap
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.FilesStatus, nil
 	})
@@ -9235,7 +9272,7 @@ func (ec *executionContext) _Torrent_filesCount(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.FilesCount, nil
 	})
@@ -9276,7 +9313,7 @@ func (ec *executionContext) _Torrent_fileType(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.FileType(), nil
 	})
@@ -9317,7 +9354,7 @@ func (ec *executionContext) _Torrent_fileTypes(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.FileTypes(), nil
 	})
@@ -9358,7 +9395,7 @@ func (ec *executionContext) _Torrent_files(ctx context.Context, field graphql.Co
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Files, nil
 	})
@@ -9417,7 +9454,7 @@ func (ec *executionContext) _Torrent_sources(ctx context.Context, field graphql.
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Torrent().Sources(rctx, obj)
 	})
@@ -9473,7 +9510,7 @@ func (ec *executionContext) _Torrent_seeders(ctx context.Context, field graphql.
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Seeders(), nil
 	})
@@ -9514,7 +9551,7 @@ func (ec *executionContext) _Torrent_leechers(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Leechers(), nil
 	})
@@ -9555,7 +9592,7 @@ func (ec *executionContext) _Torrent_tagNames(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.TagNames(), nil
 	})
@@ -9599,7 +9636,7 @@ func (ec *executionContext) _Torrent_magnetUri(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.MagnetUri(), nil
 	})
@@ -9643,7 +9680,7 @@ func (ec *executionContext) _Torrent_createdAt(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.CreatedAt, nil
 	})
@@ -9687,7 +9724,7 @@ func (ec *executionContext) _Torrent_updatedAt(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.UpdatedAt, nil
 	})
@@ -9731,7 +9768,7 @@ func (ec *executionContext) _TorrentContent_id(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ID, nil
 	})
@@ -9775,7 +9812,7 @@ func (ec *executionContext) _TorrentContent_infoHash(ctx context.Context, field 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.InfoHash, nil
 	})
@@ -9819,7 +9856,7 @@ func (ec *executionContext) _TorrentContent_torrent(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Torrent, nil
 	})
@@ -9901,7 +9938,7 @@ func (ec *executionContext) _TorrentContent_contentType(ctx context.Context, fie
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ContentType, nil
 	})
@@ -9942,7 +9979,7 @@ func (ec *executionContext) _TorrentContent_contentSource(ctx context.Context, f
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ContentSource, nil
 	})
@@ -9983,7 +10020,7 @@ func (ec *executionContext) _TorrentContent_contentId(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ContentID, nil
 	})
@@ -10024,7 +10061,7 @@ func (ec *executionContext) _TorrentContent_content(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Content, nil
 	})
@@ -10107,7 +10144,7 @@ func (ec *executionContext) _TorrentContent_title(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Title, nil
 	})
@@ -10151,7 +10188,7 @@ func (ec *executionContext) _TorrentContent_languages(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Languages, nil
 	})
@@ -10198,7 +10235,7 @@ func (ec *executionContext) _TorrentContent_episodes(ctx context.Context, field 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Episodes, nil
 	})
@@ -10245,7 +10282,7 @@ func (ec *executionContext) _TorrentContent_videoResolution(ctx context.Context,
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.VideoResolution, nil
 	})
@@ -10286,7 +10323,7 @@ func (ec *executionContext) _TorrentContent_videoSource(ctx context.Context, fie
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.VideoSource, nil
 	})
@@ -10327,7 +10364,7 @@ func (ec *executionContext) _TorrentContent_videoCodec(ctx context.Context, fiel
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.VideoCodec, nil
 	})
@@ -10368,7 +10405,7 @@ func (ec *executionContext) _TorrentContent_video3d(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Video3D, nil
 	})
@@ -10409,7 +10446,7 @@ func (ec *executionContext) _TorrentContent_videoModifier(ctx context.Context, f
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.VideoModifier, nil
 	})
@@ -10450,7 +10487,7 @@ func (ec *executionContext) _TorrentContent_releaseGroup(ctx context.Context, fi
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ReleaseGroup, nil
 	})
@@ -10491,7 +10528,7 @@ func (ec *executionContext) _TorrentContent_seeders(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Seeders, nil
 	})
@@ -10532,7 +10569,7 @@ func (ec *executionContext) _TorrentContent_leechers(ctx context.Context, field 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Leechers, nil
 	})
@@ -10573,7 +10610,7 @@ func (ec *executionContext) _TorrentContent_publishedAt(ctx context.Context, fie
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.PublishedAt, nil
 	})
@@ -10617,7 +10654,7 @@ func (ec *executionContext) _TorrentContent_createdAt(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.CreatedAt, nil
 	})
@@ -10661,7 +10698,7 @@ func (ec *executionContext) _TorrentContent_updatedAt(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.UpdatedAt, nil
 	})
@@ -10705,7 +10742,7 @@ func (ec *executionContext) _TorrentContentAggregations_contentType(ctx context.
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ContentType, nil
 	})
@@ -10756,7 +10793,7 @@ func (ec *executionContext) _TorrentContentAggregations_torrentSource(ctx contex
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.TorrentSource, nil
 	})
@@ -10807,7 +10844,7 @@ func (ec *executionContext) _TorrentContentAggregations_torrentTag(ctx context.C
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.TorrentTag, nil
 	})
@@ -10858,7 +10895,7 @@ func (ec *executionContext) _TorrentContentAggregations_torrentFileType(ctx cont
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.TorrentFileType, nil
 	})
@@ -10909,7 +10946,7 @@ func (ec *executionContext) _TorrentContentAggregations_language(ctx context.Con
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Language, nil
 	})
@@ -10960,7 +10997,7 @@ func (ec *executionContext) _TorrentContentAggregations_genre(ctx context.Contex
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Genre, nil
 	})
@@ -11011,7 +11048,7 @@ func (ec *executionContext) _TorrentContentAggregations_releaseYear(ctx context.
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ReleaseYear, nil
 	})
@@ -11062,7 +11099,7 @@ func (ec *executionContext) _TorrentContentAggregations_videoResolution(ctx cont
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.VideoResolution, nil
 	})
@@ -11113,7 +11150,7 @@ func (ec *executionContext) _TorrentContentAggregations_videoSource(ctx context.
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.VideoSource, nil
 	})
@@ -11164,7 +11201,7 @@ func (ec *executionContext) _TorrentContentQuery_search(ctx context.Context, fie
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Search(ctx, fc.Args["input"].(gqlmodel.TorrentContentSearchQueryInput))
 	})
@@ -11231,7 +11268,7 @@ func (ec *executionContext) _TorrentContentSearchResult_totalCount(ctx context.C
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.TotalCount, nil
 	})
@@ -11275,7 +11312,7 @@ func (ec *executionContext) _TorrentContentSearchResult_totalCountIsEstimate(ctx
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.TotalCountIsEstimate, nil
 	})
@@ -11319,7 +11356,7 @@ func (ec *executionContext) _TorrentContentSearchResult_hasNextPage(ctx context.
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.HasNextPage, nil
 	})
@@ -11360,7 +11397,7 @@ func (ec *executionContext) _TorrentContentSearchResult_items(ctx context.Contex
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Items, nil
 	})
@@ -11448,7 +11485,7 @@ func (ec *executionContext) _TorrentContentSearchResult_aggregations(ctx context
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Aggregations, nil
 	})
@@ -11512,7 +11549,7 @@ func (ec *executionContext) _TorrentFile_infoHash(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.InfoHash, nil
 	})
@@ -11556,7 +11593,7 @@ func (ec *executionContext) _TorrentFile_index(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Index, nil
 	})
@@ -11600,7 +11637,7 @@ func (ec *executionContext) _TorrentFile_path(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Path, nil
 	})
@@ -11644,7 +11681,7 @@ func (ec *executionContext) _TorrentFile_extension(ctx context.Context, field gr
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Extension, nil
 	})
@@ -11685,7 +11722,7 @@ func (ec *executionContext) _TorrentFile_fileType(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.FileType(), nil
 	})
@@ -11726,7 +11763,7 @@ func (ec *executionContext) _TorrentFile_size(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Size, nil
 	})
@@ -11770,7 +11807,7 @@ func (ec *executionContext) _TorrentFile_createdAt(ctx context.Context, field gr
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.CreatedAt, nil
 	})
@@ -11814,7 +11851,7 @@ func (ec *executionContext) _TorrentFile_updatedAt(ctx context.Context, field gr
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.UpdatedAt, nil
 	})
@@ -11858,7 +11895,7 @@ func (ec *executionContext) _TorrentFileTypeAgg_value(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Value, nil
 	})
@@ -11902,7 +11939,7 @@ func (ec *executionContext) _TorrentFileTypeAgg_label(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Label, nil
 	})
@@ -11946,7 +11983,7 @@ func (ec *executionContext) _TorrentFileTypeAgg_count(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Count, nil
 	})
@@ -11990,7 +12027,7 @@ func (ec *executionContext) _TorrentFileTypeAgg_isEstimate(ctx context.Context, 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IsEstimate, nil
 	})
@@ -12034,7 +12071,7 @@ func (ec *executionContext) _TorrentFilesQueryResult_totalCount(ctx context.Cont
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.TotalCount, nil
 	})
@@ -12078,7 +12115,7 @@ func (ec *executionContext) _TorrentFilesQueryResult_hasNextPage(ctx context.Con
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.HasNextPage, nil
 	})
@@ -12119,7 +12156,7 @@ func (ec *executionContext) _TorrentFilesQueryResult_items(ctx context.Context, 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Items, nil
 	})
@@ -12181,7 +12218,7 @@ func (ec *executionContext) _TorrentListSourcesResult_sources(ctx context.Contex
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Sources, nil
 	})
@@ -12231,7 +12268,7 @@ func (ec *executionContext) _TorrentMetricsBucket_source(ctx context.Context, fi
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Source, nil
 	})
@@ -12275,7 +12312,7 @@ func (ec *executionContext) _TorrentMetricsBucket_bucket(ctx context.Context, fi
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Bucket, nil
 	})
@@ -12319,7 +12356,7 @@ func (ec *executionContext) _TorrentMetricsBucket_updated(ctx context.Context, f
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Updated, nil
 	})
@@ -12363,7 +12400,7 @@ func (ec *executionContext) _TorrentMetricsBucket_count(ctx context.Context, fie
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Count, nil
 	})
@@ -12407,7 +12444,7 @@ func (ec *executionContext) _TorrentMetricsQueryResult_buckets(ctx context.Conte
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Buckets, nil
 	})
@@ -12461,7 +12498,7 @@ func (ec *executionContext) _TorrentMutation_delete(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.TorrentMutation().Delete(rctx, obj, fc.Args["infoHashes"].([]protocol.ID))
 	})
@@ -12513,7 +12550,7 @@ func (ec *executionContext) _TorrentMutation_putTags(ctx context.Context, field 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.TorrentMutation().PutTags(rctx, obj, fc.Args["infoHashes"].([]protocol.ID), fc.Args["tagNames"].([]string))
 	})
@@ -12565,7 +12602,7 @@ func (ec *executionContext) _TorrentMutation_setTags(ctx context.Context, field 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.TorrentMutation().SetTags(rctx, obj, fc.Args["infoHashes"].([]protocol.ID), fc.Args["tagNames"].([]string))
 	})
@@ -12617,7 +12654,7 @@ func (ec *executionContext) _TorrentMutation_deleteTags(ctx context.Context, fie
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.TorrentMutation().DeleteTags(rctx, obj, fc.Args["infoHashes"].([]protocol.ID), fc.Args["tagNames"].([]string))
 	})
@@ -12657,6 +12694,58 @@ func (ec *executionContext) fieldContext_TorrentMutation_deleteTags(ctx context.
 	return fc, nil
 }
 
+func (ec *executionContext) _TorrentMutation_reprocess(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.TorrentMutation) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TorrentMutation_reprocess(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.TorrentMutation().Reprocess(rctx, obj, fc.Args["input"].(gen.TorrentReprocessInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOVoid2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TorrentMutation_reprocess(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TorrentMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Void does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_TorrentMutation_reprocess_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _TorrentQuery_files(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.TorrentQuery) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_TorrentQuery_files(ctx, field)
 	if err != nil {
@@ -12669,7 +12758,7 @@ func (ec *executionContext) _TorrentQuery_files(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.TorrentQuery().Files(rctx, obj, fc.Args["input"].(gqlmodel.TorrentFilesQueryInput))
 	})
@@ -12732,7 +12821,7 @@ func (ec *executionContext) _TorrentQuery_listSources(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ListSources(ctx)
 	})
@@ -12780,7 +12869,7 @@ func (ec *executionContext) _TorrentQuery_suggestTags(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.SuggestTags(ctx, fc.Args["input"].(*gen.SuggestTagsQueryInput))
 	})
@@ -12839,7 +12928,7 @@ func (ec *executionContext) _TorrentQuery_metrics(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Metrics(ctx, fc.Args["input"].(gen.TorrentMetricsQueryInput))
 	})
@@ -12898,7 +12987,7 @@ func (ec *executionContext) _TorrentSource_key(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Key, nil
 	})
@@ -12942,7 +13031,7 @@ func (ec *executionContext) _TorrentSource_name(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Name, nil
 	})
@@ -12986,7 +13075,7 @@ func (ec *executionContext) _TorrentSourceAgg_value(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Value, nil
 	})
@@ -13030,7 +13119,7 @@ func (ec *executionContext) _TorrentSourceAgg_label(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Label, nil
 	})
@@ -13074,7 +13163,7 @@ func (ec *executionContext) _TorrentSourceAgg_count(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Count, nil
 	})
@@ -13118,7 +13207,7 @@ func (ec *executionContext) _TorrentSourceAgg_isEstimate(ctx context.Context, fi
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IsEstimate, nil
 	})
@@ -13162,7 +13251,7 @@ func (ec *executionContext) _TorrentSourceInfo_key(ctx context.Context, field gr
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Key, nil
 	})
@@ -13206,7 +13295,7 @@ func (ec *executionContext) _TorrentSourceInfo_name(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Name, nil
 	})
@@ -13250,7 +13339,7 @@ func (ec *executionContext) _TorrentSourceInfo_importId(ctx context.Context, fie
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ImportID, nil
 	})
@@ -13291,7 +13380,7 @@ func (ec *executionContext) _TorrentSourceInfo_seeders(ctx context.Context, fiel
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Seeders, nil
 	})
@@ -13332,7 +13421,7 @@ func (ec *executionContext) _TorrentSourceInfo_leechers(ctx context.Context, fie
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Leechers, nil
 	})
@@ -13373,7 +13462,7 @@ func (ec *executionContext) _TorrentSuggestTagsResult_suggestions(ctx context.Co
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Suggestions, nil
 	})
@@ -13423,7 +13512,7 @@ func (ec *executionContext) _TorrentTagAgg_value(ctx context.Context, field grap
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Value, nil
 	})
@@ -13467,7 +13556,7 @@ func (ec *executionContext) _TorrentTagAgg_label(ctx context.Context, field grap
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Label, nil
 	})
@@ -13511,7 +13600,7 @@ func (ec *executionContext) _TorrentTagAgg_count(ctx context.Context, field grap
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Count, nil
 	})
@@ -13555,7 +13644,7 @@ func (ec *executionContext) _TorrentTagAgg_isEstimate(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IsEstimate, nil
 	})
@@ -13599,7 +13688,7 @@ func (ec *executionContext) _VideoResolutionAgg_value(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Value, nil
 	})
@@ -13640,7 +13729,7 @@ func (ec *executionContext) _VideoResolutionAgg_label(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Label, nil
 	})
@@ -13684,7 +13773,7 @@ func (ec *executionContext) _VideoResolutionAgg_count(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Count, nil
 	})
@@ -13728,7 +13817,7 @@ func (ec *executionContext) _VideoResolutionAgg_isEstimate(ctx context.Context, 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IsEstimate, nil
 	})
@@ -13772,7 +13861,7 @@ func (ec *executionContext) _VideoSourceAgg_value(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Value, nil
 	})
@@ -13813,7 +13902,7 @@ func (ec *executionContext) _VideoSourceAgg_label(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Label, nil
 	})
@@ -13857,7 +13946,7 @@ func (ec *executionContext) _VideoSourceAgg_count(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Count, nil
 	})
@@ -13901,7 +13990,7 @@ func (ec *executionContext) _VideoSourceAgg_isEstimate(ctx context.Context, fiel
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IsEstimate, nil
 	})
@@ -13945,7 +14034,7 @@ func (ec *executionContext) _Worker_key(ctx context.Context, field graphql.Colle
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Key, nil
 	})
@@ -13989,7 +14078,7 @@ func (ec *executionContext) _Worker_started(ctx context.Context, field graphql.C
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Started, nil
 	})
@@ -14033,7 +14122,7 @@ func (ec *executionContext) _WorkersListAllQueryResult_workers(ctx context.Conte
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Workers, nil
 	})
@@ -14083,7 +14172,7 @@ func (ec *executionContext) _WorkersQuery_listAll(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ListAll, nil
 	})
@@ -14131,7 +14220,7 @@ func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Name, nil
 	})
@@ -14175,7 +14264,7 @@ func (ec *executionContext) ___Directive_description(ctx context.Context, field 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Description(), nil
 	})
@@ -14216,7 +14305,7 @@ func (ec *executionContext) ___Directive_locations(ctx context.Context, field gr
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Locations, nil
 	})
@@ -14260,7 +14349,7 @@ func (ec *executionContext) ___Directive_args(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Args, nil
 	})
@@ -14279,7 +14368,7 @@ func (ec *executionContext) ___Directive_args(ctx context.Context, field graphql
 	return ec.marshalN__InputValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValueᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Directive_args(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Directive_args(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Directive",
 		Field:      field,
@@ -14295,9 +14384,24 @@ func (ec *executionContext) fieldContext___Directive_args(_ context.Context, fie
 				return ec.fieldContext___InputValue_type(ctx, field)
 			case "defaultValue":
 				return ec.fieldContext___InputValue_defaultValue(ctx, field)
+			case "isDeprecated":
+				return ec.fieldContext___InputValue_isDeprecated(ctx, field)
+			case "deprecationReason":
+				return ec.fieldContext___InputValue_deprecationReason(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __InputValue", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field___Directive_args_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -14314,7 +14418,7 @@ func (ec *executionContext) ___Directive_isRepeatable(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IsRepeatable, nil
 	})
@@ -14358,7 +14462,7 @@ func (ec *executionContext) ___EnumValue_name(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Name, nil
 	})
@@ -14402,7 +14506,7 @@ func (ec *executionContext) ___EnumValue_description(ctx context.Context, field 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Description(), nil
 	})
@@ -14443,7 +14547,7 @@ func (ec *executionContext) ___EnumValue_isDeprecated(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IsDeprecated(), nil
 	})
@@ -14487,7 +14591,7 @@ func (ec *executionContext) ___EnumValue_deprecationReason(ctx context.Context, 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.DeprecationReason(), nil
 	})
@@ -14528,7 +14632,7 @@ func (ec *executionContext) ___Field_name(ctx context.Context, field graphql.Col
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Name, nil
 	})
@@ -14572,7 +14676,7 @@ func (ec *executionContext) ___Field_description(ctx context.Context, field grap
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Description(), nil
 	})
@@ -14613,7 +14717,7 @@ func (ec *executionContext) ___Field_args(ctx context.Context, field graphql.Col
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Args, nil
 	})
@@ -14632,7 +14736,7 @@ func (ec *executionContext) ___Field_args(ctx context.Context, field graphql.Col
 	return ec.marshalN__InputValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValueᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Field_args(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Field_args(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Field",
 		Field:      field,
@@ -14648,9 +14752,24 @@ func (ec *executionContext) fieldContext___Field_args(_ context.Context, field g
 				return ec.fieldContext___InputValue_type(ctx, field)
 			case "defaultValue":
 				return ec.fieldContext___InputValue_defaultValue(ctx, field)
+			case "isDeprecated":
+				return ec.fieldContext___InputValue_isDeprecated(ctx, field)
+			case "deprecationReason":
+				return ec.fieldContext___InputValue_deprecationReason(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __InputValue", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field___Field_args_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -14667,7 +14786,7 @@ func (ec *executionContext) ___Field_type(ctx context.Context, field graphql.Col
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Type, nil
 	})
@@ -14714,6 +14833,8 @@ func (ec *executionContext) fieldContext___Field_type(_ context.Context, field g
 				return ec.fieldContext___Type_ofType(ctx, field)
 			case "specifiedByURL":
 				return ec.fieldContext___Type_specifiedByURL(ctx, field)
+			case "isOneOf":
+				return ec.fieldContext___Type_isOneOf(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
 		},
@@ -14733,7 +14854,7 @@ func (ec *executionContext) ___Field_isDeprecated(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IsDeprecated(), nil
 	})
@@ -14777,7 +14898,7 @@ func (ec *executionContext) ___Field_deprecationReason(ctx context.Context, fiel
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.DeprecationReason(), nil
 	})
@@ -14818,7 +14939,7 @@ func (ec *executionContext) ___InputValue_name(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Name, nil
 	})
@@ -14862,7 +14983,7 @@ func (ec *executionContext) ___InputValue_description(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Description(), nil
 	})
@@ -14903,7 +15024,7 @@ func (ec *executionContext) ___InputValue_type(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Type, nil
 	})
@@ -14950,6 +15071,8 @@ func (ec *executionContext) fieldContext___InputValue_type(_ context.Context, fi
 				return ec.fieldContext___Type_ofType(ctx, field)
 			case "specifiedByURL":
 				return ec.fieldContext___Type_specifiedByURL(ctx, field)
+			case "isOneOf":
+				return ec.fieldContext___Type_isOneOf(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
 		},
@@ -14969,7 +15092,7 @@ func (ec *executionContext) ___InputValue_defaultValue(ctx context.Context, fiel
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.DefaultValue, nil
 	})
@@ -14998,6 +15121,91 @@ func (ec *executionContext) fieldContext___InputValue_defaultValue(_ context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) ___InputValue_isDeprecated(ctx context.Context, field graphql.CollectedField, obj *introspection.InputValue) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext___InputValue_isDeprecated(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsDeprecated(), nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext___InputValue_isDeprecated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "__InputValue",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) ___InputValue_deprecationReason(ctx context.Context, field graphql.CollectedField, obj *introspection.InputValue) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext___InputValue_deprecationReason(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DeprecationReason(), nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext___InputValue_deprecationReason(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "__InputValue",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) ___Schema_description(ctx context.Context, field graphql.CollectedField, obj *introspection.Schema) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext___Schema_description(ctx, field)
 	if err != nil {
@@ -15010,7 +15218,7 @@ func (ec *executionContext) ___Schema_description(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Description(), nil
 	})
@@ -15051,7 +15259,7 @@ func (ec *executionContext) ___Schema_types(ctx context.Context, field graphql.C
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Types(), nil
 	})
@@ -15098,6 +15306,8 @@ func (ec *executionContext) fieldContext___Schema_types(_ context.Context, field
 				return ec.fieldContext___Type_ofType(ctx, field)
 			case "specifiedByURL":
 				return ec.fieldContext___Type_specifiedByURL(ctx, field)
+			case "isOneOf":
+				return ec.fieldContext___Type_isOneOf(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
 		},
@@ -15117,7 +15327,7 @@ func (ec *executionContext) ___Schema_queryType(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.QueryType(), nil
 	})
@@ -15164,6 +15374,8 @@ func (ec *executionContext) fieldContext___Schema_queryType(_ context.Context, f
 				return ec.fieldContext___Type_ofType(ctx, field)
 			case "specifiedByURL":
 				return ec.fieldContext___Type_specifiedByURL(ctx, field)
+			case "isOneOf":
+				return ec.fieldContext___Type_isOneOf(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
 		},
@@ -15183,7 +15395,7 @@ func (ec *executionContext) ___Schema_mutationType(ctx context.Context, field gr
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.MutationType(), nil
 	})
@@ -15227,6 +15439,8 @@ func (ec *executionContext) fieldContext___Schema_mutationType(_ context.Context
 				return ec.fieldContext___Type_ofType(ctx, field)
 			case "specifiedByURL":
 				return ec.fieldContext___Type_specifiedByURL(ctx, field)
+			case "isOneOf":
+				return ec.fieldContext___Type_isOneOf(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
 		},
@@ -15246,7 +15460,7 @@ func (ec *executionContext) ___Schema_subscriptionType(ctx context.Context, fiel
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.SubscriptionType(), nil
 	})
@@ -15290,6 +15504,8 @@ func (ec *executionContext) fieldContext___Schema_subscriptionType(_ context.Con
 				return ec.fieldContext___Type_ofType(ctx, field)
 			case "specifiedByURL":
 				return ec.fieldContext___Type_specifiedByURL(ctx, field)
+			case "isOneOf":
+				return ec.fieldContext___Type_isOneOf(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
 		},
@@ -15309,7 +15525,7 @@ func (ec *executionContext) ___Schema_directives(ctx context.Context, field grap
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Directives(), nil
 	})
@@ -15365,7 +15581,7 @@ func (ec *executionContext) ___Type_kind(ctx context.Context, field graphql.Coll
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Kind(), nil
 	})
@@ -15409,7 +15625,7 @@ func (ec *executionContext) ___Type_name(ctx context.Context, field graphql.Coll
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Name(), nil
 	})
@@ -15450,7 +15666,7 @@ func (ec *executionContext) ___Type_description(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Description(), nil
 	})
@@ -15491,7 +15707,7 @@ func (ec *executionContext) ___Type_fields(ctx context.Context, field graphql.Co
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Fields(fc.Args["includeDeprecated"].(bool)), nil
 	})
@@ -15557,7 +15773,7 @@ func (ec *executionContext) ___Type_interfaces(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Interfaces(), nil
 	})
@@ -15601,6 +15817,8 @@ func (ec *executionContext) fieldContext___Type_interfaces(_ context.Context, fi
 				return ec.fieldContext___Type_ofType(ctx, field)
 			case "specifiedByURL":
 				return ec.fieldContext___Type_specifiedByURL(ctx, field)
+			case "isOneOf":
+				return ec.fieldContext___Type_isOneOf(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
 		},
@@ -15620,7 +15838,7 @@ func (ec *executionContext) ___Type_possibleTypes(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.PossibleTypes(), nil
 	})
@@ -15664,6 +15882,8 @@ func (ec *executionContext) fieldContext___Type_possibleTypes(_ context.Context,
 				return ec.fieldContext___Type_ofType(ctx, field)
 			case "specifiedByURL":
 				return ec.fieldContext___Type_specifiedByURL(ctx, field)
+			case "isOneOf":
+				return ec.fieldContext___Type_isOneOf(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
 		},
@@ -15683,7 +15903,7 @@ func (ec *executionContext) ___Type_enumValues(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.EnumValues(fc.Args["includeDeprecated"].(bool)), nil
 	})
@@ -15745,7 +15965,7 @@ func (ec *executionContext) ___Type_inputFields(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.InputFields(), nil
 	})
@@ -15777,6 +15997,10 @@ func (ec *executionContext) fieldContext___Type_inputFields(_ context.Context, f
 				return ec.fieldContext___InputValue_type(ctx, field)
 			case "defaultValue":
 				return ec.fieldContext___InputValue_defaultValue(ctx, field)
+			case "isDeprecated":
+				return ec.fieldContext___InputValue_isDeprecated(ctx, field)
+			case "deprecationReason":
+				return ec.fieldContext___InputValue_deprecationReason(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __InputValue", field.Name)
 		},
@@ -15796,7 +16020,7 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.OfType(), nil
 	})
@@ -15840,6 +16064,8 @@ func (ec *executionContext) fieldContext___Type_ofType(_ context.Context, field 
 				return ec.fieldContext___Type_ofType(ctx, field)
 			case "specifiedByURL":
 				return ec.fieldContext___Type_specifiedByURL(ctx, field)
+			case "isOneOf":
+				return ec.fieldContext___Type_isOneOf(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Type", field.Name)
 		},
@@ -15859,7 +16085,7 @@ func (ec *executionContext) ___Type_specifiedByURL(ctx context.Context, field gr
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.SpecifiedByURL(), nil
 	})
@@ -15888,14 +16114,55 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(_ context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) ___Type_isOneOf(ctx context.Context, field graphql.CollectedField, obj *introspection.Type) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext___Type_isOneOf(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsOneOf(), nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalOBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "__Type",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 // endregion **************************** field.gotpl *****************************
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputContentTypeFacetInput(ctx context.Context, obj interface{}) (gen.ContentTypeFacetInput, error) {
+func (ec *executionContext) unmarshalInputContentTypeFacetInput(ctx context.Context, obj any) (gen.ContentTypeFacetInput, error) {
 	var it gen.ContentTypeFacetInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -15926,10 +16193,10 @@ func (ec *executionContext) unmarshalInputContentTypeFacetInput(ctx context.Cont
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputGenreFacetInput(ctx context.Context, obj interface{}) (gen.GenreFacetInput, error) {
+func (ec *executionContext) unmarshalInputGenreFacetInput(ctx context.Context, obj any) (gen.GenreFacetInput, error) {
 	var it gen.GenreFacetInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -15967,10 +16234,10 @@ func (ec *executionContext) unmarshalInputGenreFacetInput(ctx context.Context, o
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputLanguageFacetInput(ctx context.Context, obj interface{}) (gen.LanguageFacetInput, error) {
+func (ec *executionContext) unmarshalInputLanguageFacetInput(ctx context.Context, obj any) (gen.LanguageFacetInput, error) {
 	var it gen.LanguageFacetInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -16001,20 +16268,27 @@ func (ec *executionContext) unmarshalInputLanguageFacetInput(ctx context.Context
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputQueueEnqueueReprocessTorrentsBatchInput(ctx context.Context, obj interface{}) (manager.EnqueueReprocessTorrentsBatchRequest, error) {
+func (ec *executionContext) unmarshalInputQueueEnqueueReprocessTorrentsBatchInput(ctx context.Context, obj any) (manager.EnqueueReprocessTorrentsBatchRequest, error) {
 	var it manager.EnqueueReprocessTorrentsBatchRequest
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"batchSize", "chunkSize", "contentTypes", "orphans", "classifierRematch", "classifierWorkflow", "apisDisabled", "localSearchDisabled"}
+	fieldsInOrder := [...]string{"purge", "batchSize", "chunkSize", "contentTypes", "orphans", "classifierRematch", "classifierWorkflow", "apisDisabled", "localSearchDisabled"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "purge":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("purge"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Purge = data
 		case "batchSize":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("batchSize"))
 			data, err := ec.unmarshalOInt2uint(ctx, v)
@@ -16079,10 +16353,10 @@ func (ec *executionContext) unmarshalInputQueueEnqueueReprocessTorrentsBatchInpu
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputQueueJobQueueFacetInput(ctx context.Context, obj interface{}) (gen.QueueJobQueueFacetInput, error) {
+func (ec *executionContext) unmarshalInputQueueJobQueueFacetInput(ctx context.Context, obj any) (gen.QueueJobQueueFacetInput, error) {
 	var it gen.QueueJobQueueFacetInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -16113,10 +16387,10 @@ func (ec *executionContext) unmarshalInputQueueJobQueueFacetInput(ctx context.Co
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputQueueJobStatusFacetInput(ctx context.Context, obj interface{}) (gen.QueueJobStatusFacetInput, error) {
+func (ec *executionContext) unmarshalInputQueueJobStatusFacetInput(ctx context.Context, obj any) (gen.QueueJobStatusFacetInput, error) {
 	var it gen.QueueJobStatusFacetInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -16147,10 +16421,10 @@ func (ec *executionContext) unmarshalInputQueueJobStatusFacetInput(ctx context.C
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputQueueJobsFacetsInput(ctx context.Context, obj interface{}) (gen.QueueJobsFacetsInput, error) {
+func (ec *executionContext) unmarshalInputQueueJobsFacetsInput(ctx context.Context, obj any) (gen.QueueJobsFacetsInput, error) {
 	var it gen.QueueJobsFacetsInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -16181,10 +16455,10 @@ func (ec *executionContext) unmarshalInputQueueJobsFacetsInput(ctx context.Conte
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputQueueJobsOrderByInput(ctx context.Context, obj interface{}) (gen.QueueJobsOrderByInput, error) {
+func (ec *executionContext) unmarshalInputQueueJobsOrderByInput(ctx context.Context, obj any) (gen.QueueJobsOrderByInput, error) {
 	var it gen.QueueJobsOrderByInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -16215,10 +16489,10 @@ func (ec *executionContext) unmarshalInputQueueJobsOrderByInput(ctx context.Cont
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputQueueJobsQueryInput(ctx context.Context, obj interface{}) (gqlmodel.QueueJobsQueryInput, error) {
+func (ec *executionContext) unmarshalInputQueueJobsQueryInput(ctx context.Context, obj any) (gqlmodel.QueueJobsQueryInput, error) {
 	var it gqlmodel.QueueJobsQueryInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -16298,10 +16572,10 @@ func (ec *executionContext) unmarshalInputQueueJobsQueryInput(ctx context.Contex
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputQueueMetricsQueryInput(ctx context.Context, obj interface{}) (gen.QueueMetricsQueryInput, error) {
+func (ec *executionContext) unmarshalInputQueueMetricsQueryInput(ctx context.Context, obj any) (gen.QueueMetricsQueryInput, error) {
 	var it gen.QueueMetricsQueryInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -16353,10 +16627,10 @@ func (ec *executionContext) unmarshalInputQueueMetricsQueryInput(ctx context.Con
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputQueuePurgeJobsInput(ctx context.Context, obj interface{}) (manager.PurgeJobsRequest, error) {
+func (ec *executionContext) unmarshalInputQueuePurgeJobsInput(ctx context.Context, obj any) (manager.PurgeJobsRequest, error) {
 	var it manager.PurgeJobsRequest
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -16387,10 +16661,10 @@ func (ec *executionContext) unmarshalInputQueuePurgeJobsInput(ctx context.Contex
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputReleaseYearFacetInput(ctx context.Context, obj interface{}) (gen.ReleaseYearFacetInput, error) {
+func (ec *executionContext) unmarshalInputReleaseYearFacetInput(ctx context.Context, obj any) (gen.ReleaseYearFacetInput, error) {
 	var it gen.ReleaseYearFacetInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -16421,10 +16695,10 @@ func (ec *executionContext) unmarshalInputReleaseYearFacetInput(ctx context.Cont
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputSuggestTagsQueryInput(ctx context.Context, obj interface{}) (gen.SuggestTagsQueryInput, error) {
+func (ec *executionContext) unmarshalInputSuggestTagsQueryInput(ctx context.Context, obj any) (gen.SuggestTagsQueryInput, error) {
 	var it gen.SuggestTagsQueryInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -16455,10 +16729,10 @@ func (ec *executionContext) unmarshalInputSuggestTagsQueryInput(ctx context.Cont
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputTorrentContentFacetsInput(ctx context.Context, obj interface{}) (gen.TorrentContentFacetsInput, error) {
+func (ec *executionContext) unmarshalInputTorrentContentFacetsInput(ctx context.Context, obj any) (gen.TorrentContentFacetsInput, error) {
 	var it gen.TorrentContentFacetsInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -16538,10 +16812,10 @@ func (ec *executionContext) unmarshalInputTorrentContentFacetsInput(ctx context.
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputTorrentContentOrderByInput(ctx context.Context, obj interface{}) (gen.TorrentContentOrderByInput, error) {
+func (ec *executionContext) unmarshalInputTorrentContentOrderByInput(ctx context.Context, obj any) (gen.TorrentContentOrderByInput, error) {
 	var it gen.TorrentContentOrderByInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -16572,10 +16846,10 @@ func (ec *executionContext) unmarshalInputTorrentContentOrderByInput(ctx context
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputTorrentContentSearchQueryInput(ctx context.Context, obj interface{}) (gqlmodel.TorrentContentSearchQueryInput, error) {
+func (ec *executionContext) unmarshalInputTorrentContentSearchQueryInput(ctx context.Context, obj any) (gqlmodel.TorrentContentSearchQueryInput, error) {
 	var it gqlmodel.TorrentContentSearchQueryInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -16669,10 +16943,10 @@ func (ec *executionContext) unmarshalInputTorrentContentSearchQueryInput(ctx con
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputTorrentFileTypeFacetInput(ctx context.Context, obj interface{}) (gen.TorrentFileTypeFacetInput, error) {
+func (ec *executionContext) unmarshalInputTorrentFileTypeFacetInput(ctx context.Context, obj any) (gen.TorrentFileTypeFacetInput, error) {
 	var it gen.TorrentFileTypeFacetInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -16710,10 +16984,10 @@ func (ec *executionContext) unmarshalInputTorrentFileTypeFacetInput(ctx context.
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputTorrentFilesOrderByInput(ctx context.Context, obj interface{}) (gen.TorrentFilesOrderByInput, error) {
+func (ec *executionContext) unmarshalInputTorrentFilesOrderByInput(ctx context.Context, obj any) (gen.TorrentFilesOrderByInput, error) {
 	var it gen.TorrentFilesOrderByInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -16744,10 +17018,10 @@ func (ec *executionContext) unmarshalInputTorrentFilesOrderByInput(ctx context.C
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputTorrentFilesQueryInput(ctx context.Context, obj interface{}) (gqlmodel.TorrentFilesQueryInput, error) {
+func (ec *executionContext) unmarshalInputTorrentFilesQueryInput(ctx context.Context, obj any) (gqlmodel.TorrentFilesQueryInput, error) {
 	var it gqlmodel.TorrentFilesQueryInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -16820,10 +17094,10 @@ func (ec *executionContext) unmarshalInputTorrentFilesQueryInput(ctx context.Con
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputTorrentMetricsQueryInput(ctx context.Context, obj interface{}) (gen.TorrentMetricsQueryInput, error) {
+func (ec *executionContext) unmarshalInputTorrentMetricsQueryInput(ctx context.Context, obj any) (gen.TorrentMetricsQueryInput, error) {
 	var it gen.TorrentMetricsQueryInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -16868,10 +17142,65 @@ func (ec *executionContext) unmarshalInputTorrentMetricsQueryInput(ctx context.C
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputTorrentSourceFacetInput(ctx context.Context, obj interface{}) (gen.TorrentSourceFacetInput, error) {
+func (ec *executionContext) unmarshalInputTorrentReprocessInput(ctx context.Context, obj any) (gen.TorrentReprocessInput, error) {
+	var it gen.TorrentReprocessInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"infoHashes", "classifierRematch", "classifierWorkflow", "apisDisabled", "localSearchDisabled"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "infoHashes":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("infoHashes"))
+			data, err := ec.unmarshalNHash202ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋprotocolᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.InfoHashes = data
+		case "classifierRematch":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("classifierRematch"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClassifierRematch = graphql.OmittableOf(data)
+		case "classifierWorkflow":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("classifierWorkflow"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClassifierWorkflow = graphql.OmittableOf(data)
+		case "apisDisabled":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("apisDisabled"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ApisDisabled = graphql.OmittableOf(data)
+		case "localSearchDisabled":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("localSearchDisabled"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LocalSearchDisabled = graphql.OmittableOf(data)
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputTorrentSourceFacetInput(ctx context.Context, obj any) (gen.TorrentSourceFacetInput, error) {
 	var it gen.TorrentSourceFacetInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -16909,10 +17238,10 @@ func (ec *executionContext) unmarshalInputTorrentSourceFacetInput(ctx context.Co
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputTorrentTagFacetInput(ctx context.Context, obj interface{}) (gen.TorrentTagFacetInput, error) {
+func (ec *executionContext) unmarshalInputTorrentTagFacetInput(ctx context.Context, obj any) (gen.TorrentTagFacetInput, error) {
 	var it gen.TorrentTagFacetInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -16950,10 +17279,10 @@ func (ec *executionContext) unmarshalInputTorrentTagFacetInput(ctx context.Conte
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputVideoResolutionFacetInput(ctx context.Context, obj interface{}) (gen.VideoResolutionFacetInput, error) {
+func (ec *executionContext) unmarshalInputVideoResolutionFacetInput(ctx context.Context, obj any) (gen.VideoResolutionFacetInput, error) {
 	var it gen.VideoResolutionFacetInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -16984,10 +17313,10 @@ func (ec *executionContext) unmarshalInputVideoResolutionFacetInput(ctx context.
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputVideoSourceFacetInput(ctx context.Context, obj interface{}) (gen.VideoSourceFacetInput, error) {
+func (ec *executionContext) unmarshalInputVideoSourceFacetInput(ctx context.Context, obj any) (gen.VideoSourceFacetInput, error) {
 	var it gen.VideoSourceFacetInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -19686,6 +20015,39 @@ func (ec *executionContext) _TorrentMutation(ctx context.Context, sel ast.Select
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "reprocess":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TorrentMutation_reprocess(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -20539,6 +20901,13 @@ func (ec *executionContext) ___InputValue(ctx context.Context, sel ast.Selection
 			}
 		case "defaultValue":
 			out.Values[i] = ec.___InputValue_defaultValue(ctx, field, obj)
+		case "isDeprecated":
+			out.Values[i] = ec.___InputValue_isDeprecated(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "deprecationReason":
+			out.Values[i] = ec.___InputValue_deprecationReason(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -20651,6 +21020,8 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = ec.___Type_ofType(ctx, field, obj)
 		case "specifiedByURL":
 			out.Values[i] = ec.___Type_specifiedByURL(ctx, field, obj)
+		case "isOneOf":
+			out.Values[i] = ec.___Type_isOneOf(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -20678,7 +21049,7 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
+func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -20789,7 +21160,7 @@ func (ec *executionContext) marshalNContentCollection2ᚕgithubᚗcomᚋbitmagne
 	return ret
 }
 
-func (ec *executionContext) unmarshalNContentType2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐContentType(ctx context.Context, v interface{}) (model.ContentType, error) {
+func (ec *executionContext) unmarshalNContentType2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐContentType(ctx context.Context, v any) (model.ContentType, error) {
 	tmp, err := graphql.UnmarshalString(v)
 	res := model.ContentType(tmp)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -20809,7 +21180,7 @@ func (ec *executionContext) marshalNContentTypeAgg2githubᚗcomᚋbitmagnetᚑio
 	return ec._ContentTypeAgg(ctx, sel, &v)
 }
 
-func (ec *executionContext) unmarshalNDateTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
+func (ec *executionContext) unmarshalNDateTime2timeᚐTime(ctx context.Context, v any) (time.Time, error) {
 	res, err := graphql.UnmarshalTime(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -20880,7 +21251,7 @@ func (ec *executionContext) marshalNExternalLink2ᚕgithubᚗcomᚋbitmagnetᚑi
 	return ret
 }
 
-func (ec *executionContext) unmarshalNFileType2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐFileType(ctx context.Context, v interface{}) (model.FileType, error) {
+func (ec *executionContext) unmarshalNFileType2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐFileType(ctx context.Context, v any) (model.FileType, error) {
 	tmp, err := graphql.UnmarshalString(v)
 	res := model.FileType(tmp)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -20896,7 +21267,7 @@ func (ec *executionContext) marshalNFileType2githubᚗcomᚋbitmagnetᚑioᚋbit
 	return res
 }
 
-func (ec *executionContext) unmarshalNFilesStatus2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐFilesStatus(ctx context.Context, v interface{}) (model.FilesStatus, error) {
+func (ec *executionContext) unmarshalNFilesStatus2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐFilesStatus(ctx context.Context, v any) (model.FilesStatus, error) {
 	tmp, err := graphql.UnmarshalString(v)
 	res := model.FilesStatus(tmp)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -20916,7 +21287,7 @@ func (ec *executionContext) marshalNGenreAgg2githubᚗcomᚋbitmagnetᚑioᚋbit
 	return ec._GenreAgg(ctx, sel, &v)
 }
 
-func (ec *executionContext) unmarshalNHash202githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋprotocolᚐID(ctx context.Context, v interface{}) (protocol.ID, error) {
+func (ec *executionContext) unmarshalNHash202githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋprotocolᚐID(ctx context.Context, v any) (protocol.ID, error) {
 	var res protocol.ID
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -20926,8 +21297,8 @@ func (ec *executionContext) marshalNHash202githubᚗcomᚋbitmagnetᚑioᚋbitma
 	return v
 }
 
-func (ec *executionContext) unmarshalNHash202ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋprotocolᚐIDᚄ(ctx context.Context, v interface{}) ([]protocol.ID, error) {
-	var vSlice []interface{}
+func (ec *executionContext) unmarshalNHash202ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋprotocolᚐIDᚄ(ctx context.Context, v any) ([]protocol.ID, error) {
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -21010,7 +21381,7 @@ func (ec *executionContext) marshalNHealthQuery2githubᚗcomᚋbitmagnetᚑioᚋ
 	return ec._HealthQuery(ctx, sel, &v)
 }
 
-func (ec *executionContext) unmarshalNHealthStatus2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐHealthStatus(ctx context.Context, v interface{}) (gen.HealthStatus, error) {
+func (ec *executionContext) unmarshalNHealthStatus2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐHealthStatus(ctx context.Context, v any) (gen.HealthStatus, error) {
 	var res gen.HealthStatus
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -21020,7 +21391,7 @@ func (ec *executionContext) marshalNHealthStatus2githubᚗcomᚋbitmagnetᚑio�
 	return v
 }
 
-func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
+func (ec *executionContext) unmarshalNID2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -21035,7 +21406,7 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v any) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -21050,7 +21421,7 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) unmarshalNInt2uint(ctx context.Context, v interface{}) (uint, error) {
+func (ec *executionContext) unmarshalNInt2uint(ctx context.Context, v any) (uint, error) {
 	res, err := graphql.UnmarshalUint(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -21065,7 +21436,7 @@ func (ec *executionContext) marshalNInt2uint(ctx context.Context, sel ast.Select
 	return res
 }
 
-func (ec *executionContext) unmarshalNLanguage2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐLanguage(ctx context.Context, v interface{}) (model.Language, error) {
+func (ec *executionContext) unmarshalNLanguage2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐLanguage(ctx context.Context, v any) (model.Language, error) {
 	tmp, err := graphql.UnmarshalString(v)
 	res := model.Language(tmp)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -21093,7 +21464,7 @@ func (ec *executionContext) marshalNMetadataSource2githubᚗcomᚋbitmagnetᚑio
 	return ec._MetadataSource(ctx, sel, &v)
 }
 
-func (ec *executionContext) unmarshalNMetricsBucketDuration2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐMetricsBucketDuration(ctx context.Context, v interface{}) (gen.MetricsBucketDuration, error) {
+func (ec *executionContext) unmarshalNMetricsBucketDuration2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐMetricsBucketDuration(ctx context.Context, v any) (gen.MetricsBucketDuration, error) {
 	var res gen.MetricsBucketDuration
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -21155,7 +21526,7 @@ func (ec *executionContext) marshalNQueueJobQueueAgg2githubᚗcomᚋbitmagnetᚑ
 	return ec._QueueJobQueueAgg(ctx, sel, &v)
 }
 
-func (ec *executionContext) unmarshalNQueueJobStatus2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐQueueJobStatus(ctx context.Context, v interface{}) (model.QueueJobStatus, error) {
+func (ec *executionContext) unmarshalNQueueJobStatus2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐQueueJobStatus(ctx context.Context, v any) (model.QueueJobStatus, error) {
 	tmp, err := graphql.UnmarshalString(v)
 	res := model.QueueJobStatus(tmp)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -21179,7 +21550,7 @@ func (ec *executionContext) marshalNQueueJobsAggregations2githubᚗcomᚋbitmagn
 	return ec._QueueJobsAggregations(ctx, sel, &v)
 }
 
-func (ec *executionContext) unmarshalNQueueJobsOrderByField2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobsOrderByField(ctx context.Context, v interface{}) (gen.QueueJobsOrderByField, error) {
+func (ec *executionContext) unmarshalNQueueJobsOrderByField2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobsOrderByField(ctx context.Context, v any) (gen.QueueJobsOrderByField, error) {
 	var res gen.QueueJobsOrderByField
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -21189,12 +21560,12 @@ func (ec *executionContext) marshalNQueueJobsOrderByField2githubᚗcomᚋbitmagn
 	return v
 }
 
-func (ec *executionContext) unmarshalNQueueJobsOrderByInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobsOrderByInput(ctx context.Context, v interface{}) (gen.QueueJobsOrderByInput, error) {
+func (ec *executionContext) unmarshalNQueueJobsOrderByInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobsOrderByInput(ctx context.Context, v any) (gen.QueueJobsOrderByInput, error) {
 	res, err := ec.unmarshalInputQueueJobsOrderByInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNQueueJobsQueryInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐQueueJobsQueryInput(ctx context.Context, v interface{}) (gqlmodel.QueueJobsQueryInput, error) {
+func (ec *executionContext) unmarshalNQueueJobsQueryInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐQueueJobsQueryInput(ctx context.Context, v any) (gqlmodel.QueueJobsQueryInput, error) {
 	res, err := ec.unmarshalInputQueueJobsQueryInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -21251,7 +21622,7 @@ func (ec *executionContext) marshalNQueueMetricsBucket2ᚕgithubᚗcomᚋbitmagn
 	return ret
 }
 
-func (ec *executionContext) unmarshalNQueueMetricsQueryInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueMetricsQueryInput(ctx context.Context, v interface{}) (gen.QueueMetricsQueryInput, error) {
+func (ec *executionContext) unmarshalNQueueMetricsQueryInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueMetricsQueryInput(ctx context.Context, v any) (gen.QueueMetricsQueryInput, error) {
 	res, err := ec.unmarshalInputQueueMetricsQueryInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -21270,7 +21641,7 @@ func (ec *executionContext) marshalNQueueMutation2githubᚗcomᚋbitmagnetᚑio�
 	return ec._QueueMutation(ctx, sel, &v)
 }
 
-func (ec *executionContext) unmarshalNQueuePurgeJobsInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋqueueᚋmanagerᚐPurgeJobsRequest(ctx context.Context, v interface{}) (manager.PurgeJobsRequest, error) {
+func (ec *executionContext) unmarshalNQueuePurgeJobsInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋqueueᚋmanagerᚐPurgeJobsRequest(ctx context.Context, v any) (manager.PurgeJobsRequest, error) {
 	res, err := ec.unmarshalInputQueuePurgeJobsInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -21331,7 +21702,7 @@ func (ec *executionContext) marshalNSeason2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbi
 	return ret
 }
 
-func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
+func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -21346,8 +21717,8 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
-	var vSlice []interface{}
+func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -21482,7 +21853,7 @@ func (ec *executionContext) marshalNTorrentContentAggregations2githubᚗcomᚋbi
 	return ec._TorrentContentAggregations(ctx, sel, &v)
 }
 
-func (ec *executionContext) unmarshalNTorrentContentOrderByField2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentOrderByField(ctx context.Context, v interface{}) (gen.TorrentContentOrderByField, error) {
+func (ec *executionContext) unmarshalNTorrentContentOrderByField2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentOrderByField(ctx context.Context, v any) (gen.TorrentContentOrderByField, error) {
 	var res gen.TorrentContentOrderByField
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -21492,7 +21863,7 @@ func (ec *executionContext) marshalNTorrentContentOrderByField2githubᚗcomᚋbi
 	return v
 }
 
-func (ec *executionContext) unmarshalNTorrentContentOrderByInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentOrderByInput(ctx context.Context, v interface{}) (gen.TorrentContentOrderByInput, error) {
+func (ec *executionContext) unmarshalNTorrentContentOrderByInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentOrderByInput(ctx context.Context, v any) (gen.TorrentContentOrderByInput, error) {
 	res, err := ec.unmarshalInputTorrentContentOrderByInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -21501,7 +21872,7 @@ func (ec *executionContext) marshalNTorrentContentQuery2githubᚗcomᚋbitmagnet
 	return ec._TorrentContentQuery(ctx, sel, &v)
 }
 
-func (ec *executionContext) unmarshalNTorrentContentSearchQueryInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐTorrentContentSearchQueryInput(ctx context.Context, v interface{}) (gqlmodel.TorrentContentSearchQueryInput, error) {
+func (ec *executionContext) unmarshalNTorrentContentSearchQueryInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐTorrentContentSearchQueryInput(ctx context.Context, v any) (gqlmodel.TorrentContentSearchQueryInput, error) {
 	res, err := ec.unmarshalInputTorrentContentSearchQueryInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -21562,7 +21933,7 @@ func (ec *executionContext) marshalNTorrentFileTypeAgg2githubᚗcomᚋbitmagnet�
 	return ec._TorrentFileTypeAgg(ctx, sel, &v)
 }
 
-func (ec *executionContext) unmarshalNTorrentFilesOrderByField2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentFilesOrderByField(ctx context.Context, v interface{}) (gen.TorrentFilesOrderByField, error) {
+func (ec *executionContext) unmarshalNTorrentFilesOrderByField2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentFilesOrderByField(ctx context.Context, v any) (gen.TorrentFilesOrderByField, error) {
 	var res gen.TorrentFilesOrderByField
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -21572,12 +21943,12 @@ func (ec *executionContext) marshalNTorrentFilesOrderByField2githubᚗcomᚋbitm
 	return v
 }
 
-func (ec *executionContext) unmarshalNTorrentFilesOrderByInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentFilesOrderByInput(ctx context.Context, v interface{}) (gen.TorrentFilesOrderByInput, error) {
+func (ec *executionContext) unmarshalNTorrentFilesOrderByInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentFilesOrderByInput(ctx context.Context, v any) (gen.TorrentFilesOrderByInput, error) {
 	res, err := ec.unmarshalInputTorrentFilesOrderByInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNTorrentFilesQueryInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐTorrentFilesQueryInput(ctx context.Context, v interface{}) (gqlmodel.TorrentFilesQueryInput, error) {
+func (ec *executionContext) unmarshalNTorrentFilesQueryInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐTorrentFilesQueryInput(ctx context.Context, v any) (gqlmodel.TorrentFilesQueryInput, error) {
 	res, err := ec.unmarshalInputTorrentFilesQueryInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -21638,7 +22009,7 @@ func (ec *executionContext) marshalNTorrentMetricsBucket2ᚕgithubᚗcomᚋbitma
 	return ret
 }
 
-func (ec *executionContext) unmarshalNTorrentMetricsQueryInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentMetricsQueryInput(ctx context.Context, v interface{}) (gen.TorrentMetricsQueryInput, error) {
+func (ec *executionContext) unmarshalNTorrentMetricsQueryInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentMetricsQueryInput(ctx context.Context, v any) (gen.TorrentMetricsQueryInput, error) {
 	res, err := ec.unmarshalInputTorrentMetricsQueryInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -21659,6 +22030,11 @@ func (ec *executionContext) marshalNTorrentMutation2githubᚗcomᚋbitmagnetᚑi
 
 func (ec *executionContext) marshalNTorrentQuery2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐTorrentQuery(ctx context.Context, sel ast.SelectionSet, v gqlmodel.TorrentQuery) graphql.Marshaler {
 	return ec._TorrentQuery(ctx, sel, &v)
+}
+
+func (ec *executionContext) unmarshalNTorrentReprocessInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentReprocessInput(ctx context.Context, v any) (gen.TorrentReprocessInput, error) {
+	res, err := ec.unmarshalInputTorrentReprocessInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNTorrentSource2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐTorrentSource(ctx context.Context, sel ast.SelectionSet, v model.TorrentSource) graphql.Marshaler {
@@ -21881,7 +22257,7 @@ func (ec *executionContext) marshalN__Directive2ᚕgithubᚗcomᚋ99designsᚋgq
 	return ret
 }
 
-func (ec *executionContext) unmarshalN__DirectiveLocation2string(ctx context.Context, v interface{}) (string, error) {
+func (ec *executionContext) unmarshalN__DirectiveLocation2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -21896,8 +22272,8 @@ func (ec *executionContext) marshalN__DirectiveLocation2string(ctx context.Conte
 	return res
 }
 
-func (ec *executionContext) unmarshalN__DirectiveLocation2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
-	var vSlice []interface{}
+func (ec *executionContext) unmarshalN__DirectiveLocation2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -22071,7 +22447,7 @@ func (ec *executionContext) marshalN__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgen�
 	return ec.___Type(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalN__TypeKind2string(ctx context.Context, v interface{}) (string, error) {
+func (ec *executionContext) unmarshalN__TypeKind2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -22086,7 +22462,7 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
-func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
+func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -22096,7 +22472,7 @@ func (ec *executionContext) marshalOBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalOBoolean2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullBool(ctx context.Context, v interface{}) (model.NullBool, error) {
+func (ec *executionContext) unmarshalOBoolean2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullBool(ctx context.Context, v any) (model.NullBool, error) {
 	var res model.NullBool
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -22106,7 +22482,7 @@ func (ec *executionContext) marshalOBoolean2githubᚗcomᚋbitmagnetᚑioᚋbitm
 	return v
 }
 
-func (ec *executionContext) unmarshalOBoolean2ᚖbool(ctx context.Context, v interface{}) (*bool, error) {
+func (ec *executionContext) unmarshalOBoolean2ᚖbool(ctx context.Context, v any) (*bool, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -22129,7 +22505,7 @@ func (ec *executionContext) marshalOContent2ᚖgithubᚗcomᚋbitmagnetᚑioᚋb
 	return ec._Content(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOContentType2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullContentType(ctx context.Context, v interface{}) (model.NullContentType, error) {
+func (ec *executionContext) unmarshalOContentType2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullContentType(ctx context.Context, v any) (model.NullContentType, error) {
 	var res model.NullContentType
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -22139,11 +22515,11 @@ func (ec *executionContext) marshalOContentType2githubᚗcomᚋbitmagnetᚑioᚋ
 	return v
 }
 
-func (ec *executionContext) unmarshalOContentType2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullContentType(ctx context.Context, v interface{}) ([]model.NullContentType, error) {
+func (ec *executionContext) unmarshalOContentType2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullContentType(ctx context.Context, v any) ([]model.NullContentType, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var vSlice []interface{}
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -22200,11 +22576,11 @@ func (ec *executionContext) marshalOContentType2ᚕgithubᚗcomᚋbitmagnetᚑio
 	return ret
 }
 
-func (ec *executionContext) unmarshalOContentType2ᚕᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐContentType(ctx context.Context, v interface{}) ([]*model.ContentType, error) {
+func (ec *executionContext) unmarshalOContentType2ᚕᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐContentType(ctx context.Context, v any) ([]*model.ContentType, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var vSlice []interface{}
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -22261,7 +22637,7 @@ func (ec *executionContext) marshalOContentType2ᚕᚖgithubᚗcomᚋbitmagnet�
 	return ret
 }
 
-func (ec *executionContext) unmarshalOContentType2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐContentType(ctx context.Context, v interface{}) (*model.ContentType, error) {
+func (ec *executionContext) unmarshalOContentType2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐContentType(ctx context.Context, v any) (*model.ContentType, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -22325,7 +22701,7 @@ func (ec *executionContext) marshalOContentTypeAgg2ᚕgithubᚗcomᚋbitmagnet�
 	return ret
 }
 
-func (ec *executionContext) unmarshalOContentTypeFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐContentTypeFacetInput(ctx context.Context, v interface{}) (*gen.ContentTypeFacetInput, error) {
+func (ec *executionContext) unmarshalOContentTypeFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐContentTypeFacetInput(ctx context.Context, v any) (*gen.ContentTypeFacetInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -22333,7 +22709,7 @@ func (ec *executionContext) unmarshalOContentTypeFacetInput2ᚖgithubᚗcomᚋbi
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalODate2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐDate(ctx context.Context, v interface{}) (model.Date, error) {
+func (ec *executionContext) unmarshalODate2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐDate(ctx context.Context, v any) (model.Date, error) {
 	var res model.Date
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -22343,7 +22719,7 @@ func (ec *executionContext) marshalODate2githubᚗcomᚋbitmagnetᚑioᚋbitmagn
 	return v
 }
 
-func (ec *executionContext) unmarshalODateTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
+func (ec *executionContext) unmarshalODateTime2timeᚐTime(ctx context.Context, v any) (time.Time, error) {
 	res, err := graphql.UnmarshalTime(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -22353,7 +22729,7 @@ func (ec *executionContext) marshalODateTime2timeᚐTime(ctx context.Context, se
 	return res
 }
 
-func (ec *executionContext) unmarshalODateTime2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {
+func (ec *executionContext) unmarshalODateTime2ᚖtimeᚐTime(ctx context.Context, v any) (*time.Time, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -22369,7 +22745,7 @@ func (ec *executionContext) marshalODateTime2ᚖtimeᚐTime(ctx context.Context,
 	return res
 }
 
-func (ec *executionContext) unmarshalODuration2ᚖtimeᚐDuration(ctx context.Context, v interface{}) (*time.Duration, error) {
+func (ec *executionContext) unmarshalODuration2ᚖtimeᚐDuration(ctx context.Context, v any) (*time.Duration, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -22392,7 +22768,7 @@ func (ec *executionContext) marshalOEpisodes2ᚖgithubᚗcomᚋbitmagnetᚑioᚋ
 	return ec._Episodes(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOFacetLogic2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐFacetLogic(ctx context.Context, v interface{}) (*model.FacetLogic, error) {
+func (ec *executionContext) unmarshalOFacetLogic2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐFacetLogic(ctx context.Context, v any) (*model.FacetLogic, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -22409,7 +22785,7 @@ func (ec *executionContext) marshalOFacetLogic2ᚖgithubᚗcomᚋbitmagnetᚑio�
 	return res
 }
 
-func (ec *executionContext) unmarshalOFileType2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullFileType(ctx context.Context, v interface{}) (model.NullFileType, error) {
+func (ec *executionContext) unmarshalOFileType2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullFileType(ctx context.Context, v any) (model.NullFileType, error) {
 	var res model.NullFileType
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -22419,11 +22795,11 @@ func (ec *executionContext) marshalOFileType2githubᚗcomᚋbitmagnetᚑioᚋbit
 	return v
 }
 
-func (ec *executionContext) unmarshalOFileType2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐFileTypeᚄ(ctx context.Context, v interface{}) ([]model.FileType, error) {
+func (ec *executionContext) unmarshalOFileType2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐFileTypeᚄ(ctx context.Context, v any) ([]model.FileType, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var vSlice []interface{}
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -22486,7 +22862,7 @@ func (ec *executionContext) marshalOFileType2ᚕgithubᚗcomᚋbitmagnetᚑioᚋ
 	return ret
 }
 
-func (ec *executionContext) unmarshalOFloat2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullFloat32(ctx context.Context, v interface{}) (model.NullFloat32, error) {
+func (ec *executionContext) unmarshalOFloat2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullFloat32(ctx context.Context, v any) (model.NullFloat32, error) {
 	var res model.NullFloat32
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -22496,7 +22872,7 @@ func (ec *executionContext) marshalOFloat2githubᚗcomᚋbitmagnetᚑioᚋbitmag
 	return v
 }
 
-func (ec *executionContext) unmarshalOFloat2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullFloat64(ctx context.Context, v interface{}) (model.NullFloat64, error) {
+func (ec *executionContext) unmarshalOFloat2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullFloat64(ctx context.Context, v any) (model.NullFloat64, error) {
 	var res model.NullFloat64
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -22553,7 +22929,7 @@ func (ec *executionContext) marshalOGenreAgg2ᚕgithubᚗcomᚋbitmagnetᚑioᚋ
 	return ret
 }
 
-func (ec *executionContext) unmarshalOGenreFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐGenreFacetInput(ctx context.Context, v interface{}) (*gen.GenreFacetInput, error) {
+func (ec *executionContext) unmarshalOGenreFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐGenreFacetInput(ctx context.Context, v any) (*gen.GenreFacetInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -22561,11 +22937,11 @@ func (ec *executionContext) unmarshalOGenreFacetInput2ᚖgithubᚗcomᚋbitmagne
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOHash202ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋprotocolᚐIDᚄ(ctx context.Context, v interface{}) ([]protocol.ID, error) {
+func (ec *executionContext) unmarshalOHash202ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋprotocolᚐIDᚄ(ctx context.Context, v any) ([]protocol.ID, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var vSlice []interface{}
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -22599,7 +22975,7 @@ func (ec *executionContext) marshalOHash202ᚕgithubᚗcomᚋbitmagnetᚑioᚋbi
 	return ret
 }
 
-func (ec *executionContext) unmarshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullUint(ctx context.Context, v interface{}) (model.NullUint, error) {
+func (ec *executionContext) unmarshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullUint(ctx context.Context, v any) (model.NullUint, error) {
 	var res model.NullUint
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -22609,7 +22985,7 @@ func (ec *executionContext) marshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmagne
 	return v
 }
 
-func (ec *executionContext) unmarshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullUint16(ctx context.Context, v interface{}) (model.NullUint16, error) {
+func (ec *executionContext) unmarshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullUint16(ctx context.Context, v any) (model.NullUint16, error) {
 	var res model.NullUint16
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -22619,7 +22995,7 @@ func (ec *executionContext) marshalOInt2githubᚗcomᚋbitmagnetᚑioᚋbitmagne
 	return v
 }
 
-func (ec *executionContext) unmarshalOInt2uint(ctx context.Context, v interface{}) (uint, error) {
+func (ec *executionContext) unmarshalOInt2uint(ctx context.Context, v any) (uint, error) {
 	res, err := graphql.UnmarshalUint(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -22629,11 +23005,11 @@ func (ec *executionContext) marshalOInt2uint(ctx context.Context, sel ast.Select
 	return res
 }
 
-func (ec *executionContext) unmarshalOInt2ᚕintᚄ(ctx context.Context, v interface{}) ([]int, error) {
+func (ec *executionContext) unmarshalOInt2ᚕintᚄ(ctx context.Context, v any) ([]int, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var vSlice []interface{}
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -22667,11 +23043,11 @@ func (ec *executionContext) marshalOInt2ᚕintᚄ(ctx context.Context, sel ast.S
 	return ret
 }
 
-func (ec *executionContext) unmarshalOLanguage2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐLanguageᚄ(ctx context.Context, v interface{}) ([]model.Language, error) {
+func (ec *executionContext) unmarshalOLanguage2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐLanguageᚄ(ctx context.Context, v any) ([]model.Language, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var vSlice []interface{}
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -22781,7 +23157,7 @@ func (ec *executionContext) marshalOLanguageAgg2ᚕgithubᚗcomᚋbitmagnetᚑio
 	return ret
 }
 
-func (ec *executionContext) unmarshalOLanguageFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐLanguageFacetInput(ctx context.Context, v interface{}) (*gen.LanguageFacetInput, error) {
+func (ec *executionContext) unmarshalOLanguageFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐLanguageFacetInput(ctx context.Context, v any) (*gen.LanguageFacetInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -22843,12 +23219,12 @@ func (ec *executionContext) marshalOLanguageInfo2ᚖgithubᚗcomᚋbitmagnetᚑi
 	return ec._LanguageInfo(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOQueueEnqueueReprocessTorrentsBatchInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋqueueᚋmanagerᚐEnqueueReprocessTorrentsBatchRequest(ctx context.Context, v interface{}) (manager.EnqueueReprocessTorrentsBatchRequest, error) {
+func (ec *executionContext) unmarshalOQueueEnqueueReprocessTorrentsBatchInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋqueueᚋmanagerᚐEnqueueReprocessTorrentsBatchRequest(ctx context.Context, v any) (manager.EnqueueReprocessTorrentsBatchRequest, error) {
 	res, err := ec.unmarshalInputQueueEnqueueReprocessTorrentsBatchInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOQueueEnqueueReprocessTorrentsBatchInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋqueueᚋmanagerᚐEnqueueReprocessTorrentsBatchRequest(ctx context.Context, v interface{}) (*manager.EnqueueReprocessTorrentsBatchRequest, error) {
+func (ec *executionContext) unmarshalOQueueEnqueueReprocessTorrentsBatchInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋqueueᚋmanagerᚐEnqueueReprocessTorrentsBatchRequest(ctx context.Context, v any) (*manager.EnqueueReprocessTorrentsBatchRequest, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -22903,7 +23279,7 @@ func (ec *executionContext) marshalOQueueJobQueueAgg2ᚕgithubᚗcomᚋbitmagnet
 	return ret
 }
 
-func (ec *executionContext) unmarshalOQueueJobQueueFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobQueueFacetInput(ctx context.Context, v interface{}) (*gen.QueueJobQueueFacetInput, error) {
+func (ec *executionContext) unmarshalOQueueJobQueueFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobQueueFacetInput(ctx context.Context, v any) (*gen.QueueJobQueueFacetInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -22911,11 +23287,11 @@ func (ec *executionContext) unmarshalOQueueJobQueueFacetInput2ᚖgithubᚗcomᚋ
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOQueueJobStatus2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐQueueJobStatusᚄ(ctx context.Context, v interface{}) ([]model.QueueJobStatus, error) {
+func (ec *executionContext) unmarshalOQueueJobStatus2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐQueueJobStatusᚄ(ctx context.Context, v any) ([]model.QueueJobStatus, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var vSlice []interface{}
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -23025,7 +23401,7 @@ func (ec *executionContext) marshalOQueueJobStatusAgg2ᚕgithubᚗcomᚋbitmagne
 	return ret
 }
 
-func (ec *executionContext) unmarshalOQueueJobStatusFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobStatusFacetInput(ctx context.Context, v interface{}) (*gen.QueueJobStatusFacetInput, error) {
+func (ec *executionContext) unmarshalOQueueJobStatusFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobStatusFacetInput(ctx context.Context, v any) (*gen.QueueJobStatusFacetInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -23033,7 +23409,7 @@ func (ec *executionContext) unmarshalOQueueJobStatusFacetInput2ᚖgithubᚗcom�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOQueueJobsFacetsInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobsFacetsInput(ctx context.Context, v interface{}) (*gen.QueueJobsFacetsInput, error) {
+func (ec *executionContext) unmarshalOQueueJobsFacetsInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobsFacetsInput(ctx context.Context, v any) (*gen.QueueJobsFacetsInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -23041,11 +23417,11 @@ func (ec *executionContext) unmarshalOQueueJobsFacetsInput2ᚖgithubᚗcomᚋbit
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOQueueJobsOrderByInput2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobsOrderByInputᚄ(ctx context.Context, v interface{}) ([]gen.QueueJobsOrderByInput, error) {
+func (ec *executionContext) unmarshalOQueueJobsOrderByInput2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐQueueJobsOrderByInputᚄ(ctx context.Context, v any) ([]gen.QueueJobsOrderByInput, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var vSlice []interface{}
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -23108,7 +23484,7 @@ func (ec *executionContext) marshalOReleaseYearAgg2ᚕgithubᚗcomᚋbitmagnet�
 	return ret
 }
 
-func (ec *executionContext) unmarshalOReleaseYearFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐReleaseYearFacetInput(ctx context.Context, v interface{}) (*gen.ReleaseYearFacetInput, error) {
+func (ec *executionContext) unmarshalOReleaseYearFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐReleaseYearFacetInput(ctx context.Context, v any) (*gen.ReleaseYearFacetInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -23116,7 +23492,7 @@ func (ec *executionContext) unmarshalOReleaseYearFacetInput2ᚖgithubᚗcomᚋbi
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOString2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullString(ctx context.Context, v interface{}) (model.NullString, error) {
+func (ec *executionContext) unmarshalOString2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullString(ctx context.Context, v any) (model.NullString, error) {
 	var res model.NullString
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -23126,7 +23502,7 @@ func (ec *executionContext) marshalOString2githubᚗcomᚋbitmagnetᚑioᚋbitma
 	return v
 }
 
-func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
+func (ec *executionContext) unmarshalOString2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -23136,11 +23512,11 @@ func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var vSlice []interface{}
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -23174,7 +23550,7 @@ func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel
 	return ret
 }
 
-func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v any) (*string, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -23190,7 +23566,7 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) unmarshalOSuggestTagsQueryInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐSuggestTagsQueryInput(ctx context.Context, v interface{}) (*gen.SuggestTagsQueryInput, error) {
+func (ec *executionContext) unmarshalOSuggestTagsQueryInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐSuggestTagsQueryInput(ctx context.Context, v any) (*gen.SuggestTagsQueryInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -23198,7 +23574,7 @@ func (ec *executionContext) unmarshalOSuggestTagsQueryInput2ᚖgithubᚗcomᚋbi
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOTorrentContentFacetsInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentFacetsInput(ctx context.Context, v interface{}) (*gen.TorrentContentFacetsInput, error) {
+func (ec *executionContext) unmarshalOTorrentContentFacetsInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentFacetsInput(ctx context.Context, v any) (*gen.TorrentContentFacetsInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -23206,11 +23582,11 @@ func (ec *executionContext) unmarshalOTorrentContentFacetsInput2ᚖgithubᚗcom�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOTorrentContentOrderByInput2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentOrderByInputᚄ(ctx context.Context, v interface{}) ([]gen.TorrentContentOrderByInput, error) {
+func (ec *executionContext) unmarshalOTorrentContentOrderByInput2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentContentOrderByInputᚄ(ctx context.Context, v any) ([]gen.TorrentContentOrderByInput, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var vSlice []interface{}
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -23320,7 +23696,7 @@ func (ec *executionContext) marshalOTorrentFileTypeAgg2ᚕgithubᚗcomᚋbitmagn
 	return ret
 }
 
-func (ec *executionContext) unmarshalOTorrentFileTypeFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentFileTypeFacetInput(ctx context.Context, v interface{}) (*gen.TorrentFileTypeFacetInput, error) {
+func (ec *executionContext) unmarshalOTorrentFileTypeFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentFileTypeFacetInput(ctx context.Context, v any) (*gen.TorrentFileTypeFacetInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -23328,11 +23704,11 @@ func (ec *executionContext) unmarshalOTorrentFileTypeFacetInput2ᚖgithubᚗcom�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOTorrentFilesOrderByInput2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentFilesOrderByInputᚄ(ctx context.Context, v interface{}) ([]gen.TorrentFilesOrderByInput, error) {
+func (ec *executionContext) unmarshalOTorrentFilesOrderByInput2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentFilesOrderByInputᚄ(ctx context.Context, v any) ([]gen.TorrentFilesOrderByInput, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var vSlice []interface{}
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -23395,7 +23771,7 @@ func (ec *executionContext) marshalOTorrentSourceAgg2ᚕgithubᚗcomᚋbitmagnet
 	return ret
 }
 
-func (ec *executionContext) unmarshalOTorrentSourceFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentSourceFacetInput(ctx context.Context, v interface{}) (*gen.TorrentSourceFacetInput, error) {
+func (ec *executionContext) unmarshalOTorrentSourceFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentSourceFacetInput(ctx context.Context, v any) (*gen.TorrentSourceFacetInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -23450,7 +23826,7 @@ func (ec *executionContext) marshalOTorrentTagAgg2ᚕgithubᚗcomᚋbitmagnetᚑ
 	return ret
 }
 
-func (ec *executionContext) unmarshalOTorrentTagFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentTagFacetInput(ctx context.Context, v interface{}) (*gen.TorrentTagFacetInput, error) {
+func (ec *executionContext) unmarshalOTorrentTagFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTorrentTagFacetInput(ctx context.Context, v any) (*gen.TorrentTagFacetInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -23458,7 +23834,7 @@ func (ec *executionContext) unmarshalOTorrentTagFacetInput2ᚖgithubᚗcomᚋbit
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOVideo3D2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullVideo3D(ctx context.Context, v interface{}) (model.NullVideo3D, error) {
+func (ec *executionContext) unmarshalOVideo3D2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullVideo3D(ctx context.Context, v any) (model.NullVideo3D, error) {
 	var res model.NullVideo3D
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -23468,7 +23844,7 @@ func (ec *executionContext) marshalOVideo3D2githubᚗcomᚋbitmagnetᚑioᚋbitm
 	return v
 }
 
-func (ec *executionContext) unmarshalOVideoCodec2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullVideoCodec(ctx context.Context, v interface{}) (model.NullVideoCodec, error) {
+func (ec *executionContext) unmarshalOVideoCodec2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullVideoCodec(ctx context.Context, v any) (model.NullVideoCodec, error) {
 	var res model.NullVideoCodec
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -23478,7 +23854,7 @@ func (ec *executionContext) marshalOVideoCodec2githubᚗcomᚋbitmagnetᚑioᚋb
 	return v
 }
 
-func (ec *executionContext) unmarshalOVideoModifier2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullVideoModifier(ctx context.Context, v interface{}) (model.NullVideoModifier, error) {
+func (ec *executionContext) unmarshalOVideoModifier2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullVideoModifier(ctx context.Context, v any) (model.NullVideoModifier, error) {
 	var res model.NullVideoModifier
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -23488,7 +23864,7 @@ func (ec *executionContext) marshalOVideoModifier2githubᚗcomᚋbitmagnetᚑio�
 	return v
 }
 
-func (ec *executionContext) unmarshalOVideoResolution2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullVideoResolution(ctx context.Context, v interface{}) (model.NullVideoResolution, error) {
+func (ec *executionContext) unmarshalOVideoResolution2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullVideoResolution(ctx context.Context, v any) (model.NullVideoResolution, error) {
 	var res model.NullVideoResolution
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -23498,11 +23874,11 @@ func (ec *executionContext) marshalOVideoResolution2githubᚗcomᚋbitmagnetᚑi
 	return v
 }
 
-func (ec *executionContext) unmarshalOVideoResolution2ᚕᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐVideoResolution(ctx context.Context, v interface{}) ([]*model.VideoResolution, error) {
+func (ec *executionContext) unmarshalOVideoResolution2ᚕᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐVideoResolution(ctx context.Context, v any) ([]*model.VideoResolution, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var vSlice []interface{}
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -23559,7 +23935,7 @@ func (ec *executionContext) marshalOVideoResolution2ᚕᚖgithubᚗcomᚋbitmagn
 	return ret
 }
 
-func (ec *executionContext) unmarshalOVideoResolution2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐVideoResolution(ctx context.Context, v interface{}) (*model.VideoResolution, error) {
+func (ec *executionContext) unmarshalOVideoResolution2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐVideoResolution(ctx context.Context, v any) (*model.VideoResolution, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -23623,7 +23999,7 @@ func (ec *executionContext) marshalOVideoResolutionAgg2ᚕgithubᚗcomᚋbitmagn
 	return ret
 }
 
-func (ec *executionContext) unmarshalOVideoResolutionFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐVideoResolutionFacetInput(ctx context.Context, v interface{}) (*gen.VideoResolutionFacetInput, error) {
+func (ec *executionContext) unmarshalOVideoResolutionFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐVideoResolutionFacetInput(ctx context.Context, v any) (*gen.VideoResolutionFacetInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -23631,7 +24007,7 @@ func (ec *executionContext) unmarshalOVideoResolutionFacetInput2ᚖgithubᚗcom�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOVideoSource2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullVideoSource(ctx context.Context, v interface{}) (model.NullVideoSource, error) {
+func (ec *executionContext) unmarshalOVideoSource2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐNullVideoSource(ctx context.Context, v any) (model.NullVideoSource, error) {
 	var res model.NullVideoSource
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -23641,11 +24017,11 @@ func (ec *executionContext) marshalOVideoSource2githubᚗcomᚋbitmagnetᚑioᚋ
 	return v
 }
 
-func (ec *executionContext) unmarshalOVideoSource2ᚕᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐVideoSource(ctx context.Context, v interface{}) ([]*model.VideoSource, error) {
+func (ec *executionContext) unmarshalOVideoSource2ᚕᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐVideoSource(ctx context.Context, v any) ([]*model.VideoSource, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var vSlice []interface{}
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -23702,7 +24078,7 @@ func (ec *executionContext) marshalOVideoSource2ᚕᚖgithubᚗcomᚋbitmagnet�
 	return ret
 }
 
-func (ec *executionContext) unmarshalOVideoSource2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐVideoSource(ctx context.Context, v interface{}) (*model.VideoSource, error) {
+func (ec *executionContext) unmarshalOVideoSource2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐVideoSource(ctx context.Context, v any) (*model.VideoSource, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -23766,7 +24142,7 @@ func (ec *executionContext) marshalOVideoSourceAgg2ᚕgithubᚗcomᚋbitmagnet�
 	return ret
 }
 
-func (ec *executionContext) unmarshalOVideoSourceFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐVideoSourceFacetInput(ctx context.Context, v interface{}) (*gen.VideoSourceFacetInput, error) {
+func (ec *executionContext) unmarshalOVideoSourceFacetInput2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐVideoSourceFacetInput(ctx context.Context, v any) (*gen.VideoSourceFacetInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -23774,7 +24150,7 @@ func (ec *executionContext) unmarshalOVideoSourceFacetInput2ᚖgithubᚗcomᚋbi
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOVoid2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+func (ec *executionContext) unmarshalOVoid2ᚖstring(ctx context.Context, v any) (*string, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -23790,7 +24166,7 @@ func (ec *executionContext) marshalOVoid2ᚖstring(ctx context.Context, sel ast.
 	return res
 }
 
-func (ec *executionContext) unmarshalOYear2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐYear(ctx context.Context, v interface{}) (model.Year, error) {
+func (ec *executionContext) unmarshalOYear2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐYear(ctx context.Context, v any) (model.Year, error) {
 	var res model.Year
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -23800,11 +24176,11 @@ func (ec *executionContext) marshalOYear2githubᚗcomᚋbitmagnetᚑioᚋbitmagn
 	return v
 }
 
-func (ec *executionContext) unmarshalOYear2ᚕᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐYear(ctx context.Context, v interface{}) ([]*model.Year, error) {
+func (ec *executionContext) unmarshalOYear2ᚕᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐYear(ctx context.Context, v any) ([]*model.Year, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var vSlice []interface{}
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -23832,7 +24208,7 @@ func (ec *executionContext) marshalOYear2ᚕᚖgithubᚗcomᚋbitmagnetᚑioᚋb
 	return ret
 }
 
-func (ec *executionContext) unmarshalOYear2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐYear(ctx context.Context, v interface{}) (*model.Year, error) {
+func (ec *executionContext) unmarshalOYear2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐYear(ctx context.Context, v any) (*model.Year, error) {
 	if v == nil {
 		return nil, nil
 	}
