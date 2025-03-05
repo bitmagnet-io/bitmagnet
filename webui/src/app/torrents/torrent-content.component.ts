@@ -1,18 +1,22 @@
 import { Component, EventEmitter, inject, Input, Output } from "@angular/core";
 import { catchError, EMPTY, tap } from "rxjs";
-import { FormControl } from "@angular/forms";
-import { COMMA, ENTER } from "@angular/cdk/keycodes";
 import { NgOptimizedImage } from "@angular/common";
 import { TranslocoService } from "@jsverse/transloco";
 import { FilesizePipe } from "../pipes/filesize.pipe";
 import * as generated from "../graphql/generated";
-import normalizeTagInput from "../util/normalizeTagInput";
 import { GraphQLService } from "../graphql/graphql.service";
 import { ErrorsService } from "../errors/errors.service";
 import { BreakpointsService } from "../layout/breakpoints.service";
 import { TimeAgoPipe } from "../pipes/time-ago.pipe";
 import { AppModule } from "../app.module";
 import { TorrentFilesTableComponent } from "./torrent-files-table.component";
+import { TorrentEditTagsComponent } from "./torrent-edit-tags.component";
+import {
+  TorrentTab,
+  torrentTabNames,
+  TorrentTabSelection,
+} from "./torrents-search.controller";
+import { TorrentReprocessComponent } from "./torrent-reprocess.component";
 
 @Component({
   selector: "app-torrent-content",
@@ -24,7 +28,9 @@ import { TorrentFilesTableComponent } from "./torrent-files-table.component";
     FilesizePipe,
     NgOptimizedImage,
     TimeAgoPipe,
+    TorrentEditTagsComponent,
     TorrentFilesTableComponent,
+    TorrentReprocessComponent,
   ],
 })
 export class TorrentContentComponent {
@@ -37,98 +43,29 @@ export class TorrentContentComponent {
   @Input() published = true;
 
   @Output() updated = new EventEmitter<null>();
+  @Output() tabSelected = new EventEmitter<TorrentTabSelection>();
 
-  newTagCtrl = new FormControl<string>("");
-  private editedTags = Array<string>();
-  public readonly suggestedTags = Array<string>();
-  public selectedTabIndex = 0;
-
-  readonly separatorKeysCodes = [ENTER, COMMA] as const;
+  @Input() selectedTab: TorrentTabSelection = undefined;
 
   transloco = inject(TranslocoService);
+  grapql = inject(GraphQLService);
+  errors = inject(ErrorsService);
 
-  constructor(
-    private graphQLService: GraphQLService,
-    private errorsService: ErrorsService,
-  ) {
-    this.newTagCtrl.valueChanges.subscribe((value) => {
-      if (value) {
-        value = normalizeTagInput(value);
-        this.newTagCtrl.setValue(value, { emitEvent: false });
-      }
-      return graphQLService
-        .torrentSuggestTags({
-          input: {
-            prefix: value,
-            exclusions: this.torrentContent.torrent.tagNames,
-          },
-        })
-        .pipe(
-          tap((result) => {
-            this.suggestedTags.splice(
-              0,
-              this.suggestedTags.length,
-              ...result.suggestions.map((t) => t.name),
-            );
-          }),
-        )
-        .subscribe();
-    });
+  get selectedTabIndex(): number {
+    return torrentTabNames.indexOf(this.selectedTab as TorrentTab) + 1;
   }
 
-  selectTab(index: number): void {
-    this.selectedTabIndex = index;
-  }
-
-  addTag(tagName: string) {
-    this.editTags((tags) => [...tags, tagName]);
-    this.saveTags();
-  }
-
-  renameTag(oldTagName: string, newTagName: string) {
-    this.editTags((tags) =>
-      tags.map((t) => (t === oldTagName ? newTagName : t)),
-    );
-    this.saveTags();
-  }
-
-  deleteTag(tagName: string) {
-    this.editTags((tags) => tags.filter((t) => t !== tagName));
-    this.saveTags();
-  }
-
-  private editTags(fn: (tagNames: string[]) => string[]) {
-    this.editedTags = fn(this.editedTags);
-    this.newTagCtrl.reset();
-  }
-
-  saveTags(): void {
-    this.graphQLService
-      .torrentSetTags({
-        infoHashes: [this.torrentContent.infoHash],
-        tagNames: this.editedTags,
-      })
-      .pipe(
-        catchError((err: Error) => {
-          this.errorsService.addError(`Error saving tags: ${err.message}`);
-          return EMPTY;
-        }),
-      )
-      .pipe(
-        tap(() => {
-          this.editedTags = [];
-          this.updated.emit(null);
-        }),
-      )
-      .subscribe();
+  selectTabIndex(index: number): void {
+    this.selectedTab = torrentTabNames[index - 1];
+    this.tabSelected.emit(this.selectedTab);
   }
 
   delete() {
-    this.graphQLService
+    this.grapql
       .torrentDelete({ infoHashes: [this.torrentContent.infoHash] })
       .pipe(
         catchError((err: Error) => {
-          this.errorsService.addError(`Error deleting torrent: ${err.message}`);
+          this.errors.addError(`Error deleting torrent: ${err.message}`);
           return EMPTY;
         }),
       )

@@ -55,7 +55,8 @@
       "event": "Event",
       "resolution": "Resolution",
       "throughput": "Throughput",
-      "timeframe": "Timeframe"
+      "timeframe": "Timeframe",
+      "toggle_legend": "Toggle legend"
     },
     "queues": {
       "created": "Created",
@@ -63,11 +64,8 @@
       "enqueue_jobs": "Enqueue jobs",
       "enqueue_torrent_processing_batch": "Enqueue Torrent Processing Batch",
       "failed": "Failed",
-      "force_rematch": "Force rematch of already matched content",
       "jobs_enqueued": "Jobs enqueued",
       "latency": "Latency",
-      "match_content_by_external_api_search": "Match content by external API search",
-      "match_content_by_local_search": "Match content by local search",
       "payload": "Payload",
       "pending": "Pending",
       "priority": "Priority",
@@ -236,6 +234,7 @@
     "visualize": "Visualize"
   },
   "torrents": {
+    "classification": "Classification",
     "clear_search": "Clear Search",
     "copy": "Copy",
     "copy_to_clipboard": "Copy to clipboard",
@@ -281,6 +280,12 @@
     "published": "Published",
     "rating": "Rating",
     "refresh": "Refresh results",
+    "reprocess": {
+      "force_rematch": "Force rematch of already matched content",
+      "match_content_by_external_api_search": "Match content by external API search",
+      "match_content_by_local_search": "Match content by local search",
+      "reprocess": "Reprocess"
+    },
     "s_l": "S / L",
     "search": "Search",
     "seeders": "Seeders",

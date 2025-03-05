@@ -1,0 +1,40 @@
+<ng-container *transloco="let t">
+  <mat-card>
+    <mat-card-content>
+      <mat-checkbox
+        [checked]="!localSearchDisabled"
+        (change)="
+          localSearchDisabled = !$event.checked;
+          apisDisabled = !$event.checked ? true : apisDisabled
+        "
+        >{{
+          t("torrents.reprocess.match_content_by_local_search")
+        }}</mat-checkbox
+      >
+      <mat-checkbox
+        [checked]="!apisDisabled"
+        (change)="
+          apisDisabled = !$event.checked;
+          localSearchDisabled = $event.checked ? false : localSearchDisabled
+        "
+        >{{
+          t("torrents.reprocess.match_content_by_external_api_search")
+        }}</mat-checkbox
+      >
+      <mat-checkbox
+        [checked]="classifierRematch"
+        (change)="classifierRematch = $event.checked"
+        >{{ t("torrents.reprocess.force_rematch") }}</mat-checkbox
+      >
+    </mat-card-content>
+    <mat-card-actions class="button-row">
+      <button
+        mat-stroked-button
+        [disabled]="!infoHashes.length"
+        (click)="reprocess()"
+      >
+        <mat-icon>cycle</mat-icon>{{ t("torrents.reprocess.reprocess") }}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</ng-container>

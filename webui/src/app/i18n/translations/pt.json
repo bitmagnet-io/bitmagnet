@@ -55,7 +55,8 @@
       "event": "Evento",
       "resolution": "Resolução",
       "throughput": "Taxa de transferência",
-      "timeframe": "Intervalo de tempo"
+      "timeframe": "Intervalo de tempo",
+      "toggle_legend": "Alternar legenda"
     },
     "queues": {
       "created": "Criado",
@@ -236,6 +237,7 @@
     "visualize": "Visualizar"
   },
   "torrents": {
+    "classification": "Classificação",
     "clear_search": "Limpar Pesquisa",
     "copy": "Copiar",
     "copy_to_clipboard": "Copiar para a área de transferência",
@@ -281,6 +283,12 @@
     "published": "Publicado",
     "rating": "Classificação",
     "refresh": "Atualizar resultados",
+    "reprocess": {
+      "force_rematch": "Forçar nova correspondência de conteúdo já correspondido",
+      "match_content_by_external_api_search": "Corresponder conteúdo por pesquisa de API externa",
+      "match_content_by_local_search": "Corresponder conteúdo por pesquisa local",
+      "reprocess": "Reprocessar"
+    },
     "s_l": "S / L",
     "search": "Buscar",
     "seeders": "Seeders",

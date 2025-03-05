@@ -2,7 +2,7 @@ import { ChartConfiguration } from "chart.js";
 import { inject, Injectable } from "@angular/core";
 import { TranslocoService } from "@jsverse/transloco";
 import { format as formatDate } from "date-fns/format";
-import { ChartAdapter } from "../../charting/types";
+import { ChartAdapter, FactoryParams } from "../../charting/types";
 import { ThemeBaseColor } from "../../themes/theme-types";
 import { createThemeColor } from "../../themes/theme-utils";
 import { ThemeInfoService } from "../../themes/theme-info.service";
@@ -27,7 +27,10 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, "line"> {
   private themeInfo = inject(ThemeInfoService);
   private transloco = inject(TranslocoService);
 
-  create(result?: Result): ChartConfiguration<"line"> {
+  create(
+    result: Result | undefined,
+    params: FactoryParams,
+  ): ChartConfiguration<"line"> {
     const { colors } = this.themeInfo.info;
     const labels = Array<string>();
     const datasets: ChartConfiguration<"line">["data"]["datasets"] = [];
@@ -134,6 +137,7 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, "line"> {
       type: "line",
       options: {
         animation: false,
+        responsive: true,
         elements: {
           line: {
             tension: 0.5,
@@ -155,32 +159,23 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, "line"> {
               callback: this.formatDuration.bind(this),
             },
           },
-          // x: {
-          //   ticks: {
-          //     stepSize: 5
-          //   }
-          // }
-          // y1: {
-          //   position: 'right',
-          //   grid: {
-          //     color: 'rgba(255,0,0,0.3)',
-          //   },
-          //   ticks: {
-          //     color: 'red',
-          //   },
-          // },
         },
         plugins: {
           legend: {
-            display: true,
+            display: params.legend,
           },
           decimation: {
             enabled: true,
           },
-          // datalabels: {
-          //   anchor: 'end',
-          //   align: 'end',
-          // },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                return context.dataset.yAxisID === "yCount"
+                  ? context.formattedValue
+                  : this.formatDuration(context.parsed.y);
+              },
+            },
+          },
         },
       },
       data: {

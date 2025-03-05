@@ -55,7 +55,8 @@
       "event": "Evento",
       "resolution": "Resolución",
       "throughput": "Rendimiento",
-      "timeframe": "Periodo de tiempo"
+      "timeframe": "Periodo de tiempo",
+      "toggle_legend": "Alternar leyenda"
     },
     "queues": {
       "created": "Creado",
@@ -236,6 +237,7 @@
     "visualize": "Visualizar"
   },
   "torrents": {
+    "classification": "Clasificación",
     "clear_search": "Borrar búsqueda",
     "copy": "Copiar",
     "copy_to_clipboard": "Copiar al portapapeles",
@@ -281,6 +283,12 @@
     "published": "Publicado",
     "rating": "Calificación",
     "refresh": "Actualizar resultados",
+    "reprocess": {
+      "force_rematch": "Forzar nueva coincidencia de contenido ya coincidente",
+      "match_content_by_external_api_search": "Coincidir contenido por búsqueda de API externa",
+      "match_content_by_local_search": "Coincidir contenido por búsqueda local",
+      "reprocess": "Volver a procesar"
+    },
     "s_l": "S / L",
     "search": "Buscar",
     "seeders": "Seeders",
