@@ -55,7 +55,8 @@
       "event": "حدث",
       "resolution": "الدقة",
       "throughput": "معدل النقل",
-      "timeframe": "الإطار الزمني"
+      "timeframe": "الإطار الزمني",
+      "toggle_legend": "تبديل الأسطورة"
     },
     "queues": {
       "created": "تم الإنشاء",
@@ -236,6 +237,7 @@
     "visualize": "تصور"
   },
   "torrents": {
+    "classification": "التصنيف",
     "clear_search": "مسح البحث",
     "copy": "نسخ",
     "copy_to_clipboard": "نسخ إلى الحافظة",
@@ -281,6 +283,12 @@
     "published": "منشور",
     "rating": "التقييم",
     "refresh": "تحديث النتائج",
+    "reprocess": {
+      "force_rematch": "فرض إعادة المطابقة للمحتوى المطابق بالفعل",
+      "match_content_by_external_api_search": "مطابقة المحتوى من خلال البحث في API الخارجية",
+      "match_content_by_local_search": "مطابقة المحتوى من خلال البحث المحلي",
+      "reprocess": "إعادة المعالجة"
+    },
     "s_l": "S / L",
     "search": "بحث",
     "seeders": "الباذرون",

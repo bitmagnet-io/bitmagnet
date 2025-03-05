@@ -55,7 +55,8 @@
       "event": "Événement",
       "resolution": "Résolution",
       "throughput": "Débit",
-      "timeframe": "Période"
+      "timeframe": "Période",
+      "toggle_legend": "Basculer la légende"
     },
     "queues": {
       "created": "Créé",
@@ -108,7 +109,7 @@
   },
   "general": {
     "all": "Tous",
-    "dismiss": "Rejeter",
+    "dismiss": "Fermer",
     "error": "Erreur",
     "none": "Aucun",
     "page_not_found": "Page non trouvée",
@@ -124,7 +125,7 @@
       "postgres": "Postgres",
       "tmdb": "TMDB"
     },
-    "dismiss": "Rejeter",
+    "dismiss": "Fermer",
     "error": "Erreur",
     "status": "Statut",
     "statuses": {
@@ -236,6 +237,7 @@
     "visualize": "Visualiser"
   },
   "torrents": {
+    "classification": "Classification",
     "clear_search": "Effacer la recherche",
     "copy": "Copier",
     "copy_to_clipboard": "Copier dans le presse-papiers",
@@ -281,6 +283,12 @@
     "published": "Publié",
     "rating": "Évaluation",
     "refresh": "Rafraîchir les résultats",
+    "reprocess": {
+      "force_rematch": "Forcer le rematch du contenu déjà apparié",
+      "match_content_by_external_api_search": "Apparier le contenu par recherche API externe",
+      "match_content_by_local_search": "Apparier le contenu par recherche locale",
+      "reprocess": "Retraitement"
+    },
     "s_l": "S / L",
     "search": "Rechercher",
     "seeders": "Seeders",
