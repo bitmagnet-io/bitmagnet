@@ -11,6 +11,6 @@ type Socket interface {
 	Receive([]byte) (int, netip.AddrPort, error)
 }
 
-func NewSocket() Socket {
-	return newSocket()
+func NewSocket(ip_type int) Socket {
+	return newSocket(ip_type)
 }

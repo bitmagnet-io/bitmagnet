@@ -1,0 +1,12 @@
+postgres:
+  password: 123456789
+log:
+  level: debug
+dht_server:
+  addr: '::'
+  query_timeout: 8s
+dht_crawler:
+  bootstrap_nodes:
+    - 'router.utorrent.com:6881'
+    - 'router.bittorrent.com:6881'
+    - "router.silotis.us:6881"

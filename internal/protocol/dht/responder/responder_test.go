@@ -2,15 +2,16 @@ package responder
 
 import (
 	"context"
+	"net/netip"
+	"testing"
+	"time"
+
 	"github.com/anacrolix/dht/v2/krpc"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable/mocks"
+	ktable_mocks "github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable/mocks"
 	"github.com/stretchr/testify/assert"
-	"net/netip"
-	"testing"
-	"time"
 )
 
 type testResponderMocks struct {
@@ -141,6 +142,47 @@ func TestResponder_find_node(t *testing.T) {
 	assert.Equal(t, dht.Return{
 		ID:    mocks.nodeID,
 		Nodes: nodes,
+	}, ret)
+	assert.NoError(t, err)
+}
+
+func TestResponder_find_node_ipv6(t *testing.T) {
+	mocks := newTestResponderMocks(t)
+	target := protocol.RandomNodeID()
+	msg := dht.RecvMsg{
+		From: mocks.sender.Addr.ToAddrPort(),
+		Msg: dht.Msg{
+			Q: "find_node",
+			A: &dht.MsgArgs{
+				ID:     mocks.sender.ID,
+				Target: target,
+			},
+		},
+	}
+	nodes6 := dht.CompactIPv6NodeInfo{
+		dht.RandomNodeInfo(16),
+		dht.RandomNodeInfo(16),
+		dht.RandomNodeInfo(16),
+	}
+	nodes := dht.CompactIPv4NodeInfo{
+		dht.RandomNodeInfo(4),
+		dht.RandomNodeInfo(4),
+		dht.RandomNodeInfo(4),
+	}
+	peers := []ktable.Node{
+		mockedPeer{nodes[0]},
+		mockedPeer{nodes[1]},
+		mockedPeer{nodes[2]},
+		mockedPeer{nodes6[0]},
+		mockedPeer{nodes6[1]},
+		mockedPeer{nodes6[2]},
+	}
+	mocks.table.On("GetClosestNodes", target).Return(peers)
+	ret, err := mocks.responder.Respond(context.Background(), msg)
+	assert.Equal(t, dht.Return{
+		ID:     mocks.nodeID,
+		Nodes6: nodes6,
+		Nodes:  nodes,
 	}, ret)
 	assert.NoError(t, err)
 }

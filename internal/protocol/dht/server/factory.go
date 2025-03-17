@@ -3,6 +3,9 @@ package server
 import (
 	"context"
 	"fmt"
+	"net/netip"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
@@ -11,8 +14,6 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"golang.org/x/time/rate"
-	"net/netip"
-	"time"
 )
 
 type Params struct {
@@ -39,6 +40,18 @@ const subsystem = "dht_server"
 func New(p Params) Result {
 	lastResponses := &concurrency.AtomicValue[LastResponses]{}
 	collector := newPrometheusCollector()
+	addr, err := netip.ParseAddr(p.Config.Addr)
+	socket_ip_type := 4
+
+	if err != nil {
+		addr = netip.IPv4Unspecified()
+	}
+	if addr.Is4() {
+		socket_ip_type = 4
+	}
+	if addr.Is6() || addr.Is4In6() {
+		socket_ip_type = 6
+	}
 	ls := lazy.New(func() (Server, error) {
 		s := queryLimiter{
 			server: prometheusServerWrapper{
@@ -46,8 +59,8 @@ func New(p Params) Result {
 				server: healthCollector{
 					baseServer: &server{
 						stopped:          make(chan struct{}),
-						localAddr:        netip.AddrPortFrom(netip.IPv4Unspecified(), p.Config.Port),
-						socket:           NewSocket(),
+						localAddr:        netip.AddrPortFrom(addr, p.Config.Port),
+						socket:           NewSocket(socket_ip_type),
 						queries:          make(map[string]chan dht.RecvMsg),
 						queryTimeout:     p.Config.QueryTimeout,
 						responder:        p.Responder,
