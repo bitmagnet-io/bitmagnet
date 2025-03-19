@@ -56,6 +56,10 @@ export const appConfig: ApplicationConfig = {
             label: "العربية",
           },
           {
+            id: "ca",
+            label: "Català",
+          },
+          {
             id: "de",
             label: "Deutsch",
           },
