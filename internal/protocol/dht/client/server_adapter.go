@@ -3,10 +3,11 @@ package client
 import (
 	"context"
 	"errors"
+	"net/netip"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/server"
-	"net/netip"
 )
 
 type serverAdapter struct {
@@ -92,12 +93,15 @@ func (a serverAdapter) SampleInfoHashes(ctx context.Context, addr netip.AddrPort
 }
 
 func extractNodes(msg dht.Msg) []NodeInfo {
-	if len(msg.R.Nodes) == 0 {
+	if len(msg.R.Nodes)+len(msg.R.Nodes6) == 0 {
 		return nil
 	}
-	nodes := make([]NodeInfo, 0, len(msg.R.Nodes))
+	nodes := make([]NodeInfo, 0, len(msg.R.Nodes)+len(msg.R.Nodes6))
 	for _, n := range msg.R.Nodes {
 		nodes = append(nodes, NodeInfo{ID: n.ID, Addr: n.Addr.ToAddrPort()})
+	}
+	for _, n6 := range msg.R.Nodes6 {
+		nodes = append(nodes, NodeInfo{ID: n6.ID, Addr: n6.Addr.ToAddrPort()})
 	}
 	return nodes
 }
