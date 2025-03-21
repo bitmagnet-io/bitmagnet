@@ -25,18 +25,12 @@ func New(p Params) Result {
 				return nil, err
 			}
 			return adapter{
-				title:        "bitmagnet",
-				maxLimit:     100,
-				defaultLimit: 100,
-				search:       s,
+				search: s,
 			}, nil
 		}),
 	}
 }
 
 type adapter struct {
-	title        string
-	maxLimit     uint
-	defaultLimit uint
-	search       search.Search
+	search search.Search
 }

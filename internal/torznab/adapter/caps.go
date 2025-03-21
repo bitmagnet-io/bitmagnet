@@ -6,14 +6,14 @@ import (
 	"strings"
 )
 
-func (a adapter) Caps(context.Context) (torznab.Caps, error) {
+func (a adapter) Caps(_ context.Context, profile torznab.Profile) (torznab.Caps, error) {
 	return torznab.Caps{
 		Server: torznab.CapsServer{
-			Title: a.title,
+			Title: profile.Title,
 		},
 		Limits: torznab.CapsLimits{
-			Max:     a.maxLimit,
-			Default: a.defaultLimit,
+			Max:     profile.MaxLimit,
+			Default: profile.DefaultLimit,
 		},
 		Searching: torznab.CapsSearching{
 			Search: torznab.CapsSearch{

@@ -5,6 +5,7 @@ import (
 )
 
 type SearchRequest struct {
+	Profile  Profile
 	Query    string
 	Type     string
 	Cats     []int
@@ -16,5 +17,4 @@ type SearchRequest struct {
 	Extended bool
 	Limit    model.NullUint
 	Offset   model.NullUint
-	Profile  Profile
 }

@@ -161,11 +161,11 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 			ID:     tmdbId,
 		})))
 	}
-	limit := a.defaultLimit
+	limit := r.Profile.DefaultLimit
 	if r.Limit.Valid {
 		limit = r.Limit.Uint
-		if limit > a.maxLimit {
-			limit = a.maxLimit
+		if limit > r.Profile.MaxLimit {
+			limit = r.Profile.MaxLimit
 		}
 	}
 	options = append(options, query.Limit(limit))
@@ -321,7 +321,7 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 	}
 	return torznab.SearchResult{
 		Channel: torznab.SearchResultChannel{
-			Title: a.title,
+			Title: req.Profile.Title,
 			Response: torznab.SearchResultResponse{
 				Offset: req.Offset.Uint,
 				//Total:  res.TotalCount,
