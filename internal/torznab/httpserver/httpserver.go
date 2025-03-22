@@ -49,8 +49,8 @@ func (b builder) Apply(e *gin.Engine) error {
 			_ = c.AbortWithError(500, err)
 			_, _ = c.Writer.WriteString(err.Error() + "\n")
 		}
-		writeXml := func(obj torznab.Xmler) {
-			body, err := obj.Xml()
+		writeXml := func(obj torznab.XMLer) {
+			body, err := obj.XML()
 			if err != nil {
 				writeInternalError(fmt.Errorf("failed to encode xml: %w", err))
 				return
@@ -93,12 +93,12 @@ func (b builder) Apply(e *gin.Engine) error {
 			}
 		}
 		imdbId := model.NullString{}
-		if qImdbId := c.Query(torznab.ParamImdbId); qImdbId != "" {
+		if qImdbId := c.Query(torznab.ParamIMDBID); qImdbId != "" {
 			imdbId.Valid = true
 			imdbId.String = qImdbId
 		}
 		tmdbId := model.NullString{}
-		if qTmdbId := c.Query(torznab.ParamTmdbId); qTmdbId != "" {
+		if qTmdbId := c.Query(torznab.ParamTMDBID); qTmdbId != "" {
 			tmdbId.Valid = true
 			tmdbId.String = qTmdbId
 		}
@@ -130,8 +130,8 @@ func (b builder) Apply(e *gin.Engine) error {
 			Query:   c.Query(torznab.ParamQuery),
 			Type:    tp,
 			Cats:    cats,
-			ImdbId:  imdbId,
-			TmdbId:  tmdbId,
+			IMDBID:  imdbId,
+			TMDBID:  tmdbId,
 			Season:  season,
 			Episode: episode,
 			Limit:   limit,

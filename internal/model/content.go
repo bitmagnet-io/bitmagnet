@@ -33,24 +33,24 @@ func (c Content) Identifier(source string) (string, bool) {
 type ExternalLink struct {
 	MetadataSource
 	ID  string
-	Url string
+	URL string
 }
 
 func (c Content) ExternalLinks() []ExternalLink {
 	links := make([]ExternalLink, 0)
-	if link := getExternalLinkUrl(c.Type, c.Source, c.ID); link.Valid {
+	if link := getExternalLinkURL(c.Type, c.Source, c.ID); link.Valid {
 		links = append(links, ExternalLink{
 			MetadataSource: c.MetadataSource,
-			Url:            link.String,
+			URL:            link.String,
 		})
 	}
 	for _, attr := range c.Attributes {
 		if attr.Key == "id" {
-			if link := getExternalLinkUrl(c.Type, attr.Source, attr.Value); link.Valid {
+			if link := getExternalLinkURL(c.Type, attr.Source, attr.Value); link.Valid {
 				links = append(links, ExternalLink{
 					MetadataSource: attr.MetadataSource,
 					ID:             attr.Value,
-					Url:            link.String,
+					URL:            link.String,
 				})
 			}
 		}
@@ -58,7 +58,7 @@ func (c Content) ExternalLinks() []ExternalLink {
 	return links
 }
 
-func getExternalLinkUrl(contentType ContentType, source, id string) NullString {
+func getExternalLinkURL(contentType ContentType, source, id string) NullString {
 	switch source {
 	case "imdb":
 		return NewNullString("https://www.imdb.com/title/" + id)

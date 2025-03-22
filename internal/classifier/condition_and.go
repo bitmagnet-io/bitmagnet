@@ -47,6 +47,6 @@ func (andCondition) compileCondition(ctx compilerContext) (condition, error) {
 	}, nil
 }
 
-func (andCondition) JsonSchema() JsonSchema {
-	return andConditionPayloadSpec.JsonSchema()
+func (andCondition) JSONSchema() JSONSchema {
+	return andConditionPayloadSpec.JSONSchema()
 }

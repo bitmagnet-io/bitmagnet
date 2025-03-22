@@ -13,7 +13,7 @@ type expressionCondition struct{}
 
 var celProgramPayload = payloadTransformer[string, cel.Program]{
 	spec: payloadGeneric[string]{
-		jsonSchema: JsonSchema{
+		jsonSchema: JSONSchema{
 			"type":        "string",
 			"minLength":   1,
 			"description": "A CEL expression describing a condition",
@@ -78,6 +78,6 @@ func (c expressionCondition) compileCondition(ctx compilerContext) (condition, e
 	}, nil
 }
 
-func (c expressionCondition) JsonSchema() JsonSchema {
-	return expressionConditionPayload.JsonSchema()
+func (c expressionCondition) JSONSchema() JSONSchema {
+	return expressionConditionPayload.JSONSchema()
 }

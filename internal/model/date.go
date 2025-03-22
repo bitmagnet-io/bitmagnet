@@ -116,9 +116,8 @@ func numDaysInMonth(year Year, month time.Month) uint8 {
 	case time.February:
 		if year%4 == 0 {
 			return 29
-		} else {
-			return 28
 		}
+		return 28
 	}
 	return 0
 }

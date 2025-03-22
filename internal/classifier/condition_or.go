@@ -45,6 +45,6 @@ func (orCondition) compileCondition(ctx compilerContext) (condition, error) {
 	}}, nil
 }
 
-func (orCondition) JsonSchema() JsonSchema {
-	return orConditionSpec.JsonSchema()
+func (orCondition) JSONSchema() JSONSchema {
+	return orConditionSpec.JSONSchema()
 }

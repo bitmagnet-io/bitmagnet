@@ -31,7 +31,7 @@ func (torrentContentLanguageFacet) Values(query.FacetContext) (map[string]string
 	languageValues := model.LanguageValues()
 	values := make(map[string]string, len(languageValues))
 	for _, l := range languageValues {
-		values[l.Id()] = l.Name()
+		values[l.ID()] = l.Name()
 	}
 	return values, nil
 }
@@ -55,7 +55,7 @@ func (f torrentContentLanguageFacet) Criteria(filter query.FacetFilter) []query.
 				if i > 0 {
 					array += ","
 				}
-				array += fmt.Sprintf("'%s'", lang.Id())
+				array += fmt.Sprintf("'%s'", lang.ID())
 			}
 			array += "]"
 			return query.RawCriteria{

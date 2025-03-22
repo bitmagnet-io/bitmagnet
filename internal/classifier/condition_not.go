@@ -35,6 +35,6 @@ func (notCondition) compileCondition(ctx compilerContext) (condition, error) {
 	}, nil
 }
 
-func (notCondition) JsonSchema() JsonSchema {
-	return notConditionPayloadSpec.JsonSchema()
+func (notCondition) JSONSchema() JSONSchema {
+	return notConditionPayloadSpec.JSONSchema()
 }

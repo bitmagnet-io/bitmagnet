@@ -26,7 +26,7 @@ type Msg struct {
 	IP       NodeAddr `bencode:"ip,omitempty"`
 	ReadOnly bool     `bencode:"ro,omitempty"` // BEP 43. Sender does not respond to queries.
 	// https://www.libtorrent.org/dht_extensions.html
-	ClientId string `bencode:"v,omitempty"`
+	ClientID string `bencode:"v,omitempty"`
 }
 
 const (

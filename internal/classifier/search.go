@@ -11,7 +11,7 @@ import (
 )
 
 type LocalSearch interface {
-	ContentById(context.Context, model.ContentRef) (model.Content, error)
+	ContentByID(context.Context, model.ContentRef) (model.Content, error)
 	ContentBySearch(context.Context, model.ContentType, string, model.Year) (model.Content, error)
 }
 
@@ -19,7 +19,7 @@ type localSearch struct {
 	search.Search
 }
 
-func (l localSearch) ContentById(ctx context.Context, ref model.ContentRef) (model.Content, error) {
+func (l localSearch) ContentByID(ctx context.Context, ref model.ContentRef) (model.Content, error) {
 	options := []query.Option{
 		query.Where(
 			search.ContentTypeCriteria(ref.Type),

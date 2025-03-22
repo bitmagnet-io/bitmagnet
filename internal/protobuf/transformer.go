@@ -102,7 +102,7 @@ func NewClassification(c classification.Result) *Classification {
 	//}
 	var languages []string
 	for _, l := range c.Languages.Slice() {
-		languages = append(languages, l.Id())
+		languages = append(languages, l.ID())
 	}
 	var episodes []string
 	for _, e := range c.Episodes.SeasonEntries() {
@@ -127,10 +127,10 @@ func NewClassification(c classification.Result) *Classification {
 	if c.ReleaseGroup.Valid {
 		releaseGroup = &c.ReleaseGroup.String
 	}
-	var contentId *string
+	var contentID *string
 	var contentSource *string
 	if c.Content != nil {
-		contentId = &c.Content.ID
+		contentID = &c.Content.ID
 		contentSource = &c.Content.Source
 	}
 	return &Classification{
@@ -144,7 +144,7 @@ func NewClassification(c classification.Result) *Classification {
 		VideoSource:     videoSource,
 		VideoCodec:      videoCodec,
 		ReleaseGroup:    releaseGroup,
-		ContentId:       contentId,
+		ContentId:       contentID,
 		ContentSource:   contentSource,
 	}
 }

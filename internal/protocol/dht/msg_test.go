@@ -155,10 +155,10 @@ func unprettifyHex(s string) string {
 func TestBep33BloomFilter(t *testing.T) {
 	var f ScrapeBloomFilter
 	for i := 0; i <= 255; i++ {
-		f.AddIp(net.IPv4(192, 0, 2, byte(i)).To4())
+		f.AddIP(net.IPv4(192, 0, 2, byte(i)).To4())
 	}
 	for i := 0; i <= 0x3e7; i++ {
-		f.AddIp(net.ParseIP(fmt.Sprintf("2001:DB8::%x", i)))
+		f.AddIP(net.ParseIP(fmt.Sprintf("2001:DB8::%x", i)))
 	}
 	expected, err := hex.DecodeString(unprettifyHex(`
 F6C3F5EA A07FFD91 BDE89F77 7F26FB2B FF37BDB8 FB2BBAA2 FD3DDDE7 BACFFF75 EE7CCBAE

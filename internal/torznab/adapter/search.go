@@ -126,8 +126,8 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 	if len(catsCriteria) > 0 {
 		options = append(options, query.Where(query.Or(catsCriteria...)))
 	}
-	if r.ImdbId.Valid {
-		imdbId := r.ImdbId.String
+	if r.IMDBID.Valid {
+		imdbId := r.IMDBID.String
 		if !strings.HasPrefix(imdbId, "tt") {
 			imdbId = "tt" + imdbId
 		}
@@ -143,8 +143,8 @@ func (a adapter) searchRequestOptions(r torznab.SearchRequest) ([]query.Option, 
 			ID:     imdbId,
 		})))
 	}
-	if r.TmdbId.Valid {
-		tmdbId := r.TmdbId.String
+	if r.TMDBID.Valid {
+		tmdbId := r.TMDBID.String
 		var ct model.ContentType
 		if r.Type != torznab.FunctionTv {
 			ct = model.ContentTypeMovie
@@ -205,8 +205,8 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 				AttrValue: item.Torrent.InfoHash.String(),
 			},
 			{
-				AttrName:  torznab.AttrMagnetUrl,
-				AttrValue: item.Torrent.MagnetUri(),
+				AttrName:  torznab.AttrMagnetURL,
+				AttrValue: item.Torrent.MagnetURI(),
 			},
 			{
 				AttrName:  torznab.AttrCategory,
@@ -304,7 +304,7 @@ func (a adapter) transformSearchResult(req torznab.SearchRequest, res search.Tor
 			GUID:     item.InfoHash.String(),
 			PubDate:  torznab.RssDate(item.PublishedAt),
 			Enclosure: torznab.SearchResultItemEnclosure{
-				URL:    item.Torrent.MagnetUri(),
+				URL:    item.Torrent.MagnetURI(),
 				Type:   "application/x-bittorrent;x-scheme-handler/magnet",
 				Length: strconv.FormatUint(uint64(item.Torrent.Size), 10),
 			},

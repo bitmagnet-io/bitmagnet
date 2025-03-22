@@ -36,7 +36,7 @@ func newRequester(ctx context.Context, config Config, logger *zap.SugaredLogger)
 	if !config.Enabled {
 		return nil, errors.New("TMDB is disabled")
 	}
-	if config.ApiKey == defaultTmdbApiKey {
+	if config.APIKey == defaultTmdbAPIKey {
 		logger.Warnln("you are using the default TMDB api key; TMDB requests will be limited to 1 per second; to remove this warning please configure a personal TMDB api key")
 		config.RateLimit = time.Second
 		config.RateLimitBurst = 8
@@ -47,8 +47,8 @@ func newRequester(ctx context.Context, config Config, logger *zap.SugaredLogger)
 				requester: requesterLimiter{
 					requester: requester{
 						resty: resty.New().
-							SetBaseURL(config.BaseUrl).
-							SetQueryParam("api_key", config.ApiKey).
+							SetBaseURL(config.BaseURL).
+							SetQueryParam("api_key", config.APIKey).
 							SetRetryCount(3).
 							SetRetryWaitTime(2 * time.Second).
 							SetRetryMaxWaitTime(20 * time.Second).
@@ -66,11 +66,11 @@ func newRequester(ctx context.Context, config Config, logger *zap.SugaredLogger)
 	}
 	err := client{r}.ValidateApiKey(ctx)
 	if errors.Is(err, ErrUnauthorized) {
-		if config.ApiKey == defaultTmdbApiKey {
+		if config.APIKey == defaultTmdbAPIKey {
 			return r, fmt.Errorf("default api key is invalid: %w", err)
 		}
 		logger.Errorw("invalid api key, falling back to default", "error", err)
-		config.ApiKey = defaultTmdbApiKey
+		config.APIKey = defaultTmdbAPIKey
 		return newRequester(ctx, config, logger)
 	}
 	return r, err

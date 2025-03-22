@@ -15,7 +15,7 @@ package torznab
 //	result := &SearchResult{}
 //	unmarshalErr := xml.compileCondition(example, &result)
 //	assert.NoError(t, unmarshalErr)
-//	marshaled, marshalErr := result.Xml()
+//	marshaled, marshalErr := result.XML()
 //	assert.NoError(t, marshalErr)
 //	t.Logf("marshaled: %s", marshaled)
 //	result2 := &SearchResult{}

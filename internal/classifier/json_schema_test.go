@@ -13,10 +13,10 @@ var metaSchemaJson []byte
 
 func TestJsonSchema(t *testing.T) {
 
-	schemaJson, err := DefaultJsonSchema().MarshalJSON()
+	schemaJSON, err := DefaultJSONSchema().MarshalJSON()
 	assert.NoError(t, err)
 
-	schemaLoader := gojsonschema.NewBytesLoader(schemaJson)
+	schemaLoader := gojsonschema.NewBytesLoader(schemaJSON)
 	metaSchemaLoader := gojsonschema.NewBytesLoader(metaSchemaJson)
 
 	// validate the schema against the meta schema
@@ -26,10 +26,10 @@ func TestJsonSchema(t *testing.T) {
 
 	coreClassifier, err := yamlSourceProvider{rawSourceProvider: coreSourceProvider{}}.source()
 	assert.NoError(t, err)
-	coreClassifierJson, err := json.Marshal(coreClassifier)
+	coreClassifierJSON, err := json.Marshal(coreClassifier)
 	assert.NoError(t, err)
 
-	documentLoader := gojsonschema.NewBytesLoader(coreClassifierJson)
+	documentLoader := gojsonschema.NewBytesLoader(coreClassifierJSON)
 
 	// validate the classifier against the schema
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)

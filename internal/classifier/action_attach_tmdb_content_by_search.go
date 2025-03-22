@@ -31,7 +31,7 @@ func (a attachTmdbContentBySearchAction) compileAction(ctx compilerContext) (act
 			var content *model.Content
 			switch cl.ContentType.ContentType {
 			case model.ContentTypeTvShow:
-				if result, searchErr := ctx.tmdb_searchTvShow(cl.BaseTitle.String, cl.Date.Year); searchErr != nil {
+				if result, searchErr := ctx.tmdbSearchTvShow(cl.BaseTitle.String, cl.Date.Year); searchErr != nil {
 					return cl, searchErr
 				} else {
 					content = &result
@@ -40,7 +40,7 @@ func (a attachTmdbContentBySearchAction) compileAction(ctx compilerContext) (act
 				if len(cl.Episodes) > 0 {
 					return cl, classification.ErrUnmatched
 				}
-				if result, searchErr := ctx.tmdb_searchMovie(cl.BaseTitle.String, cl.Date.Year); searchErr != nil {
+				if result, searchErr := ctx.tmdbSearchMovie(cl.BaseTitle.String, cl.Date.Year); searchErr != nil {
 					return cl, searchErr
 				} else {
 					content = &result
@@ -52,6 +52,6 @@ func (a attachTmdbContentBySearchAction) compileAction(ctx compilerContext) (act
 	}, nil
 }
 
-func (attachTmdbContentBySearchAction) JsonSchema() JsonSchema {
-	return attachTmdbContentBySearchPayloadSpec.JsonSchema()
+func (attachTmdbContentBySearchAction) JSONSchema() JSONSchema {
+	return attachTmdbContentBySearchPayloadSpec.JSONSchema()
 }

@@ -27,6 +27,6 @@ func (unmatchedAction) compileAction(ctx compilerContext) (action, error) {
 	}, nil
 }
 
-func (unmatchedAction) JsonSchema() JsonSchema {
-	return unmatchedPayloadSpec.JsonSchema()
+func (unmatchedAction) JSONSchema() JSONSchema {
+	return unmatchedPayloadSpec.JSONSchema()
 }

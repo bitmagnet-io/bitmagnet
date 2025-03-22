@@ -49,15 +49,14 @@ func (findMatchAction) compileAction(ctx compilerContext) (action, error) {
 						Cause: err,
 						Path:  path,
 					}
-				} else {
-					return result, nil
 				}
+				return result, nil
 			}
 			return ctx.result, nil
 		},
 	}, nil
 }
 
-func (findMatchAction) JsonSchema() JsonSchema {
-	return findMatchActionPayloadSpec.JsonSchema()
+func (findMatchAction) JSONSchema() JSONSchema {
+	return findMatchActionPayloadSpec.JSONSchema()
 }

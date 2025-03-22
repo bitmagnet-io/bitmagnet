@@ -40,12 +40,12 @@ func (runWorkflowAction) compileAction(ctx compilerContext) (action, error) {
 	}
 	return action{
 		func(ctx executionContext) (classification.Result, error) {
+			var err error
 			cl := ctx.result
 			for _, name := range names {
-				if nextCl, err := ctx.workflows[name].run(ctx.withResult(cl)); err != nil {
+				cl, err = ctx.workflows[name].run(ctx.withResult(cl))
+				if err != nil {
 					return cl, err
-				} else {
-					cl = nextCl
 				}
 			}
 			return cl, nil
@@ -53,6 +53,6 @@ func (runWorkflowAction) compileAction(ctx compilerContext) (action, error) {
 	}, nil
 }
 
-func (runWorkflowAction) JsonSchema() JsonSchema {
-	return runWorkflowPayloadSpec.JsonSchema()
+func (runWorkflowAction) JSONSchema() JSONSchema {
+	return runWorkflowPayloadSpec.JSONSchema()
 }

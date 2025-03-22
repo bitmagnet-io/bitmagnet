@@ -65,10 +65,9 @@ func (l *dateLexer) lexDate() model.Date {
 						if !part3.IsNil() && (i == len(parts)-1 || parts[i+1].format == datePartNonWordChars) {
 							if date := findFirstValidDate(part1.Date, part2.Date, part3.Date); !date.IsNil() {
 								return date
-							} else {
-								isStartOrWordBreak = false
-								continue
 							}
+							isStartOrWordBreak = false
+							continue
 						} else {
 							isStartOrWordBreak = part3.format == datePartNonWordChars
 							continue

@@ -150,11 +150,11 @@ var listsLibraryDecls = map[string][]cel.FunctionOpt{
 	}),
 	"max": templatedOverloads(comparableTypes, func(name string, paramType *cel.Type) cel.FunctionOpt {
 		return cel.MemberOverload(fmt.Sprintf("list_%s_max_%s", name, name),
-			[]*cel.Type{cel.ListType(paramType)}, paramType, cel.UnaryBinding(max()))
+			[]*cel.Type{cel.ListType(paramType)}, paramType, cel.UnaryBinding(celMax()))
 	}),
 	"min": templatedOverloads(comparableTypes, func(name string, paramType *cel.Type) cel.FunctionOpt {
 		return cel.MemberOverload(fmt.Sprintf("list_%s_min_%s", name, name),
-			[]*cel.Type{cel.ListType(paramType)}, paramType, cel.UnaryBinding(min()))
+			[]*cel.Type{cel.ListType(paramType)}, paramType, cel.UnaryBinding(celMin()))
 	}),
 	"indexOf": {
 		cel.MemberOverload("list_a_index_of_int", []*cel.Type{cel.ListType(paramA), paramA}, cel.IntType,
@@ -236,11 +236,11 @@ func sum(init func() ref.Val) functions.UnaryOp {
 	}
 }
 
-func min() functions.UnaryOp {
+func celMin() functions.UnaryOp {
 	return cmp("min", types.IntOne)
 }
 
-func max() functions.UnaryOp {
+func celMax() functions.UnaryOp {
 	return cmp("max", types.IntNegOne)
 }
 

@@ -6,12 +6,12 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
 
-type HasJsonSchema interface {
-	JsonSchema() JsonSchema
+type HasJSONSchema interface {
+	JSONSchema() JSONSchema
 }
 
 type TypedPayload[T any] interface {
-	HasJsonSchema
+	HasJSONSchema
 	Unmarshal(ctx compilerContext) (T, error)
 }
 
@@ -22,8 +22,8 @@ type payloadTransformer[From any, To any] struct {
 	transform PayloadTransformerFunc[From, To]
 }
 
-func (s payloadTransformer[From, To]) JsonSchema() JsonSchema {
-	return s.spec.JsonSchema()
+func (s payloadTransformer[From, To]) JSONSchema() JSONSchema {
+	return s.spec.JSONSchema()
 }
 
 func (s payloadTransformer[From, To]) Unmarshal(ctx compilerContext) (to To, _ error) {
@@ -38,10 +38,10 @@ type payloadUnion[T any] struct {
 	oneOf []TypedPayload[T]
 }
 
-func (s payloadUnion[T]) JsonSchema() JsonSchema {
+func (s payloadUnion[T]) JSONSchema() JSONSchema {
 	schemas := make([]any, len(s.oneOf))
 	for i, spec := range s.oneOf {
-		schemas[i] = spec.JsonSchema()
+		schemas[i] = spec.JSONSchema()
 	}
 	return map[string]any{
 		"oneOf": schemas,
@@ -65,7 +65,7 @@ type payloadGeneric[T any] struct {
 	jsonSchema map[string]any
 }
 
-func (s payloadGeneric[T]) JsonSchema() JsonSchema {
+func (s payloadGeneric[T]) JSONSchema() JSONSchema {
 	return s.jsonSchema
 }
 
@@ -81,7 +81,7 @@ type payloadStruct[T any] struct {
 	jsonSchema map[string]any
 }
 
-func (s payloadStruct[T]) JsonSchema() JsonSchema {
+func (s payloadStruct[T]) JSONSchema() JSONSchema {
 	return s.jsonSchema
 }
 
@@ -94,7 +94,7 @@ type payloadLiteral[T comparable] struct {
 	description string
 }
 
-func (s payloadLiteral[T]) JsonSchema() JsonSchema {
+func (s payloadLiteral[T]) JSONSchema() JSONSchema {
 	schema := map[string]any{
 		"const": s.literal,
 	}
@@ -120,10 +120,10 @@ type payloadList[T any] struct {
 	description string
 }
 
-func (s payloadList[T]) JsonSchema() JsonSchema {
+func (s payloadList[T]) JSONSchema() JSONSchema {
 	schema := map[string]any{
 		"type":  "array",
-		"items": s.itemSpec.JsonSchema(),
+		"items": s.itemSpec.JSONSchema(),
 	}
 	if s.description != "" {
 		schema["description"] = s.description
@@ -156,11 +156,11 @@ type payloadSingleKeyValue[T any] struct {
 	description string
 }
 
-func (s payloadSingleKeyValue[T]) JsonSchema() JsonSchema {
+func (s payloadSingleKeyValue[T]) JSONSchema() JSONSchema {
 	schema := map[string]any{
 		"type": "object",
 		"properties": map[string]any{
-			s.key: s.valueSpec.JsonSchema(),
+			s.key: s.valueSpec.JSONSchema(),
 		},
 		"required":             []string{s.key},
 		"additionalProperties": false,
@@ -194,7 +194,7 @@ type payloadEnum[T string] struct {
 	values []T
 }
 
-func (s payloadEnum[T]) JsonSchema() JsonSchema {
+func (s payloadEnum[T]) JSONSchema() JSONSchema {
 	return map[string]any{
 		"type": "string",
 		"enum": s.values,
@@ -226,8 +226,8 @@ func (p payloadMustSucceed[T]) Unmarshal(ctx compilerContext) (t T, _ error) {
 	return result, nil
 }
 
-func (p payloadMustSucceed[T]) JsonSchema() JsonSchema {
-	return p.payload.JsonSchema()
+func (p payloadMustSucceed[T]) JSONSchema() JSONSchema {
+	return p.payload.JSONSchema()
 }
 
 var contentTypePayloadSpec = payloadTransformer[string, model.NullContentType]{

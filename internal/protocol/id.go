@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-// There are 2 main conventions for encodeing client and client version information into the client ID,
+// There are 2 main conventions for encoding client and client version information into the client ID,
 // Azureus-style and Shadow's-style.
 //
 // Azureus-style uses the following encoding: '-', two characters for client id, four ascii digits for version
@@ -109,28 +109,28 @@ func (id ID) Bytes() []byte {
 	return id[:]
 }
 
-func (b *ID) Scan(value interface{}) error {
+func (id *ID) Scan(value interface{}) error {
 	v, ok := value.([]byte)
 	if !ok {
 		return errors.New("invalid bytes type")
 	}
-	copy(b[:], v)
+	copy(id[:], v)
 	return nil
 }
 
-func (b ID) Value() (driver.Value, error) {
-	return b[:], nil
+func (id ID) Value() (driver.Value, error) {
+	return id[:], nil
 }
 
-func (b ID) MarshalBinary() ([]byte, error) {
-	return b[:], nil
+func (id ID) MarshalBinary() ([]byte, error) {
+	return id[:], nil
 }
 
-func (b *ID) UnmarshalBinary(data []byte) error {
+func (id *ID) UnmarshalBinary(data []byte) error {
 	if len(data) != 20 {
 		return errors.New("invalid ID length")
 	}
-	copy(b[:], data)
+	copy(id[:], data)
 	return nil
 }
 
@@ -149,11 +149,11 @@ func (id *ID) UnmarshalBencode(b []byte) error {
 	return nil
 }
 
-func (b ID) MarshalJSON() ([]byte, error) {
-	return json.Marshal(b.String())
+func (id ID) MarshalJSON() ([]byte, error) {
+	return json.Marshal(id.String())
 }
 
-func (b *ID) UnmarshalJSON(data []byte) error {
+func (id *ID) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
 		return err
@@ -162,26 +162,26 @@ func (b *ID) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
-	*b = tb
+	*id = tb
 	return nil
 }
 
-func (b *ID) UnmarshalGQL(input interface{}) error {
+func (id *ID) UnmarshalGQL(input interface{}) error {
 	switch input := input.(type) {
 	case string:
 		tb, err := ParseID(input)
 		if err != nil {
 			return err
 		}
-		*b = tb
+		*id = tb
 		return nil
 	default:
 		return errors.New("invalid hash type")
 	}
 }
 
-func (b ID) MarshalGQL(w io.Writer) {
-	_, _ = w.Write([]byte(`"` + b.String() + `"`))
+func (id ID) MarshalGQL(w io.Writer) {
+	_, _ = w.Write([]byte(`"` + id.String() + `"`))
 }
 
 type MutableID ID

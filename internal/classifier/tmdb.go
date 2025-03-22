@@ -7,7 +7,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
 )
 
-func (c executionContext) tmdb_searchMovie(title string, year model.Year) (model.Content, error) {
+func (c executionContext) tmdbSearchMovie(title string, year model.Year) (model.Content, error) {
 	req := tmdb.SearchMovieRequest{
 		Query:        title,
 		IncludeAdult: true,
@@ -29,11 +29,11 @@ func (c executionContext) tmdb_searchMovie(title string, year model.Year) (model
 	); !ok {
 		return model.Content{}, classification.ErrUnmatched
 	} else {
-		return c.tmdb_getMovieByTmbdId(bestMatch.ID)
+		return c.tmdbGetMovieByTmbdId(bestMatch.ID)
 	}
 }
 
-func (c executionContext) tmdb_searchTvShow(title string, year model.Year) (model.Content, error) {
+func (c executionContext) tmdbSearchTvShow(title string, year model.Year) (model.Content, error) {
 	req := tmdb.SearchTvRequest{
 		Query:        title,
 		IncludeAdult: true,
@@ -55,11 +55,11 @@ func (c executionContext) tmdb_searchTvShow(title string, year model.Year) (mode
 	); !ok {
 		return model.Content{}, classification.ErrUnmatched
 	} else {
-		return c.tmdb_getTvShowByTmbdId(bestMatch.ID)
+		return c.tmdbGetTvShowByTmbdId(bestMatch.ID)
 	}
 }
 
-func (c executionContext) tmdb_getMovieByTmbdId(id int64) (movie model.Content, err error) {
+func (c executionContext) tmdbGetMovieByTmbdId(id int64) (movie model.Content, err error) {
 	d, getDetailsErr := c.tmdbClient.MovieDetails(c.Context, tmdb.MovieDetailsRequest{
 		ID: id,
 	})
@@ -73,7 +73,7 @@ func (c executionContext) tmdb_getMovieByTmbdId(id int64) (movie model.Content, 
 	return tmdb.MovieDetailsToMovieModel(d)
 }
 
-func (c executionContext) tmdb_getTvShowByTmbdId(id int64) (movie model.Content, err error) {
+func (c executionContext) tmdbGetTvShowByTmbdId(id int64) (movie model.Content, err error) {
 	d, getDetailsErr := c.tmdbClient.TvDetails(c.Context, tmdb.TvDetailsRequest{
 		SeriesID:         id,
 		AppendToResponse: []string{"external_ids"},
@@ -88,14 +88,14 @@ func (c executionContext) tmdb_getTvShowByTmbdId(id int64) (movie model.Content,
 	return tmdb.TvShowDetailsToTvShowModel(d)
 }
 
-func (c executionContext) tmdb_getTmdbIdByExternalId(ref model.ContentRef) (int64, error) {
-	externalSource, externalId, externalSourceErr := tmdb.ExternalSource(ref)
+func (c executionContext) tmdbGetTmdbIdByExternalId(ref model.ContentRef) (int64, error) {
+	externalSource, externalID, externalSourceErr := tmdb.ExternalSource(ref)
 	if externalSourceErr != nil {
 		return 0, externalSourceErr
 	}
 	byIdResult, byIdErr := c.tmdbClient.FindByID(c.Context, tmdb.FindByIDRequest{
 		ExternalSource: externalSource,
-		ExternalID:     externalId,
+		ExternalID:     externalID,
 	})
 	if byIdErr != nil {
 		return 0, byIdErr

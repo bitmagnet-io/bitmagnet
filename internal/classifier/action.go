@@ -17,7 +17,7 @@ type actionCompiler interface {
 }
 
 type actionDefinition interface {
-	HasJsonSchema
+	HasJSONSchema
 	name() string
 	actionCompiler
 }
@@ -44,10 +44,9 @@ outer:
 			if err == nil {
 				actions = append(actions, a)
 				continue outer
-			} else {
-				if asFatalCompilerError(err) != nil {
-					return action{}, err
-				}
+			}
+			if asFatalCompilerError(err) != nil {
+				return action{}, err
 			}
 		}
 		errs = append(errs, fmt.Errorf("no action matched: %v", ctx.source))

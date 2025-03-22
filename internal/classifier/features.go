@@ -33,7 +33,7 @@ var defaultFeatures = newFeatures(
 		addTagAction{},
 		attachLocalContentByIdAction{},
 		attachLocalContentBySearchAction{},
-		attachTmdbContentByIdAction{},
+		attachTMDBContentByIDAction{},
 		attachTmdbContentBySearchAction{},
 		deleteAction{},
 		findMatchAction{},

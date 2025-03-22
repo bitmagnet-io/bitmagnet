@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func (t *Torrent) AfterFind(tx *gorm.DB) error {
+func (t *Torrent) AfterFind(_ *gorm.DB) error {
 	if t.Files != nil {
 		sort.Slice(t.Files, func(i, j int) bool {
 			return t.Files[i].Path < t.Files[j].Path
@@ -70,7 +70,7 @@ func (t Torrent) PublishedAt() time.Time {
 	return publishedAt
 }
 
-func (t Torrent) MagnetUri() string {
+func (t Torrent) MagnetURI() string {
 	return "magnet:?xt=urn:btih:" + t.InfoHash.String() +
 		"&dn=" + url.QueryEscape(t.Name) +
 		"&xl=" + strconv.FormatUint(uint64(t.Size), 10)

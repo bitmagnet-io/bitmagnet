@@ -81,6 +81,6 @@ func (ifElseAction) compileAction(ctx compilerContext) (action, error) {
 	}, nil
 }
 
-func (ifElseAction) JsonSchema() JsonSchema {
-	return ifElsePayloadSpec.JsonSchema()
+func (ifElseAction) JSONSchema() JSONSchema {
+	return ifElsePayloadSpec.JSONSchema()
 }

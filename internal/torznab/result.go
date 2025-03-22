@@ -15,8 +15,8 @@ type SearchResult struct {
 	Channel    SearchResultChannel `xml:"channel"`
 }
 
-func (r SearchResult) Xml() ([]byte, error) {
-	return objToXml(r)
+func (r SearchResult) XML() ([]byte, error) {
+	return objToXML(r)
 }
 
 type customNs struct{}

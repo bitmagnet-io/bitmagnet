@@ -28,7 +28,7 @@ func (a attachLocalContentByIdAction) compileAction(ctx compilerContext) (action
 			if ctx.torrent.Hint.IsNil() || !ctx.torrent.Hint.ContentSource.Valid {
 				return cl, classification.ErrUnmatched
 			}
-			content, err := ctx.search.ContentById(ctx, model.ContentRef{
+			content, err := ctx.search.ContentByID(ctx, model.ContentRef{
 				Type:   ctx.torrent.Hint.ContentType,
 				Source: ctx.torrent.Hint.ContentSource.String,
 				ID:     ctx.torrent.Hint.ContentID.String,
@@ -42,6 +42,6 @@ func (a attachLocalContentByIdAction) compileAction(ctx compilerContext) (action
 	}, nil
 }
 
-func (a attachLocalContentByIdAction) JsonSchema() JsonSchema {
-	return attachLocalContentByIdPayloadSpec.JsonSchema()
+func (a attachLocalContentByIdAction) JSONSchema() JSONSchema {
+	return attachLocalContentByIdPayloadSpec.JSONSchema()
 }

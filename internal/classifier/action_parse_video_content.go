@@ -35,6 +35,6 @@ func (parseVideoContentAction) compileAction(ctx compilerContext) (action, error
 	}, nil
 }
 
-func (parseVideoContentAction) JsonSchema() JsonSchema {
-	return parseVideoContentPayloadSpec.JsonSchema()
+func (parseVideoContentAction) JSONSchema() JSONSchema {
+	return parseVideoContentPayloadSpec.JSONSchema()
 }

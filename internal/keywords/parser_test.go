@@ -29,7 +29,7 @@ func TestParser(t *testing.T) {
 		},
 		{
 			input: []string{"foo(bar"},
-			err:   ErrUnexpectedEof,
+			err:   ErrUnexpectedEOF,
 		},
 		{
 			input: []string{"foo\\(bar"},

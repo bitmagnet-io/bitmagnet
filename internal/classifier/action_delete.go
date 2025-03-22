@@ -27,6 +27,6 @@ func (deleteAction) compileAction(ctx compilerContext) (action, error) {
 	}, nil
 }
 
-func (deleteAction) JsonSchema() JsonSchema {
-	return deletePayloadSpec.JsonSchema()
+func (deleteAction) JSONSchema() JSONSchema {
+	return deletePayloadSpec.JSONSchema()
 }

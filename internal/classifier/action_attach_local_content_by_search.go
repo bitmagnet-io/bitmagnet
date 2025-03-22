@@ -37,6 +37,6 @@ func (a attachLocalContentBySearchAction) compileAction(ctx compilerContext) (ac
 	}, nil
 }
 
-func (attachLocalContentBySearchAction) JsonSchema() JsonSchema {
-	return attachLocalContentBySearchPayloadSpec.JsonSchema()
+func (attachLocalContentBySearchAction) JSONSchema() JSONSchema {
+	return attachLocalContentBySearchPayloadSpec.JSONSchema()
 }

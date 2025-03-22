@@ -35,6 +35,6 @@ func (parseDateAction) compileAction(ctx compilerContext) (action, error) {
 	}, nil
 }
 
-func (parseDateAction) JsonSchema() JsonSchema {
-	return parseDatePayloadSpec.JsonSchema()
+func (parseDateAction) JSONSchema() JSONSchema {
+	return parseDatePayloadSpec.JSONSchema()
 }

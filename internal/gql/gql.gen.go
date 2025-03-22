@@ -5381,7 +5381,7 @@ func (ec *executionContext) _ExternalLink_url(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Url, nil
+		return obj.URL, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6048,7 +6048,7 @@ func (ec *executionContext) _LanguageInfo_id(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Id(), nil
+		return obj.ID(), nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -9354,7 +9354,7 @@ func (ec *executionContext) _Torrent_magnetUri(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.MagnetUri(), nil
+		return obj.MagnetURI(), nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)

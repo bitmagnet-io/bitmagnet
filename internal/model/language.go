@@ -32,7 +32,7 @@ func (l Language) String() string {
 	return l.Alpha2()
 }
 
-func (l Language) Id() string {
+func (l Language) ID() string {
 	return l.Alpha2()
 }
 

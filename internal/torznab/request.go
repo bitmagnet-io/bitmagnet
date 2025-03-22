@@ -8,8 +8,8 @@ type SearchRequest struct {
 	Query    string
 	Type     string
 	Cats     []int
-	ImdbId   model.NullString
-	TmdbId   model.NullString
+	IMDBID   model.NullString
+	TMDBID   model.NullString
 	Season   model.NullInt
 	Episode  model.NullInt
 	Attrs    []string

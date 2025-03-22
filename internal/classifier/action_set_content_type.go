@@ -35,6 +35,6 @@ func (setContentTypeAction) compileAction(ctx compilerContext) (action, error) {
 	}, nil
 }
 
-func (setContentTypeAction) JsonSchema() JsonSchema {
-	return setContentTypePayloadSpec.JsonSchema()
+func (setContentTypeAction) JSONSchema() JSONSchema {
+	return setContentTypePayloadSpec.JSONSchema()
 }

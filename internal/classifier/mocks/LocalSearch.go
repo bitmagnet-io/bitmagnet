@@ -23,11 +23,11 @@ func (_m *LocalSearch) EXPECT() *LocalSearch_Expecter {
 }
 
 // ContentById provides a mock function with given fields: _a0, _a1
-func (_m *LocalSearch) ContentById(_a0 context.Context, _a1 model.ContentRef) (model.Content, error) {
+func (_m *LocalSearch) ContentByID(_a0 context.Context, _a1 model.ContentRef) (model.Content, error) {
 	ret := _m.Called(_a0, _a1)
 
 	if len(ret) == 0 {
-		panic("no return value specified for ContentById")
+		panic("no return value specified for ContentByID")
 	}
 
 	var r0 model.Content
@@ -50,7 +50,7 @@ func (_m *LocalSearch) ContentById(_a0 context.Context, _a1 model.ContentRef) (m
 	return r0, r1
 }
 
-// LocalSearch_ContentById_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ContentById'
+// LocalSearch_ContentById_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ContentByID'
 type LocalSearch_ContentById_Call struct {
 	*mock.Call
 }
@@ -59,7 +59,7 @@ type LocalSearch_ContentById_Call struct {
 //   - _a0 context.Context
 //   - _a1 model.ContentRef
 func (_e *LocalSearch_Expecter) ContentById(_a0 interface{}, _a1 interface{}) *LocalSearch_ContentById_Call {
-	return &LocalSearch_ContentById_Call{Call: _e.mock.On("ContentById", _a0, _a1)}
+	return &LocalSearch_ContentById_Call{Call: _e.mock.On("ContentByID", _a0, _a1)}
 }
 
 func (_c *LocalSearch_ContentById_Call) Run(run func(_a0 context.Context, _a1 model.ContentRef)) *LocalSearch_ContentById_Call {

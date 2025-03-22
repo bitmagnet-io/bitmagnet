@@ -73,8 +73,8 @@ type keywordsLexer struct {
 	lexer.Lexer
 }
 
-var ErrEof = errors.New("EOF")
-var ErrUnexpectedEof = errors.New("unexpected EOF")
+var ErrEOF = errors.New("EOF")
+var ErrUnexpectedEOF = errors.New("unexpected EOF")
 var ErrUnexpectedChar = errors.New("unexpected character")
 
 func (l *keywordsLexer) lexGroupToken(parens bool) (base.GroupToken, error) {
@@ -120,9 +120,9 @@ outer:
 				continue outer
 			}
 			token, err := l.lexClassWithModifierToken()
-			if errors.Is(err, ErrEof) {
+			if errors.Is(err, ErrEOF) {
 				if parens {
-					return base.GroupToken{}, ErrUnexpectedEof
+					return base.GroupToken{}, ErrUnexpectedEOF
 				}
 				addGroup()
 				break outer
@@ -135,7 +135,7 @@ outer:
 		}
 	}
 	if len(groupTokens) == 0 {
-		return base.GroupToken{}, ErrUnexpectedEof
+		return base.GroupToken{}, ErrUnexpectedEOF
 	}
 	return rex.Group.Composite(groupTokens...).NonCaptured(), nil
 }
@@ -171,11 +171,11 @@ func (l *keywordsLexer) lexClassToken() (base.ClassToken, error) {
 	ch, ok := l.Read()
 	switch {
 	case !ok:
-		return tk, ErrEof
+		return tk, ErrEOF
 	case ch == '\\':
 		exactChar, ok2 := l.Read()
 		if !ok2 {
-			return tk, ErrUnexpectedEof
+			return tk, ErrUnexpectedEOF
 		}
 		return rex.Chars.Single(exactChar), nil
 	case lexer.IsWordChar(ch):
