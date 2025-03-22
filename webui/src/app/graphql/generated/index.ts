@@ -522,6 +522,7 @@ export type TorrentContentFacetsInput = {
   contentType?: InputMaybe<ContentTypeFacetInput>;
   genre?: InputMaybe<GenreFacetInput>;
   language?: InputMaybe<LanguageFacetInput>;
+  publishedAt?: InputMaybe<Scalars['String']['input']>;
   releaseYear?: InputMaybe<ReleaseYearFacetInput>;
   torrentFileType?: InputMaybe<TorrentFileTypeFacetInput>;
   torrentSource?: InputMaybe<TorrentSourceFacetInput>;

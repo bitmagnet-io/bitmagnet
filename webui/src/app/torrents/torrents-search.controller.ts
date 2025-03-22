@@ -51,71 +51,84 @@ export type TorrentSearchControls = {
     videoResolution: FacetInput<generated.VideoResolution>;
     videoSource: FacetInput<generated.VideoSource>;
   };
+  publishedAt?: string;
   selectedTorrent?: TorrentSelection;
 };
 
 const controlsToQueryVariables = (
   ctrl: TorrentSearchControls,
-): generated.TorrentContentSearchQueryVariables => ({
-  input: {
+): generated.TorrentContentSearchQueryVariables => {
+  // Build facets object using the types we know are available
+  const facets: generated.TorrentContentFacetsInput = {
+    contentType: {
+      aggregate: true,
+      filter: ctrl.contentType
+        ? [ctrl.contentType === "null" ? null : ctrl.contentType]
+        : undefined,
+    },
+    genre: ctrl.facets.genre.active
+      ? {
+          aggregate: true,
+          filter: ctrl.facets.genre.filter,
+        }
+      : undefined,
+    language: ctrl.facets.language.active
+      ? {
+          aggregate: ctrl.facets.language.active,
+          filter: ctrl.facets.language.filter,
+        }
+      : undefined,
+    torrentFileType: ctrl.facets.fileType.active
+      ? {
+          aggregate: true,
+          filter: ctrl.facets.fileType.filter,
+        }
+      : undefined,
+    torrentSource: ctrl.facets.torrentSource.active
+      ? {
+          aggregate: true,
+          filter: ctrl.facets.torrentSource.filter,
+        }
+      : undefined,
+    torrentTag: ctrl.facets.torrentTag.active
+      ? {
+          aggregate: true,
+          filter: ctrl.facets.torrentTag.filter,
+        }
+      : undefined,
+    videoResolution: ctrl.facets.videoResolution.active
+      ? {
+          aggregate: true,
+          filter: ctrl.facets.videoResolution.filter,
+        }
+      : undefined,
+    videoSource: ctrl.facets.videoSource.active
+      ? {
+          aggregate: true,
+          filter: ctrl.facets.videoSource.filter,
+        }
+      : undefined,
+  };
+
+  // Create the standard input object with proper typing from the generated types
+  const inputObject: generated.TorrentContentSearchQueryInput = {
     queryString: ctrl.queryString,
     limit: ctrl.limit,
     page: ctrl.page,
     totalCount: true,
     hasNextPage: true,
     orderBy: [ctrl.orderBy],
-    facets: {
-      contentType: {
-        aggregate: true,
-        filter: ctrl.contentType
-          ? [ctrl.contentType === "null" ? null : ctrl.contentType]
-          : undefined,
-      },
-      genre: ctrl.facets.genre.active
-        ? {
-            aggregate: true,
-            filter: ctrl.facets.genre.filter,
-          }
-        : undefined,
-      language: ctrl.facets.language.active
-        ? {
-            aggregate: ctrl.facets.language.active,
-            filter: ctrl.facets.language.filter,
-          }
-        : undefined,
-      torrentFileType: ctrl.facets.fileType.active
-        ? {
-            aggregate: true,
-            filter: ctrl.facets.fileType.filter,
-          }
-        : undefined,
-      torrentSource: ctrl.facets.torrentSource.active
-        ? {
-            aggregate: true,
-            filter: ctrl.facets.torrentSource.filter,
-          }
-        : undefined,
-      torrentTag: ctrl.facets.torrentTag.active
-        ? {
-            aggregate: true,
-            filter: ctrl.facets.torrentTag.filter,
-          }
-        : undefined,
-      videoResolution: ctrl.facets.videoResolution.active
-        ? {
-            aggregate: true,
-            filter: ctrl.facets.videoResolution.filter,
-          }
-        : undefined,
-      videoSource: ctrl.facets.videoSource.active
-        ? {
-            aggregate: true,
-            filter: ctrl.facets.videoSource.filter,
-          }
-        : undefined,
-    },
-  },
-});
+    facets,
+  };
+
+  if (ctrl.publishedAt) {
+    facets.publishedAt = ctrl.publishedAt;
+  }
+
+  return {
+    input: inputObject,
+  };
+};
 
 export const inactiveFacet = {
   active: false,
@@ -324,6 +337,14 @@ export class TorrentsSearchController {
       ...ctrl,
       limit: event.pageSize,
       page: event.page,
+    }));
+  }
+
+  setPublishedAt(timeFrame?: string) {
+    this.update((ctrl) => ({
+      ...ctrl,
+      page: 1,
+      publishedAt: timeFrame || undefined,
     }));
   }
 }

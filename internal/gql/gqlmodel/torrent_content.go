@@ -2,6 +2,8 @@ package gqlmodel
 
 import (
 	"context"
+	"time"
+
 	"github.com/99designs/gqlgen/graphql"
 	q "github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
@@ -9,7 +11,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"time"
 )
 
 type TorrentContentQuery struct {
@@ -162,6 +163,11 @@ func (t TorrentContentQuery) Search(
 			qFacets = append(qFacets, videoSourceFacet(*videoSource))
 		}
 		options = append(options, q.WithFacet(qFacets...))
+
+		// Handle publishedAt filter
+		if publishedAt, ok := input.Facets.PublishedAt.ValueOK(); ok && *publishedAt != "" {
+			options = append(options, q.Where(search.TorrentContentPublishedAtCriteria(*publishedAt)))
+		}
 	}
 	if infoHashes, ok := input.InfoHashes.ValueOK(); ok {
 		options = append(options, q.Where(search.TorrentContentInfoHashCriteria(infoHashes...)))
