@@ -1,9 +1,8 @@
-import { waitForAsync, ComponentFixture, TestBed } from "@angular/core/testing";
-
+import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
 import { appConfig } from "../app.config";
 import { TorrentsSearchComponent } from "./torrents-search.component";
 
-describe("TableComponent", () => {
+describe("TorrentsSearchComponent", () => {
   let component: TorrentsSearchComponent;
   let fixture: ComponentFixture<TorrentsSearchComponent>;
 

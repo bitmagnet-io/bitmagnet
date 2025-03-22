@@ -88,6 +88,41 @@
   }
 }
 
+.size-filter-panel {
+  margin-bottom: 14px;
+
+  .size-filter-section {
+    margin-left: 0 !important;
+  }
+
+  .size-filter-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 8px;
+
+    .size-input {
+      flex: 1;
+    }
+
+    .size-unit-selector {
+      width: 80px;
+    }
+  }
+
+  .size-filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    justify-content: space-between;
+
+    button[mat-raised-button] {
+      flex: 1;
+    }
+  }
+}
+
 app-paginator {
   float: right;
   padding-top: 14px;

@@ -447,6 +447,11 @@ export type Season = {
   season: Scalars['Int']['output'];
 };
 
+export type SizeRangeInput = {
+  max?: InputMaybe<Scalars['Int']['input']>;
+  min?: InputMaybe<Scalars['Int']['input']>;
+};
+
 export type SuggestTagsQueryInput = {
   exclusions?: InputMaybe<Array<Scalars['String']['input']>>;
   prefix?: InputMaybe<Scalars['String']['input']>;
@@ -523,6 +528,7 @@ export type TorrentContentFacetsInput = {
   genre?: InputMaybe<GenreFacetInput>;
   language?: InputMaybe<LanguageFacetInput>;
   releaseYear?: InputMaybe<ReleaseYearFacetInput>;
+  sizeRange?: InputMaybe<SizeRangeInput>;
   torrentFileType?: InputMaybe<TorrentFileTypeFacetInput>;
   torrentSource?: InputMaybe<TorrentSourceFacetInput>;
   torrentTag?: InputMaybe<TorrentTagFacetInput>;
