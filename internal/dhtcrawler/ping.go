@@ -17,8 +17,11 @@ func (c *crawler) runPing(ctx context.Context) {
 			// In either case we can continue.
 			return
 		}
+
 		res, err := c.client.Ping(ctx, n.Addr())
+
 		var nodeID protocol.ID
+
 		if err == nil {
 			nodeID = res.ID
 			if !n.ID().IsZero() && n.ID() != nodeID {
@@ -26,6 +29,7 @@ func (c *crawler) runPing(ctx context.Context) {
 				err = errors.New("node responded with a mismatching ID")
 			}
 		}
+
 		if err != nil {
 			c.kTable.BatchCommand(ktable.DropNode{
 				ID:     nodeID,

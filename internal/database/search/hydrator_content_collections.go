@@ -36,13 +36,16 @@ func (contentCollectionsHydrator) GetJoinSubs(
 ) ([]model.ContentCollectionContent, error) {
 	refMap := contentMapFromRefs(ids...)
 	q := dbCtx.Query()
+
 	var conds []gen.Condition
+
 	for contentType, sourceMap := range refMap {
 		for source, idMap := range sourceMap {
 			thisIDs := make([]string, 0, len(idMap))
 			for id := range idMap {
 				thisIDs = append(thisIDs, id)
 			}
+
 			conds = append(conds, q.ContentCollectionContent.Where(
 				q.ContentCollectionContent.ContentType.Eq(contentType),
 				q.ContentCollectionContent.ContentSource.Eq(source),
@@ -50,6 +53,7 @@ func (contentCollectionsHydrator) GetJoinSubs(
 			))
 		}
 	}
+
 	qCtx := q.ContentCollectionContent.WithContext(ctx).Preload(
 		q.ContentCollectionContent.Collection.RelationField,
 		q.ContentCollectionContent.Collection.MetadataSource.RelationField,
@@ -57,10 +61,12 @@ func (contentCollectionsHydrator) GetJoinSubs(
 	for _, cond := range conds {
 		qCtx = qCtx.Or(cond)
 	}
+
 	var results []model.ContentCollectionContent
 	if err := qCtx.Find(&results).Error; err != nil {
 		return nil, err
 	}
+
 	return results, nil
 }
 

@@ -29,6 +29,7 @@ func (queueJobStatusFacet) Values(query.FacetContext) (map[string]string, error)
 	for _, n := range model.QueueJobStatusNames() {
 		values[n] = n
 	}
+
 	return values, nil
 }
 
@@ -37,6 +38,7 @@ func (queueJobStatusFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 	if len(values) == 0 {
 		return nil
 	}
+
 	return []query.Criteria{
 		query.DaoCriteria{
 			Conditions: func(ctx query.DBContext) ([]field.Expr, error) {

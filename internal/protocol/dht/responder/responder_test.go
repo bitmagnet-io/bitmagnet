@@ -24,6 +24,7 @@ type testResponderMocks struct {
 func newTestResponderMocks(t *testing.T) testResponderMocks {
 	nodeID := protocol.RandomNodeID()
 	tableMock := ktable_mocks.NewTable(t)
+
 	return testResponderMocks{
 		nodeID: nodeID,
 		table:  tableMock,
@@ -79,6 +80,7 @@ func (m mockedHash) Peers() []ktable.HashPeer {
 			Addr: nodeInfo.Addr.ToAddrPort(),
 		})
 	}
+
 	return peers
 }
 
@@ -184,6 +186,7 @@ func TestResponder_get_peers__values(t *testing.T) {
 		Hash:  mockedHash{nodeInfos: nodeInfos},
 		Found: true,
 	})
+
 	ret, err := mocks.responder.Respond(context.Background(), msg)
 	assert.Equal(t, dht.Return{
 		ID: mocks.nodeID,
@@ -225,6 +228,7 @@ func TestResponder_get_peers__nodes(t *testing.T) {
 	mocks.table.On("GetHashOrClosestNodes", infoHash).Return(ktable.GetHashOrClosestNodesResult{
 		ClosestNodes: peers,
 	})
+
 	ret, err := mocks.responder.Respond(context.Background(), msg)
 	assert.Equal(t, dht.Return{
 		ID:     mocks.nodeID,
@@ -266,12 +270,14 @@ func TestResponder_announce_peer__implied_port(t *testing.T) {
 			},
 		},
 	}
+
 	mocks.table.On("BatchCommand", ktable.PutHash{
 		ID: infoHash,
 		Peers: []ktable.HashPeer{{
 			Addr: mocks.sender.Addr.ToAddrPort(),
 		}},
 	}).Return(nil)
+
 	ret, err := mocks.responder.Respond(context.Background(), msg)
 	assert.Equal(t, dht.Return{
 		ID: mocks.nodeID,
@@ -296,12 +302,14 @@ func TestResponder_announce_peer__specified_port(t *testing.T) {
 			},
 		},
 	}
+
 	mocks.table.On("BatchCommand", ktable.PutHash{
 		ID: infoHash,
 		Peers: []ktable.HashPeer{{
 			Addr: netip.AddrPortFrom(mocks.sender.Addr.ToAddrPort().Addr(), uint16(port)),
 		}},
 	}).Return(nil)
+
 	ret, err := mocks.responder.Respond(context.Background(), msg)
 	assert.Equal(t, dht.Return{
 		ID: mocks.nodeID,
@@ -341,6 +349,7 @@ func TestResponder_sample_infohashes(t *testing.T) {
 		Nodes:       peers,
 		TotalHashes: int(num),
 	})
+
 	ret, err := mocks.responder.Respond(context.Background(), msg)
 	assert.Equal(t, dht.Return{
 		ID:    mocks.nodeID,

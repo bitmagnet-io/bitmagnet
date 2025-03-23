@@ -67,6 +67,7 @@ func (t *table) Origin() ID {
 func (t *table) BatchCommand(commands ...Command) {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
+
 	for _, command := range commands {
 		command.exec(t)
 	}
@@ -75,6 +76,7 @@ func (t *table) BatchCommand(commands ...Command) {
 func (t *table) PutNode(id ID, addr netip.AddrPort, options ...NodeOption) btree.PutResult {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
+
 	return PutNode{
 		ID:      id,
 		Addr:    addr,
@@ -85,6 +87,7 @@ func (t *table) PutNode(id ID, addr netip.AddrPort, options ...NodeOption) btree
 func (t *table) DropNode(id ID, reason error) bool {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
+
 	return DropNode{
 		ID:     id,
 		Reason: reason,
@@ -94,6 +97,7 @@ func (t *table) DropNode(id ID, reason error) bool {
 func (t *table) PutHash(id ID, peers []HashPeer, options ...HashOption) btree.PutResult {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
+
 	return PutHash{
 		ID:      id,
 		Peers:   peers,
@@ -104,6 +108,7 @@ func (t *table) PutHash(id ID, peers []HashPeer, options ...HashOption) btree.Pu
 func (t *table) GetClosestNodes(id ID) []Node {
 	t.mutex.RLock()
 	defer t.mutex.RUnlock()
+
 	return GetClosestPeers{
 		ID: id,
 	}.execReturn(t)
@@ -112,6 +117,7 @@ func (t *table) GetClosestNodes(id ID) []Node {
 func (t *table) GetOldestNodes(cutoff time.Time, n int) []Node {
 	t.mutex.RLock()
 	defer t.mutex.RUnlock()
+
 	return GetOldestPeers{
 		Cutoff: cutoff,
 		N:      n,
@@ -121,6 +127,7 @@ func (t *table) GetOldestNodes(cutoff time.Time, n int) []Node {
 func (t *table) GetNodesForSampleInfoHashes(n int) []Node {
 	t.mutex.RLock()
 	defer t.mutex.RUnlock()
+
 	return GetNodesForSampleInfoHashes{
 		N: n,
 	}.execReturn(t)
@@ -129,6 +136,7 @@ func (t *table) GetNodesForSampleInfoHashes(n int) []Node {
 func (t *table) FilterKnownAddrs(addrs []netip.Addr) []netip.Addr {
 	t.mutex.RLock()
 	defer t.mutex.RUnlock()
+
 	return FilterKnownAddrs{
 		Addrs: addrs,
 	}.execReturn(t)
@@ -137,6 +145,7 @@ func (t *table) FilterKnownAddrs(addrs []netip.Addr) []netip.Addr {
 func (t *table) GetHashOrClosestNodes(id ID) GetHashOrClosestNodesResult {
 	t.mutex.RLock()
 	defer t.mutex.RUnlock()
+
 	return GetHashOrClosestNodes{
 		ID: id,
 	}.execReturn(t)
@@ -145,5 +154,6 @@ func (t *table) GetHashOrClosestNodes(id ID) GetHashOrClosestNodesResult {
 func (t *table) SampleHashesAndNodes() SampleHashesAndNodesResult {
 	t.mutex.RLock()
 	defer t.mutex.RUnlock()
+
 	return SampleHashesAndNodes{}.execReturn(t)
 }

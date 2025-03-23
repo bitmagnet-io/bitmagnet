@@ -44,13 +44,16 @@ type Result struct {
 
 func New(params Params) Result {
 	active := &concurrency.AtomicValue[bool]{}
+
 	var c crawler
+
 	persistedTotal := prometheus.NewCounterVec(prometheus.CounterOpts{
 		Namespace: "bitmagnet",
 		Subsystem: "dht_crawler",
 		Name:      "persisted_total",
 		Help:      "A counter of persisted database entities.",
 	}, []string{"entity"})
+
 	return Result{
 		Worker: worker.NewWorker(
 			"dht_crawler",

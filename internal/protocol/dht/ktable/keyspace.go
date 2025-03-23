@@ -52,28 +52,35 @@ func (k keyspace[_, _, ItemPublic, _]) get(id ID) (it ItemPublic, ok bool) {
 	if ok {
 		it = prv.public()
 	}
+
 	return
 }
 
 func (k keyspace[Input, Option, _, ItemPrivate]) put(id ID, input Input, options ...Option) btree.PutResult {
 	var it ItemPrivate
+
 	var putResult btree.PutResult
+
 	it, ok := k.items[id]
 	putResult = k.btree.Put(id[:])
+
 	switch putResult {
 	case btree.PutAccepted:
 		if !ok {
 			it = k.newItem(id, input)
 		}
+
 		k.items[id] = it
 	case btree.PutAlreadyExists:
 		it.update(input)
 	default:
 		return putResult
 	}
+
 	for _, o := range options {
 		it.apply(o)
 	}
+
 	return putResult
 }
 
@@ -81,13 +88,16 @@ func (k keyspace[_, _, ItemPublic, _]) getRandom(n int) []ItemPublic {
 	if n > len(k.items) {
 		n = len(k.items)
 	}
+
 	items := make([]ItemPublic, 0, n)
 	for _, prv := range k.items {
 		if len(items) >= n {
 			break
 		}
+
 		items = append(items, prv.public())
 	}
+
 	return items
 }
 
@@ -98,11 +108,14 @@ func (k keyspace[_, _, _, _]) drop(id ID, reason error) bool {
 	if !ok {
 		return false
 	}
+
 	if reason == nil {
 		reason = ErrDropReasonNotProvided
 	}
+
 	it.drop(reason)
 	delete(k.items, id)
+
 	return k.btree.Drop(id[:])
 }
 
@@ -110,11 +123,14 @@ func (k keyspace[_, _, ItemPublic, _]) getClosest(id ID) []ItemPublic {
 	if it, ok := k.items[id]; ok {
 		return []ItemPublic{it.public()}
 	}
+
 	closestIDs := k.btree.Closest(id[:], 8)
 	closest := make([]ItemPublic, 0, len(closestIDs))
+
 	for _, id := range closestIDs {
 		closest = append(closest, k.items[protocol.MustNewIDFromByteSlice(id)].public())
 	}
+
 	return closest
 }
 

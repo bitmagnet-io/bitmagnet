@@ -27,8 +27,10 @@ func Options(o ...Option) Option {
 			if err != nil {
 				return b, err
 			}
+
 			b = nextCtx
 		}
+
 		return b, nil
 	}
 }

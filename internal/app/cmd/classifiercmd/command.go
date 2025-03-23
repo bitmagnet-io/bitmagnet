@@ -65,6 +65,7 @@ func write(writer io.Writer, src any, format string) error {
 		output    []byte
 		outputErr error
 	)
+
 	switch format {
 	case "json":
 		output, outputErr = json.MarshalIndent(src, "", "  ")
@@ -74,9 +75,12 @@ func write(writer io.Writer, src any, format string) error {
 	default:
 		outputErr = fmt.Errorf("unsupported format: %s", format)
 	}
+
 	if outputErr != nil {
 		return outputErr
 	}
+
 	_, writeErr := writer.Write(output)
+
 	return writeErr
 }

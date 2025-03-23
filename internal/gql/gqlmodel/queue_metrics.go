@@ -20,6 +20,7 @@ func (qq QueueQuery) Metrics(
 	input gen.QueueMetricsQueryInput,
 ) (*gen.QueueMetricsQueryResult, error) {
 	req := queuemetrics.Request{}
+
 	switch input.BucketDuration {
 	case gen.MetricsBucketDurationMinute:
 		req.BucketDuration = "minute"
@@ -30,22 +31,28 @@ func (qq QueueQuery) Metrics(
 	default:
 		return nil, fmt.Errorf("invalid bucket duration: %s", input.BucketDuration)
 	}
+
 	if t, ok := input.StartTime.ValueOK(); ok && !t.IsZero() {
 		req.StartTime = *t
 	}
+
 	if t, ok := input.EndTime.ValueOK(); ok && !t.IsZero() {
 		req.EndTime = *t
 	}
+
 	if statuses, ok := input.Statuses.ValueOK(); ok {
 		req.Statuses = statuses
 	}
+
 	if queues, ok := input.Queues.ValueOK(); ok {
 		req.Queues = queues
 	}
+
 	buckets, err := qq.QueueMetricsClient.Request(ctx, req)
 	if err != nil {
 		return nil, err
 	}
+
 	return &gen.QueueMetricsQueryResult{
 		Buckets: buckets,
 	}, nil

@@ -22,5 +22,6 @@ func ReadTorrentFileBytes(bytes []byte) (TorrentFile, error) {
 	if unmarshalErr := bencode.Unmarshal(bytes, &torrentFile); unmarshalErr != nil {
 		return TorrentFile{}, fmt.Errorf("error unmarshaling torrent file: %s", unmarshalErr)
 	}
+
 	return torrentFile, nil
 }

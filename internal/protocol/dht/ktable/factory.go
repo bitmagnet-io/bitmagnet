@@ -67,6 +67,7 @@ func New(p Params) Result {
 		),
 	}
 	hashesCollector := patchPrometheusCollector("hashes", &hashes.keyspace)
+
 	return Result{
 		Table: &table{
 			origin:  p.NodeID,
@@ -116,5 +117,6 @@ func patchPrometheusCollector[
 		}),
 	}
 	ks.btree = collector
+
 	return collector
 }

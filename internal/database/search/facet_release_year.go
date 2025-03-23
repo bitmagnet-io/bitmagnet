@@ -81,7 +81,9 @@ func yearCondition(target field.Uint16, years ...uint16) field.Expr {
 
 func (yearFacet) Values(ctx query.FacetContext) (map[string]string, error) {
 	q := ctx.Query().Content
+
 	var years []model.Year
+
 	err := q.WithContext(ctx.Context()).Where(
 		q.ReleaseYear.Gte(1000),
 		q.ReleaseYear.Lte(9999),
@@ -89,10 +91,13 @@ func (yearFacet) Values(ctx query.FacetContext) (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	values := make(map[string]string, len(years)+1)
 	values["null"] = "Unknown"
+
 	for _, y := range years {
 		values[y.String()] = y.String()
 	}
+
 	return values, nil
 }

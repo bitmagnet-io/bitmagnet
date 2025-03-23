@@ -11,6 +11,7 @@ func removeEnumPrefixes(names ...string) []string {
 	for i, name := range names {
 		result[i] = name[1:]
 	}
+
 	return result
 }
 
@@ -19,5 +20,6 @@ func namesToLower(names ...string) []string {
 	for i, name := range names {
 		result[i] = strings.ToLower(name)
 	}
+
 	return result
 }

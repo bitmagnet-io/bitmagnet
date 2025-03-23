@@ -59,10 +59,12 @@ func (c *inMemoryCacher) Get(ctx context.Context, key string) *caches.Query {
 	if m == ModeNoCache || m == ModeWarm {
 		return nil
 	}
+
 	val, ok := c.lru.Get(key)
 	if !ok {
 		return nil
 	}
+
 	c.logger.Debugw("cache hit", "key", key)
 
 	return val
@@ -73,14 +75,17 @@ func (c *inMemoryCacher) Store(ctx context.Context, key string, val *caches.Quer
 	if m == ModeCached || m == ModeWarm {
 		c.lru.Add(key, val)
 	}
+
 	return nil
 }
 
 func cacheModeFromContext(ctx context.Context) Mode {
 	ctxValue := ctx.Value(ModeKey)
+
 	m, isOk := ctxValue.(Mode)
 	if !isOk {
 		return ModeNoCache
 	}
+
 	return m
 }

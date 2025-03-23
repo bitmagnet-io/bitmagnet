@@ -32,5 +32,6 @@ func (l gooseLogger) Printf(format string, v ...interface{}) {
 		strings.HasPrefix(format, "goose: no migrations to run") {
 		fn = l.l.Infof
 	}
+
 	fn(strings.TrimSpace(format), v...)
 }

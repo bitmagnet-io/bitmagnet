@@ -10,6 +10,7 @@ import (
 func TorrentTagCriteria(tagNames ...string) query.Criteria {
 	return query.GenCriteria(func(ctx query.DBContext) (query.Criteria, error) {
 		q := ctx.Query()
+
 		return query.OrCriteria{
 			Criteria: []query.Criteria{
 				query.RawCriteria{

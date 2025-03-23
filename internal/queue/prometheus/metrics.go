@@ -38,6 +38,7 @@ func (qmc *queueMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 	if err != nil {
 		qmc.logger.Errorf("Failed to collect metrics data: %s", err)
 	}
+
 	for _, info := range queueInfos {
 		ch <- prometheus.MustNewConstMetric(
 			tasksQueuedDesc,
@@ -60,12 +61,15 @@ func (qmc *queueMetricsCollector) collectQueueStatusInfos() ([]*queueStatusInfo,
 	if err != nil {
 		return nil, fmt.Errorf("failed to get query: %v", err)
 	}
+
 	var queueInfos []*queueStatusInfo
+
 	err = q.QueueJob.WithContext(context.Background()).UnderlyingDB().Raw(
 		"SELECT queue, status, count(*) FROM queue_jobs GROUP BY queue, status",
 	).Find(&queueInfos).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get queue status info: %v", err)
 	}
+
 	return queueInfos, nil
 }

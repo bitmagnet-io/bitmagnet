@@ -23,9 +23,11 @@ func (r requesterFailFast) Request(
 	if r.isUnauthorized.Get() {
 		return nil, ErrUnauthorized
 	}
+
 	res, err := r.requester.Request(ctx, path, queryParams, result)
 	if err != nil && errors.Is(err, ErrUnauthorized) {
 		r.isUnauthorized.Set(true)
 	}
+
 	return res, err
 }

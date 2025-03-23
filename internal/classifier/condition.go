@@ -22,17 +22,22 @@ type conditionDefinition interface {
 
 func (c compilerContext) compileCondition(ctx compilerContext) (condition, error) {
 	var errs []error
+
 	for _, def := range c.conditions {
 		c, err := def.compileCondition(ctx.child(def.name(), ctx.source))
 		if err == nil {
 			return c, nil
 		}
+
 		if asFatalCompilerError(err) != nil {
 			return condition{}, err
 		}
+
 		errs = append(errs, err)
 	}
+
 	errs = append(errs, errors.New("no condition matched"))
+
 	return condition{}, errors.Join(errs...)
 }
 

@@ -15,12 +15,15 @@ func (m manager) EnqueueReprocessTorrentsBatch(ctx context.Context, req EnqueueR
 	if flags == nil {
 		flags = make(classifier.Flags)
 	}
+
 	if req.ApisDisabled {
 		flags["apis_enabled"] = false
 	}
+
 	if req.LocalSearchDisabled {
 		flags["local_search_enabled"] = false
 	}
+
 	job, err := batch.NewQueueJob(batch.MessageParams{
 		ClassifyMode:    req.ClassifyMode,
 		ClassifierFlags: flags,
@@ -33,12 +36,14 @@ func (m manager) EnqueueReprocessTorrentsBatch(ctx context.Context, req EnqueueR
 	if err != nil {
 		return err
 	}
+
 	return m.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if req.Purge {
 			if _, err := tx.WithContext(ctx).Raw("TRUNCATE TABLE queue_jobs;").Rows(); err != nil {
 				return fmt.Errorf("error purging queue: %w", err)
 			}
 		}
+
 		return tx.WithContext(ctx).Create(&job).Error
 	})
 }

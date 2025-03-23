@@ -28,9 +28,11 @@ func RandomNodeInfo(ipLen int) (ni NodeInfo) {
 	ni.ID = protocol.RandomNodeID()
 	ni.Addr.Port = rand.Intn(math.MaxUint16 + 1)
 	ni.Addr.IP = make(net.IP, ipLen)
+
 	for i := range ipLen {
 		ni.Addr.IP[i] = byte(rand.Intn(256))
 	}
+
 	return
 }
 
@@ -43,9 +45,11 @@ func (ni NodeInfo) MarshalBinary() ([]byte, error) {
 	var w bytes.Buffer
 	_, _ = w.Write(ni.ID[:])
 	_, _ = w.Write(ni.Addr.IP)
+
 	if err := binary.Write(&w, binary.BigEndian, uint16(ni.Addr.Port)); err != nil {
 		return nil, err
 	}
+
 	return w.Bytes(), nil
 }
 
@@ -90,10 +94,12 @@ func (ni *CompactIPv4NodeInfo) UnmarshalBencode(b []byte) error {
 
 func unmarshalBencodedBinary(u encoding.BinaryUnmarshaler, b []byte) (err error) {
 	var ub string
+
 	err = bencode.Unmarshal(b, &ub)
 	if err != nil {
 		return
 	}
+
 	return u.UnmarshalBinary([]byte(ub))
 }
 
@@ -106,11 +112,13 @@ func unmarshalBinarySlice(slice elemSizer, b []byte) (err error) {
 	elemType := sliceValue.Type().Elem()
 	bytesPerElem := slice.ElemSize()
 	elem := reflect.New(elemType)
+
 	for len(b) != 0 {
 		if len(b) < bytesPerElem {
 			err = fmt.Errorf("%d trailing bytes < %d required for element", len(b), bytesPerElem)
 			break
 		}
+
 		if bu, ok := elem.Interface().(encoding.BinaryUnmarshaler); ok {
 			err = bu.UnmarshalBinary(b[:bytesPerElem])
 		} else if elem.Elem().Len() == bytesPerElem {
@@ -118,29 +126,39 @@ func unmarshalBinarySlice(slice elemSizer, b []byte) (err error) {
 		} else {
 			err = fmt.Errorf("can't unmarshal %v bytes into %v", bytesPerElem, elem.Type())
 		}
+
 		if err != nil {
 			return
 		}
+
 		sliceValue.Set(reflect.Append(sliceValue, elem.Elem()))
+
 		b = b[bytesPerElem:]
 	}
+
 	return
 }
 
 func marshalBinarySlice(slice elemSizer) (ret []byte, err error) {
 	var elems []encoding.BinaryMarshaler
+
 	makeInto(&elems, slice)
+
 	for _, e := range elems {
 		var b []byte
+
 		b, err = e.MarshalBinary()
 		if err != nil {
 			return
 		}
+
 		if len(b) != slice.ElemSize() {
 			panic(fmt.Sprintf("marshalled %d bytes, but expected %d", len(b), slice.ElemSize()))
 		}
+
 		ret = append(ret, b...)
 	}
+
 	return
 }
 
@@ -148,12 +166,14 @@ func bencodeBytesResult(b []byte, err error) ([]byte, error) {
 	if err != nil {
 		return b, err
 	}
+
 	return bencode.Marshal(b)
 }
 
 // makes and sets a slice at *ptrTo, and type asserts all the elements from "from" to it.
 func makeInto(ptrTo interface{}, from interface{}) {
 	fromSliceValue := reflect.ValueOf(from)
+
 	fromLen := fromSliceValue.Len()
 	if fromLen == 0 {
 		return
@@ -163,16 +183,19 @@ func makeInto(ptrTo interface{}, from interface{}) {
 	if slicePtrValue.Kind() != reflect.Ptr {
 		panic("destination is not a pointer")
 	}
+
 	destSliceValue := slicePtrValue.Elem()
 	// The type of the elements of the destination slice.
 	destSliceElemType := destSliceValue.Type().Elem()
 	destSliceValue.Set(reflect.MakeSlice(destSliceValue.Type(), fromLen, fromLen))
+
 	for i := range make([]struct{}, fromSliceValue.Len()) {
 		// The value inside the interface in the slice element.
 		itemValue := fromSliceValue.Index(i)
 		if itemValue.Kind() == reflect.Interface {
 			itemValue = itemValue.Elem()
 		}
+
 		convertedItem := itemValue.Convert(destSliceElemType)
 		destSliceValue.Index(i).Set(convertedItem)
 	}

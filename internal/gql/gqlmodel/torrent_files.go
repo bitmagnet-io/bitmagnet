@@ -27,6 +27,7 @@ func (t TorrentQuery) Files(ctx context.Context, query TorrentFilesQueryInput) (
 	if query.Limit.Valid {
 		limit = query.Limit.Uint
 	}
+
 	options := []q.Option{
 		q.SearchParams{
 			Limit:             model.NullUint{Valid: true, Uint: limit},
@@ -37,23 +38,30 @@ func (t TorrentQuery) Files(ctx context.Context, query TorrentFilesQueryInput) (
 			AggregationBudget: model.NullFloat64{Valid: true, Float64: 0},
 		}.Option(),
 	}
+
 	var criteria []q.Criteria
 	if query.InfoHashes != nil {
 		criteria = append(criteria, search.TorrentFileInfoHashCriteria(query.InfoHashes...))
 	}
+
 	options = append(options, q.Where(criteria...))
 	fullOrderBy := maps.NewInsertMap[search.TorrentFilesOrderBy, search.OrderDirection]()
+
 	for _, ob := range query.OrderBy {
 		direction := search.OrderDirectionAscending
 		if desc, ok := ob.Descending.ValueOK(); ok && *desc {
 			direction = search.OrderDirectionDescending
 		}
+
 		field, err := search.ParseTorrentFilesOrderBy(ob.Field.String())
 		if err != nil {
 			return search.TorrentFilesResult{}, err
 		}
+
 		fullOrderBy.Set(field, direction)
 	}
+
 	options = append(options, search.TorrentFilesFullOrderBy(fullOrderBy).Option())
+
 	return t.Search.TorrentFiles(ctx, options...)
 }

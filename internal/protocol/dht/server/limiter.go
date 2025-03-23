@@ -30,5 +30,6 @@ func (s queryLimiter) Query(
 	if limitErr := s.queryLimiter.Wait(ctx, addr.Addr().String()); limitErr != nil {
 		return r, limitErr
 	}
+
 	return s.server.Query(ctx, addr, q, args)
 }

@@ -26,6 +26,7 @@ func (setContentTypeAction) compileAction(ctx compilerContext) (action, error) {
 	if err != nil {
 		return action{}, ctx.error(err)
 	}
+
 	return action{
 		func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result

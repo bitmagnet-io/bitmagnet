@@ -33,6 +33,7 @@ type server struct {
 
 func (s *server) Start(ctx context.Context) (err error) {
 	ctx, cancel := context.WithCancel(ctx)
+
 	defer func() {
 		if err != nil {
 			cancel()
@@ -46,6 +47,7 @@ func (s *server) Start(ctx context.Context) (err error) {
 	//listenerConn := pListenerConn.Conn()
 	handlers := make([]serverHandler, len(s.handlers))
 	listenerChans := make(map[string]chan pgconn.Notification)
+
 	for i, h := range s.handlers {
 		listenerChan := make(chan pgconn.Notification)
 		sh := serverHandler{
@@ -64,6 +66,7 @@ func (s *server) Start(ctx context.Context) (err error) {
 		//}
 		go sh.start(ctx)
 	}
+
 	go func() {
 		for {
 			select {
@@ -103,6 +106,7 @@ func (s *server) Start(ctx context.Context) (err error) {
 	//	}
 	//}()
 	go s.runGarbageCollection(ctx)
+
 	return
 }
 
@@ -151,6 +155,7 @@ type serverHandler struct {
 
 func (h *serverHandler) start(ctx context.Context) {
 	checkTicker := time.NewTicker(1)
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -159,6 +164,7 @@ func (h *serverHandler) start(ctx context.Context) {
 			if semErr := h.sem.Acquire(ctx, 1); semErr != nil {
 				return
 			}
+
 			go func() {
 				defer h.sem.Release(1)
 				_, _, _ = h.handleJob(ctx, h.query.QueueJob.ID.Eq(notification.Payload))
@@ -167,7 +173,9 @@ func (h *serverHandler) start(ctx context.Context) {
 			if semErr := h.sem.Acquire(ctx, 1); semErr != nil {
 				return
 			}
+
 			checkTicker.Reset(h.CheckInterval)
+
 			go func() {
 				defer h.sem.Release(1)
 				jobID, _, err := h.handleJob(ctx)
@@ -204,12 +212,16 @@ func (h *serverHandler) handleJob(
 			if errors.Is(findErr, gorm.ErrRecordNotFound) {
 				return nil
 			}
+
 			return findErr
 		}
+
 		jobID = job.ID
+
 		var jobErr error
 		if job.Deadline.Valid && job.Deadline.Time.Before(time.Now()) {
 			jobErr = ErrJobExceededDeadline
+
 			h.logger.Debugw("job deadline is in the past, skipping", "job_id", job.ID)
 		} else {
 			// check if the job is being retried and increment retry count accordingly
@@ -224,18 +236,22 @@ func (h *serverHandler) handleJob(
 
 		if jobErr != nil {
 			h.logger.Errorw("job failed", "error", jobErr)
+
 			if job.Retries < job.MaxRetries {
 				job.Status = model.QueueJobStatusRetry
 				job.RunAfter = queue.CalculateBackoff(job.Retries)
 			} else {
 				job.Status = model.QueueJobStatusFailed
 			}
+
 			job.Error = model.NewNullString(jobErr.Error())
 		} else {
 			job.Status = model.QueueJobStatusProcessed
 			processed = true
 		}
+
 		_, updateErr := tx.QueueJob.WithContext(ctx).Updates(job)
+
 		return updateErr
 	})
 	if err != nil {
@@ -243,6 +259,7 @@ func (h *serverHandler) handleJob(
 	} else if processed {
 		h.logger.Debugw("job processed", "job_id", jobID)
 	}
+
 	return
 }
 

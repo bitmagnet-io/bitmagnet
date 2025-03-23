@@ -24,10 +24,12 @@ type lazy[T any] struct {
 func (l *lazy[T]) Get() (T, error) {
 	l.mtx.Lock()
 	defer l.mtx.Unlock()
+
 	if !l.done {
 		l.v, l.err = l.fn()
 		l.done = true
 	}
+
 	return l.v, l.err
 }
 
@@ -40,7 +42,9 @@ func (l *lazy[T]) Decorate(fn func(T) (T, error)) {
 		if err != nil {
 			return v, err
 		}
+
 		v, err = fn(v)
+
 		return v, err
 	}
 }
@@ -48,8 +52,10 @@ func (l *lazy[T]) Decorate(fn func(T) (T, error)) {
 func (l *lazy[T]) IfInitialized(fn func(T) error) error {
 	l.mtx.Lock()
 	defer l.mtx.Unlock()
+
 	if l.done && l.err == nil {
 		return fn(l.v)
 	}
+
 	return nil
 }

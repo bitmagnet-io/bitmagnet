@@ -19,9 +19,11 @@ func (m StringMap[T]) OrderedEntries() []StringMapEntry[T] {
 			Value: v,
 		})
 	}
+
 	sort.Slice(entries, func(i, j int) bool {
 		return natsort.Compare(entries[i].Key, entries[j].Key)
 	})
+
 	return entries
 }
 

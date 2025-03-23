@@ -30,10 +30,13 @@ func New(p Params) (Result, error) {
 	sort.Slice(commands, func(i, j int) bool {
 		return strings.Compare(commands[i].Name, commands[j].Name) < 0
 	})
+
 	name := "bitmagnet"
+
 	if version.GitTag != "" {
 		name += " " + version.GitTag
 	}
+
 	app := &cli.App{
 		Name:     name,
 		Commands: commands,
@@ -47,7 +50,9 @@ func New(p Params) (Result, error) {
 		// disabling the version flag as for some reason the After hook never gets called
 		HideVersion: true,
 	}
+
 	app.Setup()
+
 	p.Lifecycle.Append(fx.Hook{
 		OnStart: func(context.Context) error {
 			go (func() {
@@ -63,6 +68,7 @@ func New(p Params) (Result, error) {
 			return nil
 		},
 	})
+
 	return Result{
 		App: app,
 	}, nil

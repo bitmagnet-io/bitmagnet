@@ -47,6 +47,7 @@ type customLogger struct {
 func (l *customLogger) LogMode(level gormlogger.LogLevel) gormlogger.Interface {
 	newlogger := *l
 	newlogger.logLevel = level
+
 	return l
 }
 
@@ -66,7 +67,9 @@ func (l *customLogger) Trace(_ context.Context, begin time.Time, fc func() (stri
 	if l.logLevel <= gormlogger.Silent {
 		return
 	}
+
 	elapsed := time.Since(begin)
+
 	switch {
 	case err != nil && l.logLevel >= gormlogger.Error &&
 		!errors.Is(err, gormlogger.ErrRecordNotFound) &&

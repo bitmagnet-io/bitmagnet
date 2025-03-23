@@ -34,14 +34,17 @@ func New(p Params) (Result, error) {
 	lazyPool := lazy.New(func() (*pgxpool.Pool, error) {
 		ctx, cancel := context.WithCancel(context.Background())
 		pl, plErr := pgxpool.New(ctx, p.Config.CreateDSN())
+
 		if plErr != nil {
 			cancel()
 			return nil, plErr
 		}
+
 		if pingErr := waitForPing(ctx, p.Logger, pl); pingErr != nil {
 			cancel()
 			return nil, pingErr
 		}
+
 		go func() {
 			<-stopped
 			// wait for services to be finished with the pool before closing
@@ -49,8 +52,10 @@ func New(p Params) (Result, error) {
 			cancel()
 			pl.Close()
 		}()
+
 		return pl, nil
 	})
+
 	return Result{
 		PgxPool: lazyPool,
 		SQLDB: lazy.New(func() (*sql.DB, error) {
@@ -72,16 +77,20 @@ func New(p Params) (Result, error) {
 
 func waitForPing(ctx context.Context, logger *zap.SugaredLogger, pool *pgxpool.Pool) error {
 	i := 0
+
 	var err error
+
 	for {
 		if ctx.Err() != nil {
 			err = ctx.Err()
 			break
 		}
+
 		err = pool.Ping(ctx)
 		if err == nil {
 			return nil
 		}
+
 		i++
 		if i > 10 {
 			break
@@ -94,5 +103,6 @@ func waitForPing(ctx context.Context, logger *zap.SugaredLogger, pool *pgxpool.P
 			break
 		}
 	}
+
 	return fmt.Errorf("timed out waiting for ping: %w", err)
 }

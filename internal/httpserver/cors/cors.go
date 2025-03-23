@@ -25,6 +25,7 @@ type Result struct {
 
 func New(p Params) Result {
 	config := p.Config.Cors
+
 	return Result{
 		Option: corsOption{gincors.New(cors.Options{
 			AllowedOrigins:       config.AllowedOrigins,

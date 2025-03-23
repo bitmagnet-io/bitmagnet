@@ -12,10 +12,12 @@ func TestReadTorrentFile(t *testing.T) {
 	if readErr != nil {
 		t.Fatalf("error reading torrent file: %s", readErr)
 	}
+
 	torrentFile, parseErr := ReadTorrentFileBytes(input)
 	if parseErr != nil {
 		t.Fatalf("error parsing torrent file: %s", parseErr)
 	}
+
 	assert.NotEmpty(t, torrentFile.Info.Pieces)
 	torrentFile.Info.Pieces = nil
 	assert.Equal(t, TorrentFile{

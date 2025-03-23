@@ -57,6 +57,7 @@ func (expressionCondition) compileCondition(ctx compilerContext) (condition, err
 	if err != nil {
 		return condition{}, ctx.error(err)
 	}
+
 	return condition{
 		check: func(ctx executionContext) (bool, error) {
 			vars := map[string]any{

@@ -8,14 +8,18 @@ import (
 
 func AppQueryToTsquery(str string) string {
 	l := queryLexer{newLexer(str)}
+
 	var tokens []TokenValue
+
 	for {
 		token, ok := l.readQueryToken()
 		if !ok {
 			break
 		}
+
 		tokens = append(tokens, token)
 	}
+
 	return appQueryTokensToTsquery(tokens...)
 }
 
@@ -55,40 +59,52 @@ func (l *queryLexer) readQueryToken() (TokenValue, bool) {
 		if l.IsEOF() {
 			return TokenValue{}, false
 		}
+
 		start := l.Pos()
+
 		if l.ReadChar('(') {
 			return TokenValue{l.Pos(), 1, TokenOpenParens, "("}, true
 		}
+
 		if l.ReadChar(')') {
 			return TokenValue{l.Pos(), 1, TokenCloseParens, ")"}, true
 		}
+
 		if l.ReadChar('&') {
 			return TokenValue{l.Pos(), 1, TokenOperator, string(OperatorAnd)}, true
 		}
+
 		if l.ReadChar('|') {
 			return TokenValue{l.Pos(), 1, TokenOperator, string(OperatorOr)}, true
 		}
+
 		if l.ReadChar('.') {
 			return TokenValue{l.Pos(), 1, TokenOperator, string(OperatorFollowedBy)}, true
 		}
+
 		if l.ReadChar('!') {
 			return TokenValue{l.Pos(), 1, TokenNegation, "-"}, true
 		}
+
 		if l.ReadChar('*') {
 			return TokenValue{l.Pos(), 1, TokenWildcard, "*"}, true
 		}
+
 		if quoted, _ := l.readQuotedString('"'); quoted != "" {
 			return TokenValue{start, l.Pos() - start, TokenQuoted, quoted}, true
 		}
+
 		if phrase := l.ReadWhile(lexer.IsWordChar); phrase != "" {
 			return TokenValue{start, l.Pos() - start, TokenPhrase, phrase}, true
 		}
+
 		l.Read()
 	}
 }
 
 func appQueryTokensToTsquery(tokens ...TokenValue) string {
 	var parts []string
+
 	i := 0
 outer:
 	for {
@@ -176,5 +192,6 @@ outer:
 			i++
 		}
 	}
+
 	return strings.Join(parts, " ")
 }

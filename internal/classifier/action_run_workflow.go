@@ -34,11 +34,13 @@ func (runWorkflowAction) compileAction(ctx compilerContext) (action, error) {
 	if err != nil {
 		return action{}, ctx.error(err)
 	}
+
 	for _, name := range names {
 		if _, ok := ctx.workflowNames[name]; !ok {
 			return action{}, ctx.fatal(fmt.Errorf("workflow %s not found", name))
 		}
 	}
+
 	return action{
 		func(ctx executionContext) (classification.Result, error) {
 			var err error

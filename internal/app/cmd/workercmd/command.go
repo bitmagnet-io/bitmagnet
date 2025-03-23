@@ -60,5 +60,6 @@ func New(p Params) (Result, error) {
 			},
 		},
 	}
+
 	return Result{Command: cmd}, nil
 }

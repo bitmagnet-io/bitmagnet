@@ -27,11 +27,14 @@ func (p MessageParams) ApisDisabled() bool {
 	if p.ClassifierFlags == nil {
 		return false
 	}
+
 	enabledAny, ok := p.ClassifierFlags["apis_enabled"]
 	if !ok {
 		return false
 	}
+
 	enabled, ok := enabledAny.(bool)
+
 	return ok && !enabled
 }
 
@@ -39,9 +42,11 @@ func NewQueueJob(msg MessageParams, options ...model.QueueJobOption) (model.Queu
 	if msg.BatchSize == 0 {
 		msg.BatchSize = 100
 	}
+
 	if msg.ChunkSize == 0 {
 		msg.ChunkSize = 10_000
 	}
+
 	return model.NewQueueJob(
 		MessageName,
 		msg,

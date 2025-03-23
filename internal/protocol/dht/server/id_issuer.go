@@ -21,5 +21,6 @@ func (i *variantIDIssuer) Issue() string {
 	i.next++
 	id := string(i.buf[:n])
 	i.mu.Unlock()
+
 	return id
 }

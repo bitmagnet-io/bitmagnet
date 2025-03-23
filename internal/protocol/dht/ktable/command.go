@@ -27,6 +27,7 @@ func (c PutNode) execReturn(t *table) btree.PutResult {
 	if !c.Addr.IsValid() {
 		return btree.PutRejected
 	}
+
 	return t.nodes.put(c.ID, c.Addr, c.Options...)
 }
 
@@ -61,6 +62,7 @@ func (c DropAddr) execReturn(t *table) bool {
 	if !ok {
 		return false
 	}
+
 	return t.nodes.drop(id, c.Reason)
 }
 

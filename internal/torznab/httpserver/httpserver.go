@@ -28,10 +28,12 @@ func (b builder) Apply(e *gin.Engine) error {
 	if err != nil {
 		return err
 	}
+
 	h := handler{
 		config: b.config,
 		client: client,
 	}
 	e.GET("/torznab/*any", h.handleRequest)
+
 	return nil
 }

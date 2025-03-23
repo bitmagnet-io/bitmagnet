@@ -48,12 +48,14 @@ func (with With) Build(builder clause.Builder) {
 			panic(err)
 		}
 	}
+
 	for index, cte := range with.CTEs {
 		if index > 0 {
 			if err := builder.WriteByte(','); err != nil {
 				panic(err)
 			}
 		}
+
 		cte.Build(builder, with.Materialized)
 	}
 }
@@ -61,18 +63,22 @@ func (with With) Build(builder clause.Builder) {
 // Build build CTE
 func (cte CTE) Build(builder clause.Builder, materialized bool) {
 	builder.WriteQuoted(cte.Name)
+
 	if len(cte.Columns) > 0 {
 		if _, err := builder.WriteString(" ("); err != nil {
 			panic(err)
 		}
+
 		for index, column := range cte.Columns {
 			if index > 0 {
 				if err := builder.WriteByte(','); err != nil {
 					panic(err)
 				}
 			}
+
 			builder.WriteQuoted(column)
 		}
+
 		if err := builder.WriteByte(')'); err != nil {
 			panic(err)
 		}
@@ -94,7 +100,9 @@ func (cte CTE) Build(builder clause.Builder, materialized bool) {
 	if err := builder.WriteByte('('); err != nil {
 		panic(err)
 	}
+
 	cte.Subquery.Build(builder)
+
 	if err := builder.WriteByte(')'); err != nil {
 		panic(err)
 	}
@@ -106,6 +114,7 @@ func (with With) MergeClause(clause *clause.Clause) {
 		if w.Recursive {
 			with.Recursive = true
 		}
+
 		ctes := make([]CTE, len(w.CTEs)+len(with.CTEs))
 		copy(ctes, w.CTEs)
 		copy(ctes[len(w.CTEs):], with.CTEs)
@@ -153,5 +162,6 @@ func NewWith(name string, subquery interface{}, materialized bool, args ...inter
 			Materialized: materialized,
 		}
 	}
+
 	return With{}
 }

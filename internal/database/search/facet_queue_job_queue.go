@@ -29,6 +29,7 @@ func (queueJobQueueFacet) Values(query.FacetContext) (map[string]string, error) 
 	for _, n := range queueNames {
 		values[n] = n
 	}
+
 	return values, nil
 }
 
@@ -37,6 +38,7 @@ func (queueJobQueueFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 	if len(values) == 0 {
 		return nil
 	}
+
 	return []query.Criteria{
 		QueueJobQueueCriteria(filter.Values()...),
 	}

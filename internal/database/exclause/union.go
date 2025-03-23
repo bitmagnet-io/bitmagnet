@@ -23,6 +23,7 @@ func (union Union) Build(builder clause.Builder) {
 				panic(err)
 			}
 		}
+
 		statement.Build(builder)
 	}
 }
@@ -61,5 +62,6 @@ func NewUnion(query interface{}, args ...interface{}) Union {
 			Statements: []clause.Expression{clause.Expr{SQL: v, Vars: args}},
 		}
 	}
+
 	return Union{}
 }

@@ -22,9 +22,11 @@ func (c processor) persist(ctx context.Context, payload persistPayload) error {
 	contentsPtr := make([]*model.Content, 0, len(payload.torrentContents))
 	torrentContentsPtr := make([]*model.TorrentContent, 0, len(payload.torrentContents))
 	torrentTagsPtr := make([]*model.TorrentTag, 0, len(payload.addTags))
+
 	for _, tc := range payload.torrentContents {
 		tcCopy := tc
 		tcCopy.Torrent = model.Torrent{}
+
 		if tcCopy.ContentID.Valid && tcCopy.Content.CreatedAt.IsZero() {
 			contentRef := tcCopy.Content.Ref()
 			if _, ok := contentsMap[contentRef]; !ok {
@@ -33,9 +35,11 @@ func (c processor) persist(ctx context.Context, payload persistPayload) error {
 				contentsPtr = append(contentsPtr, &contentCopy)
 			}
 		}
+
 		tcCopy.Content = model.Content{}
 		torrentContentsPtr = append(torrentContentsPtr, &tcCopy)
 	}
+
 	for infoHash, tags := range payload.addTags {
 		for tag := range tags {
 			torrentTagsPtr = append(torrentTagsPtr, &model.TorrentTag{
@@ -44,6 +48,7 @@ func (c processor) persist(ctx context.Context, payload persistPayload) error {
 			})
 		}
 	}
+
 	if len(payload.deleteInfoHashes) > 0 {
 		if blockErr := c.blockingManager.Block(ctx, payload.deleteInfoHashes, false); blockErr != nil {
 			return blockErr
@@ -55,6 +60,7 @@ func (c processor) persist(ctx context.Context, payload persistPayload) error {
 		return err
 	}
 	defer c.persistSemaphore.Release(1)
+
 	return c.dao.Transaction(func(tx *dao.Query) error {
 		if len(contentsPtr) > 0 {
 			if createContentErr := tx.Content.WithContext(ctx).Clauses(
@@ -64,6 +70,7 @@ func (c processor) persist(ctx context.Context, payload persistPayload) error {
 				return createContentErr
 			}
 		}
+
 		if len(payload.deleteIDs) > 0 {
 			if _, deleteErr := tx.TorrentContent.WithContext(ctx).Where(
 				c.dao.TorrentContent.ID.In(payload.deleteIDs...),
@@ -71,6 +78,7 @@ func (c processor) persist(ctx context.Context, payload persistPayload) error {
 				return deleteErr
 			}
 		}
+
 		if len(torrentContentsPtr) > 0 {
 			if createErr := tx.TorrentContent.WithContext(ctx).Clauses(
 				clause.OnConflict{
@@ -80,6 +88,7 @@ func (c processor) persist(ctx context.Context, payload persistPayload) error {
 				return createErr
 			}
 		}
+
 		if len(torrentTagsPtr) > 0 {
 			if createErr := tx.TorrentTag.WithContext(ctx).Clauses(
 				clause.OnConflict{
@@ -89,17 +98,20 @@ func (c processor) persist(ctx context.Context, payload persistPayload) error {
 				return createErr
 			}
 		}
+
 		if len(payload.deleteInfoHashes) > 0 {
 			valuers := make([]driver.Valuer, 0, len(payload.deleteInfoHashes))
 			for _, infoHash := range payload.deleteInfoHashes {
 				valuers = append(valuers, infoHash)
 			}
+
 			if _, deleteErr := tx.Torrent.WithContext(ctx).Where(
 				c.dao.Torrent.InfoHash.In(valuers...),
 			).Delete(); deleteErr != nil {
 				return deleteErr
 			}
 		}
+
 		return nil
 	})
 }

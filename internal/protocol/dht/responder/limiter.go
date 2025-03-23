@@ -20,6 +20,7 @@ func (r responderLimiter) Respond(ctx context.Context, msg dht.RecvMsg) (ret dht
 	if !r.limiter.Allow(msg.From.Addr()) {
 		return dht.Return{}, ErrTooManyRequests
 	}
+
 	return r.responder.Respond(ctx, msg)
 }
 

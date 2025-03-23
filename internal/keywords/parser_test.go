@@ -50,11 +50,14 @@ func TestParser(t *testing.T) {
 				assert.ErrorIs(t, err, test.err)
 				return
 			}
+
 			require.NoError(t, err)
 			t.Logf("regex: %s", r.String())
+
 			for _, m := range test.match {
 				assert.True(t, r.MatchString(m))
 			}
+
 			for _, nm := range test.nomatch {
 				assert.False(t, r.MatchString(nm))
 			}

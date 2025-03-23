@@ -30,10 +30,12 @@ func New(params Params) Result {
 		if err != nil {
 			return nil, err
 		}
+
 		tmdbClient, err := params.TmdbClient.Get()
 		if err != nil {
 			return nil, err
 		}
+
 		return compiler{
 			options: []compilerOption{
 				compilerFeatures(defaultFeatures),
@@ -50,11 +52,14 @@ func New(params Params) Result {
 		if err != nil {
 			return Source{}, err
 		}
+
 		if _, ok := src.Workflows[params.Config.Workflow]; !ok {
 			return Source{}, fmt.Errorf("default workflow '%s' not found", params.Config.Workflow)
 		}
+
 		return src, nil
 	})
+
 	return Result{
 		Compiler: lc,
 		Source:   lsrc,

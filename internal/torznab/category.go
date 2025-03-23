@@ -16,10 +16,12 @@ func (c Category) Has(id int) bool {
 	if c.ID == id {
 		return true
 	}
+
 	for _, sub := range c.Subcat {
 		if sub.ID == id {
 			return true
 		}
 	}
+
 	return false
 }

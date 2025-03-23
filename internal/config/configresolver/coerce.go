@@ -15,6 +15,7 @@ func coerceStringValue(stringValue string, valueType reflect.Type) (interface{},
 	if valueType == durationType {
 		return time.ParseDuration(stringValue)
 	}
+
 	switch valueType.Kind() {
 	case reflect.String:
 		return stringValue, nil
@@ -32,15 +33,19 @@ func coerceStringValue(stringValue string, valueType reflect.Type) (interface{},
 	case reflect.Slice:
 		strValues := strings.Split(stringValue, ",")
 		values := make([]interface{}, len(strValues))
+
 		for i, strValue := range strValues {
 			coercedValue, err := coerceStringValue(strValue, valueType.Elem())
 			if err != nil {
 				return nil, err
 			}
+
 			values[i] = coercedValue
 		}
+
 		return values, nil
 	default:
 	}
+
 	return nil, fmt.Errorf("cannot coerce value to type %v", valueType)
 }

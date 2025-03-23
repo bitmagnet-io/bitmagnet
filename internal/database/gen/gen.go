@@ -422,6 +422,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		gen.FieldGORMTag("archival_duration", func(tag field.GormTag) field.GormTag {
 			tag.Set("<-", "create")
 			tag.Remove("default")
+
 			return tag
 		}),
 		createdAtReadOnly,

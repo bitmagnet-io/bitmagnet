@@ -22,15 +22,19 @@ func (p Profile) MergeDefaults() Profile {
 	if p.Title == "" {
 		p.Title = ProfileDefault.Title
 	}
+
 	if p.DefaultLimit == 0 {
 		p.DefaultLimit = ProfileDefault.DefaultLimit
 	}
+
 	if p.MaxLimit == 0 {
 		p.MaxLimit = ProfileDefault.MaxLimit
 	}
+
 	if p.DefaultLimit > p.MaxLimit {
 		p.DefaultLimit = p.MaxLimit
 	}
+
 	return p
 }
 

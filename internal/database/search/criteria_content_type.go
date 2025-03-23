@@ -12,6 +12,7 @@ func ContentTypeCriteria(types ...model.ContentType) query.Criteria {
 	for _, contentType := range types {
 		strTypes = append(strTypes, contentType.String())
 	}
+
 	return query.DaoCriteria{
 		Conditions: func(ctx query.DBContext) ([]field.Expr, error) {
 			q := ctx.Query()

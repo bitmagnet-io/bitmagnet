@@ -30,6 +30,7 @@ type RecvMsg struct {
 // https://www.bittorrent.org/beps/bep_0005.html
 func (m RecvMsg) AnnouncePort() uint16 {
 	port := m.From.Port()
+
 	args := m.Msg.A
 	if args != nil && !args.ImpliedPort {
 		argsPort := args.Port
@@ -37,5 +38,6 @@ func (m RecvMsg) AnnouncePort() uint16 {
 			port = uint16(*argsPort)
 		}
 	}
+
 	return port
 }

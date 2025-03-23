@@ -56,6 +56,7 @@ func (s search) TorrentsWithMissingInfoHashes(
 	if searchErr != nil {
 		return TorrentsWithMissingInfoHashesResult{}, searchErr
 	}
+
 	torrents := make([]model.Torrent, 0, len(searchResult.Items))
 	missingInfoHashes := make([]protocol.ID, 0, len(infoHashes)-len(searchResult.Items))
 	foundInfoHashes := make(map[protocol.ID]struct{}, len(searchResult.Items))
@@ -73,6 +74,7 @@ nextInfoHash:
 		}
 		missingInfoHashes = append(missingInfoHashes, h)
 	}
+
 	return TorrentsWithMissingInfoHashesResult{
 		Torrents:          torrents,
 		MissingInfoHashes: missingInfoHashes,
@@ -108,6 +110,7 @@ func (s search) TorrentSuggestTags(
 			},
 		})
 	}
+
 	if len(q.Exclusions) > 0 {
 		criteria = append(criteria, query.DaoCriteria{
 			Conditions: func(dbCtx query.DBContext) ([]field.Expr, error) {
@@ -117,6 +120,7 @@ func (s search) TorrentSuggestTags(
 			},
 		})
 	}
+
 	result, resultErr := query.GenericQuery[SuggestedTag](
 		ctx,
 		s.q,
@@ -163,6 +167,7 @@ func (s search) TorrentSuggestTags(
 	if resultErr != nil {
 		return TorrentSuggestTagsResult{}, resultErr
 	}
+
 	return TorrentSuggestTagsResult{
 		Suggestions: result.Items,
 	}, nil

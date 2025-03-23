@@ -40,6 +40,7 @@ func New(p Params) (Result, error) {
 			},
 		},
 	}
+
 	return Result{Command: cmd}, nil
 }
 
@@ -48,15 +49,18 @@ func appendRows(tw table.Writer, node config.ResolvedNode) {
 		tw.AppendSeparator()
 		tw.AppendRow(table.Row{node.PathString + ":", node.Type})
 		tw.AppendSeparator()
+
 		for _, child := range node.Children() {
 			appendRows(tw, child)
 		}
+
 		tw.AppendSeparator()
 	} else {
 		from := node.ResolverKey
 		if from == "" {
 			from = "default"
 		}
+
 		tw.AppendRow(table.Row{node.PathString, node.Type, node.ValueLabel, node.DefaultLabel, from})
 	}
 }

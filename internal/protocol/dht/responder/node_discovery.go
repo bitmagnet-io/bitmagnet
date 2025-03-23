@@ -27,5 +27,6 @@ func (r responderNodeDiscovery) Respond(ctx context.Context, msg dht.RecvMsg) (d
 			}
 		}()
 	}
+
 	return ret, err
 }

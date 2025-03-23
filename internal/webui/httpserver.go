@@ -40,17 +40,21 @@ func (*builder) Key() string {
 
 func (b *builder) Apply(e *gin.Engine) error {
 	webuiFS := webui.StaticFS()
+
 	appRoot, appRootErr := fs.Sub(webuiFS, "dist/bitmagnet/browser")
 	if appRootErr != nil {
 		b.logger.Errorf(
 			"the webui app root directory is missing; run `npm run build` within the `webui` folder: %v",
 			appRootErr)
+
 		return nil
 	}
+
 	e.StaticFS("/webui", wrappedFs{http.FS(appRoot)})
 	e.GET("/", func(c *gin.Context) {
 		c.Redirect(301, "/webui")
 	})
+
 	return nil
 }
 
@@ -63,5 +67,6 @@ func (w wrappedFs) Open(name string) (http.File, error) {
 	if err != nil && errors.Is(err, fs.ErrNotExist) {
 		return w.FileSystem.Open("/index.html")
 	}
+
 	return f, err
 }

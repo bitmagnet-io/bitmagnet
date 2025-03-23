@@ -27,6 +27,7 @@ type Result struct {
 
 func New(p Params) Result {
 	stopped := make(chan struct{})
+
 	return Result{
 		Worker: worker.NewWorker(
 			"queue_server",

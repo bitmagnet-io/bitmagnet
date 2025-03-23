@@ -32,20 +32,26 @@ func New(p Params) (r Result, err error) {
 		if resolvers[i].Priority() == resolvers[j].Priority() {
 			return strings.Compare(resolvers[i].Key(), resolvers[j].Key()) < 0
 		}
+
 		return resolvers[i].Priority() < resolvers[j].Priority()
 	})
+
 	res := &ResolvedConfig{
 		NodeMap: make(map[string]ResolvedNode),
 	}
+
 	for _, spec := range p.Specs {
 		resolved, resolveErr := resolveRootNode(resolvers, p.Validate, spec)
 		if resolveErr != nil {
 			err = resolveErr
 			return
 		}
+
 		res.NodeMap[spec.Key] = resolved
 	}
+
 	r.Resolved = *res
+
 	return
 }
 
@@ -63,7 +69,9 @@ func (r ResolvedConfig) Nodes() []ResolvedNode {
 	for _, node := range r.NodeMap {
 		nodes = append(nodes, node)
 	}
+
 	sortNodes(nodes)
+
 	return nodes
 }
 
@@ -87,7 +95,9 @@ func (r ResolvedNode) Children() []ResolvedNode {
 	for _, child := range r.ChildMap {
 		children = append(children, child)
 	}
+
 	sortNodes(children)
+
 	return children
 }
 
@@ -96,6 +106,7 @@ func sortNodes(nodes []ResolvedNode) {
 		if nodes[i].IsStruct != nodes[j].IsStruct {
 			return !nodes[i].IsStruct
 		}
+
 		return strings.Compare(nodes[i].Key, nodes[j].Key) < 0
 	})
 }
@@ -119,33 +130,41 @@ func resolveStructNode(
 	if value.Type().Kind() != reflect.Struct {
 		return ResolvedNode{}, errors.New("default value must be a struct")
 	}
+
 	thisPath := append(parentPath, key)
 	defaultValue := value.Interface()
 	children := make(map[string]ResolvedNode)
+
 	for i := range value.Type().NumField() {
 		field := value.Type().Field(i)
 		fieldKey := strcase.ToSnake(field.Name)
 		fieldValue := value.FieldByName(field.Name)
+
 		switch field.Type.Kind() {
 		case reflect.Struct:
 			structResolved, err := resolveStructNode(resolvers, val, thisPath, fieldKey, field.Name, fieldValue)
 			if err != nil {
 				return ResolvedNode{}, err
 			}
+
 			children[fieldKey] = structResolved
 		default:
 			dv := fieldValue.Interface()
 			rv := dv
+
 			var rk string
+
 			for _, resolver := range resolvers {
 				if resolved, ok, err := resolver.Resolve(append(thisPath, fieldKey), field.Type); err != nil {
 					return ResolvedNode{}, err
 				} else if ok {
 					rv = resolved
 					rk = resolver.Key()
+
 					break
 				}
 			}
+
 			children[fieldKey] = ResolvedNode{
 				Spec: Spec{
 					Key:          fieldKey,
@@ -163,10 +182,12 @@ func resolveStructNode(
 			}
 		}
 	}
+
 	valueMap := make(map[string]interface{}, len(children))
 	for _, c := range children {
 		valueMap[c.StructKey] = c.ValueRaw
 	}
+
 	resolvedValue := reflect.New(value.Type())
 	decodeConfig := &mapstructure.DecoderConfig{
 		Metadata: nil,
@@ -175,16 +196,20 @@ func resolveStructNode(
 			return mapKey == fieldName
 		},
 	}
+
 	decoder, decoderErr := mapstructure.NewDecoder(decodeConfig)
 	if decoderErr != nil {
 		return ResolvedNode{}, decoderErr
 	}
+
 	if decodeErr := decoder.Decode(valueMap); decodeErr != nil {
 		return ResolvedNode{}, decodeErr
 	}
+
 	if validateErr := val.Struct(resolvedValue.Interface()); validateErr != nil {
 		return ResolvedNode{}, validateErr
 	}
+
 	return ResolvedNode{
 		Spec: Spec{
 			Key:          key,
@@ -209,8 +234,10 @@ func createValueLabel(value interface{}) string {
 	default:
 		label = fmt.Sprintf("%v", value)
 	}
+
 	if len(label) > 20 {
 		label = label[:20] + "..."
 	}
+
 	return label
 }

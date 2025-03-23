@@ -24,6 +24,7 @@ func NewNodeAddrFromAddrPort(f netip.AddrPort) NodeAddr {
 	var me NodeAddr
 	me.IP = f.Addr().AsSlice()
 	me.Port = int(f.Port())
+
 	return me
 }
 
@@ -36,24 +37,29 @@ func (a *NodeAddr) UnmarshalBinary(b []byte) error {
 	a.IP = make(net.IP, len(b)-2)
 	copy(a.IP, b[:len(b)-2])
 	a.Port = int(binary.BigEndian.Uint16(b[len(b)-2:]))
+
 	return nil
 }
 
 func (a *NodeAddr) UnmarshalBencode(b []byte) (err error) {
 	var _b []byte
+
 	err = bencode.Unmarshal(b, &_b)
 	if err != nil {
 		return
 	}
+
 	return a.UnmarshalBinary(_b)
 }
 
 func (a NodeAddr) MarshalBinary() ([]byte, error) {
 	var b bytes.Buffer
 	_, _ = b.Write(a.IP)
+
 	if err := binary.Write(&b, binary.BigEndian, uint16(a.Port)); err != nil {
 		return nil, err
 	}
+
 	return b.Bytes(), nil
 }
 

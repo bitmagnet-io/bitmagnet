@@ -32,9 +32,11 @@ func (c GetOldestPeers) execReturn(t *table) []Node {
 	sort.Slice(peers, func(i, j int) bool {
 		return peers[i].Time().Before(peers[j].Time())
 	})
+
 	if c.N > 0 && len(peers) > c.N {
 		peers = peers[:c.N]
 	}
+
 	return peers
 }
 
@@ -46,11 +48,13 @@ type FilterKnownAddrs struct {
 
 func (c FilterKnownAddrs) execReturn(t *table) []netip.Addr {
 	var unknown []netip.Addr
+
 	for _, addr := range c.Addrs {
 		if _, ok := t.addrs.addrs[addr.String()]; !ok {
 			unknown = append(unknown, addr)
 		}
 	}
+
 	return unknown
 }
 
@@ -68,6 +72,7 @@ func (c GetNodesForSampleInfoHashes) execReturn(t *table) []Node {
 			break
 		}
 	}
+
 	return peers
 }
 
@@ -85,7 +90,9 @@ func (c GetHashOrClosestNodes) execReturn(t *table) GetHashOrClosestNodesResult 
 			Found: true,
 		}
 	}
+
 	closestNodes := t.nodes.getClosest(c.ID)
+
 	return GetHashOrClosestNodesResult{
 		ClosestNodes: closestNodes,
 	}
@@ -101,6 +108,7 @@ func (SampleHashesAndNodes) execReturn(t *table) SampleHashesAndNodesResult {
 	nNodes := 20 + (nHashes - len(hashes))
 	nodes := t.nodes.getRandom(nNodes)
 	totalHashes := t.hashes.count()
+
 	return SampleHashesAndNodesResult{
 		Hashes:      hashes,
 		Nodes:       nodes,

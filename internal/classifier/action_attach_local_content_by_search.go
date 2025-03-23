@@ -21,6 +21,7 @@ func (attachLocalContentBySearchAction) compileAction(ctx compilerContext) (acti
 	if _, err := attachLocalContentBySearchPayloadSpec.Unmarshal(ctx); err != nil {
 		return action{}, ctx.error(err)
 	}
+
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result

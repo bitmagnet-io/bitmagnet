@@ -12,8 +12,10 @@ func main() {
 	for _, e := range enums.Enums {
 		gqlParts = append(gqlParts, genGql(e.Name, e.Values))
 	}
+
 	f, fErr := os.Create("./graphql/schema/enums.graphqls")
 	checkErr(fErr)
+
 	_, wErr := f.WriteString(strings.Join(gqlParts, "\n"))
 	checkErr(wErr)
 }
@@ -23,7 +25,9 @@ func genGql(name string, values []string) string {
 	for _, value := range values {
 		str += "  " + value + "\n"
 	}
+
 	str += "}\n"
+
 	return str
 }
 

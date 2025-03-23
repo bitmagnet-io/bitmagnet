@@ -21,6 +21,7 @@ func WithLogger() fx.Option {
 	return fx.WithLogger(func(log *zap.Logger) fxevent.Logger {
 		l := &fxevent.ZapLogger{Logger: log.Named("fx")}
 		l.UseLogLevel(zapcore.DebugLevel)
+
 		return l
 	})
 }

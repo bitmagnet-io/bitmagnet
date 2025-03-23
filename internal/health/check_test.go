@@ -138,6 +138,7 @@ func doTestCheckerCheckFunc(t *testing.T, updateInterval time.Duration, err erro
 	// Assert
 	require.NotNil(t, res.Details)
 	assert.Equal(t, expectedStatus, res.Status)
+
 	for _, checkName := range []string{"check1", "check2"} {
 		_, checkResultExists := res.Details[checkName]
 		assert.True(t, checkResultExists)

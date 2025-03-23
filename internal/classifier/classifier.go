@@ -50,6 +50,7 @@ type executionContext struct {
 func (c executionContext) withResult(result classification.Result) executionContext {
 	c.result = result
 	c.resultPb = protobuf.NewClassification(result)
+
 	return c
 }
 
@@ -59,6 +60,7 @@ func (c compilerContext) child(pathPart string, source any) compilerContext {
 	copy(newPath, c.path)
 	newPath = append(newPath, pathPart)
 	c.path = newPath
+
 	return c
 }
 
@@ -66,6 +68,7 @@ func (c compilerContext) error(cause error) error {
 	if asCompilerError(cause) != nil {
 		return cause
 	}
+
 	return compilerError{c.path, cause}
 }
 
@@ -73,10 +76,12 @@ func (c compilerContext) fatal(cause error) error {
 	if asFatalCompilerError(cause) != nil {
 		return cause
 	}
+
 	cErr := asCompilerError(cause)
 	if cErr != nil {
 		return fatalCompilerError{compilerError: *cErr}
 	}
+
 	return fatalCompilerError{compilerError{c.path, cause}}
 }
 
@@ -86,35 +91,45 @@ func (c compiler) Compile(source Source) (Runner, error) {
 		workflowNames: source.workflowNames(),
 	}
 	source, sourceErr := decode[Source](*ctx)
+
 	if sourceErr != nil {
 		return nil, ctx.fatal(sourceErr)
 	}
+
 	for _, opt := range c.options {
 		if err := opt(source, ctx); err != nil {
 			return nil, ctx.fatal(err)
 		}
 	}
+
 	workflowsCtx := ctx.child("workflows", source.Workflows)
 	workflows := make(map[string]action)
+
 	for name, src := range source.Workflows {
 		a, err := ctx.compileAction(workflowsCtx.child(name, src))
 		if err != nil {
 			return nil, ctx.fatal(err)
 		}
+
 		workflows[name] = a
 	}
+
 	cfs := make(compiledFlags, len(source.FlagDefinitions))
+
 	for k, def := range source.FlagDefinitions {
 		rawVal, ok := source.Flags[k]
 		if !ok {
 			return nil, ctx.fatal(fmt.Errorf("missing value for flag '%q'", k))
 		}
+
 		val, err := def.celVal(rawVal)
 		if err != nil {
 			return nil, ctx.fatal(fmt.Errorf("invalid value for flag '%s': %w", k, err))
 		}
+
 		cfs[k] = val
 	}
+
 	return runner{
 		dependencies:    c.dependencies,
 		flagDefinitions: source.FlagDefinitions,
@@ -128,12 +143,14 @@ func decodeTo[T any](ctx compilerContext, target *T) error {
 	if decoderErr != nil {
 		return ctx.error(decoderErr)
 	}
+
 	return decoder.Decode(ctx.source)
 }
 
 func decode[T any](ctx compilerContext) (T, error) {
 	var target T
 	err := decodeTo(ctx, &target)
+
 	return target, err
 }
 
@@ -155,6 +172,7 @@ func asCompilerError(err error) *compilerError {
 	if ok := errors.As(err, ue); ok {
 		return ue
 	}
+
 	return nil
 }
 
@@ -171,6 +189,7 @@ func asFatalCompilerError(err error) *fatalCompilerError {
 	if ok := errors.As(err, ue); ok {
 		return ue
 	}
+
 	return nil
 }
 

@@ -37,6 +37,7 @@ func New(p Params) Result {
 			KeepAlive: -1,
 		},
 	})
+
 	return Result{
 		Requester: requestLimiter{
 			requester: requestLogger{

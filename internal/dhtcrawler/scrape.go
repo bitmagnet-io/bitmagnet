@@ -37,15 +37,19 @@ func (c *crawler) requestScrape(
 			Addr:   req.node.Addr(),
 			Reason: fmt.Errorf("failed to get peers from p: %w", err),
 		})
+
 		return infoHashWithScrape{}, err
 	}
+
 	c.kTable.BatchCommand(ktable.PutNode{
 		ID:      res.ID,
 		Addr:    req.node,
 		Options: []ktable.NodeOption{ktable.NodeResponded()},
 	})
+
 	if len(res.Nodes) > 0 {
 		cancelCtx, cancel := context.WithTimeout(ctx, time.Second)
+
 		for _, n := range res.Nodes {
 			select {
 			case <-cancelCtx.Done():
@@ -54,8 +58,10 @@ func (c *crawler) requestScrape(
 				continue
 			}
 		}
+
 		cancel()
 	}
+
 	return infoHashWithScrape{
 		nodeHasPeersForHash: req,
 		bfsd:                res.BfSeeders,

@@ -20,6 +20,7 @@ func (a serverAdapter) Ping(ctx context.Context, addr netip.AddrPort) (PingResul
 	if err != nil {
 		return PingResult{}, err
 	}
+
 	return PingResult{ID: res.Msg.R.ID}, nil
 }
 
@@ -32,6 +33,7 @@ func (a serverAdapter) FindNode(
 	if err != nil {
 		return FindNodeResult{}, err
 	}
+
 	return FindNodeResult{
 		ID:    res.Msg.R.ID,
 		Nodes: extractNodes(res.Msg),
@@ -47,6 +49,7 @@ func (a serverAdapter) GetPeers(
 	if err != nil {
 		return GetPeersResult{}, err
 	}
+
 	return GetPeersResult{
 		ID:     res.Msg.R.ID,
 		Values: extractValues(res.Msg),
@@ -63,9 +66,11 @@ func (a serverAdapter) GetPeersScrape(
 	if err != nil {
 		return GetPeersScrapeResult{}, err
 	}
+
 	if res.Msg.R.BFpe == nil || res.Msg.R.BFsd == nil {
 		return GetPeersScrapeResult{}, errors.New("missing bloom filter in scrape response")
 	}
+
 	return GetPeersScrapeResult{
 		ID:        res.Msg.R.ID,
 		Values:    extractValues(res.Msg),
@@ -84,6 +89,7 @@ func (a serverAdapter) SampleInfoHashes(
 	if err != nil {
 		return SampleInfoHashesResult{}, err
 	}
+
 	var samples []protocol.ID
 	if res.Msg.R.Samples != nil {
 		samples = make([]protocol.ID, 0, len(*res.Msg.R.Samples))
@@ -91,14 +97,18 @@ func (a serverAdapter) SampleInfoHashes(
 			samples = append(samples, s)
 		}
 	}
+
 	totalNum := 0
 	interval := 0
+
 	if res.Msg.R.Num != nil {
 		totalNum = int(*res.Msg.R.Num)
 	}
+
 	if res.Msg.R.Interval != nil {
 		interval = int(*res.Msg.R.Interval)
 	}
+
 	return SampleInfoHashesResult{
 		ID:       res.Msg.R.ID,
 		Samples:  samples,
@@ -112,10 +122,12 @@ func extractNodes(msg dht.Msg) []NodeInfo {
 	if len(msg.R.Nodes) == 0 {
 		return nil
 	}
+
 	nodes := make([]NodeInfo, 0, len(msg.R.Nodes))
 	for _, n := range msg.R.Nodes {
 		nodes = append(nodes, NodeInfo{ID: n.ID, Addr: n.Addr.ToAddrPort()})
 	}
+
 	return nodes
 }
 
@@ -123,9 +135,11 @@ func extractValues(msg dht.Msg) []netip.AddrPort {
 	if len(msg.R.Values) == 0 {
 		return nil
 	}
+
 	values := make([]netip.AddrPort, 0, len(msg.R.Values))
 	for _, v := range msg.R.Values {
 		values = append(values, v.ToAddrPort())
 	}
+
 	return values
 }

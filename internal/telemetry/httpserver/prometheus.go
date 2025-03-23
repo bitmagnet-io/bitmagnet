@@ -20,11 +20,14 @@ func (b prometheusBuilder) Apply(e *gin.Engine) error {
 	if err != nil {
 		return err
 	}
+
 	h := promhttp.HandlerFor(r, promhttp.HandlerOpts{
 		EnableOpenMetrics: true,
 	})
+
 	e.Any("/metrics", func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
 	})
+
 	return nil
 }

@@ -35,8 +35,10 @@ type video3dFacet struct {
 func (video3dFacet) Values(query.FacetContext) (map[string]string, error) {
 	v3ds := model.Video3DValues()
 	values := make(map[string]string, len(v3ds))
+
 	for _, vr := range v3ds {
 		values[vr.String()] = vr.Label()
 	}
+
 	return values, nil
 }

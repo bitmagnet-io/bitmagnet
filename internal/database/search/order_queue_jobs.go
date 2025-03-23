@@ -13,6 +13,7 @@ type QueueJobsOrderBy string
 
 func (ob QueueJobsOrderBy) Clauses(direction OrderDirection) []query.OrderByColumn {
 	desc := direction == OrderDirectionDescending
+
 	switch ob {
 	case QueueJobsOrderByCreatedAt:
 		return []query.OrderByColumn{{
@@ -54,9 +55,11 @@ type QueueJobsFullOrderBy maps.InsertMap[QueueJobsOrderBy, OrderDirection]
 func (fob QueueJobsFullOrderBy) Clauses() []query.OrderByColumn {
 	im := maps.InsertMap[QueueJobsOrderBy, OrderDirection](fob)
 	clauses := make([]query.OrderByColumn, 0, im.Len())
+
 	for _, ob := range im.Entries() {
 		clauses = append(clauses, ob.Key.Clauses(ob.Value)...)
 	}
+
 	return clauses
 }
 

@@ -103,9 +103,11 @@ func cleanTitle(title string) string {
 		if partMatch == nil {
 			return ""
 		}
+
 		return partMatch[1] + " "
 	})
 	title = trimTitleRegex.ReplaceAllString(title, "$1")
+
 	return title
 }
 
@@ -113,10 +115,12 @@ func parseTitleYear(input string) (string, model.Year, string, error) {
 	if match := titleYearRegex.FindStringSubmatch(input); match != nil {
 		yearMatch, _ := strconv.ParseUint(match[2], 10, 16)
 		title := cleanTitle(match[1])
+
 		if title != "" {
 			return title, model.Year(yearMatch), input[len(match[0]):], nil
 		}
 	}
+
 	return "", 0, "", classification.ErrUnmatched
 }
 
@@ -127,6 +131,7 @@ func parseTitle(input string) (title string, rest string, err error) {
 			return title, input[len(match[0]):], nil
 		}
 	}
+
 	return "", "", classification.ErrUnmatched
 }
 
@@ -134,15 +139,19 @@ func parseTitleYearEpisodes(input string) (string, model.Year, model.Episodes, s
 	if match := titleEpisodesRegex.FindStringSubmatch(input); match != nil {
 		title := match[1]
 		year := model.Year(0)
+
 		if t, y, _, err := parseTitleYear(title); err == nil {
 			title = t
 			year = y
 		} else {
 			title = cleanTitle(title)
 		}
+
 		episodes := model.EpisodesMatchToEpisodes(match[2:])
+
 		return title, year, episodes, input[len(match[0]):], nil
 	}
+
 	return "", 0, nil, "", classification.ErrUnmatched
 }
 
@@ -155,12 +164,15 @@ func ParseTitleYearEpisodes(
 			return title, year, episodes, rest, nil
 		}
 	}
+
 	if title, year, rest, err := parseTitleYear(input); err == nil {
 		return title, year, nil, rest, nil
 	}
+
 	if title, rest, err := parseTitle(input); err == nil {
 		return title, 0, nil, rest, nil
 	}
+
 	return "", 0, nil, "", classification.ErrUnmatched
 }
 
@@ -170,8 +182,10 @@ func ParseVideoContent(torrent model.Torrent, result classification.Result) (cla
 		if !result.ContentType.Valid {
 			return classification.ContentAttributes{}, err
 		}
+
 		rest = torrent.Name
 	}
+
 	ct := model.NullContentType{}
 	if result.ContentType.Valid {
 		ct = model.NullContentType{Valid: true, ContentType: result.ContentType.ContentType}
@@ -180,13 +194,16 @@ func ParseVideoContent(torrent model.Torrent, result classification.Result) (cla
 	} else if !year.IsNil() {
 		ct = model.NullContentType{Valid: true, ContentType: model.ContentTypeMovie}
 	}
+
 	if ct.ContentType != model.ContentTypeTvShow {
 		episodes = nil
+
 		if year.IsNil() {
 			title = ""
 			rest = torrent.Name
 		}
 	}
+
 	attrs := classification.ContentAttributes{
 		ContentType:   ct,
 		BaseTitle:     model.NullString{Valid: title != "", String: title},
@@ -196,5 +213,6 @@ func ParseVideoContent(torrent model.Torrent, result classification.Result) (cla
 		LanguageMulti: multiRegex.MatchString(rest),
 	}
 	attrs.InferVideoAttributes(rest)
+
 	return attrs, nil
 }

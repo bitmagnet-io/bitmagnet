@@ -28,6 +28,7 @@ func (c healthCollector) start() error {
 			return lr
 		})
 	}
+
 	return err
 }
 
@@ -48,7 +49,9 @@ func (c healthCollector) Query(
 		if err == nil {
 			lr.LastSuccess = lr.LastResponse
 		}
+
 		return lr
 	})
+
 	return res, err
 }

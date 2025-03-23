@@ -20,14 +20,17 @@ func (r requesterLogger) Request(
 ) (*resty.Response, error) {
 	res, err := r.requester.Request(ctx, path, queryParams, result)
 	kvs := []interface{}{"path", path, "queryParams", queryParams}
+
 	if res != nil {
 		kvs = append(kvs, "status", res.Status(), "trace", res.Request.TraceInfo())
 	}
+
 	if err == nil {
 		r.logger.Debugw("request succeeded", kvs...)
 	} else {
 		kvs = append(kvs, "error", err)
 		r.logger.Errorw("request failed", kvs...)
 	}
+
 	return res, err
 }

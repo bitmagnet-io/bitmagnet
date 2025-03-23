@@ -32,6 +32,7 @@ func (s payloadTransformer[From, To]) Unmarshal(ctx compilerContext) (to To, _ e
 	if err != nil {
 		return to, err
 	}
+
 	return s.transform(from, ctx)
 }
 
@@ -44,6 +45,7 @@ func (s payloadUnion[T]) JSONSchema() JSONSchema {
 	for i, spec := range s.oneOf {
 		schemas[i] = spec.JSONSchema()
 	}
+
 	return map[string]any{
 		"oneOf": schemas,
 	}
@@ -51,14 +53,18 @@ func (s payloadUnion[T]) JSONSchema() JSONSchema {
 
 func (s payloadUnion[T]) Unmarshal(ctx compilerContext) (to T, _ error) {
 	var errs []error
+
 	for _, def := range s.oneOf {
 		result, err := def.Unmarshal(ctx)
 		if err == nil {
 			return result, nil
 		}
+
 		errs = append(errs, err)
 	}
+
 	errs = append(errs, errors.New("no definition matched"))
+
 	return to, errors.Join(errs...)
 }
 
@@ -75,6 +81,7 @@ func (payloadGeneric[T]) Unmarshal(ctx compilerContext) (to T, err error) {
 	if !ok {
 		err = ctx.error(errors.New("not ok"))
 	}
+
 	return to, err
 }
 
@@ -102,6 +109,7 @@ func (s payloadLiteral[T]) JSONSchema() JSONSchema {
 	if s.description != "" {
 		schema["description"] = s.description
 	}
+
 	return schema
 }
 
@@ -110,9 +118,11 @@ func (s payloadLiteral[T]) Unmarshal(ctx compilerContext) (to T, _ error) {
 	if err != nil {
 		return to, err
 	}
+
 	if typedPayload != s.literal {
 		return to, errors.New("value mismatch")
 	}
+
 	return typedPayload, nil
 }
 
@@ -129,6 +139,7 @@ func (s payloadList[T]) JSONSchema() JSONSchema {
 	if s.description != "" {
 		schema["description"] = s.description
 	}
+
 	return schema
 }
 
@@ -136,18 +147,23 @@ func (s payloadList[T]) Unmarshal(ctx compilerContext) (to []T, _ error) {
 	if ctx.source == nil {
 		return nil, nil
 	}
+
 	rawList, ok := ctx.source.([]any)
 	if !ok {
 		rawList = []any{ctx.source}
 	}
+
 	to = make([]T, len(rawList))
+
 	for i, rawItem := range rawList {
 		item, err := s.itemSpec.Unmarshal(ctx.child(numericPathPart(i), rawItem))
 		if err != nil {
 			return to, err
 		}
+
 		to[i] = item
 	}
+
 	return to, nil
 }
 
@@ -169,6 +185,7 @@ func (s payloadSingleKeyValue[T]) JSONSchema() JSONSchema {
 	if s.description != "" {
 		schema["description"] = s.description
 	}
+
 	return schema
 }
 
@@ -177,17 +194,21 @@ func (s payloadSingleKeyValue[T]) Unmarshal(ctx compilerContext) (to T, _ error)
 	if err != nil {
 		return to, err
 	}
+
 	if len(rawMap) != 1 {
 		return to, ctx.error(errors.New("expected a single key"))
 	}
+
 	rawValue, ok := rawMap[s.key]
 	if !ok {
 		return to, ctx.error(fmt.Errorf("missing expected key: '%s' %+v", s.key, rawMap))
 	}
+
 	value, err := s.valueSpec.Unmarshal(ctx.child(s.key, rawValue))
 	if err != nil {
 		return to, err
 	}
+
 	return value, nil
 }
 
@@ -207,11 +228,13 @@ func (s payloadEnum[T]) Unmarshal(ctx compilerContext) (to T, _ error) {
 	if err != nil {
 		return to, ctx.error(err)
 	}
+
 	for _, validValue := range s.values {
 		if value == validValue {
 			return value, nil
 		}
 	}
+
 	return to, ctx.error(fmt.Errorf("value not in enum: '%s'", value))
 }
 
@@ -224,6 +247,7 @@ func (p payloadMustSucceed[T]) Unmarshal(ctx compilerContext) (t T, _ error) {
 	if err != nil {
 		return t, ctx.fatal(err)
 	}
+
 	return result, nil
 }
 

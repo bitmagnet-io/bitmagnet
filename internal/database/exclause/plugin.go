@@ -18,6 +18,7 @@ func (*ExtraClausePlugin) Initialize(db *gorm.DB) error {
 	db.Callback().Row().Clauses = []string{
 		"WITH", "SELECT", "FROM", "WHERE", "GROUP BY", "UNION", "INTERSECT", "EXCEPT", "ORDER BY", "LIMIT", "FOR",
 	}
+
 	return nil
 }
 

@@ -109,6 +109,7 @@ type ignoreHashes struct {
 func (i *ignoreHashes) testAndAdd(id protocol.ID) bool {
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
+
 	return i.bloom.TestAndAdd(id[:])
 }
 

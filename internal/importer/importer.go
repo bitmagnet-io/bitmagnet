@@ -64,6 +64,7 @@ func (i importer) New(ctx context.Context, info Info) ActiveImport {
 		importedSources: make(map[string]struct{}),
 	}
 	ai.run(ctx)
+
 	return ai
 }
 
@@ -94,6 +95,7 @@ func (e ImportErrors) OrNil() error {
 	if e.IsNil() {
 		return nil
 	}
+
 	return e
 }
 
@@ -144,6 +146,7 @@ func (i *activeImport) buffer(item Item) {
 	defer i.wg.Done()
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
+
 	i.itemBuffer = append(i.itemBuffer, item)
 	if len(i.itemBuffer) >= int(i.bufferSize) {
 		i.flushLocked()
@@ -160,6 +163,7 @@ func (i *activeImport) flushLocked() {
 	if len(i.itemBuffer) == 0 {
 		return
 	}
+
 	err := i.persistItems(i.itemBuffer...)
 	if err != nil {
 		i.errors = append(i.errors, ImportItemsError{
@@ -167,16 +171,19 @@ func (i *activeImport) flushLocked() {
 			Err:   err,
 		})
 	}
+
 	i.itemBuffer = make([]Item, 0, i.bufferSize)
 }
 
 func (i *activeImport) persistItems(items ...Item) error {
 	var sources []*model.TorrentSource
+
 	sourcesMap := make(map[string]struct{})
 	torrents := make([]*model.Torrent, 0, len(items))
 	torrentsTorrentSources := make([]*model.TorrentsTorrentSource, 0, len(items))
 	torrentHints := make([]*model.TorrentHint, 0, len(items))
 	infoHashes := make([]protocol.ID, 0, len(items))
+
 	for _, item := range items {
 		if _, ok1 := i.importedSources[item.Source]; !ok1 {
 			if _, ok2 := sourcesMap[item.Source]; !ok2 {
@@ -187,26 +194,31 @@ func (i *activeImport) persistItems(items ...Item) error {
 				sourcesMap[item.Source] = struct{}{}
 			}
 		}
+
 		torrent := createTorrentModel(i.info, item)
 		if !torrent.Hint.IsNil() {
 			hint := torrent.Hint
 			torrentHints = append(torrentHints, &hint)
 			torrent.Hint = model.TorrentHint{}
 		}
+
 		for _, s := range torrent.Sources {
 			src := s
 			torrentsTorrentSources = append(torrentsTorrentSources, &src)
 		}
+
 		torrent.Sources = nil
 		torrents = append(torrents, &torrent)
 		infoHashes = append(infoHashes, item.InfoHash)
 	}
+
 	job, jobErr := processor.NewQueueJob(processor.MessageParams{
 		InfoHashes: infoHashes,
 	}, model.QueueJobPriority(20))
 	if jobErr != nil {
 		return jobErr
 	}
+
 	return i.dao.Transaction(func(tx *dao.Query) error {
 		if len(sources) > 0 {
 			if createSourcesErr := tx.TorrentSource.WithContext(i.ctx).Clauses(clause.OnConflict{
@@ -214,15 +226,18 @@ func (i *activeImport) persistItems(items ...Item) error {
 			}).CreateInBatches(sources, 100); createSourcesErr != nil {
 				return createSourcesErr
 			}
+
 			for _, s := range sources {
 				i.importedSources[s.Key] = struct{}{}
 			}
 		}
+
 		if createTorrentsErr := tx.Torrent.WithContext(i.ctx).Clauses(clause.OnConflict{
 			DoNothing: true,
 		}).CreateInBatches(torrents, 100); createTorrentsErr != nil {
 			return createTorrentsErr
 		}
+
 		if len(torrentHints) > 0 {
 			if createTorrentHintsErr := tx.TorrentHint.WithContext(i.ctx).Clauses(clause.OnConflict{
 				UpdateAll: true,
@@ -230,11 +245,13 @@ func (i *activeImport) persistItems(items ...Item) error {
 				return createTorrentHintsErr
 			}
 		}
+
 		if createTorrentsTorrentSourcesErr := tx.TorrentsTorrentSource.WithContext(i.ctx).Clauses(clause.OnConflict{
 			UpdateAll: true,
 		}).CreateInBatches(torrentsTorrentSources, 100); createTorrentsTorrentSourcesErr != nil {
 			return createTorrentsTorrentSourcesErr
 		}
+
 		return tx.QueueJob.Create(&job)
 	})
 }
@@ -275,19 +292,24 @@ func createTorrentModel(info Info, item Item) model.Torrent {
 			ReleaseGroup:    item.ReleaseGroup,
 		}
 	}
+
 	return t
 }
 
 func (i *activeImport) Import(items ...Item) error {
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
+
 	if i.stopped {
 		return ErrImportClosed
 	}
+
 	i.wg.Add(len(items))
+
 	for _, item := range items {
 		i.itemChan <- item
 	}
+
 	return nil
 }
 
@@ -298,18 +320,21 @@ func (i *activeImport) Drain() {
 func (i *activeImport) Err() error {
 	i.mutex.RLock()
 	defer i.mutex.RUnlock()
+
 	return i.errors.OrNil()
 }
 
 func (i *activeImport) ImportErrors() ImportErrors {
 	i.mutex.RLock()
 	defer i.mutex.RUnlock()
+
 	return i.errors
 }
 
 func (i *activeImport) Closed() bool {
 	i.mutex.RLock()
 	defer i.mutex.RUnlock()
+
 	return i.stopped
 }
 
@@ -317,10 +342,12 @@ func (i *activeImport) Close() error {
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
 	i.flushLocked()
+
 	if !i.stopped {
 		i.stopped = true
 		i.stop()
 		close(i.itemChan)
 	}
+
 	return i.errors.OrNil()
 }

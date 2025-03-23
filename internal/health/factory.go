@@ -22,6 +22,7 @@ func New(params Params) Result {
 	lChecker := lazy.New[Checker](func() (Checker, error) {
 		return NewChecker(params.Options...), nil
 	})
+
 	return Result{
 		Checker:          lChecker,
 		HTTPServerOption: handlerBuilder{lChecker},
@@ -41,9 +42,12 @@ func (b handlerBuilder) Apply(e *gin.Engine) error {
 	if err != nil {
 		return err
 	}
+
 	handler := NewHandler(checker)
+
 	e.GET("/status", func(c *gin.Context) {
 		handler(c.Writer, c.Request)
 	})
+
 	return nil
 }

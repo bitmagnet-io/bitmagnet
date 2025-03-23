@@ -62,6 +62,7 @@ func WithConfig(logger ZapLogger, conf *Config) gin.HandlerFunc {
 		if _, ok := skipPaths[path]; !ok {
 			end := time.Now()
 			latency := end.Sub(start)
+
 			if conf.UTC {
 				end = end.UTC()
 			}
@@ -120,6 +121,7 @@ func CustomRecoveryWithZap(logger ZapLogger, stack bool, recovery gin.RecoveryFu
 				// check for a broken connection, as it is not really a
 				// condition that warrants a panic stack trace.
 				var brokenPipe bool
+
 				if ne, ok := err.(*net.OpError); ok {
 					if se, ok := ne.Err.(*os.SyscallError); ok {
 						if strings.Contains(strings.ToLower(se.Error()), "broken pipe") ||
@@ -138,6 +140,7 @@ func CustomRecoveryWithZap(logger ZapLogger, stack bool, recovery gin.RecoveryFu
 					// If the connection is dead, we can't write a status to it.
 					_ = c.Error(err.(error))
 					c.Abort()
+
 					return
 				}
 
@@ -155,6 +158,7 @@ func CustomRecoveryWithZap(logger ZapLogger, stack bool, recovery gin.RecoveryFu
 						zap.String("request", string(httpRequest)),
 					)
 				}
+
 				recovery(c, err)
 			}
 		}()

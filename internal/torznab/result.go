@@ -72,6 +72,7 @@ func (r *RSSDate) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	if err := d.DecodeElement(&v, &start); err != nil {
 		return err
 	}
+
 	for _, format := range rssDateFormats {
 		parsed, err := time.Parse(format, v)
 		if err == nil {
@@ -79,6 +80,7 @@ func (r *RSSDate) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 			return nil
 		}
 	}
+
 	return fmt.Errorf("cannot parse %q as RSSDate", v)
 }
 

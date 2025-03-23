@@ -49,14 +49,19 @@ func (b builder) Apply(e *gin.Engine) error {
 	if err != nil {
 		return err
 	}
+
 	gql := newServer(schema)
+
 	e.POST("/graphql", func(c *gin.Context) {
 		gql.ServeHTTP(c.Writer, c.Request)
 	})
+
 	pg := playground.Handler("GraphQL playground", "/graphql")
+
 	e.GET("/graphql", func(c *gin.Context) {
 		pg.ServeHTTP(c.Writer, c.Request)
 	})
+
 	return nil
 }
 

@@ -22,6 +22,7 @@ func (attachTmdbContentBySearchAction) compileAction(ctx compilerContext) (actio
 	if _, err := attachTmdbContentBySearchPayloadSpec.Unmarshal(ctx); err != nil {
 		return action{}, ctx.error(err)
 	}
+
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result

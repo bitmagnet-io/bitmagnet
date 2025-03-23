@@ -51,23 +51,29 @@ func (b builder) Apply(e *gin.Engine) error {
 	if err != nil {
 		return err
 	}
+
 	e.POST("/import", func(ctx *gin.Context) {
 		b.handle(ctx, i)
 	})
+
 	return nil
 }
 
 func (b builder) handle(ctx *gin.Context, i importer.Importer) {
 	s := bufio.NewScanner(ctx.Request.Body)
 	s.Split(bufio.ScanRunes)
+
 	importID := ctx.Request.Header.Get(ImportIDHeader)
 	if importID == "" {
 		importID = strconv.FormatUint(uint64(time.Now().Unix()), 10)
 	}
+
 	ai := i.New(ctx, importer.Info{
 		ID: importID,
 	})
+
 	var currentLine []rune
+
 	count := 0
 	writeCount := func() {
 		_, _ = ctx.Writer.WriteString(fmt.Sprintf("%d items imported\n", count))
@@ -78,48 +84,62 @@ func (b builder) handle(ctx *gin.Context, i importer.Importer) {
 			b.logger.Errorw("error adding item", "error", err)
 			ctx.Status(400)
 			_, _ = ctx.Writer.WriteString(err.Error())
+
 			return err
 		}
+
 		if err := ai.Import(item); err != nil {
 			b.logger.Errorw("error importing item", "error", err)
 			ctx.Status(400)
 			_, _ = ctx.Writer.WriteString(err.Error())
+
 			return err
 		}
+
 		count++
 		if count%1_000 == 0 {
 			writeCount()
+
 			if count%10_000 == 0 {
 				ctx.Writer.Flush()
 			}
 		}
+
 		return nil
 	}
+
 	for s.Scan() {
 		for _, ch := range s.Text() {
 			if ch == '\n' && len(currentLine) > 0 {
 				if err := addItem(); err != nil {
 					return
 				}
+
 				currentLine = nil
 			} else {
 				currentLine = append(currentLine, ch)
 			}
 		}
 	}
+
 	if len(currentLine) > 0 {
 		if err := addItem(); err != nil {
 			return
 		}
 	}
+
 	ai.Drain()
+
 	if err := ai.Close(); err != nil {
 		b.logger.Errorw("error closing import", "error", err)
 		ctx.Status(400)
 		_, _ = ctx.Writer.WriteString(err.Error())
+
 		return
 	}
+
 	ctx.Status(200)
 	writeCount()
+
 	_, _ = ctx.Writer.WriteString("import complete\n")
 }

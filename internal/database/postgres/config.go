@@ -32,11 +32,14 @@ func (c *Config) CreateDSN() string {
 	if c.DSN != "" {
 		return c.DSN
 	}
+
 	vals := dbValues(c)
 	p := make([]string, 0, len(vals))
+
 	for k, v := range vals {
 		p = append(p, fmt.Sprintf("%s=%s", k, v))
 	}
+
 	return strings.Join(p, " ")
 }
 
@@ -65,5 +68,6 @@ func dbValues(cfg *Config) map[string]string {
 	setIfNotEmpty(p, "sslcert", cfg.SSLCertPath)
 	setIfNotEmpty(p, "sslkey", cfg.SSLKeyPath)
 	setIfNotEmpty(p, "sslrootcert", cfg.SSLRootCertPath)
+
 	return p
 }

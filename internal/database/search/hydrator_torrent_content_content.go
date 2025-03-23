@@ -34,10 +34,12 @@ func (torrentContentContentHydrator) GetSubs(
 	if contentErr != nil {
 		return nil, contentErr
 	}
+
 	content := make([]model.Content, 0, len(contentResult.Items))
 	for _, c := range contentResult.Items {
 		content = append(content, c.Content)
 	}
+
 	return content, nil
 }
 

@@ -20,6 +20,7 @@ func New() fx.Option {
 	if osEnv[extraFilesKey] != "" {
 		extraConfigFiles = strings.Split(osEnv[extraFilesKey], ",")
 	}
+
 	for i, file := range extraConfigFiles {
 		options = append(options,
 			fx.Provide(
@@ -79,6 +80,7 @@ func New() fx.Option {
 			),
 		)
 	}
+
 	return fx.Module(
 		"config",
 		fx.Options(options...),
@@ -88,10 +90,12 @@ func New() fx.Option {
 func ReadOsEnv() map[string]string {
 	rawEnv := os.Environ()
 	env := make(map[string]string, len(rawEnv))
+
 	for _, rawEnvEntry := range rawEnv {
 		parts := strings.SplitN(rawEnvEntry, "=", 2)
 		env[parts[0]] = parts[1]
 	}
+
 	return env
 }
 

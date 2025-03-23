@@ -31,9 +31,11 @@ type torrentContentLanguageFacet struct {
 func (torrentContentLanguageFacet) Values(query.FacetContext) (map[string]string, error) {
 	languageValues := model.LanguageValues()
 	values := make(map[string]string, len(languageValues))
+
 	for _, l := range languageValues {
 		values[l.ID()] = l.Name()
 	}
+
 	return values, nil
 }
 

@@ -25,14 +25,18 @@ type actionDefinition interface {
 
 func (c compilerContext) compileAction(ctx compilerContext) (action, error) {
 	var rawActions []any
+
 	isArray := false
+
 	if s, ok := ctx.source.([]any); ok {
 		rawActions = s
 		isArray = true
 	} else {
 		rawActions = []any{ctx.source}
 	}
+
 	var actions []action
+
 	var errs []error
 outer:
 	for i, rawAction := range rawActions {
@@ -52,9 +56,11 @@ outer:
 		}
 		errs = append(errs, fmt.Errorf("no action matched: %v", ctx.source))
 	}
+
 	if len(errs) > 0 {
 		return action{}, errors.Join(errs...)
 	}
+
 	return action{func(ctx executionContext) (classification.Result, error) {
 		for _, a := range actions {
 			result, err := a.run(ctx)

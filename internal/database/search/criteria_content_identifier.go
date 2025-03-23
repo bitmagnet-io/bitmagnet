@@ -15,11 +15,14 @@ func contentMapFromRefs(refs ...model.ContentRef) contentMap {
 		if _, ok := m[ref.Type]; !ok {
 			m[ref.Type] = make(map[string]map[string]struct{})
 		}
+
 		if _, ok := m[ref.Type][ref.Source]; !ok {
 			m[ref.Type][ref.Source] = make(map[string]struct{})
 		}
+
 		m[ref.Type][ref.Source][ref.ID] = struct{}{}
 	}
+
 	return m
 }
 
@@ -31,16 +34,19 @@ func contentCanonicalIdentifierCriteria(contentMap contentMap) query.Criteria {
 	return query.GenCriteria(func(ctx query.DBContext) (query.Criteria, error) {
 		q := ctx.Query()
 		criteria := make([]query.Criteria, 0, len(contentMap))
+
 		for contentType, sourceMap := range contentMap {
 			for source, idMap := range sourceMap {
 				conds := make([]gen.Condition, 0, 3)
 				if !contentType.IsNil() {
 					conds = append(conds, q.Content.Type.Eq(contentType.String()))
 				}
+
 				ids := make([]string, 0, len(idMap))
 				for id := range idMap {
 					ids = append(ids, id)
 				}
+
 				conds = append(conds,
 					q.Content.Source.Eq(source),
 					q.Content.ID.In(ids...),
@@ -53,6 +59,7 @@ func contentCanonicalIdentifierCriteria(contentMap contentMap) query.Criteria {
 				})
 			}
 		}
+
 		return query.Or(criteria...), nil
 	})
 }
@@ -65,16 +72,19 @@ func contentAlternativeIdentifierCriteria(contentMap contentMap) query.Criteria 
 	return query.GenCriteria(func(ctx query.DBContext) (query.Criteria, error) {
 		q := ctx.Query()
 		criteria := make([]query.Criteria, 0, len(contentMap))
+
 		for contentType, sourceMap := range contentMap {
 			for source, idMap := range sourceMap {
 				conds := make([]gen.Condition, 0, 6)
 				if !contentType.IsNil() {
 					conds = append(conds, q.ContentAttribute.ContentType.Eq(contentType))
 				}
+
 				ids := make([]string, 0, len(idMap))
 				for id := range idMap {
 					ids = append(ids, id)
 				}
+
 				conds = append(conds,
 					q.ContentAttribute.ContentType.EqCol(q.Content.Type),
 					q.ContentAttribute.ContentSource.EqCol(q.Content.Source),
@@ -92,12 +102,14 @@ func contentAlternativeIdentifierCriteria(contentMap contentMap) query.Criteria 
 				})
 			}
 		}
+
 		return query.Or(criteria...), nil
 	})
 }
 
 func ContentIdentifierCriteria(refs ...model.ContentRef) query.Criteria {
 	m := contentMapFromRefs(refs...)
+
 	return query.OrCriteria{
 		Criteria: []query.Criteria{
 			contentCanonicalIdentifierCriteria(m),

@@ -24,11 +24,14 @@ func (s *StableBloomFilter) Scan(value interface{}) error {
 	if !ok {
 		return errors.New("invalid type for StableBloomFilter")
 	}
+
 	bf := boom.NewStableBloomFilter(0, 0, 0)
 	if err := bf.GobDecode(bytes); err != nil {
 		return err
 	}
+
 	s.StableBloomFilter = *bf
+
 	return nil
 }
 
@@ -36,5 +39,6 @@ func (s StableBloomFilter) Value() (driver.Value, error) {
 	if s.Cells() == 0 {
 		return nil, nil
 	}
+
 	return s.GobEncode()
 }

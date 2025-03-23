@@ -10,6 +10,7 @@ import (
 
 func (c *crawler) reseedBootstrapNodes(ctx context.Context) {
 	interval := time.Duration(0)
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -29,6 +30,7 @@ func (c *crawler) reseedBootstrapNodes(ctx context.Context) {
 				}
 			}
 		}
+
 		interval = c.reseedBootstrapNodesInterval
 	}
 }

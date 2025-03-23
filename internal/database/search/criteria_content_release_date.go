@@ -34,5 +34,6 @@ func dateRangeConditionsStr(target field.Time, strDateRange string) ([]field.Exp
 	if dateRangeErr != nil {
 		return nil, dateRangeErr
 	}
+
 	return dateRangeConditions(target, dateRange), nil
 }

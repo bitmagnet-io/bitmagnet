@@ -22,6 +22,7 @@ func (attachLocalContentByIDAction) compileAction(ctx compilerContext) (action, 
 	if _, err := attachLocalContentByIDPayloadSpec.Unmarshal(ctx); err != nil {
 		return action{}, ctx.error(err)
 	}
+
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result

@@ -37,12 +37,15 @@ func (m mergeSourceProvider) source() (Source, error) {
 		if err != nil {
 			return source, err
 		}
+
 		merged, err := source.merge(s)
 		if err != nil {
 			return source, err
 		}
+
 		source = merged
 	}
+
 	return source, nil
 }
 
@@ -59,19 +62,25 @@ func (y yamlSourceProvider) source() (Source, error) {
 	if err != nil {
 		return Source{}, err
 	}
+
 	rawWorkflow := make(map[string]interface{})
+
 	parseErr := yaml.Unmarshal(raw, &rawWorkflow)
 	if parseErr != nil {
 		return Source{}, parseErr
 	}
+
 	src := Source{}
+
 	decoder, decoderErr := newDecoder(&src)
 	if decoderErr != nil {
 		return Source{}, decoderErr
 	}
+
 	if decodeErr := decoder.Decode(rawWorkflow); decodeErr != nil {
 		return Source{}, decodeErr
 	}
+
 	return src, nil
 }
 
@@ -91,6 +100,7 @@ func (xdgSourceProvider) source() ([]byte, error) {
 			return nil, readErr
 		}
 	}
+
 	return []byte{'{', '}'}, nil
 }
 
@@ -102,6 +112,7 @@ func (cwdSourceProvider) source() ([]byte, error) {
 	} else if !os.IsNotExist(readErr) {
 		return nil, readErr
 	}
+
 	return []byte{'{', '}'}, nil
 }
 
@@ -115,12 +126,15 @@ func (c configSourceProvider) source() (Source, error) {
 	for k, v := range c.config.Flags {
 		fs[k] = v
 	}
+
 	if c.config.DeleteXxx {
 		fs["delete_xxx"] = true
 	}
+
 	if !c.tmdbEnabled {
 		fs["tmdb_enabled"] = false
 	}
+
 	return Source{
 		Keywords:   c.config.Keywords,
 		Extensions: c.config.Extensions,

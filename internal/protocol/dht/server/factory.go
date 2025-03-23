@@ -64,8 +64,10 @@ func New(p Params) Result {
 		if err := s.start(); err != nil {
 			return nil, fmt.Errorf("could not start server: %w", err)
 		}
+
 		return s, nil
 	})
+
 	return Result{
 		Server: ls,
 		AppHook: fx.Hook{

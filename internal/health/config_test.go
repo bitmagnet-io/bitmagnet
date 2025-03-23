@@ -139,8 +139,8 @@ func TestWithStatusChangeListenerConfig(t *testing.T) {
 	WithStatusListener(func(context.Context, CheckerState) {})(&cfg)
 
 	// Assert
-	assert.NotNil(t, cfg.statusChangeListener)
 	// Not possible in Go to compare functions.
+	assert.NotNil(t, cfg.statusChangeListener)
 }
 
 func TestNewWithDefaults(t *testing.T) {

@@ -42,6 +42,7 @@ func New(p Params) Result {
 		},
 		limiter: NewLimiter(rate.Every(time.Second/50), 20, rate.Every(time.Second), 10, 1000, time.Second*20),
 	})
+
 	return Result{
 		Responder: responderNodeDiscovery{
 			responder: responderLogger{

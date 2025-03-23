@@ -19,6 +19,7 @@ func TestConfig(t *testing.T) {
 		IntSlice            []int
 		DB                  int
 	}
+
 	type TestConfig struct {
 		Foo         string `validate:"lowercase"`
 		Bar         int
@@ -28,6 +29,7 @@ func TestConfig(t *testing.T) {
 		Duration    time.Duration
 		Duration2   time.Duration
 	}
+
 	defaultConfig := TestConfig{
 		Foo:         "default",
 		Bar:         2,

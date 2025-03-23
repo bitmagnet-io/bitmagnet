@@ -16,6 +16,7 @@ func (c executionContext) tmdbSearchMovie(title string, year model.Year) (model.
 	if !year.IsNil() {
 		req.Year = year
 	}
+
 	searchResult, searchErr := c.tmdbClient.SearchMovie(c.Context, req)
 	if searchErr != nil {
 		return model.Content{}, searchErr
@@ -44,6 +45,7 @@ func (c executionContext) tmdbSearchTVShow(title string, year model.Year) (model
 	if !year.IsNil() {
 		req.FirstAirDateYear = year
 	}
+
 	searchResult, searchErr := c.tmdbClient.SearchTv(c.Context, req)
 	if searchErr != nil {
 		return model.Content{}, searchErr
@@ -72,9 +74,12 @@ func (c executionContext) tmdbGetMovieByTMDBID(id int64) (movie model.Content, e
 		if errors.Is(getDetailsErr, tmdb.ErrNotFound) {
 			getDetailsErr = classification.ErrUnmatched
 		}
+
 		err = getDetailsErr
+
 		return
 	}
+
 	return tmdb.MovieDetailsToMovieModel(d)
 }
 
@@ -87,9 +92,12 @@ func (c executionContext) tmdbGetTVShowByTMDBID(id int64) (movie model.Content, 
 		if errors.Is(getDetailsErr, tmdb.ErrNotFound) {
 			getDetailsErr = classification.ErrUnmatched
 		}
+
 		err = getDetailsErr
+
 		return
 	}
+
 	return tmdb.TvShowDetailsToTvShowModel(d)
 }
 
@@ -98,6 +106,7 @@ func (c executionContext) tmdbGetTMDBIDByExternalID(ref model.ContentRef) (int64
 	if externalSourceErr != nil {
 		return 0, externalSourceErr
 	}
+
 	byIDResult, byIDErr := c.tmdbClient.FindByID(c.Context, tmdb.FindByIDRequest{
 		ExternalSource: externalSource,
 		ExternalID:     externalID,
@@ -105,16 +114,19 @@ func (c executionContext) tmdbGetTMDBIDByExternalID(ref model.ContentRef) (int64
 	if byIDErr != nil {
 		return 0, byIDErr
 	}
+
 	switch ref.Type {
 	case model.ContentTypeMovie, model.ContentTypeXxx:
 		if len(byIDResult.MovieResults) == 0 {
 			return 0, classification.ErrUnmatched
 		}
+
 		return byIDResult.MovieResults[0].ID, nil
 	case model.ContentTypeTvShow:
 		if len(byIDResult.TvResults) == 0 {
 			return 0, classification.ErrUnmatched
 		}
+
 		return byIDResult.TvResults[0].ID, nil
 	default:
 		return 0, classification.ErrUnmatched

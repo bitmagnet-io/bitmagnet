@@ -44,5 +44,6 @@ func (pprofBuilder) Apply(e *gin.Engine) error {
 	e.Any("/debug/pprof/:profile", func(c *gin.Context) {
 		pprof.Handler(c.Param("profile")).ServeHTTP(c.Writer, c.Request)
 	})
+
 	return nil
 }

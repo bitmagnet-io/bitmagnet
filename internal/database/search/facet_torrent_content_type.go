@@ -34,8 +34,10 @@ type torrentContentTypeFacet struct {
 func (torrentContentTypeFacet) Values(query.FacetContext) (map[string]string, error) {
 	values := make(map[string]string)
 	values["null"] = "Unknown"
+
 	for _, contentType := range model.ContentTypeValues() {
 		values[string(contentType)] = contentType.Label()
 	}
+
 	return values, nil
 }

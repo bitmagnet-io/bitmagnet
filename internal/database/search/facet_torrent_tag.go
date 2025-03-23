@@ -27,14 +27,17 @@ type torrentTagFacet struct {
 
 func (torrentTagFacet) Values(ctx query.FacetContext) (map[string]string, error) {
 	q := ctx.Query().TorrentTag
+
 	tags, tagsErr := q.WithContext(ctx.Context()).Distinct(q.Name).Find()
 	if tagsErr != nil {
 		return nil, tagsErr
 	}
+
 	values := make(map[string]string, len(tags))
 	for _, tag := range tags {
 		values[tag.Name] = tag.Name
 	}
+
 	return values, nil
 }
 
@@ -43,5 +46,6 @@ func (torrentTagFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 	for i, tag := range filter.Values() {
 		criteria[i] = TorrentTagCriteria(tag)
 	}
+
 	return criteria
 }

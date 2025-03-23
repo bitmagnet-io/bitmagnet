@@ -29,7 +29,9 @@ func New(params Params) Result {
 		if err != nil {
 			return nil, err
 		}
+
 		params.PgxPoolWait.Add(1)
+
 		return &manager{
 			pool:          pool,
 			buffer:        make(map[protocol.ID]struct{}, 1000),
@@ -37,6 +39,7 @@ func New(params Params) Result {
 			maxFlushWait:  time.Minute * 5,
 		}, nil
 	})
+
 	return Result{
 		Manager: lazyManager,
 		AppHook: fx.Hook{

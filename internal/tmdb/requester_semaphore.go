@@ -22,5 +22,6 @@ func (r requesterSemaphore) Request(
 		return nil, err
 	}
 	defer r.semaphore.Release(1)
+
 	return r.requester.Request(ctx, path, queryParams, result)
 }

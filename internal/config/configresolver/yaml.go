@@ -9,6 +9,7 @@ import (
 
 func NewFromYamlFile(path string, ignoreMissing bool, val *validator.Validate, options ...Option) (Resolver, error) {
 	m := make(map[string]interface{})
+
 	data, readErr := os.ReadFile(path)
 	if readErr != nil {
 		if !ignoreMissing || !os.IsNotExist(readErr) {
@@ -20,5 +21,6 @@ func NewFromYamlFile(path string, ignoreMissing bool, val *validator.Validate, o
 			return nil, parseErr
 		}
 	}
+
 	return NewMap(m, val, append([]Option{WithKey(path)}, options...)...), nil
 }

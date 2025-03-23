@@ -22,6 +22,7 @@ func (parseDateAction) compileAction(ctx compilerContext) (action, error) {
 	if _, err := parseDatePayloadSpec.Unmarshal(ctx); err != nil {
 		return action{}, ctx.error(err)
 	}
+
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
 			parsed := parsers.ParseDate(ctx.torrent.Name)

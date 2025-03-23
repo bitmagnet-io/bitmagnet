@@ -25,14 +25,18 @@ func (orCondition) compileCondition(ctx compilerContext) (condition, error) {
 	if err != nil {
 		return condition{}, err
 	}
+
 	conds := make([]condition, len(rawConds))
+
 	for i, rawCond := range rawConds {
 		cond, err := ctx.compileCondition(ctx.child(numericPathPart(i), rawCond))
 		if err != nil {
 			return condition{}, err
 		}
+
 		conds[i] = cond
 	}
+
 	return condition{func(ctx executionContext) (bool, error) {
 		for _, c := range conds {
 			if result, err := c.check(ctx); err != nil {

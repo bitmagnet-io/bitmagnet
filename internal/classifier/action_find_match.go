@@ -29,15 +29,20 @@ func (findMatchAction) compileAction(ctx compilerContext) (action, error) {
 	if err != nil {
 		return action{}, ctx.error(err)
 	}
+
 	actions := make([]action, len(payload))
+
 	for i, actionPayload := range payload {
 		a, err := ctx.compileAction(ctx.child(numericPathPart(i), actionPayload))
 		if err != nil {
 			return action{}, err
 		}
+
 		actions[i] = a
 	}
+
 	path := ctx.path
+
 	return action{
 		func(ctx executionContext) (classification.Result, error) {
 			for _, action := range actions {

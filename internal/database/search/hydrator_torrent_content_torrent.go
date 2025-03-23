@@ -27,6 +27,7 @@ func HydrateTorrentContentTorrent(options ...HydrateTorrentContentTorrentOption)
 	for _, option := range options {
 		option(&config)
 	}
+
 	return query.HydrateHasOne[TorrentContentResultItem, model.Torrent, protocol.ID](
 		torrentContentTorrentHydrator{config},
 	)
@@ -58,11 +59,13 @@ func (h torrentContentTorrentHydrator) GetSubs(
 				if h.files {
 					preload = append(preload, q.Torrent.Files.RelationField)
 				}
+
 				return preload
 			}))
 	if err != nil {
 		return nil, err
 	}
+
 	return result.Items, nil
 }
 

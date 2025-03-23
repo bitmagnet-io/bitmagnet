@@ -21,5 +21,6 @@ func (r requesterLimiter) Request(
 	if err := r.limiter.Wait(ctx); err != nil {
 		return nil, err
 	}
+
 	return r.requester.Request(ctx, path, queryParams, result)
 }

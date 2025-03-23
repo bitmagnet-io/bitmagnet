@@ -54,15 +54,18 @@ func newPrometheusCollector(responder Responder) prometheusCollector {
 func (l prometheusCollector) Respond(ctx context.Context, msg dht.RecvMsg) (dht.Return, error) {
 	labels := prometheus.Labels{labelQuery: normalizeQuery(msg.Msg.Q)}
 	l.queryConcurrency.With(labels).Inc()
+
 	start := time.Now()
 	ret, err := l.responder.Respond(ctx, msg)
 	l.queryConcurrency.With(labels).Dec()
+
 	if err == nil {
 		l.queryDuration.With(labels).Observe(time.Since(start).Seconds())
 		l.querySuccessTotal.With(labels).Inc()
 	} else {
 		l.queryErrorTotal.With(labels).Inc()
 	}
+
 	return ret, err
 }
 

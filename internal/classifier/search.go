@@ -43,13 +43,16 @@ func (l localSearch) ContentByID(ctx context.Context, ref model.ContentRef) (mod
 			}),
 		))
 	}
+
 	result, err := l.Search.Content(ctx, options...)
 	if err != nil {
 		return model.Content{}, err
 	}
+
 	if len(result.Items) == 0 {
 		return model.Content{}, classification.ErrUnmatched
 	}
+
 	return result.Items[0].Content, nil
 }
 
@@ -70,6 +73,7 @@ func (l localSearch) ContentBySearch(
 	if !year.IsNil() {
 		options = append(options, query.Where(search.ContentReleaseDateCriteria(model.NewDateRangeFromYear(year))))
 	}
+
 	result, searchErr := l.Search.Content(
 		ctx,
 		options...,
@@ -77,6 +81,7 @@ func (l localSearch) ContentBySearch(
 	if searchErr != nil {
 		return model.Content{}, searchErr
 	}
+
 	bestMatch, ok := levenshteinFindBestMatch[search.ContentResultItem](
 		baseTitle,
 		result.Items,
@@ -85,11 +90,13 @@ func (l localSearch) ContentBySearch(
 			if item.OriginalTitle.Valid {
 				candidates = append(candidates, item.OriginalTitle.String)
 			}
+
 			return candidates
 		},
 	)
 	if !ok {
 		return model.Content{}, classification.ErrUnmatched
 	}
+
 	return bestMatch.Content, nil
 }

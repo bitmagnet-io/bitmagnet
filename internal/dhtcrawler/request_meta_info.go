@@ -32,23 +32,28 @@ func (c *crawler) doRequestMetaInfo(
 	peers []netip.AddrPort,
 ) (metainforequester.Response, error) {
 	var errs []error
+
 	errsMutex := sync.Mutex{}
 	addErr := func(err error) {
 		errsMutex.Lock()
 		errs = append(errs, err)
 		errsMutex.Unlock()
 	}
+
 	for _, p := range peers {
 		res, err := c.metainfoRequester.Request(ctx, hash, p)
 		if err != nil {
 			addErr(err)
 			continue
 		}
+
 		if banErr := c.banningChecker.Check(res.Info); banErr != nil {
 			_ = c.blockingManager.Block(ctx, []protocol.ID{hash}, false)
 			return metainforequester.Response{}, banErr
 		}
+
 		return res, nil
 	}
+
 	return metainforequester.Response{}, errors.Join(errs...)
 }

@@ -12,6 +12,7 @@ func newFeatures(fs ...feature) features {
 	for _, f := range fs {
 		f(&result)
 	}
+
 	return result
 }
 

@@ -19,10 +19,12 @@ func infoHashCriteria(table string, infoHashes ...protocol.ID) query.Criteria {
 			SQL: "FALSE",
 		}
 	}
+
 	decodes := make([]string, len(infoHashes))
 	for i, infoHash := range infoHashes {
 		decodes[i] = fmt.Sprintf("DECODE('%s', 'hex')", infoHash.String())
 	}
+
 	return query.DBCriteria{
 		SQL: fmt.Sprintf("%s.info_hash IN (%s)", table, strings.Join(decodes, ", ")),
 	}

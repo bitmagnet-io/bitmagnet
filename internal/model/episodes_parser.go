@@ -89,10 +89,13 @@ func EpisodesMatchToEpisodes(match []string) Episodes {
 	if len(match) < 12 {
 		return nil
 	}
+
 	episodes := Episodes{}
+
 	if match[1] != "" {
 		// regular format
 		seasonStart, _ := strconv.ParseInt(match[2], 10, 16)
+
 		if match[5] == "" {
 			// no episodes
 			if match[3] != "" {
@@ -138,13 +141,16 @@ func EpisodesMatchToEpisodes(match []string) Episodes {
 		season, _ := strconv.ParseInt(match[9], 10, 16)
 		episodeStart, _ := strconv.ParseInt(match[10], 10, 16)
 		episodeEnd := episodeStart
+
 		if match[11] != "" {
 			episodeEnd, _ = strconv.ParseInt(match[11], 10, 16)
 		}
+
 		for i := episodeStart; i <= episodeEnd; i++ {
 			episodes = episodes.AddEpisode(int(season), int(i))
 		}
 	}
+
 	return episodes
 }
 

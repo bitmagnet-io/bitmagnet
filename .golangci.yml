@@ -21,6 +21,7 @@ linters:
     - revive
     - stylecheck
     - testifylint
+    - wsl
 linters-settings:
   revive:
     rules:

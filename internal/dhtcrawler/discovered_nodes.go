@@ -37,6 +37,7 @@ func (c *crawler) runDiscoveredNodes(ctx context.Context) {
 			return
 		case ps := <-c.discoveredNodes.Out():
 			addrs := make([]netip.Addr, 0, 1)
+
 			m := make(map[string]ktable.Node, 1)
 			for _, p := range ps {
 				if _, ok := m[p.Addr().Addr().String()]; !ok {

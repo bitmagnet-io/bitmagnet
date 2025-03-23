@@ -24,6 +24,7 @@ func (attachTMDBContentByIDAction) compileAction(ctx compilerContext) (action, e
 	if _, err := attachTMDBContentByIDPayloadSpec.Unmarshal(ctx); err != nil {
 		return action{}, ctx.error(err)
 	}
+
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result

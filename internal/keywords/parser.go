@@ -18,6 +18,7 @@ func NewRegexFromKeywords(kws ...string) (*regexp.Regexp, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return rex.New(
 		rex.Group.Composite(
 			rex.Chars.Begin(),
@@ -38,6 +39,7 @@ func MustNewRegexFromKeywords(kws ...string) *regexp.Regexp {
 	if err != nil {
 		panic(err)
 	}
+
 	return r
 }
 
@@ -45,20 +47,26 @@ func NewRexTokensFromKeywords(kws ...string) ([]dialect.Token, error) {
 	if len(kws) == 0 {
 		return nil, errors.New("no keywords provided")
 	}
+
 	var tokens []dialect.Token
+
 	usedKeywords := make(map[string]struct{})
 	for _, kw := range kws {
 		if _, ok := usedKeywords[kw]; ok {
 			continue
 		}
+
 		usedKeywords[kw] = struct{}{}
 		l := keywordsLexer{Lexer: lexer.NewLexer(kw)}
 		group, err := l.lexGroupToken(false)
+
 		if err != nil {
 			return nil, fmt.Errorf("error in keyword '%s' at position %d: %w", kw, l.Pos(), err)
 		}
+
 		tokens = append(tokens, group)
 	}
+
 	return tokens, nil
 }
 
@@ -67,6 +75,7 @@ func MustNewRexTokensFromKeywords(kws ...string) []dialect.Token {
 	if err != nil {
 		panic(err)
 	}
+
 	return tokens
 }
 
@@ -135,9 +144,11 @@ outer:
 			continue inner
 		}
 	}
+
 	if len(groupTokens) == 0 {
 		return base.GroupToken{}, ErrUnexpectedEOF
 	}
+
 	return rex.Group.Composite(groupTokens...).NonCaptured(), nil
 }
 
@@ -145,9 +156,11 @@ func (l *keywordsLexer) lexClassWithModifierToken() (dialect.Token, error) {
 	if l.ReadChar('*') {
 		return regex.AnyWordChar().Repeat().ZeroOrMore(), nil
 	}
+
 	tk, err := l.lexClassToken()
 	if err == nil {
 		ch, ok := l.Read()
+
 		switch {
 		case !ok:
 			return tk, nil
@@ -160,6 +173,7 @@ func (l *keywordsLexer) lexClassWithModifierToken() (dialect.Token, error) {
 			return tk, nil
 		}
 	}
+
 	return nil, err
 }
 
@@ -169,7 +183,9 @@ var reservedChars = map[rune]struct{}{
 
 func (l *keywordsLexer) lexClassToken() (base.ClassToken, error) {
 	var tk base.ClassToken
+
 	ch, ok := l.Read()
+
 	switch {
 	case !ok:
 		return tk, ErrEOF
@@ -178,18 +194,21 @@ func (l *keywordsLexer) lexClassToken() (base.ClassToken, error) {
 		if !ok2 {
 			return tk, ErrUnexpectedEOF
 		}
+
 		return rex.Chars.Single(exactChar), nil
 	case lexer.IsWordChar(ch):
 		lcChar := strings.ToLower(string(ch))
 		if string(ch) != lcChar {
 			return tk, ErrUnexpectedChar
 		}
+
 		ucChar := strings.ToUpper(string(ch))
 		if lcChar == ucChar {
 			tk = rex.Chars.Single(ch)
 		} else {
 			tk = rex.Chars.Runes(ucChar + lcChar)
 		}
+
 		return tk, nil
 	case ch == '#':
 		return rex.Chars.Digits(), nil
@@ -200,6 +219,7 @@ func (l *keywordsLexer) lexClassToken() (base.ClassToken, error) {
 			l.Backup()
 			return tk, ErrUnexpectedChar
 		}
+
 		return rex.Chars.Single(ch), nil
 	}
 }

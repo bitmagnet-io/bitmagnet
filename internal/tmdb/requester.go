@@ -36,5 +36,6 @@ func (r requester) Request(
 			}
 		}
 	}
+
 	return res, err
 }

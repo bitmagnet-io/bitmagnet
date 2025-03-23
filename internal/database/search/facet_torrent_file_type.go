@@ -30,9 +30,11 @@ type torrentFileTypeFacet struct {
 func (torrentFileTypeFacet) Values(query.FacetContext) (map[string]string, error) {
 	fts := model.FileTypeValues()
 	values := make(map[string]string, len(fts))
+
 	for _, vr := range fts {
 		values[vr.String()] = vr.Label()
 	}
+
 	return values, nil
 }
 

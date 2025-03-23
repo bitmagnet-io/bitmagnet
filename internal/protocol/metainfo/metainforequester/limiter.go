@@ -17,5 +17,6 @@ func (r requestLimiter) Request(ctx context.Context, infoHash protocol.ID, node 
 	if limitErr := r.limiter.Wait(ctx, node.Addr().String()); limitErr != nil {
 		return Response{}, limitErr
 	}
+
 	return r.requester.Request(ctx, infoHash, node)
 }

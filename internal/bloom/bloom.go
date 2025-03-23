@@ -24,9 +24,11 @@ func FromScrape(f dht.ScrapeBloomFilter) Filter {
 
 func convertBytes(b [byteSize]byte) []uint64 {
 	ret := make([]uint64, size)
+
 	for i := range size {
 		startPos := i * 8
 		ret[i] = binary.BigEndian.Uint64(b[startPos : startPos+8])
 	}
+
 	return ret
 }

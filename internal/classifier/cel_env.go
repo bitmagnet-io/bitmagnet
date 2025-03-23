@@ -31,6 +31,7 @@ func celEnvOption(src Source, ctx *compilerContext) error {
 			cel.Variable("flags."+name, tp.celType()),
 		)
 	}
+
 	options = append(
 		options,
 		cel.Constant("flags", cel.MapType(cel.StringType, cel.NullType), types.NullValue),
@@ -41,11 +42,13 @@ func celEnvOption(src Source, ctx *compilerContext) error {
 		if err != nil {
 			return err
 		}
+
 		options = append(
 			options,
 			cel.Constant("keywords."+group, cel.StringType, types.String(r.String())),
 		)
 	}
+
 	options = append(
 		options,
 		cel.Constant("keywords", cel.MapType(cel.StringType, cel.NullType), types.NullValue),
@@ -60,6 +63,7 @@ func celEnvOption(src Source, ctx *compilerContext) error {
 			),
 		)
 	}
+
 	options = append(
 		options,
 		cel.Constant("extensions", cel.MapType(cel.StringType, cel.NullType), types.NullValue),
@@ -68,6 +72,7 @@ func celEnvOption(src Source, ctx *compilerContext) error {
 		options,
 		cel.Constant("fileType.unknown", cel.IntType, types.Int(protobuf.Torrent_File_unknown)),
 	)
+
 	for _, ft := range model.FileTypeValues() {
 		options = append(
 			options,
@@ -78,6 +83,7 @@ func celEnvOption(src Source, ctx *compilerContext) error {
 			),
 		)
 	}
+
 	options = append(
 		options,
 		cel.Constant("fileType", cel.MapType(cel.StringType, cel.NullType), types.NullValue),
@@ -86,6 +92,7 @@ func celEnvOption(src Source, ctx *compilerContext) error {
 		options,
 		cel.Constant("contentType.unknown", cel.IntType, types.Int(protobuf.Classification_unknown)),
 	)
+
 	for _, ct := range model.ContentTypeValues() {
 		options = append(
 			options,
@@ -96,6 +103,7 @@ func celEnvOption(src Source, ctx *compilerContext) error {
 			),
 		)
 	}
+
 	options = append(
 		options,
 		cel.Constant("contentType", cel.MapType(cel.StringType, cel.NullType), types.NullValue),
@@ -112,10 +120,13 @@ func celEnvOption(src Source, ctx *compilerContext) error {
 		options,
 		cel.Constant("gb", cel.IntType, types.Int(1_000_000_000)),
 	)
+
 	env, err := cel.NewCustomEnv(options...)
 	if err != nil {
 		return err
 	}
+
 	ctx.celEnv = env
+
 	return nil
 }

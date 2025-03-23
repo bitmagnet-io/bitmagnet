@@ -9,14 +9,17 @@ import (
 
 func MovieDetailsToMovieModel(details MovieDetailsResponse) (movie model.Content, err error) {
 	releaseDate := model.Date{}
+
 	if details.ReleaseDate != "" {
 		parsedDate, parseDateErr := model.NewDateFromIsoString(details.ReleaseDate)
 		if parseDateErr != nil {
 			err = parseDateErr
 			return
 		}
+
 		releaseDate = parsedDate
 	}
+
 	var collections []model.ContentCollection
 	if details.BelongsToCollection.ID != 0 {
 		collections = append(collections, model.ContentCollection{
@@ -26,6 +29,7 @@ func MovieDetailsToMovieModel(details MovieDetailsResponse) (movie model.Content
 			Name:   details.BelongsToCollection.Name,
 		})
 	}
+
 	for _, genre := range details.Genres {
 		collections = append(collections, model.ContentCollection{
 			Type:   "genre",
@@ -34,6 +38,7 @@ func MovieDetailsToMovieModel(details MovieDetailsResponse) (movie model.Content
 			Name:   genre.Name,
 		})
 	}
+
 	var attributes []model.ContentAttribute
 	if details.IMDbID != "" {
 		attributes = append(attributes, model.ContentAttribute{
@@ -42,6 +47,7 @@ func MovieDetailsToMovieModel(details MovieDetailsResponse) (movie model.Content
 			Value:  details.IMDbID,
 		})
 	}
+
 	if details.PosterPath != "" {
 		attributes = append(attributes, model.ContentAttribute{
 			Source: "tmdb",
@@ -49,6 +55,7 @@ func MovieDetailsToMovieModel(details MovieDetailsResponse) (movie model.Content
 			Value:  details.PosterPath,
 		})
 	}
+
 	if details.BackdropPath != "" {
 		attributes = append(attributes, model.ContentAttribute{
 			Source: "tmdb",
@@ -56,6 +63,7 @@ func MovieDetailsToMovieModel(details MovieDetailsResponse) (movie model.Content
 			Value:  details.BackdropPath,
 		})
 	}
+
 	releaseYear := releaseDate.Year
 
 	contentType := model.ContentTypeMovie
@@ -92,14 +100,17 @@ func MovieDetailsToMovieModel(details MovieDetailsResponse) (movie model.Content
 
 func TvShowDetailsToTvShowModel(details TvDetailsResponse) (movie model.Content, err error) {
 	firstAirDate := model.Date{}
+
 	if details.FirstAirDate != "" {
 		parsedDate, parseDateErr := model.NewDateFromIsoString(details.FirstAirDate)
 		if parseDateErr != nil {
 			err = parseDateErr
 			return
 		}
+
 		firstAirDate = parsedDate
 	}
+
 	var collections []model.ContentCollection
 	for _, genre := range details.Genres {
 		collections = append(collections, model.ContentCollection{
@@ -109,6 +120,7 @@ func TvShowDetailsToTvShowModel(details TvDetailsResponse) (movie model.Content,
 			Name:   genre.Name,
 		})
 	}
+
 	var attributes []model.ContentAttribute
 	if details.ExternalIDs.IMDbID != "" {
 		attributes = append(attributes, model.ContentAttribute{
@@ -117,6 +129,7 @@ func TvShowDetailsToTvShowModel(details TvDetailsResponse) (movie model.Content,
 			Value:  details.ExternalIDs.IMDbID,
 		})
 	}
+
 	if details.ExternalIDs.TVDBID != 0 {
 		attributes = append(attributes, model.ContentAttribute{
 			Source: model.SourceTvdb,
@@ -124,7 +137,9 @@ func TvShowDetailsToTvShowModel(details TvDetailsResponse) (movie model.Content,
 			Value:  strconv.Itoa(int(details.ExternalIDs.TVDBID)),
 		})
 	}
+
 	releaseYear := firstAirDate.Year
+
 	if details.PosterPath != "" {
 		attributes = append(attributes, model.ContentAttribute{
 			Source: model.SourceTmdb,
@@ -132,6 +147,7 @@ func TvShowDetailsToTvShowModel(details TvDetailsResponse) (movie model.Content,
 			Value:  details.PosterPath,
 		})
 	}
+
 	if details.BackdropPath != "" {
 		attributes = append(attributes, model.ContentAttribute{
 			Source: model.SourceTmdb,
@@ -139,6 +155,7 @@ func TvShowDetailsToTvShowModel(details TvDetailsResponse) (movie model.Content,
 			Value:  details.BackdropPath,
 		})
 	}
+
 	return model.Content{
 		Type:             model.ContentTypeTvShow,
 		Source:           model.SourceTmdb,
@@ -174,5 +191,6 @@ func ExternalSource(ref model.ContentRef) (externalSource string, externalID str
 	default:
 		err = classification.ErrUnmatched
 	}
+
 	return
 }

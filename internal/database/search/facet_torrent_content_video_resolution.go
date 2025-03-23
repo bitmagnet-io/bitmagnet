@@ -35,8 +35,10 @@ type videoResolutionFacet struct {
 func (videoResolutionFacet) Values(query.FacetContext) (map[string]string, error) {
 	vrs := model.VideoResolutionValues()
 	values := make(map[string]string, len(vrs))
+
 	for _, vr := range vrs {
 		values[vr.String()] = vr.Label()
 	}
+
 	return values, nil
 }

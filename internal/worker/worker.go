@@ -33,11 +33,13 @@ func NewRegistry(p RegistryParams) (RegistryResult, error) {
 	for _, w := range p.Workers {
 		r.workers[w.Key()] = w
 	}
+
 	for _, d := range p.Decorators {
 		if err := r.decorate(d.Key, d.Decorate); err != nil {
 			return RegistryResult{}, err
 		}
 	}
+
 	return RegistryResult{Registry: r}, nil
 }
 
@@ -125,48 +127,60 @@ type registry struct {
 
 func (r *registry) Workers() []Worker {
 	var workers []Worker
+
 	r.mutex.RLock()
 	defer r.mutex.RUnlock()
+
 	keys := make([]string, 0, len(r.workers))
 	for k := range r.workers {
 		keys = append(keys, k)
 	}
+
 	sort.Strings(keys)
+
 	for _, k := range keys {
 		workers = append(workers, r.workers[k])
 	}
+
 	return workers
 }
 
 func (r *registry) Enable(names ...string) error {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
+
 	for _, name := range names {
 		w, ok := r.workers[name]
 		if !ok {
 			return fmt.Errorf("worker %s not found", name)
 		}
+
 		w.setEnabled(true)
 	}
+
 	return nil
 }
 
 func (r *registry) Disable(names ...string) error {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
+
 	for _, name := range names {
 		w, ok := r.workers[name]
 		if !ok {
 			return fmt.Errorf("worker %s not found", name)
 		}
+
 		w.setEnabled(false)
 	}
+
 	return nil
 }
 
 func (r *registry) EnableAll() {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
+
 	for _, w := range r.workers {
 		w.setEnabled(true)
 	}
@@ -175,6 +189,7 @@ func (r *registry) EnableAll() {
 func (r *registry) DisableAll() {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
+
 	for _, w := range r.workers {
 		w.setEnabled(false)
 	}
@@ -185,12 +200,15 @@ var ErrorNoWorkersEnabled = errors.New("no workers enabled")
 func (r *registry) Start(ctx context.Context) error {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
+
 	i := 0
+
 	for _, w := range r.workers {
 		if w.Enabled() {
 			if w.Started() {
 				return fmt.Errorf("worker %s already started", w.Key())
 			}
+
 			startHook := w._hook().OnStart
 			if startHook != nil {
 				if err := startHook(ctx); err != nil {
@@ -198,20 +216,25 @@ func (r *registry) Start(ctx context.Context) error {
 					return err
 				}
 			}
+
 			w.setStarted(true)
 			r.logger.Infow("started worker", "key", w.Key())
+
 			i++
 		}
 	}
+
 	if i == 0 {
 		return ErrorNoWorkersEnabled
 	}
+
 	return nil
 }
 
 func (r *registry) Stop(ctx context.Context) error {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
+
 	for _, w := range r.workers {
 		if w.Started() {
 			stopHook := w._hook().OnStop
@@ -221,19 +244,23 @@ func (r *registry) Stop(ctx context.Context) error {
 					continue
 				}
 			}
+
 			w.setStarted(false)
 			r.logger.Infow("stopped worker", "key", w.Key())
 		}
 	}
+
 	return nil
 }
 
 func (r *registry) decorate(name string, fn DecorateFunction) error {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
+
 	if w, ok := r.workers[name]; ok {
 		r.workers[name] = w.decorate(fn)
 		return nil
 	}
+
 	return fmt.Errorf("worker %s not found", name)
 }

@@ -23,13 +23,16 @@ type Result struct {
 
 func New(params Params) Result {
 	var appHook fx.Hook
+
 	var encoder zapcore.Encoder
 	if params.Config.JSON {
 		encoder = zapcore.NewJSONEncoder(jsonEncoderConfig)
 	} else {
 		encoder = zapcore.NewConsoleEncoder(consoleEncoderConfig)
 	}
+
 	writeSyncer := zapcore.AddSync(os.Stdout)
+
 	opts := []zap.Option{
 		zap.AddStacktrace(zapcore.ErrorLevel),
 		zap.AddCaller(),
@@ -37,11 +40,13 @@ func New(params Params) Result {
 	if params.Config.Development {
 		opts = append(opts, zap.Development())
 	}
+
 	core := zapcore.NewCore(
 		encoder,
 		writeSyncer,
 		levelToZapLevel(params.Config.Level),
 	)
+
 	if params.Config.FileRotator.Enabled {
 		fWriteSyncer := newFileRotator(params.Config.FileRotator)
 		core = zapcore.NewTee(
@@ -58,7 +63,9 @@ func New(params Params) Result {
 			},
 		}
 	}
+
 	l := zap.New(core, opts...)
+
 	return Result{
 		Logger:  l,
 		Sugar:   l.Sugar(),

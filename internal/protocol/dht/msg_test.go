@@ -23,6 +23,7 @@ func testMarshalUnmarshalMsg(t *testing.T, m Msg, expected string) {
 	b, err := bencode.Marshal(m)
 	c.Assert(err, qt.IsNil)
 	c.Assert(string(b), qt.Equals, expected)
+
 	var _m Msg
 	err = bencode.Unmarshal([]byte(expected), &_m)
 	c.Assert(err, qt.IsNil)
@@ -104,6 +105,7 @@ func TestMarshalUnmarshalMsg(t *testing.T) {
 
 	var k [32]byte
 	_, _ = rand.Read(k[:])
+
 	var sig [64]byte
 	_, _ = rand.Read(sig[:])
 	testMarshalUnmarshalMsg(t, Msg{
@@ -133,7 +135,9 @@ func TestMarshalUnmarshalMsg(t *testing.T) {
 func TestMsgReadOnly(t *testing.T) {
 	testMarshalUnmarshalMsg(t, Msg{ReadOnly: true}, "d2:roi1e1:t0:1:y0:e")
 	testMarshalUnmarshalMsg(t, Msg{ReadOnly: false}, "d1:t0:1:y0:e")
+
 	var m Msg
+
 	require.NoError(t, bencode.Unmarshal([]byte("de"), &m))
 	require.EqualValues(t, Msg{}, m)
 	require.NoError(t, bencode.Unmarshal([]byte("d2:roi1ee"), &m))
@@ -160,9 +164,11 @@ func TestBep33BloomFilter(t *testing.T) {
 	for i := range 256 {
 		f.AddIP(net.IPv4(192, 0, 2, byte(i)).To4())
 	}
+
 	for i := range 0x3e8 {
 		f.AddIP(net.ParseIP(fmt.Sprintf("2001:DB8::%x", i)))
 	}
+
 	expected, err := hex.DecodeString(unprettifyHex(`
 F6C3F5EA A07FFD91 BDE89F77 7F26FB2B FF37BDB8 FB2BBAA2 FD3DDDE7 BACFFF75 EE7CCBAE
 FE5EEDB1 FBFAFF67 F6ABFF5E 43DDBCA3 FD9B9FFD F4FFD3E9 DFF12D1B DF59DB53 DBE9FA5B
@@ -185,6 +191,7 @@ func floorDecimals(f float64, decimals int) float64 {
 
 func TestEmptyScrapeBloomFilterEstimatedCount(t *testing.T) {
 	var f ScrapeBloomFilter
+
 	assert.EqualValues(t, 0, int(math.Floor(f.EstimateCount())))
 }
 
@@ -195,6 +202,7 @@ func marshalAndReturnUnmarshaledMsg(t *testing.T, m Msg, expected string) (ret M
 	c.Assert(string(b), qt.Equals, expected)
 	err = bencode.Unmarshal([]byte(expected), &ret)
 	c.Assert(err, qt.IsNil)
+
 	return
 }
 
@@ -205,6 +213,7 @@ func TestBep51EmptySampleField(t *testing.T) {
 		},
 		"d1:rd2:id20:\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00e1:t0:1:y0:e",
 	)
+
 	samples := marshalAndReturnUnmarshaledMsg(t,
 		Msg{
 			R: &Return{

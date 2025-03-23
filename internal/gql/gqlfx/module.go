@@ -33,6 +33,7 @@ func New() fx.Option {
 					if err != nil {
 						return nil, err
 					}
+
 					return gql.NewExecutableSchema(cfg), nil
 				})
 			},

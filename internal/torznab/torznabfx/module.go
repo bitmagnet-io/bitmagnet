@@ -21,6 +21,7 @@ func New() fx.Option {
 					if err != nil {
 						return nil, err
 					}
+
 					return adapter.New(s), nil
 				})
 			},

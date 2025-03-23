@@ -16,7 +16,10 @@ func RandInt(maxValue int) int {
 // this formula is unabashedly taken from Sidekiq because it is good.
 func CalculateBackoff(retryCount uint) time.Time {
 	const backoffExponent = 4
+
 	const maxInt = 30
+
 	p := int(math.Round(math.Pow(float64(retryCount), backoffExponent)))
+
 	return time.Now().UTC().Add(time.Duration(p+15+RandInt(maxInt)*int(retryCount)+1) * time.Second)
 }

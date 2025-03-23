@@ -13,25 +13,30 @@ type nodeKeyspace struct {
 
 func (k *nodeKeyspace) getLastRespondedBefore(t time.Time) []Node {
 	var peers []Node
+
 	for _, it := range k.items {
 		if it.lastRespondedAt.Before(t) {
 			peers = append(peers, it)
 		}
 	}
+
 	return peers
 }
 
 func (k *nodeKeyspace) getCandidatesForSampleInfoHashes(n int) []*node {
 	var candidates []*node
+
 	for _, it := range k.items {
 		if !it.IsSampleInfoHashesCandidate() {
 			continue
 		}
+
 		candidates = append(candidates, it)
 		if len(candidates) == n {
 			break
 		}
 	}
+
 	return candidates
 }
 
@@ -116,6 +121,7 @@ func (n *node) update(addr netip.AddrPort) {
 	if n.addr != addr {
 		n.reverseMap.dropAddr(n.addr.Addr())
 	}
+
 	n.addr = addr
 	n.reverseMap.putAddrPeerID(addr.Addr(), n.id)
 }
@@ -144,6 +150,7 @@ func (n *node) Dropped() bool {
 func (n *node) IsSampleInfoHashesCandidate() bool {
 	now := time.Now()
 	threshold := now.Add(-(5 * time.Second))
+
 	return n.bep51Support != protocolSupportNo &&
 		n.nextSampleInfoHashesTime.Before(now) &&
 		n.lastRespondedAt.Before(threshold)

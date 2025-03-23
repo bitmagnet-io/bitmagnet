@@ -33,9 +33,11 @@ func (r *requesterLazy) Request(
 	r.once.Do(func() {
 		r.requester, r.err = newRequester(ctx, r.config, r.logger)
 	})
+
 	if r.err != nil {
 		return nil, r.err
 	}
+
 	return r.requester.Request(ctx, path, queryParams, result)
 }
 
@@ -43,12 +45,15 @@ func newRequester(ctx context.Context, config Config, logger *zap.SugaredLogger)
 	if !config.Enabled {
 		return nil, errors.New("TMDB is disabled")
 	}
+
 	if config.APIKey == defaultTmdbAPIKey {
 		logger.Warnln("you are using the default TMDB api key; TMDB requests will be limited to 1 per second; " +
 			"to remove this warning please configure a personal TMDB api key")
+
 		config.RateLimit = time.Second
 		config.RateLimitBurst = 8
 	}
+
 	r := requesterLogger{
 		requester: requesterFailFast{
 			requester: requesterSemaphore{
@@ -72,14 +77,19 @@ func newRequester(ctx context.Context, config Config, logger *zap.SugaredLogger)
 		},
 		logger: logger,
 	}
+
 	err := client{r}.ValidateAPIKey(ctx)
 	if errors.Is(err, ErrUnauthorized) {
 		if config.APIKey == defaultTmdbAPIKey {
 			return r, fmt.Errorf("default api key is invalid: %w", err)
 		}
+
 		logger.Errorw("invalid api key, falling back to default", "error", err)
+
 		config.APIKey = defaultTmdbAPIKey
+
 		return newRequester(ctx, config, logger)
 	}
+
 	return r, err
 }

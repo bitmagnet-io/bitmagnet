@@ -13,21 +13,26 @@ func Where(conditions ...Criteria) Option {
 	return func(b OptionBuilder) (OptionBuilder, error) {
 		rawCriteria := make([]RawCriteria, 0, len(conditions))
 		joins := maps.NewInsertMap[string, struct{}]()
+
 		for _, c := range conditions {
 			rc, rawCriteriaErr := c.Raw(b)
 			if rawCriteriaErr != nil {
 				return b, rawCriteriaErr
 			}
+
 			rawCriteria = append(rawCriteria, rc)
 			joins.SetEntries(rc.Joins.Entries()...)
 		}
+
 		b = b.Scope(func(db *gorm.DB) error {
 			for _, raw := range rawCriteria {
 				db.Where(raw.Query, raw.Args...)
 			}
+
 			return nil
 		})
 		b = b.RequireJoin(joins.Keys()...)
+
 		return b, nil
 	}
 }
@@ -70,13 +75,16 @@ type DaoCriteria struct {
 func (c DaoCriteria) Raw(ctx DBContext) (RawCriteria, error) {
 	// todo Don't reference model
 	sq := ctx.Query().Torrent.UnderlyingDB()
+
 	conditions, conditionsErr := c.Conditions(ctx)
 	if conditionsErr != nil {
 		return RawCriteria{}, conditionsErr
 	}
+
 	for _, condition := range conditions {
 		sq = sq.Where(condition.RawExpr())
 	}
+
 	return RawCriteria{
 		Query: sq,
 		Joins: c.Joins,
@@ -90,14 +98,17 @@ type OrCriteria struct {
 func (c OrCriteria) Raw(ctx DBContext) (RawCriteria, error) {
 	joins := maps.NewInsertMap[string, struct{}]()
 	sq := ctx.Query().Torrent.UnderlyingDB()
+
 	for _, c := range c.Criteria {
 		rc, rawCriteriaErr := c.Raw(ctx)
 		if rawCriteriaErr != nil {
 			return RawCriteria{}, rawCriteriaErr
 		}
+
 		joins.SetEntries(rc.Joins.Entries()...)
 		sq = sq.Or(rc.Query, rc.Args...)
 	}
+
 	return RawCriteria{
 		Joins: joins,
 		Query: sq,
@@ -111,14 +122,17 @@ type AndCriteria struct {
 func (c AndCriteria) Raw(ctx DBContext) (RawCriteria, error) {
 	joins := maps.NewInsertMap[string, struct{}]()
 	sq := ctx.Query().Torrent.UnderlyingDB()
+
 	for _, c := range c.Criteria {
 		rc, rawCriteriaErr := c.Raw(ctx)
 		if rawCriteriaErr != nil {
 			return RawCriteria{}, rawCriteriaErr
 		}
+
 		joins.SetEntries(rc.Joins.Entries()...)
 		sq = sq.Where(rc.Query, rc.Args...)
 	}
+
 	return RawCriteria{
 		Joins: joins,
 		Query: sq,
@@ -132,14 +146,17 @@ type NotCriteria struct {
 func (c NotCriteria) Raw(ctx DBContext) (RawCriteria, error) {
 	joins := maps.NewInsertMap[string, struct{}]()
 	sq := ctx.Query().Torrent.UnderlyingDB()
+
 	for _, cr := range c.Criteria {
 		rc, rawCriteriaErr := cr.Raw(ctx)
 		if rawCriteriaErr != nil {
 			return RawCriteria{}, rawCriteriaErr
 		}
+
 		joins.SetEntries(rc.Joins.Entries()...)
 		sq = sq.Not(rc.Query, rc.Args...)
 	}
+
 	return RawCriteria{
 		Joins: joins,
 		Query: sq,
@@ -165,6 +182,7 @@ func (c GenCriteria) Raw(ctx DBContext) (RawCriteria, error) {
 	if err != nil {
 		return RawCriteria{}, err
 	}
+
 	return cc.Raw(ctx)
 }
 
@@ -172,6 +190,7 @@ func queryStringCriteriaFromTokens(str string, tokens []string) Criteria {
 	if len(tokens) == 0 {
 		return OrCriteria{}
 	}
+
 	return GenCriteria(func(ctx DBContext) (Criteria, error) {
 		return DBCriteria{
 			SQL: strings.Join([]string{

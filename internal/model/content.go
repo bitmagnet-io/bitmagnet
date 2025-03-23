@@ -22,11 +22,13 @@ func (c Content) Identifier(source string) (string, bool) {
 	if c.Source == source {
 		return c.ID, true
 	}
+
 	for _, attr := range c.Attributes {
 		if attr.Key == "id" && attr.Source == source {
 			return attr.Value, true
 		}
 	}
+
 	return "", false
 }
 
@@ -44,6 +46,7 @@ func (c Content) ExternalLinks() []ExternalLink {
 			URL:            link.String,
 		})
 	}
+
 	for _, attr := range c.Attributes {
 		if attr.Key == "id" {
 			if link := getExternalLinkURL(c.Type, attr.Source, attr.Value); link.Valid {
@@ -55,6 +58,7 @@ func (c Content) ExternalLinks() []ExternalLink {
 			}
 		}
 	}
+
 	return links
 }
 
@@ -72,27 +76,33 @@ func getExternalLinkURL(contentType ContentType, source, id string) NullString {
 	case "tvdb":
 		return NewNullString("https://www.thetvdb.com/dereferrer/series/" + id)
 	}
+
 	return NullString{}
 }
 
 func (c *Content) UpdateTsv() {
 	tsv := fts.Tsvector{}
 	tsv.AddText(c.Title, fts.TsvectorWeightA)
+
 	if c.OriginalTitle.Valid && c.Title != c.OriginalTitle.String {
 		tsv.AddText(c.OriginalTitle.String, fts.TsvectorWeightA)
 	}
+
 	if !c.ReleaseYear.IsNil() {
 		tsv.AddText(c.ReleaseYear.String(), fts.TsvectorWeightB)
 	}
+
 	for _, c := range c.Collections {
 		if c.Type == "genre" {
 			tsv.AddText(c.Name, fts.TsvectorWeightD)
 		}
 	}
+
 	for _, a := range c.Attributes {
 		if a.Key == "id" {
 			tsv.AddText(a.Value, fts.TsvectorWeightD)
 		}
 	}
+
 	c.Tsv = tsv
 }

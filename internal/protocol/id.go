@@ -41,9 +41,11 @@ func RandomNodeID() (id ID) {
 // where ID prefixes are used for computing the distance metric).
 func RandomNodeIDWithClientSuffix() (id ID) {
 	_, _ = crand.Read(id[:])
+
 	for i := range len(idClientPart) {
 		id[20-len(idClientPart)+i] = idClientPart[i]
 	}
+
 	return
 }
 
@@ -54,11 +56,15 @@ func ParseID(str string) (ID, error) {
 	if err != nil {
 		return ID{}, err
 	}
+
 	if len(b) != 20 {
 		return ID{}, errors.New("hash string must be 20 bytes")
 	}
+
 	var id ID
+
 	copy(id[:], b)
+
 	return id, nil
 }
 
@@ -67,6 +73,7 @@ func MustParseID(str string) ID {
 	if err != nil {
 		panic(err)
 	}
+
 	return id
 }
 
@@ -74,6 +81,7 @@ func NewIDFromRawString(s string) (id ID) {
 	if n := copy(id[:], s); n != 20 {
 		panic(n)
 	}
+
 	return
 }
 
@@ -81,6 +89,7 @@ func NewIDFromByteSlice(b []byte) (id ID, _ error) {
 	if n := copy(id[:], b); n != 20 {
 		return id, errors.New("must be 20 bytes")
 	}
+
 	return
 }
 
@@ -89,6 +98,7 @@ func MustNewIDFromByteSlice(b []byte) ID {
 	if err != nil {
 		panic(err)
 	}
+
 	return id
 }
 
@@ -117,7 +127,9 @@ func (id *ID) Scan(value interface{}) error {
 	if !ok {
 		return errors.New("invalid bytes type")
 	}
+
 	copy(id[:], v)
+
 	return nil
 }
 
@@ -133,7 +145,9 @@ func (id *ID) UnmarshalBinary(data []byte) error {
 	if len(data) != 20 {
 		return errors.New("invalid ID length")
 	}
+
 	copy(id[:], data)
+
 	return nil
 }
 
@@ -146,9 +160,11 @@ func (id *ID) UnmarshalBencode(b []byte) error {
 	if err := bencode.Unmarshal(b, &s); err != nil {
 		return err
 	}
+
 	if n := copy(id[:], s); n != 20 {
 		return fmt.Errorf("string has wrong length: %d", n)
 	}
+
 	return nil
 }
 
@@ -161,11 +177,14 @@ func (id *ID) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &s); err != nil {
 		return err
 	}
+
 	tb, err := ParseID(s)
 	if err != nil {
 		return err
 	}
+
 	*id = tb
+
 	return nil
 }
 
@@ -176,7 +195,9 @@ func (id *ID) UnmarshalGQL(input interface{}) error {
 		if err != nil {
 			return err
 		}
+
 		*id = tb
+
 		return nil
 	default:
 		return errors.New("invalid hash type")
@@ -200,9 +221,11 @@ func (id *MutableID) SetBit(i int, v bool) {
 func RandomPeerID() ID {
 	clientID := RandomNodeID()
 	i := 0
+
 	for _, c := range idClientPart {
 		clientID[i] = byte(c)
 		i++
 	}
+
 	return clientID
 }

@@ -109,7 +109,9 @@ func TestWith_Query(t *testing.T) {
 			if err != nil {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
+
 			defer mockDB.Close()
+
 			db, _ := gorm.Open(mysql.New(mysql.Config{
 				Conn:                      mockDB,
 				SkipInitializeWithVersion: true,
@@ -117,12 +119,15 @@ func TestWith_Query(t *testing.T) {
 			if err := db.Use(New()); err != nil {
 				t.Fatalf("an error '%s' was not expected when using the database plugin", err)
 			}
+
 			mock.ExpectQuery(regexp.QuoteMeta(tt.want)).
 				WithArgs(tt.wantArgs...).
 				WillReturnRows(sqlmock.NewRows([]string{}))
+
 			if tt.operation != nil {
 				db = tt.operation(db)
 			}
+
 			if db.Error != nil {
 				t.Error(db.Error.Error())
 			}
@@ -135,18 +140,21 @@ func TestNewWith(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
+
 	defer mockDB.Close()
 	db, _ := gorm.Open(mysql.New(mysql.Config{
 		Conn:                      mockDB,
 		SkipInitializeWithVersion: true,
 	}))
 	db = db.Table("users")
+
 	type args struct {
 		name         string
 		subquery     interface{}
 		materialized bool
 		args         []interface{}
 	}
+
 	tests := []struct {
 		name string
 		args args

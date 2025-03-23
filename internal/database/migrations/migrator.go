@@ -47,6 +47,7 @@ func New(p Params) Result {
 func initGoose(logger *zap.SugaredLogger) {
 	goose.SetLogger(gooseLogger{logger})
 	goose.SetBaseFS(migrationssql.FS)
+
 	err := goose.SetDialect("postgres")
 	if err != nil {
 		panic(err)

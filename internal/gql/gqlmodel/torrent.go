@@ -21,14 +21,17 @@ func (t TorrentQuery) SuggestTags(
 	input *gen.SuggestTagsQueryInput,
 ) (search.TorrentSuggestTagsResult, error) {
 	suggestTagsQuery := search.SuggestTagsQuery{}
+
 	if input != nil {
 		if prefix, ok := input.Prefix.ValueOK(); ok && prefix != nil {
 			suggestTagsQuery.Prefix = *prefix
 		}
+
 		if exclusions, ok := input.Exclusions.ValueOK(); ok {
 			suggestTagsQuery.Exclusions = exclusions
 		}
 	}
+
 	return t.Search.TorrentSuggestTags(ctx, suggestTagsQuery)
 }
 
@@ -37,10 +40,12 @@ func (t TorrentQuery) ListSources(ctx context.Context) (gen.TorrentListSourcesRe
 	if err != nil {
 		return gen.TorrentListSourcesResult{}, err
 	}
+
 	sources := make([]model.TorrentSource, len(result))
 	for i := range result {
 		sources[i] = *result[i]
 	}
+
 	return gen.TorrentListSourcesResult{
 		Sources: sources,
 	}, nil

@@ -13,10 +13,12 @@ type Year uint16
 
 func ParseYear(s string) (Year, error) {
 	var y Year
+
 	_, err := fmt.Sscanf(s, "%d", &y)
 	if err != nil {
 		return 0, err
 	}
+
 	return y, nil
 }
 
@@ -56,6 +58,7 @@ func (y *Year) Scan(src interface{}) error {
 	default:
 		return fmt.Errorf("wrong type")
 	}
+
 	return nil
 }
 
@@ -63,6 +66,7 @@ func (y Year) Value() (interface{}, error) {
 	if y.IsNil() {
 		return nil, nil
 	}
+
 	return int(y), nil
 }
 
@@ -76,6 +80,7 @@ func (y Year) GormValue(context.Context, *gorm.DB) clause.Expr {
 			SQL: "NULL",
 		}
 	}
+
 	return clause.Expr{
 		SQL: y.String(),
 	}
@@ -86,6 +91,7 @@ func (y Year) MarshalGQL(w io.Writer) {
 		_, _ = fmt.Fprintf(w, "null")
 		return
 	}
+
 	_, _ = fmt.Fprintf(w, "%d", y)
 }
 
@@ -115,5 +121,6 @@ func (y *Year) UnmarshalGQL(v interface{}) error {
 	default:
 		return fmt.Errorf("wrong type")
 	}
+
 	return nil
 }

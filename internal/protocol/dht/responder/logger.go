@@ -16,13 +16,16 @@ type responderLogger struct {
 func (r responderLogger) Respond(ctx context.Context, msg dht.RecvMsg) (dht.Return, error) {
 	start := time.Now()
 	ret, err := r.responder.Respond(ctx, msg)
+
 	var logData []interface{}
+
 	log := func(k string, v interface{}) {
 		logData = append(logData, k, v)
 	}
 	message := msg.Msg.Q
 	log("from", msg.From)
 	log("duration", time.Since(start))
+
 	if err == nil {
 		switch msg.Msg.Q {
 		case dht.QFindNode:
@@ -44,8 +47,11 @@ func (r responderLogger) Respond(ctx context.Context, msg dht.RecvMsg) (dht.Retu
 		}
 	} else {
 		message += " error"
+
 		log("error", err)
 	}
+
 	r.logger.Debugw(message, logData...)
+
 	return ret, err
 }

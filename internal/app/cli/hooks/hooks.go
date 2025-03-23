@@ -21,5 +21,6 @@ func New(p Params) (Result, error) {
 	for _, hook := range p.Hooks {
 		p.Lifecycle.Append(hook)
 	}
+
 	return Result{}, nil
 }

@@ -33,8 +33,10 @@ type videoSourceFacet struct {
 func (videoSourceFacet) Values(query.FacetContext) (map[string]string, error) {
 	vsrcs := model.VideoSourceValues()
 	values := make(map[string]string, len(vsrcs))
+
 	for _, vr := range vsrcs {
 		values[vr.String()] = vr.Label()
 	}
+
 	return values, nil
 }

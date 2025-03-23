@@ -18,6 +18,7 @@ func New(p Params) lazy.Lazy[gql.Config] {
 		if err != nil {
 			return gql.Config{}, err
 		}
+
 		return gql.Config{Resolvers: root}, nil
 	})
 }
