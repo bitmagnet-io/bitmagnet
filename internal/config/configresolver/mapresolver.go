@@ -32,13 +32,7 @@ func (r mapResolver) Resolve(path []string, valueType reflect.Type) (any, bool, 
 		if !rawOk {
 			break
 		}
-		if i < len(path)-1 {
-			mapV, mapOk := rawV.(map[string]interface{})
-			if !mapOk {
-				return nil, true, fmt.Errorf("expected map[string]interface{} at path %v, got %T", currentPath, rawV)
-			}
-			v = mapV
-		} else {
+		if i >= len(path)-1 {
 			if strV, strOk := rawV.(string); strOk {
 				coerced, coerceErr := coerceStringValue(strV, valueType)
 				if coerceErr != nil {
@@ -53,6 +47,11 @@ func (r mapResolver) Resolve(path []string, valueType reflect.Type) (any, bool, 
 			}
 			return rawV, true, nil
 		}
+		mapV, mapOk := rawV.(map[string]interface{})
+		if !mapOk {
+			return nil, true, fmt.Errorf("expected map[string]interface{} at path %v, got %T", currentPath, rawV)
+		}
+		v = mapV
 	}
 	return nil, false, nil
 }

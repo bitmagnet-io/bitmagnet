@@ -20,7 +20,7 @@ type ScrapeBloomFilter [256]byte
 // with IP.To4.
 func (me *ScrapeBloomFilter) AddIP(ip net.IP) {
 	h := sha1.New()
-	h.Write(ip)
+	_, _ = h.Write(ip)
 	var sum [20]byte
 	h.Sum(sum[:0])
 	me.addK(int(sum[0]) | int(sum[1])<<8)

@@ -40,8 +40,8 @@ var _ interface {
 
 func (ni NodeInfo) MarshalBinary() ([]byte, error) {
 	var w bytes.Buffer
-	w.Write(ni.ID[:])
-	w.Write(ni.Addr.IP)
+	_, _ = w.Write(ni.ID[:])
+	_, _ = w.Write(ni.Addr.IP)
 	if err := binary.Write(&w, binary.BigEndian, uint16(ni.Addr.Port)); err != nil {
 		return nil, err
 	}

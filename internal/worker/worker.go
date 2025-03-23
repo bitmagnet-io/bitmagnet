@@ -141,11 +141,11 @@ func (r *registry) Enable(names ...string) error {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 	for _, name := range names {
-		if w, ok := r.workers[name]; ok {
-			w.setEnabled(true)
-		} else {
+		w, ok := r.workers[name]
+		if !ok {
 			return fmt.Errorf("worker %s not found", name)
 		}
+		w.setEnabled(true)
 	}
 	return nil
 }
@@ -154,11 +154,11 @@ func (r *registry) Disable(names ...string) error {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 	for _, name := range names {
-		if w, ok := r.workers[name]; ok {
-			w.setEnabled(false)
-		} else {
+		w, ok := r.workers[name]
+		if !ok {
 			return fmt.Errorf("worker %s not found", name)
 		}
+		w.setEnabled(false)
 	}
 	return nil
 }

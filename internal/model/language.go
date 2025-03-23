@@ -101,11 +101,11 @@ func (l *Languages) Scan(value interface{}) error {
 	if strSlice, ok := value.([]string); ok {
 		languages := make(Languages, len(strSlice))
 		for _, lang := range strSlice {
-			if lang := ParseLanguage(lang); lang.Valid {
-				languages[lang.Language] = struct{}{}
-			} else {
+			lang := ParseLanguage(lang)
+			if !lang.Valid {
 				return errors.New("invalid language")
 			}
+			languages[lang.Language] = struct{}{}
 		}
 		if len(languages) == 0 {
 			*l = nil
@@ -135,11 +135,11 @@ func (l *Languages) UnmarshalJSON(data []byte) error {
 	}
 	languages := make(Languages, len(values))
 	for _, lang := range values {
-		if lang := ParseLanguage(lang); lang.Valid {
-			languages[lang.Language] = struct{}{}
-		} else {
+		lang := ParseLanguage(lang)
+		if !lang.Valid {
 			return errors.New("invalid language")
 		}
+		languages[lang.Language] = struct{}{}
 	}
 	if len(languages) == 0 {
 		*l = nil
