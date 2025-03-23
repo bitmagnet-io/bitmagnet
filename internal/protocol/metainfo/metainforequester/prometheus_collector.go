@@ -2,10 +2,11 @@ package metainforequester
 
 import (
 	"context"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"github.com/prometheus/client_golang/prometheus"
 	"net/netip"
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type prometheusCollector struct {
@@ -52,14 +53,17 @@ func newPrometheusCollector(requester Requester) *prometheusCollector {
 
 func (l prometheusCollector) Request(ctx context.Context, infoHash protocol.ID, addr netip.AddrPort) (Response, error) {
 	l.requestConcurrency.Inc()
+
 	start := time.Now()
 	resp, err := l.requester.Request(ctx, infoHash, addr)
 	l.requestConcurrency.Dec()
+
 	if err == nil {
 		l.requestDuration.Observe(time.Since(start).Seconds())
 		l.requestSuccessTotal.Inc()
 	} else {
 		l.requestErrorTotal.Inc()
 	}
+
 	return resp, err
 }

@@ -2,7 +2,6 @@ package resolvers
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/worker"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
@@ -10,6 +9,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/manager"
+	"github.com/bitmagnet-io/bitmagnet/internal/worker"
 )
 
 // This file will not be regenerated automatically.

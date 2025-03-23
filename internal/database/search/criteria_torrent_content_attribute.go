@@ -2,6 +2,7 @@ package search
 
 import (
 	"database/sql/driver"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
@@ -16,7 +17,7 @@ var Video3DCriteria = torrentContentAttributeCriteria[model.Video3D](video3dFiel
 func torrentContentAttributeCriteria[T attribute](getFld func(*dao.Query) field.Field) func(...T) query.Criteria {
 	return func(values ...T) query.Criteria {
 		return query.DaoCriteria{
-			Conditions: func(ctx query.DbContext) ([]field.Expr, error) {
+			Conditions: func(ctx query.DBContext) ([]field.Expr, error) {
 				q := ctx.Query()
 				fld := getFld(q)
 				valuers := make([]driver.Valuer, 0, len(values))

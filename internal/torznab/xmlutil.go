@@ -13,5 +13,6 @@ func objToXML(obj any) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return []byte(xml.Header + string(body)), nil
 }

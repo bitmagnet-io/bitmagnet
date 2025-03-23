@@ -16,6 +16,7 @@ func torrentContentResultToTorznabResult(
 	for _, item := range res.Items {
 		entries = append(entries, torrentContentResultItemToTorznabResultItem(item))
 	}
+
 	return torznab.SearchResult{
 		Channel: torznab.SearchResultChannel{
 			Title: req.Profile.Title,
@@ -33,27 +34,30 @@ func torrentContentResultItemToTorznabResultItem(item search.TorrentContentResul
 	if item.ContentType.Valid {
 		category = item.ContentType.ContentType.Label()
 	}
-	categoryId := torznab.CategoryOther.ID
+
+	categoryID := torznab.CategoryOther.ID
+
 	if item.ContentType.Valid {
 		switch item.ContentType.ContentType {
 		case model.ContentTypeMovie:
-			categoryId = torznab.CategoryMovies.ID
+			categoryID = torznab.CategoryMovies.ID
 		case model.ContentTypeTvShow:
-			categoryId = torznab.CategoryTV.ID
+			categoryID = torznab.CategoryTV.ID
 		case model.ContentTypeMusic:
-			categoryId = torznab.CategoryAudio.ID
+			categoryID = torznab.CategoryAudio.ID
 		case model.ContentTypeEbook:
-			categoryId = torznab.CategoryBooks.ID
+			categoryID = torznab.CategoryBooks.ID
 		case model.ContentTypeComic:
-			categoryId = torznab.CategoryBooksComics.ID
+			categoryID = torznab.CategoryBooksComics.ID
 		case model.ContentTypeAudiobook:
-			categoryId = torznab.CategoryAudioAudiobook.ID
+			categoryID = torznab.CategoryAudioAudiobook.ID
 		case model.ContentTypeSoftware:
-			categoryId = torznab.CategoryPC.ID
+			categoryID = torznab.CategoryPC.ID
 		case model.ContentTypeGame:
-			categoryId = torznab.CategoryPCGames.ID
+			categoryID = torznab.CategoryPCGames.ID
 		}
 	}
+
 	attrs := []torznab.SearchResultItemTorznabAttr{
 		{
 			AttrName:  torznab.AttrInfoHash,
@@ -61,11 +65,11 @@ func torrentContentResultItemToTorznabResultItem(item search.TorrentContentResul
 		},
 		{
 			AttrName:  torznab.AttrMagnetURL,
-			AttrValue: item.Torrent.MagnetUri(),
+			AttrValue: item.Torrent.MagnetURI(),
 		},
 		{
 			AttrName:  torznab.AttrCategory,
-			AttrValue: strconv.Itoa(categoryId),
+			AttrValue: strconv.Itoa(categoryID),
 		},
 		{
 			AttrName:  torznab.AttrSize,
@@ -78,36 +82,42 @@ func torrentContentResultItemToTorznabResultItem(item search.TorrentContentResul
 	}
 	seeders := item.Torrent.Seeders()
 	leechers := item.Torrent.Leechers()
+
 	if seeders.Valid {
 		attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 			AttrName:  torznab.AttrSeeders,
 			AttrValue: strconv.Itoa(int(seeders.Uint)),
 		})
 	}
+
 	if leechers.Valid {
 		attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 			AttrName:  torznab.AttrLeechers,
 			AttrValue: strconv.Itoa(int(leechers.Uint)),
 		})
 	}
+
 	if leechers.Valid && seeders.Valid {
 		attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 			AttrName:  torznab.AttrPeers,
 			AttrValue: strconv.Itoa(int(leechers.Uint) + int(seeders.Uint)),
 		})
 	}
+
 	if len(item.Torrent.Files) > 0 {
 		attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 			AttrName:  torznab.AttrFiles,
 			AttrValue: strconv.Itoa(len(item.Torrent.Files)),
 		})
 	}
+
 	if !item.Content.ReleaseYear.IsNil() {
 		attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 			AttrName:  torznab.AttrYear,
 			AttrValue: strconv.Itoa(int(item.Content.ReleaseYear)),
 		})
 	}
+
 	if len(item.Episodes) > 0 {
 		// should we be adding all seasons and episodes here?
 		seasons := item.Episodes.SeasonEntries()
@@ -115,6 +125,7 @@ func torrentContentResultItemToTorznabResultItem(item search.TorrentContentResul
 			AttrName:  torznab.AttrSeason,
 			AttrValue: strconv.Itoa(seasons[0].Season),
 		})
+
 		if len(seasons[0].Episodes) > 0 {
 			attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 				AttrName:  torznab.AttrEpisode,
@@ -122,36 +133,42 @@ func torrentContentResultItemToTorznabResultItem(item search.TorrentContentResul
 			})
 		}
 	}
+
 	if item.VideoCodec.Valid {
 		attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 			AttrName:  torznab.AttrVideo,
 			AttrValue: item.VideoCodec.VideoCodec.Label(),
 		})
 	}
+
 	if item.VideoResolution.Valid {
 		attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 			AttrName:  torznab.AttrResolution,
 			AttrValue: item.VideoResolution.VideoResolution.Label(),
 		})
 	}
+
 	if item.ReleaseGroup.Valid {
 		attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 			AttrName:  torznab.AttrTeam,
 			AttrValue: item.ReleaseGroup.String,
 		})
 	}
-	if tmdbid, ok := item.Content.Identifier("tmdb"); ok {
+
+	if tmdbID, ok := item.Content.Identifier("tmdb"); ok {
 		attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 			AttrName:  torznab.AttrTmdb,
-			AttrValue: tmdbid,
+			AttrValue: tmdbID,
 		})
 	}
-	if imdbId, ok := item.Content.Identifier("imdb"); ok {
+
+	if imdbID, ok := item.Content.Identifier("imdb"); ok {
 		attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 			AttrName:  torznab.AttrImdb,
-			AttrValue: imdbId[2:],
+			AttrValue: imdbID[2:],
 		})
 	}
+
 	return torznab.SearchResultItem{
 		Title:    item.Torrent.Name,
 		Size:     item.Torrent.Size,
@@ -159,7 +176,7 @@ func torrentContentResultItemToTorznabResultItem(item search.TorrentContentResul
 		GUID:     item.InfoHash.String(),
 		PubDate:  torznab.RSSDate(item.PublishedAt),
 		Enclosure: torznab.SearchResultItemEnclosure{
-			URL:    item.Torrent.MagnetUri(),
+			URL:    item.Torrent.MagnetURI(),
 			Type:   "application/x-bittorrent;x-scheme-handler/magnet",
 			Length: strconv.FormatUint(uint64(item.Torrent.Size), 10),
 		},

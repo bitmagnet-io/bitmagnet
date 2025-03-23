@@ -1,7 +1,7 @@
 package databasefx
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/config/configfx"
+	"github.com/bitmagnet-io/bitmagnet/internal/config/configfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/cache"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"

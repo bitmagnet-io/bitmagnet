@@ -19,7 +19,9 @@ func (unmatchedAction) compileAction(ctx compilerContext) (action, error) {
 	if _, err := unmatchedPayloadSpec.Unmarshal(ctx); err != nil {
 		return action{}, ctx.error(err)
 	}
+
 	path := ctx.path
+
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
 			return ctx.result, classification.RuntimeError{Cause: classification.ErrUnmatched, Path: path}
@@ -27,6 +29,6 @@ func (unmatchedAction) compileAction(ctx compilerContext) (action, error) {
 	}, nil
 }
 
-func (unmatchedAction) JsonSchema() JsonSchema {
-	return unmatchedPayloadSpec.JsonSchema()
+func (unmatchedAction) JSONSchema() JSONSchema {
+	return unmatchedPayloadSpec.JSONSchema()
 }

@@ -30,11 +30,13 @@ type videoModifierFacet struct {
 	torrentContentAttributeFacet[model.VideoModifier]
 }
 
-func (f videoModifierFacet) Values(query.FacetContext) (map[string]string, error) {
+func (videoModifierFacet) Values(query.FacetContext) (map[string]string, error) {
 	vms := model.VideoModifierValues()
 	values := make(map[string]string, len(vms))
+
 	for _, vr := range vms {
 		values[vr.String()] = vr.Label()
 	}
+
 	return values, nil
 }

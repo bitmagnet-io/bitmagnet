@@ -1,11 +1,12 @@
 package ktable
 
 import (
+	"net/netip"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable/btree"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
-	"net/netip"
-	"time"
 )
 
 type Params struct {
@@ -66,6 +67,7 @@ func New(p Params) Result {
 		),
 	}
 	hashesCollector := patchPrometheusCollector("hashes", &hashes.keyspace)
+
 	return Result{
 		Table: &table{
 			origin:  p.NodeID,
@@ -115,5 +117,6 @@ func patchPrometheusCollector[
 		}),
 	}
 	ks.btree = collector
+
 	return collector
 }

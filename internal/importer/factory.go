@@ -1,10 +1,11 @@
 package importer
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
-	"go.uber.org/fx"
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
+	"go.uber.org/fx"
 )
 
 type Params struct {

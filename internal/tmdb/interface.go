@@ -1,12 +1,15 @@
 package tmdb
 
+//revive:disable:nested-structs
+
 import (
 	"context"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
 
 type Client interface {
-	ValidateApiKey(context.Context) error
+	ValidateAPIKey(context.Context) error
 	SearchMovie(context.Context, SearchMovieRequest) (SearchMovieResponse, error)
 	MovieDetails(context.Context, MovieDetailsRequest) (MovieDetailsResponse, error)
 	SearchTv(context.Context, SearchTvRequest) (SearchTvResponse, error)

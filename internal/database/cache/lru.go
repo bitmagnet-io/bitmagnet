@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+
 	"github.com/hashicorp/golang-lru/v2/expirable"
 	caches "github.com/mgdigital/gorm-cache/v2"
 	"go.uber.org/fx"
@@ -22,7 +23,7 @@ type Result struct {
 func NewInMemoryCacher(p Params) Result {
 	return Result{
 		Cacher: &inMemoryCacher{
-			lru:    expirable.NewLRU[string, *caches.Query](int(p.Config.MaxKeys), nil, p.Config.Ttl),
+			lru:    expirable.NewLRU[string, *caches.Query](int(p.Config.MaxKeys), nil, p.Config.TTL),
 			logger: p.Logger.Named("gorm_cache"),
 		},
 	}
@@ -31,11 +32,14 @@ func NewInMemoryCacher(p Params) Result {
 type Mode int
 
 const (
-	// ModeNoCache the query will not be satisfied from the cache, and any existing cache entry will be removed to avoid stale results in future (default)
+	// ModeNoCache the query will not be satisfied from the cache,
+	// and any existing cache entry will be removed to avoid stale results in future (default)
 	ModeNoCache Mode = iota
-	// ModeCached the query will be satisfied from the cache if possible, otherwise the result will be stored in the cache
+	// ModeCached the query will be satisfied from the cache if possible,
+	// otherwise the result will be stored in the cache
 	ModeCached
-	// ModeWarm the query will not be satisfied from the cache, but the result will be stored in the cache for future queries using ModeCached
+	// ModeWarm the query will not be satisfied from the cache,
+	// but the result will be stored in the cache for future queries using ModeCached
 	ModeWarm
 )
 
@@ -55,10 +59,12 @@ func (c *inMemoryCacher) Get(ctx context.Context, key string) *caches.Query {
 	if m == ModeNoCache || m == ModeWarm {
 		return nil
 	}
+
 	val, ok := c.lru.Get(key)
 	if !ok {
 		return nil
 	}
+
 	c.logger.Debugw("cache hit", "key", key)
 
 	return val
@@ -69,14 +75,17 @@ func (c *inMemoryCacher) Store(ctx context.Context, key string, val *caches.Quer
 	if m == ModeCached || m == ModeWarm {
 		c.lru.Add(key, val)
 	}
+
 	return nil
 }
 
 func cacheModeFromContext(ctx context.Context) Mode {
 	ctxValue := ctx.Value(ModeKey)
+
 	m, isOk := ctxValue.(Mode)
 	if !isOk {
 		return ModeNoCache
 	}
+
 	return m
 }

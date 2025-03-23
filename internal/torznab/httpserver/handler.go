@@ -43,6 +43,7 @@ func (h handler) handleRequest(ctx *gin.Context) {
 
 func (h handler) handleSearch(ctx *gin.Context, profile torznab.Profile, tp string) {
 	var cats []int
+
 	for _, csvCat := range ctx.QueryArray(torznab.ParamCat) {
 		for _, cat := range strings.Split(csvCat, ",") {
 			if intCat, err := strconv.Atoi(cat); err == nil {
@@ -50,22 +51,27 @@ func (h handler) handleSearch(ctx *gin.Context, profile torznab.Profile, tp stri
 			}
 		}
 	}
+
 	imdbID := model.NullString{}
-	if qImdbId := ctx.Query(torznab.ParamIMDBID); qImdbId != "" {
+	if qIMDBID := ctx.Query(torznab.ParamIMDBID); qIMDBID != "" {
 		imdbID.Valid = true
-		imdbID.String = qImdbId
+		imdbID.String = qIMDBID
 	}
+
 	tmdbID := model.NullString{}
-	if qTmdbId := ctx.Query(torznab.ParamTMDBID); qTmdbId != "" {
+	if qTMDBID := ctx.Query(torznab.ParamTMDBID); qTMDBID != "" {
 		tmdbID.Valid = true
-		tmdbID.String = qTmdbId
+		tmdbID.String = qTMDBID
 	}
+
 	season := model.NullInt{}
 	episode := model.NullInt{}
+
 	if qSeason := ctx.Query(torznab.ParamSeason); qSeason != "" {
 		if intSeason, err := strconv.Atoi(qSeason); err == nil {
 			season.Valid = true
 			season.Int = intSeason
+
 			if qEpisode := ctx.Query(torznab.ParamEpisode); qEpisode != "" {
 				if intEpisode, err := strconv.Atoi(qEpisode); err == nil {
 					episode.Valid = true
@@ -74,16 +80,19 @@ func (h handler) handleSearch(ctx *gin.Context, profile torznab.Profile, tp stri
 			}
 		}
 	}
+
 	limit := model.NullUint{}
 	if intLimit, limitErr := strconv.Atoi(ctx.Query(torznab.ParamLimit)); limitErr == nil && intLimit > 0 {
 		limit.Valid = true
 		limit.Uint = uint(intLimit)
 	}
+
 	offset := model.NullUint{}
 	if intOffset, offsetErr := strconv.Atoi(ctx.Query(torznab.ParamOffset)); offsetErr == nil {
 		offset.Valid = true
 		offset.Uint = uint(intOffset)
 	}
+
 	result, searchErr := h.client.Search(ctx, torznab.SearchRequest{
 		Profile: profile,
 		Query:   ctx.Query(torznab.ParamQuery),
@@ -100,6 +109,7 @@ func (h handler) handleSearch(ctx *gin.Context, profile torznab.Profile, tp stri
 		h.writeError(ctx, fmt.Errorf("failed to search: %w", searchErr))
 		return
 	}
+
 	h.writeXML(ctx, result)
 }
 
@@ -109,6 +119,7 @@ func (h handler) writeXML(ctx *gin.Context, obj torznab.XMLer) {
 		h.writeHTTPError(ctx, fmt.Errorf("failed to encode xml: %w", err))
 		return
 	}
+
 	ctx.Status(http.StatusOK)
 	ctx.Header("Content-Type", "application/xml; charset=utf-8")
 	_, _ = ctx.Writer.Write(body)
@@ -123,12 +134,15 @@ func (h handler) writeError(ctx *gin.Context, err error) {
 	}
 }
 
-func (h handler) writeHTTPError(ctx *gin.Context, err error) {
+func (handler) writeHTTPError(ctx *gin.Context, err error) {
 	code := http.StatusInternalServerError
+
 	var httpErr httpError
+
 	if ok := errors.As(err, &httpErr); ok {
 		code = httpErr.httpErrorCode()
 	}
+
 	_ = ctx.AbortWithError(code, err)
 	_, _ = ctx.Writer.WriteString(err.Error() + "\n")
 }
@@ -146,7 +160,7 @@ func (e errProfileNotFound) Error() string {
 	return fmt.Sprintf("profile not found: %s", e.name)
 }
 
-func (e errProfileNotFound) httpErrorCode() int {
+func (errProfileNotFound) httpErrorCode() int {
 	return http.StatusNotFound
 }
 
@@ -160,6 +174,7 @@ func (h handler) getProfile(c *gin.Context) (torznab.Profile, error) {
 		if !ok {
 			return profile, errProfileNotFound{name: profilePathPart}
 		}
+
 		return profile, nil
 	}
 }

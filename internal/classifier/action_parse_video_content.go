@@ -22,6 +22,7 @@ func (parseVideoContentAction) compileAction(ctx compilerContext) (action, error
 	if _, err := parseVideoContentPayloadSpec.Unmarshal(ctx); err != nil {
 		return action{}, ctx.error(err)
 	}
+
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
 			parsed, err := parsers.ParseVideoContent(ctx.torrent, ctx.result)
@@ -35,6 +36,6 @@ func (parseVideoContentAction) compileAction(ctx compilerContext) (action, error
 	}, nil
 }
 
-func (parseVideoContentAction) JsonSchema() JsonSchema {
-	return parseVideoContentPayloadSpec.JsonSchema()
+func (parseVideoContentAction) JSONSchema() JSONSchema {
+	return parseVideoContentPayloadSpec.JSONSchema()
 }

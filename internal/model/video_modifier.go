@@ -20,5 +20,6 @@ func InferVideoModifier(input string) NullVideoModifier {
 			return NewNullVideoModifier(parsed)
 		}
 	}
+
 	return NullVideoModifier{}
 }

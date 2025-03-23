@@ -1,9 +1,9 @@
 package torznabfx
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/config/configfx"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
+	"github.com/bitmagnet-io/bitmagnet/internal/config/configfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab/adapter"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab/httpserver"
@@ -21,6 +21,7 @@ func New() fx.Option {
 					if err != nil {
 						return nil, err
 					}
+
 					return adapter.New(s), nil
 				})
 			},

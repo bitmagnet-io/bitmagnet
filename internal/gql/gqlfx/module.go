@@ -3,8 +3,6 @@ package gqlfx
 import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/worker"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
@@ -12,10 +10,12 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/resolvers"
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/queuemetrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/manager"
+	"github.com/bitmagnet-io/bitmagnet/internal/worker"
 	"go.uber.org/fx"
 )
 
@@ -33,6 +33,7 @@ func New() fx.Option {
 					if err != nil {
 						return nil, err
 					}
+
 					return gql.NewExecutableSchema(cfg), nil
 				})
 			},

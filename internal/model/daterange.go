@@ -42,6 +42,7 @@ func NewDateRangeFromString(str string) (DateRange, error) {
 	if str == "" {
 		return NewNilDateRange(), nil
 	}
+
 	parts := strings.Split(str, " to ")
 	switch len(parts) {
 	case 1:
@@ -49,10 +50,12 @@ func NewDateRangeFromString(str string) (DateRange, error) {
 		if err == nil {
 			return date, nil
 		}
+
 		t, err := time.Parse("2006-01", str)
 		if err == nil {
 			return NewDateRangeFromMonthAndYear(t.Month(), Year(t.Year())), nil
 		}
+
 		t, err = time.Parse("2006", str)
 		if err == nil {
 			return NewDateRangeFromYear(Year(t.Year())), nil
@@ -66,6 +69,7 @@ func NewDateRangeFromString(str string) (DateRange, error) {
 			}
 		}
 	}
+
 	return nil, errors.New("invalid date range")
 }
 
@@ -77,6 +81,7 @@ func (d dateRange) Start() Date {
 	if d.start.IsNil() {
 		return NewDateFromParts(1, time.January, 1)
 	}
+
 	return d.start
 }
 
@@ -84,6 +89,7 @@ func (d dateRange) End() Date {
 	if d.end.IsNil() {
 		return NewDateFromParts(9999, time.December, 31)
 	}
+
 	return d.end
 }
 

@@ -4,13 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
+	"sync"
+	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"sync"
-	"time"
 )
 
 type Params struct {
@@ -22,7 +23,7 @@ type Params struct {
 type Result struct {
 	fx.Out
 	PgxPool     lazy.Lazy[*pgxpool.Pool]
-	SqlDB       lazy.Lazy[*sql.DB]
+	SQLDB       lazy.Lazy[*sql.DB]
 	PgxPoolWait *sync.WaitGroup `name:"pgx_pool_wait"`
 	AppHook     fx.Hook         `group:"app_hooks"`
 }
@@ -33,14 +34,17 @@ func New(p Params) (Result, error) {
 	lazyPool := lazy.New(func() (*pgxpool.Pool, error) {
 		ctx, cancel := context.WithCancel(context.Background())
 		pl, plErr := pgxpool.New(ctx, p.Config.CreateDSN())
+
 		if plErr != nil {
 			cancel()
 			return nil, plErr
 		}
+
 		if pingErr := waitForPing(ctx, p.Logger, pl); pingErr != nil {
 			cancel()
 			return nil, pingErr
 		}
+
 		go func() {
 			<-stopped
 			// wait for services to be finished with the pool before closing
@@ -48,11 +52,13 @@ func New(p Params) (Result, error) {
 			cancel()
 			pl.Close()
 		}()
+
 		return pl, nil
 	})
+
 	return Result{
 		PgxPool: lazyPool,
-		SqlDB: lazy.New(func() (*sql.DB, error) {
+		SQLDB: lazy.New(func() (*sql.DB, error) {
 			pool, err := lazyPool.Get()
 			if err != nil {
 				return nil, err
@@ -71,16 +77,20 @@ func New(p Params) (Result, error) {
 
 func waitForPing(ctx context.Context, logger *zap.SugaredLogger, pool *pgxpool.Pool) error {
 	i := 0
+
 	var err error
+
 	for {
 		if ctx.Err() != nil {
 			err = ctx.Err()
 			break
 		}
+
 		err = pool.Ping(ctx)
 		if err == nil {
 			return nil
 		}
+
 		i++
 		if i > 10 {
 			break
@@ -93,5 +103,6 @@ func waitForPing(ctx context.Context, logger *zap.SugaredLogger, pool *pgxpool.P
 			break
 		}
 	}
+
 	return fmt.Errorf("timed out waiting for ping: %w", err)
 }

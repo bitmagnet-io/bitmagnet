@@ -19,6 +19,7 @@ func (e WorkflowError) Error() string {
 	if e.message != "" {
 		return e.message
 	}
+
 	return fmt.Sprintf("workflow unmarshalError: %s", e.key)
 }
 

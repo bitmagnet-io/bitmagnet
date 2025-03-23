@@ -1,19 +1,20 @@
 package httpserver
 
 import (
+	"time"
+
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpserver"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
+	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/gin-gonic/gin"
 	"github.com/vektah/gqlparser/v2/ast"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"time"
 )
 
 type Params struct {
@@ -48,14 +49,19 @@ func (b builder) Apply(e *gin.Engine) error {
 	if err != nil {
 		return err
 	}
+
 	gql := newServer(schema)
+
 	e.POST("/graphql", func(c *gin.Context) {
 		gql.ServeHTTP(c.Writer, c.Request)
 	})
+
 	pg := playground.Handler("GraphQL playground", "/graphql")
+
 	e.GET("/graphql", func(c *gin.Context) {
 		pg.ServeHTTP(c.Writer, c.Request)
 	})
+
 	return nil
 }
 

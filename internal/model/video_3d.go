@@ -20,5 +20,6 @@ func InferVideo3D(input string) NullVideo3D {
 			return NewNullVideo3D(parsed)
 		}
 	}
+
 	return NullVideo3D{}
 }

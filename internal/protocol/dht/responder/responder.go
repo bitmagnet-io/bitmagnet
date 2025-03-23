@@ -4,10 +4,11 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"net/netip"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
-	"net/netip"
 )
 
 type Responder interface {
@@ -47,7 +48,9 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 		err = ErrMissingArguments
 		return
 	}
+
 	ret.ID = r.nodeID
+
 	switch msg.Msg.Q {
 	case dht.QPing:
 	case dht.QFindNode:
@@ -55,6 +58,7 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 			err = ErrMissingArguments
 			return
 		}
+
 		closestNodes := r.kTable.GetClosestNodes(args.Target)
 		ret.Nodes = nodeInfosFromNodes(closestNodes...)
 	case dht.QGetPeers:
@@ -62,15 +66,19 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 			err = ErrMissingArguments
 			return
 		}
+
 		result := r.kTable.GetHashOrClosestNodes(args.InfoHash)
 		if result.Found {
 			hashPeers := result.Hash.Peers()
 			values := make([]dht.NodeAddr, 0, len(hashPeers))
+
 			for _, p := range hashPeers {
 				values = append(values, dht.NewNodeAddrFromAddrPort(p.Addr))
 			}
+
 			ret.Values = values
 		}
+
 		ret.Nodes = nodeInfosFromNodes(result.ClosestNodes...)
 		token := r.announceToken(args.InfoHash, args.ID, msg.From.Addr())
 		ret.Token = &token
@@ -79,19 +87,23 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 			err = ErrMissingArguments
 			return
 		}
+
 		if args.Token != r.announceToken(args.InfoHash, args.ID, msg.From.Addr()) {
 			err = ErrInvalidToken
 			return
 		}
+
 		r.kTable.BatchCommand(ktable.PutHash{ID: args.InfoHash, Peers: []ktable.HashPeer{{
 			Addr: netip.AddrPortFrom(msg.From.Addr(), msg.AnnouncePort()),
 		}}})
 	case dht.QSampleInfohashes:
 		result := r.kTable.SampleHashesAndNodes()
 		samples := make(dht.CompactInfohashes, 0, len(result.Hashes))
+
 		for _, h := range result.Hashes {
 			samples = append(samples, h.ID())
 		}
+
 		ret.Samples = &samples
 		ret.Nodes = nodeInfosFromNodes(result.Nodes...)
 		numInt64 := int64(result.TotalHashes)
@@ -101,6 +113,7 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 		err = ErrMethodUnknown
 		return
 	}
+
 	return
 }
 
@@ -109,8 +122,8 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 // The token value is a required argument for a future announce_peer query.
 // The token value should be a short binary string.
 // The queried node must verify that the token was previously sent to the same IP address as the querying node.
-// Then the queried node should store the IP address of the querying node and the supplied port number under the infohash
-// in its store of peer contact information.
+// Then the queried node should store the IP address of the querying node and the supplied port number
+// under the infohash in its store of peer contact information.
 // https://www.bittorrent.org/beps/bep_0005.html
 func (r responder) announceToken(infoHash protocol.ID, nodeID protocol.ID, nodeAddr netip.Addr) string {
 	bytes := r.tokenSecret
@@ -119,6 +132,7 @@ func (r responder) announceToken(infoHash protocol.ID, nodeID protocol.ID, nodeA
 	bytes = append(bytes, nodeID[:]...)
 	bytes = append(bytes, []byte(nodeAddr.String())...)
 	tokenHash := md5.Sum(bytes)
+
 	return hex.EncodeToString(tokenHash[:])
 }
 
@@ -126,10 +140,12 @@ func nodeInfosFromNodes(ns ...ktable.Node) []dht.NodeInfo {
 	if len(ns) == 0 {
 		return nil
 	}
+
 	nodes := make([]dht.NodeInfo, 0, len(ns))
 	for _, n := range ns {
 		nodes = append(nodes, nodeInfoFromNode(n))
 	}
+
 	return nodes
 }
 

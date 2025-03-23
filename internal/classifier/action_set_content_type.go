@@ -26,6 +26,7 @@ func (setContentTypeAction) compileAction(ctx compilerContext) (action, error) {
 	if err != nil {
 		return action{}, ctx.error(err)
 	}
+
 	return action{
 		func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result
@@ -35,6 +36,6 @@ func (setContentTypeAction) compileAction(ctx compilerContext) (action, error) {
 	}, nil
 }
 
-func (setContentTypeAction) JsonSchema() JsonSchema {
-	return setContentTypePayloadSpec.JsonSchema()
+func (setContentTypeAction) JSONSchema() JSONSchema {
+	return setContentTypePayloadSpec.JSONSchema()
 }

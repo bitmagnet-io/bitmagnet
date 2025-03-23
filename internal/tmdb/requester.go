@@ -2,18 +2,24 @@ package tmdb
 
 import (
 	"context"
+
 	"github.com/go-resty/resty/v2"
 )
 
 type Requester interface {
-	Request(ctx context.Context, path string, queryParams map[string]string, result interface{}) (*resty.Response, error)
+	Request(ctx context.Context, path string, queryParams map[string]string, result any) (*resty.Response, error)
 }
 
 type requester struct {
 	resty *resty.Client
 }
 
-func (r requester) Request(ctx context.Context, path string, queryParams map[string]string, result interface{}) (*resty.Response, error) {
+func (r requester) Request(
+	ctx context.Context,
+	path string,
+	queryParams map[string]string,
+	result any,
+) (*resty.Response, error) {
 	res, err := r.resty.R().
 		SetContext(ctx).
 		SetQueryParams(queryParams).
@@ -30,5 +36,6 @@ func (r requester) Request(ctx context.Context, path string, queryParams map[str
 			}
 		}
 	}
+
 	return res, err
 }

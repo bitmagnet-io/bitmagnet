@@ -2,10 +2,10 @@ package processor
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"golang.org/x/sync/semaphore"

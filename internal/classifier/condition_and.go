@@ -25,14 +25,18 @@ func (andCondition) compileCondition(ctx compilerContext) (condition, error) {
 	if err != nil {
 		return condition{}, ctx.error(err)
 	}
+
 	conds := make([]condition, len(payload))
+
 	for i, rawCond := range payload {
 		cond, err := ctx.compileCondition(ctx.child(numericPathPart(i), rawCond))
 		if err != nil {
 			return condition{}, ctx.fatal(err)
 		}
+
 		conds[i] = cond
 	}
+
 	return condition{
 		check: func(ctx executionContext) (bool, error) {
 			for _, c := range conds {
@@ -47,6 +51,6 @@ func (andCondition) compileCondition(ctx compilerContext) (condition, error) {
 	}, nil
 }
 
-func (andCondition) JsonSchema() JsonSchema {
-	return andConditionPayloadSpec.JsonSchema()
+func (andCondition) JSONSchema() JSONSchema {
+	return andConditionPayloadSpec.JSONSchema()
 }

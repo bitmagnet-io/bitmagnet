@@ -2,6 +2,7 @@ package manager
 
 import (
 	"context"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"

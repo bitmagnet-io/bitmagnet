@@ -1,8 +1,8 @@
 package httpserver
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpserver"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
+	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab"
 	"github.com/gin-gonic/gin"
 )
@@ -28,10 +28,12 @@ func (b builder) Apply(e *gin.Engine) error {
 	if err != nil {
 		return err
 	}
+
 	h := handler{
 		config: b.config,
 		client: client,
 	}
 	e.GET("/torznab/*any", h.handleRequest)
+
 	return nil
 }

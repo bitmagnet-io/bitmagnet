@@ -13,6 +13,7 @@ type TorrentFilesOrderBy string
 
 func (ob TorrentFilesOrderBy) Clauses(direction OrderDirection) []query.OrderByColumn {
 	desc := direction == OrderDirectionDescending
+
 	switch ob {
 	case TorrentFilesOrderByIndex:
 		return []query.OrderByColumn{{
@@ -64,9 +65,11 @@ type TorrentFilesFullOrderBy maps.InsertMap[TorrentFilesOrderBy, OrderDirection]
 func (fob TorrentFilesFullOrderBy) Clauses() []query.OrderByColumn {
 	im := maps.InsertMap[TorrentFilesOrderBy, OrderDirection](fob)
 	clauses := make([]query.OrderByColumn, 0, im.Len())
+
 	for _, ob := range im.Entries() {
 		clauses = append(clauses, ob.Key.Clauses(ob.Value)...)
 	}
+
 	return clauses
 }
 

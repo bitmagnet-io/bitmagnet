@@ -1,8 +1,9 @@
 package btree
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const testK = 4
@@ -41,71 +42,96 @@ var testIDs = []NodeID{
 }
 
 func assertPut(t *testing.T, root Btree, id NodeID, expectedResult PutResult) {
+	t.Helper()
+
 	label := "xor: " + id.MustXor(testOrigin).BinaryString()
 	result := root.Put(id)
 	assert.Equal(t, expectedResult, result, label)
 }
 
 func TestBtree_simple(t *testing.T) {
+	t.Parallel()
+
 	root := New(testOrigin, testK, false)
 	assertPut(t, root, testOrigin, PutRejected)
+
 	for range []int{1, 2} {
-		for i := 0; i < 12; i++ {
+		for i := range 12 {
 			assertPut(t, root, testIDs[i], PutAccepted)
 			assert.True(t, root.Has(testIDs[i]), i)
 		}
+
 		for i := 12; i < 20; i++ {
 			assertPut(t, root, testIDs[i], PutRejected)
 		}
-		for i := 0; i < 12; i++ {
+
+		for i := range 12 {
 			assertPut(t, root, testIDs[i], PutAlreadyExists)
 		}
+
 		assert.Equal(t, 12, root.Count())
-		for i := 0; i < 12; i++ {
+
+		for i := range 12 {
 			assert.True(t, root.Has(testIDs[i]), i)
 		}
+
 		for i := 12; i < 20; i++ {
 			assert.False(t, root.Has(testIDs[i]), i)
 		}
-		for i := 0; i < 12; i++ {
+
+		for i := range 12 {
 			assert.True(t, root.Drop(testIDs[i]), i)
 		}
+
 		for i := 12; i < 20; i++ {
 			assert.False(t, root.Drop(testIDs[i]), i)
 		}
+
 		assert.Equal(t, 0, root.Count())
 	}
 }
 
 func TestBtree_splitting(t *testing.T) {
+	t.Parallel()
+
 	root := New(testOrigin, testK, true)
 	assertPut(t, root, testOrigin, PutRejected)
-	for i := 0; i < 16; i++ {
+
+	for i := range 16 {
 		assertPut(t, root, testIDs[i], PutAccepted)
 	}
+
 	for i := 16; i < 20; i++ {
 		assertPut(t, root, testIDs[i], PutRejected)
 	}
-	for i := 0; i < 16; i++ {
+
+	for i := range 16 {
 		assert.True(t, root.Has(testIDs[i]), i)
 	}
+
 	for i := 16; i < 20; i++ {
 		assert.False(t, root.Has(testIDs[i]), i)
 	}
-	for i := 0; i < 16; i++ {
+
+	for i := range 16 {
 		assert.True(t, root.Drop(testIDs[i]), i)
 	}
+
 	for i := 16; i < 20; i++ {
 		assert.False(t, root.Drop(testIDs[i]), i)
 	}
+
 	assert.Equal(t, 0, root.Count())
 }
 
 func TestBtree_closest(t *testing.T) {
+	t.Parallel()
+
 	root := New(testOrigin, testK, true)
-	for i := 0; i < 16; i++ {
+	for i := range 16 {
 		assertPut(t, root, testIDs[i], PutAccepted)
 	}
+
 	assert.Equal(t, []NodeID{testIDs[4], testIDs[5], testIDs[6], testIDs[7]}, root.Closest(testIDs[16], 4))
 	assert.Equal(t, []NodeID{
 		testIDs[8],

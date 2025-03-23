@@ -1,9 +1,10 @@
 package model
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/keywords"
 	"regexp"
 	"strings"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/keywords"
 )
 
 // VideoResolution represents the resolution of a video
@@ -32,6 +33,7 @@ func createVideoResolutionRegex() *regexp.Regexp {
 	for res := range videoResolutionAliases {
 		names = append(names, res)
 	}
+
 	return keywords.MustNewRegexFromKeywords(names...)
 }
 
@@ -42,10 +44,12 @@ func InferVideoResolution(input string) NullVideoResolution {
 		if parsed, parseErr := ParseVideoResolution("V" + match[1]); parseErr == nil {
 			return NewNullVideoResolution(parsed)
 		}
+
 		lowerMatch := strings.ToLower(match[1])
 		if inferred, ok := videoResolutionAliases[lowerMatch]; ok {
 			return NewNullVideoResolution(inferred)
 		}
 	}
+
 	return NullVideoResolution{}
 }

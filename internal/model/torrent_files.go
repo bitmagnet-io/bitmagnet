@@ -1,16 +1,18 @@
 package model
 
 import (
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"regexp"
 	"strings"
+
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
-func (f *TorrentFile) BeforeCreate(tx *gorm.DB) (err error) {
+func (*TorrentFile) BeforeCreate(tx *gorm.DB) (err error) {
 	tx.Statement.AddClause(clause.OnConflict{
 		DoNothing: true,
 	})
+
 	return nil
 }
 
@@ -19,6 +21,7 @@ func (f TorrentFile) BasePath() string {
 	if f.Extension.Valid {
 		baseName = baseName[:len(baseName)-len(f.Extension.String)-1]
 	}
+
 	return baseName
 }
 
@@ -34,6 +37,7 @@ func FileExtensionFromPath(path string) NullString {
 	if len(match) == 2 {
 		return NewNullString(match[1])
 	}
+
 	return NullString{}
 }
 
@@ -42,6 +46,7 @@ func fileTypeFromPath(path string) NullFileType {
 	if extension.Valid {
 		return FileTypeFromExtension(extension.String)
 	}
+
 	return NullFileType{}
 }
 

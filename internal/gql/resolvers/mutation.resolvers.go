@@ -55,15 +55,19 @@ func (r *torrentMutationResolver) Reprocess(ctx context.Context, obj *gqlmodel.T
 	if w, ok := input.ClassifierWorkflow.ValueOK(); ok {
 		params.ClassifierWorkflow = *w
 	}
+
 	if r, ok := input.ClassifierRematch.ValueOK(); ok && *r {
 		params.ClassifyMode = processor.ClassifyModeRematch
 	}
+
 	if apisDisabled, ok := input.ApisDisabled.ValueOK(); ok {
 		params.ClassifierFlags["apis_enabled"] = !*apisDisabled
 	}
+
 	if localSearchDisabled, ok := input.LocalSearchDisabled.ValueOK(); ok {
 		params.ClassifierFlags["local_search_enabled"] = !*localSearchDisabled
 	}
+
 	return nil, r.Processor.Process(ctx, params)
 }
 

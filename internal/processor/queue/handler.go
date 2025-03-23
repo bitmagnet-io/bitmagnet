@@ -3,12 +3,13 @@ package queue
 import (
 	"context"
 	"encoding/json"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
+	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/handler"
 	"go.uber.org/fx"
-	"time"
 )
 
 type Params struct {
@@ -34,7 +35,8 @@ func New(p Params) Result {
 				if err := json.Unmarshal([]byte(job.Payload), msg); err != nil {
 					return err
 				}
-				// The following is somewhat of a hack to alter the `local_search_enabled` flag for jobs queued by the upgrade hook between 0.9.0 and 0.9.3.
+				// The following is somewhat of a hack to alter the `local_search_enabled`
+				// flag for jobs queued by the upgrade hook between 0.9.0 and 0.9.3.
 				// It should be removed at a later date.
 				if job.Priority == 5 && msg.ClassifierFlags != nil {
 					if _, ok := msg.ClassifierFlags["local_search_enabled"]; !ok {

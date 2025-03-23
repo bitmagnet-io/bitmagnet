@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"log"
 	"runtime"
 	"runtime/debug"
 	"strings"
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
 
 const (
@@ -91,6 +92,7 @@ func Exec(ctx context.Context, handler Handler, job model.QueueJob) (err error) 
 		defer func() {
 			if x := recover(); x != nil {
 				log.Printf("recovering from a panic in the job handler:\n%s", string(debug.Stack()))
+
 				_, file, line, ok := runtime.Caller(1) // skip the first frame (panic itself)
 				if ok && strings.Contains(file, "runtime/") {
 					// The panic came from the runtime, most likely due to incorrect

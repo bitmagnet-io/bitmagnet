@@ -19,6 +19,7 @@ func newInfoForAddr(peerID ID, hashes ...ID) *infoForAddr {
 		hashes: make(map[ID]struct{}, len(hashes)),
 	}
 	info.addHashes(hashes...)
+
 	return &info
 }
 
@@ -57,6 +58,7 @@ func (m reverseMap) getPeerIDForAddr(addr netip.Addr) (ID, bool) {
 	if ok && !info.peerID.IsZero() {
 		return info.peerID, ok
 	}
+
 	return ID{}, false
 }
 
@@ -65,6 +67,7 @@ func (m reverseMap) dropAddr(addr netip.Addr) bool {
 		delete(m.addrs, addr.String())
 		return true
 	}
+
 	return false
 }
 

@@ -2,11 +2,12 @@ package torrentmetrics
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"gorm.io/gorm"
-	"strings"
-	"time"
 )
 
 type Bucket struct {
@@ -36,30 +37,37 @@ func (c client) Request(ctx context.Context, req Request) ([]Bucket, error) {
 	params := []any{
 		req.BucketDuration,
 	}
+
 	var conditions []string
 	if !req.StartTime.IsZero() {
 		conditions = append(conditions, "updated_at >= ?")
 		params = append(params, req.StartTime)
 	}
+
 	if !req.EndTime.IsZero() {
 		conditions = append(conditions, "updated_at <= ?")
 		params = append(params, req.EndTime)
 	}
+
 	if req.Sources != nil {
 		conditions = append(conditions, "source IN ?")
 		params = append(params, req.Sources)
 	}
+
 	if req.Updated.Valid {
 		sign := ">"
 		if !req.Updated.Bool {
 			sign = "<="
 		}
+
 		conditions = append(conditions, "updated_at "+sign+" (created_at + interval '1 hour')")
 	}
+
 	conditionClause := ""
 	if len(conditions) > 0 {
 		conditionClause = "WHERE (" + strings.Join(conditions, " AND ") + ")"
 	}
+
 	var result []Bucket
 	if err := c.db.WithContext(ctx).Raw(`select
         source,
@@ -76,5 +84,6 @@ func (c client) Request(ctx context.Context, req Request) ([]Bucket, error) {
 	).Scan(&result).Error; err != nil {
 		return nil, err
 	}
+
 	return result, nil
 }

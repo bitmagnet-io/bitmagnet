@@ -19,6 +19,7 @@ func (p PrometheusCollector) Put(id NodeID) PutResult {
 		p.CountGauge.Add(1)
 		p.AddedCounter.Inc()
 	}
+
 	return result
 }
 
@@ -32,6 +33,7 @@ func (p PrometheusCollector) Drop(id NodeID) bool {
 		p.CountGauge.Add(-1)
 		p.DroppedCounter.Inc()
 	}
+
 	return result
 }
 

@@ -11,6 +11,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 type checkerMock struct {
@@ -51,7 +52,10 @@ func (ck *resultWriterMock) Write(result *CheckerResult, statusCode int, w http.
 
 //var testTimestamp = time.Now()
 
-func doTestHandler(t *testing.T, statusCodeUp, statusCodeDown int, expectedStatus CheckerResult, expectedStatusCode int) {
+func doTestHandler(t *testing.T,
+	statusCodeUp, statusCodeDown int, expectedStatus CheckerResult, expectedStatusCode int) {
+	t.Helper()
+
 	// Arrange
 	response := httptest.NewRecorder()
 	request := httptest.NewRequest("GET", "https://localhost/foo", nil)
@@ -68,16 +72,18 @@ func doTestHandler(t *testing.T, statusCodeUp, statusCodeDown int, expectedStatu
 
 	// Assert
 	ckr.Mock.AssertNumberOfCalls(t, "Check", 1)
-	assert.Equal(t, response.Header().Get("content-type"), "application/json; charset=utf-8")
-	assert.Equal(t, response.Result().StatusCode, expectedStatusCode)
+	assert.Equal(t, "application/json; charset=utf-8", response.Header().Get("content-type"))
+	assert.Equal(t, expectedStatusCode, response.Code)
 
 	bytes := response.Body.Bytes()
 	expectedBytes, err := json.Marshal(expectedStatus)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, string(expectedBytes), string(bytes))
 }
 
 func TestHandlerIfCheckFailThenRespondWithNotAvailable(t *testing.T) {
+	t.Parallel()
+
 	status := CheckerResult{
 		Status: StatusUnknown,
 		Details: map[string]CheckResult{
@@ -90,6 +96,8 @@ func TestHandlerIfCheckFailThenRespondWithNotAvailable(t *testing.T) {
 }
 
 func TestHandlerIfCheckSucceedsThenRespondWithAvailable(t *testing.T) {
+	t.Parallel()
+
 	status := CheckerResult{
 		Status: StatusUp,
 		Details: map[string]CheckResult{
@@ -101,6 +109,8 @@ func TestHandlerIfCheckSucceedsThenRespondWithAvailable(t *testing.T) {
 }
 
 func TestHandlerIfAuthFailsThenReturnNoDetails(t *testing.T) {
+	t.Parallel()
+
 	status := CheckerResult{
 		Status: StatusDown,
 		Details: map[string]CheckResult{
@@ -111,6 +121,8 @@ func TestHandlerIfAuthFailsThenReturnNoDetails(t *testing.T) {
 }
 
 func TestWhenChecksEmptyThenHandlerResultContainNoChecksMap(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	r := httptest.NewRequest(http.MethodGet, "/health", nil)
 	w := httptest.NewRecorder()
@@ -122,5 +134,4 @@ func TestWhenChecksEmptyThenHandlerResultContainNoChecksMap(t *testing.T) {
 	if w.Body.String() != "{\"status\":\"up\"}" {
 		t.Errorf("response does not contain the expected result")
 	}
-
 }

@@ -11,7 +11,9 @@ func (c Config) MergeDefaults() Config {
 	for _, p := range c.Profiles {
 		profiles = append(profiles, p.MergeDefaults())
 	}
+
 	c.Profiles = profiles
+
 	return c
 }
 
@@ -25,5 +27,6 @@ func (c Config) GetProfile(name string) (Profile, bool) {
 			return p, true
 		}
 	}
+
 	return Profile{}, false
 }
