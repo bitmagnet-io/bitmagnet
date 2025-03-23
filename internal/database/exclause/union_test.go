@@ -13,6 +13,8 @@ import (
 )
 
 func TestUnion_Query(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      string
 		operation func(db *gorm.DB) *gorm.DB
@@ -76,6 +78,8 @@ func TestUnion_Query(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			mockDB, mock, err := sqlmock.New()
 			if err != nil {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -107,6 +111,8 @@ func TestUnion_Query(t *testing.T) {
 }
 
 func TestNewUnion(t *testing.T) {
+	t.Parallel()
+
 	mockDB, _, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -167,6 +173,8 @@ func TestNewUnion(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			if got := NewUnion(tt.args.subquery, tt.args.args...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewUnion() = %v, want %v", got, tt.want)
 			}

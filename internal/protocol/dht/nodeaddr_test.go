@@ -8,6 +8,8 @@ import (
 )
 
 func TestUnmarshalNodeAddr(t *testing.T) {
+	t.Parallel()
+
 	var na NodeAddr
 
 	require.NoError(t, na.UnmarshalBinary([]byte("\x01\x02\x03\x04\x05\x06")))

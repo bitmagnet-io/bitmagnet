@@ -8,6 +8,8 @@ import (
 )
 
 func TestParseDate(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		input    string
 		expected model.Date
@@ -28,6 +30,8 @@ func TestParseDate(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
+			t.Parallel()
+
 			result := ParseDate(test.input)
 			assert.Equal(t, test.expected, result)
 		})

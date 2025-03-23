@@ -33,6 +33,8 @@ func testMarshalUnmarshalMsg(t *testing.T, m Msg, expected string) {
 }
 
 func TestMarshalUnmarshalMsg(t *testing.T) {
+	t.Parallel()
+
 	//{
 	//	"r":
 	//	{
@@ -133,6 +135,8 @@ func TestMarshalUnmarshalMsg(t *testing.T) {
 }
 
 func TestMsgReadOnly(t *testing.T) {
+	t.Parallel()
+
 	testMarshalUnmarshalMsg(t, Msg{ReadOnly: true}, "d2:roi1e1:t0:1:y0:e")
 	testMarshalUnmarshalMsg(t, Msg{ReadOnly: false}, "d1:t0:1:y0:e")
 
@@ -147,6 +151,8 @@ func TestMsgReadOnly(t *testing.T) {
 }
 
 func TestUnmarshalGetPeersResponse(t *testing.T) {
+	t.Parallel()
+
 	var msg Msg
 	err := bencode.Unmarshal([]byte("d1:rd6:valuesl6:\x01\x02\x03\x04\x05\x066:\x07\x08\x09\x0a\x0b\x0ce5:nodes52:\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x02\x03\x04\x05\x06\x07\x08\x09\x02\x03\x04\x05\x06\x07\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x02\x03\x04\x05\x06\x07\x08\x09\x02\x03\x04\x05\x06\x07ee"), &msg)
 	require.NoError(t, err)
@@ -160,6 +166,8 @@ func unprettifyHex(s string) string {
 }
 
 func TestBep33BloomFilter(t *testing.T) {
+	t.Parallel()
+
 	var f ScrapeBloomFilter
 	for i := range 256 {
 		f.AddIP(net.IPv4(192, 0, 2, byte(i)).To4())
@@ -190,6 +198,8 @@ func floorDecimals(f float64, decimals int) float64 {
 }
 
 func TestEmptyScrapeBloomFilterEstimatedCount(t *testing.T) {
+	t.Parallel()
+
 	var f ScrapeBloomFilter
 
 	assert.EqualValues(t, 0, int(math.Floor(f.EstimateCount())))
@@ -207,6 +217,8 @@ func marshalAndReturnUnmarshaledMsg(t *testing.T, m Msg, expected string) (ret M
 }
 
 func TestBep51EmptySampleField(t *testing.T) {
+	t.Parallel()
+
 	testMarshalUnmarshalMsg(t,
 		Msg{
 			R: &Return{},

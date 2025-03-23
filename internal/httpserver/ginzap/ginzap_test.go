@@ -41,6 +41,8 @@ func timestampLocationCheck(timestampStr string, location *time.Location) error 
 const testPath = "/test"
 
 func TestGinzap(t *testing.T) {
+	t.Parallel()
+
 	r := gin.New()
 
 	utcLogger, utcLoggerObserved := buildDummyLogger()
@@ -88,6 +90,8 @@ func TestGinzap(t *testing.T) {
 }
 
 func TestGinzapWithConfig(t *testing.T) {
+	t.Parallel()
+
 	r := gin.New()
 
 	utcLogger, utcLoggerObserved := buildDummyLogger()

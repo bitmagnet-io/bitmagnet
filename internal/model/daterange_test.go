@@ -9,6 +9,8 @@ import (
 )
 
 func TestNewDateRangeFromString(t *testing.T) {
+	t.Parallel()
+
 	type parseTest struct {
 		inputString   string
 		expectedStart Date
@@ -35,6 +37,8 @@ func TestNewDateRangeFromString(t *testing.T) {
 
 	for _, test := range parseTests {
 		t.Run(test.inputString, func(t *testing.T) {
+			t.Parallel()
+
 			actualOutput, err := NewDateRangeFromString(test.inputString)
 			require.NoError(t, err)
 			assert.Equal(t, test.expectedStart, actualOutput.Start())

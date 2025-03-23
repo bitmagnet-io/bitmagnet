@@ -48,6 +48,8 @@ func assertPut(t *testing.T, root Btree, id NodeID, expectedResult PutResult) {
 }
 
 func TestBtree_simple(t *testing.T) {
+	t.Parallel()
+
 	root := New(testOrigin, testK, false)
 	assertPut(t, root, testOrigin, PutRejected)
 
@@ -88,6 +90,8 @@ func TestBtree_simple(t *testing.T) {
 }
 
 func TestBtree_splitting(t *testing.T) {
+	t.Parallel()
+
 	root := New(testOrigin, testK, true)
 	assertPut(t, root, testOrigin, PutRejected)
 
@@ -119,6 +123,8 @@ func TestBtree_splitting(t *testing.T) {
 }
 
 func TestBtree_closest(t *testing.T) {
+	t.Parallel()
+
 	root := New(testOrigin, testK, true)
 	for i := range 16 {
 		assertPut(t, root, testIDs[i], PutAccepted)

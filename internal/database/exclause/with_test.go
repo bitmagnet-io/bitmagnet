@@ -13,6 +13,8 @@ import (
 )
 
 func TestWith_Query(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      string
 		operation func(db *gorm.DB) *gorm.DB
@@ -105,6 +107,8 @@ func TestWith_Query(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			mockDB, mock, err := sqlmock.New()
 			if err != nil {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -136,6 +140,8 @@ func TestWith_Query(t *testing.T) {
 }
 
 func TestNewWith(t *testing.T) {
+	t.Parallel()
+
 	mockDB, _, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -207,6 +213,8 @@ func TestNewWith(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := NewWith(tt.args.name, tt.args.subquery, tt.args.materialized, tt.args.args...)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewWith() = %v, want %v", got, tt.want)

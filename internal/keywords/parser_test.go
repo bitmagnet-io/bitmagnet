@@ -10,6 +10,8 @@ import (
 )
 
 func TestParser(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		input   []string
 		match   []string
@@ -45,6 +47,8 @@ func TestParser(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(strings.Join(test.input, ", "), func(t *testing.T) {
+			t.Parallel()
+
 			r, err := NewRegexFromKeywords(test.input...)
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err)

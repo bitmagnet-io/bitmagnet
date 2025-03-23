@@ -89,6 +89,8 @@ func (mockedHash) Dropped() bool {
 }
 
 func TestResponder_ping(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	msg := dht.RecvMsg{
 		From: mocks.sender.Addr.ToAddrPort(),
@@ -105,6 +107,8 @@ func TestResponder_ping(t *testing.T) {
 }
 
 func TestResponder_ping__missing_args(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	msg := dht.RecvMsg{
 		From: mocks.sender.Addr.ToAddrPort(),
@@ -117,6 +121,8 @@ func TestResponder_ping__missing_args(t *testing.T) {
 }
 
 func TestResponder_find_node(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	target := protocol.RandomNodeID()
 	msg := dht.RecvMsg{
@@ -149,6 +155,8 @@ func TestResponder_find_node(t *testing.T) {
 }
 
 func TestResponder_find_node__missing_target(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	msg := dht.RecvMsg{
 		From: mocks.sender.Addr.ToAddrPort(),
@@ -164,6 +172,8 @@ func TestResponder_find_node__missing_target(t *testing.T) {
 }
 
 func TestResponder_get_peers__values(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	infoHash := protocol.RandomNodeID()
 	msg := dht.RecvMsg{
@@ -202,6 +212,8 @@ func TestResponder_get_peers__values(t *testing.T) {
 }
 
 func TestResponder_get_peers__nodes(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	infoHash := protocol.RandomNodeID()
 	msg := dht.RecvMsg{
@@ -240,6 +252,8 @@ func TestResponder_get_peers__nodes(t *testing.T) {
 }
 
 func TestResponder_get_peers__missing_info_hash(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	msg := dht.RecvMsg{
 		From: mocks.sender.Addr.ToAddrPort(),
@@ -255,6 +269,8 @@ func TestResponder_get_peers__missing_info_hash(t *testing.T) {
 }
 
 func TestResponder_announce_peer__implied_port(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	infoHash := protocol.RandomNodeID()
 	expectedToken := mocks.responder.announceToken(infoHash, mocks.sender.ID, mocks.sender.Addr.ToAddrPort().Addr())
@@ -286,6 +302,8 @@ func TestResponder_announce_peer__implied_port(t *testing.T) {
 }
 
 func TestResponder_announce_peer__specified_port(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	infoHash := protocol.RandomNodeID()
 	expectedToken := mocks.responder.announceToken(infoHash, mocks.sender.ID, mocks.sender.Addr.ToAddrPort().Addr())
@@ -318,6 +336,8 @@ func TestResponder_announce_peer__specified_port(t *testing.T) {
 }
 
 func TestResponder_sample_infohashes(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	msg := dht.RecvMsg{
 		From: mocks.sender.Addr.ToAddrPort(),
@@ -368,6 +388,8 @@ func TestResponder_sample_infohashes(t *testing.T) {
 }
 
 func TestResponder_unknown_method(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	msg := dht.RecvMsg{
 		From: mocks.sender.Addr.ToAddrPort(),

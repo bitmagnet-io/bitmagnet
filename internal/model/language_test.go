@@ -7,6 +7,8 @@ import (
 )
 
 func TestParseLanguage(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		input string
 		want  Language
@@ -30,6 +32,8 @@ func TestParseLanguage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
+			t.Parallel()
+
 			lang := ParseLanguage(tt.input)
 			assert.Equal(t, tt.want, lang.Language)
 			assert.True(t, lang.Valid)
@@ -38,6 +42,8 @@ func TestParseLanguage(t *testing.T) {
 }
 
 func TestInferLanguages(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		input string
 		want  []Language
@@ -85,6 +91,8 @@ func TestInferLanguages(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
+			t.Parallel()
+
 			langs := InferLanguages(tt.input).Slice()
 			assert.Equal(t, tt.want, langs)
 		})

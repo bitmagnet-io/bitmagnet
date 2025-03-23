@@ -13,6 +13,8 @@ import (
 )
 
 func TestExcept_Query(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      string
 		operation func(db *gorm.DB) *gorm.DB
@@ -77,6 +79,8 @@ func TestExcept_Query(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			mockDB, mock, err := sqlmock.New()
 			if err != nil {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -108,6 +112,8 @@ func TestExcept_Query(t *testing.T) {
 }
 
 func TestNewExcept(t *testing.T) {
+	t.Parallel()
+
 	mockDB, _, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -165,6 +171,8 @@ func TestNewExcept(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			if got := NewExcept(tt.args.subquery); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewExcept() = %v, want %v", got, tt.want)
 			}

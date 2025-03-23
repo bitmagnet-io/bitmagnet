@@ -3,10 +3,14 @@ package fts
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/stretchr/testify/assert"
 )
 
 func TestParseTsvector(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		input   string
 		wantTsv Tsvector
@@ -35,13 +39,13 @@ func TestParseTsvector(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := ParseTsvector(test.input)
-			if err != nil {
-				t.Errorf("ParseTsvector(%q) = %v", test.input, err)
-			} else {
-				assert.Equal(t, test.wantTsv, got)
-				assert.Equal(t, test.wantStr, got.String())
-			}
+
+			require.NoError(t, err)
+			assert.Equal(t, test.wantTsv, got)
+			assert.Equal(t, test.wantStr, got.String())
 		})
 	}
 }

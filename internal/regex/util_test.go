@@ -7,6 +7,8 @@ import (
 )
 
 func TestNormalizeString(t *testing.T) {
+	t.Parallel()
+
 	type parseTest struct {
 		inputString    string
 		expectedOutput string
@@ -21,12 +23,15 @@ func TestNormalizeString(t *testing.T) {
 
 	for _, test := range parseTests {
 		t.Run(test.inputString, func(t *testing.T) {
+			t.Parallel()
 			assert.Equal(t, test.expectedOutput, NormalizeString(test.inputString))
 		})
 	}
 }
 
 func TestNormalizeSearchString(t *testing.T) {
+	t.Parallel()
+
 	type parseTest struct {
 		inputString    string
 		expectedOutput string
@@ -41,6 +46,7 @@ func TestNormalizeSearchString(t *testing.T) {
 
 	for _, test := range parseTests {
 		t.Run(test.inputString, func(t *testing.T) {
+			t.Parallel()
 			assert.Equal(t, test.expectedOutput, NormalizeSearchString(test.inputString))
 		})
 	}

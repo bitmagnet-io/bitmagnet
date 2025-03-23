@@ -12,6 +12,8 @@ import (
 )
 
 func TestConfig(t *testing.T) {
+	t.Parallel()
+
 	type Nested struct {
 		NestedKey           string `validate:"uppercase"`
 		NestedKeyFromConfig string

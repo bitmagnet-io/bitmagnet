@@ -8,6 +8,8 @@ import (
 )
 
 func TestReadTorrentFile(t *testing.T) {
+	t.Parallel()
+
 	input, readErr := os.ReadFile("examples/ubuntu-23.04-desktop-amd64.iso.torrent")
 	if readErr != nil {
 		t.Fatalf("error reading torrent file: %s", readErr)

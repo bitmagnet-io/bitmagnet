@@ -14,7 +14,9 @@ import (
 //go:embed json-schema.draft-07.json
 var metaSchemaJSON []byte
 
-func TestJsonSchema(t *testing.T) {
+func TestJSONSchema(t *testing.T) {
+	t.Parallel()
+
 	schemaJSON, err := DefaultJSONSchema().MarshalJSON()
 	require.NoError(t, err)
 

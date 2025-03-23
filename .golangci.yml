@@ -19,9 +19,11 @@ linters:
     #    - misspell
     #    - musttag
     - noctx
+    - paralleltest
     - revive
     - stylecheck
     - testifylint
+    - thelper
     - wsl
 linters-settings:
   revive:

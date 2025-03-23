@@ -9,6 +9,8 @@ import (
 )
 
 func TestScrapeBloomFilter(t *testing.T) {
+	t.Parallel()
+
 	var s dht.ScrapeBloomFilter
 
 	assert.InDelta(t, 0.5, s.EstimateCount(), 0)
@@ -19,6 +21,8 @@ func TestScrapeBloomFilter(t *testing.T) {
 }
 
 func TestConvertBloom(t *testing.T) {
+	t.Parallel()
+
 	var s dht.ScrapeBloomFilter
 
 	s.AddIP(net.IPv4(127, 0, 0, 1))

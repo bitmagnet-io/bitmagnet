@@ -80,6 +80,8 @@ func doTestHandler(t *testing.T,
 }
 
 func TestHandlerIfCheckFailThenRespondWithNotAvailable(t *testing.T) {
+	t.Parallel()
+
 	status := CheckerResult{
 		Status: StatusUnknown,
 		Details: map[string]CheckResult{
@@ -92,6 +94,8 @@ func TestHandlerIfCheckFailThenRespondWithNotAvailable(t *testing.T) {
 }
 
 func TestHandlerIfCheckSucceedsThenRespondWithAvailable(t *testing.T) {
+	t.Parallel()
+
 	status := CheckerResult{
 		Status: StatusUp,
 		Details: map[string]CheckResult{
@@ -103,6 +107,8 @@ func TestHandlerIfCheckSucceedsThenRespondWithAvailable(t *testing.T) {
 }
 
 func TestHandlerIfAuthFailsThenReturnNoDetails(t *testing.T) {
+	t.Parallel()
+
 	status := CheckerResult{
 		Status: StatusDown,
 		Details: map[string]CheckResult{
@@ -113,6 +119,8 @@ func TestHandlerIfAuthFailsThenReturnNoDetails(t *testing.T) {
 }
 
 func TestWhenChecksEmptyThenHandlerResultContainNoChecksMap(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	r := httptest.NewRequest(http.MethodGet, "/health", nil)
 	w := httptest.NewRecorder()
