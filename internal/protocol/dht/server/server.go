@@ -105,15 +105,15 @@ func (s *server) read(ctx context.Context) {
 
 		switch msg.Y {
 		case dht.YQuery:
-			go s.handleQuery(recvMsg)
+			go s.handleQuery(ctx, recvMsg)
 		case dht.YResponse, dht.YError:
 			go s.handleResponse(recvMsg)
 		}
 	}
 }
 
-func (s *server) handleQuery(msg dht.RecvMsg) {
-	ctx, cancel := context.WithTimeout(context.Background(), s.responderTimeout)
+func (s *server) handleQuery(ctx context.Context, msg dht.RecvMsg) {
+	ctx, cancel := context.WithTimeout(ctx, s.responderTimeout)
 	defer cancel()
 
 	res := dht.Msg{

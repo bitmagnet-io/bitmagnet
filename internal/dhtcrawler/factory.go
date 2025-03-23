@@ -121,6 +121,9 @@ func New(params Params) Result {
 						logger:          params.Logger.Named("dht_crawler"),
 					}
 					c.soughtNodeID.Set(protocol.RandomNodeID())
+
+					// todo: Fix!
+					//nolint:contextcheck
 					go c.start()
 					return nil
 				},

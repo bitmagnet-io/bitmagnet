@@ -61,6 +61,7 @@ func GenericQuery[T interface{}](
 	wg := sync.WaitGroup{}
 	wg.Add(3)
 
+	//nolint:contextcheck
 	go func() {
 		defer wg.Done()
 		gq.doItems()

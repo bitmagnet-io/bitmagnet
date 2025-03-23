@@ -57,6 +57,8 @@ func New(p Params) Result {
 						gcInterval: time.Minute * 10,
 						logger:     p.Logger.Named("queue"),
 					}
+					// todo: Fix!
+					//nolint:contextcheck
 					return srv.Start(context.Background())
 				},
 				OnStop: func(context.Context) error {

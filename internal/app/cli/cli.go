@@ -55,6 +55,8 @@ func New(p Params) (Result, error) {
 
 	p.Lifecycle.Append(fx.Hook{
 		OnStart: func(context.Context) error {
+			// todo: Fix!
+			//nolint:contextcheck
 			go (func() {
 				// the following hack fixes a weird bug where the CLI does not terminate when calling with just --help
 				args := p.Args
