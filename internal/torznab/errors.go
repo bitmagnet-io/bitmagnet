@@ -34,6 +34,6 @@ func (e Error) Error() string {
 	return e.Description
 }
 
-func (e Error) Xml() ([]byte, error) {
-	return objToXml(e)
+func (e Error) XML() ([]byte, error) {
+	return objToXML(e)
 }

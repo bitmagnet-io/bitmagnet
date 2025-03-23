@@ -5,31 +5,18 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/fx"
 )
 
-type Params struct {
-	fx.In
-	Config torznab.Config
-	Client lazy.Lazy[torznab.Client]
-}
-
-type Result struct {
-	fx.Out
-	Option httpserver.Option `group:"http_server_options"`
-}
-
-func New(p Params) Result {
-	return Result{
-		Option: builder{
-			client: p.Client,
-		},
+func New(lazyClient lazy.Lazy[torznab.Client], config torznab.Config) httpserver.Option {
+	return builder{
+		lazyClient: lazyClient,
+		config:     config,
 	}
 }
 
 type builder struct {
-	config torznab.Config
-	client lazy.Lazy[torznab.Client]
+	lazyClient lazy.Lazy[torznab.Client]
+	config     torznab.Config
 }
 
 func (builder) Key() string {
@@ -37,7 +24,7 @@ func (builder) Key() string {
 }
 
 func (b builder) Apply(e *gin.Engine) error {
-	client, err := b.client.Get()
+	client, err := b.lazyClient.Get()
 	if err != nil {
 		return err
 	}

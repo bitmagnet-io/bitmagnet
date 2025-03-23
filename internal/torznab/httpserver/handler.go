@@ -3,11 +3,13 @@ package httpserver
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab"
 	"github.com/gin-gonic/gin"
-	"strconv"
-	"strings"
 )
 
 type handler struct {
@@ -32,12 +34,7 @@ func (h handler) handleRequest(ctx *gin.Context) {
 		})
 
 	case torznab.FunctionCaps:
-		caps, capsErr := h.client.Caps(ctx, profile)
-		if capsErr != nil {
-			h.writeError(ctx, fmt.Errorf("failed to execute caps: %w", capsErr))
-			return
-		}
-		h.writeXML(ctx, caps)
+		h.writeXML(ctx, profile.Caps())
 
 	default:
 		h.handleSearch(ctx, profile, tp)
@@ -53,15 +50,15 @@ func (h handler) handleSearch(ctx *gin.Context, profile torznab.Profile, tp stri
 			}
 		}
 	}
-	imdbId := model.NullString{}
-	if qImdbId := ctx.Query(torznab.ParamImdbId); qImdbId != "" {
-		imdbId.Valid = true
-		imdbId.String = qImdbId
+	imdbID := model.NullString{}
+	if qImdbId := ctx.Query(torznab.ParamIMDBID); qImdbId != "" {
+		imdbID.Valid = true
+		imdbID.String = qImdbId
 	}
-	tmdbId := model.NullString{}
-	if qTmdbId := ctx.Query(torznab.ParamTmdbId); qTmdbId != "" {
-		tmdbId.Valid = true
-		tmdbId.String = qTmdbId
+	tmdbID := model.NullString{}
+	if qTmdbId := ctx.Query(torznab.ParamTMDBID); qTmdbId != "" {
+		tmdbID.Valid = true
+		tmdbID.String = qTmdbId
 	}
 	season := model.NullInt{}
 	episode := model.NullInt{}
@@ -92,8 +89,8 @@ func (h handler) handleSearch(ctx *gin.Context, profile torznab.Profile, tp stri
 		Query:   ctx.Query(torznab.ParamQuery),
 		Type:    tp,
 		Cats:    cats,
-		ImdbId:  imdbId,
-		TmdbId:  tmdbId,
+		IMDBID:  imdbID,
+		TMDBID:  tmdbID,
 		Season:  season,
 		Episode: episode,
 		Limit:   limit,
@@ -106,13 +103,13 @@ func (h handler) handleSearch(ctx *gin.Context, profile torznab.Profile, tp stri
 	h.writeXML(ctx, result)
 }
 
-func (h handler) writeXML(ctx *gin.Context, obj torznab.Xmler) {
-	body, err := obj.Xml()
+func (h handler) writeXML(ctx *gin.Context, obj torznab.XMLer) {
+	body, err := obj.XML()
 	if err != nil {
 		h.writeHTTPError(ctx, fmt.Errorf("failed to encode xml: %w", err))
 		return
 	}
-	ctx.Status(200)
+	ctx.Status(http.StatusOK)
 	ctx.Header("Content-Type", "application/xml; charset=utf-8")
 	_, _ = ctx.Writer.Write(body)
 }
@@ -127,7 +124,7 @@ func (h handler) writeError(ctx *gin.Context, err error) {
 }
 
 func (h handler) writeHTTPError(ctx *gin.Context, err error) {
-	code := 500
+	code := http.StatusInternalServerError
 	var httpErr httpError
 	if ok := errors.As(err, &httpErr); ok {
 		code = httpErr.httpErrorCode()
@@ -150,19 +147,19 @@ func (e errProfileNotFound) Error() string {
 }
 
 func (e errProfileNotFound) httpErrorCode() int {
-	return 404
+	return http.StatusNotFound
 }
 
 func (h handler) getProfile(c *gin.Context) (torznab.Profile, error) {
-	profileName := strings.ToLower(strings.Split(strings.Trim(c.Param("any"), "/"), "/")[0])
-	switch profileName {
-	case "", "api", torznab.ProfileDefault.Name:
+	profilePathPart := strings.ToLower(strings.Split(strings.Trim(c.Param("any"), "/"), "/")[0])
+	switch profilePathPart {
+	case "", "api", torznab.ProfileDefault.ID:
 		return torznab.ProfileDefault, nil
 	default:
-		profile, ok := h.config.GetProfile(profileName)
+		profile, ok := h.config.GetProfile(profilePathPart)
 		if !ok {
-			return profile, errProfileNotFound{name: profileName}
+			return profile, errProfileNotFound{name: profilePathPart}
 		}
-		return profile.MergeDefaults(), nil
+		return profile, nil
 	}
 }
