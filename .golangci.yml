@@ -13,7 +13,7 @@ linters:
     - goconst
     - goimports
     - gosmopolitan
-    - iface
+#    - iface
     - importas
     - intrange
     #    - misspell
@@ -80,7 +80,12 @@ linters-settings:
       - name: var-declaration
       - name: var-naming
 issues:
+  exclude-files:
+    - '(.+)\.gen\.go'
   exclude-rules:
+#    - path: '(.+)\.gen\.go'
+#      linters:
+#        - typecheck
     # For some reason this picks up a lot of false positives for methods on generic types:
     - path: 'internal/protocol/dht/ktable/(.+)\.go'
       linters:
