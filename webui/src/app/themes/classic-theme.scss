@@ -217,16 +217,10 @@ $theme: map.merge(
   --mdc-fab-small-container-color: #{mat.get-theme-color($theme, neutral, 90)};
   --mdc-fab-small-container-elevation-shadow: none;
   --mdc-fab-small-container-shape: 4px;
-  --mdc-fab-small-focus-container-elevation-shadow: 1px 1px 2px #{mat.get-theme-color(
-      $theme,
-      neutral,
-      80
-    )};
-  --mdc-fab-small-hover-container-elevation-shadow: 1px 1px 2px #{mat.get-theme-color(
-      $theme,
-      neutral,
-      70
-    )};
+  --mdc-fab-small-focus-container-elevation-shadow: 1px 1px 2px
+    #{mat.get-theme-color($theme, neutral, 80)};
+  --mdc-fab-small-hover-container-elevation-shadow: 1px 1px 2px
+    #{mat.get-theme-color($theme, neutral, 70)};
   --mdc-filled-text-field-container-color: #{mat.get-theme-color(
       $theme,
       neutral,
