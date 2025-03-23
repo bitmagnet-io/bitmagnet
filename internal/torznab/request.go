@@ -5,6 +5,7 @@ import (
 )
 
 type SearchRequest struct {
+	Profile  Profile
 	Query    string
 	Type     string
 	Cats     []int
