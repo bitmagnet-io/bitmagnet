@@ -26,6 +26,7 @@ import {
 } from "@angular/material/core";
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatDividerModule } from "@angular/material/divider";
+import { MatExpansionModule } from "@angular/material/expansion";
 import { TranslocoModule } from "@jsverse/transloco";
 import {
   Subject,
@@ -71,6 +72,7 @@ export const MY_DATE_FORMATS = {
     MatNativeDateModule,
     MatTabsModule,
     MatDividerModule,
+    MatExpansionModule,
     TranslocoModule,
   ],
   providers: [
@@ -80,51 +82,56 @@ export const MY_DATE_FORMATS = {
   template: `
     <ng-container *transloco="let t">
       <div class="time-frame-container">
-        <!-- Tabbed interface for filtering options -->
-        <mat-tab-group
-          animationDuration="0ms"
-          (selectedTabChange)="onTabChange($event)"
-          [selectedIndex]="activeTabIndex"
-          class="filter-tabs"
-        >
-          <!-- Quick Presets Tab -->
-          <mat-tab [label]="t('dates.quick_presets')">
-            <div class="preset-buttons">
+        <!-- Quick Preset Buttons -->
+        <div class="quick-presets-grid">
+          <button
+            *ngFor="let preset of quickPresets"
+            mat-stroked-button
+            [class.selected]="timeFrameControl.value === preset.value"
+            (click)="onPresetSelected({ value: preset.value })"
+            class="preset-button"
+          >
+            <span class="preset-label">{{ preset.label }}</span>
+          </button>
+        </div>
+
+        <!-- Advanced Filter Accordion -->
+        <mat-accordion class="filter-accordion">
+          <!-- More Presets Panel -->
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon>date_range</mat-icon> {{ t("dates.more_presets") }}
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div class="more-presets-grid">
               <button
-                *ngFor="let preset of commonPresets"
+                *ngFor="let preset of morePresets"
                 mat-stroked-button
                 [class.selected]="timeFrameControl.value === preset.value"
                 (click)="onPresetSelected({ value: preset.value })"
+                class="preset-button"
               >
                 {{ preset.label }}
               </button>
             </div>
+          </mat-expansion-panel>
 
-            <mat-divider></mat-divider>
-
-            <div class="more-presets-section">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>{{ t("dates.more_presets") }}</mat-label>
-                <mat-select (selectionChange)="onPresetSelected($event)">
-                  <mat-option
-                    *ngFor="let preset of morePresets"
-                    [value]="preset.value"
-                  >
-                    {{ preset.label }}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-          </mat-tab>
-
-          <!-- Calendar Tab -->
-          <mat-tab [label]="t('dates.date_range')">
+          <!-- Calendar Range Panel -->
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon>calendar_month</mat-icon> {{ t("dates.date_range") }}
+              </mat-panel-title>
+            </mat-expansion-panel-header>
             <div class="date-range-container">
               <mat-form-field appearance="outline" class="date-range-field">
                 <mat-label>{{ t("dates.select_date_range") }}</mat-label>
                 <mat-date-range-input
                   [formGroup]="dateRange"
                   [rangePicker]="rangePicker"
+                  [comparisonStart]="comparisonStart"
+                  [comparisonEnd]="comparisonEnd"
                 >
                   <input
                     matStartDate
@@ -142,7 +149,15 @@ export const MY_DATE_FORMATS = {
                   matIconSuffix
                   [for]="rangePicker"
                 ></mat-datepicker-toggle>
-                <mat-date-range-picker #rangePicker></mat-date-range-picker>
+                <mat-date-range-picker 
+                  #rangePicker 
+                  [dateClass]="dateClass"
+                >
+                  <mat-date-range-picker-actions>
+                    <button mat-button matDateRangePickerCancel>{{ t("general.dismiss") }}</button>
+                    <button mat-raised-button color="primary" matDateRangePickerApply>{{ t("general.apply") }}</button>
+                  </mat-date-range-picker-actions>
+                </mat-date-range-picker>
 
                 <mat-error
                   *ngIf="
@@ -158,6 +173,37 @@ export const MY_DATE_FORMATS = {
                 </mat-error>
               </mat-form-field>
 
+              <div class="date-shortcuts">
+                <button 
+                  mat-button 
+                  (click)="selectThisMonth()"
+                  [class.active]="isThisMonthSelected"
+                >
+                  {{ t("dates.this_month") }}
+                </button>
+                <button 
+                  mat-button 
+                  (click)="selectLastMonth()"
+                  [class.active]="isLastMonthSelected"
+                >
+                  {{ t("dates.last_month") }}
+                </button>
+                <button 
+                  mat-button 
+                  (click)="selectThisYear()"
+                  [class.active]="isThisYearSelected"
+                >
+                  {{ t("dates.this_year") }}
+                </button>
+                <button 
+                  mat-button 
+                  (click)="selectLastYear()"
+                  [class.active]="isLastYearSelected"
+                >
+                  {{ t("dates.last_year") }}
+                </button>
+              </div>
+
               <button
                 mat-raised-button
                 color="primary"
@@ -172,10 +218,15 @@ export const MY_DATE_FORMATS = {
                 {{ t("general.apply") }}
               </button>
             </div>
-          </mat-tab>
+          </mat-expansion-panel>
 
-          <!-- Custom Expression Tab -->
-          <mat-tab [label]="t('dates.custom')">
+          <!-- Custom Expression Panel -->
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon>edit</mat-icon> {{ t("dates.custom") }}
+              </mat-panel-title>
+            </mat-expansion-panel-header>
             <div class="custom-expression">
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>{{ t("dates.time_frame") }}</mat-label>
@@ -186,6 +237,10 @@ export const MY_DATE_FORMATS = {
                   [placeholder]="t('dates.time_frame_placeholder')"
                   (keyup.enter)="updateTimeFrameAndEmit(timeFrameControl.value)"
                 />
+                <mat-icon 
+                  matSuffix 
+                  [matTooltip]="t('dates.time_frame_tooltip')"
+                >help_outline</mat-icon>
                 <mat-hint>{{ t("dates.custom_time_hint") }}</mat-hint>
               </mat-form-field>
 
@@ -198,8 +253,8 @@ export const MY_DATE_FORMATS = {
                 {{ t("general.apply") }}
               </button>
             </div>
-          </mat-tab>
-        </mat-tab-group>
+          </mat-expansion-panel>
+        </mat-accordion>
 
         <!-- Active time frame display -->
         <div
@@ -240,30 +295,40 @@ export const MY_DATE_FORMATS = {
         gap: 16px;
       }
 
-      .filter-tabs {
-        border-radius: 8px;
-        overflow: hidden;
-      }
-
-      .preset-buttons {
-        display: flex;
-        flex-wrap: wrap;
+      .quick-presets-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
         gap: 8px;
-        margin: 16px 0;
       }
 
-      .preset-buttons button {
-        margin: 4px;
-        min-width: 110px;
+      .more-presets-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 8px;
+        margin-top: 8px;
       }
 
-      .preset-buttons button.selected {
-        background-color: rgba(0, 0, 0, 0.08);
+      .preset-button {
+        height: auto;
+        line-height: 1.2;
+        padding: 8px 12px;
+        white-space: normal;
+        text-align: center;
+      }
+
+      .preset-button.selected {
+        background-color: rgba(103, 58, 183, 0.1);
+        border-color: rgba(103, 58, 183, 0.5);
         font-weight: 500;
       }
 
-      .more-presets-section {
-        margin: 16px 0;
+      .preset-label {
+        white-space: normal;
+        display: block;
+      }
+
+      .filter-accordion {
+        width: 100%;
       }
 
       .full-width {
@@ -271,10 +336,26 @@ export const MY_DATE_FORMATS = {
       }
 
       .date-range-container {
-        padding: 16px 0;
+        padding: 8px 0;
         display: flex;
         flex-direction: column;
         gap: 16px;
+      }
+
+      .date-shortcuts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      
+      .date-shortcuts button {
+        min-width: auto;
+        padding: 0 8px;
+      }
+      
+      .date-shortcuts button.active {
+        background-color: rgba(103, 58, 183, 0.1);
+        font-weight: 500;
       }
 
       .date-range-field {
@@ -282,7 +363,7 @@ export const MY_DATE_FORMATS = {
       }
 
       .custom-expression {
-        padding: 16px 0;
+        padding: 8px 0;
         display: flex;
         flex-direction: column;
         gap: 16px;
@@ -314,11 +395,20 @@ export const MY_DATE_FORMATS = {
       }
 
       @media (max-width: 599px) {
-        .preset-buttons {
-          flex-direction: column;
+        .quick-presets-grid {
+          grid-template-columns: repeat(2, 1fr);
         }
-
-        .preset-buttons button {
+        
+        .more-presets-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .date-shortcuts {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        
+        .date-shortcuts button {
           width: 100%;
         }
       }
@@ -340,15 +430,49 @@ export class TimeFrameSelectorComponent
     end: new FormControl<Date | null>(null),
   });
 
-  activeTabIndex = 0;
+  // Comparison date range for highlighting in the calendar
+  comparisonStart: Date | null = null;
+  comparisonEnd: Date | null = null;
+
+  // State tracking for date shortcut active states
+  isThisMonthSelected = false;
+  isLastMonthSelected = false;
+  isThisYearSelected = false;
+  isLastYearSelected = false;
+
   currentTimeFrame: TimeFrame | null = null;
 
-  // Split presets into common and more categories
-  commonPresets = timeFramePresets.slice(0, 6); // First 6 presets for quick access
-  morePresets = timeFramePresets.slice(6); // Remaining presets in dropdown
+  // Split presets into quick and more categories
+  quickPresets = timeFramePresets.slice(0, 4); // First 4 presets for immediate access
+  morePresets = timeFramePresets.slice(4); // Remaining presets in expandable panel
 
   private _manualChange = new Subject<string>();
   private _subscriptions: Subscription[] = [];
+
+  // Function to apply custom date class for highlighting in the calendar
+  dateClass = (date: Date): string => {
+    // Highlight today's date
+    if (this.isToday(date)) {
+      return 'today-date';
+    }
+    
+    // Highlight dates in the current selection range
+    if (this.comparisonStart && this.comparisonEnd) {
+      if (date >= this.comparisonStart && date <= this.comparisonEnd) {
+        return 'comparison-date';
+      }
+    }
+    
+    return '';
+  };
+
+  // Helper to check if a date is today
+  private isToday(date: Date): boolean {
+    const today = new Date();
+    return date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear();
+  }
 
   ngOnInit(): void {
     if (this.initialTimeFrame) {
@@ -363,13 +487,20 @@ export class TimeFrameSelectorComponent
           start: this.currentTimeFrame.startDate,
           end: this.currentTimeFrame.endDate,
         });
+        
+        // Set comparison dates for highlighting
+        this.comparisonStart = this.currentTimeFrame.startDate;
+        this.comparisonEnd = this.currentTimeFrame.endDate;
+        
+        // Update shortcut button states
+        this.updateShortcutButtonStates();
       }
     }
 
     // Handle form control changes - only update UI, don't emit events
     this._subscriptions.push(
       this.timeFrameControl.valueChanges
-        .pipe(debounceTime(500), distinctUntilChanged()) // Increased debounce time
+        .pipe(debounceTime(300), distinctUntilChanged())
         .subscribe((value) => {
           if (value !== null) {
             this.updateTimeFrame(value, false); // Don't emit events during typing
@@ -380,9 +511,30 @@ export class TimeFrameSelectorComponent
                 start: this.currentTimeFrame.startDate,
                 end: this.currentTimeFrame.endDate,
               });
+              
+              // Update comparison dates for highlighting
+              this.comparisonStart = this.currentTimeFrame.startDate;
+              this.comparisonEnd = this.currentTimeFrame.endDate;
+              
+              // Update shortcut button states
+              this.updateShortcutButtonStates();
             }
           }
         }),
+    );
+
+    // Handle date range form changes
+    this._subscriptions.push(
+      this.dateRange.valueChanges.subscribe(range => {
+        if (range.start && range.end) {
+          // Update comparison dates for highlighting
+          this.comparisonStart = range.start;
+          this.comparisonEnd = range.end;
+          
+          // Update shortcut button states when user selects dates
+          this.updateShortcutButtonStates();
+        }
+      })
     );
 
     // Handle manual changes (for presets)
@@ -419,11 +571,21 @@ export class TimeFrameSelectorComponent
             start: this.currentTimeFrame.startDate,
             end: this.currentTimeFrame.endDate,
           });
+          
+          // Update comparison dates for highlighting
+          this.comparisonStart = this.currentTimeFrame.startDate;
+          this.comparisonEnd = this.currentTimeFrame.endDate;
+          
+          // Update shortcut button states
+          this.updateShortcutButtonStates();
         }
       } else {
         // Clear the time frame if empty
         this.currentTimeFrame = null;
         this.dateRange.reset();
+        this.comparisonStart = null;
+        this.comparisonEnd = null;
+        this.resetShortcutButtonStates();
       }
     }
   }
@@ -433,12 +595,126 @@ export class TimeFrameSelectorComponent
     this._subscriptions = [];
   }
 
-  onTabChange(event: { index: number }): void {
-    this.activeTabIndex = event.index;
-  }
-
   onPresetSelected(event: { value: string }): void {
     this._manualChange.next(event.value);
+  }
+
+  // Date range preset methods
+  selectThisMonth(): void {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    endOfMonth.setHours(23, 59, 59, 999);
+    
+    this.dateRange.setValue({
+      start: startOfMonth,
+      end: endOfMonth
+    });
+    
+    this.applyDateRangePicker();
+  }
+
+  selectLastMonth(): void {
+    const now = new Date();
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+    endOfLastMonth.setHours(23, 59, 59, 999);
+    
+    this.dateRange.setValue({
+      start: startOfLastMonth,
+      end: endOfLastMonth
+    });
+    
+    this.applyDateRangePicker();
+  }
+
+  selectThisYear(): void {
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const endOfYear = new Date(now.getFullYear(), 11, 31);
+    endOfYear.setHours(23, 59, 59, 999);
+    
+    this.dateRange.setValue({
+      start: startOfYear,
+      end: endOfYear
+    });
+    
+    this.applyDateRangePicker();
+  }
+
+  selectLastYear(): void {
+    const now = new Date();
+    const startOfLastYear = new Date(now.getFullYear() - 1, 0, 1);
+    const endOfLastYear = new Date(now.getFullYear() - 1, 11, 31);
+    endOfLastYear.setHours(23, 59, 59, 999);
+    
+    this.dateRange.setValue({
+      start: startOfLastYear,
+      end: endOfLastYear
+    });
+    
+    this.applyDateRangePicker();
+  }
+  
+  // Update the shortcut button active states based on current date range
+  updateShortcutButtonStates(): void {
+    this.resetShortcutButtonStates();
+    
+    const { start, end } = this.dateRange.value;
+    if (!start || !end) return;
+    
+    const now = new Date();
+    
+    // Check for this month
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    endOfMonth.setHours(23, 59, 59, 999);
+    
+    if (this.isSameDay(start, startOfMonth) && this.isSameDay(end, endOfMonth)) {
+      this.isThisMonthSelected = true;
+    }
+    
+    // Check for last month
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+    endOfLastMonth.setHours(23, 59, 59, 999);
+    
+    if (this.isSameDay(start, startOfLastMonth) && this.isSameDay(end, endOfLastMonth)) {
+      this.isLastMonthSelected = true;
+    }
+    
+    // Check for this year
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const endOfYear = new Date(now.getFullYear(), 11, 31);
+    endOfYear.setHours(23, 59, 59, 999);
+    
+    if (this.isSameDay(start, startOfYear) && this.isSameDay(end, endOfYear)) {
+      this.isThisYearSelected = true;
+    }
+    
+    // Check for last year
+    const startOfLastYear = new Date(now.getFullYear() - 1, 0, 1);
+    const endOfLastYear = new Date(now.getFullYear() - 1, 11, 31);
+    endOfLastYear.setHours(23, 59, 59, 999);
+    
+    if (this.isSameDay(start, startOfLastYear) && this.isSameDay(end, endOfLastYear)) {
+      this.isLastYearSelected = true;
+    }
+  }
+  
+  // Helper to check if two dates represent the same day
+  private isSameDay(date1: Date, date2: Date): boolean {
+    return date1.getDate() === date2.getDate() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getFullYear() === date2.getFullYear();
+  }
+  
+  // Reset all shortcut button states
+  resetShortcutButtonStates(): void {
+    this.isThisMonthSelected = false;
+    this.isLastMonthSelected = false;
+    this.isThisYearSelected = false;
+    this.isLastYearSelected = false;
   }
 
   applyDateRangePicker(): void {
@@ -469,6 +745,13 @@ export class TimeFrameSelectorComponent
 
     if (timeFrame.isValid) {
       this.timeFrameChanged.emit(timeFrame);
+      
+      // Update comparison dates for highlighting
+      this.comparisonStart = timeFrame.startDate;
+      this.comparisonEnd = timeFrame.endDate;
+      
+      // Update shortcut button states
+      this.updateShortcutButtonStates();
     }
   }
 
@@ -492,6 +775,9 @@ export class TimeFrameSelectorComponent
     this.timeFrameControl.setValue("");
     this.dateRange.reset();
     this.currentTimeFrame = null;
+    this.comparisonStart = null;
+    this.comparisonEnd = null;
+    this.resetShortcutButtonStates();
 
     this.timeFrameChanged.emit({
       startDate: new Date(),

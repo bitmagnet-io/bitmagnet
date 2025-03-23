@@ -141,3 +141,24 @@ mat-drawer-content {
   overflow: visible;
   padding-bottom: 20px;
 }
+
+/* Date picker custom styles for time-frame-selector */
+.today-date {
+  background-color: rgba(103, 58, 183, 0.2);
+  border-radius: 50%;
+}
+
+.comparison-date {
+  background-color: rgba(103, 58, 183, 0.05);
+}
+
+/* Active selected date in date picker */
+.mat-calendar-body-selected {
+  background-color: #673ab7 !important;
+  color: white !important;
+}
+
+/* Date range selection highlight in datepicker */
+.mat-calendar-body-in-range::before {
+  background: rgba(103, 58, 183, 0.2);
+}
