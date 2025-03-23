@@ -13,7 +13,6 @@ linters:
     - goconst
     - goimports
     - gosmopolitan
-#    - iface
     - importas
     - intrange
     #    - misspell
@@ -80,8 +79,6 @@ linters-settings:
       - name: var-declaration
       - name: var-naming
 issues:
-  exclude-files:
-    - '(.+)\.gen\.go'
   exclude-rules:
 #    - path: '(.+)\.gen\.go'
 #      linters:
