@@ -9,19 +9,19 @@ import (
 
 type SearchResult struct {
 	XMLName    xml.Name            `xml:"rss"`
-	RssVersion rssVersion          `xml:"version,attr"`
-	AtomNs     customNs            `xml:"xmlns:atom,attr"`
-	TorznabNs  customNs            `xml:"xmlns:torznab,attr"`
+	RSSVersion rssVersion          `xml:"version,attr"`
+	AtomNS     customNS            `xml:"xmlns:atom,attr"`
+	TorznabNS  customNS            `xml:"xmlns:torznab,attr"`
 	Channel    SearchResultChannel `xml:"channel"`
 }
 
-func (r SearchResult) Xml() ([]byte, error) {
-	return objToXml(r)
+func (r SearchResult) XML() ([]byte, error) {
+	return objToXML(r)
 }
 
-type customNs struct{}
+type customNS struct{}
 
-func (r customNs) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
+func (r customNS) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 	switch name.Local {
 	case "xmlns:atom":
 		return xml.Attr{
@@ -47,11 +47,11 @@ func (r rssVersion) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 	}, nil
 }
 
-type RssDate time.Time
+type RSSDate time.Time
 
 const RssDateDefaultFormat = "Mon, 02 Jan 2006 15:04:05 -0700"
 
-func (r RssDate) String() string {
+func (r RSSDate) String() string {
 	return time.Time(r).Format(RssDateDefaultFormat)
 }
 
@@ -67,7 +67,7 @@ var rssDateFormats = []string{
 	//"02 Jan 2006 15:04:05 -0700",
 }
 
-func (r *RssDate) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+func (r *RSSDate) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	var v string
 	if err := d.DecodeElement(&v, &start); err != nil {
 		return err
@@ -75,14 +75,14 @@ func (r *RssDate) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	for _, format := range rssDateFormats {
 		parsed, err := time.Parse(format, v)
 		if err == nil {
-			*r = RssDate(parsed)
+			*r = RSSDate(parsed)
 			return nil
 		}
 	}
-	return fmt.Errorf("cannot parse %q as RssDate", v)
+	return fmt.Errorf("cannot parse %q as RSSDate", v)
 }
 
-func (r RssDate) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+func (r RSSDate) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	return e.EncodeElement(r.String(), start)
 }
 
@@ -91,8 +91,8 @@ type SearchResultChannel struct {
 	Link          string               `xml:"link,omitempty"`
 	Description   string               `xml:"description,omitempty"`
 	Language      string               `xml:"language,omitempty"`
-	PubDate       RssDate              `xml:"pubDate,omitempty"`
-	LastBuildDate RssDate              `xml:"lastBuildDate,omitempty"`
+	PubDate       RSSDate              `xml:"pubDate,omitempty"`
+	LastBuildDate RSSDate              `xml:"lastBuildDate,omitempty"`
 	Docs          string               `xml:"docs,omitempty"`
 	Generator     string               `xml:"generator,omitempty"`
 	Response      SearchResultResponse `xml:"http://www.newznab.com/DTD/2010/feeds/attributes/ response"`
@@ -107,7 +107,7 @@ type SearchResultResponse struct {
 type SearchResultItem struct {
 	Title        string                        `xml:"title"`
 	GUID         string                        `xml:"guid,omitempty"`
-	PubDate      RssDate                       `xml:"pubDate,omitempty"`
+	PubDate      RSSDate                       `xml:"pubDate,omitempty"`
 	Category     string                        `xml:"category,omitempty"`
 	Link         string                        `xml:"link,omitempty"`
 	Size         uint                          `xml:"size"`
