@@ -6,7 +6,6 @@ import (
 )
 
 func TestNewDateFromIsoString(t *testing.T) {
-
 	type parseTest struct {
 		inputString  string
 		expectedDate Date

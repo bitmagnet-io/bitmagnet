@@ -48,7 +48,8 @@ func (c processor) persist(ctx context.Context, payload persistPayload) error {
 			return blockErr
 		}
 	}
-	// a semaphore is used here to avoid a Postgres deadlock being detected when multiple processes are trying to persist
+	// a semaphore is used here to avoid a Postgres deadlock being detected
+	// when multiple processes are trying to persist
 	if err := c.persistSemaphore.Acquire(ctx, 1); err != nil {
 		return err
 	}

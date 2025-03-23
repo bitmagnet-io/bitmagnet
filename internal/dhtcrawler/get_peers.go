@@ -44,10 +44,17 @@ func (c *crawler) requestPeersForHash(
 ) (infoHashWithPeers, error) {
 	res, err := c.client.GetPeers(ctx, req.node, req.infoHash)
 	if err != nil {
-		c.kTable.BatchCommand(ktable.DropAddr{Addr: req.node.Addr(), Reason: fmt.Errorf("failed to get peers: %w", err)})
+		c.kTable.BatchCommand(ktable.DropAddr{
+			Addr:   req.node.Addr(),
+			Reason: fmt.Errorf("failed to get peers: %w", err),
+		})
 		return infoHashWithPeers{}, err
 	}
-	c.kTable.BatchCommand(ktable.PutNode{ID: res.ID, Addr: req.node, Options: []ktable.NodeOption{ktable.NodeResponded()}})
+	c.kTable.BatchCommand(ktable.PutNode{
+		ID:      res.ID,
+		Addr:    req.node,
+		Options: []ktable.NodeOption{ktable.NodeResponded()},
+	})
 	if len(res.Nodes) > 0 {
 		// block the channel for up to a second in an attempt to add the nodes to the discoveredNodes channel
 		cancelCtx, cancel := context.WithTimeout(ctx, time.Second)

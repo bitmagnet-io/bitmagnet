@@ -21,7 +21,11 @@ func TorrentContentEpisodesCriteria(episodes model.Episodes) query.Criteria {
 					keyParts = append(keyParts, fmt.Sprintf("\"%d\":{}", e))
 				}
 				and = append(and, query.DBCriteria{
-					SQL: fmt.Sprintf("torrent_contents.episodes #> '{%d}' @> '{%s}'::jsonb", s.Season, strings.Join(keyParts, ",")),
+					SQL: fmt.Sprintf(
+						"torrent_contents.episodes #> '{%d}' @> '{%s}'::jsonb",
+						s.Season,
+						strings.Join(keyParts, ","),
+					),
 				})
 			}
 		}

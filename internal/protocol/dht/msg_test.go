@@ -15,6 +15,8 @@ import (
 	"testing"
 )
 
+//revive:disable:line-length-limit
+
 func testMarshalUnmarshalMsg(t *testing.T, m Msg, expected string) {
 	c := qt.New(t)
 	b, err := bencode.Marshal(m)
@@ -210,7 +212,8 @@ func TestBep51EmptySampleField(t *testing.T) {
 				},
 			},
 		},
-		"d1:rd2:id20:\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x007:samples0:e1:t0:1:y0:e",
+		"d1:rd2:id20:\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"+
+			"7:samples0:e1:t0:1:y0:e",
 	).R.Samples
 	c := qt.New(t)
 	c.Assert(samples, qt.Not(qt.IsNil))

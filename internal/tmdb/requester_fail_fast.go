@@ -13,7 +13,12 @@ type requesterFailFast struct {
 	isUnauthorized *concurrency.AtomicValue[bool]
 }
 
-func (r requesterFailFast) Request(ctx context.Context, path string, queryParams map[string]string, result interface{}) (*resty.Response, error) {
+func (r requesterFailFast) Request(
+	ctx context.Context,
+	path string,
+	queryParams map[string]string,
+	result any,
+) (*resty.Response, error) {
 	if r.isUnauthorized.Get() {
 		return nil, ErrUnauthorized
 	}

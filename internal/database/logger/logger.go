@@ -67,15 +67,31 @@ func (l *customLogger) Trace(_ context.Context, begin time.Time, fc func() (stri
 	}
 	elapsed := time.Since(begin)
 	switch {
-	case err != nil && l.logLevel >= gormlogger.Error && !errors.Is(err, gormlogger.ErrRecordNotFound) && !errors.Is(err, context.Canceled):
+	case err != nil && l.logLevel >= gormlogger.Error &&
+		!errors.Is(err, gormlogger.ErrRecordNotFound) &&
+		!errors.Is(err, context.Canceled):
 		sql, rows := fc()
-		l.zap.Errorw("gorm trace", "location", utils.FileWithLineNum(), "error", err, "elapsed", float64(elapsed.Nanoseconds())/1e6, "sql", sql, "rows", rows)
+		l.zap.Errorw("gorm trace",
+			"location", utils.FileWithLineNum(),
+			"error", err,
+			"elapsed", float64(elapsed.Nanoseconds())/1e6,
+			"sql", sql,
+			"rows", rows)
 	case elapsed > l.slowThreshold && l.slowThreshold != 0 && l.logLevel >= gormlogger.Warn:
 		sql, rows := fc()
 		slowLog := fmt.Sprintf("SLOW SQL >= %v", l.slowThreshold)
-		l.zap.Warnw("gorm trace", "location", utils.FileWithLineNum(), "slowLog", slowLog, "elapsed", float64(elapsed.Nanoseconds())/1e6, "sql", sql, "rows", rows)
+		l.zap.Warnw("gorm trace",
+			"location", utils.FileWithLineNum(),
+			"slowLog", slowLog,
+			"elapsed", float64(elapsed.Nanoseconds())/1e6,
+			"sql", sql,
+			"rows", rows)
 	case l.logLevel == gormlogger.Info:
 		sql, rows := fc()
-		l.zap.Debugw("gorm trace", "location", utils.FileWithLineNum(), "elapsed", float64(elapsed.Nanoseconds())/1e6, "sql", sql, "rows", rows)
+		l.zap.Debugw("gorm trace",
+			"location", utils.FileWithLineNum(),
+			"elapsed", float64(elapsed.Nanoseconds())/1e6,
+			"sql", sql,
+			"rows", rows)
 	}
 }

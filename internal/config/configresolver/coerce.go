@@ -12,8 +12,7 @@ var durationType = reflect.TypeOf(time.Duration(0))
 
 func coerceStringValue(stringValue string, valueType reflect.Type) (interface{}, error) {
 	// todo Fill this out
-	switch valueType {
-	case durationType:
+	if valueType == durationType {
 		return time.ParseDuration(stringValue)
 	}
 	switch valueType.Kind() {
@@ -41,6 +40,7 @@ func coerceStringValue(stringValue string, valueType reflect.Type) (interface{},
 			values[i] = coercedValue
 		}
 		return values, nil
+	default:
 	}
 	return nil, fmt.Errorf("cannot coerce value to type %v", valueType)
 }

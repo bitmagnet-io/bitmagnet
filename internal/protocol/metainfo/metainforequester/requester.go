@@ -32,15 +32,20 @@ type ExtensionBit uint
 // https://www.bittorrent.org/beps/bep_0004.html
 // https://wiki.theory.org/BitTorrentSpecification.html#Reserved_Bytes
 const (
-	ExtensionBitDht                          = 0 // http://www.bittorrent.org/beps/bep_0005.html
-	ExtensionBitFast                         = 2 // http://www.bittorrent.org/beps/bep_0006.html
-	ExtensionBitV2                           = 7 // "Hybrid torrent legacy to v2 upgrade"
+	// ExtensionBitDht http://www.bittorrent.org/beps/bep_0005.html
+	ExtensionBitDht = 0
+	// ExtensionBitFast http://www.bittorrent.org/beps/bep_0006.html
+	ExtensionBitFast = 2
+	// ExtensionBitV2 "Hybrid torrent legacy to v2 upgrade"
+	ExtensionBitV2                           = 7
 	ExtensionBitAzureusExtensionNegotiation1 = 16
 	ExtensionBitAzureusExtensionNegotiation2 = 17
-	ExtensionBitLtep                         = 20 // LibTorrent Extension Protocol, http://www.bittorrent.org/beps/bep_0010.html
-	ExtensionBitLocationAwareProtocol        = 43 // https://wiki.theory.org/BitTorrent_Location-aware_Protocol_1
-	ExtensionBitAzureusMessagingProtocol     = 63 // https://www.bittorrent.org/beps/bep_0004.html
-
+	// ExtensionBitLtep LibTorrent Extension Protocol, http://www.bittorrent.org/beps/bep_0010.html
+	ExtensionBitLtep = 20
+	// ExtensionBitLocationAwareProtocol https://wiki.theory.org/BitTorrent_Location-aware_Protocol_1
+	ExtensionBitLocationAwareProtocol = 43
+	// ExtensionBitAzureusMessagingProtocol https://www.bittorrent.org/beps/bep_0004.html
+	ExtensionBitAzureusMessagingProtocol = 63
 )
 
 type PeerExtensionBits [8]byte
@@ -152,7 +157,8 @@ func btHandshake(rw io.ReadWriter, infoHash protocol.ID, clientID protocol.ID) (
 	}
 	handshakeResponse := make([]byte, 68)
 	if n, hsErr := io.ReadFull(rw, handshakeResponse); hsErr != nil {
-		return HandshakeInfo{}, fmt.Errorf("failed to read all handshake bytes (%d): %w / %s", n, hsErr, infoHash.String())
+		return HandshakeInfo{},
+			fmt.Errorf("failed to read all handshake bytes (%d): %w / %s", n, hsErr, infoHash.String())
 	}
 	if !bytes.HasPrefix(handshakeResponse, []byte(peer_protocol.Protocol)) {
 		return HandshakeInfo{}, errors.New("invalid handshake response received")

@@ -10,11 +10,14 @@ import (
 
 // runInfoHashTriage receives discovered hashes on the infoHashTriage channel, determines if they should be crawled,
 // and forwards them to the appropriate channel. Possible outcomes are:
-// 1. The hash is not in the database, so it is forwarded to the getPeers channel to attempt retrieval of the meta info.
-// 2. The hash is in the database, but we don't have the full details of the torrent (for example it was imported outside the DHT crawler,
-// and so we don't have the files info), so it is forwarded to the getPeers channel to attempt retrieval of the meta info.
-// 3. The hash is in the database, but the seeders/leechers are not known or are outdated, so it is forwarded to the scrape channel.
-// 4. The hash is in the database and the seeders/leechers are known and up to date, so it is discarded.
+//  1. The hash is not in the database, so it is forwarded to the getPeers channel to attempt
+//     retrieval of the meta info.
+//  2. The hash is in the database, but we don't have the full details of the torrent (for example it was imported
+//     outside the DHT crawler, and so we don't have the files info), so it is forwarded to the getPeers channel to
+//     attempt retrieval of the meta info.
+//  3. The hash is in the database, but the seeders/leechers are not known or are outdated,
+//     so it is forwarded to the scrape channel.
+//  4. The hash is in the database and the seeders/leechers are known and up to date, so it is discarded.
 func (c *crawler) runInfoHashTriage(ctx context.Context) {
 	for {
 		select {
@@ -78,7 +81,8 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 					case c.getPeers.In() <- r:
 						continue
 					}
-				} else if !(t.Seeders.Valid && t.Leechers.Valid) || t.UpdatedAt.Before(time.Now().Add(-c.rescrapeThreshold)) {
+				} else if !(t.Seeders.Valid && t.Leechers.Valid) ||
+					t.UpdatedAt.Before(time.Now().Add(-c.rescrapeThreshold)) {
 					select {
 					case <-ctx.Done():
 						return

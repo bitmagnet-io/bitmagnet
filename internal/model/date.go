@@ -55,7 +55,12 @@ func (d Date) IsNil() bool {
 }
 
 func (d Date) IsValid() bool {
-	return d.Year >= 1000 && d.Year <= 9999 && d.Month >= 1 && d.Month <= 12 && d.Day >= 1 && d.Day <= numDaysInMonth(d.Year, d.Month)
+	return d.Year >= 1000 &&
+		d.Year <= 9999 &&
+		d.Month >= 1 &&
+		d.Month <= 12 &&
+		d.Day >= 1 &&
+		d.Day <= numDaysInMonth(d.Year, d.Month)
 }
 
 func (d *Date) Scan(value interface{}) error {

@@ -42,7 +42,9 @@ func (r mapResolver) Resolve(path []string, valueType reflect.Type) (any, bool, 
 			if strV, strOk := rawV.(string); strOk {
 				coerced, coerceErr := coerceStringValue(strV, valueType)
 				if coerceErr != nil {
-					return nil, true, fmt.Errorf("error coercing configcmd map path '%s' with value '%s' to type %v: %w", currentPath, strV, valueType, coerceErr)
+					return nil, true, fmt.Errorf(
+						"error coercing configcmd map path '%s' with value '%s' to type %v: %w",
+						currentPath, strV, valueType, coerceErr)
 				}
 				return coerced, true, nil
 			} else if sliceV, sliceOk := rawV.([]interface{}); sliceOk {

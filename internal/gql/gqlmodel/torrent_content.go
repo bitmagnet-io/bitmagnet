@@ -189,7 +189,9 @@ func (t TorrentContentQuery) Search(
 	return transformTorrentContentSearchResult(result)
 }
 
-func transformTorrentContentSearchResult(result q.GenericResult[search.TorrentContentResultItem]) (TorrentContentSearchResult, error) {
+func transformTorrentContentSearchResult(
+	result q.GenericResult[search.TorrentContentResultItem],
+) (TorrentContentSearchResult, error) {
 	aggs, aggsErr := transformTorrentContentAggregations(result.Aggregations)
 	if aggsErr != nil {
 		return TorrentContentSearchResult{}, aggsErr

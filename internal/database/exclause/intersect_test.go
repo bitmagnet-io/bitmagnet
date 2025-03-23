@@ -70,7 +70,8 @@ func TestIntersect_Query(t *testing.T) {
 						},
 					}).Scan(nil)
 			},
-			want:     "SELECT * FROM `general_users` INTERSECT SELECT * FROM `admin_users` INTERSECT SELECT * FROM `guest_users`",
+			want: "SELECT * FROM `general_users` INTERSECT SELECT * FROM `admin_users` " +
+				"INTERSECT SELECT * FROM `guest_users`",
 			wantArgs: []driver.Value{},
 		},
 	}
@@ -88,7 +89,9 @@ func TestIntersect_Query(t *testing.T) {
 			if err := db.Use(New()); err != nil {
 				t.Fatalf("an error '%s' was not expected when using the database plugin", err)
 			}
-			mock.ExpectQuery(regexp.QuoteMeta(tt.want)).WithArgs(tt.wantArgs...).WillReturnRows(sqlmock.NewRows([]string{}))
+			mock.ExpectQuery(regexp.QuoteMeta(tt.want)).
+				WithArgs(tt.wantArgs...).
+				WillReturnRows(sqlmock.NewRows([]string{}))
 
 			if tt.operation != nil {
 				db = tt.operation(db)

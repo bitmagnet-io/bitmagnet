@@ -119,9 +119,9 @@ func parseTitleYear(input string) (string, model.Year, string, error) {
 	return "", 0, "", classification.ErrUnmatched
 }
 
-func parseTitle(input string) (string, string, error) {
+func parseTitle(input string) (title string, rest string, err error) {
 	if match := titleRegex.FindStringSubmatch(input); match != nil {
-		title := cleanTitle(match[1])
+		title = cleanTitle(match[1])
 		if title != "" {
 			return title, input[len(match[0]):], nil
 		}
@@ -145,7 +145,10 @@ func parseTitleYearEpisodes(input string) (string, model.Year, model.Episodes, s
 	return "", 0, nil, "", classification.ErrUnmatched
 }
 
-func ParseTitleYearEpisodes(contentType model.NullContentType, input string) (string, model.Year, model.Episodes, string, error) {
+func ParseTitleYearEpisodes(
+	contentType model.NullContentType,
+	input string,
+) (string, model.Year, model.Episodes, string, error) {
 	if !contentType.Valid || contentType.ContentType == model.ContentTypeTvShow {
 		if title, year, episodes, rest, err := parseTitleYearEpisodes(input); err == nil {
 			return title, year, episodes, rest, nil

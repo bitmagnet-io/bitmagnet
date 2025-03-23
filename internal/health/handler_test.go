@@ -51,7 +51,8 @@ func (ck *resultWriterMock) Write(result *CheckerResult, statusCode int, w http.
 
 //var testTimestamp = time.Now()
 
-func doTestHandler(t *testing.T, statusCodeUp, statusCodeDown int, expectedStatus CheckerResult, expectedStatusCode int) {
+func doTestHandler(t *testing.T,
+	statusCodeUp, statusCodeDown int, expectedStatus CheckerResult, expectedStatusCode int) {
 	// Arrange
 	response := httptest.NewRecorder()
 	request := httptest.NewRequest("GET", "https://localhost/foo", nil)
@@ -122,5 +123,4 @@ func TestWhenChecksEmptyThenHandlerResultContainNoChecksMap(t *testing.T) {
 	if w.Body.String() != "{\"status\":\"up\"}" {
 		t.Errorf("response does not contain the expected result")
 	}
-
 }

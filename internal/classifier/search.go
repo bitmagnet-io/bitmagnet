@@ -53,7 +53,12 @@ func (l localSearch) ContentByID(ctx context.Context, ref model.ContentRef) (mod
 	return result.Items[0].Content, nil
 }
 
-func (l localSearch) ContentBySearch(ctx context.Context, ct model.ContentType, baseTitle string, year model.Year) (model.Content, error) {
+func (l localSearch) ContentBySearch(
+	ctx context.Context,
+	ct model.ContentType,
+	baseTitle string,
+	year model.Year,
+) (model.Content, error) {
 	options := []query.Option{
 		query.Where(search.ContentTypeCriteria(ct)),
 		query.SearchString(fmt.Sprintf("\"%s\"", baseTitle)),

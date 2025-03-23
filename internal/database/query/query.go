@@ -125,7 +125,9 @@ func (gq *genericQuery[_]) doCount() {
 			gq.addError(sqErr)
 			return
 		}
-		if countResult, countErr := dao.BudgetedCount(sq.UnderlyingDB(), gq.builder.AggregationBudget()); countErr != nil {
+		if countResult, countErr := dao.BudgetedCount(
+			sq.UnderlyingDB(), gq.builder.AggregationBudget(),
+		); countErr != nil {
 			gq.addError(countErr)
 		} else {
 			gq.result.TotalCount = uint(countResult.Count)
@@ -203,7 +205,8 @@ func (gq *genericQuery[T]) doItems() {
 					return
 				}
 				if len(items) == 0 {
-					// if no items are returned, we need a further check to distinguish between stopping point reached and no matching items
+					// if no items are returned, we need a further check
+					// to distinguish between stopping point reached and no matching items
 					exists, existsErr := gq.checkExists(raceCtx)
 					if existsErr != nil {
 						done(nil, existsErr)
@@ -616,7 +619,11 @@ func (b optionBuilder) applyPre(sq SubQuery, withOrderJoins bool) error {
 	return nil
 }
 
-func extractRequiredJoins(tableName string, joins map[string]TableJoin, requiredJoins maps.InsertMap[string, struct{}]) ([]TableJoin, error) {
+func extractRequiredJoins(
+	tableName string,
+	joins map[string]TableJoin,
+	requiredJoins maps.InsertMap[string, struct{}],
+) ([]TableJoin, error) {
 	resolvedJoins := maps.NewInsertMap[string, TableJoin]()
 	var addJoin func(name string) error
 	addJoin = func(name string) error {
@@ -722,5 +729,7 @@ func (b optionBuilder) shouldTryCteStrategy() bool {
 			return true
 		}
 	}
-	return b.tsquery != "" && (len(b.orderBy) != 1 || b.orderBy[0].Column.Name != QueryStringRankField || !b.orderBy[0].Desc)
+	return b.tsquery != "" && (len(b.orderBy) != 1 ||
+		b.orderBy[0].Column.Name != QueryStringRankField ||
+		!b.orderBy[0].Desc)
 }

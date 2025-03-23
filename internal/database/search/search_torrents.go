@@ -14,8 +14,16 @@ type TorrentsResult = query.GenericResult[model.Torrent]
 
 type TorrentSearch interface {
 	Torrents(ctx context.Context, options ...query.Option) (TorrentsResult, error)
-	TorrentsWithMissingInfoHashes(ctx context.Context, infoHashes []protocol.ID, options ...query.Option) (TorrentsWithMissingInfoHashesResult, error)
-	TorrentSuggestTags(ctx context.Context, query SuggestTagsQuery, options ...query.Option) (TorrentSuggestTagsResult, error)
+	TorrentsWithMissingInfoHashes(
+		ctx context.Context,
+		infoHashes []protocol.ID,
+		options ...query.Option,
+	) (TorrentsWithMissingInfoHashesResult, error)
+	TorrentSuggestTags(
+		ctx context.Context,
+		query SuggestTagsQuery,
+		options ...query.Option,
+	) (TorrentSuggestTagsResult, error)
 }
 
 func (s search) Torrents(ctx context.Context, options ...query.Option) (TorrentsResult, error) {
@@ -37,8 +45,13 @@ type TorrentsWithMissingInfoHashesResult struct {
 	MissingInfoHashes []protocol.ID
 }
 
-func (s search) TorrentsWithMissingInfoHashes(ctx context.Context, infoHashes []protocol.ID, options ...query.Option) (TorrentsWithMissingInfoHashesResult, error) {
-	searchResult, searchErr := s.Torrents(ctx, append([]query.Option{query.Where(TorrentInfoHashCriteria(infoHashes...))}, options...)...)
+func (s search) TorrentsWithMissingInfoHashes(
+	ctx context.Context,
+	infoHashes []protocol.ID,
+	options ...query.Option,
+) (TorrentsWithMissingInfoHashesResult, error) {
+	searchResult, searchErr := s.Torrents(ctx,
+		append([]query.Option{query.Where(TorrentInfoHashCriteria(infoHashes...))}, options...)...)
 	if searchErr != nil {
 		return TorrentsWithMissingInfoHashesResult{}, searchErr
 	}
@@ -79,7 +92,11 @@ type TorrentSuggestTagsResult struct {
 	Suggestions []SuggestedTag
 }
 
-func (s search) TorrentSuggestTags(ctx context.Context, q SuggestTagsQuery, options ...query.Option) (TorrentSuggestTagsResult, error) {
+func (s search) TorrentSuggestTags(
+	ctx context.Context,
+	q SuggestTagsQuery,
+	options ...query.Option,
+) (TorrentSuggestTagsResult, error) {
 	var criteria []query.Criteria
 	if q.Prefix != "" {
 		criteria = append(criteria, query.DaoCriteria{

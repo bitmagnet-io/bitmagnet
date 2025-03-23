@@ -7,7 +7,10 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics"
 )
 
-func (t TorrentQuery) Metrics(ctx context.Context, input gen.TorrentMetricsQueryInput) (*gen.TorrentMetricsQueryResult, error) {
+func (t TorrentQuery) Metrics(
+	ctx context.Context,
+	input gen.TorrentMetricsQueryInput,
+) (*gen.TorrentMetricsQueryResult, error) {
 	req := torrentmetrics.Request{}
 	switch input.BucketDuration {
 	case gen.MetricsBucketDurationMinute:

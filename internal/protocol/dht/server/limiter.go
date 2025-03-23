@@ -20,7 +20,12 @@ func (s queryLimiter) stop() {
 	s.server.stop()
 }
 
-func (s queryLimiter) Query(ctx context.Context, addr netip.AddrPort, q string, args dht.MsgArgs) (r dht.RecvMsg, err error) {
+func (s queryLimiter) Query(
+	ctx context.Context,
+	addr netip.AddrPort,
+	q string,
+	args dht.MsgArgs,
+) (r dht.RecvMsg, err error) {
 	if limitErr := s.queryLimiter.Wait(ctx, addr.Addr().String()); limitErr != nil {
 		return r, limitErr
 	}

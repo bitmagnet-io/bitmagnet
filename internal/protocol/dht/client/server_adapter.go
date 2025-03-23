@@ -22,7 +22,11 @@ func (a serverAdapter) Ping(ctx context.Context, addr netip.AddrPort) (PingResul
 	return PingResult{ID: res.Msg.R.ID}, nil
 }
 
-func (a serverAdapter) FindNode(ctx context.Context, addr netip.AddrPort, target protocol.ID) (FindNodeResult, error) {
+func (a serverAdapter) FindNode(
+	ctx context.Context,
+	addr netip.AddrPort,
+	target protocol.ID,
+) (FindNodeResult, error) {
 	res, err := a.server.Query(ctx, addr, dht.QFindNode, dht.MsgArgs{ID: a.nodeID, Target: target})
 	if err != nil {
 		return FindNodeResult{}, err
@@ -33,7 +37,11 @@ func (a serverAdapter) FindNode(ctx context.Context, addr netip.AddrPort, target
 	}, nil
 }
 
-func (a serverAdapter) GetPeers(ctx context.Context, addr netip.AddrPort, infoHash protocol.ID) (GetPeersResult, error) {
+func (a serverAdapter) GetPeers(
+	ctx context.Context,
+	addr netip.AddrPort,
+	infoHash protocol.ID,
+) (GetPeersResult, error) {
 	res, err := a.server.Query(ctx, addr, dht.QGetPeers, dht.MsgArgs{ID: a.nodeID, InfoHash: infoHash})
 	if err != nil {
 		return GetPeersResult{}, err
@@ -45,7 +53,11 @@ func (a serverAdapter) GetPeers(ctx context.Context, addr netip.AddrPort, infoHa
 	}, nil
 }
 
-func (a serverAdapter) GetPeersScrape(ctx context.Context, addr netip.AddrPort, infoHash protocol.ID) (GetPeersScrapeResult, error) {
+func (a serverAdapter) GetPeersScrape(
+	ctx context.Context,
+	addr netip.AddrPort,
+	infoHash protocol.ID,
+) (GetPeersScrapeResult, error) {
 	res, err := a.server.Query(ctx, addr, dht.QGetPeers, dht.MsgArgs{ID: a.nodeID, InfoHash: infoHash, Scrape: 1})
 	if err != nil {
 		return GetPeersScrapeResult{}, err
@@ -62,7 +74,11 @@ func (a serverAdapter) GetPeersScrape(ctx context.Context, addr netip.AddrPort, 
 	}, nil
 }
 
-func (a serverAdapter) SampleInfoHashes(ctx context.Context, addr netip.AddrPort, target protocol.ID) (SampleInfoHashesResult, error) {
+func (a serverAdapter) SampleInfoHashes(
+	ctx context.Context,
+	addr netip.AddrPort,
+	target protocol.ID,
+) (SampleInfoHashesResult, error) {
 	res, err := a.server.Query(ctx, addr, dht.QSampleInfohashes, dht.MsgArgs{ID: a.nodeID, Target: target})
 	if err != nil {
 		return SampleInfoHashesResult{}, err

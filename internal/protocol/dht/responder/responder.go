@@ -109,8 +109,8 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 // The token value is a required argument for a future announce_peer query.
 // The token value should be a short binary string.
 // The queried node must verify that the token was previously sent to the same IP address as the querying node.
-// Then the queried node should store the IP address of the querying node and the supplied port number under the infohash
-// in its store of peer contact information.
+// Then the queried node should store the IP address of the querying node and the supplied port number
+// under the infohash in its store of peer contact information.
 // https://www.bittorrent.org/beps/bep_0005.html
 func (r responder) announceToken(infoHash protocol.ID, nodeID protocol.ID, nodeAddr netip.Addr) string {
 	bytes := r.tokenSecret

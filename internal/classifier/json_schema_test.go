@@ -12,7 +12,6 @@ import (
 var metaSchemaJSON []byte
 
 func TestJsonSchema(t *testing.T) {
-
 	schemaJSON, err := DefaultJSONSchema().MarshalJSON()
 	assert.NoError(t, err)
 

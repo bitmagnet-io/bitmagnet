@@ -35,7 +35,12 @@ func (c healthCollector) stop() {
 	c.baseServer.stop()
 }
 
-func (c healthCollector) Query(ctx context.Context, addr netip.AddrPort, q string, args dht.MsgArgs) (dht.RecvMsg, error) {
+func (c healthCollector) Query(
+	ctx context.Context,
+	addr netip.AddrPort,
+	q string,
+	args dht.MsgArgs,
+) (dht.RecvMsg, error) {
 	res, err := c.baseServer.Query(ctx, addr, q, args)
 	c.lastResponses.Update(func(lr LastResponses) LastResponses {
 		lr.LastResponse = time.Now()

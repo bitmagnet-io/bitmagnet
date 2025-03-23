@@ -11,7 +11,12 @@ type requesterLimiter struct {
 	limiter   *rate.Limiter
 }
 
-func (r requesterLimiter) Request(ctx context.Context, path string, queryParams map[string]string, result interface{}) (*resty.Response, error) {
+func (r requesterLimiter) Request(
+	ctx context.Context,
+	path string,
+	queryParams map[string]string,
+	result any,
+) (*resty.Response, error) {
 	if err := r.limiter.Wait(ctx); err != nil {
 		return nil, err
 	}

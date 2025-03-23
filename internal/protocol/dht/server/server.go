@@ -143,7 +143,12 @@ func (s *server) handleResponse(msg dht.RecvMsg) {
 	}
 }
 
-func (s *server) Query(ctx context.Context, addr netip.AddrPort, q string, args dht.MsgArgs) (r dht.RecvMsg, err error) {
+func (s *server) Query(
+	ctx context.Context,
+	addr netip.AddrPort,
+	q string,
+	args dht.MsgArgs,
+) (r dht.RecvMsg, err error) {
 	transactionID := s.idIssuer.Issue()
 	ch := make(chan dht.RecvMsg, 1)
 	s.mutex.Lock()

@@ -13,7 +13,8 @@ import (
 	"time"
 )
 
-// requesterLazy defers instantiation of the requester (and possible failure) until the first request is made, avoiding failure when the TMDB client is not needed.
+// requesterLazy defers instantiation of the requester (and possible failure) until the first request is made,
+// avoiding failure when the TMDB client is not needed.
 type requesterLazy struct {
 	once      sync.Once
 	config    Config
@@ -22,7 +23,12 @@ type requesterLazy struct {
 	requester Requester
 }
 
-func (r *requesterLazy) Request(ctx context.Context, path string, queryParams map[string]string, result interface{}) (*resty.Response, error) {
+func (r *requesterLazy) Request(
+	ctx context.Context,
+	path string,
+	queryParams map[string]string,
+	result interface{},
+) (*resty.Response, error) {
 	r.once.Do(func() {
 		r.requester, r.err = newRequester(ctx, r.config, r.logger)
 	})
@@ -37,7 +43,8 @@ func newRequester(ctx context.Context, config Config, logger *zap.SugaredLogger)
 		return nil, errors.New("TMDB is disabled")
 	}
 	if config.APIKey == defaultTmdbAPIKey {
-		logger.Warnln("you are using the default TMDB api key; TMDB requests will be limited to 1 per second; to remove this warning please configure a personal TMDB api key")
+		logger.Warnln("you are using the default TMDB api key; TMDB requests will be limited to 1 per second; " +
+			"to remove this warning please configure a personal TMDB api key")
 		config.RateLimit = time.Second
 		config.RateLimitBurst = 8
 	}

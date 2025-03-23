@@ -26,9 +26,16 @@ func (c *crawler) runFindNode(ctx context.Context) {
 	_ = c.nodesForFindNode.Run(ctx, func(p ktable.Node) {
 		res, err := c.client.FindNode(ctx, p.Addr(), c.soughtNodeID.Get())
 		if err != nil {
-			c.kTable.BatchCommand(ktable.DropNode{ID: p.ID(), Reason: fmt.Errorf("find_node failed: %w", err)})
+			c.kTable.BatchCommand(ktable.DropNode{
+				ID:     p.ID(),
+				Reason: fmt.Errorf("find_node failed: %w", err),
+			})
 		} else {
-			c.kTable.BatchCommand(ktable.PutNode{ID: p.ID(), Addr: p.Addr(), Options: []ktable.NodeOption{ktable.NodeResponded()}})
+			c.kTable.BatchCommand(ktable.PutNode{
+				ID:      p.ID(),
+				Addr:    p.Addr(),
+				Options: []ktable.NodeOption{ktable.NodeResponded()},
+			})
 			// block this channel until all nodes can be added to the discoveredNodes channel
 			for _, n := range res.Nodes {
 				select {

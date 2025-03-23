@@ -27,7 +27,12 @@ func (a attachLocalContentBySearchAction) compileAction(ctx compilerContext) (ac
 			if !cl.ContentType.Valid || !cl.BaseTitle.Valid {
 				return cl, classification.ErrUnmatched
 			}
-			content, err := ctx.search.ContentBySearch(ctx.Context, cl.ContentType.ContentType, cl.BaseTitle.String, cl.Date.Year)
+			content, err := ctx.search.ContentBySearch(
+				ctx.Context,
+				cl.ContentType.ContentType,
+				cl.BaseTitle.String,
+				cl.Date.Year,
+			)
 			if err != nil {
 				return cl, err
 			}

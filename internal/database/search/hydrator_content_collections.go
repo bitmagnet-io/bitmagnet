@@ -8,7 +8,12 @@ import (
 )
 
 func HydrateContentCollections() query.Option {
-	return query.HydrateHasMany[ContentResultItem, model.ContentRef, model.ContentCollectionContent, model.ContentCollection](
+	return query.HydrateHasMany[
+		ContentResultItem,
+		model.ContentRef,
+		model.ContentCollectionContent,
+		model.ContentCollection,
+	](
 		contentCollectionsHydrator{},
 	)
 }
@@ -23,7 +28,11 @@ func (h contentCollectionsHydrator) RootID(root ContentResultItem) (model.Conten
 	}, true
 }
 
-func (h contentCollectionsHydrator) GetJoinSubs(ctx context.Context, dbCtx query.DBContext, ids []model.ContentRef) ([]model.ContentCollectionContent, error) {
+func (h contentCollectionsHydrator) GetJoinSubs(
+	ctx context.Context,
+	dbCtx query.DBContext,
+	ids []model.ContentRef,
+) ([]model.ContentCollectionContent, error) {
 	refMap := contentMapFromRefs(ids...)
 	q := dbCtx.Query()
 	var conds []gen.Condition
@@ -54,7 +63,9 @@ func (h contentCollectionsHydrator) GetJoinSubs(ctx context.Context, dbCtx query
 	return results, nil
 }
 
-func (h contentCollectionsHydrator) JoinSubToRootIDAndSub(j model.ContentCollectionContent) (model.ContentRef, model.ContentCollection) {
+func (h contentCollectionsHydrator) JoinSubToRootIDAndSub(
+	j model.ContentCollectionContent,
+) (model.ContentRef, model.ContentCollection) {
 	return model.ContentRef{
 		Type:   j.ContentType,
 		Source: j.ContentSource,

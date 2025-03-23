@@ -26,6 +26,7 @@ type Error struct {
 	// 300 Item already exists.
 	// 900 Unknown error
 	// 910 API Disabled
+	//revive:disable-next-line:struct-tag
 	Code        int    `xml:"error,attr"`
 	Description string `xml:"description,attr"`
 }

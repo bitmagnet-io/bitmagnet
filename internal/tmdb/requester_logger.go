@@ -11,7 +11,12 @@ type requesterLogger struct {
 	logger    *zap.SugaredLogger
 }
 
-func (r requesterLogger) Request(ctx context.Context, path string, queryParams map[string]string, result interface{}) (*resty.Response, error) {
+func (r requesterLogger) Request(
+	ctx context.Context,
+	path string,
+	queryParams map[string]string,
+	result any,
+) (*resty.Response, error) {
 	res, err := r.requester.Request(ctx, path, queryParams, result)
 	kvs := []interface{}{"path", path, "queryParams", queryParams}
 	if res != nil {

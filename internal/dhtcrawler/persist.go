@@ -51,7 +51,8 @@ func (c *crawler) runPersistTorrents(ctx context.Context) {
 					continue
 				}
 				hashMap[i.infoHash] = i
-				if t, err := createTorrentModel(i.infoHash, i.metaInfo, c.savePieces, c.saveFilesThreshold); err != nil {
+				if t, err := createTorrentModel(
+					i.infoHash, i.metaInfo, c.savePieces, c.saveFilesThreshold); err != nil {
 					c.logger.Errorf("error creating torrent model: %s", err.Error())
 				} else {
 					for _, f := range t.Files {

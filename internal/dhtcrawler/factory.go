@@ -79,13 +79,20 @@ func New(params Params) Result {
 						getOldestNodesInterval:       time.Second * 10,
 						oldPeerThreshold:             time.Minute * 15,
 						discoveredNodes:              params.DiscoveredNodes,
-						nodesForPing:                 concurrency.NewBufferedConcurrentChannel[ktable.Node](scalingFactor, scalingFactor),
-						nodesForFindNode:             concurrency.NewBufferedConcurrentChannel[ktable.Node](10*scalingFactor, 10*scalingFactor),
-						nodesForSampleInfoHashes:     concurrency.NewBufferedConcurrentChannel[ktable.Node](10*scalingFactor, 10*scalingFactor),
-						infoHashTriage:               concurrency.NewBatchingChannel[nodeHasPeersForHash](10*scalingFactor, 1000, 20*time.Second),
-						getPeers:                     concurrency.NewBufferedConcurrentChannel[nodeHasPeersForHash](10*scalingFactor, 20*scalingFactor),
-						scrape:                       concurrency.NewBufferedConcurrentChannel[nodeHasPeersForHash](10*scalingFactor, 20*scalingFactor),
-						requestMetaInfo:              concurrency.NewBufferedConcurrentChannel[infoHashWithPeers](10*scalingFactor, 40*scalingFactor),
+						nodesForPing: concurrency.NewBufferedConcurrentChannel[ktable.Node](
+							scalingFactor, scalingFactor),
+						nodesForFindNode: concurrency.NewBufferedConcurrentChannel[ktable.Node](
+							10*scalingFactor, 10*scalingFactor),
+						nodesForSampleInfoHashes: concurrency.NewBufferedConcurrentChannel[ktable.Node](
+							10*scalingFactor, 10*scalingFactor),
+						infoHashTriage: concurrency.NewBatchingChannel[nodeHasPeersForHash](
+							10*scalingFactor, 1000, 20*time.Second),
+						getPeers: concurrency.NewBufferedConcurrentChannel[nodeHasPeersForHash](
+							10*scalingFactor, 20*scalingFactor),
+						scrape: concurrency.NewBufferedConcurrentChannel[nodeHasPeersForHash](
+							10*scalingFactor, 20*scalingFactor),
+						requestMetaInfo: concurrency.NewBufferedConcurrentChannel[infoHashWithPeers](
+							10*scalingFactor, 40*scalingFactor),
 						persistTorrents: concurrency.NewBatchingChannel[infoHashWithMetaInfo](
 							1000,
 							1000,

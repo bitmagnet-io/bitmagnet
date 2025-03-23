@@ -21,8 +21,9 @@ func celEnvOption(src Source, ctx *compilerContext) error {
 		cel.Variable("torrent", cel.ObjectType("bitmagnet.Torrent")),
 		cel.Variable("result", cel.ObjectType("bitmagnet.Classification")),
 	}
-	// `flags` is masquerading as a map of strings to regexes, but it's actually individual variables defined with a dot in the name,
-	// along with a placeholder map of strings to nulls. This achieves correct compile-time checking with acceptable error messages.
+	// `flags` is masquerading as a map of strings to regexes, but it's actually individual variables defined
+	// with a dot in the name, along with a placeholder map of strings to nulls. This achieves correct compile-time
+	// checking with acceptable error messages.
 	for name, tp := range src.FlagDefinitions {
 		options = append(
 			options,
@@ -51,7 +52,11 @@ func celEnvOption(src Source, ctx *compilerContext) error {
 	for group, extensions := range src.Extensions {
 		options = append(
 			options,
-			cel.Constant("extensions."+group, cel.ListType(cel.StringType), types.NewStringList(types.DefaultTypeAdapter, extensions)),
+			cel.Constant(
+				"extensions."+group,
+				cel.ListType(cel.StringType),
+				types.NewStringList(types.DefaultTypeAdapter, extensions),
+			),
 		)
 	}
 	options = append(
@@ -65,7 +70,11 @@ func celEnvOption(src Source, ctx *compilerContext) error {
 	for _, ft := range model.FileTypeValues() {
 		options = append(
 			options,
-			cel.Constant(fmt.Sprintf("fileType.%s", ft.String()), cel.IntType, types.Int(protobuf.NewFileType(model.NullFileType{Valid: true, FileType: ft}))),
+			cel.Constant(
+				fmt.Sprintf("fileType.%s", ft.String()),
+				cel.IntType,
+				types.Int(protobuf.NewFileType(model.NullFileType{Valid: true, FileType: ft})),
+			),
 		)
 	}
 	options = append(
@@ -79,7 +88,11 @@ func celEnvOption(src Source, ctx *compilerContext) error {
 	for _, ct := range model.ContentTypeValues() {
 		options = append(
 			options,
-			cel.Constant(fmt.Sprintf("contentType.%s", ct.String()), cel.IntType, types.Int(protobuf.NewContentType(model.NullContentType{Valid: true, ContentType: ct}))),
+			cel.Constant(
+				fmt.Sprintf("contentType.%s", ct.String()),
+				cel.IntType,
+				types.Int(protobuf.NewContentType(model.NullContentType{Valid: true, ContentType: ct})),
+			),
 		)
 	}
 	options = append(

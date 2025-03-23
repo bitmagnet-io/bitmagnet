@@ -98,10 +98,9 @@ func (l *Languages) Scan(value interface{}) error {
 		*l = nil
 		return nil
 	}
-	switch v := value.(type) {
-	case []string:
-		languages := make(Languages, len(v))
-		for _, lang := range v {
+	if strSlice, ok := value.([]string); ok {
+		languages := make(Languages, len(strSlice))
+		for _, lang := range strSlice {
 			if lang := ParseLanguage(lang); lang.Valid {
 				languages[lang.Language] = struct{}{}
 			} else {
@@ -222,13 +221,12 @@ func (l *NullLanguage) Scan(value interface{}) error {
 		l.Language, l.Valid = "", false
 		return nil
 	}
-	switch v := value.(type) {
-	case string:
-		if v == "" {
+	if str, ok := value.(string); ok {
+		if str == "" {
 			l.Valid = false
 			return nil
 		}
-		lang := ParseLanguage(v)
+		lang := ParseLanguage(str)
 		if !lang.Valid {
 			return errors.New("invalid language")
 		}

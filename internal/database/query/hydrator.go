@@ -75,7 +75,9 @@ type HasManyHydrator[Root any, RootID comparable, JoinSub any, Sub any] interfac
 	Hydrate(root *Root, subs []Sub)
 }
 
-func HydrateHasMany[Root any, RootID comparable, JoinSub any, Sub any](h HasManyHydrator[Root, RootID, JoinSub, Sub]) Option {
+func HydrateHasMany[Root any, RootID comparable, JoinSub any, Sub any](
+	h HasManyHydrator[Root, RootID, JoinSub, Sub],
+) Option {
 	return func(b OptionBuilder) (OptionBuilder, error) {
 		return b.Callback(func(ctx context.Context, cbCtx CallbackContext, result any) error {
 			items, ok := result.([]Root)

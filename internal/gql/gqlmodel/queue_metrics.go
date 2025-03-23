@@ -14,7 +14,10 @@ type QueueQuery struct {
 	QueueMetricsClient queuemetrics.Client
 }
 
-func (q QueueQuery) Metrics(ctx context.Context, input gen.QueueMetricsQueryInput) (*gen.QueueMetricsQueryResult, error) {
+func (q QueueQuery) Metrics(
+	ctx context.Context,
+	input gen.QueueMetricsQueryInput,
+) (*gen.QueueMetricsQueryResult, error) {
 	req := queuemetrics.Request{}
 	switch input.BucketDuration {
 	case gen.MetricsBucketDurationMinute:
@@ -56,7 +59,10 @@ func (m *QueueMutation) PurgeJobs(ctx context.Context, input manager.PurgeJobsRe
 	return nil, err
 }
 
-func (m *QueueMutation) EnqueueReprocessTorrentsBatch(ctx context.Context, input manager.EnqueueReprocessTorrentsBatchRequest) (*string, error) {
+func (m *QueueMutation) EnqueueReprocessTorrentsBatch(
+	ctx context.Context,
+	input manager.EnqueueReprocessTorrentsBatchRequest,
+) (*string, error) {
 	err := m.QueueManager.EnqueueReprocessTorrentsBatch(ctx, input)
 	return nil, err
 }

@@ -26,9 +26,16 @@ func (c *crawler) runPing(ctx context.Context) {
 			}
 		}
 		if err != nil {
-			c.kTable.BatchCommand(ktable.DropNode{ID: nodeID, Reason: fmt.Errorf("failed to respond to ping: %w", err)})
+			c.kTable.BatchCommand(ktable.DropNode{
+				ID:     nodeID,
+				Reason: fmt.Errorf("failed to respond to ping: %w", err),
+			})
 		} else {
-			c.kTable.BatchCommand(ktable.PutNode{ID: nodeID, Addr: n.Addr(), Options: []ktable.NodeOption{ktable.NodeResponded()}})
+			c.kTable.BatchCommand(ktable.PutNode{
+				ID:      nodeID,
+				Addr:    n.Addr(),
+				Options: []ktable.NodeOption{ktable.NodeResponded()}},
+			)
 		}
 	})
 }

@@ -15,7 +15,7 @@ type rootNode struct {
 	k                int
 	node             iNode
 	splittingEnabled bool
-	bucketCounts map[int]int
+	bucketCounts     map[int]int
 }
 
 func New(origin NodeID, k int, splittingEnabled bool) Btree {
@@ -31,7 +31,7 @@ func New(origin NodeID, k int, splittingEnabled bool) Btree {
 		},
 		k:                k,
 		splittingEnabled: splittingEnabled,
-		bucketCounts: make(map[int]int, len(origin)*8),
+		bucketCounts:     make(map[int]int, len(origin)*8),
 	}
 }
 
@@ -191,7 +191,8 @@ func (n leafNode) put(xor NodeID) (iNode, PutResult) {
 	if n.xor.Equals(xor) {
 		return n, PutAlreadyExists
 	}
-	// unlike the emptyNode and leafNode, the branchNode is initialized as a pointer as it may have many thousands of descendents
+	// unlike the emptyNode and leafNode,
+	// the branchNode is initialized as a pointer as it may have many thousands of descendents
 	initNode := &branchNode{
 		baseNode: n.baseNode,
 		branches: map[Bit]iNode{

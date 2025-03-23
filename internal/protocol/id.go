@@ -34,8 +34,10 @@ func RandomNodeID() (id ID) {
 }
 
 // RandomNodeIDWithClientSuffix generates a node ID for the DHT client.
-// We use a random byte string with the client ID encoded at the end, to allow identifying other bitmagnet instances in the wild.
-// A suffix is used instead of a prefix, which would be incompatible with DHT, where ID prefixes are used for computing the distance metric).
+// We use a random byte string with the client ID encoded at the end,
+// to allow identifying other bitmagnet instances in the wild.
+// A suffix is used instead of a prefix, which would be incompatible with DHT,
+// where ID prefixes are used for computing the distance metric).
 func RandomNodeIDWithClientSuffix() (id ID) {
 	_, _ = crand.Read(id[:])
 	for i := 0; i < len(idClientPart); i++ {

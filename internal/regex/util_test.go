@@ -6,7 +6,6 @@ import (
 )
 
 func TestNormalizeString(t *testing.T) {
-
 	type parseTest struct {
 		inputString    string
 		expectedOutput string
@@ -27,7 +26,6 @@ func TestNormalizeString(t *testing.T) {
 }
 
 func TestNormalizeSearchString(t *testing.T) {
-
 	type parseTest struct {
 		inputString    string
 		expectedOutput string

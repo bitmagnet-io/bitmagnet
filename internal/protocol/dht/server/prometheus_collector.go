@@ -62,7 +62,12 @@ func (s prometheusServerWrapper) stop() {
 	s.server.stop()
 }
 
-func (s prometheusServerWrapper) Query(ctx context.Context, addr netip.AddrPort, q string, args dht.MsgArgs) (dht.RecvMsg, error) {
+func (s prometheusServerWrapper) Query(
+	ctx context.Context,
+	addr netip.AddrPort,
+	q string,
+	args dht.MsgArgs,
+) (dht.RecvMsg, error) {
 	labels := prometheus.Labels{labelQuery: q}
 	s.queryConcurrency.With(labels).Inc()
 	start := time.Now()

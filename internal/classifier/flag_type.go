@@ -1,5 +1,7 @@
 package classifier
 
+//revive:disable:line-length-limit
+
 //go:generate go run github.com/abice/go-enum --marshal --names --nocase --nocomments --sql --sqlnullstr --values -f flag_type.go
 
 // FlagType represents the type of a flag

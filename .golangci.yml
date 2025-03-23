@@ -4,26 +4,45 @@ linters:
 linters-settings:
   revive:
     rules:
+#      - name: add-constant
+      - name: argument-limit
       - name: blank-imports
+      - name: bool-literal-in-expr
+#      - name: confusing-naming
+      - name: confusing-results
+      - name: constant-logical-expr
       - name: context-as-argument
       - name: context-keys-type
+#      - name: cyclomatic
+      - name: deep-exit
       - name: dot-imports
       - name: empty-block
+      - name: empty-lines
       - name: error-naming
       - name: error-return
       - name: error-strings
       - name: errorf
       - name: exported
+#      - name: flag-parameter
+#      - name: function-result-limit
+#      - name: get-return
       - name: if-return
       - name: increment-decrement
       - name: indent-error-flow
+      - name: line-length-limit
+        arguments:
+          - 120
       - name: package-comments
       - name: range
+      - name: range-val-address
+      - name: range-val-in-closure
       - name: receiver-naming
       - name: redefines-builtin-id
+      - name: struct-tag
       - name: superfluous-else
       - name: time-naming
       - name: unexported-return
+      - name: unnecessary-stmt
       - name: unreachable-code
       - name: unused-parameter
       - name: var-declaration

@@ -6,7 +6,6 @@ import (
 )
 
 func TestNewDateRangeFromString(t *testing.T) {
-
 	type parseTest struct {
 		inputString   string
 		expectedStart Date

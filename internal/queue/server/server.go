@@ -121,7 +121,10 @@ func (s *server) runGarbageCollection(ctx context.Context) {
 	for {
 		tx := s.query.QueueJob.WithContext(ctx).Where(
 			s.query.QueueJob.Status.In(string(model.QueueJobStatusProcessed), string(model.QueueJobStatusFailed)),
-		).UnderlyingDB().Where("queue_jobs.ran_at + queue_jobs.archival_duration < ?::timestamptz", time.Now()).Delete(&model.QueueJob{})
+		).UnderlyingDB().Where(
+			"queue_jobs.ran_at + queue_jobs.archival_duration < ?::timestamptz",
+			time.Now(),
+		).Delete(&model.QueueJob{})
 		if tx.Error != nil {
 			s.logger.Errorw("error deleting old queue jobs", "error", tx.Error)
 		} else if tx.RowsAffected > 0 {
@@ -167,7 +170,8 @@ func (h *serverHandler) start(ctx context.Context) {
 			go func() {
 				defer h.sem.Release(1)
 				jobID, _, err := h.handleJob(ctx)
-				// if a job was found, we should check straight away for another job, otherwise we wait for the check interval
+				// if a job was found, we should check straight away for another job,
+				// otherwise we wait for the check interval
 				if err == nil && jobID != "" {
 					checkTicker.Reset(1)
 				}
@@ -176,7 +180,10 @@ func (h *serverHandler) start(ctx context.Context) {
 	}
 }
 
-func (h *serverHandler) handleJob(ctx context.Context, conds ...gen.Condition) (jobID string, processed bool, err error) {
+func (h *serverHandler) handleJob(
+	ctx context.Context,
+	conds ...gen.Condition,
+) (jobID string, processed bool, err error) {
 	err = h.query.Transaction(func(tx *dao.Query) error {
 		job, findErr := tx.QueueJob.WithContext(ctx).Where(
 			append(conds,

@@ -15,7 +15,10 @@ type TorrentQuery struct {
 	TorrentMetricsClient torrentmetrics.Client
 }
 
-func (t TorrentQuery) SuggestTags(ctx context.Context, input *gen.SuggestTagsQueryInput) (search.TorrentSuggestTagsResult, error) {
+func (t TorrentQuery) SuggestTags(
+	ctx context.Context,
+	input *gen.SuggestTagsQueryInput,
+) (search.TorrentSuggestTagsResult, error) {
 	suggestTagsQuery := search.SuggestTagsQuery{}
 	if input != nil {
 		if prefix, ok := input.Prefix.ValueOK(); ok && prefix != nil {

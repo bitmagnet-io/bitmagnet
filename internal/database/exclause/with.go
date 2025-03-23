@@ -7,18 +7,22 @@ import (
 
 // With with clause
 //
-//	// examples
-//	// WITH `cte` AS (SELECT * FROM `users`) SELECT * FROM `cte`
-//	db.Clauses(exclause.With{CTEs: []exclause.CTE{{Name: "cte", Subquery: clause.Expr{SQL: "SELECT * FROM `users`"}}}}).Table("cte").Scan(&users)
+//		// examples
+//		// WITH `cte` AS (SELECT * FROM `users`) SELECT * FROM `cte`
+//		db.Clauses(exclause.With{CTEs: []exclause.CTE{{Name: "cte",
+//	 	Subquery: clause.Expr{SQL: "SELECT * FROM `users`"}}}}).Table("cte").Scan(&users)
 //
-//	// WITH `cte` AS (SELECT * FROM `users`) SELECT * FROM `cte`
-//	db.Clauses(exclause.With{CTEs: []exclause.CTE{{Name: "cte", Subquery: exclause.Subquery{DB: db.Table("users")}}}}).Table("cte").Scan(&users)
+//		// WITH `cte` AS (SELECT * FROM `users`) SELECT * FROM `cte`
+//		db.Clauses(exclause.With{CTEs: []exclause.CTE{{Name: "cte",
+//	 	Subquery: exclause.Subquery{DB: db.Table("users")}}}}).Table("cte").Scan(&users)
 //
-//	// WITH `cte` (`id`,`name`) AS (SELECT * FROM `users`) SELECT * FROM `cte`
-//	db.Clauses(exclause.With{CTEs: []exclause.CTE{{Name: "cte", Columns: []string{"id", "name"}, Subquery: exclause.Subquery{DB: db.Table("users")}}}}).Table("cte").Scan(&users)
+//		// WITH `cte` (`id`,`name`) AS (SELECT * FROM `users`) SELECT * FROM `cte`
+//		db.Clauses(exclause.With{CTEs: []exclause.CTE{{Name: "cte", Columns: []string{"id", "name"},
+//	 	Subquery: exclause.Subquery{DB: db.Table("users")}}}}).Table("cte").Scan(&users)
 //
-//	// WITH RECURSIVE `cte` AS (SELECT * FROM `users`) SELECT * FROM `cte`
-//	db.Clauses(exclause.With{Recursive: true, CTEs: []exclause.CTE{{Name: "cte", Subquery: exclause.Subquery{DB: db.Table("users")}}}}).Table("cte").Scan(&users)
+//		// WITH RECURSIVE `cte` AS (SELECT * FROM `users`) SELECT * FROM `cte`
+//		db.Clauses(exclause.With{Recursive: true, CTEs: []exclause.CTE{{Name: "cte",
+//	 	Subquery: exclause.Subquery{DB: db.Table("users")}}}}).Table("cte").Scan(&users)
 type With struct {
 	Recursive    bool
 	Materialized bool
@@ -113,15 +117,17 @@ func (with With) MergeClause(clause *clause.Clause) {
 
 // NewWith is easy to create new With
 //
-//	// examples
-//	// WITH `cte` AS (SELECT * FROM `users`) SELECT * FROM `cte`
-//	db.Clauses(exclause.NewWith("cte", "SELECT * FROM `users`")).Table("cte").Scan(&users)
+//		// examples
+//		// WITH `cte` AS (SELECT * FROM `users`) SELECT * FROM `cte`
+//		db.Clauses(exclause.NewWith("cte", "SELECT * FROM `users`")).Table("cte").Scan(&users)
 //
-//	// WITH `cte` AS (SELECT * FROM `users` WHERE `name` = 'WinterYukky') SELECT * FROM `cte`
-//	db.Clauses(exclause.NewWith("cte", "SELECT * FROM `users` WHERE `name` = ?", "WinterYukky")).Table("cte").Scan(&users)
+//		// WITH `cte` AS (SELECT * FROM `users` WHERE `name` = 'WinterYukky') SELECT * FROM `cte`
+//		db.Clauses(exclause.NewWith("cte", "SELECT * FROM `users` WHERE `name` = ?", "WinterYukky")).
+//		  Table("cte").Scan(&users)
 //
-//	// WITH `cte` AS (SELECT * FROM `users` WHERE `name` = 'WinterYukky') SELECT * FROM `cte`
-//	db.Clauses(exclause.NewWith("cte", db.Table("users").Where("`name` = ?", "WinterYukky"))).Table("cte").Scan(&users)
+//		// WITH `cte` AS (SELECT * FROM `users` WHERE `name` = 'WinterYukky') SELECT * FROM `cte`
+//		db.Clauses(exclause.NewWith("cte", db.Table("users").Where("`name` = ?", "WinterYukky"))).Table("cte").
+//	 	Scan(&users)
 //
 // If you need more advanced WITH clause, you can see With struct.
 func NewWith(name string, subquery interface{}, materialized bool, args ...interface{}) With {

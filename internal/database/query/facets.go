@@ -255,7 +255,9 @@ func (b optionBuilder) calculateAggregations(ctx context.Context) (Aggregations,
 				ctx:           ctx,
 			})
 			if valuesErr != nil {
-				addErr(fmt.Errorf("failed to get values for key '%s': %w", facet.Key(), valuesErr))
+				addErr(fmt.Errorf("failed to get values for key '%s': %w",
+					facet.Key(),
+					valuesErr))
 				return
 			}
 			filter := facet.Filter()
@@ -284,7 +286,10 @@ func (b optionBuilder) calculateAggregations(ctx context.Context) (Aggregations,
 						Where(criteria),
 					)(b)
 					if aggBuilderErr != nil {
-						addErr(fmt.Errorf("failed to create aggregation option for key '%s': %w", facet.Key(), aggBuilderErr))
+						addErr(
+							fmt.Errorf(
+								"failed to create aggregation option for key '%s': %w", facet.Key(), aggBuilderErr),
+						)
 						return
 					}
 					q := aggBuilder.NewSubQuery(ctx)

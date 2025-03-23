@@ -31,11 +31,14 @@ func NewInMemoryCacher(p Params) Result {
 type Mode int
 
 const (
-	// ModeNoCache the query will not be satisfied from the cache, and any existing cache entry will be removed to avoid stale results in future (default)
+	// ModeNoCache the query will not be satisfied from the cache,
+	// and any existing cache entry will be removed to avoid stale results in future (default)
 	ModeNoCache Mode = iota
-	// ModeCached the query will be satisfied from the cache if possible, otherwise the result will be stored in the cache
+	// ModeCached the query will be satisfied from the cache if possible,
+	// otherwise the result will be stored in the cache
 	ModeCached
-	// ModeWarm the query will not be satisfied from the cache, but the result will be stored in the cache for future queries using ModeCached
+	// ModeWarm the query will not be satisfied from the cache,
+	// but the result will be stored in the cache for future queries using ModeCached
 	ModeWarm
 )
 

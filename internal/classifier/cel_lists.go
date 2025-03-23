@@ -100,7 +100,8 @@ func (*lists) LibraryName() string {
 
 var paramA = cel.TypeParamType("A")
 
-// CEL typeParams can be used to constraint to a specific trait (e.g. traits.ComparableType) if the 1st operand is the type to constrain.
+// CEL typeParams can be used to constraint to a specific trait (e.g. traits.ComparableType)
+// if the 1st operand is the type to constrain.
 // But the functions we need to constrain are <list<paramType>>, not just <paramType>.
 // Make sure the order of overload set is deterministic
 type namedCELType struct {
@@ -132,8 +133,6 @@ var comparableTypes = []namedCELType{
 	{typeName: "bytes", celType: cel.BytesType},
 }
 
-// WARNING: All library additions or modifications must follow
-// https://github.com/kubernetes/enhancements/tree/master/keps/sig-api-machinery/2876-crd-validation-expression-language#function-library-updates
 var listsLibraryDecls = map[string][]cel.FunctionOpt{
 	"isSorted": templatedOverloads(comparableTypes, func(name string, paramType *cel.Type) cel.FunctionOpt {
 		return cel.MemberOverload(fmt.Sprintf("list_%s_is_sorted_bool", name),
@@ -304,7 +303,10 @@ func lastIndexOf(list ref.Val, item ref.Val) ref.Val {
 
 // templatedOverloads returns overloads for each of the provided types. The template function is called with each type
 // name (map key) and type to construct the overloads.
-func templatedOverloads(types []namedCELType, template func(name string, t *cel.Type) cel.FunctionOpt) []cel.FunctionOpt {
+func templatedOverloads(
+	types []namedCELType,
+	template func(name string, t *cel.Type) cel.FunctionOpt,
+) []cel.FunctionOpt {
 	overloads := make([]cel.FunctionOpt, len(types))
 	i := 0
 	for _, t := range types {

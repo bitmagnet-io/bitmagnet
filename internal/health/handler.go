@@ -35,8 +35,9 @@ type (
 		// that the ResultWriter supports (such as XML, JSON, etc.).
 		// A ResultWriter is expected to write at least the following information into the http.ResponseWriter:
 		// (1) A MIME type header (e.g., "Content-Type" : "application/json"),
-		// (2) the HTTP status code that is passed in parameter statusCode (this is necessary due to ordering constraints
-		// when writing into a http.ResponseWriter (see https://github.com/alexliesenfeld/health/issues/9), and
+		// (2) the HTTP status code that is passed in parameter statusCode (this is necessary due to
+		// ordering constraints when writing into a http.ResponseWriter
+		// (see https://github.com/alexliesenfeld/health/issues/9), and
 		// (3) the response body in the format that the ResultWriter supports.
 		Write(result *CheckerResult, statusCode int, w http.ResponseWriter, r *http.Request) error
 	}

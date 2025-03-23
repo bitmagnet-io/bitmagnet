@@ -191,7 +191,9 @@ outer:
 		for j := 0; j < i; j++ {
 			l := 0
 			for {
-				if l >= len(firstPass[i]) || l >= len(firstPass[j]) || firstPass[i][len(firstPass[i])-l-1] != firstPass[j][len(firstPass[j])-l-1] {
+				if l >= len(firstPass[i]) ||
+					l >= len(firstPass[j]) ||
+					firstPass[i][len(firstPass[i])-l-1] != firstPass[j][len(firstPass[j])-l-1] {
 					break
 				}
 				l++
@@ -201,7 +203,8 @@ outer:
 			}
 		}
 		for {
-			if longestSuffixLength == 0 || !lexer.IsWordChar(rune(firstPass[i][len(firstPass[i])-longestSuffixLength])) {
+			if longestSuffixLength == 0 ||
+				!lexer.IsWordChar(rune(firstPass[i][len(firstPass[i])-longestSuffixLength])) {
 				break
 			}
 			longestSuffixLength--
