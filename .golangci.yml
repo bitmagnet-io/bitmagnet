@@ -5,8 +5,8 @@ linters:
     - bidichk
     - bodyclose
     - canonicalheader
-#    - containedctx
-#    - contextcheck
+    #    - containedctx
+    #    - contextcheck
     - copyloopvar
       #stopped here
 
@@ -16,8 +16,8 @@ linters:
     - iface
     - importas
     - intrange
-#    - misspell
-#    - musttag
+    #    - misspell
+    #    - musttag
     - noctx
     - revive
     - stylecheck
@@ -48,7 +48,7 @@ linters-settings:
       - name: errorf
       - name: exported
       #      - name: flag-parameter
-#      - name: function-length
+      #      - name: function-length
       #      - name: function-result-limit
       #      - name: get-return
       - name: if-return
