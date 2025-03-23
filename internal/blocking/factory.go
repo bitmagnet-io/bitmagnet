@@ -2,7 +2,7 @@ package blocking
 
 import (
 	"context"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/fx"

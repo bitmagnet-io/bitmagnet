@@ -2,7 +2,7 @@ package dhtcrawlerfx
 
 import (
 	adht "github.com/anacrolix/dht/v2"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/config/configfx"
+	"github.com/bitmagnet-io/bitmagnet/internal/config/configfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/dhtcrawler"
 	"github.com/bitmagnet-io/bitmagnet/internal/dhtcrawler/dhtcrawler_health_check"
 	"go.uber.org/fx"

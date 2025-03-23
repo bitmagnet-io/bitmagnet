@@ -3,7 +3,7 @@ package migrations
 import (
 	"context"
 	"database/sql"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	migrationssql "github.com/bitmagnet-io/bitmagnet/migrations"
 	goose "github.com/pressly/goose/v3"
 	"go.uber.org/fx"

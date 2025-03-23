@@ -2,10 +2,10 @@ package server
 
 import (
 	"context"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/worker"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/handler"
+	"github.com/bitmagnet-io/bitmagnet/internal/worker"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"time"

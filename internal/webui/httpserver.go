@@ -2,7 +2,7 @@ package webui
 
 import (
 	"errors"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpserver"
+	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/webui"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
