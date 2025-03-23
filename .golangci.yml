@@ -14,7 +14,6 @@ linters:
     - gosmopolitan
     - importas
     - intrange
-    #    - misspell
     - musttag
     - noctx
     - paralleltest
@@ -26,16 +25,13 @@ linters:
 linters-settings:
   revive:
     rules:
-      #      - name: add-constant
       - name: argument-limit
       - name: blank-imports
       - name: bool-literal-in-expr
-      #      - name: confusing-naming
       - name: confusing-results
       - name: constant-logical-expr
       - name: context-as-argument
       - name: context-keys-type
-      #      - name: cyclomatic
       - name: deep-exit
       - name: defer
       - name: dot-imports
@@ -48,10 +44,6 @@ linters-settings:
       - name: error-strings
       - name: errorf
       - name: exported
-      #      - name: flag-parameter
-      #      - name: function-length
-      #      - name: function-result-limit
-      #      - name: get-return
       - name: if-return
       - name: identical-branches
       - name: increment-decrement
@@ -82,9 +74,6 @@ linters-settings:
       - name: var-naming
 issues:
   exclude-rules:
-    #    - path: '(.+)\.gen\.go'
-    #      linters:
-    #        - typecheck
     # For some reason this picks up a lot of false positives for methods on generic types:
     - path: 'internal/protocol/dht/ktable/(.+)\.go'
       linters:
