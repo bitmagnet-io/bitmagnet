@@ -33,7 +33,7 @@ type builder struct {
 	logger *zap.SugaredLogger
 }
 
-func (b *builder) Key() string {
+func (*builder) Key() string {
 	return "webui"
 }
 

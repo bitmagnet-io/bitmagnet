@@ -32,7 +32,7 @@ type video3dFacet struct {
 	torrentContentAttributeFacet[model.Video3D]
 }
 
-func (f video3dFacet) Values(query.FacetContext) (map[string]string, error) {
+func (video3dFacet) Values(query.FacetContext) (map[string]string, error) {
 	v3ds := model.Video3DValues()
 	values := make(map[string]string, len(v3ds))
 	for _, vr := range v3ds {

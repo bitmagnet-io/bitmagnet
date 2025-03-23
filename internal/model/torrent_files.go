@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func (f *TorrentFile) BeforeCreate(tx *gorm.DB) (err error) {
+func (*TorrentFile) BeforeCreate(tx *gorm.DB) (err error) {
 	tx.Statement.AddClause(clause.OnConflict{
 		DoNothing: true,
 	})

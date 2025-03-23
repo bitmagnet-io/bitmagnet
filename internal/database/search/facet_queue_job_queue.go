@@ -24,7 +24,7 @@ type queueJobQueueFacet struct {
 
 var queueNames = []string{"process_torrent", "process_torrent_batch"}
 
-func (f queueJobQueueFacet) Values(query.FacetContext) (map[string]string, error) {
+func (queueJobQueueFacet) Values(query.FacetContext) (map[string]string, error) {
 	values := make(map[string]string)
 	for _, n := range queueNames {
 		values[n] = n
@@ -32,7 +32,7 @@ func (f queueJobQueueFacet) Values(query.FacetContext) (map[string]string, error
 	return values, nil
 }
 
-func (f queueJobQueueFacet) Criteria(filter query.FacetFilter) []query.Criteria {
+func (queueJobQueueFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 	values := filter.Values()
 	if len(values) == 0 {
 		return nil

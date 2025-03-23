@@ -123,7 +123,7 @@ func (h handler) writeError(ctx *gin.Context, err error) {
 	}
 }
 
-func (h handler) writeHTTPError(ctx *gin.Context, err error) {
+func (handler) writeHTTPError(ctx *gin.Context, err error) {
 	code := http.StatusInternalServerError
 	var httpErr httpError
 	if ok := errors.As(err, &httpErr); ok {
@@ -146,7 +146,7 @@ func (e errProfileNotFound) Error() string {
 	return fmt.Sprintf("profile not found: %s", e.name)
 }
 
-func (e errProfileNotFound) httpErrorCode() int {
+func (errProfileNotFound) httpErrorCode() int {
 	return http.StatusNotFound
 }
 

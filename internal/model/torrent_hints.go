@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func (h *TorrentHint) BeforeCreate(tx *gorm.DB) (err error) {
+func (*TorrentHint) BeforeCreate(tx *gorm.DB) (err error) {
 	tx.Statement.AddClause(clause.OnConflict{
 		UpdateAll: true,
 	})

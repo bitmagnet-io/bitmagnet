@@ -17,7 +17,7 @@ var attachLocalContentBySearchPayloadSpec = payloadLiteral[string]{
 	description: "Attempt to attach local content with a search on the torrent name",
 }
 
-func (a attachLocalContentBySearchAction) compileAction(ctx compilerContext) (action, error) {
+func (attachLocalContentBySearchAction) compileAction(ctx compilerContext) (action, error) {
 	if _, err := attachLocalContentBySearchPayloadSpec.Unmarshal(ctx); err != nil {
 		return action{}, ctx.error(err)
 	}

@@ -11,7 +11,7 @@ type Except struct {
 }
 
 // Name except clause name
-func (except Except) Name() string {
+func (Except) Name() string {
 	return "EXCEPT"
 }
 

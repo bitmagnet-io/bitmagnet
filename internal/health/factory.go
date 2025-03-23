@@ -32,7 +32,7 @@ type handlerBuilder struct {
 	Checker lazy.Lazy[Checker]
 }
 
-func (b handlerBuilder) Key() string {
+func (handlerBuilder) Key() string {
 	return "health"
 }
 

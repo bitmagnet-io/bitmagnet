@@ -19,7 +19,7 @@ var attachTMDBContentByIDPayloadSpec = payloadLiteral[string]{
 	description: "Use the torrent hint to attach content from the TMDB API by ID",
 }
 
-func (a attachTMDBContentByIDAction) compileAction(ctx compilerContext) (action, error) {
+func (attachTMDBContentByIDAction) compileAction(ctx compilerContext) (action, error) {
 	if _, err := attachTMDBContentByIDPayloadSpec.Unmarshal(ctx); err != nil {
 		return action{}, ctx.error(err)
 	}

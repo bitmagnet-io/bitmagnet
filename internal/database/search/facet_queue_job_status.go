@@ -24,7 +24,7 @@ type queueJobStatusFacet struct {
 	query.FacetConfig
 }
 
-func (f queueJobStatusFacet) Values(query.FacetContext) (map[string]string, error) {
+func (queueJobStatusFacet) Values(query.FacetContext) (map[string]string, error) {
 	values := make(map[string]string)
 	for _, n := range model.QueueJobStatusNames() {
 		values[n] = n
@@ -32,7 +32,7 @@ func (f queueJobStatusFacet) Values(query.FacetContext) (map[string]string, erro
 	return values, nil
 }
 
-func (f queueJobStatusFacet) Criteria(filter query.FacetFilter) []query.Criteria {
+func (queueJobStatusFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 	values := filter.Values()
 	if len(values) == 0 {
 		return nil

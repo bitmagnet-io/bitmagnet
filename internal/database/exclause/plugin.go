@@ -6,12 +6,12 @@ import "gorm.io/gorm"
 type ExtraClausePlugin struct{}
 
 // Name return plugin name
-func (e *ExtraClausePlugin) Name() string {
+func (*ExtraClausePlugin) Name() string {
 	return "ExtraClausePlugin"
 }
 
 // Initialize register BuildClauses
-func (e *ExtraClausePlugin) Initialize(db *gorm.DB) error {
+func (*ExtraClausePlugin) Initialize(db *gorm.DB) error {
 	db.Callback().Query().Clauses = []string{
 		"WITH", "SELECT", "FROM", "WHERE", "GROUP BY", "UNION", "INTERSECT", "EXCEPT", "ORDER BY", "LIMIT", "FOR",
 	}

@@ -81,7 +81,7 @@ type ImportItemsError struct {
 
 type ImportErrors []ImportItemsError
 
-func (e ImportErrors) Error() string {
+func (ImportErrors) Error() string {
 	return "one or more items failed to import"
 }
 

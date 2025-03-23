@@ -135,7 +135,7 @@ type emptyNode struct {
 	baseNode
 }
 
-func (n emptyNode) has(NodeID) bool {
+func (emptyNode) has(NodeID) bool {
 	return false
 }
 
@@ -150,31 +150,31 @@ func (n emptyNode) drop(NodeID) (iNode, bool) {
 	return n, false
 }
 
-func (n emptyNode) furthestXor() (NodeID, bool) {
+func (emptyNode) furthestXor() (NodeID, bool) {
 	return nil, false
 }
 
-func (n emptyNode) allXors() []NodeID {
+func (emptyNode) allXors() []NodeID {
 	return nil
 }
 
-func (n emptyNode) any() bool {
+func (emptyNode) any() bool {
 	return false
 }
 
-func (n emptyNode) count() int {
+func (emptyNode) count() int {
 	return 0
 }
 
-func (n emptyNode) countCloserThanSubpath(Bits) int {
+func (emptyNode) countCloserThanSubpath(Bits) int {
 	return 0
 }
 
-func (n emptyNode) countAtSubpath(Bits) int {
+func (emptyNode) countAtSubpath(Bits) int {
 	return 0
 }
 
-func (n emptyNode) xorsClosestToSubpath(Bits, int) []NodeID {
+func (emptyNode) xorsClosestToSubpath(Bits, int) []NodeID {
 	return nil
 }
 
@@ -240,11 +240,11 @@ func (n leafNode) allXors() []NodeID {
 	return []NodeID{n.xor}
 }
 
-func (n leafNode) any() bool {
+func (leafNode) any() bool {
 	return true
 }
 
-func (n leafNode) count() int {
+func (leafNode) count() int {
 	return 1
 }
 

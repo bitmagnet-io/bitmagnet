@@ -30,7 +30,7 @@ type videoCodecFacet struct {
 	torrentContentAttributeFacet[model.VideoCodec]
 }
 
-func (f videoCodecFacet) Values(query.FacetContext) (map[string]string, error) {
+func (videoCodecFacet) Values(query.FacetContext) (map[string]string, error) {
 	vcs := model.VideoCodecValues()
 	values := make(map[string]string, len(vcs))
 	for _, vr := range vcs {

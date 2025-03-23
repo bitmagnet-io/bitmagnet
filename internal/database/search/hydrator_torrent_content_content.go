@@ -14,12 +14,12 @@ func HydrateTorrentContentContent() query.Option {
 
 type torrentContentContentHydrator struct{}
 
-func (h torrentContentContentHydrator) RootToSubID(root TorrentContentResultItem) (model.ContentRef, bool) {
+func (torrentContentContentHydrator) RootToSubID(root TorrentContentResultItem) (model.ContentRef, bool) {
 	ref := root.ContentRef()
 	return ref.Val, ref.Valid
 }
 
-func (h torrentContentContentHydrator) GetSubs(
+func (torrentContentContentHydrator) GetSubs(
 	ctx context.Context,
 	dbCtx query.DBContext,
 	ids []model.ContentRef,
@@ -40,14 +40,14 @@ func (h torrentContentContentHydrator) GetSubs(
 	return content, nil
 }
 
-func (h torrentContentContentHydrator) SubID(item model.Content) model.ContentRef {
+func (torrentContentContentHydrator) SubID(item model.Content) model.ContentRef {
 	return item.Ref()
 }
 
-func (h torrentContentContentHydrator) Hydrate(root *TorrentContentResultItem, sub model.Content) {
+func (torrentContentContentHydrator) Hydrate(root *TorrentContentResultItem, sub model.Content) {
 	root.Content = sub
 }
 
-func (h torrentContentContentHydrator) MustSucceed() bool {
+func (torrentContentContentHydrator) MustSucceed() bool {
 	return true
 }

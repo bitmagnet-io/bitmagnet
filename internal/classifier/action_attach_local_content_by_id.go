@@ -18,7 +18,7 @@ var attachLocalContentByIDPayloadSpec = payloadLiteral[string]{
 	description: "Use the torrent hint to attach locally stored content by ID",
 }
 
-func (a attachLocalContentByIDAction) compileAction(ctx compilerContext) (action, error) {
+func (attachLocalContentByIDAction) compileAction(ctx compilerContext) (action, error) {
 	if _, err := attachLocalContentByIDPayloadSpec.Unmarshal(ctx); err != nil {
 		return action{}, ctx.error(err)
 	}
@@ -42,6 +42,6 @@ func (a attachLocalContentByIDAction) compileAction(ctx compilerContext) (action
 	}, nil
 }
 
-func (a attachLocalContentByIDAction) JSONSchema() JSONSchema {
+func (attachLocalContentByIDAction) JSONSchema() JSONSchema {
 	return attachLocalContentByIDPayloadSpec.JSONSchema()
 }

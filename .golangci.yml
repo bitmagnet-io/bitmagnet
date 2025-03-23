@@ -16,6 +16,7 @@ linters-settings:
 #      - name: cyclomatic
       - name: deep-exit
       - name: dot-imports
+      - name: duplicated-imports
       - name: empty-block
       - name: empty-lines
       - name: error-naming
@@ -42,9 +43,11 @@ linters-settings:
       - name: superfluous-else
       - name: time-naming
       - name: unexported-return
+#      - name: unhandled-error
       - name: unnecessary-stmt
       - name: unreachable-code
       - name: unused-parameter
+      - name: unused-receiver
       - name: var-declaration
       - name: var-naming
 issues:

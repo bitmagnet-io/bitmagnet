@@ -13,7 +13,7 @@ func (pprofBuilder) Key() string {
 	return "pprof"
 }
 
-func (b pprofBuilder) Apply(e *gin.Engine) error {
+func (pprofBuilder) Apply(e *gin.Engine) error {
 	runtime.SetMutexProfileFraction(5)
 	runtime.SetBlockProfileRate(5)
 	e.Any("/debug/pprof/", func(c *gin.Context) {

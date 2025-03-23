@@ -35,7 +35,7 @@ type yearFacet struct {
 	field string
 }
 
-func (r yearFacet) Criteria(filter query.FacetFilter) []query.Criteria {
+func (yearFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 	return []query.Criteria{
 		query.GenCriteria(func(ctx query.DBContext) (query.Criteria, error) {
 			years := make([]uint16, 0, len(filter))

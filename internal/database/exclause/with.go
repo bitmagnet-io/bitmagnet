@@ -37,7 +37,7 @@ type CTE struct {
 }
 
 // Name with clause name
-func (with With) Name() string {
+func (With) Name() string {
 	return "WITH"
 }
 

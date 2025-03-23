@@ -36,7 +36,7 @@ func (torrentContentLanguageFacet) Values(query.FacetContext) (map[string]string
 	return values, nil
 }
 
-func (f torrentContentLanguageFacet) Criteria(filter query.FacetFilter) []query.Criteria {
+func (torrentContentLanguageFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 	return []query.Criteria{
 		query.GenCriteria(func(query.DBContext) (query.Criteria, error) {
 			langs := make([]model.Language, 0, len(filter))

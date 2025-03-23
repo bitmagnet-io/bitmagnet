@@ -20,7 +20,7 @@ func HydrateContentCollections() query.Option {
 
 type contentCollectionsHydrator struct{}
 
-func (h contentCollectionsHydrator) RootID(root ContentResultItem) (model.ContentRef, bool) {
+func (contentCollectionsHydrator) RootID(root ContentResultItem) (model.ContentRef, bool) {
 	return model.ContentRef{
 		Type:   root.Type,
 		Source: root.Source,
@@ -28,7 +28,7 @@ func (h contentCollectionsHydrator) RootID(root ContentResultItem) (model.Conten
 	}, true
 }
 
-func (h contentCollectionsHydrator) GetJoinSubs(
+func (contentCollectionsHydrator) GetJoinSubs(
 	ctx context.Context,
 	dbCtx query.DBContext,
 	ids []model.ContentRef,
@@ -63,7 +63,7 @@ func (h contentCollectionsHydrator) GetJoinSubs(
 	return results, nil
 }
 
-func (h contentCollectionsHydrator) JoinSubToRootIDAndSub(
+func (contentCollectionsHydrator) JoinSubToRootIDAndSub(
 	j model.ContentCollectionContent,
 ) (model.ContentRef, model.ContentCollection) {
 	return model.ContentRef{
@@ -73,6 +73,6 @@ func (h contentCollectionsHydrator) JoinSubToRootIDAndSub(
 	}, j.Collection
 }
 
-func (h contentCollectionsHydrator) Hydrate(root *ContentResultItem, subs []model.ContentCollection) {
+func (contentCollectionsHydrator) Hydrate(root *ContentResultItem, subs []model.ContentCollection) {
 	root.Collections = subs
 }

@@ -36,7 +36,7 @@ func (torrentSourceFacet) Values(ctx query.FacetContext) (map[string]string, err
 	return values, nil
 }
 
-func (f torrentSourceFacet) Criteria(filter query.FacetFilter) []query.Criteria {
+func (torrentSourceFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 	if len(filter) == 0 {
 		return []query.Criteria{}
 	}

@@ -21,7 +21,7 @@ func (r SearchResult) XML() ([]byte, error) {
 
 type customNS struct{}
 
-func (r customNS) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
+func (customNS) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 	switch name.Local {
 	case "xmlns:atom":
 		return xml.Attr{
@@ -40,7 +40,7 @@ func (r customNS) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 
 type rssVersion string
 
-func (r rssVersion) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
+func (rssVersion) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 	return xml.Attr{
 		Name:  name,
 		Value: "2.0",

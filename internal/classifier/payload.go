@@ -69,7 +69,7 @@ func (s payloadGeneric[T]) JSONSchema() JSONSchema {
 	return s.jsonSchema
 }
 
-func (s payloadGeneric[T]) Unmarshal(ctx compilerContext) (to T, err error) {
+func (payloadGeneric[T]) Unmarshal(ctx compilerContext) (to T, err error) {
 	to, ok := ctx.source.(T)
 	if !ok {
 		err = ctx.error(errors.New("not ok"))
@@ -85,7 +85,7 @@ func (s payloadStruct[T]) JSONSchema() JSONSchema {
 	return s.jsonSchema
 }
 
-func (s payloadStruct[T]) Unmarshal(ctx compilerContext) (to T, err error) {
+func (payloadStruct[T]) Unmarshal(ctx compilerContext) (to T, err error) {
 	return decode[T](ctx)
 }
 

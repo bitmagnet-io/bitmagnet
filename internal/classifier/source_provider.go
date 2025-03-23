@@ -76,7 +76,7 @@ func (y yamlSourceProvider) source() (Source, error) {
 
 type coreSourceProvider struct{}
 
-func (c coreSourceProvider) source() ([]byte, error) {
+func (coreSourceProvider) source() ([]byte, error) {
 	return classifierCoreYaml, nil
 }
 

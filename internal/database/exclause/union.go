@@ -11,7 +11,7 @@ type Union struct {
 }
 
 // Name union clause name
-func (union Union) Name() string {
+func (Union) Name() string {
 	return "UNION"
 }
 

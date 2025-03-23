@@ -49,15 +49,15 @@ func (m mockedPeer) Addr() netip.AddrPort {
 	return m.NodeInfo.Addr.ToAddrPort()
 }
 
-func (m mockedPeer) Time() time.Time {
+func (mockedPeer) Time() time.Time {
 	return time.Time{}
 }
 
-func (m mockedPeer) Dropped() bool {
+func (mockedPeer) Dropped() bool {
 	return false
 }
 
-func (m mockedPeer) IsSampleInfoHashesCandidate() bool {
+func (mockedPeer) IsSampleInfoHashesCandidate() bool {
 	return true
 }
 
@@ -81,7 +81,7 @@ func (m mockedHash) Peers() []ktable.HashPeer {
 	return peers
 }
 
-func (m mockedHash) Dropped() bool {
+func (mockedHash) Dropped() bool {
 	return false
 }
 

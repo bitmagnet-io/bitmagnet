@@ -32,7 +32,7 @@ type videoResolutionFacet struct {
 	torrentContentAttributeFacet[model.VideoResolution]
 }
 
-func (f videoResolutionFacet) Values(query.FacetContext) (map[string]string, error) {
+func (videoResolutionFacet) Values(query.FacetContext) (map[string]string, error) {
 	vrs := model.VideoResolutionValues()
 	values := make(map[string]string, len(vrs))
 	for _, vr := range vrs {

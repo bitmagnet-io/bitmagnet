@@ -10,7 +10,7 @@ import (
 type utf8Checker struct {
 }
 
-func (c utf8Checker) Check(info metainfo.Info) error {
+func (utf8Checker) Check(info metainfo.Info) error {
 	checkUtf8Strings := make([]string, 0, len(info.Files)+1)
 	checkUtf8Strings = append(checkUtf8Strings, info.BestName())
 	for _, file := range info.Files {

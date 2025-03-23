@@ -47,11 +47,11 @@ var expressionConditionPayload = payloadUnion[cel.Program]{
 	},
 }
 
-func (c expressionCondition) name() string {
+func (expressionCondition) name() string {
 	return expressionName
 }
 
-func (c expressionCondition) compileCondition(ctx compilerContext) (condition, error) {
+func (expressionCondition) compileCondition(ctx compilerContext) (condition, error) {
 	prg, err := expressionConditionPayload.Unmarshal(ctx)
 	if err != nil {
 		return condition{}, ctx.error(err)
@@ -78,6 +78,6 @@ func (c expressionCondition) compileCondition(ctx compilerContext) (condition, e
 	}, nil
 }
 
-func (c expressionCondition) JSONSchema() JSONSchema {
+func (expressionCondition) JSONSchema() JSONSchema {
 	return expressionConditionPayload.JSONSchema()
 }

@@ -95,7 +95,7 @@ var _ Query[SampleHashesAndNodesResult] = SampleHashesAndNodes{}
 
 type SampleHashesAndNodes struct{}
 
-func (c SampleHashesAndNodes) execReturn(t *table) SampleHashesAndNodesResult {
+func (SampleHashesAndNodes) execReturn(t *table) SampleHashesAndNodesResult {
 	nHashes := 20
 	hashes := t.hashes.getRandom(nHashes)
 	nNodes := 20 + (nHashes - len(hashes))

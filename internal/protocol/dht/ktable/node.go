@@ -62,15 +62,15 @@ func (p nodeBase) Addr() netip.AddrPort {
 	return p.addr
 }
 
-func (p nodeBase) Time() time.Time {
+func (nodeBase) Time() time.Time {
 	return time.Time{}
 }
 
-func (p nodeBase) Dropped() bool {
+func (nodeBase) Dropped() bool {
 	return false
 }
 
-func (p nodeBase) IsSampleInfoHashesCandidate() bool {
+func (nodeBase) IsSampleInfoHashesCandidate() bool {
 	return true
 }
 

@@ -38,7 +38,7 @@ func (torrentTagFacet) Values(ctx query.FacetContext) (map[string]string, error)
 	return values, nil
 }
 
-func (f torrentTagFacet) Criteria(filter query.FacetFilter) []query.Criteria {
+func (torrentTagFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 	criteria := make([]query.Criteria, len(filter))
 	for i, tag := range filter.Values() {
 		criteria[i] = TorrentTagCriteria(tag)

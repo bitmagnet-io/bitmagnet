@@ -35,7 +35,7 @@ type torrentContentTorrentHydrator struct {
 	torrentContentTorrentHydratorConfig
 }
 
-func (h torrentContentTorrentHydrator) RootToSubID(root TorrentContentResultItem) (protocol.ID, bool) {
+func (torrentContentTorrentHydrator) RootToSubID(root TorrentContentResultItem) (protocol.ID, bool) {
 	return root.InfoHash, true
 }
 
@@ -65,14 +65,14 @@ func (h torrentContentTorrentHydrator) GetSubs(
 	return result.Items, nil
 }
 
-func (h torrentContentTorrentHydrator) SubID(item model.Torrent) protocol.ID {
+func (torrentContentTorrentHydrator) SubID(item model.Torrent) protocol.ID {
 	return item.InfoHash
 }
 
-func (h torrentContentTorrentHydrator) Hydrate(root *TorrentContentResultItem, sub model.Torrent) {
+func (torrentContentTorrentHydrator) Hydrate(root *TorrentContentResultItem, sub model.Torrent) {
 	root.Torrent = sub
 }
 
-func (h torrentContentTorrentHydrator) MustSucceed() bool {
+func (torrentContentTorrentHydrator) MustSucceed() bool {
 	return true
 }

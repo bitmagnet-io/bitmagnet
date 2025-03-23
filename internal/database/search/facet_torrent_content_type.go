@@ -31,7 +31,7 @@ type torrentContentTypeFacet struct {
 	torrentContentAttributeFacet[model.ContentType]
 }
 
-func (f torrentContentTypeFacet) Values(query.FacetContext) (map[string]string, error) {
+func (torrentContentTypeFacet) Values(query.FacetContext) (map[string]string, error) {
 	values := make(map[string]string)
 	values["null"] = "Unknown"
 	for _, contentType := range model.ContentTypeValues() {

@@ -11,7 +11,7 @@ type Intersect struct {
 }
 
 // Name intersect clause name
-func (intersect Intersect) Name() string {
+func (Intersect) Name() string {
 	return "INTERSECT"
 }
 

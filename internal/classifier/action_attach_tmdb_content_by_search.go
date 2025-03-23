@@ -18,7 +18,7 @@ var attachTmdbContentBySearchPayloadSpec = payloadLiteral[string]{
 	description: "Attempt to attach content from the TMDB API with a search on the torrent name",
 }
 
-func (a attachTmdbContentBySearchAction) compileAction(ctx compilerContext) (action, error) {
+func (attachTmdbContentBySearchAction) compileAction(ctx compilerContext) (action, error) {
 	if _, err := attachTmdbContentBySearchPayloadSpec.Unmarshal(ctx); err != nil {
 		return action{}, ctx.error(err)
 	}
