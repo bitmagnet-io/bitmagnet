@@ -160,7 +160,7 @@ func TestBep33BloomFilter(t *testing.T) {
 	for i := range 256 {
 		f.AddIP(net.IPv4(192, 0, 2, byte(i)).To4())
 	}
-	for i := range 0x3e7 {
+	for i := range 0x3e8 {
 		f.AddIP(net.ParseIP(fmt.Sprintf("2001:DB8::%x", i)))
 	}
 	expected, err := hex.DecodeString(unprettifyHex(`
