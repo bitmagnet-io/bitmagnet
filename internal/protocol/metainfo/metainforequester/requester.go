@@ -6,15 +6,16 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/anacrolix/torrent/bencode"
-	"github.com/anacrolix/torrent/peer_protocol"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
 	"io"
 	"math"
 	"net"
 	"net/netip"
 	"time"
+
+	"github.com/anacrolix/torrent/bencode"
+	"github.com/anacrolix/torrent/peer_protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
 )
 
 type Requester interface {
@@ -111,7 +112,14 @@ func (r requester) Request(ctx context.Context, infoHash protocol.ID, addr netip
 }
 
 func (r requester) connect(ctx context.Context, addr netip.AddrPort) (conn *net.TCPConn, err error) {
-	c, dialErr := r.dialer.DialContext(ctx, "tcp4", addr.String())
+	tcp := "tcp6"
+	if addr.Addr().Is4() {
+		tcp = "tcp4"
+	}
+	if addr.Addr().Is6() || addr.Addr().Is4In6() {
+		tcp = "tcp6"
+	}
+	c, dialErr := r.dialer.DialContext(ctx, tcp, addr.String())
 	if dialErr != nil {
 		err = dialErr
 		return

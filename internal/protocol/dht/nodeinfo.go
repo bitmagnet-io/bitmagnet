@@ -5,13 +5,14 @@ import (
 	"encoding"
 	"encoding/binary"
 	"fmt"
-	"github.com/anacrolix/missinggo/v2/slices"
-	"github.com/anacrolix/torrent/bencode"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"math"
 	"math/rand"
 	"net"
 	"reflect"
+
+	"github.com/anacrolix/missinggo/v2/slices"
+	"github.com/anacrolix/torrent/bencode"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
 type NodeInfo struct {
