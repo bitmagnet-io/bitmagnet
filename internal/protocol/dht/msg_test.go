@@ -19,6 +19,8 @@ import (
 //revive:disable:line-length-limit
 
 func testMarshalUnmarshalMsg(t *testing.T, m Msg, expected string) {
+	t.Helper()
+
 	c := qt.New(t)
 	b, err := bencode.Marshal(m)
 	c.Assert(err, qt.IsNil)
@@ -206,6 +208,8 @@ func TestEmptyScrapeBloomFilterEstimatedCount(t *testing.T) {
 }
 
 func marshalAndReturnUnmarshaledMsg(t *testing.T, m Msg, expected string) (ret Msg) {
+	t.Helper()
+
 	c := qt.New(t)
 	b, err := bencode.Marshal(m)
 	c.Assert(err, qt.IsNil)

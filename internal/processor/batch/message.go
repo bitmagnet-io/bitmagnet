@@ -12,15 +12,15 @@ import (
 const MessageName = "process_torrent_batch"
 
 type MessageParams struct {
-	InfoHashGreaterThan protocol.ID
-	UpdatedBefore       time.Time
-	ClassifyMode        processor.ClassifyMode
-	ClassifierWorkflow  string
-	ClassifierFlags     classifier.Flags
-	ChunkSize           uint
-	BatchSize           uint
-	ContentTypes        []model.NullContentType
-	Orphans             bool
+	InfoHashGreaterThan protocol.ID             `json:"InfoHashGreaterThan,omitempty"`
+	UpdatedBefore       time.Time               `json:"UpdatedBefore,omitempty"`
+	ClassifyMode        processor.ClassifyMode  `json:"ClassifyMode,omitempty"`
+	ClassifierWorkflow  string                  `json:"ClassifierWorkflow,omitempty"`
+	ClassifierFlags     classifier.Flags        `json:"ClassifierFlags,omitempty"`
+	ChunkSize           uint                    `json:"ChunkSize,omitempty"`
+	BatchSize           uint                    `json:"BatchSize,omitempty"`
+	ContentTypes        []model.NullContentType `json:"ContentTypes,omitempty"`
+	Orphans             bool                    `json:"Orphans,omitempty"`
 }
 
 func (p MessageParams) ApisDisabled() bool {

@@ -80,6 +80,8 @@ func (b builder) handle(ctx *gin.Context, i importer.Importer) {
 	}
 	addItem := func() error {
 		item := importer.Item{}
+		// todo: Fix this
+		//nolint:musttag
 		if err := json.Unmarshal([]byte(string(currentLine)), &item); err != nil {
 			b.logger.Errorw("error adding item", "error", err)
 			ctx.Status(400)

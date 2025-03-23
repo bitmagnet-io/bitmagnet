@@ -54,6 +54,8 @@ func (ck *resultWriterMock) Write(result *CheckerResult, statusCode int, w http.
 
 func doTestHandler(t *testing.T,
 	statusCodeUp, statusCodeDown int, expectedStatus CheckerResult, expectedStatusCode int) {
+	t.Helper()
+
 	// Arrange
 	response := httptest.NewRecorder()
 	request := httptest.NewRequest("GET", "https://localhost/foo", nil)

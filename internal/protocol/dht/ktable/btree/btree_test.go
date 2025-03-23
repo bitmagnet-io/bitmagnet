@@ -42,6 +42,8 @@ var testIDs = []NodeID{
 }
 
 func assertPut(t *testing.T, root Btree, id NodeID, expectedResult PutResult) {
+	t.Helper()
+
 	label := "xor: " + id.MustXor(testOrigin).BinaryString()
 	result := root.Put(id)
 	assert.Equal(t, expectedResult, result, label)

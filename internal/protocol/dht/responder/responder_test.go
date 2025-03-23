@@ -22,6 +22,8 @@ type testResponderMocks struct {
 }
 
 func newTestResponderMocks(t *testing.T) testResponderMocks {
+	t.Helper()
+
 	nodeID := protocol.RandomNodeID()
 	tableMock := ktable_mocks.NewTable(t)
 

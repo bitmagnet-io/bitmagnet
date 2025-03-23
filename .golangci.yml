@@ -7,17 +7,15 @@ linters:
     - canonicalheader
     - contextcheck
     - copyloopvar
-#    - dupl
     - errchkjson
     - errorlint
-
     - goconst
     - goimports
     - gosmopolitan
     - importas
     - intrange
     #    - misspell
-    #    - musttag
+    - musttag
     - noctx
     - paralleltest
     - revive
