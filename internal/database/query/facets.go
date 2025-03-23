@@ -81,7 +81,7 @@ type AggregationGroup struct {
 type Aggregations = maps.StringMap[AggregationGroup]
 
 type FacetContext interface {
-	DbContext
+	DBContext
 	Context() context.Context
 	NewAggregationQuery(options ...Option) (SubQuery, error)
 }

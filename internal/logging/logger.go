@@ -23,7 +23,7 @@ type Result struct {
 func New(params Params) Result {
 	var appHook fx.Hook
 	var encoder zapcore.Encoder
-	if params.Config.Json {
+	if params.Config.JSON {
 		encoder = zapcore.NewJSONEncoder(jsonEncoderConfig)
 	} else {
 		encoder = zapcore.NewConsoleEncoder(consoleEncoderConfig)

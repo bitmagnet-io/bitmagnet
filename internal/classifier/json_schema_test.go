@@ -9,7 +9,7 @@ import (
 )
 
 //go:embed json-schema.draft-07.json
-var metaSchemaJson []byte
+var metaSchemaJSON []byte
 
 func TestJsonSchema(t *testing.T) {
 
@@ -17,7 +17,7 @@ func TestJsonSchema(t *testing.T) {
 	assert.NoError(t, err)
 
 	schemaLoader := gojsonschema.NewBytesLoader(schemaJSON)
-	metaSchemaLoader := gojsonschema.NewBytesLoader(metaSchemaJson)
+	metaSchemaLoader := gojsonschema.NewBytesLoader(metaSchemaJSON)
 
 	// validate the schema against the meta schema
 	metaResult, err := gojsonschema.Validate(metaSchemaLoader, schemaLoader)

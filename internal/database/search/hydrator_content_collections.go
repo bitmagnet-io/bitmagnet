@@ -23,20 +23,20 @@ func (h contentCollectionsHydrator) RootID(root ContentResultItem) (model.Conten
 	}, true
 }
 
-func (h contentCollectionsHydrator) GetJoinSubs(ctx context.Context, dbCtx query.DbContext, ids []model.ContentRef) ([]model.ContentCollectionContent, error) {
+func (h contentCollectionsHydrator) GetJoinSubs(ctx context.Context, dbCtx query.DBContext, ids []model.ContentRef) ([]model.ContentCollectionContent, error) {
 	refMap := contentMapFromRefs(ids...)
 	q := dbCtx.Query()
 	var conds []gen.Condition
 	for contentType, sourceMap := range refMap {
 		for source, idMap := range sourceMap {
-			thisIds := make([]string, 0, len(idMap))
+			thisIDs := make([]string, 0, len(idMap))
 			for id := range idMap {
-				thisIds = append(thisIds, id)
+				thisIDs = append(thisIDs, id)
 			}
 			conds = append(conds, q.ContentCollectionContent.Where(
 				q.ContentCollectionContent.ContentType.Eq(contentType),
 				q.ContentCollectionContent.ContentSource.Eq(source),
-				q.ContentCollectionContent.ContentID.In(thisIds...),
+				q.ContentCollectionContent.ContentID.In(thisIDs...),
 			))
 		}
 	}

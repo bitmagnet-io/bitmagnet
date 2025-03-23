@@ -30,7 +30,7 @@ func New(p Params) Result {
 		Worker: worker.NewWorker(
 			"queue_server",
 			fx.Hook{
-				OnStart: func(ctx context.Context) error {
+				OnStart: func(context.Context) error {
 					//pool, err := p.PgxPool.Get()
 					//if err != nil {
 					//	return err
@@ -57,7 +57,7 @@ func New(p Params) Result {
 					}
 					return srv.Start(context.Background())
 				},
-				OnStop: func(ctx context.Context) error {
+				OnStop: func(context.Context) error {
 					close(stopped)
 					return nil
 				},

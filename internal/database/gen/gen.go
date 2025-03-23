@@ -29,7 +29,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 			}
 			return "string"
 		},
-		"bytea": func(columnType gorm.ColumnType) (dataType string) {
+		"bytea": func(gorm.ColumnType) (dataType string) {
 			return "[]byte"
 		},
 	})

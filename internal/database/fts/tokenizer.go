@@ -45,7 +45,7 @@ func (l *tokenizerLexer) readPhrase() []string {
 		lexeme = lexeme + str
 	}
 	for {
-		if l.IsEof() {
+		if l.IsEOF() {
 			breakWord()
 			return phrase
 		}

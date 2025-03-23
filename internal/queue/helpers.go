@@ -7,9 +7,9 @@ import (
 )
 
 // RandInt returns a random integer up to max
-func RandInt(max int) int {
+func RandInt(maxValue int) int {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return r.Intn(max)
+	return r.Intn(maxValue)
 }
 
 // CalculateBackoff calculates the number of seconds to back off before the next retry

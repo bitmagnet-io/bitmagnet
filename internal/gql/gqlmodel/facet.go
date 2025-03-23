@@ -248,13 +248,13 @@ func videoSourceAggs(items q.AggregationItems) ([]gen.VideoSourceAgg, error) {
 }
 
 func queueJobQueueAggs(items q.AggregationItems) ([]gen.QueueJobQueueAgg, error) {
-	return aggs(items, func(s string) (string, error) { return s, nil }, func(value *string, label string, count uint, isEstimate bool) gen.QueueJobQueueAgg {
+	return aggs(items, func(s string) (string, error) { return s, nil }, func(value *string, label string, count uint, _ bool) gen.QueueJobQueueAgg {
 		return gen.QueueJobQueueAgg{Value: *value, Label: label, Count: int(count)}
 	})
 }
 
 func queueJobStatusAggs(items q.AggregationItems) ([]gen.QueueJobStatusAgg, error) {
-	return aggs(items, model.ParseQueueJobStatus, func(value *model.QueueJobStatus, label string, count uint, isEstimate bool) gen.QueueJobStatusAgg {
+	return aggs(items, model.ParseQueueJobStatus, func(value *model.QueueJobStatus, label string, count uint, _ bool) gen.QueueJobStatusAgg {
 		return gen.QueueJobStatusAgg{Value: *value, Label: label, Count: int(count)}
 	})
 }

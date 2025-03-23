@@ -8,7 +8,7 @@ import (
 
 func ContentReleaseDateCriteria(dateRange model.DateRange) query.Criteria {
 	return query.DaoCriteria{
-		Conditions: func(ctx query.DbContext) ([]field.Expr, error) {
+		Conditions: func(ctx query.DBContext) ([]field.Expr, error) {
 			return dateRangeConditions(ctx.Query().Content.ReleaseDate, dateRange), nil
 		},
 	}
@@ -16,7 +16,7 @@ func ContentReleaseDateCriteria(dateRange model.DateRange) query.Criteria {
 
 func ContentReleaseDateCriteriaString(dateRange string) query.Criteria {
 	return query.DaoCriteria{
-		Conditions: func(ctx query.DbContext) ([]field.Expr, error) {
+		Conditions: func(ctx query.DBContext) ([]field.Expr, error) {
 			return dateRangeConditionsStr(ctx.Query().Content.ReleaseDate, dateRange)
 		},
 	}

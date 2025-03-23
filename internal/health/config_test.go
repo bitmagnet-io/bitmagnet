@@ -90,7 +90,7 @@ func TestWithMiddlewareConfig(t *testing.T) {
 	// Arrange
 	cfg := HandlerConfig{}
 	mw := func(MiddlewareFunc) MiddlewareFunc {
-		return func(r *http.Request) CheckerResult {
+		return func(*http.Request) CheckerResult {
 			return CheckerResult{nil, StatusUp, nil}
 		}
 	}
@@ -106,7 +106,7 @@ func TestWithInterceptorConfig(t *testing.T) {
 	// Arrange
 	cfg := checkerConfig{}
 	interceptor := func(InterceptorFunc) InterceptorFunc {
-		return func(ctx context.Context, name string, state CheckState) CheckState {
+		return func(context.Context, string, CheckState) CheckState {
 			return CheckState{}
 		}
 	}
@@ -136,7 +136,7 @@ func TestWithStatusChangeListenerConfig(t *testing.T) {
 
 	// Act
 	// Use of non standard AvailabilityStatus codes.
-	WithStatusListener(func(ctx context.Context, state CheckerState) {})(&cfg)
+	WithStatusListener(func(context.Context, CheckerState) {})(&cfg)
 
 	// Assert
 	assert.NotNil(t, cfg.statusChangeListener)
@@ -146,7 +146,7 @@ func TestWithStatusChangeListenerConfig(t *testing.T) {
 func TestNewWithDefaults(t *testing.T) {
 	// Arrange
 	configApplied := false
-	opt := func(config *checkerConfig) { configApplied = true }
+	opt := func(*checkerConfig) { configApplied = true }
 
 	// Act
 	checker := NewChecker(opt)
@@ -161,7 +161,7 @@ func TestNewWithDefaults(t *testing.T) {
 func TestNewCheckerWithDefaults(t *testing.T) {
 	// Arrange
 	configApplied := false
-	opt := func(config *checkerConfig) { configApplied = true }
+	opt := func(*checkerConfig) { configApplied = true }
 
 	// Act
 	checker := NewChecker(opt)

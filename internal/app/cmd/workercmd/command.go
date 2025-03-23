@@ -51,7 +51,7 @@ func New(p Params) (Result, error) {
 			},
 			{
 				Name: "list",
-				Action: func(ctx *cli.Context) error {
+				Action: func(*cli.Context) error {
 					for _, w := range p.Workers.Workers() {
 						println(w.Key())
 					}

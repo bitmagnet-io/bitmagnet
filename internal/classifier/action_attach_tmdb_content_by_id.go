@@ -44,26 +44,26 @@ func (a attachTMDBContentByIDAction) compileAction(ctx compilerContext) (action,
 				}
 				tmdbID = int64(id)
 			default:
-				if id, err := ctx.tmdbGetTmdbIdByExternalId(ref); err != nil {
+				id, err := ctx.tmdbGetTMDBIDByExternalID(ref)
+				if err != nil {
 					return cl, err
-				} else {
-					tmdbID = id
 				}
+				tmdbID = id
 			}
 			var content *model.Content
 			switch ref.Type {
 			case model.ContentTypeMovie, model.ContentTypeXxx:
-				if c, err := ctx.tmdbGetMovieByTmbdId(tmdbID); err != nil {
+				c, err := ctx.tmdbGetMovieByTMDBID(tmdbID)
+				if err != nil {
 					return cl, err
-				} else {
-					content = &c
 				}
+				content = &c
 			case model.ContentTypeTvShow:
-				if c, err := ctx.tmdbGetTvShowByTmbdId(tmdbID); err != nil {
+				c, err := ctx.tmdbGetTVShowByTMDBID(tmdbID)
+				if err != nil {
 					return cl, err
-				} else {
-					content = &c
 				}
+				content = &c
 			default:
 				return cl, classification.ErrUnmatched
 			}

@@ -127,11 +127,11 @@ func resolveStructNode(
 		fieldValue := value.FieldByName(field.Name)
 		switch field.Type.Kind() {
 		case reflect.Struct:
-			if structResolved, err := resolveStructNode(resolvers, val, thisPath, fieldKey, field.Name, fieldValue); err != nil {
+			structResolved, err := resolveStructNode(resolvers, val, thisPath, fieldKey, field.Name, fieldValue)
+			if err != nil {
 				return ResolvedNode{}, err
-			} else {
-				children[fieldKey] = structResolved
 			}
+			children[fieldKey] = structResolved
 		default:
 			dv := fieldValue.Interface()
 			rv := dv

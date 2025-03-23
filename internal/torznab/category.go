@@ -1,9 +1,5 @@
 package torznab
 
-import (
-	_ "embed"
-)
-
 type Category struct {
 	ID     int           `xml:"id,attr"`
 	Name   string        `xml:"name,attr"`

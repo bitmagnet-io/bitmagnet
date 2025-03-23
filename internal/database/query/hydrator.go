@@ -7,7 +7,7 @@ import (
 
 type HasOneHydrator[Root any, Sub any, SubID comparable] interface {
 	RootToSubID(root Root) (SubID, bool)
-	GetSubs(ctx context.Context, dbCtx DbContext, ids []SubID) ([]Sub, error)
+	GetSubs(ctx context.Context, dbCtx DBContext, ids []SubID) ([]Sub, error)
 	SubID(sub Sub) SubID
 	Hydrate(root *Root, sub Sub)
 	MustSucceed() bool
@@ -70,7 +70,7 @@ func hydrateHasOne[Root any, Sub any, SubID comparable](
 
 type HasManyHydrator[Root any, RootID comparable, JoinSub any, Sub any] interface {
 	RootID(root Root) (RootID, bool)
-	GetJoinSubs(ctx context.Context, dbCtx DbContext, ids []RootID) ([]JoinSub, error)
+	GetJoinSubs(ctx context.Context, dbCtx DBContext, ids []RootID) ([]JoinSub, error)
 	JoinSubToRootIDAndSub(j JoinSub) (RootID, Sub)
 	Hydrate(root *Root, subs []Sub)
 }

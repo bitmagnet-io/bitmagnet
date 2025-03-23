@@ -34,14 +34,14 @@ type limiter struct {
 func NewLimiter(
 	overallRate rate.Limit,
 	overallBurst int,
-	perIpRate rate.Limit,
-	perIpBurst int,
-	perIpSize int,
-	perIpTtl time.Duration,
+	perIPRate rate.Limit,
+	perIPBurst int,
+	perIPSize int,
+	perIPTTL time.Duration,
 ) Limiter {
 	return &limiter{
 		limiter:      rate.NewLimiter(overallRate, overallBurst),
-		keyedLimiter: concurrency.NewKeyedLimiter(perIpRate, perIpBurst, perIpSize, perIpTtl),
+		keyedLimiter: concurrency.NewKeyedLimiter(perIPRate, perIPBurst, perIPSize, perIPTTL),
 	}
 }
 

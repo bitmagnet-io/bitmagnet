@@ -11,7 +11,7 @@ import (
 
 type persistPayload struct {
 	torrentContents  []model.TorrentContent
-	deleteIds        []string
+	deleteIDs        []string
 	deleteInfoHashes []protocol.ID
 	addTags          map[protocol.ID]map[string]struct{}
 }
@@ -62,9 +62,9 @@ func (c processor) persist(ctx context.Context, payload persistPayload) error {
 				return createContentErr
 			}
 		}
-		if len(payload.deleteIds) > 0 {
+		if len(payload.deleteIDs) > 0 {
 			if _, deleteErr := tx.TorrentContent.WithContext(ctx).Where(
-				c.dao.TorrentContent.ID.In(payload.deleteIds...),
+				c.dao.TorrentContent.ID.In(payload.deleteIDs...),
 			).Delete(); deleteErr != nil {
 				return deleteErr
 			}

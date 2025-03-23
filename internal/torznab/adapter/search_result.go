@@ -33,25 +33,25 @@ func torrentContentResultItemToTorznabResultItem(item search.TorrentContentResul
 	if item.ContentType.Valid {
 		category = item.ContentType.ContentType.Label()
 	}
-	categoryId := torznab.CategoryOther.ID
+	categoryID := torznab.CategoryOther.ID
 	if item.ContentType.Valid {
 		switch item.ContentType.ContentType {
 		case model.ContentTypeMovie:
-			categoryId = torznab.CategoryMovies.ID
+			categoryID = torznab.CategoryMovies.ID
 		case model.ContentTypeTvShow:
-			categoryId = torznab.CategoryTV.ID
+			categoryID = torznab.CategoryTV.ID
 		case model.ContentTypeMusic:
-			categoryId = torznab.CategoryAudio.ID
+			categoryID = torznab.CategoryAudio.ID
 		case model.ContentTypeEbook:
-			categoryId = torznab.CategoryBooks.ID
+			categoryID = torznab.CategoryBooks.ID
 		case model.ContentTypeComic:
-			categoryId = torznab.CategoryBooksComics.ID
+			categoryID = torznab.CategoryBooksComics.ID
 		case model.ContentTypeAudiobook:
-			categoryId = torznab.CategoryAudioAudiobook.ID
+			categoryID = torznab.CategoryAudioAudiobook.ID
 		case model.ContentTypeSoftware:
-			categoryId = torznab.CategoryPC.ID
+			categoryID = torznab.CategoryPC.ID
 		case model.ContentTypeGame:
-			categoryId = torznab.CategoryPCGames.ID
+			categoryID = torznab.CategoryPCGames.ID
 		}
 	}
 	attrs := []torznab.SearchResultItemTorznabAttr{
@@ -65,7 +65,7 @@ func torrentContentResultItemToTorznabResultItem(item search.TorrentContentResul
 		},
 		{
 			AttrName:  torznab.AttrCategory,
-			AttrValue: strconv.Itoa(categoryId),
+			AttrValue: strconv.Itoa(categoryID),
 		},
 		{
 			AttrName:  torznab.AttrSize,
@@ -140,16 +140,16 @@ func torrentContentResultItemToTorznabResultItem(item search.TorrentContentResul
 			AttrValue: item.ReleaseGroup.String,
 		})
 	}
-	if tmdbid, ok := item.Content.Identifier("tmdb"); ok {
+	if tmdbID, ok := item.Content.Identifier("tmdb"); ok {
 		attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 			AttrName:  torznab.AttrTmdb,
-			AttrValue: tmdbid,
+			AttrValue: tmdbID,
 		})
 	}
-	if imdbId, ok := item.Content.Identifier("imdb"); ok {
+	if imdbID, ok := item.Content.Identifier("imdb"); ok {
 		attrs = append(attrs, torznab.SearchResultItemTorznabAttr{
 			AttrName:  torznab.AttrImdb,
-			AttrValue: imdbId[2:],
+			AttrValue: imdbID[2:],
 		})
 	}
 	return torznab.SearchResultItem{

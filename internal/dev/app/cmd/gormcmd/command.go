@@ -24,7 +24,7 @@ func New(p Params) (r Result, err error) {
 		Subcommands: []*cli.Command{
 			{
 				Name: "gen",
-				Action: func(ctx *cli.Context) error {
+				Action: func(*cli.Context) error {
 					db, err := p.DB.Get()
 					if err != nil {
 						return err

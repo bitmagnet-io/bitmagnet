@@ -22,7 +22,7 @@ type Params struct {
 type Result struct {
 	fx.Out
 	PgxPool     lazy.Lazy[*pgxpool.Pool]
-	SqlDB       lazy.Lazy[*sql.DB]
+	SQLDB       lazy.Lazy[*sql.DB]
 	PgxPoolWait *sync.WaitGroup `name:"pgx_pool_wait"`
 	AppHook     fx.Hook         `group:"app_hooks"`
 }
@@ -52,7 +52,7 @@ func New(p Params) (Result, error) {
 	})
 	return Result{
 		PgxPool: lazyPool,
-		SqlDB: lazy.New(func() (*sql.DB, error) {
+		SQLDB: lazy.New(func() (*sql.DB, error) {
 			pool, err := lazyPool.Get()
 			if err != nil {
 				return nil, err

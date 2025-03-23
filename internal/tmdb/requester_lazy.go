@@ -64,7 +64,7 @@ func newRequester(ctx context.Context, config Config, logger *zap.SugaredLogger)
 		},
 		logger: logger,
 	}
-	err := client{r}.ValidateApiKey(ctx)
+	err := client{r}.ValidateAPIKey(ctx)
 	if errors.Is(err, ErrUnauthorized) {
 		if config.APIKey == defaultTmdbAPIKey {
 			return r, fmt.Errorf("default api key is invalid: %w", err)

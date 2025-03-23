@@ -36,7 +36,7 @@ type yearFacet struct {
 
 func (r yearFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 	return []query.Criteria{
-		query.GenCriteria(func(ctx query.DbContext) (query.Criteria, error) {
+		query.GenCriteria(func(ctx query.DBContext) (query.Criteria, error) {
 			years := make([]uint16, 0, len(filter))
 			hasNull := false
 			for _, v := range filter.Values() {

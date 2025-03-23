@@ -36,11 +36,11 @@ func (m mergeSourceProvider) source() (Source, error) {
 		if err != nil {
 			return source, err
 		}
-		if merged, err := source.merge(s); err != nil {
+		merged, err := source.merge(s)
+		if err != nil {
 			return source, err
-		} else {
-			source = merged
 		}
+		source = merged
 	}
 	return source, nil
 }

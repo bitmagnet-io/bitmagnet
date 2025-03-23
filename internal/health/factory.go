@@ -15,7 +15,7 @@ type Params struct {
 type Result struct {
 	fx.Out
 	Checker          lazy.Lazy[Checker]
-	HttpServerOption httpserver.Option `group:"http_server_options"`
+	HTTPServerOption httpserver.Option `group:"http_server_options"`
 }
 
 func New(params Params) Result {
@@ -24,7 +24,7 @@ func New(params Params) Result {
 	})
 	return Result{
 		Checker:          lChecker,
-		HttpServerOption: handlerBuilder{lChecker},
+		HTTPServerOption: handlerBuilder{lChecker},
 	}
 }
 

@@ -39,7 +39,7 @@ func New(p Params) (Result, error) {
 		CommandNotFound: func(_ *cli.Context, command string) {
 			p.Logger.Errorw("command not found", "command", command)
 		},
-		After: func(ctx *cli.Context) error {
+		After: func(*cli.Context) error {
 			return p.Shutdowner.Shutdown()
 		},
 		Version: version.GitTag,
@@ -48,7 +48,7 @@ func New(p Params) (Result, error) {
 	}
 	app.Setup()
 	p.Lifecycle.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
+		OnStart: func(context.Context) error {
 			go (func() {
 				// the following hack fixes a weird bug where the CLI does not terminate when calling with just --help
 				args := p.Args

@@ -31,20 +31,20 @@ func (a attachTmdbContentBySearchAction) compileAction(ctx compilerContext) (act
 			var content *model.Content
 			switch cl.ContentType.ContentType {
 			case model.ContentTypeTvShow:
-				if result, searchErr := ctx.tmdbSearchTvShow(cl.BaseTitle.String, cl.Date.Year); searchErr != nil {
+				result, searchErr := ctx.tmdbSearchTVShow(cl.BaseTitle.String, cl.Date.Year)
+				if searchErr != nil {
 					return cl, searchErr
-				} else {
-					content = &result
 				}
+				content = &result
 			default:
 				if len(cl.Episodes) > 0 {
 					return cl, classification.ErrUnmatched
 				}
-				if result, searchErr := ctx.tmdbSearchMovie(cl.BaseTitle.String, cl.Date.Year); searchErr != nil {
+				result, searchErr := ctx.tmdbSearchMovie(cl.BaseTitle.String, cl.Date.Year)
+				if searchErr != nil {
 					return cl, searchErr
-				} else {
-					content = &result
 				}
+				content = &result
 			}
 			cl.AttachContent(content)
 			return cl, nil

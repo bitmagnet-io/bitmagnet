@@ -1,4 +1,4 @@
-package tmdb_health
+package tmdbhealthcheck
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/health"

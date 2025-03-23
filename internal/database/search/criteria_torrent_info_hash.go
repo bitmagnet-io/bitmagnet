@@ -14,15 +14,15 @@ func TorrentInfoHashCriteria(infoHashes ...protocol.ID) query.Criteria {
 
 func infoHashCriteria(table string, infoHashes ...protocol.ID) query.Criteria {
 	if len(infoHashes) == 0 {
-		return query.DbCriteria{
-			Sql: "FALSE",
+		return query.DBCriteria{
+			SQL: "FALSE",
 		}
 	}
 	decodes := make([]string, len(infoHashes))
 	for i, infoHash := range infoHashes {
 		decodes[i] = fmt.Sprintf("DECODE('%s', 'hex')", infoHash.String())
 	}
-	return query.DbCriteria{
-		Sql: fmt.Sprintf("%s.info_hash IN (%s)", table, strings.Join(decodes, ", ")),
+	return query.DBCriteria{
+		SQL: fmt.Sprintf("%s.info_hash IN (%s)", table, strings.Join(decodes, ", ")),
 	}
 }

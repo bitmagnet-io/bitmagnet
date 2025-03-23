@@ -47,7 +47,7 @@ func searchRequestToQueryOptions(r torznab.SearchRequest) ([]query.Option, error
 		if r.Profile.DisableOrderByRelevance {
 			order = search.TorrentContentOrderByPublishedAt
 		}
-		options = append(options, query.QueryString(r.Query), query.OrderBy(order.Clauses(search.OrderDirectionDescending)...))
+		options = append(options, query.SearchString(r.Query), query.OrderBy(order.Clauses(search.OrderDirectionDescending)...))
 	}
 	var catsCriteria []query.Criteria
 	for _, cat := range r.Cats {
@@ -115,9 +115,9 @@ func searchRequestToQueryOptions(r torznab.SearchRequest) ([]query.Option, error
 		options = append(options, query.Where(query.Or(catsCriteria...)))
 	}
 	if r.IMDBID.Valid {
-		imdbId := r.IMDBID.String
-		if !strings.HasPrefix(imdbId, "tt") {
-			imdbId = "tt" + imdbId
+		imdbID := r.IMDBID.String
+		if !strings.HasPrefix(imdbID, "tt") {
+			imdbID = "tt" + imdbID
 		}
 		var ct model.ContentType
 		if r.Type != torznab.FunctionTV {
@@ -128,11 +128,11 @@ func searchRequestToQueryOptions(r torznab.SearchRequest) ([]query.Option, error
 		options = append(options, query.Where(search.ContentAlternativeIdentifierCriteria(model.ContentRef{
 			Type:   ct,
 			Source: "imdb",
-			ID:     imdbId,
+			ID:     imdbID,
 		})))
 	}
 	if r.TMDBID.Valid {
-		tmdbId := r.TMDBID.String
+		tmdbID := r.TMDBID.String
 		var ct model.ContentType
 		if r.Type != torznab.FunctionTV {
 			ct = model.ContentTypeMovie
@@ -142,7 +142,7 @@ func searchRequestToQueryOptions(r torznab.SearchRequest) ([]query.Option, error
 		options = append(options, query.Where(search.ContentCanonicalIdentifierCriteria(model.ContentRef{
 			Type:   ct,
 			Source: "tmdb",
-			ID:     tmdbId,
+			ID:     tmdbID,
 		})))
 	}
 	limit := r.Profile.DefaultLimit

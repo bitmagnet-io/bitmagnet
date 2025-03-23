@@ -6,7 +6,7 @@ import (
 )
 
 type Client interface {
-	ValidateApiKey(context.Context) error
+	ValidateAPIKey(context.Context) error
 	SearchMovie(context.Context, SearchMovieRequest) (SearchMovieResponse, error)
 	MovieDetails(context.Context, MovieDetailsRequest) (MovieDetailsResponse, error)
 	SearchTv(context.Context, SearchTvRequest) (SearchTvResponse, error)

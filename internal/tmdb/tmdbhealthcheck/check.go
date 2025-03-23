@@ -1,4 +1,4 @@
-package tmdb_health
+package tmdbhealthcheck
 
 import (
 	"context"
@@ -23,7 +23,7 @@ func NewCheck(
 			if err != nil {
 				return err
 			}
-			return c.ValidateApiKey(ctx)
+			return c.ValidateAPIKey(ctx)
 		},
 	}
 }

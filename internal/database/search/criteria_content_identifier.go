@@ -28,7 +28,7 @@ func ContentCanonicalIdentifierCriteria(refs ...model.ContentRef) query.Criteria
 }
 
 func contentCanonicalIdentifierCriteria(contentMap contentMap) query.Criteria {
-	return query.GenCriteria(func(ctx query.DbContext) (query.Criteria, error) {
+	return query.GenCriteria(func(ctx query.DBContext) (query.Criteria, error) {
 		q := ctx.Query()
 		criteria := make([]query.Criteria, 0, len(contentMap))
 		for contentType, sourceMap := range contentMap {
@@ -62,7 +62,7 @@ func ContentAlternativeIdentifierCriteria(refs ...model.ContentRef) query.Criter
 }
 
 func contentAlternativeIdentifierCriteria(contentMap contentMap) query.Criteria {
-	return query.GenCriteria(func(ctx query.DbContext) (query.Criteria, error) {
+	return query.GenCriteria(func(ctx query.DBContext) (query.Criteria, error) {
 		q := ctx.Query()
 		criteria := make([]query.Criteria, 0, len(contentMap))
 		for contentType, sourceMap := range contentMap {

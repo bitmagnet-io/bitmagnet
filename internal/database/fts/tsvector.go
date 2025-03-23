@@ -94,7 +94,7 @@ func ParseTsvector(str string) (Tsvector, error) {
 	l := tsvectorLexer{newLexer(strings.TrimSpace(str))}
 	tsv := Tsvector{}
 	for {
-		if l.IsEof() {
+		if l.IsEOF() {
 			break
 		}
 		word, posWeights, err := l.readTsvPart()
@@ -122,7 +122,7 @@ func (l *tsvectorLexer) readTsvPart() (string, []TsvectorLabel, error) {
 	}
 	if !l.ReadChar(':') {
 		spaces := l.ReadWhile(lexer.IsChar(' '))
-		if !l.IsEof() && len(spaces) == 0 {
+		if !l.IsEOF() && len(spaces) == 0 {
 			return "", nil, errors.New("unexpected character")
 		}
 		return lexeme, []TsvectorLabel{}, nil
@@ -162,12 +162,12 @@ func (l *tsvectorLexer) readLabels() ([]TsvectorLabel, error) {
 	}
 	pws := []TsvectorLabel{pw}
 	if l.ReadChar(',') {
-		if rest, err := l.readLabels(); err != nil {
+		rest, err := l.readLabels()
+		if err != nil {
 			return nil, err
-		} else {
-			pws = append(pws, rest...)
 		}
-	} else if !l.IsEof() && l.ReadWhile(lexer.IsChar(' ')) == "" {
+		pws = append(pws, rest...)
+	} else if !l.IsEOF() && l.ReadWhile(lexer.IsChar(' ')) == "" {
 		return nil, errors.New("unexpected character")
 	}
 	return pws, nil

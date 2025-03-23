@@ -166,9 +166,9 @@ func (h *serverHandler) start(ctx context.Context) {
 			checkTicker.Reset(h.CheckInterval)
 			go func() {
 				defer h.sem.Release(1)
-				jobId, _, err := h.handleJob(ctx)
+				jobID, _, err := h.handleJob(ctx)
 				// if a job was found, we should check straight away for another job, otherwise we wait for the check interval
-				if err == nil && jobId != "" {
+				if err == nil && jobID != "" {
 					checkTicker.Reset(1)
 				}
 			}()
@@ -176,7 +176,7 @@ func (h *serverHandler) start(ctx context.Context) {
 	}
 }
 
-func (h *serverHandler) handleJob(ctx context.Context, conds ...gen.Condition) (jobId string, processed bool, err error) {
+func (h *serverHandler) handleJob(ctx context.Context, conds ...gen.Condition) (jobID string, processed bool, err error) {
 	err = h.query.Transaction(func(tx *dao.Query) error {
 		job, findErr := tx.QueueJob.WithContext(ctx).Where(
 			append(conds,
@@ -198,7 +198,7 @@ func (h *serverHandler) handleJob(ctx context.Context, conds ...gen.Condition) (
 			}
 			return findErr
 		}
-		jobId = job.ID
+		jobID = job.ID
 		var jobErr error
 		if job.Deadline.Valid && job.Deadline.Time.Before(time.Now()) {
 			jobErr = ErrJobExceededDeadline
@@ -233,7 +233,7 @@ func (h *serverHandler) handleJob(ctx context.Context, conds ...gen.Condition) (
 	if err != nil {
 		h.logger.Error("error handling job", "error", err)
 	} else if processed {
-		h.logger.Debugw("job processed", "job_id", jobId)
+		h.logger.Debugw("job processed", "job_id", jobID)
 	}
 	return
 }

@@ -82,7 +82,7 @@ func TestGinzapWithConfig(t *testing.T) {
 	r := gin.New()
 
 	utcLogger, utcLoggerObserved := buildDummyLogger()
-	r.Use(GinzapWithConfig(utcLogger, &Config{
+	r.Use(WithConfig(utcLogger, &Config{
 		TimeFormat: time.RFC3339,
 		UTC:        true,
 		SkipPaths:  []string{"/no_log"},

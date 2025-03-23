@@ -159,17 +159,17 @@ func TvShowDetailsToTvShowModel(details TvDetailsResponse) (movie model.Content,
 	}, nil
 }
 
-func ExternalSource(ref model.ContentRef) (externalSource string, externalId string, err error) {
+func ExternalSource(ref model.ContentRef) (externalSource string, externalID string, err error) {
 	switch {
 	case (ref.Type == model.ContentTypeMovie ||
 		ref.Type == model.ContentTypeTvShow ||
 		ref.Type == model.ContentTypeXxx) &&
 		ref.Source == model.SourceImdb:
 		externalSource = "imdb_id"
-		externalId = ref.ID
+		externalID = ref.ID
 	case ref.Type == model.ContentTypeTvShow && ref.Source == model.SourceTvdb:
 		externalSource = "tvdb_id"
-		externalId = ref.ID
+		externalID = ref.ID
 	default:
 		err = classification.ErrUnmatched
 	}

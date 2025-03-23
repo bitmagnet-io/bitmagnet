@@ -68,25 +68,20 @@ func (l *dateLexer) lexDate() model.Date {
 							}
 							isStartOrWordBreak = false
 							continue
-						} else {
-							isStartOrWordBreak = part3.format == datePartNonWordChars
-							continue
 						}
-					} else {
-						isStartOrWordBreak = part2.format == datePartNonWordChars
+						isStartOrWordBreak = part3.format == datePartNonWordChars
 						continue
 					}
-				} else {
-					isStartOrWordBreak = true
+					isStartOrWordBreak = part2.format == datePartNonWordChars
 					continue
 				}
-			} else {
-				isStartOrWordBreak = false
+				isStartOrWordBreak = true
 				continue
 			}
-		} else {
-			isStartOrWordBreak = part1.format == datePartNonWordChars
+			isStartOrWordBreak = false
+			continue
 		}
+		isStartOrWordBreak = part1.format == datePartNonWordChars
 	}
 	return model.Date{}
 }
@@ -135,7 +130,7 @@ type datePart struct {
 
 func (l *dateLexer) lexDateParts() []datePart {
 	var parts []datePart
-	for !l.IsEof() {
+	for !l.IsEOF() {
 		parts = append(parts, l.lexDatePart())
 	}
 	return parts

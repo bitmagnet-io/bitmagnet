@@ -18,7 +18,7 @@ type SearchParams struct {
 func (s SearchParams) Option() Option {
 	var options []Option
 	if s.QueryString.Valid {
-		options = append(options, QueryString(s.QueryString.String), OrderByQueryStringRank())
+		options = append(options, SearchString(s.QueryString.String), OrderByQueryStringRank())
 	}
 	offset := uint(0)
 	if s.Limit.Valid {

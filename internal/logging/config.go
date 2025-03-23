@@ -11,7 +11,7 @@ import (
 type Config struct {
 	Level       string
 	Development bool
-	Json        bool
+	JSON        bool
 	FileRotator FileRotatorConfig
 }
 
@@ -30,7 +30,7 @@ func NewDefaultConfig() Config {
 	return Config{
 		Level:       "info",
 		Development: false,
-		Json:        false,
+		JSON:        false,
 		FileRotator: FileRotatorConfig{
 			Enabled:    false,
 			Level:      "debug",

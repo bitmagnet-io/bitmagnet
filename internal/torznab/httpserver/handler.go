@@ -51,14 +51,14 @@ func (h handler) handleSearch(ctx *gin.Context, profile torznab.Profile, tp stri
 		}
 	}
 	imdbID := model.NullString{}
-	if qImdbId := ctx.Query(torznab.ParamIMDBID); qImdbId != "" {
+	if qIMDBID := ctx.Query(torznab.ParamIMDBID); qIMDBID != "" {
 		imdbID.Valid = true
-		imdbID.String = qImdbId
+		imdbID.String = qIMDBID
 	}
 	tmdbID := model.NullString{}
-	if qTmdbId := ctx.Query(torznab.ParamTMDBID); qTmdbId != "" {
+	if qTMDBID := ctx.Query(torznab.ParamTMDBID); qTMDBID != "" {
 		tmdbID.Valid = true
-		tmdbID.String = qTmdbId
+		tmdbID.String = qTMDBID
 	}
 	season := model.NullInt{}
 	episode := model.NullInt{}

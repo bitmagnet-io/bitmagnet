@@ -18,7 +18,7 @@ func newError(msg string) error {
 var ErrUnauthorized = newError("401 Unauthorized")
 var ErrNotFound = newError("404 Not Found")
 
-func (c client) ValidateApiKey(ctx context.Context) error {
+func (c client) ValidateAPIKey(ctx context.Context) error {
 	_, err := c.requester.Request(ctx, "/authentication", nil, nil)
 	return err
 }

@@ -22,18 +22,18 @@ func DefaultOption() Option {
 func Options(o ...Option) Option {
 	return func(b OptionBuilder) (OptionBuilder, error) {
 		for _, opt := range o {
-			if nextCtx, err := opt(b); err != nil {
+			nextCtx, err := opt(b)
+			if err != nil {
 				return b, err
-			} else {
-				b = nextCtx
 			}
+			b = nextCtx
 		}
 		return b, nil
 	}
 }
 
 type Criteria interface {
-	Raw(c DbContext) (RawCriteria, error)
+	Raw(c DBContext) (RawCriteria, error)
 }
 
 type TableJoinType int
@@ -71,7 +71,7 @@ func RequireJoin(names ...string) Option {
 	}
 }
 
-func QueryString(str string) Option {
+func SearchString(str string) Option {
 	return func(ctx OptionBuilder) (OptionBuilder, error) {
 		return ctx.QueryString(str), nil
 	}

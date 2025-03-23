@@ -197,7 +197,7 @@ func (s AvailabilityStatus) criticality() int {
 }
 
 var (
-	CheckTimeoutErr = errors.New("check timed out")
+	ErrTimeout = errors.New("check timed out")
 )
 
 func newChecker(cfg checkerConfig) *defaultChecker {
@@ -522,7 +522,7 @@ func executeCheckFunc(ctx context.Context, check *Check) error {
 	case err := <-res:
 		return err
 	case <-ctx.Done():
-		return CheckTimeoutErr
+		return ErrTimeout
 	}
 }
 

@@ -24,7 +24,7 @@ func collectionMapFromRefs(refs ...model.ContentCollectionRef) collectionMap {
 }
 
 func ContentCollectionCriteria(refs ...model.ContentCollectionRef) query.Criteria {
-	return query.GenCriteria(func(ctx query.DbContext) (query.Criteria, error) {
+	return query.GenCriteria(func(ctx query.DBContext) (query.Criteria, error) {
 		refMap := collectionMapFromRefs(refs...)
 		q := ctx.Query()
 		var criteria []query.Criteria

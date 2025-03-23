@@ -33,7 +33,7 @@ func New(p Params) Result {
 		Worker: worker.NewWorker(
 			"http_server",
 			fx.Hook{
-				OnStart: func(ctx context.Context) error {
+				OnStart: func(context.Context) error {
 					gin.SetMode(p.Config.GinMode)
 					g := gin.New()
 					g.Use(ginzap.Ginzap(p.Logger.Named("gin"), time.RFC3339, true), gin.Recovery())

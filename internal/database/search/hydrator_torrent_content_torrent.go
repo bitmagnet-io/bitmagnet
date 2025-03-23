@@ -39,7 +39,7 @@ func (h torrentContentTorrentHydrator) RootToSubID(root TorrentContentResultItem
 	return root.InfoHash, true
 }
 
-func (h torrentContentTorrentHydrator) GetSubs(ctx context.Context, dbCtx query.DbContext, ids []protocol.ID) ([]model.Torrent, error) {
+func (h torrentContentTorrentHydrator) GetSubs(ctx context.Context, dbCtx query.DBContext, ids []protocol.ID) ([]model.Torrent, error) {
 	result, err := search{dbCtx.Query()}.Torrents(ctx, query.Where(TorrentInfoHashCriteria(ids...)), query.Preload(func(q *dao.Query) []field.RelationField {
 		preload := []field.RelationField{
 			q.Torrent.Sources.RelationField,

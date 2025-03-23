@@ -89,10 +89,10 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 	var infoHashesToDelete []protocol.ID
 	tagsToAdd := make(map[protocol.ID]map[string]struct{})
 	for _, torrent := range searchResult.Torrents {
-		thisDeleteIds := make(map[string]struct{}, len(torrent.Contents))
+		thisDeleteIDs := make(map[string]struct{}, len(torrent.Contents))
 		foundMatch := false
 		for _, tc := range torrent.Contents {
-			thisDeleteIds[tc.ID] = struct{}{}
+			thisDeleteIDs[tc.ID] = struct{}{}
 			if !foundMatch &&
 				!torrent.Hint.ContentSource.Valid &&
 				params.ClassifyMode != ClassifyModeRematch &&
@@ -116,9 +116,9 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 			continue
 		}
 		torrentContent := newTorrentContent(torrent, cl)
-		tcId := torrentContent.InferID()
-		for id := range thisDeleteIds {
-			if id != tcId {
+		tcID := torrentContent.InferID()
+		for id := range thisDeleteIDs {
+			if id != tcID {
 				idsToDelete = append(idsToDelete, id)
 			}
 		}
@@ -151,7 +151,7 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 	}
 	if persistErr := c.persist(ctx, persistPayload{
 		torrentContents:  tcs,
-		deleteIds:        idsToDelete,
+		deleteIDs:        idsToDelete,
 		deleteInfoHashes: infoHashesToDelete,
 		addTags:          tagsToAdd,
 	}); persistErr != nil {

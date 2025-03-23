@@ -34,7 +34,7 @@ func New(p Params) Result {
 	}
 }
 
-const ImportIdHeader = "x-import-id"
+const ImportIDHeader = "x-import-id"
 
 type builder struct {
 	importer lazy.Lazy[importer.Importer]
@@ -59,12 +59,12 @@ func (b builder) Apply(e *gin.Engine) error {
 func (b builder) handle(ctx *gin.Context, i importer.Importer) {
 	s := bufio.NewScanner(ctx.Request.Body)
 	s.Split(bufio.ScanRunes)
-	importId := ctx.Request.Header.Get(ImportIdHeader)
-	if importId == "" {
-		importId = strconv.FormatUint(uint64(time.Now().Unix()), 10)
+	importID := ctx.Request.Header.Get(ImportIDHeader)
+	if importID == "" {
+		importID = strconv.FormatUint(uint64(time.Now().Unix()), 10)
 	}
 	ai := i.New(ctx, importer.Info{
-		ID: importId,
+		ID: importID,
 	})
 	var currentLine []rune
 	count := 0

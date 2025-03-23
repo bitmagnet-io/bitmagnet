@@ -8,7 +8,7 @@ import (
 )
 
 func TorrentFileExtensionCriteria(extensions ...string) query.Criteria {
-	return query.GenCriteria(func(ctx query.DbContext) (query.Criteria, error) {
+	return query.GenCriteria(func(ctx query.DBContext) (query.Criteria, error) {
 		q := ctx.Query()
 		return query.OrCriteria{
 			Criteria: []query.Criteria{

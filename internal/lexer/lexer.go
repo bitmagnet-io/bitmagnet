@@ -49,7 +49,7 @@ func (l *Lexer) BackupN(n int) {
 	}
 }
 
-func (l *Lexer) IsEof() bool {
+func (l *Lexer) IsEOF() bool {
 	_, ok := l.Read()
 	if !ok {
 		return true

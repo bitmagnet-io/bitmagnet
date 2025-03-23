@@ -28,7 +28,7 @@ type server struct {
 	queries          map[string]chan dht.RecvMsg
 	responder        responder.Responder
 	responderTimeout time.Duration
-	idIssuer         IdIssuer
+	idIssuer         IDIssuer
 	logger           *zap.SugaredLogger
 }
 
@@ -134,9 +134,9 @@ func (s *server) handleQuery(msg dht.RecvMsg) {
 }
 
 func (s *server) handleResponse(msg dht.RecvMsg) {
-	transactionId := msg.Msg.T
+	transactionID := msg.Msg.T
 	s.mutex.Lock()
-	ch, ok := s.queries[transactionId]
+	ch, ok := s.queries[transactionID]
 	s.mutex.Unlock()
 	if ok {
 		ch <- msg
@@ -144,19 +144,19 @@ func (s *server) handleResponse(msg dht.RecvMsg) {
 }
 
 func (s *server) Query(ctx context.Context, addr netip.AddrPort, q string, args dht.MsgArgs) (r dht.RecvMsg, err error) {
-	transactionId := s.idIssuer.Issue()
+	transactionID := s.idIssuer.Issue()
 	ch := make(chan dht.RecvMsg, 1)
 	s.mutex.Lock()
-	s.queries[transactionId] = ch
+	s.queries[transactionID] = ch
 	s.mutex.Unlock()
 	defer (func() {
 		s.mutex.Lock()
-		delete(s.queries, transactionId)
+		delete(s.queries, transactionID)
 		s.mutex.Unlock()
 	})()
 	msg := dht.Msg{
 		Q: q,
-		T: transactionId,
+		T: transactionID,
 		A: &args,
 		Y: dht.YQuery,
 	}

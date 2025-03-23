@@ -28,7 +28,7 @@ func (torrentContentAttributeFacet[T]) Values(query.FacetContext) (map[string]st
 
 func (f torrentContentAttributeFacet[T]) Criteria(filter query.FacetFilter) []query.Criteria {
 	return []query.Criteria{
-		query.GenCriteria(func(ctx query.DbContext) (query.Criteria, error) {
+		query.GenCriteria(func(ctx query.DBContext) (query.Criteria, error) {
 			fld := f.field(ctx.Query())
 			values := make([]driver.Valuer, 0, len(filter))
 			hasNull := false

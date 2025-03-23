@@ -45,16 +45,16 @@ func GenericQuery[T interface{}](
 		daoQ:    daoQ,
 		factory: factory,
 	}
-	if builder, optionErr := option(newQueryContext(dbContext{
+	builder, optionErr := option(newQueryContext(dbContext{
 		q:         daoQ,
 		tableName: tableName,
 		factory:   factory,
-	})); optionErr != nil {
+	}))
+	if optionErr != nil {
 		return gq.result, optionErr
-	} else {
-		gq.ctx = builder.createContext(_ctx)
-		gq.builder = builder
 	}
+	gq.ctx = builder.createContext(_ctx)
+	gq.builder = builder
 	wg := sync.WaitGroup{}
 	wg.Add(3)
 	go func() {
@@ -282,7 +282,7 @@ type Scope = func(*gorm.DB) error
 
 type GormScope = func(gen.Dao) gen.Dao
 
-type DbContext interface {
+type DBContext interface {
 	Query() *dao.Query
 	TableName() string
 	NewSubQuery(context.Context) SubQuery
@@ -307,7 +307,7 @@ func (db dbContext) NewSubQuery(ctx context.Context) SubQuery {
 }
 
 type CallbackContext interface {
-	DbContext
+	DBContext
 	Lock()
 	Unlock()
 }
@@ -325,7 +325,7 @@ type OrderByColumn struct {
 }
 
 type OptionBuilder interface {
-	DbContext
+	DBContext
 	Table(string) OptionBuilder
 	Join(...TableJoin) OptionBuilder
 	RequireJoin(...string) OptionBuilder

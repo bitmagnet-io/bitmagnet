@@ -51,7 +51,7 @@ const (
 
 func (l *queryLexer) readQueryToken() (TokenValue, bool) {
 	for {
-		if l.IsEof() {
+		if l.IsEOF() {
 			return TokenValue{}, false
 		}
 		start := l.Pos()

@@ -99,7 +99,7 @@ func TestStartStopManualPeriodicChecks(t *testing.T) {
 		WithDisabledAutostart(),
 		WithPeriodicCheck(50*time.Minute, 0, Check{
 			Name: "check",
-			Check: func(ctx context.Context) error {
+			Check: func(context.Context) error {
 				return nil
 			},
 		}))
@@ -119,13 +119,13 @@ func doTestCheckerCheckFunc(t *testing.T, updateInterval time.Duration, err erro
 		WithTimeout(10*time.Second),
 		WithCheck(Check{
 			Name: "check1",
-			Check: func(ctx context.Context) error {
+			Check: func(context.Context) error {
 				return nil
 			},
 		}),
 		WithPeriodicCheck(updateInterval, 0, Check{
 			Name: "check2",
-			Check: func(ctx context.Context) error {
+			Check: func(context.Context) error {
 				return err
 			},
 		}),
@@ -161,7 +161,7 @@ func TestPanicRecovery(t *testing.T) {
 	ckr := NewChecker(
 		WithCheck(Check{
 			Name: "iPanic",
-			Check: func(ctx context.Context) error {
+			Check: func(context.Context) error {
 				panic(expectedPanicMsg)
 			},
 		}),

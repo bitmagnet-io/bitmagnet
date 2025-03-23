@@ -308,11 +308,11 @@ func (_c *Client_TvDetails_Call) RunAndReturn(run func(context.Context, tmdb.TvD
 }
 
 // ValidateApiKey provides a mock function with given fields: _a0
-func (_m *Client) ValidateApiKey(_a0 context.Context) error {
+func (_m *Client) ValidateAPIKey(_a0 context.Context) error {
 	ret := _m.Called(_a0)
 
 	if len(ret) == 0 {
-		panic("no return value specified for ValidateApiKey")
+		panic("no return value specified for ValidateAPIKey")
 	}
 
 	var r0 error
@@ -325,7 +325,7 @@ func (_m *Client) ValidateApiKey(_a0 context.Context) error {
 	return r0
 }
 
-// Client_ValidateApiKey_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ValidateApiKey'
+// Client_ValidateApiKey_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ValidateAPIKey'
 type Client_ValidateApiKey_Call struct {
 	*mock.Call
 }
@@ -333,7 +333,7 @@ type Client_ValidateApiKey_Call struct {
 // ValidateApiKey is a helper method to define mock.On call
 //   - _a0 context.Context
 func (_e *Client_Expecter) ValidateApiKey(_a0 interface{}) *Client_ValidateApiKey_Call {
-	return &Client_ValidateApiKey_Call{Call: _e.mock.On("ValidateApiKey", _a0)}
+	return &Client_ValidateApiKey_Call{Call: _e.mock.On("ValidateAPIKey", _a0)}
 }
 
 func (_c *Client_ValidateApiKey_Call) Run(run func(_a0 context.Context)) *Client_ValidateApiKey_Call {

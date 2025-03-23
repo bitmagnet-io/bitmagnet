@@ -20,20 +20,22 @@ func (c executionContext) tmdbSearchMovie(title string, year model.Year) (model.
 		return model.Content{}, searchErr
 	}
 
-	if bestMatch, ok := levenshteinFindBestMatch[tmdb.SearchMovieResult](
+	bestMatch, ok := levenshteinFindBestMatch[tmdb.SearchMovieResult](
 		title,
 		searchResult.Results,
 		func(item tmdb.SearchMovieResult) []string {
 			return []string{item.Title, item.OriginalTitle}
 		},
-	); !ok {
+	)
+
+	if !ok {
 		return model.Content{}, classification.ErrUnmatched
-	} else {
-		return c.tmdbGetMovieByTmbdId(bestMatch.ID)
 	}
+
+	return c.tmdbGetMovieByTMDBID(bestMatch.ID)
 }
 
-func (c executionContext) tmdbSearchTvShow(title string, year model.Year) (model.Content, error) {
+func (c executionContext) tmdbSearchTVShow(title string, year model.Year) (model.Content, error) {
 	req := tmdb.SearchTvRequest{
 		Query:        title,
 		IncludeAdult: true,
@@ -46,20 +48,22 @@ func (c executionContext) tmdbSearchTvShow(title string, year model.Year) (model
 		return model.Content{}, searchErr
 	}
 
-	if bestMatch, ok := levenshteinFindBestMatch[tmdb.SearchTvResult](
+	bestMatch, ok := levenshteinFindBestMatch[tmdb.SearchTvResult](
 		title,
 		searchResult.Results,
 		func(item tmdb.SearchTvResult) []string {
 			return []string{item.Name, item.OriginalName}
 		},
-	); !ok {
+	)
+
+	if !ok {
 		return model.Content{}, classification.ErrUnmatched
-	} else {
-		return c.tmdbGetTvShowByTmbdId(bestMatch.ID)
 	}
+
+	return c.tmdbGetTVShowByTMDBID(bestMatch.ID)
 }
 
-func (c executionContext) tmdbGetMovieByTmbdId(id int64) (movie model.Content, err error) {
+func (c executionContext) tmdbGetMovieByTMDBID(id int64) (movie model.Content, err error) {
 	d, getDetailsErr := c.tmdbClient.MovieDetails(c.Context, tmdb.MovieDetailsRequest{
 		ID: id,
 	})
@@ -73,7 +77,7 @@ func (c executionContext) tmdbGetMovieByTmbdId(id int64) (movie model.Content, e
 	return tmdb.MovieDetailsToMovieModel(d)
 }
 
-func (c executionContext) tmdbGetTvShowByTmbdId(id int64) (movie model.Content, err error) {
+func (c executionContext) tmdbGetTVShowByTMDBID(id int64) (movie model.Content, err error) {
 	d, getDetailsErr := c.tmdbClient.TvDetails(c.Context, tmdb.TvDetailsRequest{
 		SeriesID:         id,
 		AppendToResponse: []string{"external_ids"},
@@ -88,29 +92,29 @@ func (c executionContext) tmdbGetTvShowByTmbdId(id int64) (movie model.Content, 
 	return tmdb.TvShowDetailsToTvShowModel(d)
 }
 
-func (c executionContext) tmdbGetTmdbIdByExternalId(ref model.ContentRef) (int64, error) {
+func (c executionContext) tmdbGetTMDBIDByExternalID(ref model.ContentRef) (int64, error) {
 	externalSource, externalID, externalSourceErr := tmdb.ExternalSource(ref)
 	if externalSourceErr != nil {
 		return 0, externalSourceErr
 	}
-	byIdResult, byIdErr := c.tmdbClient.FindByID(c.Context, tmdb.FindByIDRequest{
+	byIDResult, byIDErr := c.tmdbClient.FindByID(c.Context, tmdb.FindByIDRequest{
 		ExternalSource: externalSource,
 		ExternalID:     externalID,
 	})
-	if byIdErr != nil {
-		return 0, byIdErr
+	if byIDErr != nil {
+		return 0, byIDErr
 	}
 	switch ref.Type {
 	case model.ContentTypeMovie, model.ContentTypeXxx:
-		if len(byIdResult.MovieResults) == 0 {
+		if len(byIDResult.MovieResults) == 0 {
 			return 0, classification.ErrUnmatched
 		}
-		return byIdResult.MovieResults[0].ID, nil
+		return byIDResult.MovieResults[0].ID, nil
 	case model.ContentTypeTvShow:
-		if len(byIdResult.TvResults) == 0 {
+		if len(byIDResult.TvResults) == 0 {
 			return 0, classification.ErrUnmatched
 		}
-		return byIdResult.TvResults[0].ID, nil
+		return byIDResult.TvResults[0].ID, nil
 	default:
 		return 0, classification.ErrUnmatched
 	}

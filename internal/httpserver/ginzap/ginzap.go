@@ -42,11 +42,11 @@ type Config struct {
 //  1. A time package format string (e.g. time.RFC3339).
 //  2. A boolean stating whether to use UTC time zone or local.
 func Ginzap(logger ZapLogger, timeFormat string, utc bool) gin.HandlerFunc {
-	return GinzapWithConfig(logger, &Config{TimeFormat: timeFormat, UTC: utc})
+	return WithConfig(logger, &Config{TimeFormat: timeFormat, UTC: utc})
 }
 
-// GinzapWithConfig returns a gin.HandlerFunc using configs
-func GinzapWithConfig(logger ZapLogger, conf *Config) gin.HandlerFunc {
+// WithConfig returns a gin.HandlerFunc using configs
+func WithConfig(logger ZapLogger, conf *Config) gin.HandlerFunc {
 	skipPaths := make(map[string]bool, len(conf.SkipPaths))
 	for _, path := range conf.SkipPaths {
 		skipPaths[path] = true
@@ -95,7 +95,7 @@ func GinzapWithConfig(logger ZapLogger, conf *Config) gin.HandlerFunc {
 	}
 }
 
-func defaultHandleRecovery(c *gin.Context, err interface{}) {
+func defaultHandleRecovery(c *gin.Context, _ interface{}) {
 	c.AbortWithStatus(http.StatusInternalServerError)
 }
 

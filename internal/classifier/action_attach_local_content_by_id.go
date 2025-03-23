@@ -5,21 +5,21 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
 
-const attachLocalContentByIdName = "attach_local_content_by_id"
+const attachLocalContentByIDName = "attach_local_content_by_id"
 
-type attachLocalContentByIdAction struct{}
+type attachLocalContentByIDAction struct{}
 
-func (attachLocalContentByIdAction) name() string {
-	return attachLocalContentByIdName
+func (attachLocalContentByIDAction) name() string {
+	return attachLocalContentByIDName
 }
 
-var attachLocalContentByIdPayloadSpec = payloadLiteral[string]{
-	literal:     attachLocalContentByIdName,
+var attachLocalContentByIDPayloadSpec = payloadLiteral[string]{
+	literal:     attachLocalContentByIDName,
 	description: "Use the torrent hint to attach locally stored content by ID",
 }
 
-func (a attachLocalContentByIdAction) compileAction(ctx compilerContext) (action, error) {
-	if _, err := attachLocalContentByIdPayloadSpec.Unmarshal(ctx); err != nil {
+func (a attachLocalContentByIDAction) compileAction(ctx compilerContext) (action, error) {
+	if _, err := attachLocalContentByIDPayloadSpec.Unmarshal(ctx); err != nil {
 		return action{}, ctx.error(err)
 	}
 	return action{
@@ -42,6 +42,6 @@ func (a attachLocalContentByIdAction) compileAction(ctx compilerContext) (action
 	}, nil
 }
 
-func (a attachLocalContentByIdAction) JSONSchema() JSONSchema {
-	return attachLocalContentByIdPayloadSpec.JSONSchema()
+func (a attachLocalContentByIDAction) JSONSchema() JSONSchema {
+	return attachLocalContentByIDPayloadSpec.JSONSchema()
 }

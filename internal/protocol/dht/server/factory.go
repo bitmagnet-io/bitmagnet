@@ -52,7 +52,7 @@ func New(p Params) Result {
 						queryTimeout:     p.Config.QueryTimeout,
 						responder:        p.Responder,
 						responderTimeout: time.Second * 5,
-						idIssuer:         &variantIdIssuer{},
+						idIssuer:         &variantIDIssuer{},
 						logger:           p.Logger.Named(subsystem),
 					},
 					lastResponses: lastResponses,

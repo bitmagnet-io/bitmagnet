@@ -14,11 +14,11 @@ type flagDefinitions map[string]FlagType
 func (d flagDefinitions) merge(other flagDefinitions) (flagDefinitions, error) {
 	result := make(flagDefinitions)
 	for k, v := range d {
-		if tp, ok := other[k]; ok && tp != v {
+		tp, ok := other[k]
+		if ok && tp != v {
 			return nil, fmt.Errorf("conflicting flag definition %s", k)
-		} else {
-			result[k] = v
 		}
+		result[k] = v
 	}
 	for k, v := range other {
 		if _, ok := result[k]; !ok {
@@ -97,11 +97,11 @@ func (t FlagType) celVal(rawVal any) (ref.Val, error) {
 				if strVal, ok := v.(string); ok {
 					var ct model.NullContentType
 					if strVal != "unknown" {
-						if parsed, parseErr := model.ParseContentType(strVal); parseErr != nil {
+						parsed, parseErr := model.ParseContentType(strVal)
+						if parseErr != nil {
 							return nil, fmt.Errorf("could not parse content type %s: %w", strVal, parseErr)
-						} else {
-							ct = model.NewNullContentType(parsed)
 						}
+						ct = model.NewNullContentType(parsed)
 					}
 					celVal[i] = protobuf.NewContentType(ct)
 				} else {

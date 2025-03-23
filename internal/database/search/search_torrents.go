@@ -83,7 +83,7 @@ func (s search) TorrentSuggestTags(ctx context.Context, q SuggestTagsQuery, opti
 	var criteria []query.Criteria
 	if q.Prefix != "" {
 		criteria = append(criteria, query.DaoCriteria{
-			Conditions: func(dbCtx query.DbContext) ([]field.Expr, error) {
+			Conditions: func(dbCtx query.DBContext) ([]field.Expr, error) {
 				return []field.Expr{
 					dbCtx.Query().TorrentTag.Name.Like(q.Prefix + "%"),
 				}, nil
@@ -92,7 +92,7 @@ func (s search) TorrentSuggestTags(ctx context.Context, q SuggestTagsQuery, opti
 	}
 	if len(q.Exclusions) > 0 {
 		criteria = append(criteria, query.DaoCriteria{
-			Conditions: func(dbCtx query.DbContext) ([]field.Expr, error) {
+			Conditions: func(dbCtx query.DBContext) ([]field.Expr, error) {
 				return []field.Expr{
 					dbCtx.Query().TorrentTag.Name.NotIn(q.Exclusions...),
 				}, nil

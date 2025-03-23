@@ -1,4 +1,4 @@
-package dhtcrawler_health_check
+package dhtcrawlerhealthcheck
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"

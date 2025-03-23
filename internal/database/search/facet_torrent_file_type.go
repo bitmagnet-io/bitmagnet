@@ -36,7 +36,7 @@ func (torrentFileTypeFacet) Values(query.FacetContext) (map[string]string, error
 }
 
 func (f torrentFileTypeFacet) Criteria(filter query.FacetFilter) []query.Criteria {
-	return []query.Criteria{query.GenCriteria(func(ctx query.DbContext) (query.Criteria, error) {
+	return []query.Criteria{query.GenCriteria(func(query.DBContext) (query.Criteria, error) {
 		if len(filter) == 0 {
 			return query.AndCriteria{}, nil
 		}

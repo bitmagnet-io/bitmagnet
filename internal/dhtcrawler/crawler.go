@@ -60,7 +60,7 @@ func (c *crawler) start() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	// start the various pipeline workers
-	go c.rotateSoughtNodeId(ctx)
+	go c.rotateSoughtNodeID(ctx)
 	go c.runDiscoveredNodes(ctx)
 	go c.runPing(ctx)
 	go c.runFindNode(ctx)
@@ -110,7 +110,7 @@ func (i *ignoreHashes) testAndAdd(id protocol.ID) bool {
 	return i.bloom.TestAndAdd(id[:])
 }
 
-func (c *crawler) rotateSoughtNodeId(ctx context.Context) {
+func (c *crawler) rotateSoughtNodeID(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():

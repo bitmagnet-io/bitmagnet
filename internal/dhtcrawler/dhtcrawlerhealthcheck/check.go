@@ -1,4 +1,4 @@
-package dhtcrawler_health_check
+package dhtcrawlerhealthcheck
 
 import (
 	"context"
@@ -19,7 +19,7 @@ func NewCheck(
 			return dhtCrawlerActive.Get()
 		},
 		Timeout: time.Second,
-		Check: func(ctx context.Context) error {
+		Check: func(context.Context) error {
 			lr := lastResponses.Get()
 			if lr.StartTime.IsZero() {
 				return nil

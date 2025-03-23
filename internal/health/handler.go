@@ -47,7 +47,7 @@ type (
 )
 
 // Write implements ResultWriter.Write.
-func (rw *JSONResultWriter) Write(result *CheckerResult, statusCode int, w http.ResponseWriter, r *http.Request) error {
+func (rw *JSONResultWriter) Write(result *CheckerResult, statusCode int, w http.ResponseWriter, _ *http.Request) error {
 	jsonResp, err := json.Marshal(result)
 	if err != nil {
 		return fmt.Errorf("cannot marshal response: %w", err)

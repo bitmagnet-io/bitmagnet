@@ -56,7 +56,7 @@ func (l localSearch) ContentByID(ctx context.Context, ref model.ContentRef) (mod
 func (l localSearch) ContentBySearch(ctx context.Context, ct model.ContentType, baseTitle string, year model.Year) (model.Content, error) {
 	options := []query.Option{
 		query.Where(search.ContentTypeCriteria(ct)),
-		query.QueryString(fmt.Sprintf("\"%s\"", baseTitle)),
+		query.SearchString(fmt.Sprintf("\"%s\"", baseTitle)),
 		query.OrderByQueryStringRank(),
 		query.Limit(10),
 		search.ContentDefaultPreload(),
@@ -72,7 +72,7 @@ func (l localSearch) ContentBySearch(ctx context.Context, ct model.ContentType, 
 	if searchErr != nil {
 		return model.Content{}, searchErr
 	}
-	if bestMatch, ok := levenshteinFindBestMatch[search.ContentResultItem](
+	bestMatch, ok := levenshteinFindBestMatch[search.ContentResultItem](
 		baseTitle,
 		result.Items,
 		func(item search.ContentResultItem) []string {
@@ -82,9 +82,9 @@ func (l localSearch) ContentBySearch(ctx context.Context, ct model.ContentType, 
 			}
 			return candidates
 		},
-	); !ok {
+	)
+	if !ok {
 		return model.Content{}, classification.ErrUnmatched
-	} else {
-		return bestMatch.Content, nil
 	}
+	return bestMatch.Content, nil
 }

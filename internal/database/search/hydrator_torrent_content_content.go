@@ -19,7 +19,7 @@ func (h torrentContentContentHydrator) RootToSubID(root TorrentContentResultItem
 	return ref.Val, ref.Valid
 }
 
-func (h torrentContentContentHydrator) GetSubs(ctx context.Context, dbCtx query.DbContext, ids []model.ContentRef) ([]model.Content, error) {
+func (h torrentContentContentHydrator) GetSubs(ctx context.Context, dbCtx query.DBContext, ids []model.ContentRef) ([]model.Content, error) {
 	contentResult, contentErr := search{dbCtx.Query()}.Content(
 		ctx,
 		query.Where(ContentCanonicalIdentifierCriteria(ids...)),
