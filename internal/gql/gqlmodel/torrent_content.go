@@ -177,6 +177,11 @@ func (t TorrentContentQuery) Search(
 		}
 
 		options = append(options, q.WithFacet(qFacets...))
+
+		// Handle publishedAt filter
+		if publishedAt, ok := input.Facets.PublishedAt.ValueOK(); ok && *publishedAt != "" {
+			options = append(options, q.Where(search.TorrentContentPublishedAtCriteria(*publishedAt)))
+		}
 	}
 
 	if infoHashes, ok := input.InfoHashes.ValueOK(); ok {

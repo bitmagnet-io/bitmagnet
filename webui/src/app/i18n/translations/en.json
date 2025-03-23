@@ -26,6 +26,37 @@
       "xxx": "XXX"
     }
   },
+  "dates": {
+    "time_frame": "Time Frame",
+    "time_frame_placeholder": "e.g. 7d, today, last month",
+    "time_frame_tooltip": "Enter a time frame like '7d', 'today', or '2023-01-01 to 2023-01-31'",
+    "time_frame_error": "Invalid time frame",
+    "presets": "Presets",
+    "quick_presets": "Quick Presets",
+    "more_presets": "More Options",
+    "date_range": "Date Range",
+    "select_date_range": "Enter a date range",
+    "date_range_hint": "MM/DD/YYYY – MM/DD/YYYY",
+    "invalid_start_date": "Invalid start date",
+    "invalid_end_date": "Invalid end date",
+    "custom": "Custom",
+    "custom_time_hint": "Example: '7d', 'today', 'Jan 1, 2023 to Jan 31, 2023'",
+    "selected_range": "Selected Range",
+    "calendar": "Calendar",
+    "date_picker": "Select dates using calendar",
+    "start_date": "Start Date",
+    "end_date": "End Date",
+    "to": "to", 
+    "this_month": "This Month",
+    "last_month": "Last Month",
+    "this_year": "This Year",
+    "last_year": "Last Year",
+    "last_x_hours": "Last {{x}} hours",
+    "last_x_days": "Last {{x}} days",
+    "last_x_weeks": "Last {{x}} weeks",
+    "last_x_months": "Last {{x}} months",
+    "custom_range": "Custom Range"
+  },
   "dashboard": {
     "event": {
       "created": "Created",
@@ -106,6 +137,7 @@
   },
   "general": {
     "all": "All",
+    "apply": "Apply",
     "dismiss": "Dismiss",
     "error": "Error",
     "none": "None",
@@ -239,6 +271,7 @@
     "copy": "Copy",
     "copy_to_clipboard": "Copy to clipboard",
     "delete": "Delete",
+    "published_date_filter": "Published Date",
     "delete_action_cannot_be_undone": "This action cannot be undone",
     "delete_are_you_sure": "Are you sure you want to delete this torrent?",
     "deselect_all": "Deselect All",

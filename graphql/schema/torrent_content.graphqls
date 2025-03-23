@@ -74,6 +74,7 @@ input TorrentContentFacetsInput {
   releaseYear: ReleaseYearFacetInput
   videoResolution: VideoResolutionFacetInput
   videoSource: VideoSourceFacetInput
+  publishedAt: String
 }
 
 type ContentTypeAgg {
