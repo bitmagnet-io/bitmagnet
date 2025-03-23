@@ -206,7 +206,7 @@ func (i *activeImport) persistItems(items ...Item) error {
 	if jobErr != nil {
 		return jobErr
 	}
-	if txErr := i.dao.Transaction(func(tx *dao.Query) error {
+	return i.dao.Transaction(func(tx *dao.Query) error {
 		if len(sources) > 0 {
 			if createSourcesErr := tx.TorrentSource.WithContext(i.ctx).Clauses(clause.OnConflict{
 				DoNothing: true,
@@ -234,14 +234,8 @@ func (i *activeImport) persistItems(items ...Item) error {
 		}).CreateInBatches(torrentsTorrentSources, 100); createTorrentsTorrentSourcesErr != nil {
 			return createTorrentsTorrentSourcesErr
 		}
-		if createJobErr := tx.QueueJob.Create(&job); createJobErr != nil {
-			return createJobErr
-		}
-		return nil
-	}); txErr != nil {
-		return txErr
-	}
-	return nil
+		return tx.QueueJob.Create(&job)
+	})
 }
 
 func createTorrentModel(info Info, item Item) model.Torrent {

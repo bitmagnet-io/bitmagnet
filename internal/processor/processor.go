@@ -149,15 +149,12 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 	if len(tcs) == 0 {
 		return nil
 	}
-	if persistErr := c.persist(ctx, persistPayload{
+	return c.persist(ctx, persistPayload{
 		torrentContents:  tcs,
 		deleteIDs:        idsToDelete,
 		deleteInfoHashes: infoHashesToDelete,
 		addTags:          tagsToAdd,
-	}); persistErr != nil {
-		return persistErr
-	}
-	return nil
+	})
 }
 
 func newTorrentContent(t model.Torrent, c classification.Result) model.TorrentContent {

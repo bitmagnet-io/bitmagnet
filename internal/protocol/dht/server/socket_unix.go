@@ -29,10 +29,7 @@ func (s *socket) Open(localAddr netip.AddrPort) error {
 	if addrErr != nil {
 		return addrErr
 	}
-	if bindErr := unix.Bind(s.fd, sAddr); bindErr != nil {
-		return bindErr
-	}
-	return nil
+	return unix.Bind(s.fd, sAddr)
 }
 
 func (s *socket) Close() error {

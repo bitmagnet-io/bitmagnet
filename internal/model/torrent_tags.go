@@ -21,8 +21,5 @@ func ValidateTagName(name string) error {
 }
 
 func (t *TorrentTag) BeforeCreate(*gorm.DB) error {
-	if validateErr := ValidateTagName(t.Name); validateErr != nil {
-		return validateErr
-	}
-	return nil
+	return ValidateTagName(t.Name)
 }
