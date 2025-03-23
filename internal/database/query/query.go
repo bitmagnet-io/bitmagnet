@@ -364,7 +364,8 @@ type OptionBuilder interface {
 
 type optionBuilder struct {
 	dbContext
-	joins             map[string]TableJoin
+	joins map[string]TableJoin
+	//revive:disable-next-line:nested-structs
 	requiredJoins     maps.InsertMap[string, struct{}]
 	tsquery           string
 	scopes            []Scope

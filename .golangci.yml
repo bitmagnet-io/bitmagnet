@@ -15,6 +15,7 @@ linters-settings:
       - name: context-keys-type
       #      - name: cyclomatic
       - name: deep-exit
+      - name: defer
       - name: dot-imports
       - name: duplicated-imports
       - name: early-return
@@ -26,14 +27,17 @@ linters-settings:
       - name: errorf
       - name: exported
       #      - name: flag-parameter
+#      - name: function-length
       #      - name: function-result-limit
       #      - name: get-return
       - name: if-return
+      - name: identical-branches
       - name: increment-decrement
       - name: indent-error-flow
       - name: line-length-limit
         arguments:
           - 120
+      - name: nested-structs
       - name: package-comments
       - name: range
       - name: range-val-address
@@ -44,6 +48,8 @@ linters-settings:
       - name: struct-tag
       - name: superfluous-else
       - name: time-naming
+      - name: unconditional-recursion
+      - name: unexported-naming
       - name: unexported-return
       - name: unhandled-error
       - name: unnecessary-stmt

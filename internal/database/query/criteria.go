@@ -52,6 +52,7 @@ func Not(criteria ...Criteria) Criteria {
 type RawCriteria struct {
 	Query interface{}
 	Args  []interface{}
+	//revive:disable-next-line:nested-structs
 	Joins maps.InsertMap[string, struct{}]
 }
 
@@ -61,7 +62,8 @@ func (c RawCriteria) Raw(DBContext) (RawCriteria, error) {
 
 type DaoCriteria struct {
 	Conditions func(ctx DBContext) ([]field.Expr, error)
-	Joins      maps.InsertMap[string, struct{}]
+	//revive:disable-next-line:nested-structs
+	Joins maps.InsertMap[string, struct{}]
 }
 
 func (c DaoCriteria) Raw(ctx DBContext) (RawCriteria, error) {

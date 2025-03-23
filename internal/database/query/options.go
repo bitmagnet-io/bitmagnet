@@ -45,9 +45,10 @@ const (
 )
 
 type TableJoin struct {
-	Table        schema.Tabler
-	On           []field.Expr
-	Type         TableJoinType
+	Table schema.Tabler
+	On    []field.Expr
+	Type  TableJoinType
+	//revive:disable-next-line:nested-structs
 	Dependencies maps.InsertMap[string, struct{}]
 	Required     bool
 }
