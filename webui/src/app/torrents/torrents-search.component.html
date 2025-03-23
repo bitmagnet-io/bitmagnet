@@ -69,6 +69,125 @@
           </nav>
         </section>
       </mat-expansion-panel>
+
+      <!-- Size Filter Panel -->
+      <mat-expansion-panel class="size-filter-panel">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon>sd_card</mat-icon> {{ t("torrents.size_filter") }}
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <section class="size-filter-section">
+          <div class="size-filter-row">
+            <mat-form-field subscriptSizing="dynamic" class="size-input">
+              <mat-label>{{ t("torrents.min_size") }}</mat-label>
+              <input
+                matInput
+                type="number"
+                min="0"
+                [formControl]="minSizeControl"
+              />
+            </mat-form-field>
+
+            <mat-form-field
+              subscriptSizing="dynamic"
+              class="size-unit-selector"
+            >
+              <mat-label>{{ t("torrents.unit") }}</mat-label>
+              <mat-select [formControl]="minSizeUnitControl">
+                <mat-option value="KB">{{
+                  t("torrents.size_units.kb")
+                }}</mat-option>
+                <mat-option value="MB">{{
+                  t("torrents.size_units.mb")
+                }}</mat-option>
+                <mat-option value="GB">{{
+                  t("torrents.size_units.gb")
+                }}</mat-option>
+                <mat-option value="TB">{{
+                  t("torrents.size_units.tb")
+                }}</mat-option>
+                <mat-option value="KiB">{{
+                  t("torrents.size_units.kib")
+                }}</mat-option>
+                <mat-option value="MiB">{{
+                  t("torrents.size_units.mib")
+                }}</mat-option>
+                <mat-option value="GiB">{{
+                  t("torrents.size_units.gib")
+                }}</mat-option>
+                <mat-option value="TiB">{{
+                  t("torrents.size_units.tib")
+                }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="size-filter-row">
+            <mat-form-field subscriptSizing="dynamic" class="size-input">
+              <mat-label>{{ t("torrents.max_size") }}</mat-label>
+              <input
+                matInput
+                type="number"
+                min="0"
+                [formControl]="maxSizeControl"
+              />
+            </mat-form-field>
+
+            <mat-form-field
+              subscriptSizing="dynamic"
+              class="size-unit-selector"
+            >
+              <mat-label>{{ t("torrents.unit") }}</mat-label>
+              <mat-select [formControl]="maxSizeUnitControl">
+                <mat-option value="KB">{{
+                  t("torrents.size_units.kb")
+                }}</mat-option>
+                <mat-option value="MB">{{
+                  t("torrents.size_units.mb")
+                }}</mat-option>
+                <mat-option value="GB">{{
+                  t("torrents.size_units.gb")
+                }}</mat-option>
+                <mat-option value="TB">{{
+                  t("torrents.size_units.tb")
+                }}</mat-option>
+                <mat-option value="KiB">{{
+                  t("torrents.size_units.kib")
+                }}</mat-option>
+                <mat-option value="MiB">{{
+                  t("torrents.size_units.mib")
+                }}</mat-option>
+                <mat-option value="GiB">{{
+                  t("torrents.size_units.gib")
+                }}</mat-option>
+                <mat-option value="TiB">{{
+                  t("torrents.size_units.tib")
+                }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="size-filter-actions">
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="updateSizeFilter()"
+            >
+              <mat-icon>filter_alt</mat-icon> {{ t("general.apply") }}
+            </button>
+
+            <button
+              mat-icon-button
+              [matTooltip]="t('torrents.clear_size_filter')"
+              (click)="clearSizeFilter()"
+              *ngIf="minSizeControl.value || maxSizeControl.value"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        </section>
+      </mat-expansion-panel>
       @for (facet of facets$ | async; track facet.key) {
         @if (facet.relevant) {
           <mat-expansion-panel

@@ -64,6 +64,11 @@ input VideoSourceFacetInput {
   filter: [VideoSource]
 }
 
+input SizeRangeInput {
+  min: Int
+  max: Int
+}
+
 input TorrentContentFacetsInput {
   contentType: ContentTypeFacetInput
   torrentSource: TorrentSourceFacetInput
@@ -74,6 +79,7 @@ input TorrentContentFacetsInput {
   releaseYear: ReleaseYearFacetInput
   videoResolution: VideoResolutionFacetInput
   videoSource: VideoSourceFacetInput
+  sizeRange: SizeRangeInput
 }
 
 type ContentTypeAgg {

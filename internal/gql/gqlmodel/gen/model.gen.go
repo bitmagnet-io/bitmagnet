@@ -131,6 +131,11 @@ type ReleaseYearFacetInput struct {
 	Filter    graphql.Omittable[[]*model.Year] `json:"filter,omitempty"`
 }
 
+type SizeRangeInput struct {
+	Min graphql.Omittable[*int] `json:"min,omitempty"`
+	Max graphql.Omittable[*int] `json:"max,omitempty"`
+}
+
 type SuggestTagsQueryInput struct {
 	Prefix     graphql.Omittable[*string]  `json:"prefix,omitempty"`
 	Exclusions graphql.Omittable[[]string] `json:"exclusions,omitempty"`
@@ -158,6 +163,7 @@ type TorrentContentFacetsInput struct {
 	ReleaseYear     graphql.Omittable[*ReleaseYearFacetInput]     `json:"releaseYear,omitempty"`
 	VideoResolution graphql.Omittable[*VideoResolutionFacetInput] `json:"videoResolution,omitempty"`
 	VideoSource     graphql.Omittable[*VideoSourceFacetInput]     `json:"videoSource,omitempty"`
+	SizeRange       graphql.Omittable[*SizeRangeInput]            `json:"sizeRange,omitempty"`
 }
 
 type TorrentContentOrderByInput struct {

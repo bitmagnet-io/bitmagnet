@@ -36,6 +36,11 @@ const compareTorrentSelection = (
   return a === b;
 };
 
+export type SizeRangeFilter = {
+  min?: number;
+  max?: number;
+};
+
 export type TorrentSearchControls = {
   limit: number;
   page: number;
@@ -51,6 +56,7 @@ export type TorrentSearchControls = {
     videoResolution: FacetInput<generated.VideoResolution>;
     videoSource: FacetInput<generated.VideoSource>;
   };
+  sizeRange?: SizeRangeFilter;
   selectedTorrent?: TorrentSelection;
 };
 
@@ -111,6 +117,12 @@ const controlsToQueryVariables = (
         ? {
             aggregate: true,
             filter: ctrl.facets.videoSource.filter,
+          }
+        : undefined,
+      sizeRange: ctrl.sizeRange
+        ? {
+            min: ctrl.sizeRange.min ? Number(ctrl.sizeRange.min) : undefined,
+            max: ctrl.sizeRange.max ? Number(ctrl.sizeRange.max) : undefined,
           }
         : undefined,
     },
@@ -324,6 +336,14 @@ export class TorrentsSearchController {
       ...ctrl,
       limit: event.pageSize,
       page: event.page,
+    }));
+  }
+
+  setSizeRange(min?: number, max?: number) {
+    this.update((ctrl) => ({
+      ...ctrl,
+      page: 1,
+      sizeRange: min || max ? { min, max } : undefined,
     }));
   }
 }
