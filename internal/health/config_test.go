@@ -23,7 +23,7 @@ func TestWithPeriodicCheckConfig(t *testing.T) {
 	WithPeriodicCheck(interval, initialDelay, check)(&cfg)
 
 	// Assert
-	assert.Equal(t, 1, len(cfg.checks))
+	assert.Len(t, cfg.checks, 1)
 	assert.True(t, reflect.DeepEqual(check, *cfg.checks[expectedName]))
 }
 
@@ -37,7 +37,7 @@ func TestWithCheckConfig(t *testing.T) {
 	WithCheck(check)(&cfg)
 
 	// Assert
-	require.Equal(t, 1, len(cfg.checks))
+	require.Len(t, cfg.checks, 1)
 	assert.True(t, reflect.DeepEqual(&check, cfg.checks[expectedName]))
 }
 
@@ -83,7 +83,7 @@ func TestWithDisabledDetailsConfig(t *testing.T) {
 	WithDisabledDetails()(&cfg)
 
 	// Assert
-	assert.Equal(t, true, cfg.detailsDisabled)
+	assert.True(t, cfg.detailsDisabled)
 }
 
 func TestWithMiddlewareConfig(t *testing.T) {
@@ -99,7 +99,7 @@ func TestWithMiddlewareConfig(t *testing.T) {
 	WithMiddleware(mw)(&cfg)
 
 	// Assert
-	assert.Equal(t, 1, len(cfg.middleware))
+	assert.Len(t, cfg.middleware, 1)
 }
 
 func TestWithInterceptorConfig(t *testing.T) {
@@ -115,7 +115,7 @@ func TestWithInterceptorConfig(t *testing.T) {
 	WithInterceptors(interceptor)(&cfg)
 
 	// Assert
-	assert.Equal(t, 1, len(cfg.interceptors))
+	assert.Len(t, cfg.interceptors, 1)
 }
 
 func TestWithResultWriterConfig(t *testing.T) {

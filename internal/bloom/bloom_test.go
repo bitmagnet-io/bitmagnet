@@ -10,7 +10,7 @@ import (
 
 func TestScrapeBloomFilter(t *testing.T) {
 	var s dht.ScrapeBloomFilter
-	assert.Equal(t, 0.5, s.EstimateCount())
+	assert.InDelta(t, 0.5, s.EstimateCount(), 0)
 	s.AddIP(net.IPv4(127, 0, 0, 1))
 	c := s.EstimateCount()
 	assert.Greater(t, c, 0.9)

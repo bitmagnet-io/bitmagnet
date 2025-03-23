@@ -175,7 +175,7 @@ FD8F72EF
 `))
 	require.NoError(t, err)
 	assert.EqualValues(t, expected, f[:])
-	assert.EqualValues(t, 1224.9308, floorDecimals(f.EstimateCount(), 4))
+	assert.InDelta(t, 1224.9308, floorDecimals(f.EstimateCount(), 4), 0)
 }
 
 func floorDecimals(f float64, decimals int) float64 {
@@ -185,7 +185,7 @@ func floorDecimals(f float64, decimals int) float64 {
 
 func TestEmptyScrapeBloomFilterEstimatedCount(t *testing.T) {
 	var f ScrapeBloomFilter
-	assert.EqualValues(t, 0, math.Floor(f.EstimateCount()))
+	assert.EqualValues(t, 0, int(math.Floor(f.EstimateCount())))
 }
 
 func marshalAndReturnUnmarshaledMsg(t *testing.T, m Msg, expected string) (ret Msg) {

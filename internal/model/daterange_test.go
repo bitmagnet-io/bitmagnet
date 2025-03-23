@@ -3,6 +3,8 @@ package model
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -34,7 +36,7 @@ func TestNewDateRangeFromString(t *testing.T) {
 	for _, test := range parseTests {
 		t.Run(test.inputString, func(t *testing.T) {
 			actualOutput, err := NewDateRangeFromString(test.inputString)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, test.expectedStart, actualOutput.Start())
 			assert.Equal(t, test.expectedEnd, actualOutput.End())
 		})

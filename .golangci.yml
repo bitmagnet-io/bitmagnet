@@ -21,6 +21,7 @@ linters:
     - noctx
     - revive
     - stylecheck
+    - testifylint
 linters-settings:
   revive:
     rules:

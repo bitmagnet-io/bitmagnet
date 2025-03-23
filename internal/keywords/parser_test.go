@@ -4,6 +4,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -48,7 +50,7 @@ func TestParser(t *testing.T) {
 				assert.ErrorIs(t, err, test.err)
 				return
 			}
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			t.Logf("regex: %s", r.String())
 			for _, m := range test.match {
 				assert.True(t, r.MatchString(m))

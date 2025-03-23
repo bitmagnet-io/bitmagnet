@@ -18,7 +18,7 @@ func TestStatusUnknownBeforeStatusUp(t *testing.T) {
 	result := aggregateStatus(testData)
 
 	// Assert
-	assert.Equal(t, result, StatusUnknown)
+	assert.Equal(t, StatusUnknown, result)
 }
 
 func TestStatusDownBeforeStatusUnknown(t *testing.T) {
@@ -29,7 +29,7 @@ func TestStatusDownBeforeStatusUnknown(t *testing.T) {
 	result := aggregateStatus(testData)
 
 	// Assert
-	assert.Equal(t, result, StatusDown)
+	assert.Equal(t, StatusDown, result)
 }
 
 func doTestEvaluateAvailabilityStatus(
@@ -177,6 +177,6 @@ func TestPanicRecovery(t *testing.T) {
 
 	checkRes, checkResultExists := res.Details["iPanic"]
 	assert.True(t, checkResultExists)
-	assert.NotNil(t, checkRes.Error)
-	assert.Equal(t, (checkRes.Error).Error(), expectedPanicMsg)
+	require.Error(t, checkRes.Error)
+	assert.Equal(t, expectedPanicMsg, (checkRes.Error).Error())
 }

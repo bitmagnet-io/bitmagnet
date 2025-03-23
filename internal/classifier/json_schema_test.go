@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/xeipuuv/gojsonschema"
 )
@@ -14,25 +16,25 @@ var metaSchemaJSON []byte
 
 func TestJsonSchema(t *testing.T) {
 	schemaJSON, err := DefaultJSONSchema().MarshalJSON()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	schemaLoader := gojsonschema.NewBytesLoader(schemaJSON)
 	metaSchemaLoader := gojsonschema.NewBytesLoader(metaSchemaJSON)
 
 	// validate the schema against the meta schema
 	metaResult, err := gojsonschema.Validate(metaSchemaLoader, schemaLoader)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, metaResult.Valid())
 
 	coreClassifier, err := yamlSourceProvider{rawSourceProvider: coreSourceProvider{}}.source()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	coreClassifierJSON, err := json.Marshal(coreClassifier)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	documentLoader := gojsonschema.NewBytesLoader(coreClassifierJSON)
 
 	// validate the classifier against the schema
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, result.Valid())
 }

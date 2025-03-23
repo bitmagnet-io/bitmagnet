@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -69,12 +71,12 @@ func doTestHandler(t *testing.T,
 
 	// Assert
 	ckr.Mock.AssertNumberOfCalls(t, "Check", 1)
-	assert.Equal(t, response.Header().Get("content-type"), "application/json; charset=utf-8")
-	assert.Equal(t, response.Result().StatusCode, expectedStatusCode)
+	assert.Equal(t, "application/json; charset=utf-8", response.Header().Get("content-type"))
+	assert.Equal(t, expectedStatusCode, response.Result().StatusCode)
 
 	bytes := response.Body.Bytes()
 	expectedBytes, err := json.Marshal(expectedStatus)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, string(expectedBytes), string(bytes))
 }
 
