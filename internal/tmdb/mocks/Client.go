@@ -307,7 +307,7 @@ func (_c *Client_TvDetails_Call) RunAndReturn(run func(context.Context, tmdb.TvD
 	return _c
 }
 
-// ValidateApiKey provides a mock function with given fields: _a0
+// ValidateAPIKey provides a mock function with given fields: _a0
 func (_m *Client) ValidateAPIKey(_a0 context.Context) error {
 	ret := _m.Called(_a0)
 
@@ -325,30 +325,30 @@ func (_m *Client) ValidateAPIKey(_a0 context.Context) error {
 	return r0
 }
 
-// Client_ValidateApiKey_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ValidateAPIKey'
-type Client_ValidateApiKey_Call struct {
+// Client_ValidateAPIKey_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ValidateAPIKey'
+type Client_ValidateAPIKey_Call struct {
 	*mock.Call
 }
 
-// ValidateApiKey is a helper method to define mock.On call
+// ValidateAPIKey is a helper method to define mock.On call
 //   - _a0 context.Context
-func (_e *Client_Expecter) ValidateApiKey(_a0 interface{}) *Client_ValidateApiKey_Call {
-	return &Client_ValidateApiKey_Call{Call: _e.mock.On("ValidateAPIKey", _a0)}
+func (_e *Client_Expecter) ValidateAPIKey(_a0 interface{}) *Client_ValidateAPIKey_Call {
+	return &Client_ValidateAPIKey_Call{Call: _e.mock.On("ValidateAPIKey", _a0)}
 }
 
-func (_c *Client_ValidateApiKey_Call) Run(run func(_a0 context.Context)) *Client_ValidateApiKey_Call {
+func (_c *Client_ValidateAPIKey_Call) Run(run func(_a0 context.Context)) *Client_ValidateAPIKey_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context))
 	})
 	return _c
 }
 
-func (_c *Client_ValidateApiKey_Call) Return(_a0 error) *Client_ValidateApiKey_Call {
+func (_c *Client_ValidateAPIKey_Call) Return(_a0 error) *Client_ValidateAPIKey_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *Client_ValidateApiKey_Call) RunAndReturn(run func(context.Context) error) *Client_ValidateApiKey_Call {
+func (_c *Client_ValidateAPIKey_Call) RunAndReturn(run func(context.Context) error) *Client_ValidateAPIKey_Call {
 	_c.Call.Return(run)
 	return _c
 }

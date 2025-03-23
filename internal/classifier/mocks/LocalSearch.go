@@ -22,7 +22,7 @@ func (_m *LocalSearch) EXPECT() *LocalSearch_Expecter {
 	return &LocalSearch_Expecter{mock: &_m.Mock}
 }
 
-// ContentById provides a mock function with given fields: _a0, _a1
+// ContentByID provides a mock function with given fields: _a0, _a1
 func (_m *LocalSearch) ContentByID(_a0 context.Context, _a1 model.ContentRef) (model.Content, error) {
 	ret := _m.Called(_a0, _a1)
 
@@ -50,31 +50,31 @@ func (_m *LocalSearch) ContentByID(_a0 context.Context, _a1 model.ContentRef) (m
 	return r0, r1
 }
 
-// LocalSearch_ContentById_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ContentByID'
-type LocalSearch_ContentById_Call struct {
+// LocalSearch_ContentByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ContentByID'
+type LocalSearch_ContentByID_Call struct {
 	*mock.Call
 }
 
-// ContentById is a helper method to define mock.On call
+// ContentByID is a helper method to define mock.On call
 //   - _a0 context.Context
 //   - _a1 model.ContentRef
-func (_e *LocalSearch_Expecter) ContentById(_a0 interface{}, _a1 interface{}) *LocalSearch_ContentById_Call {
-	return &LocalSearch_ContentById_Call{Call: _e.mock.On("ContentByID", _a0, _a1)}
+func (_e *LocalSearch_Expecter) ContentByID(_a0 interface{}, _a1 interface{}) *LocalSearch_ContentByID_Call {
+	return &LocalSearch_ContentByID_Call{Call: _e.mock.On("ContentByID", _a0, _a1)}
 }
 
-func (_c *LocalSearch_ContentById_Call) Run(run func(_a0 context.Context, _a1 model.ContentRef)) *LocalSearch_ContentById_Call {
+func (_c *LocalSearch_ContentByID_Call) Run(run func(_a0 context.Context, _a1 model.ContentRef)) *LocalSearch_ContentByID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(model.ContentRef))
 	})
 	return _c
 }
 
-func (_c *LocalSearch_ContentById_Call) Return(_a0 model.Content, _a1 error) *LocalSearch_ContentById_Call {
+func (_c *LocalSearch_ContentByID_Call) Return(_a0 model.Content, _a1 error) *LocalSearch_ContentByID_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *LocalSearch_ContentById_Call) RunAndReturn(run func(context.Context, model.ContentRef) (model.Content, error)) *LocalSearch_ContentById_Call {
+func (_c *LocalSearch_ContentByID_Call) RunAndReturn(run func(context.Context, model.ContentRef) (model.Content, error)) *LocalSearch_ContentByID_Call {
 	_c.Call.Return(run)
 	return _c
 }
