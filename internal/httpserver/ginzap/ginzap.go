@@ -122,6 +122,8 @@ func CustomRecoveryWithZap(logger ZapLogger, stack bool, recovery gin.RecoveryFu
 				// condition that warrants a panic stack trace.
 				var brokenPipe bool
 
+				// todo: Fix this
+				//nolint:errorlint
 				if ne, ok := err.(*net.OpError); ok {
 					if se, ok := ne.Err.(*os.SyscallError); ok {
 						if strings.Contains(strings.ToLower(se.Error()), "broken pipe") ||

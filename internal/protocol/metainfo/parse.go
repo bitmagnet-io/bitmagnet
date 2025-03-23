@@ -16,7 +16,7 @@ func ParseMetaInfoBytes(infoHash protocol.ID, metaInfoBytes []byte) (Info, error
 
 	var info Info
 	if unmarshalErr := bencode.Unmarshal(metaInfoBytes, &info); unmarshalErr != nil {
-		return Info{}, fmt.Errorf("error unmarshaling info bytes: %s", unmarshalErr)
+		return Info{}, fmt.Errorf("error unmarshaling info bytes: %w", unmarshalErr)
 	}
 
 	return info, nil

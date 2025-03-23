@@ -59,7 +59,7 @@ type queueStatusInfo struct {
 func (qmc *queueMetricsCollector) collectQueueStatusInfos() ([]*queueStatusInfo, error) {
 	q, err := qmc.query.Get()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get query: %v", err)
+		return nil, fmt.Errorf("failed to get query: %w", err)
 	}
 
 	var queueInfos []*queueStatusInfo
@@ -68,7 +68,7 @@ func (qmc *queueMetricsCollector) collectQueueStatusInfos() ([]*queueStatusInfo,
 		"SELECT queue, status, count(*) FROM queue_jobs GROUP BY queue, status",
 	).Find(&queueInfos).Error
 	if err != nil {
-		return nil, fmt.Errorf("failed to get queue status info: %v", err)
+		return nil, fmt.Errorf("failed to get queue status info: %w", err)
 	}
 
 	return queueInfos, nil
