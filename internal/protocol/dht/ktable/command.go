@@ -1,8 +1,9 @@
 package ktable
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable/btree"
 	"net/netip"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable/btree"
 )
 
 type Command interface {

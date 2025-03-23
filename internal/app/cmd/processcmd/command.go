@@ -2,6 +2,7 @@ package processcmd
 
 import (
 	"encoding/json"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"

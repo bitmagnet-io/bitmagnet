@@ -1,11 +1,12 @@
 package logging
 
 import (
-	"github.com/adrg/xdg"
-	"go.uber.org/zap/zapcore"
 	"path"
 	"strings"
 	"time"
+
+	"github.com/adrg/xdg"
+	"go.uber.org/zap/zapcore"
 )
 
 type Config struct {

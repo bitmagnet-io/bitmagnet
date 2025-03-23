@@ -3,8 +3,9 @@ package classifier
 import (
 	"errors"
 	"fmt"
-	"github.com/google/cel-go/cel"
 	"reflect"
+
+	"github.com/google/cel-go/cel"
 )
 
 const expressionName = "expression"

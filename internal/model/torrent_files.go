@@ -1,10 +1,11 @@
 package model
 
 import (
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"regexp"
 	"strings"
+
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func (*TorrentFile) BeforeCreate(tx *gorm.DB) (err error) {

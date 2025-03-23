@@ -3,6 +3,7 @@ package bloom
 import (
 	"database/sql/driver"
 	"errors"
+
 	boom "github.com/tylertreat/BoomFilters"
 )
 

@@ -1,9 +1,10 @@
 package model
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/keywords"
 	"regexp"
 	"strings"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/keywords"
 )
 
 // VideoSource represents the source of a video

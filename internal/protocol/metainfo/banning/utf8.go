@@ -2,9 +2,10 @@ package banning
 
 import (
 	"errors"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
 )
 
 type utf8Checker struct {

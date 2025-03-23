@@ -2,10 +2,11 @@ package metainforequester
 
 import (
 	"context"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"github.com/prometheus/client_golang/prometheus"
 	"net/netip"
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type prometheusCollector struct {

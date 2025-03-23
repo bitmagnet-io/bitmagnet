@@ -3,6 +3,8 @@ package queue
 import (
 	"context"
 	"encoding/json"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
@@ -12,7 +14,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/handler"
 	"go.uber.org/fx"
 	"gorm.io/gen"
-	"time"
 )
 
 type Params struct {

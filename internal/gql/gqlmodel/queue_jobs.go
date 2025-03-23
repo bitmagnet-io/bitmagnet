@@ -2,6 +2,7 @@ package gqlmodel
 
 import (
 	"context"
+
 	q "github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
@@ -28,7 +29,7 @@ type QueueJobsQueryResult struct {
 	Aggregations gen.QueueJobsAggregations
 }
 
-func (r QueueQuery) Jobs(
+func (qq QueueQuery) Jobs(
 	ctx context.Context,
 	query QueueJobsQueryInput,
 ) (QueueJobsQueryResult, error) {
@@ -78,7 +79,7 @@ func (r QueueQuery) Jobs(
 		fullOrderBy.Set(field, direction)
 	}
 	options = append(options, search.QueueJobsFullOrderBy(fullOrderBy).Option())
-	result, resultErr := r.QueueJobSearch.QueueJobs(ctx, options...)
+	result, resultErr := qq.QueueJobSearch.QueueJobs(ctx, options...)
 	if resultErr != nil {
 		return QueueJobsQueryResult{}, resultErr
 	}

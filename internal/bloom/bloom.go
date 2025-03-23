@@ -2,6 +2,7 @@ package bloom
 
 import (
 	"encoding/binary"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bits-and-blooms/bloom/v3"
 )
@@ -23,7 +24,7 @@ func FromScrape(f dht.ScrapeBloomFilter) Filter {
 
 func convertBytes(b [byteSize]byte) []uint64 {
 	ret := make([]uint64, size)
-	for i := 0; i < size; i++ {
+	for i := range size {
 		startPos := i * 8
 		ret[i] = binary.BigEndian.Uint64(b[startPos : startPos+8])
 	}

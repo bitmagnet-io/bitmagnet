@@ -5,11 +5,12 @@ import (
 	_ "embed"
 	"encoding/json"
 	"errors"
-	"github.com/bitmagnet-io/bitmagnet/internal/keywords"
-	"github.com/facette/natsort"
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/keywords"
+	"github.com/facette/natsort"
 )
 
 type Language string

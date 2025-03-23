@@ -2,6 +2,10 @@ package dhtcrawler
 
 import (
 	"context"
+	"net/netip"
+	"sync"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
 	"github.com/bitmagnet-io/bitmagnet/internal/bloom"
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
@@ -15,9 +19,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	boom "github.com/tylertreat/BoomFilters"
 	"go.uber.org/zap"
-	"net/netip"
-	"sync"
-	"time"
 )
 
 type crawler struct {

@@ -2,9 +2,10 @@ package server
 
 import (
 	"context"
+	"net/netip"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
-	"net/netip"
 )
 
 type queryLimiter struct {

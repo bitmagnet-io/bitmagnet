@@ -2,11 +2,12 @@ package dhtcrawler
 
 import (
 	"context"
+	"net/netip"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"go.uber.org/fx"
-	"net/netip"
-	"time"
 )
 
 type DiscoveredNodesParams struct {

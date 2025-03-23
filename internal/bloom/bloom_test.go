@@ -1,10 +1,11 @@
 package bloom
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
-	"github.com/stretchr/testify/assert"
 	"net"
 	"testing"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestScrapeBloomFilter(t *testing.T) {

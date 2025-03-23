@@ -1,9 +1,10 @@
 package classifier
 
 import (
+	"strconv"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
-	"strconv"
 )
 
 const attachTMDBContentByIDName = "attach_tmdb_content_by_id"

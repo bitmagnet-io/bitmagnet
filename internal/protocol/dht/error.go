@@ -2,6 +2,7 @@ package dht
 
 import (
 	"fmt"
+
 	"github.com/anacrolix/torrent/bencode"
 )
 

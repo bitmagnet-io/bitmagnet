@@ -1,13 +1,14 @@
 package configfx
 
 import (
+	"os"
+	"strings"
+
 	"github.com/adrg/xdg"
 	"github.com/bitmagnet-io/bitmagnet/internal/config"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/configresolver"
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/fx"
-	"os"
-	"strings"
 )
 
 func New() fx.Option {

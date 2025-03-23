@@ -3,10 +3,11 @@ package dht
 import (
 	"bytes"
 	"encoding/binary"
-	"github.com/anacrolix/torrent/bencode"
 	"net"
 	"net/netip"
 	"strconv"
+
+	"github.com/anacrolix/torrent/bencode"
 )
 
 type NodeAddr struct {

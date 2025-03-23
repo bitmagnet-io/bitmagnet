@@ -1,8 +1,9 @@
 package maps
 
 import (
-	"github.com/facette/natsort"
 	"sort"
+
+	"github.com/facette/natsort"
 )
 
 type StringMap[T interface{}] map[string]T

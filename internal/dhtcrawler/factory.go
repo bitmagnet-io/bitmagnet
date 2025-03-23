@@ -2,6 +2,8 @@ package dhtcrawler
 
 import (
 	"context"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
@@ -17,7 +19,6 @@ import (
 	boom "github.com/tylertreat/BoomFilters"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"time"
 )
 
 type Params struct {

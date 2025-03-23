@@ -2,12 +2,13 @@ package cli
 
 import (
 	"context"
+	"sort"
+	"strings"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/version"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"sort"
-	"strings"
 )
 
 type Params struct {

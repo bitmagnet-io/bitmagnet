@@ -2,8 +2,9 @@ package model
 
 import (
 	"fmt"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/fts"
 	"strings"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/database/fts"
 )
 
 func (tc TorrentContent) InferID() string {

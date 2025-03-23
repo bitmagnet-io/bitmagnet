@@ -3,10 +3,11 @@ package dhtcrawlerhealthcheck
 import (
 	"context"
 	"errors"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/server"
-	"time"
 )
 
 func NewCheck(

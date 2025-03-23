@@ -3,13 +3,14 @@ package keywords
 import (
 	"errors"
 	"fmt"
+	"regexp"
+	"strings"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
 	"github.com/bitmagnet-io/bitmagnet/internal/regex"
 	"github.com/hedhyw/rex/pkg/dialect"
 	"github.com/hedhyw/rex/pkg/dialect/base"
 	"github.com/hedhyw/rex/pkg/rex"
-	"regexp"
-	"strings"
 )
 
 func NewRegexFromKeywords(kws ...string) (*regexp.Regexp, error) {

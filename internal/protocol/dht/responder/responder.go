@@ -4,10 +4,11 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"net/netip"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
-	"net/netip"
 )
 
 type Responder interface {

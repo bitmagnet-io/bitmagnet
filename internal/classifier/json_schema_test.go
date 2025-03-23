@@ -3,9 +3,10 @@ package classifier
 import (
 	_ "embed"
 	"encoding/json"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/xeipuuv/gojsonschema"
-	"testing"
 )
 
 //go:embed json-schema.draft-07.json

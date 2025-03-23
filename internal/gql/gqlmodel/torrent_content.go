@@ -2,6 +2,8 @@ package gqlmodel
 
 import (
 	"context"
+	"time"
+
 	"github.com/99designs/gqlgen/graphql"
 	q "github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
@@ -9,7 +11,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"time"
 )
 
 type TorrentContentQuery struct {

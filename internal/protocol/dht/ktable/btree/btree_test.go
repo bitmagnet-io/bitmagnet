@@ -1,8 +1,9 @@
 package btree
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const testK = 4
@@ -50,24 +51,24 @@ func TestBtree_simple(t *testing.T) {
 	root := New(testOrigin, testK, false)
 	assertPut(t, root, testOrigin, PutRejected)
 	for range []int{1, 2} {
-		for i := 0; i < 12; i++ {
+		for i := range 12 {
 			assertPut(t, root, testIDs[i], PutAccepted)
 			assert.True(t, root.Has(testIDs[i]), i)
 		}
 		for i := 12; i < 20; i++ {
 			assertPut(t, root, testIDs[i], PutRejected)
 		}
-		for i := 0; i < 12; i++ {
+		for i := range 12 {
 			assertPut(t, root, testIDs[i], PutAlreadyExists)
 		}
 		assert.Equal(t, 12, root.Count())
-		for i := 0; i < 12; i++ {
+		for i := range 12 {
 			assert.True(t, root.Has(testIDs[i]), i)
 		}
 		for i := 12; i < 20; i++ {
 			assert.False(t, root.Has(testIDs[i]), i)
 		}
-		for i := 0; i < 12; i++ {
+		for i := range 12 {
 			assert.True(t, root.Drop(testIDs[i]), i)
 		}
 		for i := 12; i < 20; i++ {
@@ -80,19 +81,19 @@ func TestBtree_simple(t *testing.T) {
 func TestBtree_splitting(t *testing.T) {
 	root := New(testOrigin, testK, true)
 	assertPut(t, root, testOrigin, PutRejected)
-	for i := 0; i < 16; i++ {
+	for i := range 16 {
 		assertPut(t, root, testIDs[i], PutAccepted)
 	}
 	for i := 16; i < 20; i++ {
 		assertPut(t, root, testIDs[i], PutRejected)
 	}
-	for i := 0; i < 16; i++ {
+	for i := range 16 {
 		assert.True(t, root.Has(testIDs[i]), i)
 	}
 	for i := 16; i < 20; i++ {
 		assert.False(t, root.Has(testIDs[i]), i)
 	}
-	for i := 0; i < 16; i++ {
+	for i := range 16 {
 		assert.True(t, root.Drop(testIDs[i]), i)
 	}
 	for i := 16; i < 20; i++ {
@@ -103,7 +104,7 @@ func TestBtree_splitting(t *testing.T) {
 
 func TestBtree_closest(t *testing.T) {
 	root := New(testOrigin, testK, true)
-	for i := 0; i < 16; i++ {
+	for i := range 16 {
 		assertPut(t, root, testIDs[i], PutAccepted)
 	}
 	assert.Equal(t, []NodeID{testIDs[4], testIDs[5], testIDs[6], testIDs[7]}, root.Closest(testIDs[16], 4))

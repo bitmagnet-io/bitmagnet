@@ -2,6 +2,7 @@ package ktable
 
 import (
 	"errors"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable/btree"
 )

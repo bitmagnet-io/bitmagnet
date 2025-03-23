@@ -2,9 +2,10 @@ package metainforequester
 
 import (
 	"context"
+	"net/netip"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"net/netip"
 )
 
 type requestLimiter struct {

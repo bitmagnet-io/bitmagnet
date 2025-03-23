@@ -2,9 +2,10 @@ package responder
 
 import (
 	"context"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
-	"time"
 )
 
 // responderNodeDiscovery attempts to add nodes from incoming requests to the discovered nodes channel.

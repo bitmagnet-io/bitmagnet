@@ -44,7 +44,7 @@ func (l *Lexer) Backup() {
 }
 
 func (l *Lexer) BackupN(n int) {
-	for i := 0; i < n; i++ {
+	for range n {
 		l.Backup()
 	}
 }

@@ -2,10 +2,11 @@ package logging
 
 import (
 	"context"
+	"os"
+
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"os"
 )
 
 type Params struct {

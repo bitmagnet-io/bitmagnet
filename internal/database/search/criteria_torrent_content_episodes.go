@@ -2,9 +2,10 @@ package search
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
-	"strings"
 )
 
 func TorrentContentEpisodesCriteria(episodes model.Episodes) query.Criteria {

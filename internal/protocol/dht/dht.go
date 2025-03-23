@@ -1,8 +1,9 @@
 package dht
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"net/netip"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
 type ID = protocol.ID

@@ -1,6 +1,9 @@
 package metainforequester
 
 import (
+	"net"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/prometheus/client_golang/prometheus"
@@ -8,8 +11,6 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"golang.org/x/time/rate"
-	"net"
-	"time"
 )
 
 type Params struct {

@@ -1,11 +1,12 @@
 package batch
 
 import (
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"time"
 )
 
 const MessageName = "process_torrent_batch"

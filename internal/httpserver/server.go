@@ -4,15 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
+	"net/http"
+	"sort"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/httpserver/ginzap"
 	"github.com/bitmagnet-io/bitmagnet/internal/worker"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"net"
-	"net/http"
-	"sort"
-	"time"
 )
 
 type Params struct {

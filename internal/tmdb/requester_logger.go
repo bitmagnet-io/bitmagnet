@@ -2,6 +2,7 @@ package tmdb
 
 import (
 	"context"
+
 	"github.com/go-resty/resty/v2"
 	"go.uber.org/zap"
 )

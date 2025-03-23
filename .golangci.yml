@@ -1,6 +1,26 @@
 linters:
   enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - canonicalheader
+#    - containedctx
+#    - contextcheck
+    - copyloopvar
+      #stopped here
+
+    - goconst
+    - goimports
+    - gosmopolitan
+    - iface
+    - importas
+    - intrange
+#    - misspell
+#    - musttag
+    - noctx
     - revive
+    - stylecheck
 linters-settings:
   revive:
     rules:

@@ -5,13 +5,14 @@ import (
 	"encoding"
 	"encoding/binary"
 	"fmt"
-	"github.com/anacrolix/missinggo/v2/slices"
-	"github.com/anacrolix/torrent/bencode"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"math"
 	"math/rand"
 	"net"
 	"reflect"
+
+	"github.com/anacrolix/missinggo/v2/slices"
+	"github.com/anacrolix/torrent/bencode"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
 type NodeInfo struct {
@@ -27,7 +28,7 @@ func RandomNodeInfo(ipLen int) (ni NodeInfo) {
 	ni.ID = protocol.RandomNodeID()
 	ni.Addr.Port = rand.Intn(math.MaxUint16 + 1)
 	ni.Addr.IP = make(net.IP, ipLen)
-	for i := 0; i < ipLen; i++ {
+	for i := range ipLen {
 		ni.Addr.IP[i] = byte(rand.Intn(256))
 	}
 	return

@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/go-resty/resty/v2"
 	"go.uber.org/zap"
 	"golang.org/x/sync/semaphore"
 	"golang.org/x/time/rate"
-	"sync"
-	"time"
 )
 
 // requesterLazy defers instantiation of the requester (and possible failure) until the first request is made,

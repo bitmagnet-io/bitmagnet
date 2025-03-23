@@ -296,8 +296,6 @@ func (ck *defaultChecker) runSynchronousChecks(ctx context.Context) {
 	)
 
 	for _, check := range ck.cfg.checks {
-		check := check
-
 		if !isPeriodicCheck(check) {
 			checkState := ck.state.CheckState[check.Name]
 
@@ -330,8 +328,6 @@ func (ck *defaultChecker) startPeriodicChecks(ctx context.Context) {
 
 	// Start periodic checks.
 	for _, check := range ck.cfg.checks {
-		check := check
-
 		if isPeriodicCheck(check) {
 			// ATTENTION: Access to check and ck.state.CheckState is not synchronized here,
 			// 	assuming that the accessed values are never changed, such as

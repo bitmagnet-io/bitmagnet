@@ -3,6 +3,7 @@ package gqlmodel
 import (
 	"context"
 	"fmt"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics"
 )

@@ -3,10 +3,11 @@ package dht
 import (
 	"crypto/sha1"
 	"encoding/binary"
-	"github.com/bits-and-blooms/bloom/v3"
 	"math"
 	"math/bits"
 	"net"
+
+	"github.com/bits-and-blooms/bloom/v3"
 )
 
 const (
@@ -63,7 +64,7 @@ func (me *ScrapeBloomFilter) ToBloomFilter() *bloom.BloomFilter {
 
 func convertBytes(b [byteSize]byte) []uint64 {
 	ret := make([]uint64, size)
-	for i := 0; i < size; i++ {
+	for i := range size {
 		startPos := i * 8
 		ret[i] = binary.BigEndian.Uint64(b[startPos : startPos+8])
 	}

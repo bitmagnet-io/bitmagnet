@@ -3,10 +3,11 @@ package manager
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor/batch"
 	"gorm.io/gorm"
-	"time"
 )
 
 func (m manager) EnqueueReprocessTorrentsBatch(ctx context.Context, req EnqueueReprocessTorrentsBatchRequest) error {

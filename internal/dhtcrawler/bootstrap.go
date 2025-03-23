@@ -2,9 +2,10 @@ package dhtcrawler
 
 import (
 	"context"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"net"
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 )
 
 func (c *crawler) reseedBootstrapNodes(ctx context.Context) {

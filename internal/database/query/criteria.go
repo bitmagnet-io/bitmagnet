@@ -1,11 +1,12 @@
 package query
 
 import (
+	"strings"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/regex"
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
-	"strings"
 )
 
 func Where(conditions ...Criteria) Option {

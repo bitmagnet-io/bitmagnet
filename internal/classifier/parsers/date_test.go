@@ -1,9 +1,10 @@
 package parsers
 
 import (
+	"testing"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestParseDate(t *testing.T) {

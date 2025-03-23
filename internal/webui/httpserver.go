@@ -2,13 +2,14 @@ package webui
 
 import (
 	"errors"
+	"io/fs"
+	"net/http"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/webui"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"io/fs"
-	"net/http"
 )
 
 type Params struct {

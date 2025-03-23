@@ -2,6 +2,8 @@ package dhtcrawler
 
 import (
 	"context"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
@@ -10,7 +12,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"gorm.io/gen"
 	"gorm.io/gorm/clause"
-	"time"
 )
 
 // runPersistTorrents waits on the persistTorrents channel, and persists torrents to the database in batches.

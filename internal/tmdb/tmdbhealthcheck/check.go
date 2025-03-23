@@ -2,10 +2,11 @@ package tmdbhealthcheck
 
 import (
 	"context"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
 	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
-	"time"
 )
 
 func NewCheck(

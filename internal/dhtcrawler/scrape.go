@@ -3,8 +3,9 @@ package dhtcrawler
 import (
 	"context"
 	"fmt"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 )
 
 func (c *crawler) runScrape(ctx context.Context) {

@@ -1,9 +1,10 @@
 package configresolver
 
 import (
+	"os"
+
 	"github.com/go-playground/validator/v10"
 	"gopkg.in/yaml.v3"
-	"os"
 )
 
 func NewFromYamlFile(path string, ignoreMissing bool, val *validator.Validate, options ...Option) (Resolver, error) {

@@ -1,12 +1,13 @@
 package gen
 
 import (
+	"path"
+	"runtime"
+
 	"github.com/iancoleman/strcase"
 	"gorm.io/gen"
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
-	"path"
-	"runtime"
 )
 
 func BuildGenerator(db *gorm.DB) *gen.Generator {

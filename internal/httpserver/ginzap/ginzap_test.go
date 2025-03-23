@@ -1,6 +1,7 @@
 package ginzap
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -35,6 +36,8 @@ func timestampLocationCheck(timestampStr string, location *time.Location) error 
 	return nil
 }
 
+const testPath = "/test"
+
 func TestGinzap(t *testing.T) {
 	r := gin.New()
 
@@ -44,12 +47,14 @@ func TestGinzap(t *testing.T) {
 	localLogger, localLoggerObserved := buildDummyLogger()
 	r.Use(Ginzap(localLogger, time.RFC3339, false))
 
-	r.GET("/test", func(c *gin.Context) {
+	r.GET(testPath, func(c *gin.Context) {
 		c.JSON(204, nil)
 	})
 
 	res1 := httptest.NewRecorder()
-	req1, _ := http.NewRequest("GET", "/test", nil)
+
+	ctx := context.Background()
+	req1, _ := http.NewRequestWithContext(ctx, "GET", testPath, nil)
 	r.ServeHTTP(res1, req1)
 
 	if len(utcLoggerObserved.All()) != 1 {
@@ -58,7 +63,7 @@ func TestGinzap(t *testing.T) {
 
 	logLine := utcLoggerObserved.All()[0]
 	pathStr := logLine.Context[2].String
-	if pathStr != "/test" {
+	if pathStr != testPath {
 		t.Fatalf("logged path should be /test but %s", pathStr)
 	}
 
@@ -73,7 +78,7 @@ func TestGinzap(t *testing.T) {
 
 	logLine = localLoggerObserved.All()[0]
 	pathStr = logLine.Context[2].String
-	if pathStr != "/test" {
+	if pathStr != testPath {
 		t.Fatalf("logged path should be /test but %s", pathStr)
 	}
 }
@@ -88,7 +93,7 @@ func TestGinzapWithConfig(t *testing.T) {
 		SkipPaths:  []string{"/no_log"},
 	}))
 
-	r.GET("/test", func(c *gin.Context) {
+	r.GET(testPath, func(c *gin.Context) {
 		c.JSON(204, nil)
 	})
 
@@ -97,11 +102,12 @@ func TestGinzapWithConfig(t *testing.T) {
 	})
 
 	res1 := httptest.NewRecorder()
-	req1, _ := http.NewRequest("GET", "/test", nil)
+	ctx := context.Background()
+	req1, _ := http.NewRequestWithContext(ctx, "GET", testPath, nil)
 	r.ServeHTTP(res1, req1)
 
 	res2 := httptest.NewRecorder()
-	req2, _ := http.NewRequest("GET", "/no_log", nil)
+	req2, _ := http.NewRequestWithContext(ctx, "GET", "/no_log", nil)
 	r.ServeHTTP(res2, req2)
 
 	if res2.Code != 204 {
@@ -114,7 +120,7 @@ func TestGinzapWithConfig(t *testing.T) {
 
 	logLine := utcLoggerObserved.All()[0]
 	pathStr := logLine.Context[2].String
-	if pathStr != "/test" {
+	if pathStr != testPath {
 		t.Fatalf("logged path should be /test but %s", pathStr)
 	}
 

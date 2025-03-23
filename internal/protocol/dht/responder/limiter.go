@@ -2,11 +2,12 @@ package responder
 
 import (
 	"context"
+	"net/netip"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"golang.org/x/time/rate"
-	"net/netip"
-	"time"
 )
 
 // responderLimiter applies both overall and per-IP rate limiting

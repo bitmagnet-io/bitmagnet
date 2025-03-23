@@ -1,8 +1,9 @@
 package fts
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
 	"strings"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
 )
 
 func AppQueryToTsquery(str string) string {

@@ -3,6 +3,7 @@ package gqlmodel
 import (
 	"context"
 	"fmt"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/queuemetrics"
@@ -14,7 +15,7 @@ type QueueQuery struct {
 	QueueMetricsClient queuemetrics.Client
 }
 
-func (q QueueQuery) Metrics(
+func (qq QueueQuery) Metrics(
 	ctx context.Context,
 	input gen.QueueMetricsQueryInput,
 ) (*gen.QueueMetricsQueryResult, error) {
@@ -41,7 +42,7 @@ func (q QueueQuery) Metrics(
 	if queues, ok := input.Queues.ValueOK(); ok {
 		req.Queues = queues
 	}
-	buckets, err := q.QueueMetricsClient.Request(ctx, req)
+	buckets, err := qq.QueueMetricsClient.Request(ctx, req)
 	if err != nil {
 		return nil, err
 	}

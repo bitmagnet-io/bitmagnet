@@ -1,6 +1,8 @@
 package httpserver
 
 import (
+	"time"
+
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
@@ -13,7 +15,6 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"time"
 )
 
 type Params struct {

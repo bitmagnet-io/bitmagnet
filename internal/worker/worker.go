@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"go.uber.org/fx"
-	"go.uber.org/zap"
 	"sort"
 	"sync"
+
+	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 type RegistryParams struct {

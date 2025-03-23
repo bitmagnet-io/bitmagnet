@@ -7,9 +7,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/anacrolix/torrent/bencode"
 	"io"
 	"strings"
+
+	"github.com/anacrolix/torrent/bencode"
 )
 
 // There are 2 main conventions for encoding client and client version information into the client ID,
@@ -40,7 +41,7 @@ func RandomNodeID() (id ID) {
 // where ID prefixes are used for computing the distance metric).
 func RandomNodeIDWithClientSuffix() (id ID) {
 	_, _ = crand.Read(id[:])
-	for i := 0; i < len(idClientPart); i++ {
+	for i := range len(idClientPart) {
 		id[20-len(idClientPart)+i] = idClientPart[i]
 	}
 	return

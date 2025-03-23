@@ -1,13 +1,14 @@
 package dhtcrawlerfx
 
 import (
+	"net"
+	"net/netip"
+
 	adht "github.com/anacrolix/dht/v2"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/configfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/dhtcrawler"
 	"github.com/bitmagnet-io/bitmagnet/internal/dhtcrawler/dhtcrawlerhealthcheck"
 	"go.uber.org/fx"
-	"net"
-	"net/netip"
 )
 
 func New() fx.Option {

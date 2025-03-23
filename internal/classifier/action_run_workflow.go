@@ -2,6 +2,7 @@ package classifier
 
 import (
 	"fmt"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 )
 

@@ -18,6 +18,7 @@ package classifier
 
 import (
 	"fmt"
+
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/common/types"
 	"github.com/google/cel-go/common/types/ref"

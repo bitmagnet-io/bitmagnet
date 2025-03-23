@@ -3,10 +3,11 @@ package dhtcrawler
 import (
 	"context"
 	"errors"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainforequester"
 	"net/netip"
 	"sync"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainforequester"
 )
 
 func (c *crawler) runRequestMetaInfo(ctx context.Context) {

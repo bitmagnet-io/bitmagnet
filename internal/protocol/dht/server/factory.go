@@ -3,6 +3,9 @@ package server
 import (
 	"context"
 	"fmt"
+	"net/netip"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
@@ -11,8 +14,6 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"golang.org/x/time/rate"
-	"net/netip"
-	"time"
 )
 
 type Params struct {

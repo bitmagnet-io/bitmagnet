@@ -5,14 +5,15 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
-	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
-	"github.com/bitmagnet-io/bitmagnet/internal/maps"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"regexp"
 	"sort"
 	"strings"
 	"unicode"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
+	"github.com/bitmagnet-io/bitmagnet/internal/maps"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type TsvectorWeight rune

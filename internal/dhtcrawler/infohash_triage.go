@@ -3,9 +3,10 @@ package dhtcrawler
 import (
 	"context"
 	"database/sql/driver"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"time"
 )
 
 // runInfoHashTriage receives discovered hashes on the infoHashTriage channel, determines if they should be crawled,

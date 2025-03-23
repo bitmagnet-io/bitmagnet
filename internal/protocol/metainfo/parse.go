@@ -3,6 +3,7 @@ package metainfo
 import (
 	"errors"
 	"fmt"
+
 	"github.com/anacrolix/torrent/bencode"
 	mi "github.com/anacrolix/torrent/metainfo"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"

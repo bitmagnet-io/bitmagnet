@@ -2,6 +2,7 @@ package banning
 
 import (
 	"errors"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
 	"go.uber.org/fx"
 )

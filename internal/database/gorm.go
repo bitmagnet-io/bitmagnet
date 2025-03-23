@@ -2,6 +2,8 @@ package database
 
 import (
 	"database/sql"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/database/exclause"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/logger"
 	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
@@ -10,7 +12,6 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	gormlogger "gorm.io/gorm/logger"
-	"time"
 )
 
 type Params struct {
@@ -21,12 +22,12 @@ type Params struct {
 
 type Result struct {
 	fx.Out
-	GormDb lazy.Lazy[*gorm.DB]
+	GormDB lazy.Lazy[*gorm.DB]
 }
 
 func New(p Params) Result {
 	return Result{
-		GormDb: lazy.New(func() (*gorm.DB, error) {
+		GormDB: lazy.New(func() (*gorm.DB, error) {
 			sqlDB, err := p.SQLDB.Get()
 			if err != nil {
 				return nil, err
@@ -34,7 +35,7 @@ func New(p Params) Result {
 			dialector := postgres.New(postgres.Config{
 				Conn: sqlDB,
 			})
-			gDb, dbErr := gorm.Open(dialector, &gorm.Config{
+			gDB, dbErr := gorm.Open(dialector, &gorm.Config{
 				Logger: logger.New(logger.Params{
 					ZapLogger: p.Logger,
 					Config: logger.Config{
@@ -47,10 +48,10 @@ func New(p Params) Result {
 			if dbErr != nil {
 				return nil, dbErr
 			}
-			if pluginErr := gDb.Use(exclause.New()); pluginErr != nil {
+			if pluginErr := gDB.Use(exclause.New()); pluginErr != nil {
 				return nil, pluginErr
 			}
-			return gDb, nil
+			return gDB, nil
 		}),
 	}
 }

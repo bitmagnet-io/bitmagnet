@@ -4,15 +4,16 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"math"
+	"net"
+	"strings"
+	"testing"
+
 	"github.com/anacrolix/torrent/bencode"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	qt "github.com/frankban/quicktest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"math"
-	"net"
-	"strings"
-	"testing"
 )
 
 //revive:disable:line-length-limit
@@ -156,10 +157,10 @@ func unprettifyHex(s string) string {
 
 func TestBep33BloomFilter(t *testing.T) {
 	var f ScrapeBloomFilter
-	for i := 0; i <= 255; i++ {
+	for i := range 256 {
 		f.AddIP(net.IPv4(192, 0, 2, byte(i)).To4())
 	}
-	for i := 0; i <= 0x3e7; i++ {
+	for i := range 0x3e7 {
 		f.AddIP(net.ParseIP(fmt.Sprintf("2001:DB8::%x", i)))
 	}
 	expected, err := hex.DecodeString(unprettifyHex(`

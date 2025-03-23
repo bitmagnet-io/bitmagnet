@@ -70,7 +70,7 @@ func ParseBinaryNodeID(str string) (NodeID, error) {
 		return nil, errors.New("length must be multiple of 8")
 	}
 	id := make(NodeID, len(str)/8)
-	for i := 0; i < len(str); i++ {
+	for i := range len(str) {
 		if str[i] == '1' {
 			id[i/8] |= 1 << (7 - uint(i%8))
 		} else if str[i] != '0' {
@@ -97,7 +97,7 @@ func (id NodeID) Xor(other NodeID) (NodeID, error) {
 		return nil, errors.New("length mismatch")
 	}
 	ret := make(NodeID, len(id))
-	for i := 0; i < len(id); i++ {
+	for i := range id {
 		ret[i] = id[i] ^ other[i]
 	}
 	return ret, nil
@@ -133,7 +133,7 @@ func (id NodeID) Equals(other NodeID) bool {
 
 func (id NodeID) Bits() Bits {
 	path := make(Bits, len(id)*8)
-	for i := 0; i < len(id)*8; i++ {
+	for i := range len(id) * 8 {
 		if id.GetBit(i) {
 			path[i] = Bit1
 		}

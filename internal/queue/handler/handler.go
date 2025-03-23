@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"log"
 	"runtime"
 	"runtime/debug"
 	"strings"
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
 
 const (

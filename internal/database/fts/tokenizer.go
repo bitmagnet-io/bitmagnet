@@ -1,10 +1,11 @@
 package fts
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
-	"github.com/mozillazg/go-unidecode/table"
 	"strings"
 	"unicode"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
+	"github.com/mozillazg/go-unidecode/table"
 )
 
 func Tokenize(str string) [][]string {

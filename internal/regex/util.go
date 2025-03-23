@@ -1,13 +1,14 @@
 package regex
 
 import (
+	"regexp"
+	"strings"
+	"unicode"
+
 	"github.com/hedhyw/rex/pkg/dialect/base"
 	"github.com/hedhyw/rex/pkg/rex"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
-	"regexp"
-	"strings"
-	"unicode"
 )
 
 func AnyWordChar() base.ClassToken {

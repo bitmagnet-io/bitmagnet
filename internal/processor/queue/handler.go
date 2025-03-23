@@ -3,12 +3,13 @@ package queue
 import (
 	"context"
 	"encoding/json"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/handler"
 	"go.uber.org/fx"
-	"time"
 )
 
 type Params struct {

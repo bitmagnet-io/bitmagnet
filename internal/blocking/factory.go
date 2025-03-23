@@ -2,12 +2,13 @@ package blocking
 
 import (
 	"context"
+	"sync"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/fx"
-	"sync"
-	"time"
 )
 
 type Params struct {

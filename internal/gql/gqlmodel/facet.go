@@ -3,13 +3,14 @@ package gqlmodel
 import (
 	"errors"
 	"fmt"
+	"sort"
+
 	"github.com/99designs/gqlgen/graphql"
 	q "github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/facette/natsort"
-	"sort"
 )
 
 func facet[T comparable](

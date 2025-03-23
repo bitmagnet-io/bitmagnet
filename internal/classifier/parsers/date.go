@@ -1,12 +1,13 @@
 package parsers
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
-	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
+	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
 
 type dateLexer struct {

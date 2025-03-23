@@ -8,7 +8,7 @@ import (
 
 type Params struct {
 	fx.In
-	GormDb lazy.Lazy[*gorm.DB]
+	GormDB lazy.Lazy[*gorm.DB]
 }
 
 type Result struct {
@@ -19,7 +19,7 @@ type Result struct {
 func New(p Params) Result {
 	return Result{
 		Dao: lazy.New(func() (*Query, error) {
-			db, err := p.GormDb.Get()
+			db, err := p.GormDB.Get()
 			if err != nil {
 				return nil, err
 			}

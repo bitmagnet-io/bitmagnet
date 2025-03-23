@@ -1,10 +1,11 @@
 package httpserver
 
 import (
-	"github.com/gin-gonic/gin"
-	pyroscope "github.com/grafana/pyroscope-go/godeltaprof/http/pprof"
 	"net/http/pprof"
 	"runtime"
+
+	"github.com/gin-gonic/gin"
+	pyroscope "github.com/grafana/pyroscope-go/godeltaprof/http/pprof"
 )
 
 type pprofBuilder struct{}

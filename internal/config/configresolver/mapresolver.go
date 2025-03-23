@@ -2,10 +2,11 @@ package configresolver
 
 import (
 	"fmt"
+	"reflect"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/iancoleman/strcase"
-	"reflect"
 )
 
 type mapResolver struct {

@@ -3,10 +3,11 @@ package client
 import (
 	"context"
 	"errors"
+	"net/netip"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/server"
-	"net/netip"
 )
 
 type serverAdapter struct {

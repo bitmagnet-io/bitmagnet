@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/netip"
+	"sync"
+	"time"
+
 	"github.com/anacrolix/torrent/bencode"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/responder"
 	"go.uber.org/zap"
-	"net/netip"
-	"sync"
-	"time"
 )
 
 type Server interface {

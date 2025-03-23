@@ -8,7 +8,7 @@ import (
 
 type Params struct {
 	fx.In
-	Db lazy.Lazy[*gorm.DB]
+	DB lazy.Lazy[*gorm.DB]
 }
 
 type Result struct {
@@ -19,7 +19,7 @@ type Result struct {
 func New(p Params) Result {
 	return Result{
 		Client: lazy.New[Client](func() (Client, error) {
-			db, err := p.Db.Get()
+			db, err := p.DB.Get()
 			if err != nil {
 				return nil, err
 			}

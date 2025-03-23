@@ -1,8 +1,9 @@
 package args
 
 import (
-	"go.uber.org/fx"
 	"os"
+
+	"go.uber.org/fx"
 )
 
 type Result struct {

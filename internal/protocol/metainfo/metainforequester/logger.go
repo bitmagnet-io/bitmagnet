@@ -2,10 +2,11 @@ package metainforequester
 
 import (
 	"context"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"go.uber.org/zap"
 	"net/netip"
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"go.uber.org/zap"
 )
 
 type requestLogger struct {

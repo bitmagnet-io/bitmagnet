@@ -2,9 +2,10 @@ package responder
 
 import (
 	"context"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"go.uber.org/zap"
-	"time"
 )
 
 type responderLogger struct {

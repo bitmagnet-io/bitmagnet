@@ -2,6 +2,7 @@ package fts
 
 import (
 	"errors"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
 )
 

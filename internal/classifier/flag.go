@@ -2,6 +2,7 @@ package classifier
 
 import (
 	"fmt"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protobuf"
 	"github.com/google/cel-go/cel"

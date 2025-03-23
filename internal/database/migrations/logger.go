@@ -1,8 +1,9 @@
 package migrations
 
 import (
-	"go.uber.org/zap"
 	"strings"
+
+	"go.uber.org/zap"
 )
 
 type gooseLogger struct {

@@ -1,14 +1,15 @@
 package model
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
-	"github.com/facette/natsort"
-	"gorm.io/gorm"
 	"net/url"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
+	"github.com/facette/natsort"
+	"gorm.io/gorm"
 )
 
 func (t *Torrent) AfterFind(_ *gorm.DB) error {
@@ -188,7 +189,7 @@ outer:
 	searchStrings := make([]string, 0, len(firstPass))
 	for i := range firstPass {
 		longestSuffixLength := 0
-		for j := 0; j < i; j++ {
+		for j := range i {
 			l := 0
 			for {
 				if l >= len(firstPass[i]) ||

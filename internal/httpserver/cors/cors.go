@@ -1,6 +1,8 @@
 package cors
 
 import (
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/cors"
@@ -8,7 +10,6 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"time"
 )
 
 type Params struct {

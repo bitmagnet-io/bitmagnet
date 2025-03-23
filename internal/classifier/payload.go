@@ -3,6 +3,7 @@ package classifier
 import (
 	"errors"
 	"fmt"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
 

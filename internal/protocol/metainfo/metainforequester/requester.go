@@ -6,15 +6,16 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/anacrolix/torrent/bencode"
-	"github.com/anacrolix/torrent/peer_protocol"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
 	"io"
 	"math"
 	"net"
 	"net/netip"
 	"time"
+
+	"github.com/anacrolix/torrent/bencode"
+	"github.com/anacrolix/torrent/peer_protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
 )
 
 type Requester interface {
@@ -230,7 +231,7 @@ func exHandshake(rw io.ReadWriter) (metadataSize uint, utMetadata uint8, err err
 
 func requestAllPieces(w io.Writer, metadataSize uint, utMetadata uint8) error {
 	nPieces := int(math.Ceil(float64(metadataSize) / math.Pow(2, 14)))
-	for piece := 0; piece < nPieces; piece++ {
+	for piece := range nPieces {
 		extDictDump, err := bencode.Marshal(extDict{
 			MsgType: 0,
 			Piece:   piece,

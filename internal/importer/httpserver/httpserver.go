@@ -4,14 +4,15 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/internal/importer"
 	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"strconv"
-	"time"
 )
 
 type Params struct {
@@ -34,7 +35,7 @@ func New(p Params) Result {
 	}
 }
 
-const ImportIDHeader = "x-import-id"
+const ImportIDHeader = "X-Import-Id"
 
 type builder struct {
 	importer lazy.Lazy[importer.Importer]

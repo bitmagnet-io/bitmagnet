@@ -2,15 +2,16 @@ package responder
 
 import (
 	"context"
+	"net/netip"
+	"testing"
+	"time"
+
 	"github.com/anacrolix/dht/v2/krpc"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable/mocks"
+	ktable_mocks "github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable/mocks"
 	"github.com/stretchr/testify/assert"
-	"net/netip"
-	"testing"
-	"time"
 )
 
 type testResponderMocks struct {

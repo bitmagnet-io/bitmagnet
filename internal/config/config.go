@@ -3,14 +3,15 @@ package config
 import (
 	"errors"
 	"fmt"
+	"reflect"
+	"sort"
+	"strings"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/config/configresolver"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/iancoleman/strcase"
 	"go.uber.org/fx"
-	"reflect"
-	"sort"
-	"strings"
 )
 
 type Params struct {
@@ -121,7 +122,7 @@ func resolveStructNode(
 	thisPath := append(parentPath, key)
 	defaultValue := value.Interface()
 	children := make(map[string]ResolvedNode)
-	for i := 0; i < value.Type().NumField(); i++ {
+	for i := range value.Type().NumField() {
 		field := value.Type().Field(i)
 		fieldKey := strcase.ToSnake(field.Name)
 		fieldValue := value.FieldByName(field.Name)
