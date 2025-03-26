@@ -1,4 +1,11 @@
 {
+  "aggregation": {
+    "aggregation_count_accuracy": "Count accuracy",
+    "aggregation_count_accuracy_default": "Default",
+    "aggregation_count_accuracy_high": "High",
+    "budget": "Budget",
+    "settings": "Count budget"
+  },
   "content_types": {
     "plural": {
       "all": "All",

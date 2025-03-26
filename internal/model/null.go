@@ -331,6 +331,13 @@ func (n *NullFloat64) UnmarshalGQL(v interface{}) error {
 		if err != nil {
 			return err
 		}
+	case json.Number:
+		f, err := v.Float64()
+		if err != nil {
+			return err
+		}
+
+		n.Float64 = float64(f)
 	default:
 		return fmt.Errorf("wrong type")
 	}

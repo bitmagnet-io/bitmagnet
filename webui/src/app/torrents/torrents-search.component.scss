@@ -49,6 +49,12 @@
   }
 }
 
+.aggregation {
+  display: inline-flex;
+  padding-bottom: 20px;
+  align-items: center;
+}
+
 .search-form {
   padding-top: 20px;
   padding-bottom: 10px;
@@ -82,6 +88,9 @@
         padding-right: 50px;
       }
     }
+  }
+  &.form-field-aggregation {
+    padding-top: 10px;
   }
   .button-container-toggle-direction {
     margin-left: 4px;

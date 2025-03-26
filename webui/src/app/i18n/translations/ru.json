@@ -1,4 +1,11 @@
 {
+  "aggregation": {
+    "aggregation_count_accuracy": "Точность подсчета",
+    "aggregation_count_accuracy_default": "По умолчанию",
+    "aggregation_count_accuracy_high": "Высокая",
+    "budget": "Бюджет",
+    "settings": "Рассчитать бюджет"
+  },
   "content_types": {
     "plural": {
       "all": "Все",
@@ -64,11 +71,8 @@
       "enqueue_jobs": "Добавить задания в очередь",
       "enqueue_torrent_processing_batch": "Добавить партию для обработки торрентов",
       "failed": "Ошибка",
-      "force_rematch": "Принудительное повторное сопоставление уже сопоставленного контента",
       "jobs_enqueued": "Задания добавлены в очередь",
       "latency": "Задержка",
-      "match_content_by_external_api_search": "Сопоставить контент через внешний API",
-      "match_content_by_local_search": "Сопоставить контент через локальный поиск",
       "payload": "Данные",
       "pending": "В ожидании",
       "priority": "Приоритет",

@@ -1,4 +1,11 @@
 {
+  "aggregation": {
+    "aggregation_count_accuracy": "دقة العد",
+    "aggregation_count_accuracy_default": "افتراضي",
+    "aggregation_count_accuracy_high": "مرتفع",
+    "budget": "الميزانية",
+    "settings": "حساب الميزانية"
+  },
   "content_types": {
     "plural": {
       "all": "الكل",
@@ -64,11 +71,8 @@
       "enqueue_jobs": "إدراج الوظائف في الطابور",
       "enqueue_torrent_processing_batch": "إدراج دفعة معالجة التورنت في الطابور",
       "failed": "فشل",
-      "force_rematch": "فرض إعادة المطابقة للمحتوى المطابق بالفعل",
       "jobs_enqueued": "الوظائف المدرجة في الطابور",
       "latency": "التأخير",
-      "match_content_by_external_api_search": "مطابقة المحتوى من خلال البحث في API الخارجية",
-      "match_content_by_local_search": "مطابقة المحتوى من خلال البحث المحلي",
       "payload": "الحمولة",
       "pending": "قيد الانتظار",
       "priority": "الأولوية",

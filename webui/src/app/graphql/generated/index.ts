@@ -25,6 +25,11 @@ export type Scalars = {
   Year: { input: number; output: number; }
 };
 
+export type AggregationInfoQuery = {
+  __typename?: 'AggregationInfoQuery';
+  highCost: Scalars['Float']['output'];
+};
+
 export type Content = {
   __typename?: 'Content';
   adult?: Maybe<Scalars['Boolean']['output']>;
@@ -262,6 +267,7 @@ export type Mutation = {
 
 export type Query = {
   __typename?: 'Query';
+  aggregationInfo: AggregationInfoQuery;
   health: HealthQuery;
   queue: QueueQuery;
   torrent: TorrentQuery;
@@ -930,6 +936,11 @@ export type TorrentSetTagsMutationVariables = Exact<{
 
 export type TorrentSetTagsMutation = { __typename?: 'Mutation', torrent: { __typename?: 'TorrentMutation', setTags?: void | null } };
 
+export type AggregationStatsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AggregationStatsQuery = { __typename?: 'Query', aggregationInfo: { __typename?: 'AggregationInfoQuery', highCost: number } };
+
 export type HealthCheckQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -1337,6 +1348,24 @@ export const TorrentSetTagsDocument = gql`
   })
   export class TorrentSetTagsGQL extends Apollo.Mutation<TorrentSetTagsMutation, TorrentSetTagsMutationVariables> {
     override document = TorrentSetTagsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const AggregationStatsDocument = gql`
+    query AggregationStats {
+  aggregationInfo {
+    highCost
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class AggregationStatsGQL extends Apollo.Query<AggregationStatsQuery, AggregationStatsQueryVariables> {
+    override document = AggregationStatsDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

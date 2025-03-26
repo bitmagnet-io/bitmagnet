@@ -1,0 +1,21 @@
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  margin: 15px 0;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.radio-option {
+  display: inline-flex;
+  align-items: center;
+}
+
+p,
+label {
+  padding-left: 10px;
+}
+
+mat-slider {
+  width: 150px;
+}

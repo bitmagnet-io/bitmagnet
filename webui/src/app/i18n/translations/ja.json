@@ -1,4 +1,11 @@
 {
+  "aggregation": {
+    "aggregation_count_accuracy": "カウント精度",
+    "aggregation_count_accuracy_default": "デフォルト",
+    "aggregation_count_accuracy_high": "高",
+    "budget": "予算",
+    "settings": "予算をカウントする"
+  },
   "content_types": {
     "plural": {
       "all": "すべて",
@@ -64,11 +71,8 @@
       "enqueue_jobs": "ジョブをキューに入れる",
       "enqueue_torrent_processing_batch": "トレント処理バッチをキューに入れる",
       "failed": "失敗",
-      "force_rematch": "既に一致したコンテンツを強制的に再一致させる",
       "jobs_enqueued": "キューに追加されたジョブ",
       "latency": "レイテンシ",
-      "match_content_by_external_api_search": "外部API検索でコンテンツを一致させる",
-      "match_content_by_local_search": "ローカル検索でコンテンツを一致させる",
       "payload": "ペイロード",
       "pending": "保留中",
       "priority": "優先順位",

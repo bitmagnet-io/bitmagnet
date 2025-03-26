@@ -1,0 +1,47 @@
+<ng-container *transloco="let t">
+  <button
+    mat-icon-button
+    aria-label="AggregationBudget"
+    [matTooltip]="t('aggregation.aggregation_count_accuracy')"
+    (click)="open()"
+  >
+    <mat-icon>{{ itemIcon(budgetType) }}</mat-icon>
+  </button>
+  <ng-template #aggregationBudgetSheet>
+    <h2 matDialogTitle>{{ t("aggregation.settings") }}</h2>
+    <mat-radio-group
+      class="radio-group"
+      [(ngModel)]="budgetType"
+      (change)="selectBudgetType()"
+    >
+      @for (item of budgetTypes; track item) {
+        <mat-radio-button [value]="item"
+          ><div class="radio-option">
+            <mat-icon>{{ itemIcon(item) }}</mat-icon>
+            @if (item <= budgetTypeEnum.High) {
+              <p>
+                {{
+                  item == budgetTypeEnum.Default
+                    ? t("aggregation.aggregation_count_accuracy_default")
+                    : t("aggregation.aggregation_count_accuracy_high") +
+                      highValueText()
+                }}
+              </p>
+            } @else {
+              <label class="example-value-label">{{
+                customBudgetLabel()
+              }}</label>
+              <mat-slider
+                min="0"
+                [max]="sliderMax"
+                [step]="sliderStep"
+                (click)="budgetType = budgetTypeEnum.Custom"
+              >
+                <input matSliderThumb [formControl]="sliderBudget" />
+              </mat-slider>
+            }</div
+        ></mat-radio-button>
+      }
+    </mat-radio-group>
+  </ng-template>
+</ng-container>

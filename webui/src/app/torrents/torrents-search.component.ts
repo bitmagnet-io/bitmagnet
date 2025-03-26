@@ -22,11 +22,18 @@ import { GraphQLModule } from "../graphql/graphql.module";
 import { PaginatorComponent } from "../paginator/paginator.component";
 import { BreakpointsService } from "../layout/breakpoints.service";
 import * as generated from "../graphql/generated";
-import { intParam, stringListParam, stringParam } from "../util/query-string";
+import {
+  intParam,
+  stringListParam,
+  stringParam,
+  floatParam,
+} from "../util/query-string";
 import { AppModule } from "../app.module";
 import { DocumentTitleComponent } from "../layout/document-title.component";
 import { IntEstimatePipe } from "../pipes/int-estimate.pipe";
+import { AggregationBudgetService } from "./aggregation-budget/aggregation-budget.service";
 import { TorrentsBulkActionsComponent } from "./torrents-bulk-actions.component";
+import { AggregationBudgetComponent } from "./aggregation-budget/aggregation-budget.component";
 import { contentTypeList, contentTypeMap } from "./content-types";
 import {
   allColumns,
@@ -66,6 +73,7 @@ import {
     PaginatorComponent,
     TorrentsBulkActionsComponent,
     TorrentsTableComponent,
+    AggregationBudgetComponent,
     IntEstimatePipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -76,6 +84,7 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
   private apollo = inject(Apollo);
   private errorsService = inject(ErrorsService);
   private transloco = inject(TranslocoService);
+  private aggregationBudget = inject(AggregationBudgetService);
   breakpoints = inject(BreakpointsService);
 
   dataSource: TorrentsSearchDatasource;
@@ -174,6 +183,11 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
           this.result.items.filter((i) => infoHashes.has(i.infoHash)),
         );
       }),
+      this.aggregationBudget.getBudget().subscribe((budget) => {
+        this.controller.update((c: TorrentSearchControls) => {
+          return { ...c, aggregationBudget: budget };
+        });
+      }),
     );
   }
 
@@ -190,6 +204,7 @@ const initControls: TorrentSearchControls = {
   limit: defaultLimit,
   contentType: null,
   orderBy: defaultOrderBy,
+  aggregationBudget: null,
   facets: {
     genre: inactiveFacet,
     language: inactiveFacet,
@@ -219,6 +234,7 @@ const paramsToControls = (params: Params): TorrentSearchControls => {
   }
   return {
     queryString,
+    aggregationBudget: floatParam(params, "budget") ?? null,
     orderBy: orderByParam(params, !!queryString),
     contentType: contentTypeParam(params),
     limit: intParam(params, "limit") ?? defaultLimit,
@@ -251,6 +267,7 @@ const controlsToParams = (ctrl: TorrentSearchControls): Params => {
   }
   return {
     query: ctrl.queryString ? encodeURIComponent(ctrl.queryString) : undefined,
+    budget: ctrl.aggregationBudget,
     page,
     limit,
     content_type: ctrl.contentType,

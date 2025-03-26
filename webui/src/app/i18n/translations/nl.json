@@ -1,4 +1,11 @@
 {
+  "aggregation": {
+    "aggregation_count_accuracy": "Nauwkeurigheid van telling",
+    "aggregation_count_accuracy_default": "Standaard",
+    "aggregation_count_accuracy_high": "Hoog",
+    "budget": "Budget",
+    "settings": "Budget tellen"
+  },
   "content_types": {
     "plural": {
       "all": "Alle",
@@ -64,11 +71,8 @@
       "enqueue_jobs": "Voeg taken toe aan wachtrij",
       "enqueue_torrent_processing_batch": "Torrentverwerkingsbatch toevoegen",
       "failed": "Mislukt",
-      "force_rematch": "Forceer nieuwe match van al gematchte inhoud",
       "jobs_enqueued": "Taken in wachtrij gezet",
       "latency": "Latentie",
-      "match_content_by_external_api_search": "Match inhoud via externe API-zoekopdracht",
-      "match_content_by_local_search": "Match inhoud via lokale zoekopdracht",
       "payload": "Inhoud",
       "pending": "In afwachting",
       "priority": "Prioriteit",
