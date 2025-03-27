@@ -2,6 +2,7 @@ package classifier
 
 import (
 	"fmt"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 )
 
@@ -33,19 +34,21 @@ func (runWorkflowAction) compileAction(ctx compilerContext) (action, error) {
 	if err != nil {
 		return action{}, ctx.error(err)
 	}
+
 	for _, name := range names {
 		if _, ok := ctx.workflowNames[name]; !ok {
 			return action{}, ctx.fatal(fmt.Errorf("workflow %s not found", name))
 		}
 	}
+
 	return action{
 		func(ctx executionContext) (classification.Result, error) {
+			var err error
 			cl := ctx.result
 			for _, name := range names {
-				if nextCl, err := ctx.workflows[name].run(ctx.withResult(cl)); err != nil {
+				cl, err = ctx.workflows[name].run(ctx.withResult(cl))
+				if err != nil {
 					return cl, err
-				} else {
-					cl = nextCl
 				}
 			}
 			return cl, nil
@@ -53,6 +56,6 @@ func (runWorkflowAction) compileAction(ctx compilerContext) (action, error) {
 	}, nil
 }
 
-func (runWorkflowAction) JsonSchema() JsonSchema {
-	return runWorkflowPayloadSpec.JsonSchema()
+func (runWorkflowAction) JSONSchema() JSONSchema {
+	return runWorkflowPayloadSpec.JSONSchema()
 }

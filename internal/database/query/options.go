@@ -2,6 +2,7 @@ package query
 
 import (
 	"context"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/database/cache"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
@@ -22,18 +23,20 @@ func DefaultOption() Option {
 func Options(o ...Option) Option {
 	return func(b OptionBuilder) (OptionBuilder, error) {
 		for _, opt := range o {
-			if nextCtx, err := opt(b); err != nil {
+			nextCtx, err := opt(b)
+			if err != nil {
 				return b, err
-			} else {
-				b = nextCtx
 			}
+
+			b = nextCtx
 		}
+
 		return b, nil
 	}
 }
 
 type Criteria interface {
-	Raw(c DbContext) (RawCriteria, error)
+	Raw(c DBContext) (RawCriteria, error)
 }
 
 type TableJoinType int
@@ -45,9 +48,10 @@ const (
 )
 
 type TableJoin struct {
-	Table        schema.Tabler
-	On           []field.Expr
-	Type         TableJoinType
+	Table schema.Tabler
+	On    []field.Expr
+	Type  TableJoinType
+	//revive:disable-next-line:nested-structs
 	Dependencies maps.InsertMap[string, struct{}]
 	Required     bool
 }
@@ -71,7 +75,7 @@ func RequireJoin(names ...string) Option {
 	}
 }
 
-func QueryString(str string) Option {
+func SearchString(str string) Option {
 	return func(ctx OptionBuilder) (OptionBuilder, error) {
 		return ctx.QueryString(str), nil
 	}

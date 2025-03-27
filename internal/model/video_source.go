@@ -1,9 +1,10 @@
 package model
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/keywords"
 	"regexp"
 	"strings"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/keywords"
 )
 
 // VideoSource represents the source of a video
@@ -33,6 +34,7 @@ func createVideoSourceRegex() *regexp.Regexp {
 	for alias := range videoSourceAliases {
 		names = append(names, alias)
 	}
+
 	return keywords.MustNewRegexFromKeywords(names...)
 }
 
@@ -43,9 +45,11 @@ func InferVideoSource(input string) NullVideoSource {
 		if parsed, parseErr := ParseVideoSource(match[1]); parseErr == nil {
 			return NewNullVideoSource(parsed)
 		}
+
 		if aliased, ok := videoSourceAliases[strings.ToLower(match[1])]; ok {
 			return NewNullVideoSource(aliased)
 		}
 	}
+
 	return NullVideoSource{}
 }

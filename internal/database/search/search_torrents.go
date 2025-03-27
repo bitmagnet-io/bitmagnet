@@ -2,6 +2,7 @@ package search
 
 import (
 	"context"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
@@ -14,8 +15,16 @@ type TorrentsResult = query.GenericResult[model.Torrent]
 
 type TorrentSearch interface {
 	Torrents(ctx context.Context, options ...query.Option) (TorrentsResult, error)
-	TorrentsWithMissingInfoHashes(ctx context.Context, infoHashes []protocol.ID, options ...query.Option) (TorrentsWithMissingInfoHashesResult, error)
-	TorrentSuggestTags(ctx context.Context, query SuggestTagsQuery, options ...query.Option) (TorrentSuggestTagsResult, error)
+	TorrentsWithMissingInfoHashes(
+		ctx context.Context,
+		infoHashes []protocol.ID,
+		options ...query.Option,
+	) (TorrentsWithMissingInfoHashesResult, error)
+	TorrentSuggestTags(
+		ctx context.Context,
+		query SuggestTagsQuery,
+		options ...query.Option,
+	) (TorrentSuggestTagsResult, error)
 }
 
 func (s search) Torrents(ctx context.Context, options ...query.Option) (TorrentsResult, error) {
@@ -37,11 +46,17 @@ type TorrentsWithMissingInfoHashesResult struct {
 	MissingInfoHashes []protocol.ID
 }
 
-func (s search) TorrentsWithMissingInfoHashes(ctx context.Context, infoHashes []protocol.ID, options ...query.Option) (TorrentsWithMissingInfoHashesResult, error) {
-	searchResult, searchErr := s.Torrents(ctx, append([]query.Option{query.Where(TorrentInfoHashCriteria(infoHashes...))}, options...)...)
+func (s search) TorrentsWithMissingInfoHashes(
+	ctx context.Context,
+	infoHashes []protocol.ID,
+	options ...query.Option,
+) (TorrentsWithMissingInfoHashesResult, error) {
+	searchResult, searchErr := s.Torrents(ctx,
+		append([]query.Option{query.Where(TorrentInfoHashCriteria(infoHashes...))}, options...)...)
 	if searchErr != nil {
 		return TorrentsWithMissingInfoHashesResult{}, searchErr
 	}
+
 	torrents := make([]model.Torrent, 0, len(searchResult.Items))
 	missingInfoHashes := make([]protocol.ID, 0, len(infoHashes)-len(searchResult.Items))
 	foundInfoHashes := make(map[protocol.ID]struct{}, len(searchResult.Items))
@@ -59,6 +74,7 @@ nextInfoHash:
 		}
 		missingInfoHashes = append(missingInfoHashes, h)
 	}
+
 	return TorrentsWithMissingInfoHashesResult{
 		Torrents:          torrents,
 		MissingInfoHashes: missingInfoHashes,
@@ -79,26 +95,32 @@ type TorrentSuggestTagsResult struct {
 	Suggestions []SuggestedTag
 }
 
-func (s search) TorrentSuggestTags(ctx context.Context, q SuggestTagsQuery, options ...query.Option) (TorrentSuggestTagsResult, error) {
+func (s search) TorrentSuggestTags(
+	ctx context.Context,
+	q SuggestTagsQuery,
+	options ...query.Option,
+) (TorrentSuggestTagsResult, error) {
 	var criteria []query.Criteria
 	if q.Prefix != "" {
 		criteria = append(criteria, query.DaoCriteria{
-			Conditions: func(dbCtx query.DbContext) ([]field.Expr, error) {
+			Conditions: func(dbCtx query.DBContext) ([]field.Expr, error) {
 				return []field.Expr{
 					dbCtx.Query().TorrentTag.Name.Like(q.Prefix + "%"),
 				}, nil
 			},
 		})
 	}
+
 	if len(q.Exclusions) > 0 {
 		criteria = append(criteria, query.DaoCriteria{
-			Conditions: func(dbCtx query.DbContext) ([]field.Expr, error) {
+			Conditions: func(dbCtx query.DBContext) ([]field.Expr, error) {
 				return []field.Expr{
 					dbCtx.Query().TorrentTag.Name.NotIn(q.Exclusions...),
 				}, nil
 			},
 		})
 	}
+
 	result, resultErr := query.GenericQuery[SuggestedTag](
 		ctx,
 		s.q,
@@ -145,6 +167,7 @@ func (s search) TorrentSuggestTags(ctx context.Context, q SuggestTagsQuery, opti
 	if resultErr != nil {
 		return TorrentSuggestTagsResult{}, resultErr
 	}
+
 	return TorrentSuggestTagsResult{
 		Suggestions: result.Items,
 	}, nil

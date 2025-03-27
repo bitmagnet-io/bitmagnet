@@ -1,8 +1,8 @@
 package migratecmd
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/migrations"
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/fx"
 )
@@ -37,9 +37,8 @@ func New(p Params) (r Result, err error) {
 					version := ctx.Int64("version")
 					if version == 0 {
 						return m.Up(ctx.Context)
-					} else {
-						return m.UpTo(ctx.Context, version)
 					}
+					return m.UpTo(ctx.Context, version)
 				},
 			},
 			{
@@ -58,12 +57,12 @@ func New(p Params) (r Result, err error) {
 					version := ctx.Int64("version")
 					if version == 0 {
 						return m.Down(ctx.Context)
-					} else {
-						return m.DownTo(ctx.Context, version)
 					}
+					return m.DownTo(ctx.Context, version)
 				},
 			},
 		},
 	}
+
 	return
 }

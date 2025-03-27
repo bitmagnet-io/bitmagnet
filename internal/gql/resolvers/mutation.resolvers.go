@@ -45,7 +45,7 @@ func (r *mutationResolver) Downloadclient(ctx context.Context) (gqlmodel.Downloa
 
 // Delete is the resolver for the delete field.
 func (r *torrentMutationResolver) Delete(ctx context.Context, obj *gqlmodel.TorrentMutation, infoHashes []protocol.ID) (*string, error) {
-	_, err := r.Dao.DeleteAndBlockTorrents(ctx, infoHashes)
+	err := r.BlockingManager.Block(ctx, infoHashes, true)
 	return nil, err
 }
 
@@ -73,15 +73,19 @@ func (r *torrentMutationResolver) Reprocess(ctx context.Context, obj *gqlmodel.T
 	if w, ok := input.ClassifierWorkflow.ValueOK(); ok {
 		params.ClassifierWorkflow = *w
 	}
+
 	if r, ok := input.ClassifierRematch.ValueOK(); ok && *r {
 		params.ClassifyMode = processor.ClassifyModeRematch
 	}
+
 	if apisDisabled, ok := input.ApisDisabled.ValueOK(); ok {
 		params.ClassifierFlags["apis_enabled"] = !*apisDisabled
 	}
+
 	if localSearchDisabled, ok := input.LocalSearchDisabled.ValueOK(); ok {
 		params.ClassifierFlags["local_search_enabled"] = !*localSearchDisabled
 	}
+
 	return nil, r.Processor.Process(ctx, params)
 }
 

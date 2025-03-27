@@ -127,7 +127,7 @@ type ComplexityRoot struct {
 
 	ExternalLink struct {
 		MetadataSource func(childComplexity int) int
-		Url            func(childComplexity int) int
+		URL            func(childComplexity int) int
 	}
 
 	GenreAgg struct {
@@ -157,7 +157,7 @@ type ComplexityRoot struct {
 	}
 
 	LanguageInfo struct {
-		Id   func(childComplexity int) int
+		ID   func(childComplexity int) int
 		Name func(childComplexity int) int
 	}
 
@@ -271,7 +271,7 @@ type ComplexityRoot struct {
 		HasFilesInfo func(childComplexity int) int
 		InfoHash     func(childComplexity int) int
 		Leechers     func(childComplexity int) int
-		MagnetUri    func(childComplexity int) int
+		MagnetURI    func(childComplexity int) int
 		Name         func(childComplexity int) int
 		Seeders      func(childComplexity int) int
 		SingleFile   func(childComplexity int) int
@@ -805,11 +805,11 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		return e.complexity.ExternalLink.MetadataSource(childComplexity), true
 
 	case "ExternalLink.url":
-		if e.complexity.ExternalLink.Url == nil {
+		if e.complexity.ExternalLink.URL == nil {
 			break
 		}
 
-		return e.complexity.ExternalLink.Url(childComplexity), true
+		return e.complexity.ExternalLink.URL(childComplexity), true
 
 	case "GenreAgg.count":
 		if e.complexity.GenreAgg.Count == nil {
@@ -910,11 +910,11 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		return e.complexity.LanguageAgg.Value(childComplexity), true
 
 	case "LanguageInfo.id":
-		if e.complexity.LanguageInfo.Id == nil {
+		if e.complexity.LanguageInfo.ID == nil {
 			break
 		}
 
-		return e.complexity.LanguageInfo.Id(childComplexity), true
+		return e.complexity.LanguageInfo.ID(childComplexity), true
 
 	case "LanguageInfo.name":
 		if e.complexity.LanguageInfo.Name == nil {
@@ -1392,11 +1392,11 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		return e.complexity.Torrent.Leechers(childComplexity), true
 
 	case "Torrent.magnetUri":
-		if e.complexity.Torrent.MagnetUri == nil {
+		if e.complexity.Torrent.MagnetURI == nil {
 			break
 		}
 
-		return e.complexity.Torrent.MagnetUri(childComplexity), true
+		return e.complexity.Torrent.MagnetURI(childComplexity), true
 
 	case "Torrent.name":
 		if e.complexity.Torrent.Name == nil {
@@ -5569,7 +5569,7 @@ func (ec *executionContext) _ExternalLink_url(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Url, nil
+		return obj.URL, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6236,7 +6236,7 @@ func (ec *executionContext) _LanguageInfo_id(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Id(), nil
+		return obj.ID(), nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -9638,7 +9638,7 @@ func (ec *executionContext) _Torrent_magnetUri(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.MagnetUri(), nil
+		return obj.MagnetURI(), nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)

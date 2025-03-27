@@ -2,10 +2,11 @@ package server
 
 import (
 	"context"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
-	"github.com/prometheus/client_golang/prometheus"
 	"net/netip"
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type prometheusCollector struct {
@@ -62,17 +63,25 @@ func (s prometheusServerWrapper) stop() {
 	s.server.stop()
 }
 
-func (s prometheusServerWrapper) Query(ctx context.Context, addr netip.AddrPort, q string, args dht.MsgArgs) (dht.RecvMsg, error) {
+func (s prometheusServerWrapper) Query(
+	ctx context.Context,
+	addr netip.AddrPort,
+	q string,
+	args dht.MsgArgs,
+) (dht.RecvMsg, error) {
 	labels := prometheus.Labels{labelQuery: q}
 	s.queryConcurrency.With(labels).Inc()
+
 	start := time.Now()
 	res, err := s.server.Query(ctx, addr, q, args)
 	s.queryConcurrency.With(labels).Dec()
+
 	if err == nil {
 		s.queryDuration.With(labels).Observe(time.Since(start).Seconds())
 		s.querySuccessTotal.With(labels).Inc()
 	} else {
 		s.queryErrorTotal.With(labels).Inc()
 	}
+
 	return res, err
 }

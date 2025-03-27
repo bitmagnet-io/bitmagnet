@@ -15,6 +15,7 @@ func newSocket() Socket {
 	if sockErr != nil {
 		panic(fmt.Errorf("error creating socket: %w", sockErr))
 	}
+
 	return &socket{
 		fd: fd,
 	}
@@ -29,10 +30,8 @@ func (s *socket) Open(localAddr netip.AddrPort) error {
 	if addrErr != nil {
 		return addrErr
 	}
-	if bindErr := unix.Bind(s.fd, sAddr); bindErr != nil {
-		return bindErr
-	}
-	return nil
+
+	return unix.Bind(s.fd, sAddr)
 }
 
 func (s *socket) Close() error {
@@ -44,6 +43,7 @@ func (s *socket) Send(remoteAddr netip.AddrPort, data []byte) error {
 	if addrErr != nil {
 		return addrErr
 	}
+
 	return unix.Sendto(s.fd, data, 0, sAddr)
 }
 
@@ -52,10 +52,12 @@ func (s *socket) Receive(data []byte) (int, netip.AddrPort, error) {
 	if recvErr != nil {
 		return n, netip.AddrPort{}, recvErr
 	}
+
 	addr, addrErr := sockaddrToAddrPort(sAddr)
 	if addrErr != nil {
 		return n, netip.AddrPort{}, addrErr
 	}
+
 	return n, addr, nil
 }
 
@@ -66,12 +68,14 @@ func addrPortToSockaddr(addr netip.AddrPort) (unix.Sockaddr, error) {
 			Port: int(addr.Port()),
 		}, nil
 	}
+
 	if addr.Addr().Is6() {
 		return &unix.SockaddrInet6{
 			Addr: addr.Addr().As16(),
 			Port: int(addr.Port()),
 		}, nil
 	}
+
 	return nil, errors.New("invalid address")
 }
 

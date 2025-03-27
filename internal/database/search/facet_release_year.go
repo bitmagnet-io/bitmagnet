@@ -2,11 +2,12 @@ package search
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"gorm.io/gen/field"
-	"strconv"
 )
 
 const ReleaseYearFacetKey = "release_year"
@@ -18,7 +19,8 @@ func ReleaseYearFacet(options ...query.FacetOption) query.Facet {
 				query.FacetHasKey(ReleaseYearFacetKey),
 				query.FacetHasLabel("Release Year"),
 				query.FacetUsesOrLogic(),
-				// avoids counting different versions of the same piece of content, but has issues when combined with other filters:
+				// avoids counting different versions of the same piece of content,
+				// but has issues when combined with other filters:
 				//query.FacetHasAggregationOption(
 				//	query.Table(model.TableNameContent),
 				//	ContentCoreJoins(),
@@ -34,9 +36,9 @@ type yearFacet struct {
 	field string
 }
 
-func (r yearFacet) Criteria(filter query.FacetFilter) []query.Criteria {
+func (yearFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 	return []query.Criteria{
-		query.GenCriteria(func(ctx query.DbContext) (query.Criteria, error) {
+		query.GenCriteria(func(ctx query.DBContext) (query.Criteria, error) {
 			years := make([]uint16, 0, len(filter))
 			hasNull := false
 			for _, v := range filter.Values() {
@@ -79,7 +81,9 @@ func yearCondition(target field.Uint16, years ...uint16) field.Expr {
 
 func (yearFacet) Values(ctx query.FacetContext) (map[string]string, error) {
 	q := ctx.Query().Content
+
 	var years []model.Year
+
 	err := q.WithContext(ctx.Context()).Where(
 		q.ReleaseYear.Gte(1000),
 		q.ReleaseYear.Lte(9999),
@@ -87,10 +91,13 @@ func (yearFacet) Values(ctx query.FacetContext) (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	values := make(map[string]string, len(years)+1)
 	values["null"] = "Unknown"
+
 	for _, y := range years {
 		values[y.String()] = y.String()
 	}
+
 	return values, nil
 }

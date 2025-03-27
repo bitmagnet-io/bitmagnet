@@ -10,5 +10,6 @@ func TorrentFileTypeCriteria(fileTypes ...model.FileType) query.Criteria {
 	for _, fileType := range fileTypes {
 		extensions = append(extensions, fileType.Extensions()...)
 	}
+
 	return TorrentFileExtensionCriteria(extensions...)
 }

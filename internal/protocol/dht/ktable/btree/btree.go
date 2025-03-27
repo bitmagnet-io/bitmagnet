@@ -35,26 +35,32 @@ func (b Bits) LeadingZeros() int {
 			return i
 		}
 	}
+
 	return len(b)
 }
 
 func (b Bits) Cmp(other Bits) int {
 	thisPos := b.LeadingZeros() + 1
 	otherPos := other.LeadingZeros() + 1
+
 	if thisPos < otherPos {
 		return 1
 	}
+
 	if thisPos > otherPos {
 		return -1
 	}
+
 	if thisPos == len(b) {
 		return 0
 	}
+
 	return b[thisPos:].Cmp(other[thisPos:])
 }
 
 func (b Bits) String() string {
 	str := ""
+
 	for _, bit := range b {
 		if bit {
 			str += "1"
@@ -62,6 +68,7 @@ func (b Bits) String() string {
 			str += "0"
 		}
 	}
+
 	return str
 }
 
@@ -69,14 +76,17 @@ func ParseBinaryNodeID(str string) (NodeID, error) {
 	if len(str)%8 != 0 {
 		return nil, errors.New("length must be multiple of 8")
 	}
+
 	id := make(NodeID, len(str)/8)
-	for i := 0; i < len(str); i++ {
+
+	for i := range len(str) {
 		if str[i] == '1' {
 			id[i/8] |= 1 << (7 - uint(i%8))
 		} else if str[i] != '0' {
 			return nil, errors.New("invalid character")
 		}
 	}
+
 	return id, nil
 }
 
@@ -85,6 +95,7 @@ func MustParseBinaryNodeID(str string) NodeID {
 	if err != nil {
 		panic(err)
 	}
+
 	return id
 }
 
@@ -96,10 +107,12 @@ func (id NodeID) Xor(other NodeID) (NodeID, error) {
 	if len(id) != len(other) {
 		return nil, errors.New("length mismatch")
 	}
+
 	ret := make(NodeID, len(id))
-	for i := 0; i < len(id); i++ {
+	for i := range id {
 		ret[i] = id[i] ^ other[i]
 	}
+
 	return ret, nil
 }
 
@@ -108,6 +121,7 @@ func (id NodeID) MustXor(other NodeID) NodeID {
 	if err != nil {
 		panic(err)
 	}
+
 	return ret
 }
 
@@ -123,21 +137,25 @@ func (id NodeID) Equals(other NodeID) bool {
 	if len(other) != len(id) {
 		return false
 	}
+
 	for i, b := range other {
 		if b != id[i] {
 			return false
 		}
 	}
+
 	return true
 }
 
 func (id NodeID) Bits() Bits {
 	path := make(Bits, len(id)*8)
-	for i := 0; i < len(id)*8; i++ {
+
+	for i := range len(id) * 8 {
 		if id.GetBit(i) {
 			path[i] = Bit1
 		}
 	}
+
 	return path
 }
 
@@ -166,5 +184,6 @@ func appendToPath(path []Bit, bit Bit) []Bit {
 	newPath := make([]Bit, 0, len(path)+1)
 	newPath = append(newPath, path...)
 	newPath = append(newPath, bit)
+
 	return newPath
 }

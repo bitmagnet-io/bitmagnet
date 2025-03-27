@@ -19,7 +19,9 @@ func (deleteAction) compileAction(ctx compilerContext) (action, error) {
 	if _, err := deletePayloadSpec.Unmarshal(ctx); err != nil {
 		return action{}, ctx.error(err)
 	}
+
 	path := ctx.path
+
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
 			return ctx.result, classification.RuntimeError{Cause: classification.ErrDeleteTorrent, Path: path}
@@ -27,6 +29,6 @@ func (deleteAction) compileAction(ctx compilerContext) (action, error) {
 	}, nil
 }
 
-func (deleteAction) JsonSchema() JsonSchema {
-	return deletePayloadSpec.JsonSchema()
+func (deleteAction) JSONSchema() JSONSchema {
+	return deletePayloadSpec.JSONSchema()
 }

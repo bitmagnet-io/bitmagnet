@@ -2,6 +2,7 @@ package concurrency
 
 import (
 	"context"
+
 	"golang.org/x/sync/semaphore"
 )
 
@@ -35,6 +36,7 @@ func (ch bufferedConcurrentChannel[T]) Run(ctx context.Context, f func(T)) error
 			if err := ch.sem.Acquire(ctx, 1); err != nil {
 				return err
 			}
+
 			go func() {
 				defer ch.sem.Release(1)
 				f(next)

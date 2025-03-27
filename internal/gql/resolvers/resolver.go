@@ -1,7 +1,7 @@
 package resolvers
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/worker"
+	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
 	"github.com/bitmagnet-io/bitmagnet/internal/client"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
@@ -10,6 +10,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/manager"
+	"github.com/bitmagnet-io/bitmagnet/internal/worker"
 )
 
 // This file will not be regenerated automatically.
@@ -25,5 +26,6 @@ type Resolver struct {
 	QueueManager         manager.Manager
 	TorrentMetricsClient torrentmetrics.Client
 	Processor            processor.Processor
+	BlockingManager      blocking.Manager
 	ClientConfig         client.Config
 }

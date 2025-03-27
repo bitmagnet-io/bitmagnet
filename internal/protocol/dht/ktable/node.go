@@ -1,9 +1,10 @@
 package ktable
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"net/netip"
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
 type nodeKeyspace struct {
@@ -12,25 +13,30 @@ type nodeKeyspace struct {
 
 func (k *nodeKeyspace) getLastRespondedBefore(t time.Time) []Node {
 	var peers []Node
+
 	for _, it := range k.items {
 		if it.lastRespondedAt.Before(t) {
 			peers = append(peers, it)
 		}
 	}
+
 	return peers
 }
 
 func (k *nodeKeyspace) getCandidatesForSampleInfoHashes(n int) []*node {
 	var candidates []*node
+
 	for _, it := range k.items {
 		if !it.IsSampleInfoHashesCandidate() {
 			continue
 		}
+
 		candidates = append(candidates, it)
 		if len(candidates) == n {
 			break
 		}
 	}
+
 	return candidates
 }
 
@@ -62,15 +68,15 @@ func (p nodeBase) Addr() netip.AddrPort {
 	return p.addr
 }
 
-func (p nodeBase) Time() time.Time {
+func (nodeBase) Time() time.Time {
 	return time.Time{}
 }
 
-func (p nodeBase) Dropped() bool {
+func (nodeBase) Dropped() bool {
 	return false
 }
 
-func (p nodeBase) IsSampleInfoHashesCandidate() bool {
+func (nodeBase) IsSampleInfoHashesCandidate() bool {
 	return true
 }
 
@@ -115,6 +121,7 @@ func (n *node) update(addr netip.AddrPort) {
 	if n.addr != addr {
 		n.reverseMap.dropAddr(n.addr.Addr())
 	}
+
 	n.addr = addr
 	n.reverseMap.putAddrPeerID(addr.Addr(), n.id)
 }
@@ -143,6 +150,7 @@ func (n *node) Dropped() bool {
 func (n *node) IsSampleInfoHashesCandidate() bool {
 	now := time.Now()
 	threshold := now.Add(-(5 * time.Second))
+
 	return n.bep51Support != protocolSupportNo &&
 		n.nextSampleInfoHashesTime.Before(now) &&
 		n.lastRespondedAt.Before(threshold)

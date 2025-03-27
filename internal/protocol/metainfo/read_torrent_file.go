@@ -2,6 +2,7 @@ package metainfo
 
 import (
 	"fmt"
+
 	"github.com/anacrolix/torrent/bencode"
 )
 
@@ -19,7 +20,8 @@ type TorrentFile struct {
 func ReadTorrentFileBytes(bytes []byte) (TorrentFile, error) {
 	var torrentFile TorrentFile
 	if unmarshalErr := bencode.Unmarshal(bytes, &torrentFile); unmarshalErr != nil {
-		return TorrentFile{}, fmt.Errorf("error unmarshaling torrent file: %s", unmarshalErr)
+		return TorrentFile{}, fmt.Errorf("error unmarshaling torrent file: %w", unmarshalErr)
 	}
+
 	return torrentFile, nil
 }

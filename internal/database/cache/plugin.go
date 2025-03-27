@@ -21,6 +21,7 @@ func NewPlugin(p PluginParams) PluginResult {
 	if p.Config.CacheEnabled {
 		cacher = p.Cacher
 	}
+
 	return PluginResult{
 		Plugin: &caches.Caches{Conf: &caches.Config{
 			Easer:  p.Config.EaserEnabled,

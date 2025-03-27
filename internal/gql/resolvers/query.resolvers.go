@@ -31,6 +31,7 @@ func (r *queryResolver) Workers(ctx context.Context) (gen.WorkersQuery, error) {
 			Started: w.Started(),
 		})
 	}
+
 	return gen.WorkersQuery{
 		ListAll: gen.WorkersListAllQueryResult{
 			Workers: workers,
@@ -54,12 +55,15 @@ func (r *queryResolver) Health(ctx context.Context) (gen.HealthQuery, error) {
 	}
 	check := r.Checker.Check(ctx)
 	checks := make([]gen.HealthCheck, 0, len(check.Details))
+
 	for k, v := range check.Details {
 		var err *string
+
 		if v.Error != nil {
 			strErr := v.Error.Error()
 			err = &strErr
 		}
+
 		checks = append(checks, gen.HealthCheck{
 			Key:       k,
 			Status:    transformHealthCheckStatus(v.Status),
@@ -67,13 +71,16 @@ func (r *queryResolver) Health(ctx context.Context) (gen.HealthQuery, error) {
 			Error:     err,
 		})
 	}
+
 	sort.Slice(checks, func(i, j int) bool {
 		return checks[i].Key < checks[j].Key
 	})
+
 	result := gen.HealthQuery{
 		Status: transformHealthCheckStatus(check.Status),
 		Checks: checks,
 	}
+
 	return result, nil
 }
 

@@ -12,6 +12,7 @@ func NewInsertMap[K comparable, V any](entries ...MapEntry[K, V]) InsertMap[K, V
 		keyValues: make(map[K]V, len(entries)),
 	}
 	m.SetEntries(entries...)
+
 	return m
 }
 
@@ -28,6 +29,7 @@ func (m InsertMap[K, V]) Values() []V {
 	for _, k := range m.keys {
 		values = append(values, m.keyValues[k])
 	}
+
 	return values
 }
 
@@ -39,6 +41,7 @@ func (m InsertMap[K, V]) Entries() []MapEntry[K, V] {
 			Value: m.keyValues[k],
 		})
 	}
+
 	return values
 }
 
@@ -46,11 +49,13 @@ func (m *InsertMap[K, V]) Set(key K, value V) {
 	if _, ok := m.keyValues[key]; !ok {
 		m.keys = append(m.keys, key)
 	}
+
 	m.keyValues[key] = value
 }
 
 func (m *InsertMap[K, V]) SetKey(key K) {
 	var value V
+
 	m.Set(key, value)
 }
 

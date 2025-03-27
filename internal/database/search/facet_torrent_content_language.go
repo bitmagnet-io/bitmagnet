@@ -3,6 +3,7 @@ package search
 import (
 	"errors"
 	"fmt"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
@@ -30,15 +31,17 @@ type torrentContentLanguageFacet struct {
 func (torrentContentLanguageFacet) Values(query.FacetContext) (map[string]string, error) {
 	languageValues := model.LanguageValues()
 	values := make(map[string]string, len(languageValues))
+
 	for _, l := range languageValues {
-		values[l.Id()] = l.Name()
+		values[l.ID()] = l.Name()
 	}
+
 	return values, nil
 }
 
-func (f torrentContentLanguageFacet) Criteria(filter query.FacetFilter) []query.Criteria {
+func (torrentContentLanguageFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 	return []query.Criteria{
-		query.GenCriteria(func(ctx query.DbContext) (query.Criteria, error) {
+		query.GenCriteria(func(query.DBContext) (query.Criteria, error) {
 			langs := make([]model.Language, 0, len(filter))
 			for _, v := range filter.Values() {
 				lang := model.ParseLanguage(v)
@@ -55,7 +58,7 @@ func (f torrentContentLanguageFacet) Criteria(filter query.FacetFilter) []query.
 				if i > 0 {
 					array += ","
 				}
-				array += fmt.Sprintf("'%s'", lang.Id())
+				array += fmt.Sprintf("'%s'", lang.ID())
 			}
 			array += "]"
 			return query.RawCriteria{
