@@ -18,6 +18,7 @@ func newSourceProvider(config Config, tmdbConfig tmdb.Config) sourceProvider {
 		config:      config,
 		tmdbEnabled: tmdbConfig.Enabled,
 	})
+
 	return mergeSourceProvider{providers: providers}
 }
 
@@ -59,6 +60,7 @@ func (y yamlSourceProvider) source() (Source, error) {
 	}
 
 	rawWorkflow := make(map[string]interface{})
+
 	parseErr := yaml.Unmarshal(y.raw, &rawWorkflow)
 	if parseErr != nil {
 		return Source{}, parseErr
@@ -80,7 +82,7 @@ func (y yamlSourceProvider) source() (Source, error) {
 
 type coreSourceProvider struct{}
 
-func (c coreSourceProvider) provider() sourceProvider {
+func (coreSourceProvider) provider() sourceProvider {
 	return yamlSourceProvider{raw: classifierCoreYaml}
 }
 
@@ -89,18 +91,20 @@ type xdgSourceProvider struct{}
 func (yamlSourceProvider) providers(path string) []sourceProvider {
 	dir, fname := filepath.Split(path)
 	glob := dir + "classifier*" + filepath.Ext(fname)
+
 	paths, err := filepath.Glob(glob)
 	if err != nil {
 		return []sourceProvider{yamlSourceProvider{err: err}}
 	}
+
 	providers := make([]sourceProvider, len(paths))
+
 	for i, path := range paths {
 		bytes, readErr := os.ReadFile(path)
 		providers[i] = yamlSourceProvider{raw: bytes, err: readErr}
 	}
 
 	return providers
-
 }
 
 func (xdgSourceProvider) providers() []sourceProvider {
@@ -108,6 +112,7 @@ func (xdgSourceProvider) providers() []sourceProvider {
 	if err != nil {
 		return []sourceProvider{yamlSourceProvider{err: err}}
 	}
+
 	return yamlSourceProvider{}.providers(path)
 }
 

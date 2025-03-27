@@ -30,7 +30,7 @@ func TestJSONSchema(t *testing.T) {
 
 	coreClassifier, err := coreSourceProvider{}.provider().source()
 	require.NoError(t, err)
-	coreClassifierJson, err := json.Marshal(coreClassifier)
+	coreClassifierJSON, err := json.Marshal(coreClassifier)
 	require.NoError(t, err)
 
 	documentLoader := gojsonschema.NewBytesLoader(coreClassifierJSON)
