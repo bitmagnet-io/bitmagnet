@@ -23,37 +23,36 @@ type clientWorker interface {
 	download(ctx context.Context, content *content) error
 }
 
-type commonClient struct {
+type CommonClient struct {
 	config *Config
 	search search.Search
 	client clientWorker
 }
 
-func New(cfg *Config, search search.Search) commonClient {
-	cc := commonClient{
+func New(cfg *Config, search search.Search) CommonClient {
+	cc := CommonClient{
 		config: cfg,
 		search: search,
 	}
 
 	return cc
-
 }
 
-func (c commonClient) downloadCategory(contentType model.ContentType) string {
+func (c CommonClient) downloadCategory(contentType model.ContentType) string {
 	category := c.config.Categories[contentType]
 	if category == "" {
 		category = c.config.DefaultCategory
 	}
+
 	return category
 }
 
-func (c commonClient) AddInfoHashes(ctx context.Context, req AddInfoHashesRequest) error {
-
+func (c CommonClient) AddInfoHashes(ctx context.Context, req AddInfoHashesRequest) error {
 	switch c.config.DownloadClient {
 	case gen.ClientIDTransmission:
-		c.client = transmissionClient{commonClient: c}
+		c.client = transmissionClient{CommonClient: c}
 	case gen.ClientIDQBittorrent:
-		c.client = qBitClient{commonClient: c}
+		c.client = qBitClient{CommonClient: c}
 	default:
 		return fmt.Errorf("not implemented %s", c.config.DownloadClient)
 	}
@@ -67,6 +66,7 @@ func (c commonClient) AddInfoHashes(ctx context.Context, req AddInfoHashesReques
 		search.HydrateTorrentContentTorrent(),
 		q.Limit(uint(len(req.InfoHashes))),
 	}
+
 	sr, err := c.search.TorrentContent(ctx, options...)
 	if err != nil {
 		return err

@@ -8,11 +8,10 @@ import (
 )
 
 type qBitClient struct {
-	commonClient
+	CommonClient
 }
 
 func (c qBitClient) download(ctx context.Context, content *content) error {
-
 	qb := qbittorrent.NewClient(qbittorrent.Config{
 		Host:     fmt.Sprintf("http://%v:%v/", c.config.Qbittorrent.Host, c.config.Qbittorrent.Port),
 		Username: c.config.Qbittorrent.Username,
@@ -35,7 +34,7 @@ func (c qBitClient) download(ctx context.Context, content *content) error {
 
 		err = qb.AddTorrentFromUrlCtx(
 			ctx,
-			item.Torrent.MagnetUri(),
+			item.Torrent.MagnetURI(),
 			map[string]string{
 				"savepath": fmt.Sprintf("%v/%v", pref.SavePath, category),
 				"category": category,
@@ -47,5 +46,4 @@ func (c qBitClient) download(ctx context.Context, content *content) error {
 	}
 
 	return nil
-
 }

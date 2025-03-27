@@ -9,15 +9,16 @@ import (
 )
 
 type transmissionClient struct {
-	commonClient
+	CommonClient
 }
 
 func (c transmissionClient) download(ctx context.Context, content *content) error {
-
-	endpoint, err := url.Parse(fmt.Sprintf("http://%v:%v/transmission/rpc", c.config.Transmission.Host, c.config.Transmission.Port))
+	endpoint, err := url.Parse(
+		fmt.Sprintf("http://%v:%v/transmission/rpc", c.config.Transmission.Host, c.config.Transmission.Port))
 	if err != nil {
 		return err
 	}
+
 	tbt, err := transmissionrpc.New(endpoint, nil)
 	if err != nil {
 		return err
@@ -27,12 +28,13 @@ func (c transmissionClient) download(ctx context.Context, content *content) erro
 	if err != nil {
 		return err
 	}
+
 	for _, item := range *content {
 		category := c.downloadCategory(item.Content.Type)
 
 		dir := *settings.DownloadDir + "/" + category
 
-		magnet := item.Torrent.MagnetUri()
+		magnet := item.Torrent.MagnetURI()
 		_, err = tbt.TorrentAdd(ctx, transmissionrpc.TorrentAddPayload{
 			Filename:    &magnet,
 			DownloadDir: &dir,
@@ -42,6 +44,6 @@ func (c transmissionClient) download(ctx context.Context, content *content) erro
 			return err
 		}
 	}
-	return nil
 
+	return nil
 }
