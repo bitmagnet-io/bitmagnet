@@ -17,17 +17,23 @@ var attachLocalContentBySearchPayloadSpec = payloadLiteral[string]{
 	description: "Attempt to attach local content with a search on the torrent name",
 }
 
-func (a attachLocalContentBySearchAction) compileAction(ctx compilerContext) (action, error) {
+func (attachLocalContentBySearchAction) compileAction(ctx compilerContext) (action, error) {
 	if _, err := attachLocalContentBySearchPayloadSpec.Unmarshal(ctx); err != nil {
 		return action{}, ctx.error(err)
 	}
+
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result
 			if !cl.ContentType.Valid || !cl.BaseTitle.Valid {
 				return cl, classification.ErrUnmatched
 			}
-			content, err := ctx.search.ContentBySearch(ctx.Context, cl.ContentType.ContentType, cl.BaseTitle.String, cl.Date.Year)
+			content, err := ctx.search.ContentBySearch(
+				ctx.Context,
+				cl.ContentType.ContentType,
+				cl.BaseTitle.String,
+				cl.Date.Year,
+			)
 			if err != nil {
 				return cl, err
 			}
@@ -37,6 +43,6 @@ func (a attachLocalContentBySearchAction) compileAction(ctx compilerContext) (ac
 	}, nil
 }
 
-func (attachLocalContentBySearchAction) JsonSchema() JsonSchema {
-	return attachLocalContentBySearchPayloadSpec.JsonSchema()
+func (attachLocalContentBySearchAction) JSONSchema() JSONSchema {
+	return attachLocalContentBySearchPayloadSpec.JSONSchema()
 }

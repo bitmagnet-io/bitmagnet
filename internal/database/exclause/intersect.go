@@ -11,7 +11,7 @@ type Intersect struct {
 }
 
 // Name intersect clause name
-func (intersect Intersect) Name() string {
+func (Intersect) Name() string {
 	return "INTERSECT"
 }
 
@@ -23,6 +23,7 @@ func (intersect Intersect) Build(builder clause.Builder) {
 				panic(err)
 			}
 		}
+
 		statement.Build(builder)
 	}
 }
@@ -61,5 +62,6 @@ func NewIntersect(query interface{}, args ...interface{}) Intersect {
 			Statements: []clause.Expression{clause.Expr{SQL: v, Vars: args}},
 		}
 	}
+
 	return Intersect{}
 }

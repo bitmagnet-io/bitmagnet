@@ -2,17 +2,18 @@ package reprocesscmd
 
 import (
 	"encoding/json"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
+	"strings"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor/batch"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"strings"
-	"time"
 )
 
 type Params struct {

@@ -2,6 +2,10 @@ package dhtcrawler
 
 import (
 	"context"
+	"net/netip"
+	"sync"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
 	"github.com/bitmagnet-io/bitmagnet/internal/bloom"
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
@@ -15,9 +19,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	boom "github.com/tylertreat/BoomFilters"
 	"go.uber.org/zap"
-	"net/netip"
-	"sync"
-	"time"
 )
 
 type crawler struct {
@@ -43,9 +44,10 @@ type crawler struct {
 	saveFilesThreshold           uint
 	savePieces                   bool
 	dao                          *dao.Query
-	// ignoreHashes is a thread-safe bloom filter that the crawler keeps in memory, containing every hash it has already encountered.
-	// This avoids multiple attempts to crawl the same hash, and takes a lot of load off the database query that checks if a hash
-	// has already been indexed.
+	// ignoreHashes is a thread-safe bloom filter that the crawler keeps in memory,
+	// containing every hash it has already encountered.
+	// This avoids multiple attempts to crawl the same hash, and takes a lot of load off the database query
+	// that checks if a hash has already been indexed.
 	ignoreHashes    *ignoreHashes
 	blockingManager blocking.Manager
 	// soughtNodeID is a random node ID used as the target for find_node and sample_infohashes requests.
@@ -60,7 +62,7 @@ func (c *crawler) start() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	// start the various pipeline workers
-	go c.rotateSoughtNodeId(ctx)
+	go c.rotateSoughtNodeID(ctx)
 	go c.runDiscoveredNodes(ctx)
 	go c.runPing(ctx)
 	go c.runFindNode(ctx)
@@ -107,10 +109,11 @@ type ignoreHashes struct {
 func (i *ignoreHashes) testAndAdd(id protocol.ID) bool {
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
+
 	return i.bloom.TestAndAdd(id[:])
 }
 
-func (c *crawler) rotateSoughtNodeId(ctx context.Context) {
+func (c *crawler) rotateSoughtNodeID(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():

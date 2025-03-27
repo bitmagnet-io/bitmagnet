@@ -2,9 +2,10 @@ package metainforequester
 
 import (
 	"context"
+	"net/netip"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"net/netip"
 )
 
 type requestLimiter struct {
@@ -16,5 +17,6 @@ func (r requestLimiter) Request(ctx context.Context, infoHash protocol.ID, node 
 	if limitErr := r.limiter.Wait(ctx, node.Addr().String()); limitErr != nil {
 		return Response{}, limitErr
 	}
+
 	return r.requester.Request(ctx, infoHash, node)
 }

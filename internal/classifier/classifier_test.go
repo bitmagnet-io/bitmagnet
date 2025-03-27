@@ -15,10 +15,13 @@ import (
 )
 
 func TestClassifier(t *testing.T) {
+	t.Parallel()
+
 	matchContext := mock.MatchedBy(func(ctx any) bool {
 		_, ok := ctx.(context.Context)
 		return ok
 	})
+
 	testCases := []struct {
 		torrent      model.Torrent
 		flags        Flags
@@ -195,20 +198,25 @@ func TestClassifier(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("torrent: %s", tc.torrent.Name), func(t *testing.T) {
+			t.Parallel()
+
 			mocks := newTestClassifierMocks(t)
 			source, sourceErr := coreSourceProvider{}.provider().source()
 			if sourceErr != nil {
 				t.Fatal(sourceErr)
 				return
 			}
+
 			workflow, compileErr := mocks.compiler.Compile(source)
 			if compileErr != nil {
 				t.Fatal(compileErr)
 				return
 			}
+
 			if tc.prepareMocks != nil {
 				tc.prepareMocks(mocks)
 			}
+
 			result, runErr := workflow.Run(context.Background(), "default", tc.flags, tc.torrent)
 			if runErr != nil {
 				assert.Equal(t, tc.expectedErr, runErr)
@@ -227,8 +235,11 @@ type testClassifierMocks struct {
 }
 
 func newTestClassifierMocks(t *testing.T) testClassifierMocks {
+	t.Helper()
+
 	search := classifier_mocks.NewLocalSearch(t)
 	tmdbClient := tmdb_mocks.NewClient(t)
+
 	return testClassifierMocks{
 		compiler: compiler{
 			options: []compilerOption{

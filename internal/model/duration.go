@@ -20,11 +20,14 @@ func (d *Duration) Scan(value interface{}) error {
 		v = strings.Replace(v, ":", "h", 1)
 		v = strings.Replace(v, ":", "m", 1)
 		v += "s"
+
 		dur, err := time.ParseDuration(v)
 		if err != nil {
 			return err
 		}
+
 		*d = Duration(dur)
+
 		return nil
 	default:
 		return fmt.Errorf("cannot sql.Scan() PgDuration from: %#v", v)

@@ -197,7 +197,7 @@ func (s AvailabilityStatus) criticality() int {
 }
 
 var (
-	CheckTimeoutErr = errors.New("check timed out")
+	ErrTimeout = errors.New("check timed out")
 )
 
 func newChecker(cfg checkerConfig) *defaultChecker {
@@ -258,6 +258,7 @@ func (ck *defaultChecker) Stop() {
 func (ck *defaultChecker) GetRunningPeriodicCheckCount() int {
 	ck.mtx.Lock()
 	defer ck.mtx.Unlock()
+
 	return ck.periodicCheckCount
 }
 
@@ -265,6 +266,7 @@ func (ck *defaultChecker) GetRunningPeriodicCheckCount() int {
 func (ck *defaultChecker) IsStarted() bool {
 	ck.mtx.Lock()
 	defer ck.mtx.Unlock()
+
 	return ck.started
 }
 
@@ -272,6 +274,7 @@ func (ck *defaultChecker) IsStarted() bool {
 func (ck *defaultChecker) StartedAt() time.Time {
 	ck.mtx.Lock()
 	defer ck.mtx.Unlock()
+
 	return ck.startedAt
 }
 
@@ -296,8 +299,6 @@ func (ck *defaultChecker) runSynchronousChecks(ctx context.Context) {
 	)
 
 	for _, check := range ck.cfg.checks {
-		check := check
-
 		if !isPeriodicCheck(check) {
 			checkState := ck.state.CheckState[check.Name]
 
@@ -330,8 +331,6 @@ func (ck *defaultChecker) startPeriodicChecks(ctx context.Context) {
 
 	// Start periodic checks.
 	for _, check := range ck.cfg.checks {
-		check := check
-
 		if isPeriodicCheck(check) {
 			// ATTENTION: Access to check and ck.state.CheckState is not synchronized here,
 			// 	assuming that the accessed values are never changed, such as
@@ -342,7 +341,6 @@ func (ck *defaultChecker) startPeriodicChecks(ctx context.Context) {
 			// ALSO:
 			//  - The check state itself is never synchronized on, since the only place where values can be changed are
 			//    within this goroutine.
-
 			ck.periodicCheckCount++
 			ck.wg.Add(1)
 
@@ -412,12 +410,15 @@ func (ck *defaultChecker) mapStateToCheckerResult() CheckerResult {
 
 	if numChecks > 0 && !ck.cfg.detailsDisabled {
 		checkResults = make(map[string]CheckResult, numChecks)
+
 		for _, check := range ck.cfg.checks {
 			checkState := ck.state.CheckState[check.Name]
+
 			timestamp := checkState.LastCheckedAt
 			if timestamp.IsZero() {
 				timestamp = ck.startedAt
 			}
+
 			checkResults[check.Name] = CheckResult{
 				Status:    checkState.Status,
 				Error:     checkState.Result,
@@ -455,6 +456,7 @@ func withCheckContext(ctx context.Context, check *Check, f func(checkCtx context
 	if check.Timeout > 0 {
 		ctx, cancel = context.WithTimeout(ctx, check.Timeout)
 	}
+
 	defer cancel()
 	f(ctx)
 }
@@ -522,7 +524,7 @@ func executeCheckFunc(ctx context.Context, check *Check) error {
 	case err := <-res:
 		return err
 	case <-ctx.Done():
-		return CheckTimeoutErr
+		return ErrTimeout
 	}
 }
 

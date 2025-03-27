@@ -1,8 +1,9 @@
 package dht
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"net/netip"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
 type ID = protocol.ID
@@ -22,12 +23,14 @@ type RecvMsg struct {
 
 // AnnouncePort returns the torrent port for the message.
 // There is an optional argument called implied_port which value is either 0 or 1.
-// If it is present and non-zero, the port argument should be ignored and the source port of the UDP packet should be used as the peer's port instead.
+// If it is present and non-zero, the port argument should be ignored and the source port of the UDP packet
+// should be used as the peer's port instead.
 // This is useful for peers behind a NAT that may not know their external port, and supporting uTP,
 // they accept incoming connections on the same port as the DHT port.
 // https://www.bittorrent.org/beps/bep_0005.html
 func (m RecvMsg) AnnouncePort() uint16 {
 	port := m.From.Port()
+
 	args := m.Msg.A
 	if args != nil && !args.ImpliedPort {
 		argsPort := args.Port
@@ -35,5 +38,6 @@ func (m RecvMsg) AnnouncePort() uint16 {
 			port = uint16(*argsPort)
 		}
 	}
+
 	return port
 }

@@ -25,29 +25,34 @@ type torrentSourceFacet struct {
 
 func (torrentSourceFacet) Values(ctx query.FacetContext) (map[string]string, error) {
 	q := ctx.Query().TorrentSource
+
 	sources, sourcesErr := q.WithContext(ctx.Context()).Find()
 	if sourcesErr != nil {
 		return nil, sourcesErr
 	}
+
 	values := make(map[string]string, len(sources))
 	for _, s := range sources {
 		values[s.Key] = s.Name
 	}
+
 	return values, nil
 }
 
-func (f torrentSourceFacet) Criteria(filter query.FacetFilter) []query.Criteria {
+func (torrentSourceFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 	if len(filter) == 0 {
 		return []query.Criteria{}
 	}
+
 	return []query.Criteria{
 		TorrentSourceCriteria(filter.Values()...),
 	}
 }
 
 func TorrentSourceCriteria(keys ...string) query.Criteria {
-	return query.GenCriteria(func(ctx query.DbContext) (query.Criteria, error) {
+	return query.GenCriteria(func(ctx query.DBContext) (query.Criteria, error) {
 		q := ctx.Query()
+
 		return query.RawCriteria{
 			Query: gen.Exists(
 				q.TorrentsTorrentSource.Where(

@@ -7,7 +7,9 @@ import (
 
 func NewTorrent(t model.Torrent) *Torrent {
 	files := make([]*Torrent_File, 0, len(t.Files))
+
 	var filesSize *int64
+
 	switch t.FilesStatus {
 	case model.FilesStatusNoInfo:
 		ext := model.FileExtensionFromPath(t.Name)
@@ -24,10 +26,12 @@ func NewTorrent(t model.Torrent) *Torrent {
 		}
 	case model.FilesStatusSingle:
 		var ext *string
+
 		if t.Extension.Valid {
 			str := t.Extension.String
 			ext = &str
 		}
+
 		files = append(files, &Torrent_File{
 			Path:      t.Name,
 			BasePath:  t.BaseName(),
@@ -42,10 +46,12 @@ func NewTorrent(t model.Torrent) *Torrent {
 		fs := int64(0)
 		for _, f := range t.Files {
 			fs += int64(f.Size)
+
 			var ext *string
 			if f.Extension.Valid {
 				ext = &f.Extension.String
 			}
+
 			files = append(files, &Torrent_File{
 				Index:     int32(f.Index),
 				Path:      f.Path,
@@ -56,6 +62,7 @@ func NewTorrent(t model.Torrent) *Torrent {
 				FileType:  NewFileType(f.FileType()),
 			})
 		}
+
 		if len(files) == 0 && t.FilesStatus == model.FilesStatusOverThreshold {
 			s := int64(t.Size)
 			filesSize = &s
@@ -63,21 +70,28 @@ func NewTorrent(t model.Torrent) *Torrent {
 			filesSize = &fs
 		}
 	}
+
 	var filesCount *int32
+
 	if t.FilesCount.Valid {
 		c := int32(t.FilesCount.Uint)
 		filesCount = &c
 	}
+
 	var seeders *int32
+
 	var leechers *int32
+
 	if s := t.Seeders(); s.Valid {
 		s := int32(s.Uint)
 		seeders = &s
 	}
+
 	if l := t.Leechers(); l.Valid {
 		l := int32(l.Uint)
 		leechers = &l
 	}
+
 	return &Torrent{
 		InfoHash:           t.InfoHash.String(),
 		Name:               t.Name,
@@ -102,37 +116,49 @@ func NewClassification(c classification.Result) *Classification {
 	//}
 	var languages []string
 	for _, l := range c.Languages.Slice() {
-		languages = append(languages, l.Id())
+		languages = append(languages, l.ID())
 	}
+
 	var episodes []string
 	for _, e := range c.Episodes.SeasonEntries() {
 		episodes = append(episodes, e.String())
 	}
+
 	var videoResolution *string
+
 	if c.VideoResolution.Valid {
 		str := c.VideoResolution.VideoResolution.String()
 		videoResolution = &str
 	}
+
 	var videoSource *string
+
 	if c.VideoSource.Valid {
 		str := c.VideoSource.VideoSource.String()
 		videoSource = &str
 	}
+
 	var videoCodec *string
+
 	if c.VideoCodec.Valid {
 		str := c.VideoCodec.VideoCodec.String()
 		videoCodec = &str
 	}
+
 	var releaseGroup *string
 	if c.ReleaseGroup.Valid {
 		releaseGroup = &c.ReleaseGroup.String
 	}
-	var contentId *string
+
+	var contentID *string
+
 	var contentSource *string
+
 	if c.Content != nil {
-		contentId = &c.Content.ID
+		contentID = &c.Content.ID
 		contentSource = &c.Content.Source
 	}
+
 	return &Classification{
 		ContentType:        NewContentType(c.ContentType),
 		HasAttachedContent: c.Content != nil,
@@ -144,7 +170,7 @@ func NewClassification(c classification.Result) *Classification {
 		VideoSource:     videoSource,
 		VideoCodec:      videoCodec,
 		ReleaseGroup:    releaseGroup,
-		ContentId:       contentId,
+		ContentId:       contentID,
 		ContentSource:   contentSource,
 	}
 }
@@ -172,6 +198,7 @@ func NewContentType(ct model.NullContentType) Classification_ContentType {
 			return Classification_xxx
 		}
 	}
+
 	return Classification_unknown
 }
 
@@ -194,5 +221,6 @@ func NewFileType(ft model.NullFileType) Torrent_File_FileType {
 			return Torrent_File_video
 		}
 	}
+
 	return Torrent_File_unknown
 }

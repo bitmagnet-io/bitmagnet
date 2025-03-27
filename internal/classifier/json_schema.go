@@ -4,22 +4,22 @@ import (
 	"encoding/json"
 )
 
-type JsonSchema map[string]any
+type JSONSchema map[string]any
 
-func (s JsonSchema) MarshalJSON() ([]byte, error) {
+func (s JSONSchema) MarshalJSON() ([]byte, error) {
 	return json.MarshalIndent(map[string]any(s), "", "  ")
 }
 
-const schemaId = "https://bitmagnet.io/schemas/classifier-0.1.json"
+const schemaID = "https://bitmagnet.io/schemas/classifier-0.1.json"
 
-func (f features) JsonSchema() JsonSchema {
+func (f features) JSONSchema() JSONSchema {
 	return map[string]any{
 		"$schema": "http://json-schema.org/draft-07/schema#",
-		"$id":     schemaId,
+		"$id":     schemaID,
 		"type":    "object",
 		"properties": map[string]any{
 			"$schema": map[string]any{
-				"const": schemaId,
+				"const": schemaID,
 			},
 			"workflows": map[string]any{
 				"type": "object",
@@ -100,16 +100,16 @@ func (f features) JsonSchema() JsonSchema {
 				},
 			}
 			for _, def := range f.actions {
-				defs["action__"+def.name()] = def.JsonSchema()
+				defs["action__"+def.name()] = def.JSONSchema()
 			}
 			for _, def := range f.conditions {
-				defs["condition__"+def.name()] = def.JsonSchema()
+				defs["condition__"+def.name()] = def.JSONSchema()
 			}
 			return defs
 		}(),
 	}
 }
 
-func DefaultJsonSchema() JsonSchema {
-	return defaultFeatures.JsonSchema()
+func DefaultJSONSchema() JSONSchema {
+	return defaultFeatures.JSONSchema()
 }

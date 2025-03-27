@@ -2,6 +2,7 @@ package search
 
 import (
 	"errors"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
@@ -29,14 +30,16 @@ type torrentFileTypeFacet struct {
 func (torrentFileTypeFacet) Values(query.FacetContext) (map[string]string, error) {
 	fts := model.FileTypeValues()
 	values := make(map[string]string, len(fts))
+
 	for _, vr := range fts {
 		values[vr.String()] = vr.Label()
 	}
+
 	return values, nil
 }
 
-func (f torrentFileTypeFacet) Criteria(filter query.FacetFilter) []query.Criteria {
-	return []query.Criteria{query.GenCriteria(func(ctx query.DbContext) (query.Criteria, error) {
+func (torrentFileTypeFacet) Criteria(filter query.FacetFilter) []query.Criteria {
+	return []query.Criteria{query.GenCriteria(func(query.DBContext) (query.Criteria, error) {
 		if len(filter) == 0 {
 			return query.AndCriteria{}, nil
 		}

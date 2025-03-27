@@ -27,6 +27,7 @@ func NewBatchingChannel[T any](capacity int, maxBatchSize int, maxWaitTime time.
 		ticker:       time.NewTicker(maxWaitTime),
 	}
 	go ch.batch()
+
 	return ch
 }
 
@@ -40,6 +41,7 @@ func (ch *batchingChannel[T]) Out() <-chan []T {
 
 func (ch *batchingChannel[T]) batch() {
 	var next T
+
 	var ok bool
 
 	defer close(ch.output)
@@ -50,6 +52,7 @@ func (ch *batchingChannel[T]) batch() {
 			if !ok {
 				break
 			}
+
 			ch.buffer = append(ch.buffer, next)
 			if len(ch.buffer) >= ch.maxBatchSize {
 				ch.flush()

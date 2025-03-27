@@ -3,8 +3,9 @@ package dhtcrawler
 import (
 	"context"
 	"fmt"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 )
 
 func (c *crawler) runScrape(ctx context.Context) {
@@ -32,13 +33,23 @@ func (c *crawler) requestScrape(
 ) (infoHashWithScrape, error) {
 	res, err := c.client.GetPeersScrape(ctx, req.node, req.infoHash)
 	if err != nil {
-		c.kTable.BatchCommand(ktable.DropAddr{Addr: req.node.Addr(), Reason: fmt.Errorf("failed to get peers from p: %w", err)})
+		c.kTable.BatchCommand(ktable.DropAddr{
+			Addr:   req.node.Addr(),
+			Reason: fmt.Errorf("failed to get peers from p: %w", err),
+		})
+
 		return infoHashWithScrape{}, err
-	} else {
-		c.kTable.BatchCommand(ktable.PutNode{ID: res.ID, Addr: req.node, Options: []ktable.NodeOption{ktable.NodeResponded()}})
 	}
+
+	c.kTable.BatchCommand(ktable.PutNode{
+		ID:      res.ID,
+		Addr:    req.node,
+		Options: []ktable.NodeOption{ktable.NodeResponded()},
+	})
+
 	if len(res.Nodes) > 0 {
 		cancelCtx, cancel := context.WithTimeout(ctx, time.Second)
+
 		for _, n := range res.Nodes {
 			select {
 			case <-cancelCtx.Done():
@@ -47,8 +58,10 @@ func (c *crawler) requestScrape(
 				continue
 			}
 		}
+
 		cancel()
 	}
+
 	return infoHashWithScrape{
 		nodeHasPeersForHash: req,
 		bfsd:                res.BfSeeders,

@@ -4,8 +4,8 @@ import "time"
 
 type Config struct {
 	Enabled        bool
-	BaseUrl        string
-	ApiKey         string
+	BaseURL        string
+	APIKey         string
 	RateLimit      time.Duration
 	RateLimitBurst int
 }
@@ -13,15 +13,15 @@ type Config struct {
 func NewDefaultConfig() Config {
 	return Config{
 		Enabled:        true,
-		BaseUrl:        "https://api.themoviedb.org/3",
-		ApiKey:         defaultTmdbApiKey,
+		BaseURL:        "https://api.themoviedb.org/3",
+		APIKey:         defaultTmdbAPIKey,
 		RateLimit:      defaultRateLimit,
 		RateLimitBurst: defaultRateLimitBurst,
 	}
 }
 
 const (
-	defaultTmdbApiKey     = "9c6689fa83ae6814fbfb200d70bba3a8"
+	defaultTmdbAPIKey     = "9c6689fa83ae6814fbfb200d70bba3a8"
 	defaultRateLimit      = time.Second / 20
 	defaultRateLimitBurst = 5
 )

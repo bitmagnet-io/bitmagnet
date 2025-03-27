@@ -121,11 +121,14 @@ func init() {
 		if _, ok := m[ft]; !ok {
 			m[ft] = make([]string, 0)
 		}
+
 		m[ft] = append(m[ft], ext)
 	}
+
 	for ft := range m {
 		sort.Strings(m[ft])
 	}
+
 	fileTypeToExtensionsMap = m
 }
 
@@ -141,5 +144,6 @@ func FileTypeFromExtension(ext string) NullFileType {
 	if t, ok := extensionToFileTypeMap[ext]; ok {
 		return NullFileType{FileType: t, Valid: true}
 	}
+
 	return NullFileType{}
 }

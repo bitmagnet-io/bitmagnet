@@ -1,8 +1,8 @@
 package gormcmd
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/gen"
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
@@ -24,7 +24,7 @@ func New(p Params) (r Result, err error) {
 		Subcommands: []*cli.Command{
 			{
 				Name: "gen",
-				Action: func(ctx *cli.Context) error {
+				Action: func(*cli.Context) error {
 					db, err := p.DB.Get()
 					if err != nil {
 						return err
@@ -36,5 +36,6 @@ func New(p Params) (r Result, err error) {
 			},
 		},
 	}
+
 	return
 }

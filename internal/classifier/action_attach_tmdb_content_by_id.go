@@ -1,69 +1,71 @@
 package classifier
 
 import (
+	"strconv"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
-	"strconv"
 )
 
-const attachTmdbContentByIdName = "attach_tmdb_content_by_id"
+const attachTMDBContentByIDName = "attach_tmdb_content_by_id"
 
-type attachTmdbContentByIdAction struct{}
+type attachTMDBContentByIDAction struct{}
 
-func (attachTmdbContentByIdAction) name() string {
-	return attachTmdbContentByIdName
+func (attachTMDBContentByIDAction) name() string {
+	return attachTMDBContentByIDName
 }
 
-var attachTmdbContentByIdPayloadSpec = payloadLiteral[string]{
-	literal:     attachTmdbContentByIdName,
+var attachTMDBContentByIDPayloadSpec = payloadLiteral[string]{
+	literal:     attachTMDBContentByIDName,
 	description: "Use the torrent hint to attach content from the TMDB API by ID",
 }
 
-func (a attachTmdbContentByIdAction) compileAction(ctx compilerContext) (action, error) {
-	if _, err := attachTmdbContentByIdPayloadSpec.Unmarshal(ctx); err != nil {
+func (attachTMDBContentByIDAction) compileAction(ctx compilerContext) (action, error) {
+	if _, err := attachTMDBContentByIDPayloadSpec.Unmarshal(ctx); err != nil {
 		return action{}, ctx.error(err)
 	}
+
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result
 			var ref model.ContentRef
-			if maybeRef := ctx.torrent.Hint.ContentRef(); !maybeRef.Valid {
+			maybeRef := ctx.torrent.Hint.ContentRef()
+			if !maybeRef.Valid {
 				return cl, classification.ErrUnmatched
-			} else {
-				ref = maybeRef.Val
 			}
+			ref = maybeRef.Val
 			if cl.ContentType.Valid {
 				ref.Type = cl.ContentType.ContentType
 			}
-			var tmdbId int64
+			var tmdbID int64
 			switch ref.Source {
 			case model.SourceTmdb:
-				if id, err := strconv.Atoi(ref.ID); err != nil {
+				id, err := strconv.Atoi(ref.ID)
+				if err != nil {
 					return cl, classification.ErrUnmatched
-				} else {
-					tmdbId = int64(id)
 				}
+				tmdbID = int64(id)
 			default:
-				if id, err := ctx.tmdb_getTmdbIdByExternalId(ref); err != nil {
+				id, err := ctx.tmdbGetTMDBIDByExternalID(ref)
+				if err != nil {
 					return cl, err
-				} else {
-					tmdbId = id
 				}
+				tmdbID = id
 			}
 			var content *model.Content
 			switch ref.Type {
 			case model.ContentTypeMovie, model.ContentTypeXxx:
-				if c, err := ctx.tmdb_getMovieByTmbdId(tmdbId); err != nil {
+				c, err := ctx.tmdbGetMovieByTMDBID(tmdbID)
+				if err != nil {
 					return cl, err
-				} else {
-					content = &c
 				}
+				content = &c
 			case model.ContentTypeTvShow:
-				if c, err := ctx.tmdb_getTvShowByTmbdId(tmdbId); err != nil {
+				c, err := ctx.tmdbGetTVShowByTMDBID(tmdbID)
+				if err != nil {
 					return cl, err
-				} else {
-					content = &c
 				}
+				content = &c
 			default:
 				return cl, classification.ErrUnmatched
 			}
@@ -73,6 +75,6 @@ func (a attachTmdbContentByIdAction) compileAction(ctx compilerContext) (action,
 	}, nil
 }
 
-func (attachTmdbContentByIdAction) JsonSchema() JsonSchema {
-	return attachTmdbContentByIdPayloadSpec.JsonSchema()
+func (attachTMDBContentByIDAction) JSONSchema() JSONSchema {
+	return attachTMDBContentByIDPayloadSpec.JSONSchema()
 }

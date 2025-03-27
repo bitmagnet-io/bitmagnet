@@ -41,11 +41,13 @@ func (i *keyedLimiter) Wait(ctx context.Context, key string) error {
 
 func (i *keyedLimiter) getLimiter(key string) *rate.Limiter {
 	i.mu.Lock()
+
 	l, ok := i.lru.Get(key)
 	if !ok {
 		l = rate.NewLimiter(i.rl, i.burst)
 		i.lru.Add(key, l)
 	}
 	i.mu.Unlock()
+
 	return l
 }

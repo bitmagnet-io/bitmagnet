@@ -2,10 +2,11 @@ package metainforequester
 
 import (
 	"context"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"go.uber.org/zap"
 	"net/netip"
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"go.uber.org/zap"
 )
 
 type requestLogger struct {
@@ -22,6 +23,7 @@ func (r requestLogger) Request(ctx context.Context, infoHash protocol.ID, addr n
 		"duration", time.Since(start),
 	}
 	message := "request"
+
 	if err != nil {
 		keyValues = append(keyValues, "error", err)
 		message += " failed"
@@ -31,6 +33,8 @@ func (r requestLogger) Request(ctx context.Context, infoHash protocol.ID, addr n
 			"torrentName", resp.Info.BestName(),
 		)
 	}
+
 	r.logger.Debugw(message, keyValues...)
+
 	return resp, err
 }

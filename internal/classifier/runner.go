@@ -3,6 +3,7 @@ package classifier
 import (
 	"context"
 	"fmt"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protobuf"
@@ -21,18 +22,22 @@ func (r runner) Run(ctx context.Context, workflow string, flags Flags, t model.T
 	if !ok {
 		return classification.Result{}, fmt.Errorf("workflow not found: %s", workflow)
 	}
+
 	cfs := make(map[string]ref.Val, len(r.flagDefinitions))
+
 	for k, d := range r.flagDefinitions {
 		if runtimeRawVal, ok := flags[k]; ok {
 			rcf, err := d.celVal(runtimeRawVal)
 			if err != nil {
-				return classification.Result{}, fmt.Errorf("invalid value for runtime flag '%s': %e", k, err)
+				return classification.Result{}, fmt.Errorf("invalid value for runtime flag '%s': %w", k, err)
 			}
+
 			cfs[k] = rcf
 		} else {
 			cfs[k] = r.compiledFlags[k]
 		}
 	}
+
 	cl := classification.Result{}
 	if !t.Hint.IsNil() {
 		cl.ApplyHint(t.Hint)
@@ -48,10 +53,12 @@ func (r runner) Run(ctx context.Context, workflow string, flags Flags, t model.T
 				tc.Content.Source == tc.ContentSource.String {
 				content := tc.Content
 				cl.AttachContent(&content)
+
 				break
 			}
 		}
 	}
+
 	exCtx := executionContext{
 		Context:      ctx,
 		dependencies: r.dependencies,
@@ -61,5 +68,6 @@ func (r runner) Run(ctx context.Context, workflow string, flags Flags, t model.T
 		torrentPb:    protobuf.NewTorrent(t),
 		result:       cl,
 	}
+
 	return w.run(exCtx)
 }

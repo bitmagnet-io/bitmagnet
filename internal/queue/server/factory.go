@@ -2,13 +2,14 @@ package server
 
 import (
 	"context"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/worker"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/handler"
+	"github.com/bitmagnet-io/bitmagnet/internal/worker"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"time"
 )
 
 type Params struct {
@@ -26,11 +27,12 @@ type Result struct {
 
 func New(p Params) Result {
 	stopped := make(chan struct{})
+
 	return Result{
 		Worker: worker.NewWorker(
 			"queue_server",
 			fx.Hook{
-				OnStart: func(ctx context.Context) error {
+				OnStart: func(context.Context) error {
 					//pool, err := p.PgxPool.Get()
 					//if err != nil {
 					//	return err
@@ -55,9 +57,11 @@ func New(p Params) Result {
 						gcInterval: time.Minute * 10,
 						logger:     p.Logger.Named("queue"),
 					}
+					// todo: Fix!
+					//nolint:contextcheck
 					return srv.Start(context.Background())
 				},
-				OnStop: func(ctx context.Context) error {
+				OnStop: func(context.Context) error {
 					close(stopped)
 					return nil
 				},
