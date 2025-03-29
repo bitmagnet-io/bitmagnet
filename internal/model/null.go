@@ -508,7 +508,7 @@ func (n *NullUint) UnmarshalGQL(v interface{}) error {
 	case int64:
 		n.Uint = uint(v)
 	case uint:
-		n.Uint = uint(v)
+		n.Uint = v
 	case uint32:
 		n.Uint = uint(v)
 	case uint64:

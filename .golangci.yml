@@ -21,6 +21,7 @@ linters:
     - stylecheck
     - testifylint
     - thelper
+    - unconvert
     - usestdlibvars
     - wsl
 linters-settings:
