@@ -7,7 +7,9 @@ linters:
     - canonicalheader
     - contextcheck
     - copyloopvar
+    - durationcheck
     - errchkjson
+    - errname
     - errorlint
     - goconst
     - goimports

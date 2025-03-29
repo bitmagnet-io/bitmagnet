@@ -195,7 +195,7 @@ func (r *registry) DisableAll() {
 	}
 }
 
-var ErrorNoWorkersEnabled = errors.New("no workers enabled")
+var ErrNoWorkersEnabled = errors.New("no workers enabled")
 
 func (r *registry) Start(ctx context.Context) error {
 	r.mutex.Lock()
@@ -225,7 +225,7 @@ func (r *registry) Start(ctx context.Context) error {
 	}
 
 	if i == 0 {
-		return ErrorNoWorkersEnabled
+		return ErrNoWorkersEnabled
 	}
 
 	return nil
