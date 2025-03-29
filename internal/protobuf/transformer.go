@@ -109,11 +109,11 @@ func NewTorrent(t model.Torrent) *Torrent {
 }
 
 func NewClassification(c classification.Result) *Classification {
-	//var year *int32
-	//if !c.Year.IsNil() {
-	//	y := int32(c.Year)
-	//	year = &y
-	//}
+	// var year *int32
+	// if !c.Year.IsNil() {
+	// 	y := int32(c.Year)
+	// 	year = &y
+	// }
 	var languages []string
 	for _, l := range c.Languages.Slice() {
 		languages = append(languages, l.ID())

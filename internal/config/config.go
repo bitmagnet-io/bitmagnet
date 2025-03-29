@@ -131,7 +131,8 @@ func resolveStructNode(
 		return ResolvedNode{}, errors.New("default value must be a struct")
 	}
 
-	thisPath := append(parentPath, key)
+	thisPath := parentPath
+	thisPath = append(thisPath, key)
 	defaultValue := value.Interface()
 	children := make(map[string]ResolvedNode)
 

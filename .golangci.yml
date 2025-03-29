@@ -16,7 +16,10 @@ linters:
     #    - forcetypeassert
     #    - funlen
     - gci
+    - gocheckcompilerdirectives
+    - gochecksumtype
     - goconst
+    - gocritic
     - goimports
     - gosmopolitan
     - importas

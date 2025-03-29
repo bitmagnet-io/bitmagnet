@@ -25,7 +25,7 @@ import (
 type server struct {
 	stopped chan struct{}
 	query   *dao.Query
-	//pool       *pgxpool.Pool
+	// pool       *pgxpool.Pool
 	handlers   []handler.Handler
 	gcInterval time.Duration
 	logger     *zap.SugaredLogger
@@ -39,12 +39,12 @@ func (s *server) Start(ctx context.Context) (err error) {
 			cancel()
 		}
 	}()
-	//pListenerConn, listenerConnErr := s.newListenerConn(ctx)
-	//if listenerConnErr != nil {
-	//	err = listenerConnErr
-	//	return
-	//}
-	//listenerConn := pListenerConn.Conn()
+	// pListenerConn, listenerConnErr := s.newListenerConn(ctx)
+	// if listenerConnErr != nil {
+	// 	err = listenerConnErr
+	// 	return
+	// }
+	// listenerConn := pListenerConn.Conn()
 	handlers := make([]serverHandler, len(s.handlers))
 	listenerChans := make(map[string]chan pgconn.Notification)
 
@@ -60,7 +60,7 @@ func (s *server) Start(ctx context.Context) (err error) {
 		}
 		handlers[i] = sh
 		listenerChans[h.Queue] = listenerChan
-		//if _, listenErr := listenerConn.Exec(ctx, fmt.Sprintf(`LISTEN %q`, h.Queue)); listenErr != nil {
+		// if _, listenErr := listenerConn.Exec(ctx, fmt.Sprintf(`LISTEN %q`, h.Queue)); listenErr != nil {
 		//	err = listenErr
 		//	return
 		//}
@@ -73,44 +73,44 @@ func (s *server) Start(ctx context.Context) (err error) {
 			case <-s.stopped:
 				cancel()
 			case <-ctx.Done():
-				//pListenerConn.Release()
+				// pListenerConn.Release()
 				return
 			}
 		}
 	}()
-	//go func() {
-	//	for {
-	//		select {
-	//		case <-ctx.Done():
-	//			return
-	//		default:
-	//			notification, waitErr := listenerConn.WaitForNotification(ctx)
-	//			if waitErr != nil {
-	//				if !errors.Is(waitErr, context.Canceled) {
-	//					s.logger.Errorf("Error waiting for notification: %s", waitErr)
-	//				}
-	//				continue
-	//			}
-	//			ch, ok := listenerChans[notification.Channel]
-	//			if !ok {
-	//				s.logger.Errorf("Received notification for unknown channel: %s", notification.Channel)
-	//				continue
-	//			}
-	//			select {
-	//			case <-ctx.Done():
-	//				return
-	//			case ch <- *notification:
-	//				continue
-	//			}
-	//		}
-	//	}
-	//}()
+	// go func() {
+	// 	for {
+	// 		select {
+	// 		case <-ctx.Done():
+	// 			return
+	// 		default:
+	// 			notification, waitErr := listenerConn.WaitForNotification(ctx)
+	// 			if waitErr != nil {
+	// 				if !errors.Is(waitErr, context.Canceled) {
+	// 					s.logger.Errorf("Error waiting for notification: %s", waitErr)
+	// 				}
+	// 				continue
+	// 			}
+	// 			ch, ok := listenerChans[notification.Channel]
+	// 			if !ok {
+	// 				s.logger.Errorf("Received notification for unknown channel: %s", notification.Channel)
+	// 				continue
+	// 			}
+	// 			select {
+	// 			case <-ctx.Done():
+	// 				return
+	// 			case ch <- *notification:
+	// 				continue
+	// 			}
+	// 		}
+	// 	}
+	// }()
 	go s.runGarbageCollection(ctx)
 
 	return
 }
 
-//func (s *server) newListenerConn(ctx context.Context) (*pgxpool.Conn, error) {
+// func (s *server) newListenerConn(ctx context.Context) (*pgxpool.Conn, error) {
 //	conn, err := s.pool.Acquire(ctx)
 //	if err != nil {
 //		return nil, err
@@ -148,7 +148,7 @@ type serverHandler struct {
 	handler.Handler
 	sem   *semaphore.Weighted
 	query *dao.Query
-	//listenerConn *pgx.Conn
+	// listenerConn *pgx.Conn
 	listenerChan chan pgconn.Notification
 	logger       *zap.SugaredLogger
 }

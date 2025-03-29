@@ -25,7 +25,7 @@ func TestParseDate(t *testing.T) {
 		{"Movie.23.05.15..The.Best.Of.XXX.1080p.MP4-WRB[rarbg]", model.Date{Year: 2023, Month: 5, Day: 15}},
 		{"2021.09.11_Serie_C_2021.22_R.03_Xxx_FC_vs_Xxx_FC_[football.net]_720p.50_RUS.mkv",
 			model.Date{Year: 2021, Month: 9, Day: 11}},
-		//{"Bla Bla June 27, 2015", model.Date{Year: 2015, Month: 6, Day: 27}},
+		// {"Bla Bla June 27, 2015", model.Date{Year: 2015, Month: 6, Day: 27}},
 		{input: "Software.Pro.X2.Suite.v19.0.2.23117-R2R"},
 	}
 	for _, test := range tests {

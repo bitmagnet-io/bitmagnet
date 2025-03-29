@@ -50,7 +50,7 @@ func (ck *resultWriterMock) Write(result *CheckerResult, statusCode int, w http.
 	return ck.Called(result, statusCode, w, r).Get(0).(error)
 }
 
-//var testTimestamp = time.Now()
+// var testTimestamp = time.Now()
 
 func doTestHandler(t *testing.T,
 	statusCodeUp, statusCodeDown int, expectedStatus CheckerResult, expectedStatusCode int) {

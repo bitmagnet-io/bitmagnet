@@ -50,7 +50,7 @@ func (l *tokenizerLexer) readPhrase() []string {
 		}
 	}
 	appendStr := func(str string) {
-		lexeme = lexeme + str
+		lexeme += str
 	}
 
 	for {
