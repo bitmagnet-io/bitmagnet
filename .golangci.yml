@@ -11,6 +11,7 @@ linters:
     - errchkjson
     - errname
     - errorlint
+    - forbidigo
     - goconst
     - goimports
     - gosmopolitan
