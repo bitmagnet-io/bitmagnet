@@ -8,10 +8,14 @@ linters:
     - contextcheck
     - copyloopvar
     - durationcheck
+    #    - err113
     - errchkjson
     - errname
     - errorlint
     - forbidigo
+    #    - forcetypeassert
+    #    - funlen
+    - gci
     - goconst
     - goimports
     - gosmopolitan
