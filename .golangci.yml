@@ -21,6 +21,7 @@ linters:
     - stylecheck
     - testifylint
     - thelper
+    - usestdlibvars
     - wsl
 linters-settings:
   revive:

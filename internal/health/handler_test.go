@@ -58,7 +58,7 @@ func doTestHandler(t *testing.T,
 
 	// Arrange
 	response := httptest.NewRecorder()
-	request := httptest.NewRequest("GET", "https://localhost/foo", nil)
+	request := httptest.NewRequest(http.MethodGet, "https://localhost/foo", nil)
 
 	ckr := checkerMock{}
 	ckr.On("IsStarted").Return(false)

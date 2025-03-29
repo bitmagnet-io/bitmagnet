@@ -2,6 +2,8 @@ package reprocesscmd
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -73,63 +75,87 @@ func New(p Params) (Result, error) {
 				Usage: "disable local search queries for the classifier workflow",
 			},
 		},
-		Action: func(ctx *cli.Context) error {
-			var classifyMode processor.ClassifyMode
-			switch ctx.String("classifyMode") {
-			case "default":
-				classifyMode = processor.ClassifyModeDefault
-			case "rematch":
-				classifyMode = processor.ClassifyModeRematch
-			default:
-				return cli.Exit("invalid classifyMode", 1)
-			}
-			var flags classifier.Flags
-			strFlags := ctx.String("classifierFlags")
-			if err := json.Unmarshal([]byte(strFlags), &flags); err != nil {
-				return cli.Exit("invalid flags", 1)
-			}
-			if ctx.Bool("apisDisabled") {
-				flags["apis_enabled"] = false
-			}
-			if ctx.Bool("localSearchDisabled") {
-				flags["local_search_enabled"] = false
-			}
-			var contentTypes []model.NullContentType
-			for _, contentType := range ctx.StringSlice("contentType") {
-				if contentType == "null" {
-					contentTypes = append(contentTypes, model.NullContentType{})
-				} else {
-					ct, err := model.ParseContentType(contentType)
-					if err != nil {
-						return err
-					}
-					contentTypes = append(contentTypes, model.NullContentType{
-						ContentType: ct,
-						Valid:       true,
-					})
-				}
-			}
-			job, err := batch.NewQueueJob(batch.MessageParams{
-				ClassifyMode:    classifyMode,
-				ClassifierFlags: flags,
-				ChunkSize:       ctx.Uint("chunkSize"),
-				BatchSize:       ctx.Uint("batchSize"),
-				ContentTypes:    contentTypes,
-				Orphans:         ctx.Bool("orphans"),
-				UpdatedBefore:   time.Now(),
-			})
-			if err != nil {
-				return err
-			}
-			d, err := p.Dao.Get()
-			if err != nil {
-				return err
-			}
-			if err := d.QueueJob.WithContext(ctx.Context).Create(&job); err != nil {
-				return err
-			}
-			_, _ = ctx.App.Writer.Write([]byte("Reprocess queued!\n"))
-			return nil
-		},
+		Action: p.action,
 	}}, nil
+}
+
+func (p Params) action(ctx *cli.Context) error {
+	var classifyMode processor.ClassifyMode
+
+	switch ctx.String("classifyMode") {
+	case "default":
+		classifyMode = processor.ClassifyModeDefault
+	case "rematch":
+		classifyMode = processor.ClassifyModeRematch
+	default:
+		return errors.New("invalid classifyMode")
+	}
+
+	var flags classifier.Flags
+
+	strFlags := ctx.String("classifierFlags")
+	if err := json.Unmarshal([]byte(strFlags), &flags); err != nil {
+		return fmt.Errorf("invalid flags: %w", err)
+	}
+
+	if ctx.Bool("apisDisabled") {
+		flags["apis_enabled"] = false
+	}
+
+	if ctx.Bool("localSearchDisabled") {
+		flags["local_search_enabled"] = false
+	}
+
+	contentTypes, err := getContentTypes(ctx)
+	if err != nil {
+		return err
+	}
+
+	job, err := batch.NewQueueJob(batch.MessageParams{
+		ClassifyMode:    classifyMode,
+		ClassifierFlags: flags,
+		ChunkSize:       ctx.Uint("chunkSize"),
+		BatchSize:       ctx.Uint("batchSize"),
+		ContentTypes:    contentTypes,
+		Orphans:         ctx.Bool("orphans"),
+		UpdatedBefore:   time.Now(),
+	})
+	if err != nil {
+		return err
+	}
+
+	d, err := p.Dao.Get()
+	if err != nil {
+		return err
+	}
+
+	if err := d.QueueJob.WithContext(ctx.Context).Create(&job); err != nil {
+		return err
+	}
+
+	_, _ = ctx.App.Writer.Write([]byte("Reprocess queued!\n"))
+
+	return nil
+}
+
+func getContentTypes(ctx *cli.Context) ([]model.NullContentType, error) {
+	var contentTypes []model.NullContentType
+
+	for _, contentType := range ctx.StringSlice("contentType") {
+		if contentType == "null" {
+			contentTypes = append(contentTypes, model.NullContentType{})
+		} else {
+			ct, err := model.ParseContentType(contentType)
+			if err != nil {
+				return nil, err
+			}
+
+			contentTypes = append(contentTypes, model.NullContentType{
+				ContentType: ct,
+				Valid:       true,
+			})
+		}
+	}
+
+	return contentTypes, nil
 }

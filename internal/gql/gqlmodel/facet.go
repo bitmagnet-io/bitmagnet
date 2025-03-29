@@ -202,6 +202,10 @@ func aggs[T any, Agg comparable](
 	parse func(string) (T, error),
 	newAgg func(value *T, label string, count uint, isEstimate bool) Agg,
 ) ([]Agg, error) {
+	if items == nil {
+		return nil, nil
+	}
+
 	r := make([]Agg, 0, len(items))
 	labelMap := make(map[Agg]string, len(items))
 

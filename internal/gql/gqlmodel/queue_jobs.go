@@ -70,15 +70,13 @@ func (qq QueueQuery) Jobs(
 		criteria = append(criteria, search.QueueJobStatusCriteria(query.Statuses...))
 	}
 
-	if len(criteria) > 0 {
-		options = append(options, q.Where(criteria...))
-	}
+	options = append(options, q.Where(criteria...))
 
 	fullOrderBy := maps.NewInsertMap[search.QueueJobsOrderBy, search.OrderDirection]()
 
 	for _, ob := range query.OrderBy {
 		direction := search.OrderDirectionAscending
-		if desc, ok := ob.Descending.ValueOK(); ok && *desc {
+		if nilToZero(ob.Descending.Value()) {
 			direction = search.OrderDirectionDescending
 		}
 
@@ -92,6 +90,10 @@ func (qq QueueQuery) Jobs(
 
 	options = append(options, search.QueueJobsFullOrderBy(fullOrderBy).Option())
 
+	return qq.doQueueJobsQuery(ctx, options...)
+}
+
+func (qq QueueQuery) doQueueJobsQuery(ctx context.Context, options ...q.Option) (QueueJobsQueryResult, error) {
 	result, resultErr := qq.QueueJobSearch.QueueJobs(ctx, options...)
 	if resultErr != nil {
 		return QueueJobsQueryResult{}, resultErr
