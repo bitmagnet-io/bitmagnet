@@ -163,7 +163,7 @@ func NewClassification(c classification.Result) *Classification {
 		ContentType:        NewContentType(c.ContentType),
 		HasAttachedContent: c.Content != nil,
 		HasBaseTitle:       c.BaseTitle.Valid,
-		//Year:               year,
+		// Year:               year,
 		Languages:       languages,
 		Episodes:        episodes,
 		VideoResolution: videoResolution,

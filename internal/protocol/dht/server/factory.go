@@ -34,8 +34,10 @@ type Result struct {
 	QueryConcurrency  prometheus.Collector                    `group:"prometheus_collectors"`
 }
 
-const namespace = "bitmagnet"
-const subsystem = "dht_server"
+const (
+	namespace = "bitmagnet"
+	subsystem = "dht_server"
+)
 
 func New(p Params) Result {
 	lastResponses := &concurrency.AtomicValue[LastResponses]{}

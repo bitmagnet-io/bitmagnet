@@ -52,7 +52,7 @@ func New(p Params) Result {
 					srv := server{
 						stopped: stopped,
 						query:   query,
-						//pool:       pool,
+						// pool:       pool,
 						handlers:   handlers,
 						gcInterval: time.Minute * 10,
 						logger:     p.Logger.Named("queue"),

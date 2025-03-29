@@ -53,7 +53,8 @@ func (ck *resultWriterMock) Write(result *CheckerResult, statusCode int, w http.
 // var testTimestamp = time.Now()
 
 func doTestHandler(t *testing.T,
-	statusCodeUp, statusCodeDown int, expectedStatus CheckerResult, expectedStatusCode int) {
+	statusCodeUp, statusCodeDown int, expectedStatus CheckerResult, expectedStatusCode int,
+) {
 	t.Helper()
 
 	// Arrange

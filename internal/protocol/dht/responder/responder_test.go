@@ -78,7 +78,7 @@ func (m mockedHash) Peers() []ktable.HashPeer {
 	var peers []ktable.HashPeer
 	for _, nodeInfo := range m.nodeInfos {
 		peers = append(peers, ktable.HashPeer{
-			//ID:   nodeInfo.ID,
+			// ID:   nodeInfo.ID,
 			Addr: nodeInfo.Addr.ToAddrPort(),
 		})
 	}

@@ -123,6 +123,7 @@ var zeroValuesOfSummableTypes = map[string]ref.Val{
 	"double":   types.Double(0.0),
 	"duration": types.Duration{Duration: 0},
 }
+
 var comparableTypes = []namedCELType{
 	{typeName: "int", celType: cel.IntType},
 	{typeName: "uint", celType: cel.UintType},

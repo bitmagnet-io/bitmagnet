@@ -14,7 +14,7 @@ func TestNormalizeString(t *testing.T) {
 		expectedOutput string
 	}
 
-	var parseTests = []parseTest{
+	parseTests := []parseTest{
 		{
 			inputString:    "Mission.Impossible 'quoted string' and \"double quoted string\" &&jF $$ q",
 			expectedOutput: "mission impossible 'quoted string' and \"double quoted string\" jf q",
@@ -37,7 +37,7 @@ func TestNormalizeSearchString(t *testing.T) {
 		expectedOutput string
 	}
 
-	var parseTests = []parseTest{
+	parseTests := []parseTest{
 		{
 			inputString:    "Mission.Impossible 'quoted string' and \"double quoted string\" &&jF $$ -weak q",
 			expectedOutput: "mission impossible 'quoted string' and \"double quoted string\" jf -weak q",

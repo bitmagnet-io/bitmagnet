@@ -25,8 +25,10 @@ type Result struct {
 	HashesDroppedCounter prometheus.Collector `group:"prometheus_collectors"`
 }
 
-const nodesK = 80
-const hashesK = 80
+const (
+	nodesK  = 80
+	hashesK = 80
+)
 
 func New(p Params) Result {
 	rm := &reverseMap{addrs: make(map[string]*infoForAddr)}
@@ -86,8 +88,10 @@ func New(p Params) Result {
 	}
 }
 
-const namespace = "bitmagnet"
-const subsystem = "dht_ktable"
+const (
+	namespace = "bitmagnet"
+	subsystem = "dht_ktable"
+)
 
 func patchPrometheusCollector[
 	Input any,

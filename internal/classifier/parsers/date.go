@@ -159,9 +159,11 @@ func (l *dateLexer) lexDateParts() []datePart {
 	return parts
 }
 
-var regex1Digit = regexp.MustCompile(`^\d$`)
-var regex2Digits = regexp.MustCompile(`^\d{2}$`)
-var regex4Digits = regexp.MustCompile(`^\d{4}$`)
+var (
+	regex1Digit  = regexp.MustCompile(`^\d$`)
+	regex2Digits = regexp.MustCompile(`^\d{2}$`)
+	regex4Digits = regexp.MustCompile(`^\d{4}$`)
+)
 
 func (l *dateLexer) lexDatePart() datePart {
 	str := l.ReadWhile(lexer.IsWordChar)

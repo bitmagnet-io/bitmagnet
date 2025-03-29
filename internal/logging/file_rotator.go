@@ -47,7 +47,7 @@ func (r *fileRotator) Write(output []byte) (int, error) {
 	}
 
 	if !r.pathCreated {
-		err := os.MkdirAll(r.path, 0755)
+		err := os.MkdirAll(r.path, 0o755)
 		if err != nil {
 			return 0, err
 		}

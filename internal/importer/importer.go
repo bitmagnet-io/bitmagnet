@@ -50,9 +50,7 @@ type importer struct {
 	maxWaitTime time.Duration
 }
 
-var (
-	ErrImportClosed = errors.New("import closed")
-)
+var ErrImportClosed = errors.New("import closed")
 
 func (i importer) New(ctx context.Context, info Info) ActiveImport {
 	ai := &activeImport{

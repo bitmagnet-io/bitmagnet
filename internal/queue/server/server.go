@@ -54,7 +54,7 @@ func (s *server) Start(ctx context.Context) (err error) {
 			Handler: h,
 			sem:     semaphore.NewWeighted(int64(h.Concurrency)),
 			query:   s.query,
-			//listenerConn: listenerConn,
+			// listenerConn: listenerConn,
 			listenerChan: listenerChan,
 			logger:       s.logger.With("queue", h.Queue),
 		}

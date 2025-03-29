@@ -39,7 +39,8 @@ func (c *crawler) runPing(ctx context.Context) {
 			c.kTable.BatchCommand(ktable.PutNode{
 				ID:      nodeID,
 				Addr:    n.Addr(),
-				Options: []ktable.NodeOption{ktable.NodeResponded()}},
+				Options: []ktable.NodeOption{ktable.NodeResponded()},
+			},
 			)
 		}
 	})

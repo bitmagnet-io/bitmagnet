@@ -15,7 +15,7 @@ func TestNewDateFromIsoString(t *testing.T) {
 		expectedDate Date
 	}
 
-	var parseTests = []parseTest{
+	parseTests := []parseTest{
 		{
 			inputString:  "2020-01-01",
 			expectedDate: Date{Year: 2020, Month: 1, Day: 1},

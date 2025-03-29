@@ -196,9 +196,7 @@ func (s AvailabilityStatus) criticality() int {
 	}
 }
 
-var (
-	ErrTimeout = errors.New("check timed out")
-)
+var ErrTimeout = errors.New("check timed out")
 
 func newChecker(cfg checkerConfig) *defaultChecker {
 	checkState := map[string]CheckState{}
