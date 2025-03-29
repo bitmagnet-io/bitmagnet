@@ -14,7 +14,7 @@ func torrentContentResultToTorznabResult(
 ) torznab.SearchResult {
 	entries := make([]torznab.SearchResultItem, 0, len(res.Items))
 	for _, item := range res.Items {
-		entries = append(entries, torrentContentResultItemToTorznabResultItem(item))
+		entries = append(entries, torrentContentResultItemToTorznabResultItem(item, req.Profile))
 	}
 
 	return torznab.SearchResult{
@@ -29,7 +29,8 @@ func torrentContentResultToTorznabResult(
 	}
 }
 
-func torrentContentResultItemToTorznabResultItem(item search.TorrentContentResultItem) torznab.SearchResultItem {
+func torrentContentResultItemToTorznabResultItem(
+	item search.TorrentContentResultItem, profile torznab.Profile) torznab.SearchResultItem {
 	category := "Unknown"
 	if item.ContentType.Valid {
 		category = item.ContentType.ContentType.Label()
@@ -78,6 +79,10 @@ func torrentContentResultItemToTorznabResultItem(item search.TorrentContentResul
 		{
 			AttrName:  torznab.AttrPublishDate,
 			AttrValue: item.PublishedAt.Format(torznab.RssDateDefaultFormat),
+		},
+		{
+			AttrName:  torznab.AttrCoverURL,
+			AttrValue: item.Torrent.PermaLink(profile.BaseURL),
 		},
 	}
 	seeders := item.Torrent.Seeders()
@@ -175,6 +180,8 @@ func torrentContentResultItemToTorznabResultItem(item search.TorrentContentResul
 		Category: category,
 		GUID:     item.InfoHash.String(),
 		PubDate:  torznab.RSSDate(item.PublishedAt),
+		Comments: item.Torrent.PermaLink(profile.BaseURL),
+		Link:     item.Torrent.PermaLink(profile.BaseURL),
 		Enclosure: torznab.SearchResultItemEnclosure{
 			URL:    item.Torrent.MagnetURI(),
 			Type:   "application/x-bittorrent;x-scheme-handler/magnet",

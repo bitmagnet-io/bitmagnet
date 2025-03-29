@@ -9,6 +9,7 @@ type Profile struct {
 	DefaultLimit            uint
 	MaxLimit                uint
 	Tags                    []string
+	BaseURL                 string
 }
 
 var ProfileDefault = Profile{
