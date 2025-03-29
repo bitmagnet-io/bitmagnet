@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	var gqlParts []string
+	gqlParts := make([]string, 0, len(enums.Enums))
 	for _, e := range enums.Enums {
 		gqlParts = append(gqlParts, genGql(e.Name, e.Values))
 	}

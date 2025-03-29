@@ -72,7 +72,7 @@ func (r mapResolver) resolveSlice(currentPath []string, sliceV []any, valueType 
 		return nil, fmt.Errorf("received slice at path '%s', expected %s", currentPath, valueType.String())
 	}
 
-	var resolvedSlice []any
+	resolvedSlice := make([]any, 0, len(sliceV))
 
 	for _, sliceItem := range sliceV {
 		resolvedValue := reflect.New(valueType.Elem())

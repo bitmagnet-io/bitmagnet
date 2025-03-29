@@ -96,7 +96,8 @@ type TorrentSourceInfo struct {
 }
 
 func TorrentSourceInfosFromTorrent(t model.Torrent) []TorrentSourceInfo {
-	var sources []TorrentSourceInfo
+	sources := make([]TorrentSourceInfo, 0, len(t.Sources))
+
 	for _, s := range t.Sources {
 		sources = append(sources, TorrentSourceInfo{
 			Key:      s.Source,

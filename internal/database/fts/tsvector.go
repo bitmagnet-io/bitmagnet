@@ -45,7 +45,7 @@ func (v Tsvector) Copy() Tsvector {
 }
 
 func (v Tsvector) String() string {
-	var entries []maps.MapEntry[string, []TsvectorLabel]
+	entries := make([]maps.MapEntry[string, []TsvectorLabel], 0, len(v))
 
 	for lexeme, labelsMap := range v {
 		n := len(labelsMap)
@@ -76,7 +76,7 @@ func (v Tsvector) String() string {
 		return entries[i].Key < entries[j].Key
 	})
 
-	var parts []string
+	parts := make([]string, 0, len(entries))
 
 	for _, entry := range entries {
 		var labels []string

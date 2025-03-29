@@ -52,6 +52,7 @@ func (s payloadUnion[T]) JSONSchema() JSONSchema {
 }
 
 func (s payloadUnion[T]) Unmarshal(ctx compilerContext) (to T, _ error) {
+	//nolint:prealloc
 	var errs []error
 
 	for _, def := range s.oneOf {

@@ -23,12 +23,22 @@ linters:
     - gofmt
     - gofumpt
     - goimports
+    - gomoddirectives
+    - goprintffuncname
+    #    - gosec
     - gosmopolitan
+    - grouper
+    - iface
     - importas
     - intrange
+    - loggercheck
+    - mirror
     - musttag
+    #    - nestif
     - noctx
+    - nolintlint
     - paralleltest
+    - prealloc
     - revive
     - stylecheck
     - testifylint
@@ -49,6 +59,10 @@ linters-settings:
       - name: deep-exit
       - name: defer
       - name: dot-imports
+        arguments:
+          - allowedPackages:
+              - "github.com/onsi/ginkgo/v2"
+              - "github.com/onsi/gomega"
       - name: duplicated-imports
       - name: early-return
       - name: empty-block

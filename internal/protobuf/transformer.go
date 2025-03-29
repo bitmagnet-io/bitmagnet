@@ -3,6 +3,7 @@ package protobuf
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 )
 
 func NewTorrent(t model.Torrent) *Torrent {
@@ -114,15 +115,13 @@ func NewClassification(c classification.Result) *Classification {
 	// 	y := int32(c.Year)
 	// 	year = &y
 	// }
-	var languages []string
-	for _, l := range c.Languages.Slice() {
-		languages = append(languages, l.ID())
-	}
+	languages := slice.Map(c.Languages.Slice(), func(l model.Language) string {
+		return l.ID()
+	})
 
-	var episodes []string
-	for _, e := range c.Episodes.SeasonEntries() {
-		episodes = append(episodes, e.String())
-	}
+	episodes := slice.Map(c.Episodes.SeasonEntries(), func(e model.Season) string {
+		return e.String()
+	})
 
 	var videoResolution *string
 

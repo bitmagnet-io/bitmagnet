@@ -48,7 +48,7 @@ func NewRexTokensFromKeywords(kws ...string) ([]dialect.Token, error) {
 		return nil, errors.New("no keywords provided")
 	}
 
-	var tokens []dialect.Token
+	tokens := make([]dialect.Token, 0, len(kws))
 
 	usedKeywords := make(map[string]struct{})
 	for _, kw := range kws {

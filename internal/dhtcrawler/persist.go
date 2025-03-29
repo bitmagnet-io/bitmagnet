@@ -168,7 +168,7 @@ func createTorrentModel(
 		filesCount = model.NewNullUint(uint(len(info.Files)))
 	}
 
-	var files []model.TorrentFile
+	files := make([]model.TorrentFile, 0, min(int(saveFilesThreshold), len(info.Files)))
 
 	for i, file := range info.Files {
 		if i >= int(saveFilesThreshold) {
