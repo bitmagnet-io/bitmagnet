@@ -11,7 +11,7 @@ type Except struct {
 }
 
 // Name except clause name
-func (except Except) Name() string {
+func (Except) Name() string {
 	return "EXCEPT"
 }
 
@@ -23,6 +23,7 @@ func (except Except) Build(builder clause.Builder) {
 				panic(err)
 			}
 		}
+
 		statement.Build(builder)
 	}
 }
@@ -61,5 +62,6 @@ func NewExcept(query interface{}, args ...interface{}) Except {
 			Statements: []clause.Expression{clause.Expr{SQL: v, Vars: args}},
 		}
 	}
+
 	return Except{}
 }

@@ -1,8 +1,8 @@
 package httpserver
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/httpserver"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
+	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
 )

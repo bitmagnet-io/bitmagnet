@@ -1,9 +1,9 @@
 package config
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/resolvers"
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"go.uber.org/fx"
 )
 
@@ -18,6 +18,7 @@ func New(p Params) lazy.Lazy[gql.Config] {
 		if err != nil {
 			return gql.Config{}, err
 		}
+
 		return gql.Config{Resolvers: root}, nil
 	})
 }

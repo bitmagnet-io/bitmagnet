@@ -2,13 +2,15 @@ package dhtcrawler
 
 import (
 	"context"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"net"
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 )
 
 func (c *crawler) reseedBootstrapNodes(ctx context.Context) {
 	interval := time.Duration(0)
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -28,6 +30,7 @@ func (c *crawler) reseedBootstrapNodes(ctx context.Context) {
 				}
 			}
 		}
+
 		interval = c.reseedBootstrapNodesInterval
 	}
 }

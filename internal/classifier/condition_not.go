@@ -23,10 +23,12 @@ func (notCondition) compileCondition(ctx compilerContext) (condition, error) {
 	if decodeErr != nil {
 		return condition{}, ctx.error(decodeErr)
 	}
+
 	cond, cErr := ctx.compileCondition(ctx.child("not", p))
 	if cErr != nil {
 		return condition{}, ctx.error(cErr)
 	}
+
 	return condition{
 		check: func(ctx executionContext) (bool, error) {
 			result, err := cond.check(ctx)
@@ -35,6 +37,6 @@ func (notCondition) compileCondition(ctx compilerContext) (condition, error) {
 	}, nil
 }
 
-func (notCondition) JsonSchema() JsonSchema {
-	return notConditionPayloadSpec.JsonSchema()
+func (notCondition) JSONSchema() JSONSchema {
+	return notConditionPayloadSpec.JSONSchema()
 }

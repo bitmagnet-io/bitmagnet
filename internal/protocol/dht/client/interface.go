@@ -2,9 +2,10 @@ package client
 
 import (
 	"context"
+	"net/netip"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bits-and-blooms/bloom/v3"
-	"net/netip"
 )
 
 type Client interface {

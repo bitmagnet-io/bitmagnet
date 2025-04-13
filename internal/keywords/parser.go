@@ -3,13 +3,14 @@ package keywords
 import (
 	"errors"
 	"fmt"
+	"regexp"
+	"strings"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/lexer"
 	"github.com/bitmagnet-io/bitmagnet/internal/regex"
 	"github.com/hedhyw/rex/pkg/dialect"
 	"github.com/hedhyw/rex/pkg/dialect/base"
 	"github.com/hedhyw/rex/pkg/rex"
-	"regexp"
-	"strings"
 )
 
 func NewRegexFromKeywords(kws ...string) (*regexp.Regexp, error) {
@@ -17,6 +18,7 @@ func NewRegexFromKeywords(kws ...string) (*regexp.Regexp, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return rex.New(
 		rex.Group.Composite(
 			rex.Chars.Begin(),
@@ -37,6 +39,7 @@ func MustNewRegexFromKeywords(kws ...string) *regexp.Regexp {
 	if err != nil {
 		panic(err)
 	}
+
 	return r
 }
 
@@ -44,20 +47,26 @@ func NewRexTokensFromKeywords(kws ...string) ([]dialect.Token, error) {
 	if len(kws) == 0 {
 		return nil, errors.New("no keywords provided")
 	}
+
 	var tokens []dialect.Token
+
 	usedKeywords := make(map[string]struct{})
 	for _, kw := range kws {
 		if _, ok := usedKeywords[kw]; ok {
 			continue
 		}
+
 		usedKeywords[kw] = struct{}{}
 		l := keywordsLexer{Lexer: lexer.NewLexer(kw)}
 		group, err := l.lexGroupToken(false)
+
 		if err != nil {
 			return nil, fmt.Errorf("error in keyword '%s' at position %d: %w", kw, l.Pos(), err)
 		}
+
 		tokens = append(tokens, group)
 	}
+
 	return tokens, nil
 }
 
@@ -66,6 +75,7 @@ func MustNewRexTokensFromKeywords(kws ...string) []dialect.Token {
 	if err != nil {
 		panic(err)
 	}
+
 	return tokens
 }
 
@@ -73,8 +83,8 @@ type keywordsLexer struct {
 	lexer.Lexer
 }
 
-var ErrEof = errors.New("EOF")
-var ErrUnexpectedEof = errors.New("unexpected EOF")
+var ErrEOF = errors.New("EOF")
+var ErrUnexpectedEOF = errors.New("unexpected EOF")
 var ErrUnexpectedChar = errors.New("unexpected character")
 
 func (l *keywordsLexer) lexGroupToken(parens bool) (base.GroupToken, error) {
@@ -120,9 +130,9 @@ outer:
 				continue outer
 			}
 			token, err := l.lexClassWithModifierToken()
-			if errors.Is(err, ErrEof) {
+			if errors.Is(err, ErrEOF) {
 				if parens {
-					return base.GroupToken{}, ErrUnexpectedEof
+					return base.GroupToken{}, ErrUnexpectedEOF
 				}
 				addGroup()
 				break outer
@@ -134,9 +144,11 @@ outer:
 			continue inner
 		}
 	}
+
 	if len(groupTokens) == 0 {
-		return base.GroupToken{}, ErrUnexpectedEof
+		return base.GroupToken{}, ErrUnexpectedEOF
 	}
+
 	return rex.Group.Composite(groupTokens...).NonCaptured(), nil
 }
 
@@ -144,9 +156,11 @@ func (l *keywordsLexer) lexClassWithModifierToken() (dialect.Token, error) {
 	if l.ReadChar('*') {
 		return regex.AnyWordChar().Repeat().ZeroOrMore(), nil
 	}
+
 	tk, err := l.lexClassToken()
 	if err == nil {
 		ch, ok := l.Read()
+
 		switch {
 		case !ok:
 			return tk, nil
@@ -159,6 +173,7 @@ func (l *keywordsLexer) lexClassWithModifierToken() (dialect.Token, error) {
 			return tk, nil
 		}
 	}
+
 	return nil, err
 }
 
@@ -168,27 +183,32 @@ var reservedChars = map[rune]struct{}{
 
 func (l *keywordsLexer) lexClassToken() (base.ClassToken, error) {
 	var tk base.ClassToken
+
 	ch, ok := l.Read()
+
 	switch {
 	case !ok:
-		return tk, ErrEof
+		return tk, ErrEOF
 	case ch == '\\':
 		exactChar, ok2 := l.Read()
 		if !ok2 {
-			return tk, ErrUnexpectedEof
+			return tk, ErrUnexpectedEOF
 		}
+
 		return rex.Chars.Single(exactChar), nil
 	case lexer.IsWordChar(ch):
 		lcChar := strings.ToLower(string(ch))
 		if string(ch) != lcChar {
 			return tk, ErrUnexpectedChar
 		}
+
 		ucChar := strings.ToUpper(string(ch))
 		if lcChar == ucChar {
 			tk = rex.Chars.Single(ch)
 		} else {
 			tk = rex.Chars.Runes(ucChar + lcChar)
 		}
+
 		return tk, nil
 	case ch == '#':
 		return rex.Chars.Digits(), nil
@@ -199,6 +219,7 @@ func (l *keywordsLexer) lexClassToken() (base.ClassToken, error) {
 			l.Backup()
 			return tk, ErrUnexpectedChar
 		}
+
 		return rex.Chars.Single(ch), nil
 	}
 }

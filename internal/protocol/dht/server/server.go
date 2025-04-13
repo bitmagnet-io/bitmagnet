@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/netip"
+	"sync"
+	"time"
+
 	"github.com/anacrolix/torrent/bencode"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/responder"
 	"go.uber.org/zap"
-	"net/netip"
-	"sync"
-	"time"
 )
 
 type Server interface {
@@ -28,7 +29,7 @@ type server struct {
 	queries          map[string]chan dht.RecvMsg
 	responder        responder.Responder
 	responderTimeout time.Duration
-	idIssuer         IdIssuer
+	idIssuer         IDIssuer
 	logger           *zap.SugaredLogger
 }
 
@@ -36,13 +37,16 @@ func (s *server) start() error {
 	if err := s.socket.Open(s.localAddr); err != nil {
 		return fmt.Errorf("could not open socket: %w", err)
 	}
+
 	go func() {
 		ctx, cancel := context.WithCancel(context.Background())
 		go s.read(ctx)
 		<-s.stopped
 		cancel()
+
 		_ = s.socket.Close()
 	}()
+
 	return nil
 }
 
@@ -75,6 +79,7 @@ func (s *server) read(ctx context.Context) {
 			if ctx.Err() == nil {
 				panic(fmt.Errorf("socket read error: %w", err))
 			}
+
 			return
 		}
 
@@ -86,6 +91,7 @@ func (s *server) read(ctx context.Context) {
 		}
 
 		var msg dht.Msg
+
 		err = bencode.Unmarshal(buffer[:n], &msg)
 		if err != nil {
 			s.logger.Debugw("could not unmarshal packet data", "error", err)
@@ -99,20 +105,22 @@ func (s *server) read(ctx context.Context) {
 
 		switch msg.Y {
 		case dht.YQuery:
-			go s.handleQuery(recvMsg)
+			go s.handleQuery(ctx, recvMsg)
 		case dht.YResponse, dht.YError:
 			go s.handleResponse(recvMsg)
 		}
 	}
 }
 
-func (s *server) handleQuery(msg dht.RecvMsg) {
-	ctx, cancel := context.WithTimeout(context.Background(), s.responderTimeout)
+func (s *server) handleQuery(ctx context.Context, msg dht.RecvMsg) {
+	ctx, cancel := context.WithTimeout(ctx, s.responderTimeout)
 	defer cancel()
+
 	res := dht.Msg{
 		T: msg.Msg.T,
 		Y: dht.YResponse,
 	}
+
 	ret, retErr := s.responder.Respond(ctx, msg)
 	if retErr != nil {
 		dhtErr := &dht.Error{}
@@ -123,48 +131,62 @@ func (s *server) handleQuery(msg dht.RecvMsg) {
 				Code: dht.ErrorCodeServerError,
 				Msg:  "server error",
 			}
+
 			s.logger.Errorw("server error", "msg", msg, "retErr", retErr)
 		}
 	} else {
 		res.R = &ret
 	}
+
 	if sendErr := s.send(msg.From, res); sendErr != nil {
 		s.logger.Debugw("could not send response", "msg", msg, "retErr", sendErr)
 	}
 }
 
 func (s *server) handleResponse(msg dht.RecvMsg) {
-	transactionId := msg.Msg.T
+	transactionID := msg.Msg.T
+
 	s.mutex.Lock()
-	ch, ok := s.queries[transactionId]
+	ch, ok := s.queries[transactionID]
 	s.mutex.Unlock()
+
 	if ok {
 		ch <- msg
 	}
 }
 
-func (s *server) Query(ctx context.Context, addr netip.AddrPort, q string, args dht.MsgArgs) (r dht.RecvMsg, err error) {
-	transactionId := s.idIssuer.Issue()
+func (s *server) Query(
+	ctx context.Context,
+	addr netip.AddrPort,
+	q string,
+	args dht.MsgArgs,
+) (r dht.RecvMsg, err error) {
+	transactionID := s.idIssuer.Issue()
 	ch := make(chan dht.RecvMsg, 1)
+
 	s.mutex.Lock()
-	s.queries[transactionId] = ch
+	s.queries[transactionID] = ch
 	s.mutex.Unlock()
+
 	defer (func() {
 		s.mutex.Lock()
-		delete(s.queries, transactionId)
+		delete(s.queries, transactionID)
 		s.mutex.Unlock()
 	})()
+
 	msg := dht.Msg{
 		Q: q,
-		T: transactionId,
+		T: transactionID,
 		A: &args,
 		Y: dht.YQuery,
 	}
 	if sendErr := s.send(addr, msg); sendErr != nil {
 		s.logger.Debugw("could not send query", "msg", msg, "sendErr", sendErr)
 		err = sendErr
+
 		return
 	}
+
 	queryCtx, cancel := context.WithTimeout(ctx, s.queryTimeout)
 	defer cancel()
 	select {
@@ -176,7 +198,9 @@ func (s *server) Query(ctx context.Context, addr netip.AddrPort, q string, args 
 			err = errors.New("channel closed")
 			return
 		}
+
 		r = res
+
 		if res.Msg.Y == dht.YError {
 			err = res.Msg.E
 			if err == nil {
@@ -185,6 +209,7 @@ func (s *server) Query(ctx context.Context, addr netip.AddrPort, q string, args 
 		} else if r.Msg.R == nil {
 			err = errors.New("return data missing from response")
 		}
+
 		return
 	}
 }
@@ -194,9 +219,11 @@ func (s *server) send(addr netip.AddrPort, msg dht.Msg) error {
 	if encodeErr != nil {
 		return encodeErr
 	}
+
 	sendErr := s.socket.Send(addr, data)
 	if sendErr != nil {
 		return sendErr
 	}
+
 	return nil
 }

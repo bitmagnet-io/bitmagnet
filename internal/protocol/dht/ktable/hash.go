@@ -71,6 +71,7 @@ func (h *hash) Peers() []HashPeer {
 	for _, p := range h.peers {
 		peers = append(peers, p)
 	}
+
 	return peers
 }
 

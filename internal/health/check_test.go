@@ -3,13 +3,16 @@ package health
 import (
 	"context"
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestStatusUnknownBeforeStatusUp(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	testData := map[string]CheckState{"check1": {Status: StatusUp}, "check2": {Status: StatusUnknown}}
 
@@ -17,10 +20,12 @@ func TestStatusUnknownBeforeStatusUp(t *testing.T) {
 	result := aggregateStatus(testData)
 
 	// Assert
-	assert.Equal(t, result, StatusUnknown)
+	assert.Equal(t, StatusUnknown, result)
 }
 
 func TestStatusDownBeforeStatusUnknown(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	testData := map[string]CheckState{"check1": {Status: StatusDown}, "check2": {Status: StatusUnknown}}
 
@@ -28,7 +33,7 @@ func TestStatusDownBeforeStatusUnknown(t *testing.T) {
 	result := aggregateStatus(testData)
 
 	// Assert
-	assert.Equal(t, result, StatusDown)
+	assert.Equal(t, StatusDown, result)
 }
 
 func doTestEvaluateAvailabilityStatus(
@@ -38,6 +43,8 @@ func doTestEvaluateAvailabilityStatus(
 	maxFails uint,
 	state CheckState,
 ) {
+	t.Helper()
+
 	// Act
 	result := evaluateCheckStatus(&state, maxTimeInError, maxFails)
 
@@ -46,18 +53,24 @@ func doTestEvaluateAvailabilityStatus(
 }
 
 func TestWhenNoChecksMadeYetThenStatusUnknown(t *testing.T) {
+	t.Parallel()
+
 	doTestEvaluateAvailabilityStatus(t, StatusUnknown, 0, 0, CheckState{
 		LastCheckedAt: time.Time{},
 	})
 }
 
 func TestWhenNoErrorThenStatusUp(t *testing.T) {
+	t.Parallel()
+
 	doTestEvaluateAvailabilityStatus(t, StatusUp, 0, 0, CheckState{
 		LastCheckedAt: time.Now(),
 	})
 }
 
 func TestWhenErrorThenStatusDown(t *testing.T) {
+	t.Parallel()
+
 	doTestEvaluateAvailabilityStatus(t, StatusDown, 0, 0, CheckState{
 		LastCheckedAt: time.Now(),
 		Result:        fmt.Errorf("example error"),
@@ -65,6 +78,8 @@ func TestWhenErrorThenStatusDown(t *testing.T) {
 }
 
 func TestWhenErrorAndMaxFailuresThresholdNotCrossedThenStatusWarn(t *testing.T) {
+	t.Parallel()
+
 	doTestEvaluateAvailabilityStatus(t, StatusUp, 1*time.Second, uint(10), CheckState{
 		LastCheckedAt:       time.Now(),
 		Result:              fmt.Errorf("example error"),
@@ -75,6 +90,8 @@ func TestWhenErrorAndMaxFailuresThresholdNotCrossedThenStatusWarn(t *testing.T) 
 }
 
 func TestWhenErrorAndMaxTimeInErrorThresholdNotCrossedThenStatusWarn(t *testing.T) {
+	t.Parallel()
+
 	doTestEvaluateAvailabilityStatus(t, StatusUp, 1*time.Hour, uint(1), CheckState{
 		LastCheckedAt:       time.Now(),
 		Result:              fmt.Errorf("example error"),
@@ -85,6 +102,8 @@ func TestWhenErrorAndMaxTimeInErrorThresholdNotCrossedThenStatusWarn(t *testing.
 }
 
 func TestWhenErrorAndAllThresholdsCrossedThenStatusDown(t *testing.T) {
+	t.Parallel()
+
 	doTestEvaluateAvailabilityStatus(t, StatusDown, 1*time.Second, uint(1), CheckState{
 		LastCheckedAt:       time.Now(),
 		Result:              fmt.Errorf("example error"),
@@ -95,11 +114,13 @@ func TestWhenErrorAndAllThresholdsCrossedThenStatusDown(t *testing.T) {
 }
 
 func TestStartStopManualPeriodicChecks(t *testing.T) {
+	t.Parallel()
+
 	ckr := NewChecker(
 		WithDisabledAutostart(),
 		WithPeriodicCheck(50*time.Minute, 0, Check{
 			Name: "check",
-			Check: func(ctx context.Context) error {
+			Check: func(context.Context) error {
 				return nil
 			},
 		}))
@@ -114,18 +135,20 @@ func TestStartStopManualPeriodicChecks(t *testing.T) {
 }
 
 func doTestCheckerCheckFunc(t *testing.T, updateInterval time.Duration, err error, expectedStatus AvailabilityStatus) {
+	t.Helper()
+
 	// Arrange
 	ckr := NewChecker(
 		WithTimeout(10*time.Second),
 		WithCheck(Check{
 			Name: "check1",
-			Check: func(ctx context.Context) error {
+			Check: func(context.Context) error {
 				return nil
 			},
 		}),
 		WithPeriodicCheck(updateInterval, 0, Check{
 			Name: "check2",
-			Check: func(ctx context.Context) error {
+			Check: func(context.Context) error {
 				return err
 			},
 		}),
@@ -137,6 +160,7 @@ func doTestCheckerCheckFunc(t *testing.T, updateInterval time.Duration, err erro
 	// Assert
 	require.NotNil(t, res.Details)
 	assert.Equal(t, expectedStatus, res.Status)
+
 	for _, checkName := range []string{"check1", "check2"} {
 		_, checkResultExists := res.Details[checkName]
 		assert.True(t, checkResultExists)
@@ -144,24 +168,29 @@ func doTestCheckerCheckFunc(t *testing.T, updateInterval time.Duration, err erro
 }
 
 func TestWhenChecksExecutedThenAggregatedResultUp(t *testing.T) {
+	t.Parallel()
 	doTestCheckerCheckFunc(t, 0, nil, StatusUp)
 }
 
 func TestWhenOneCheckFailedThenAggregatedResultDown(t *testing.T) {
+	t.Parallel()
 	doTestCheckerCheckFunc(t, 0, fmt.Errorf("this is a check error"), StatusDown)
 }
 
 func TestCheckSuccessNotAllChecksExecutedYet(t *testing.T) {
+	t.Parallel()
 	doTestCheckerCheckFunc(t, 5*time.Hour, nil, StatusUnknown)
 }
 
 func TestPanicRecovery(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	expectedPanicMsg := "test message"
 	ckr := NewChecker(
 		WithCheck(Check{
 			Name: "iPanic",
-			Check: func(ctx context.Context) error {
+			Check: func(context.Context) error {
 				panic(expectedPanicMsg)
 			},
 		}),
@@ -176,6 +205,6 @@ func TestPanicRecovery(t *testing.T) {
 
 	checkRes, checkResultExists := res.Details["iPanic"]
 	assert.True(t, checkResultExists)
-	assert.NotNil(t, checkRes.Error)
-	assert.Equal(t, (checkRes.Error).Error(), expectedPanicMsg)
+	require.Error(t, checkRes.Error)
+	assert.Equal(t, expectedPanicMsg, (checkRes.Error).Error())
 }

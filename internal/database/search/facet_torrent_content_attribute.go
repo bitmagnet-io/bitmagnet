@@ -3,6 +3,7 @@ package search
 import (
 	"database/sql/driver"
 	"fmt"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
@@ -28,7 +29,7 @@ func (torrentContentAttributeFacet[T]) Values(query.FacetContext) (map[string]st
 
 func (f torrentContentAttributeFacet[T]) Criteria(filter query.FacetFilter) []query.Criteria {
 	return []query.Criteria{
-		query.GenCriteria(func(ctx query.DbContext) (query.Criteria, error) {
+		query.GenCriteria(func(ctx query.DBContext) (query.Criteria, error) {
 			fld := f.field(ctx.Query())
 			values := make([]driver.Valuer, 0, len(filter))
 			hasNull := false

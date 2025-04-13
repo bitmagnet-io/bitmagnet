@@ -3,6 +3,8 @@ package model
 import "testing"
 
 func TestEpisodesString(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		episodes Episodes
@@ -70,6 +72,8 @@ func TestEpisodesString(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			if got := tt.episodes.String(); got != tt.want {
 				t.Errorf("Episodes.String() = %v, want %v", got, tt.want)
 			}

@@ -1,13 +1,14 @@
 package regex
 
 import (
+	"regexp"
+	"strings"
+	"unicode"
+
 	"github.com/hedhyw/rex/pkg/dialect/base"
 	"github.com/hedhyw/rex/pkg/rex"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
-	"regexp"
-	"strings"
-	"unicode"
 )
 
 func AnyWordChar() base.ClassToken {
@@ -59,12 +60,15 @@ func WordTokenRegex() *regexp.Regexp {
 func NormalizeString(input string) string {
 	input = strings.ToLower(input)
 	input, _, _ = transform.String(transform.Chain(norm.NFD, norm.NFC), input)
+
 	var tokens []string
+
 	for _, match := range WordTokenRegex().FindAllStringSubmatch(input, -1) {
 		if len(match) >= 1 && len(match[0]) >= 1 {
 			tokens = append(tokens, match[0])
 		}
 	}
+
 	return strings.Join(tokens, " ")
 }
 
@@ -89,6 +93,7 @@ var searchTokenRegex = rex.New(
 
 func SearchStringToNormalizedTokens(input string) []string {
 	var tokens []string
+
 	matches := searchTokenRegex.FindAllStringSubmatch(input, -1)
 	for _, match := range matches {
 		if len(match[1]) >= 1 {
@@ -99,6 +104,7 @@ func SearchStringToNormalizedTokens(input string) []string {
 			tokens = append(tokens, strings.ToLower(match[5]))
 		}
 	}
+
 	return tokens
 }
 

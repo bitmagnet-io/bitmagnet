@@ -14,6 +14,7 @@ func (s Source) merge(other Source) (Source, error) {
 	if err != nil {
 		return Source{}, err
 	}
+
 	return Source{
 		FlagDefinitions: flagDefs,
 		Flags:           s.Flags.merge(other.Flags),
@@ -28,6 +29,7 @@ func (s Source) workflowNames() map[string]struct{} {
 	for k := range s.Workflows {
 		result[k] = struct{}{}
 	}
+
 	return result
 }
 
@@ -35,6 +37,7 @@ type keywordGroups map[string][]string
 
 func (g keywordGroups) merge(other keywordGroups) keywordGroups {
 	result := make(keywordGroups)
+
 	for k, v := range g {
 		if _, ok := other[k]; ok {
 			result[k] = append(v, other[k]...)
@@ -42,11 +45,13 @@ func (g keywordGroups) merge(other keywordGroups) keywordGroups {
 			result[k] = v
 		}
 	}
+
 	for k, v := range other {
 		if _, ok := result[k]; !ok {
 			result[k] = v
 		}
 	}
+
 	return result
 }
 
@@ -54,6 +59,7 @@ type extensionGroups map[string][]string
 
 func (g extensionGroups) merge(other extensionGroups) extensionGroups {
 	result := make(extensionGroups)
+
 	for k, v := range g {
 		if _, ok := other[k]; ok {
 			result[k] = append(v, other[k]...)
@@ -61,11 +67,13 @@ func (g extensionGroups) merge(other extensionGroups) extensionGroups {
 			result[k] = v
 		}
 	}
+
 	for k, v := range other {
 		if _, ok := result[k]; !ok {
 			result[k] = v
 		}
 	}
+
 	return result
 }
 
@@ -76,8 +84,10 @@ func (s workflowSources) merge(other workflowSources) workflowSources {
 	for k, v := range s {
 		result[k] = v
 	}
+
 	for k, v := range other {
 		result[k] = v
 	}
+
 	return result
 }

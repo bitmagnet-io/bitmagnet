@@ -35,8 +35,9 @@ type (
 		// that the ResultWriter supports (such as XML, JSON, etc.).
 		// A ResultWriter is expected to write at least the following information into the http.ResponseWriter:
 		// (1) A MIME type header (e.g., "Content-Type" : "application/json"),
-		// (2) the HTTP status code that is passed in parameter statusCode (this is necessary due to ordering constraints
-		// when writing into a http.ResponseWriter (see https://github.com/alexliesenfeld/health/issues/9), and
+		// (2) the HTTP status code that is passed in parameter statusCode (this is necessary due to
+		// ordering constraints when writing into a http.ResponseWriter
+		// (see https://github.com/alexliesenfeld/health/issues/9), and
 		// (3) the response body in the format that the ResultWriter supports.
 		Write(result *CheckerResult, statusCode int, w http.ResponseWriter, r *http.Request) error
 	}
@@ -47,14 +48,16 @@ type (
 )
 
 // Write implements ResultWriter.Write.
-func (rw *JSONResultWriter) Write(result *CheckerResult, statusCode int, w http.ResponseWriter, r *http.Request) error {
+func (*JSONResultWriter) Write(result *CheckerResult, statusCode int, w http.ResponseWriter, _ *http.Request) error {
 	jsonResp, err := json.Marshal(result)
 	if err != nil {
 		return fmt.Errorf("cannot marshal response: %w", err)
 	}
+
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(statusCode)
 	_, err = w.Write(jsonResp)
+
 	return err
 }
 
@@ -66,6 +69,7 @@ func NewJSONResultWriter() *JSONResultWriter {
 // NewHandler creates a new health check http.Handler.
 func NewHandler(checker Checker, options ...HandlerOption) http.HandlerFunc {
 	cfg := createConfig(options)
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Do the check (with configured middleware)
 		result := withMiddleware(cfg.middleware, func(r *http.Request) CheckerResult {
@@ -74,6 +78,7 @@ func NewHandler(checker Checker, options ...HandlerOption) http.HandlerFunc {
 
 		// Write HTTP response
 		disableResponseCache(w)
+
 		statusCode := mapHTTPStatusCode(result.Status, cfg.statusCodeUp, cfg.statusCodeDown)
 		_ = cfg.resultWriter.Write(&result, statusCode, w, r)
 	}
@@ -90,6 +95,7 @@ func mapHTTPStatusCode(status AvailabilityStatus, statusCodeUp int, statusCodeDo
 	if status == StatusDown || status == StatusUnknown {
 		return statusCodeDown
 	}
+
 	return statusCodeUp
 }
 
@@ -116,5 +122,6 @@ func withMiddleware(interceptors []Middleware, target MiddlewareFunc) Middleware
 	for idx := len(interceptors) - 1; idx >= 0; idx-- {
 		chain = interceptors[idx](chain)
 	}
+
 	return chain
 }

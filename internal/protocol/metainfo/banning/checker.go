@@ -2,6 +2,7 @@ package banning
 
 import (
 	"errors"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
 	"go.uber.org/fx"
 )
@@ -24,6 +25,7 @@ func New(p Params) Result {
 		sizeChecker{min: 1024},
 		utf8Checker{},
 	)
+
 	return Result{
 		Checker: combinedChecker{
 			checkers: checkers,
@@ -44,5 +46,6 @@ func (c combinedChecker) Check(info metainfo.Info) error {
 	for _, checker := range c.checkers {
 		errs = append(errs, checker.Check(info))
 	}
+
 	return errors.Join(errs...)
 }

@@ -11,8 +11,8 @@ type Caps struct {
 	Tags       string         `xml:"tags"`
 }
 
-func (c Caps) Xml() ([]byte, error) {
-	return objToXml(c)
+func (c Caps) XML() ([]byte, error) {
+	return objToXML(c)
 }
 
 type CapsServer struct {

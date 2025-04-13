@@ -20,10 +20,12 @@ func (r *queueJobResolver) RanAt(ctx context.Context, obj *model.QueueJob) (*tim
 	if obj == nil {
 		return nil, nil
 	}
+
 	t := obj.RanAt.Time
 	if t.IsZero() {
 		return nil, nil
 	}
+
 	return &t, nil
 }
 
@@ -37,6 +39,7 @@ func (r *queueEnqueueReprocessTorrentsBatchInputResolver) ClassifierRematch(ctx 
 	if data != nil && *data {
 		obj.ClassifyMode = processor.ClassifyModeRematch
 	}
+
 	return nil
 }
 

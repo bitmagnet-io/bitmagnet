@@ -1,21 +1,26 @@
 package metainfo
 
 import (
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestReadTorrentFile(t *testing.T) {
+	t.Parallel()
+
 	input, readErr := os.ReadFile("examples/ubuntu-23.04-desktop-amd64.iso.torrent")
 	if readErr != nil {
 		t.Fatalf("error reading torrent file: %s", readErr)
 	}
+
 	torrentFile, parseErr := ReadTorrentFileBytes(input)
 	if parseErr != nil {
 		t.Fatalf("error parsing torrent file: %s", parseErr)
 	}
-	assert.Greater(t, len(torrentFile.Info.Pieces), 0)
+
+	assert.NotEmpty(t, torrentFile.Info.Pieces)
 	torrentFile.Info.Pieces = nil
 	assert.Equal(t, TorrentFile{
 		Info: Info{

@@ -2,11 +2,12 @@ package responder
 
 import (
 	"context"
+	"net/netip"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"golang.org/x/time/rate"
-	"net/netip"
-	"time"
 )
 
 // responderLimiter applies both overall and per-IP rate limiting
@@ -19,6 +20,7 @@ func (r responderLimiter) Respond(ctx context.Context, msg dht.RecvMsg) (ret dht
 	if !r.limiter.Allow(msg.From.Addr()) {
 		return dht.Return{}, ErrTooManyRequests
 	}
+
 	return r.responder.Respond(ctx, msg)
 }
 
@@ -34,14 +36,14 @@ type limiter struct {
 func NewLimiter(
 	overallRate rate.Limit,
 	overallBurst int,
-	perIpRate rate.Limit,
-	perIpBurst int,
-	perIpSize int,
-	perIpTtl time.Duration,
+	perIPRate rate.Limit,
+	perIPBurst int,
+	perIPSize int,
+	perIPTTL time.Duration,
 ) Limiter {
 	return &limiter{
 		limiter:      rate.NewLimiter(overallRate, overallBurst),
-		keyedLimiter: concurrency.NewKeyedLimiter(perIpRate, perIpBurst, perIpSize, perIpTtl),
+		keyedLimiter: concurrency.NewKeyedLimiter(perIPRate, perIPBurst, perIPSize, perIPTTL),
 	}
 }
 

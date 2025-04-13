@@ -3,7 +3,8 @@ package migrations
 import (
 	"context"
 	"database/sql"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	migrationssql "github.com/bitmagnet-io/bitmagnet/migrations"
 	goose "github.com/pressly/goose/v3"
 	"go.uber.org/fx"
@@ -46,6 +47,7 @@ func New(p Params) Result {
 func initGoose(logger *zap.SugaredLogger) {
 	goose.SetLogger(gooseLogger{logger})
 	goose.SetBaseFS(migrationssql.FS)
+
 	err := goose.SetDialect("postgres")
 	if err != nil {
 		panic(err)
