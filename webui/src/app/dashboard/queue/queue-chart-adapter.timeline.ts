@@ -75,13 +75,17 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, "line"> {
                   0,
               );
             }
+            const label =
+              queue.queue +
+              ": " +
+              this.transloco.translate("dashboard.queues." + event);
             datasets.push({
               yAxisID: "yCount",
-              label:
-                queue.queue +
-                ": " +
-                this.transloco.translate("dashboard.queues." + event),
+              label: label,
               data: series,
+              hidden: params.hiddenDatasets.has(label)
+                ? params.hiddenDatasets.get(label)
+                : false,
               borderColor: colors[createThemeColor(eventColors[event], 50)],
               pointBackgroundColor:
                 colors[createThemeColor(eventColors[event], 20)],
@@ -114,12 +118,16 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, "line"> {
                 }, null);
               latencySeries.push(result ? result[0] / result[1] : null);
             }
+            const label =
+              queue.queue +
+              ": " +
+              this.transloco.translate("dashboard.queues.latency");
             datasets.push({
               yAxisID: "yLatency",
-              label:
-                queue.queue +
-                ": " +
-                this.transloco.translate("dashboard.queues.latency"),
+              label: label,
+              hidden: params.hiddenDatasets.has(label)
+                ? params.hiddenDatasets.get(label)
+                : false,
               data: latencySeries,
               // fill: 'origin',
               // backgroundColor: 'rgba(148,159,177,0.2)',
@@ -163,6 +171,7 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, "line"> {
         plugins: {
           legend: {
             display: params.legend,
+            onClick: params.legendOnClick,
           },
           decimation: {
             enabled: true,

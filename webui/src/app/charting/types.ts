@@ -1,7 +1,21 @@
-import { ChartConfiguration, ChartType } from "chart.js";
+import {
+  ChartConfiguration,
+  ChartType,
+  ChartEvent,
+  LegendItem,
+  LegendElement,
+} from "chart.js";
+
+export type LegendOnClick = (
+  e: ChartEvent,
+  item: LegendItem,
+  ctx: LegendElement<"line">,
+) => void;
 
 export type FactoryParams = {
   legend: boolean;
+  hiddenDatasets: Map<string, boolean>;
+  legendOnClick: LegendOnClick;
 };
 
 export type ChartConfigFactory<
