@@ -3,6 +3,7 @@ package classifier
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/adrg/xdg"
 	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
@@ -14,6 +15,7 @@ func newSourceProvider(config Config, tmdbConfig tmdb.Config) sourceProvider {
 	providers = append(providers, coreSourceProvider{}.provider())
 	providers = append(providers, xdgSourceProvider{}.providers()...)
 	providers = append(providers, cwdSourceProvider{}.providers()...)
+	providers = append(providers, extraSourceProvider{}.providers()...)
 	providers = append(providers, configSourceProvider{
 		config:      config,
 		tmdbEnabled: tmdbConfig.Enabled,
@@ -88,11 +90,16 @@ func (coreSourceProvider) provider() sourceProvider {
 
 type xdgSourceProvider struct{}
 
-func (yamlSourceProvider) providers(path string) []sourceProvider {
-	dir, fname := filepath.Split(path)
-	glob := dir + "classifier*" + filepath.Ext(fname)
+func (yamlSourceProvider) providers(path string, wildcard bool) []sourceProvider {
+	glob := path
+
+	if wildcard {
+		dir, fname := filepath.Split(path)
+		glob = dir + "classifier*" + filepath.Ext(fname)
+	}
 
 	paths, err := filepath.Glob(glob)
+
 	if err != nil {
 		return []sourceProvider{yamlSourceProvider{err: err}}
 	}
@@ -113,13 +120,33 @@ func (xdgSourceProvider) providers() []sourceProvider {
 		return []sourceProvider{yamlSourceProvider{err: err}}
 	}
 
-	return yamlSourceProvider{}.providers(path)
+	return yamlSourceProvider{}.providers(path, true)
+}
+
+type extraSourceProvider struct{}
+
+func (extraSourceProvider) providers() []sourceProvider {
+	var extraConfigFiles []string
+
+	for _, rawEnvEntry := range os.Environ() {
+		parts := strings.SplitN(rawEnvEntry, "=", 2)
+		if parts[0] == extraFilesKey {
+			extraConfigFiles = strings.Split(parts[1], ",")
+		}
+	}
+
+	var providers []sourceProvider
+	for _, path := range extraConfigFiles {
+		providers = append(providers, yamlSourceProvider{}.providers(path, false)...)
+	}
+
+	return providers
 }
 
 type cwdSourceProvider struct{}
 
 func (cwdSourceProvider) providers() []sourceProvider {
-	return yamlSourceProvider{}.providers("./classifier.yml")
+	return yamlSourceProvider{}.providers("./classifier.yml", true)
 }
 
 type configSourceProvider struct {
@@ -147,3 +174,5 @@ func (c configSourceProvider) source() (Source, error) {
 		Flags:      fs,
 	}, nil
 }
+
+const extraFilesKey = "EXTRA_CLASSIFIER_FILES"
