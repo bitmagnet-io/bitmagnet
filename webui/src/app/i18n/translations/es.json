@@ -245,6 +245,8 @@
     "delete_action_cannot_be_undone": "Esta acción no se puede deshacer",
     "delete_are_you_sure": "¿Está seguro de que desea eliminar este torrent?",
     "deselect_all": "Deseleccionar todo",
+    "download": "Descargar",
+    "download_confirm": "¿Estás seguro de que deseas descargar los torrents seleccionados?",
     "edit_tags": "Editar etiquetas",
     "episodes": "Episodios",
     "external_links": "Enlaces externos",

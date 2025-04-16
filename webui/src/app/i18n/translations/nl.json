@@ -225,6 +225,7 @@
     "page_x": "Pagina {{x}}",
     "previous_page": "Vorige pagina",
     "x_to_y": "{{x}} tot {{y}}",
+    "x_to_y_of_y": "__missing__",
     "x_to_y_of_z": "{{x}} tot {{y}} van {{z}}"
   },
   "routes": {
@@ -245,6 +246,8 @@
     "delete_action_cannot_be_undone": "Deze actie kan niet ongedaan worden gemaakt",
     "delete_are_you_sure": "Weet u zeker dat u deze torrent wilt verwijderen?",
     "deselect_all": "Deselecteer alles",
+    "download": "Downloaden",
+    "download_confirm": "Weet u zeker dat u de geselecteerde torrents wilt downloaden?",
     "edit_tags": "Tags bewerken",
     "episodes": "Afleveringen",
     "external_links": "Externe links",

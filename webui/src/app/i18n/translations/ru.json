@@ -225,6 +225,7 @@
     "page_x": "Страница {{x}}",
     "previous_page": "Предыдущая страница",
     "x_to_y": "{{x}} до {{y}}",
+    "x_to_y_of_y": "__missing__",
     "x_to_y_of_z": "{{x}} до {{y}} из {{z}}"
   },
   "routes": {
@@ -245,6 +246,8 @@
     "delete_action_cannot_be_undone": "Это действие нельзя отменить",
     "delete_are_you_sure": "Вы уверены, что хотите удалить этот торрент?",
     "deselect_all": "Снять выделение",
+    "download": "Скачать",
+    "download_confirm": "Вы уверены, что хотите скачать выбранные торренты?",
     "edit_tags": "Редактировать теги",
     "episodes": "Эпизоды",
     "external_links": "Внешние ссылки",

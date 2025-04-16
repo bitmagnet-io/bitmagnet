@@ -225,6 +225,7 @@
     "page_x": "{{x}}. Sayfa",
     "previous_page": "Önceki Sayfa",
     "x_to_y": "{{x}} - {{y}} arası",
+    "x_to_y_of_y": "__missing__",
     "x_to_y_of_z": "{{x}} ile {{y}} arası, toplam {{z}}"
   },
   "routes": {
@@ -245,6 +246,8 @@
     "delete_action_cannot_be_undone": "Bu işlem geri alınamaz",
     "delete_are_you_sure": "Bu torrent'i silmek istediğinizden emin misiniz?",
     "deselect_all": "Tüm Seçimleri Kaldır",
+    "download": "İndir",
+    "download_confirm": "Seçilen torrentleri indirmek istediğinizden emin misiniz?",
     "edit_tags": "Etiketleri Düzenle",
     "episodes": "Bölümler",
     "external_links": "Dış Bağlantılar",

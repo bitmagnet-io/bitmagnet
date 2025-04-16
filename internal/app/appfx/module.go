@@ -11,6 +11,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/app/cmd/workercmd"
 	"github.com/bitmagnet-io/bitmagnet/internal/blocking/blockingfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classifierfx"
+	"github.com/bitmagnet-io/bitmagnet/internal/client/clientfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/configfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/databasefx"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/migrations"
@@ -59,6 +60,7 @@ func New() fx.Option {
 		validationfx.New(),
 		versionfx.New(),
 		workerfx.New(),
+		clientfx.New(),
 		fx.Provide(
 			args.New,
 			cli.New,

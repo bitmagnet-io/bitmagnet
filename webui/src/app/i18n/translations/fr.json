@@ -245,6 +245,8 @@
     "delete_action_cannot_be_undone": "Cette action ne peut pas être annulée",
     "delete_are_you_sure": "Êtes-vous sûr de vouloir supprimer ce torrent?",
     "deselect_all": "Tout désélectionner",
+    "download": "Télécharger",
+    "download_confirm": "Êtes-vous sûr de vouloir télécharger les torrents sélectionnés ?",
     "edit_tags": "Modifier les tags",
     "episodes": "Épisodes",
     "external_links": "Liens externes",

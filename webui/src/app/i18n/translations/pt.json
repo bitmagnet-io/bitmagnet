@@ -225,6 +225,7 @@
     "page_x": "Página {{x}}",
     "previous_page": "Página anterior",
     "x_to_y": "{{x}} a {{y}}",
+    "x_to_y_of_y": "__missing__",
     "x_to_y_of_z": "{{x}} a {{y}} de {{z}}"
   },
   "routes": {
@@ -245,6 +246,8 @@
     "delete_action_cannot_be_undone": "Esta ação não pode ser desfeita",
     "delete_are_you_sure": "Tem certeza de que deseja excluir este torrent?",
     "deselect_all": "Desmarcar todos",
+    "download": "Baixar",
+    "download_confirm": "Tem certeza de que deseja baixar os torrents selecionados?",
     "edit_tags": "Editar tags",
     "episodes": "Episódios",
     "external_links": "Links externos",

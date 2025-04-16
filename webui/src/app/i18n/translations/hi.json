@@ -225,6 +225,7 @@
     "page_x": "पृष्ठ {{x}}",
     "previous_page": "पिछला पृष्ठ",
     "x_to_y": "{{x}} से {{y}} तक",
+    "x_to_y_of_y": "__missing__",
     "x_to_y_of_z": "{{x}} से {{y}} तक {{z}} में"
   },
   "routes": {
@@ -245,6 +246,8 @@
     "delete_action_cannot_be_undone": "यह क्रिया पूर्ववत नहीं की जा सकती",
     "delete_are_you_sure": "क्या आप वाकई इस टोरेंट को हटाना चाहते हैं?",
     "deselect_all": "सभी को अचयनित करें",
+    "download": "डाउनलोड करें",
+    "download_confirm": "क्या आप वाकई चयनित टोरेंट डाउनलोड करना चाहते हैं?",
     "edit_tags": "टैग संपादित करें",
     "episodes": "एपिसोड्स",
     "external_links": "बाहरी लिंक",

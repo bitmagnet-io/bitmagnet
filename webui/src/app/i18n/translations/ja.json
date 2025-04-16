@@ -225,6 +225,7 @@
     "page_x": "ページ {{x}}",
     "previous_page": "前のページ",
     "x_to_y": "{{x}} から {{y}} まで",
+    "x_to_y_of_y": "__missing__",
     "x_to_y_of_z": "{{x}} から {{y}} までの {{z}}"
   },
   "routes": {
@@ -245,6 +246,8 @@
     "delete_action_cannot_be_undone": "この操作は元に戻せません",
     "delete_are_you_sure": "このトレントを削除してもよろしいですか？",
     "deselect_all": "すべての選択を解除",
+    "download": "ダウンロード",
+    "download_confirm": "選択したトレントをダウンロードしてもよろしいですか?",
     "edit_tags": "タグを編集",
     "episodes": "エピソード",
     "external_links": "外部リンク",

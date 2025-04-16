@@ -3,7 +3,9 @@
     animationDuration="0"
     class="tab-group-bulk-actions"
     [selectedIndex]="selectedTabIndex"
-    (focusChange)="selectTab($event.index == 5 ? 0 : $event.index)"
+    (focusChange)="
+      selectTab($event.index == (downloadEnabled ? 6 : 5) ? 0 : $event.index)
+    "
     [mat-stretch-tabs]="false"
   >
     <mat-tab
@@ -169,6 +171,38 @@
         </mat-card>
       </ng-template>
     </mat-tab>
+    @if (downloadEnabled) {
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>download_for_offline</mat-icon>
+          @if (breakpoints.sizeAtLeast("Medium")) {
+            <span class="label">{{ t("torrents.download") }}</span>
+          }
+        </ng-template>
+
+        <ng-template matTabContent>
+          <mat-card>
+            <mat-card-content>
+              <p>
+                <strong>{{ t("torrents.download_confirm") }}</strong>
+              </p>
+            </mat-card-content>
+            <mat-card-actions class="button-row">
+              <button
+                mat-stroked-button
+                color="warn"
+                [disabled]="!selectedItems.length"
+                (click)="downloadTorrents()"
+              >
+                <mat-icon>download_for_offline</mat-icon
+                >{{ t("torrents.download") }}
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        </ng-template>
+      </mat-tab>
+    }
+
     @if (selectedTabIndex > 0) {
       <mat-tab>
         <ng-template mat-tab-label>

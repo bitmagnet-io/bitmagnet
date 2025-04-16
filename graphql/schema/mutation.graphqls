@@ -1,6 +1,7 @@
 type Mutation {
   torrent: TorrentMutation!
   queue: QueueMutation!
+  downloadclient: DownloadClientMutation!
 }
 
 type TorrentMutation {
@@ -17,4 +18,8 @@ input TorrentReprocessInput {
   classifierWorkflow: String
   apisDisabled: Boolean
   localSearchDisabled: Boolean
+}
+
+type DownloadClientMutation {
+  download(infoHashes: [Hash20!]): Void
 }

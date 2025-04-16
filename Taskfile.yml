@@ -43,7 +43,7 @@ tasks:
 
   gen-classifier-schema:
     cmds:
-      - go run . classifier schema --format json > ./bitmagnet.io/schemas/classifier-0.1.json
+      - go run . classifier schema --format json > ./bitmagnet.io/schemas/classifier-0.1
 
   gen-webui-graphql:
     dir: ./webui
@@ -54,6 +54,25 @@ tasks:
     dir: ./webui
     cmds:
       - npm run i18n:extract
+
+  i18n-translate:
+    cmds:
+      - for:
+          [
+            "ar",
+            "de",
+            "es",
+            "fr",
+            "hi",
+            "ja",
+            "nl",
+            "pt",
+            "ru",
+            "tr",
+            "uk",
+            "zh",
+          ]
+        cmd: npx i18n-auto-translation -k $API_KEY -d webui/src/app/i18n/translations -t {{ .ITEM }}
 
   lint:
     cmds:

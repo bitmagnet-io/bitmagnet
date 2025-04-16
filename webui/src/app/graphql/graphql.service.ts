@@ -81,6 +81,27 @@ export class GraphQLService {
       })
       .pipe(map((r) => r.data.torrent.suggestTags));
   }
+
+  clientDownload(input: generated.DownloadMutationVariables): Observable<void> {
+    return this.apollo
+      .mutate<generated.DownloadMutation, generated.DownloadMutationVariables>({
+        mutation: generated.DownloadDocument,
+        variables: input,
+        fetchPolicy,
+      })
+      .pipe(map(() => void 0));
+  }
+
+  downloadClientEnabledQuery(): Observable<boolean> {
+    return this.apollo
+      .query<
+        generated.DownloadClientEnabledQuery,
+        generated.DownloadClientEnabledQueryVariables
+      >({
+        query: generated.DownloadClientEnabledDocument,
+      })
+      .pipe(map((r) => r.data.downloadClient.enabled));
+  }
 }
 
 const fetchPolicy = "no-cache";

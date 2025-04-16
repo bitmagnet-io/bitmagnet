@@ -27,6 +27,10 @@ type ContentTypeFacetInput struct {
 	Filter    graphql.Omittable[[]*model.ContentType] `json:"filter,omitempty"`
 }
 
+type DownloadClientConfigQuery struct {
+	Enabled bool `json:"enabled"`
+}
+
 type GenreAgg struct {
 	Value      string `json:"value"`
 	Label      string `json:"label"`
@@ -267,6 +271,47 @@ type WorkersListAllQueryResult struct {
 
 type WorkersQuery struct {
 	ListAll WorkersListAllQueryResult `json:"listAll"`
+}
+
+type ClientID string
+
+const (
+	ClientIDTransmission ClientID = "Transmission"
+	ClientIDQBittorrent  ClientID = "QBittorrent"
+)
+
+var AllClientID = []ClientID{
+	ClientIDTransmission,
+	ClientIDQBittorrent,
+}
+
+func (e ClientID) IsValid() bool {
+	switch e {
+	case ClientIDTransmission, ClientIDQBittorrent:
+		return true
+	}
+	return false
+}
+
+func (e ClientID) String() string {
+	return string(e)
+}
+
+func (e *ClientID) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ClientID(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ClientID", str)
+	}
+	return nil
+}
+
+func (e ClientID) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type HealthStatus string

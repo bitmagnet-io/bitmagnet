@@ -105,6 +105,13 @@ func (r *queryResolver) TorrentContent(ctx context.Context) (gqlmodel.TorrentCon
 	}, nil
 }
 
+// DownloadClient is the resolver for the downloadClient field.
+func (r *queryResolver) DownloadClient(ctx context.Context) (gen.DownloadClientConfigQuery, error) {
+	return gen.DownloadClientConfigQuery{
+		Enabled: r.ClientConfig.Enabled,
+	}, nil
+}
+
 // Files is the resolver for the files field.
 func (r *torrentQueryResolver) Files(ctx context.Context, obj *gqlmodel.TorrentQuery, input gqlmodel.TorrentFilesQueryInput) (query.GenericResult[model.TorrentFile], error) {
 	return gqlmodel.TorrentQuery{
