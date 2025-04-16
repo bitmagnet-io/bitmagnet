@@ -27,3 +27,10 @@ export const intParam = (params: Params, key: string): number | undefined => {
   }
   return undefined;
 };
+
+export const floatParam = (params: Params, key: string): number | undefined => {
+  if (params && params[key]) {
+    return parseFloat(params[key] as string);
+  }
+  return undefined;
+};

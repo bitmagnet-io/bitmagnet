@@ -42,6 +42,7 @@ export type TorrentSearchControls = {
   queryString?: string;
   contentType: ContentTypeSelection;
   orderBy: OrderBySelection;
+  aggregationBudget?: number | null;
   facets: {
     genre: FacetInput<string>;
     language: FacetInput<generated.Language>;
@@ -64,6 +65,7 @@ const controlsToQueryVariables = (
     totalCount: true,
     hasNextPage: true,
     orderBy: [ctrl.orderBy],
+    aggregationBudget: ctrl.aggregationBudget,
     facets: {
       contentType: {
         aggregate: true,

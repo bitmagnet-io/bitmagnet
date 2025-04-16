@@ -1,4 +1,11 @@
 {
+  "aggregation": {
+    "aggregation_count_accuracy": "计数准确度",
+    "aggregation_count_accuracy_default": "默认",
+    "aggregation_count_accuracy_high": "高",
+    "budget": "预算",
+    "settings": "计算预算"
+  },
   "content_types": {
     "plural": {
       "all": "全部",
@@ -64,11 +71,8 @@
       "enqueue_jobs": "加入队列的任务",
       "enqueue_torrent_processing_batch": "加入队列的种子处理批次",
       "failed": "失败",
-      "force_rematch": "强制重新匹配已匹配的内容",
       "jobs_enqueued": "加入队列的任务",
       "latency": "延迟",
-      "match_content_by_external_api_search": "通过外部API搜索匹配内容",
-      "match_content_by_local_search": "通过本地搜索匹配内容",
       "payload": "有效载荷",
       "pending": "待处理",
       "priority": "优先级",

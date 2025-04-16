@@ -8,6 +8,7 @@ import (
 	"context"
 	"sort"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
@@ -102,6 +103,17 @@ func (r *queryResolver) Torrent(ctx context.Context) (gqlmodel.TorrentQuery, err
 func (r *queryResolver) TorrentContent(ctx context.Context) (gqlmodel.TorrentContentQuery, error) {
 	return gqlmodel.TorrentContentQuery{
 		TorrentContentSearch: r.Search,
+	}, nil
+}
+
+// AggregationInfo is the resolver for the aggregationInfo field.
+func (r *queryResolver) AggregationInfo(ctx context.Context) (gen.AggregationInfoQuery, error) {
+	cost, err := dao.BudgetedCount(r.Dao.TorrentContent.UnderlyingDB(), 1)
+	if err != nil {
+		return gen.AggregationInfoQuery{}, err
+	}
+	return gen.AggregationInfoQuery{
+		HighCost: cost.Cost,
 	}, nil
 }
 

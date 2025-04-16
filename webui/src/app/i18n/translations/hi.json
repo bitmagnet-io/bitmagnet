@@ -1,4 +1,11 @@
 {
+  "aggregation": {
+    "aggregation_count_accuracy": "गणना सटीकता",
+    "aggregation_count_accuracy_default": "डिफ़ॉल्ट",
+    "aggregation_count_accuracy_high": "उच्च",
+    "budget": "बजट",
+    "settings": "बजट की गणना करें"
+  },
   "content_types": {
     "plural": {
       "all": "सभी",
@@ -64,11 +71,8 @@
       "enqueue_jobs": "जॉब्स को कतार में लगाएं",
       "enqueue_torrent_processing_batch": "टोरेंट प्रोसेसिंग बैच कतार में लगाएं",
       "failed": "असफल",
-      "force_rematch": "पहले से मेल खाई सामग्री को फिर से मिलाएं",
       "jobs_enqueued": "जॉब्स कतार में लगाई गईं",
       "latency": "लेटेंसी",
-      "match_content_by_external_api_search": "बाहरी API खोज से सामग्री का मिलान करें",
-      "match_content_by_local_search": "स्थानीय खोज से सामग्री का मिलान करें",
       "payload": "पेलोड",
       "pending": "बकाया",
       "priority": "प्राथमिकता",

@@ -1,4 +1,11 @@
 {
+  "aggregation": {
+    "aggregation_count_accuracy": "Sayım doğruluğu",
+    "aggregation_count_accuracy_default": "Varsayılan",
+    "aggregation_count_accuracy_high": "Yüksek",
+    "budget": "Bütçe",
+    "settings": "Bütçeyi say"
+  },
   "content_types": {
     "plural": {
       "all": "Tümü",
@@ -64,11 +71,8 @@
       "enqueue_jobs": "İşleri Kuyruğa Al",
       "enqueue_torrent_processing_batch": "Torrent İşleme Paketini Kuyruğa Al",
       "failed": "Başarısız",
-      "force_rematch": "Eşleşmiş içeriği yeniden eşleştir",
       "jobs_enqueued": "Kuyruğa Alınan İşler",
       "latency": "Gecikme",
-      "match_content_by_external_api_search": "Dış API aramasıyla içeriği eşleştir",
-      "match_content_by_local_search": "Yerel aramayla içeriği eşleştir",
       "payload": "Veri Yükü",
       "pending": "Beklemede",
       "priority": "Öncelik",

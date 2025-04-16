@@ -1,4 +1,11 @@
 {
+  "aggregation": {
+    "aggregation_count_accuracy": "Precisión del conteo",
+    "aggregation_count_accuracy_default": "Predeterminado",
+    "aggregation_count_accuracy_high": "Alto",
+    "budget": "Presupuesto",
+    "settings": "Contar presupuesto"
+  },
   "content_types": {
     "plural": {
       "all": "Todos",
@@ -64,11 +71,8 @@
       "enqueue_jobs": "Encolar trabajos",
       "enqueue_torrent_processing_batch": "Encolar lote de procesamiento de torrents",
       "failed": "Fallido",
-      "force_rematch": "Forzar nueva coincidencia de contenido ya coincidente",
       "jobs_enqueued": "Trabajos encolados",
       "latency": "Latencia",
-      "match_content_by_external_api_search": "Coincidir contenido por búsqueda de API externa",
-      "match_content_by_local_search": "Coincidir contenido por búsqueda local",
       "payload": "Carga útil",
       "pending": "Pendiente",
       "priority": "Prioridad",

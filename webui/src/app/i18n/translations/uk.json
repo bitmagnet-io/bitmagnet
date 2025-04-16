@@ -1,4 +1,11 @@
 {
+  "aggregation": {
+    "aggregation_count_accuracy": "Точність підрахунку",
+    "aggregation_count_accuracy_default": "За замовчуванням",
+    "aggregation_count_accuracy_high": "Високий",
+    "budget": "Бюджет",
+    "settings": "Розрахувати бюджет"
+  },
   "content_types": {
     "plural": {
       "all": "Усі",
@@ -64,11 +71,8 @@
       "enqueue_jobs": "Додати завдання до черги",
       "enqueue_torrent_processing_batch": "Додати пакет для обробки торрентів",
       "failed": "Помилка",
-      "force_rematch": "Примусово повторно зіставити вже зіставлений контент",
       "jobs_enqueued": "Завдання додано в чергу",
       "latency": "Затримка",
-      "match_content_by_external_api_search": "Зіставити контент через зовнішній API",
-      "match_content_by_local_search": "Зіставити контент через локальний пошук",
       "payload": "Дані",
       "pending": "В очікуванні",
       "priority": "Пріоритет",
