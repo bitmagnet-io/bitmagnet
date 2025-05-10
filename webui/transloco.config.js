@@ -2,6 +2,7 @@ module.exports = {
   rootTranslationsPath: "src/app/i18n/translations/",
   langs: [
     "ar",
+    "ca",
     "es",
     "de",
     "en",
