@@ -24,6 +24,8 @@ var videoSourceAliases = map[string]VideoSource{
 	"dvd9":    VideoSourceDVD,
 	"dvdrip":  VideoSourceDVD,
 	"hdtv":    VideoSourceTV,
+	"iptvrip": VideoSourceTV,
+	"satrip":  VideoSourceTV,
 	"web":     VideoSourceWEBRip,
 	"web-dl":  VideoSourceWEBDL,
 	"web-rip": VideoSourceWEBRip,
