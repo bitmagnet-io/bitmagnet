@@ -16,3 +16,6 @@ packages:
   github.com/bitmagnet-io/bitmagnet/internal/tmdb:
     interfaces:
       Client:
+  github.com/bitmagnet-io/bitmagnet/internal/torznab:
+    interfaces:
+      Client:

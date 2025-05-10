@@ -1,11 +1,14 @@
 package model
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewDateRangeFromString(t *testing.T) {
+	t.Parallel()
 
 	type parseTest struct {
 		inputString   string
@@ -13,7 +16,7 @@ func TestNewDateRangeFromString(t *testing.T) {
 		expectedEnd   Date
 	}
 
-	var parseTests = []parseTest{
+	parseTests := []parseTest{
 		{
 			inputString:   "2020-01-01",
 			expectedStart: Date{Year: 2020, Month: 1, Day: 1},
@@ -33,8 +36,10 @@ func TestNewDateRangeFromString(t *testing.T) {
 
 	for _, test := range parseTests {
 		t.Run(test.inputString, func(t *testing.T) {
+			t.Parallel()
+
 			actualOutput, err := NewDateRangeFromString(test.inputString)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, test.expectedStart, actualOutput.Start())
 			assert.Equal(t, test.expectedEnd, actualOutput.End())
 		})

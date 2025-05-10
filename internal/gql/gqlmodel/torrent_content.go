@@ -2,6 +2,8 @@ package gqlmodel
 
 import (
 	"context"
+	"time"
+
 	"github.com/99designs/gqlgen/graphql"
 	q "github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
@@ -9,7 +11,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"time"
 )
 
 type TorrentContentQuery struct {
@@ -70,16 +71,19 @@ func NewTorrentContentFromResultItem(item search.TorrentContentResultItem) Torre
 	if item.Content.ID != "" {
 		c.Content = &item.Content
 	}
+
 	languages := item.Languages.Slice()
 	if len(languages) > 0 {
 		c.Languages = languages
 	}
+
 	if len(item.Episodes) > 0 {
 		c.Episodes = &Episodes{
 			Label:   item.Episodes.String(),
 			Seasons: item.Episodes.SeasonEntries(),
 		}
 	}
+
 	return c
 }
 
@@ -92,7 +96,8 @@ type TorrentSourceInfo struct {
 }
 
 func TorrentSourceInfosFromTorrent(t model.Torrent) []TorrentSourceInfo {
-	var sources []TorrentSourceInfo
+	sources := make([]TorrentSourceInfo, 0, len(t.Sources))
+
 	for _, s := range t.Sources {
 		sources = append(sources, TorrentSourceInfo{
 			Key:      s.Source,
@@ -102,6 +107,7 @@ func TorrentSourceInfosFromTorrent(t model.Torrent) []TorrentSourceInfo {
 			Leechers: s.Leechers,
 		})
 	}
+
 	return sources
 }
 
@@ -132,72 +138,99 @@ func (t TorrentContentQuery) Search(
 	}
 	options = append(options, input.Option())
 	hasQueryString := input.QueryString.Valid
+
 	if input.Facets != nil {
-		var qFacets []q.Facet
-		if contentType, ok := input.Facets.ContentType.ValueOK(); ok {
-			qFacets = append(qFacets, torrentContentTypeFacet(*contentType))
-		}
-		if torrentSource, ok := input.Facets.TorrentSource.ValueOK(); ok {
-			qFacets = append(qFacets, torrentSourceFacet(*torrentSource))
-		}
-		if torrentTag, ok := input.Facets.TorrentTag.ValueOK(); ok {
-			qFacets = append(qFacets, torrentTagFacet(*torrentTag))
-		}
-		if torrentFileType, ok := input.Facets.TorrentFileType.ValueOK(); ok {
-			qFacets = append(qFacets, torrentFileTypeFacet(*torrentFileType))
-		}
-		if language, ok := input.Facets.Language.ValueOK(); ok {
-			qFacets = append(qFacets, languageFacet(*language))
-		}
-		if genre, ok := input.Facets.Genre.ValueOK(); ok {
-			qFacets = append(qFacets, genreFacet(*genre))
-		}
-		if releaseYear, ok := input.Facets.ReleaseYear.ValueOK(); ok {
-			qFacets = append(qFacets, releaseYearFacet(*releaseYear))
-		}
-		if videoResolution, ok := input.Facets.VideoResolution.ValueOK(); ok {
-			qFacets = append(qFacets, videoResolutionFacet(*videoResolution))
-		}
-		if videoSource, ok := input.Facets.VideoSource.ValueOK(); ok {
-			qFacets = append(qFacets, videoSourceFacet(*videoSource))
-		}
-		options = append(options, q.WithFacet(qFacets...))
+		options = append(options, torrentContentFacetsOption(*input.Facets))
 	}
+
 	if infoHashes, ok := input.InfoHashes.ValueOK(); ok {
 		options = append(options, q.Where(search.TorrentContentInfoHashCriteria(infoHashes...)))
 	}
+
 	fullOrderBy := maps.NewInsertMap[search.TorrentContentOrderBy, search.OrderDirection]()
+
 	for _, ob := range input.OrderBy {
 		if ob.Field == gen.TorrentContentOrderByFieldRelevance && !hasQueryString {
 			continue
 		}
+
 		direction := search.OrderDirectionAscending
 		if desc, ok := ob.Descending.ValueOK(); ok && *desc {
 			direction = search.OrderDirectionDescending
 		}
+
 		field, err := search.ParseTorrentContentOrderBy(ob.Field.String())
 		if err != nil {
 			return TorrentContentSearchResult{}, err
 		}
+
 		fullOrderBy.Set(field, direction)
 	}
+
 	options = append(options, search.TorrentContentFullOrderBy(fullOrderBy).Option())
+
 	result, resultErr := t.TorrentContentSearch.TorrentContent(ctx, options...)
 	if resultErr != nil {
 		return TorrentContentSearchResult{}, resultErr
 	}
+
 	return transformTorrentContentSearchResult(result)
 }
 
-func transformTorrentContentSearchResult(result q.GenericResult[search.TorrentContentResultItem]) (TorrentContentSearchResult, error) {
+func torrentContentFacetsOption(input gen.TorrentContentFacetsInput) q.Option {
+	var qFacets []q.Facet
+	if contentType, ok := input.ContentType.ValueOK(); ok {
+		qFacets = append(qFacets, torrentContentTypeFacet(*contentType))
+	}
+
+	if torrentSource, ok := input.TorrentSource.ValueOK(); ok {
+		qFacets = append(qFacets, torrentSourceFacet(*torrentSource))
+	}
+
+	if torrentTag, ok := input.TorrentTag.ValueOK(); ok {
+		qFacets = append(qFacets, torrentTagFacet(*torrentTag))
+	}
+
+	if torrentFileType, ok := input.TorrentFileType.ValueOK(); ok {
+		qFacets = append(qFacets, torrentFileTypeFacet(*torrentFileType))
+	}
+
+	if language, ok := input.Language.ValueOK(); ok {
+		qFacets = append(qFacets, languageFacet(*language))
+	}
+
+	if genre, ok := input.Genre.ValueOK(); ok {
+		qFacets = append(qFacets, genreFacet(*genre))
+	}
+
+	if releaseYear, ok := input.ReleaseYear.ValueOK(); ok {
+		qFacets = append(qFacets, releaseYearFacet(*releaseYear))
+	}
+
+	if videoResolution, ok := input.VideoResolution.ValueOK(); ok {
+		qFacets = append(qFacets, videoResolutionFacet(*videoResolution))
+	}
+
+	if videoSource, ok := input.VideoSource.ValueOK(); ok {
+		qFacets = append(qFacets, videoSourceFacet(*videoSource))
+	}
+
+	return q.WithFacet(qFacets...)
+}
+
+func transformTorrentContentSearchResult(
+	result q.GenericResult[search.TorrentContentResultItem],
+) (TorrentContentSearchResult, error) {
 	aggs, aggsErr := transformTorrentContentAggregations(result.Aggregations)
 	if aggsErr != nil {
 		return TorrentContentSearchResult{}, aggsErr
 	}
+
 	items := make([]TorrentContent, 0, len(result.Items))
 	for _, item := range result.Items {
 		items = append(items, NewTorrentContentFromResultItem(item))
 	}
+
 	return TorrentContentSearchResult{
 		TotalCount:           result.TotalCount,
 		TotalCountIsEstimate: result.TotalCountIsEstimate,
@@ -208,69 +241,55 @@ func transformTorrentContentSearchResult(result q.GenericResult[search.TorrentCo
 }
 
 func transformTorrentContentAggregations(aggs q.Aggregations) (gen.TorrentContentAggregations, error) {
-	a := gen.TorrentContentAggregations{}
-	if contentTypes, ok := aggs[search.TorrentContentTypeFacetKey]; ok {
-		agg, err := contentTypeAggs(contentTypes.Items)
-		if err != nil {
-			return a, err
-		}
-		a.ContentType = agg
+	var (
+		result gen.TorrentContentAggregations
+		err    error
+	)
+
+	result.ContentType, err = contentTypeAggs(aggs[search.TorrentContentTypeFacetKey].Items)
+	if err != nil {
+		return result, err
 	}
-	if torrentSources, ok := aggs[search.TorrentSourceFacetKey]; ok {
-		agg, err := torrentSourceAggs(torrentSources.Items)
-		if err != nil {
-			return a, err
-		}
-		a.TorrentSource = agg
+
+	result.TorrentSource, err = torrentSourceAggs(aggs[search.TorrentSourceFacetKey].Items)
+	if err != nil {
+		return result, err
 	}
-	if torrentTags, ok := aggs[search.TorrentTagFacetKey]; ok {
-		agg, err := torrentTagAggs(torrentTags.Items)
-		if err != nil {
-			return a, err
-		}
-		a.TorrentTag = agg
+
+	result.TorrentTag, err = torrentTagAggs(aggs[search.TorrentTagFacetKey].Items)
+	if err != nil {
+		return result, err
 	}
-	if fileTypes, ok := aggs[search.TorrentFileTypeFacetKey]; ok {
-		agg, err := torrentFileTypeAggs(fileTypes.Items)
-		if err != nil {
-			return a, err
-		}
-		a.TorrentFileType = agg
+
+	result.TorrentFileType, err = torrentFileTypeAggs(aggs[search.TorrentFileTypeFacetKey].Items)
+	if err != nil {
+		return result, err
 	}
-	if languages, ok := aggs[search.LanguageFacetKey]; ok {
-		agg, err := languageAggs(languages.Items)
-		if err != nil {
-			return a, err
-		}
-		a.Language = agg
+
+	result.Language, err = languageAggs(aggs[search.LanguageFacetKey].Items)
+	if err != nil {
+		return result, err
 	}
-	if genres, ok := aggs[search.ContentGenreFacetKey]; ok {
-		agg, err := genreAggs(genres.Items)
-		if err != nil {
-			return a, err
-		}
-		a.Genre = agg
+
+	result.Genre, err = genreAggs(aggs[search.ContentGenreFacetKey].Items)
+	if err != nil {
+		return result, err
 	}
-	if releaseYears, ok := aggs[search.ReleaseYearFacetKey]; ok {
-		agg, err := releaseYearAggs(releaseYears.Items)
-		if err != nil {
-			return a, err
-		}
-		a.ReleaseYear = agg
+
+	result.ReleaseYear, err = releaseYearAggs(aggs[search.ReleaseYearFacetKey].Items)
+	if err != nil {
+		return result, err
 	}
-	if videoResolutions, ok := aggs[search.VideoResolutionFacetKey]; ok {
-		agg, err := videoResolutionAggs(videoResolutions.Items)
-		if err != nil {
-			return a, err
-		}
-		a.VideoResolution = agg
+
+	result.VideoResolution, err = videoResolutionAggs(aggs[search.VideoResolutionFacetKey].Items)
+	if err != nil {
+		return result, err
 	}
-	if videoSource, ok := aggs[search.VideoSourceFacetKey]; ok {
-		agg, err := videoSourceAggs(videoSource.Items)
-		if err != nil {
-			return a, err
-		}
-		a.VideoSource = agg
+
+	result.VideoSource, err = videoSourceAggs(aggs[search.VideoSourceFacetKey].Items)
+	if err != nil {
+		return result, err
 	}
-	return a, nil
+
+	return result, nil
 }

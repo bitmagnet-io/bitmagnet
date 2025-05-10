@@ -1,12 +1,13 @@
 package gen
 
 import (
+	"path"
+	"runtime"
+
 	"github.com/iancoleman/strcase"
 	"gorm.io/gen"
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
-	"path"
-	"runtime"
 )
 
 func BuildGenerator(db *gorm.DB) *gen.Generator {
@@ -29,7 +30,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 			}
 			return "string"
 		},
-		"bytea": func(columnType gorm.ColumnType) (dataType string) {
+		"bytea": func(gorm.ColumnType) (dataType string) {
 			return "[]byte"
 		},
 	})
@@ -298,7 +299,9 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 			contentCollections,
 			&field.RelateConfig{
 				GORMTag: field.GormTag{
-					"foreignKey": {"ContentCollectionType,ContentCollectionSource,ContentCollectionID"},
+					"foreignKey": {
+						"ContentCollectionType,ContentCollectionSource,ContentCollectionID",
+					},
 					"references": {"Type,Source,ID"},
 				},
 			},
@@ -380,12 +383,6 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 			torrentContentBaseOptions...,
 		)...,
 	)
-	bloomFilters := g.GenerateModel(
-		"bloom_filters",
-		gen.FieldRename("bytes", "Filter"),
-		gen.FieldType("bytes", "bloom.StableBloomFilter"),
-		createdAtReadOnly,
-	)
 	keyValues := g.GenerateModel(
 		"key_values",
 		createdAtReadOnly,
@@ -427,6 +424,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		gen.FieldGORMTag("archival_duration", func(tag field.GormTag) field.GormTag {
 			tag.Set("<-", "create")
 			tag.Remove("default")
+
 			return tag
 		}),
 		createdAtReadOnly,
@@ -446,7 +444,6 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		content,
 		contentCollectionContent,
 		contentAttributes,
-		bloomFilters,
 		keyValues,
 		queueJobs,
 	)

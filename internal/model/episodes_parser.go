@@ -1,11 +1,12 @@
 package model
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/keywords"
 	"github.com/hedhyw/rex/pkg/dialect"
 	"github.com/hedhyw/rex/pkg/rex"
-	"strconv"
-	"strings"
 )
 
 func rangeToken(runes string) dialect.Token {
@@ -88,46 +89,52 @@ func EpisodesMatchToEpisodes(match []string) Episodes {
 	if len(match) < 12 {
 		return nil
 	}
+
 	episodes := Episodes{}
+
 	if match[1] != "" {
 		// regular format
 		seasonStart, _ := strconv.ParseInt(match[2], 10, 16)
+
 		if match[5] == "" {
 			// no episodes
-			if match[3] != "" {
+			switch {
+			case match[3] != "":
 				// a season range
 				seasonEnd, _ := strconv.ParseInt(match[3], 10, 16)
 				for i := seasonStart; i <= seasonEnd; i++ {
 					episodes = episodes.AddSeason(int(i))
 				}
-			} else if match[4] != "" {
+			case match[4] != "":
 				// a list of seasons
 				includedSeasons := strings.Split(match[1], ",")
 				for _, season := range includedSeasons {
 					seasonIndex, _ := strconv.ParseInt(season, 10, 16)
 					episodes = episodes.AddSeason(int(seasonIndex))
 				}
-			} else {
+			default:
 				// or just a single season
 				episodes = episodes.AddSeason(int(seasonStart))
 			}
 		} else {
 			// episodes
 			episodeStart, _ := strconv.ParseInt(match[6], 10, 16)
-			if match[7] != "" {
+
+			switch {
+			case match[7] != "":
 				// an episode range
 				episodeEnd, _ := strconv.ParseInt(match[7], 10, 16)
 				for i := episodeStart; i <= episodeEnd; i++ {
 					episodes = episodes.AddEpisode(int(seasonStart), int(i))
 				}
-			} else if match[8] != "" {
+			case match[8] != "":
 				// a list of episodes
 				includedEpisodes := strings.Split(match[5], ",")
 				for _, episode := range includedEpisodes {
 					episodeIndex, _ := strconv.ParseInt(episode, 10, 16)
 					episodes = episodes.AddEpisode(int(seasonStart), int(episodeIndex))
 				}
-			} else {
+			default:
 				// a single episode
 				episodes = episodes.AddEpisode(int(seasonStart), int(episodeStart))
 			}
@@ -137,13 +144,16 @@ func EpisodesMatchToEpisodes(match []string) Episodes {
 		season, _ := strconv.ParseInt(match[9], 10, 16)
 		episodeStart, _ := strconv.ParseInt(match[10], 10, 16)
 		episodeEnd := episodeStart
+
 		if match[11] != "" {
 			episodeEnd, _ = strconv.ParseInt(match[11], 10, 16)
 		}
+
 		for i := episodeStart; i <= episodeEnd; i++ {
 			episodes = episodes.AddEpisode(int(season), int(i))
 		}
 	}
+
 	return episodes
 }
 

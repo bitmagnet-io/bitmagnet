@@ -13,6 +13,8 @@ import (
 )
 
 func TestWith_Query(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      string
 		operation func(db *gorm.DB) *gorm.DB
@@ -22,7 +24,15 @@ func TestWith_Query(t *testing.T) {
 		{
 			name: "When Subquery is clause.Expr, then should be used as subquery",
 			operation: func(db *gorm.DB) *gorm.DB {
-				return db.Clauses(With{CTEs: []CTE{{Name: "cte", Subquery: clause.Expr{SQL: "SELECT * FROM `users` WHERE `name` = ?", Vars: []interface{}{"WinterYukky"}}}}}).Table("cte").Scan(nil)
+				return db.Clauses(With{
+					CTEs: []CTE{{
+						Name: "cte",
+						Subquery: clause.Expr{
+							SQL:  "SELECT * FROM `users` WHERE `name` = ?",
+							Vars: []interface{}{"WinterYukky"},
+						},
+					}},
+				}).Table("cte").Scan(nil)
 			},
 			want:     "WITH `cte` AS (SELECT * FROM `users` WHERE `name` = ?) SELECT * FROM `cte`",
 			wantArgs: []driver.Value{"WinterYukky"},
@@ -30,7 +40,14 @@ func TestWith_Query(t *testing.T) {
 		{
 			name: "When Subquery is exclause.Subquery, then should be used as subquery",
 			operation: func(db *gorm.DB) *gorm.DB {
-				return db.Clauses(With{CTEs: []CTE{{Name: "cte", Subquery: Subquery{DB: db.Table("users").Where("`name` = ?", "WinterYukky")}}}}).Table("cte").Scan(nil)
+				return db.Clauses(With{
+					CTEs: []CTE{{
+						Name: "cte",
+						Subquery: Subquery{
+							DB: db.Table("users").Where("`name` = ?", "WinterYukky"),
+						},
+					}},
+				}).Table("cte").Scan(nil)
 			},
 			want:     "WITH `cte` AS (SELECT * FROM `users` WHERE `name` = ?) SELECT * FROM `cte`",
 			wantArgs: []driver.Value{"WinterYukky"},
@@ -38,7 +55,15 @@ func TestWith_Query(t *testing.T) {
 		{
 			name: "When has specific fields, then should be used with columns specified",
 			operation: func(db *gorm.DB) *gorm.DB {
-				return db.Clauses(With{CTEs: []CTE{{Name: "cte", Columns: []string{"id", "name"}, Subquery: Subquery{DB: db.Table("users")}}}}).Table("cte").Scan(nil)
+				return db.Clauses(With{
+					CTEs: []CTE{
+						{
+							Name:     "cte",
+							Columns:  []string{"id", "name"},
+							Subquery: Subquery{DB: db.Table("users")},
+						},
+					},
+				}).Table("cte").Scan(nil)
 			},
 			want:     "WITH `cte` (`id`,`name`) AS (SELECT * FROM `users`) SELECT * FROM `cte`",
 			wantArgs: []driver.Value{},
@@ -47,17 +72,39 @@ func TestWith_Query(t *testing.T) {
 			name: "When contains recursive even once, then should be used RECURSIVE keyword",
 			operation: func(db *gorm.DB) *gorm.DB {
 				return db.
-					Clauses(With{Recursive: true, CTEs: []CTE{{Name: "cte1", Subquery: Subquery{DB: db.Table("users")}}}}).
-					Clauses(With{Recursive: false, CTEs: []CTE{{Name: "cte2", Subquery: Subquery{DB: db.Table("users")}}}}).
+					Clauses(With{
+						Recursive: true,
+						CTEs: []CTE{{
+							Name:     "cte1",
+							Subquery: Subquery{DB: db.Table("users")},
+						}},
+					}).
+					Clauses(With{
+						Recursive: false,
+						CTEs: []CTE{{
+							Name:     "cte2",
+							Subquery: Subquery{DB: db.Table("users")},
+						}},
+					}).
 					Table("cte").Scan(nil)
 			},
-			want:     "WITH RECURSIVE `cte1` AS (SELECT * FROM `users`),`cte2` AS (SELECT * FROM `users`) SELECT * FROM `cte`",
+			want: "WITH RECURSIVE `cte1` AS (SELECT * FROM `users`)," +
+				"`cte2` AS (SELECT * FROM `users`) SELECT * FROM `cte`",
 			wantArgs: []driver.Value{},
 		},
 		{
 			name: "When Materialized is true, then the CTE should be materialized",
 			operation: func(db *gorm.DB) *gorm.DB {
-				return db.Clauses(With{Materialized: true, CTEs: []CTE{{Name: "cte", Subquery: clause.Expr{SQL: "SELECT * FROM `users` WHERE `name` = ?", Vars: []interface{}{"WinterYukky"}}}}}).Table("cte").Scan(nil)
+				return db.Clauses(With{
+					Materialized: true,
+					CTEs: []CTE{{
+						Name: "cte",
+						Subquery: clause.Expr{
+							SQL:  "SELECT * FROM `users` WHERE `name` = ?",
+							Vars: []interface{}{"WinterYukky"},
+						},
+					}},
+				}).Table("cte").Scan(nil)
 			},
 			want:     "WITH `cte` AS MATERIALIZED (SELECT * FROM `users` WHERE `name` = ?) SELECT * FROM `cte`",
 			wantArgs: []driver.Value{"WinterYukky"},
@@ -65,11 +112,17 @@ func TestWith_Query(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			mockDB, mock, err := sqlmock.New()
 			if err != nil {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
-			defer mockDB.Close()
+
+			t.Cleanup(func() {
+				_ = mockDB.Close()
+			})
+
 			db, _ := gorm.Open(mysql.New(mysql.Config{
 				Conn:                      mockDB,
 				SkipInitializeWithVersion: true,
@@ -77,10 +130,15 @@ func TestWith_Query(t *testing.T) {
 			if err := db.Use(New()); err != nil {
 				t.Fatalf("an error '%s' was not expected when using the database plugin", err)
 			}
-			mock.ExpectQuery(regexp.QuoteMeta(tt.want)).WithArgs(tt.wantArgs...).WillReturnRows(sqlmock.NewRows([]string{}))
+
+			mock.ExpectQuery(regexp.QuoteMeta(tt.want)).
+				WithArgs(tt.wantArgs...).
+				WillReturnRows(sqlmock.NewRows([]string{}))
+
 			if tt.operation != nil {
 				db = tt.operation(db)
 			}
+
 			if db.Error != nil {
 				t.Error(db.Error.Error())
 			}
@@ -89,22 +147,30 @@ func TestWith_Query(t *testing.T) {
 }
 
 func TestNewWith(t *testing.T) {
+	t.Parallel()
+
 	mockDB, _, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer mockDB.Close()
+
+	t.Cleanup(func() {
+		_ = mockDB.Close()
+	})
+
 	db, _ := gorm.Open(mysql.New(mysql.Config{
 		Conn:                      mockDB,
 		SkipInitializeWithVersion: true,
 	}))
 	db = db.Table("users")
+
 	type args struct {
 		name         string
 		subquery     interface{}
 		materialized bool
 		args         []interface{}
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -157,7 +223,10 @@ func TestNewWith(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewWith(tt.args.name, tt.args.subquery, tt.args.materialized, tt.args.args...); !reflect.DeepEqual(got, tt.want) {
+			t.Parallel()
+
+			got := NewWith(tt.args.name, tt.args.subquery, tt.args.materialized, tt.args.args...)
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewWith() = %v, want %v", got, tt.want)
 			}
 		})

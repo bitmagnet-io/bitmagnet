@@ -11,7 +11,7 @@ import (
 )
 
 type LocalSearch interface {
-	ContentById(context.Context, model.ContentRef) (model.Content, error)
+	ContentByID(context.Context, model.ContentRef) (model.Content, error)
 	ContentBySearch(context.Context, model.ContentType, string, model.Year) (model.Content, error)
 }
 
@@ -19,7 +19,7 @@ type localSearch struct {
 	search.Search
 }
 
-func (l localSearch) ContentById(ctx context.Context, ref model.ContentRef) (model.Content, error) {
+func (l localSearch) ContentByID(ctx context.Context, ref model.ContentRef) (model.Content, error) {
 	options := []query.Option{
 		query.Where(
 			search.ContentTypeCriteria(ref.Type),
@@ -43,36 +43,49 @@ func (l localSearch) ContentById(ctx context.Context, ref model.ContentRef) (mod
 			}),
 		))
 	}
-	result, err := l.Search.Content(ctx, options...)
+
+	result, err := l.Content(ctx, options...)
 	if err != nil {
 		return model.Content{}, err
 	}
+
 	if len(result.Items) == 0 {
 		return model.Content{}, classification.ErrUnmatched
 	}
+
 	return result.Items[0].Content, nil
 }
 
-func (l localSearch) ContentBySearch(ctx context.Context, ct model.ContentType, baseTitle string, year model.Year) (model.Content, error) {
+func (l localSearch) ContentBySearch(
+	ctx context.Context,
+	ct model.ContentType,
+	baseTitle string,
+	year model.Year,
+) (model.Content, error) {
 	options := []query.Option{
 		query.Where(search.ContentTypeCriteria(ct)),
-		query.QueryString(fmt.Sprintf("\"%s\"", baseTitle)),
+		query.SearchString(fmt.Sprintf("\"%s\"", baseTitle)),
 		query.OrderByQueryStringRank(),
 		query.Limit(10),
 		search.ContentDefaultPreload(),
 		search.ContentDefaultHydrate(),
 	}
 	if !year.IsNil() {
-		options = append(options, query.Where(search.ContentReleaseDateCriteria(model.NewDateRangeFromYear(year))))
+		options = append(
+			options,
+			query.Where(search.ContentReleaseDateCriteria(model.NewDateRangeFromYear(year))),
+		)
 	}
-	result, searchErr := l.Search.Content(
+
+	result, searchErr := l.Content(
 		ctx,
 		options...,
 	)
 	if searchErr != nil {
 		return model.Content{}, searchErr
 	}
-	if bestMatch, ok := levenshteinFindBestMatch[search.ContentResultItem](
+
+	bestMatch, ok := levenshteinFindBestMatch[search.ContentResultItem](
 		baseTitle,
 		result.Items,
 		func(item search.ContentResultItem) []string {
@@ -80,11 +93,13 @@ func (l localSearch) ContentBySearch(ctx context.Context, ct model.ContentType, 
 			if item.OriginalTitle.Valid {
 				candidates = append(candidates, item.OriginalTitle.String)
 			}
+
 			return candidates
 		},
-	); !ok {
+	)
+	if !ok {
 		return model.Content{}, classification.ErrUnmatched
-	} else {
-		return bestMatch.Content, nil
 	}
+
+	return bestMatch.Content, nil
 }

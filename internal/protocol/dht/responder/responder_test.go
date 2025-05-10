@@ -2,15 +2,16 @@ package responder
 
 import (
 	"context"
+	"net/netip"
+	"testing"
+	"time"
+
 	"github.com/anacrolix/dht/v2/krpc"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable/mocks"
+	ktable_mocks "github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable/mocks"
 	"github.com/stretchr/testify/assert"
-	"net/netip"
-	"testing"
-	"time"
 )
 
 type testResponderMocks struct {
@@ -21,8 +22,11 @@ type testResponderMocks struct {
 }
 
 func newTestResponderMocks(t *testing.T) testResponderMocks {
+	t.Helper()
+
 	nodeID := protocol.RandomNodeID()
 	tableMock := ktable_mocks.NewTable(t)
+
 	return testResponderMocks{
 		nodeID: nodeID,
 		table:  tableMock,
@@ -49,15 +53,15 @@ func (m mockedPeer) Addr() netip.AddrPort {
 	return m.NodeInfo.Addr.ToAddrPort()
 }
 
-func (m mockedPeer) Time() time.Time {
+func (mockedPeer) Time() time.Time {
 	return time.Time{}
 }
 
-func (m mockedPeer) Dropped() bool {
+func (mockedPeer) Dropped() bool {
 	return false
 }
 
-func (m mockedPeer) IsSampleInfoHashesCandidate() bool {
+func (mockedPeer) IsSampleInfoHashesCandidate() bool {
 	return true
 }
 
@@ -71,21 +75,24 @@ func (m mockedHash) ID() protocol.ID {
 }
 
 func (m mockedHash) Peers() []ktable.HashPeer {
-	var peers []ktable.HashPeer
+	peers := make([]ktable.HashPeer, 0, len(m.nodeInfos))
 	for _, nodeInfo := range m.nodeInfos {
 		peers = append(peers, ktable.HashPeer{
-			//ID:   nodeInfo.ID,
+			// ID:   nodeInfo.ID,
 			Addr: nodeInfo.Addr.ToAddrPort(),
 		})
 	}
+
 	return peers
 }
 
-func (m mockedHash) Dropped() bool {
+func (mockedHash) Dropped() bool {
 	return false
 }
 
 func TestResponder_ping(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	msg := dht.RecvMsg{
 		From: mocks.sender.Addr.ToAddrPort(),
@@ -102,6 +109,8 @@ func TestResponder_ping(t *testing.T) {
 }
 
 func TestResponder_ping__missing_args(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	msg := dht.RecvMsg{
 		From: mocks.sender.Addr.ToAddrPort(),
@@ -114,6 +123,8 @@ func TestResponder_ping__missing_args(t *testing.T) {
 }
 
 func TestResponder_find_node(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	target := protocol.RandomNodeID()
 	msg := dht.RecvMsg{
@@ -146,6 +157,8 @@ func TestResponder_find_node(t *testing.T) {
 }
 
 func TestResponder_find_node__missing_target(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	msg := dht.RecvMsg{
 		From: mocks.sender.Addr.ToAddrPort(),
@@ -161,6 +174,8 @@ func TestResponder_find_node__missing_target(t *testing.T) {
 }
 
 func TestResponder_get_peers__values(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	infoHash := protocol.RandomNodeID()
 	msg := dht.RecvMsg{
@@ -183,6 +198,7 @@ func TestResponder_get_peers__values(t *testing.T) {
 		Hash:  mockedHash{nodeInfos: nodeInfos},
 		Found: true,
 	})
+
 	ret, err := mocks.responder.Respond(context.Background(), msg)
 	assert.Equal(t, dht.Return{
 		ID: mocks.nodeID,
@@ -198,6 +214,8 @@ func TestResponder_get_peers__values(t *testing.T) {
 }
 
 func TestResponder_get_peers__nodes(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	infoHash := protocol.RandomNodeID()
 	msg := dht.RecvMsg{
@@ -224,6 +242,7 @@ func TestResponder_get_peers__nodes(t *testing.T) {
 	mocks.table.On("GetHashOrClosestNodes", infoHash).Return(ktable.GetHashOrClosestNodesResult{
 		ClosestNodes: peers,
 	})
+
 	ret, err := mocks.responder.Respond(context.Background(), msg)
 	assert.Equal(t, dht.Return{
 		ID:     mocks.nodeID,
@@ -235,6 +254,8 @@ func TestResponder_get_peers__nodes(t *testing.T) {
 }
 
 func TestResponder_get_peers__missing_info_hash(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	msg := dht.RecvMsg{
 		From: mocks.sender.Addr.ToAddrPort(),
@@ -250,6 +271,8 @@ func TestResponder_get_peers__missing_info_hash(t *testing.T) {
 }
 
 func TestResponder_announce_peer__implied_port(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	infoHash := protocol.RandomNodeID()
 	expectedToken := mocks.responder.announceToken(infoHash, mocks.sender.ID, mocks.sender.Addr.ToAddrPort().Addr())
@@ -265,12 +288,14 @@ func TestResponder_announce_peer__implied_port(t *testing.T) {
 			},
 		},
 	}
+
 	mocks.table.On("BatchCommand", ktable.PutHash{
 		ID: infoHash,
 		Peers: []ktable.HashPeer{{
 			Addr: mocks.sender.Addr.ToAddrPort(),
 		}},
 	}).Return(nil)
+
 	ret, err := mocks.responder.Respond(context.Background(), msg)
 	assert.Equal(t, dht.Return{
 		ID: mocks.nodeID,
@@ -279,6 +304,8 @@ func TestResponder_announce_peer__implied_port(t *testing.T) {
 }
 
 func TestResponder_announce_peer__specified_port(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	infoHash := protocol.RandomNodeID()
 	expectedToken := mocks.responder.announceToken(infoHash, mocks.sender.ID, mocks.sender.Addr.ToAddrPort().Addr())
@@ -295,12 +322,14 @@ func TestResponder_announce_peer__specified_port(t *testing.T) {
 			},
 		},
 	}
+
 	mocks.table.On("BatchCommand", ktable.PutHash{
 		ID: infoHash,
 		Peers: []ktable.HashPeer{{
 			Addr: netip.AddrPortFrom(mocks.sender.Addr.ToAddrPort().Addr(), uint16(port)),
 		}},
 	}).Return(nil)
+
 	ret, err := mocks.responder.Respond(context.Background(), msg)
 	assert.Equal(t, dht.Return{
 		ID: mocks.nodeID,
@@ -309,6 +338,8 @@ func TestResponder_announce_peer__specified_port(t *testing.T) {
 }
 
 func TestResponder_sample_infohashes(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	msg := dht.RecvMsg{
 		From: mocks.sender.Addr.ToAddrPort(),
@@ -340,6 +371,7 @@ func TestResponder_sample_infohashes(t *testing.T) {
 		Nodes:       peers,
 		TotalHashes: int(num),
 	})
+
 	ret, err := mocks.responder.Respond(context.Background(), msg)
 	assert.Equal(t, dht.Return{
 		ID:    mocks.nodeID,
@@ -358,6 +390,8 @@ func TestResponder_sample_infohashes(t *testing.T) {
 }
 
 func TestResponder_unknown_method(t *testing.T) {
+	t.Parallel()
+
 	mocks := newTestResponderMocks(t)
 	msg := dht.RecvMsg{
 		From: mocks.sender.Addr.ToAddrPort(),

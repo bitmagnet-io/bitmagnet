@@ -18,6 +18,7 @@ func (r *contentResolver) OriginalLanguage(ctx context.Context, obj *model.Conte
 	if obj.OriginalLanguage.Valid {
 		language = &obj.OriginalLanguage.Language
 	}
+
 	return language, nil
 }
 

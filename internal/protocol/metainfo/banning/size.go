@@ -2,6 +2,7 @@ package banning
 
 import (
 	"errors"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
 )
 
@@ -13,5 +14,6 @@ func (c sizeChecker) Check(info metainfo.Info) error {
 	if info.TotalLength() < c.min {
 		return errors.New("size too small")
 	}
+
 	return nil
 }

@@ -18,10 +18,11 @@ var attachTmdbContentBySearchPayloadSpec = payloadLiteral[string]{
 	description: "Attempt to attach content from the TMDB API with a search on the torrent name",
 }
 
-func (a attachTmdbContentBySearchAction) compileAction(ctx compilerContext) (action, error) {
+func (attachTmdbContentBySearchAction) compileAction(ctx compilerContext) (action, error) {
 	if _, err := attachTmdbContentBySearchPayloadSpec.Unmarshal(ctx); err != nil {
 		return action{}, ctx.error(err)
 	}
+
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result
@@ -31,20 +32,20 @@ func (a attachTmdbContentBySearchAction) compileAction(ctx compilerContext) (act
 			var content *model.Content
 			switch cl.ContentType.ContentType {
 			case model.ContentTypeTvShow:
-				if result, searchErr := ctx.tmdb_searchTvShow(cl.BaseTitle.String, cl.Date.Year); searchErr != nil {
+				result, searchErr := ctx.tmdbSearchTVShow(cl.BaseTitle.String, cl.Date.Year)
+				if searchErr != nil {
 					return cl, searchErr
-				} else {
-					content = &result
 				}
+				content = &result
 			default:
 				if len(cl.Episodes) > 0 {
 					return cl, classification.ErrUnmatched
 				}
-				if result, searchErr := ctx.tmdb_searchMovie(cl.BaseTitle.String, cl.Date.Year); searchErr != nil {
+				result, searchErr := ctx.tmdbSearchMovie(cl.BaseTitle.String, cl.Date.Year)
+				if searchErr != nil {
 					return cl, searchErr
-				} else {
-					content = &result
 				}
+				content = &result
 			}
 			cl.AttachContent(content)
 			return cl, nil
@@ -52,6 +53,6 @@ func (a attachTmdbContentBySearchAction) compileAction(ctx compilerContext) (act
 	}, nil
 }
 
-func (attachTmdbContentBySearchAction) JsonSchema() JsonSchema {
-	return attachTmdbContentBySearchPayloadSpec.JsonSchema()
+func (attachTmdbContentBySearchAction) JSONSchema() JSONSchema {
+	return attachTmdbContentBySearchPayloadSpec.JSONSchema()
 }

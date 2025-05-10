@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
-	"time"
 )
 
 func (c *crawler) runPing(ctx context.Context) {
@@ -16,8 +17,11 @@ func (c *crawler) runPing(ctx context.Context) {
 			// In either case we can continue.
 			return
 		}
+
 		res, err := c.client.Ping(ctx, n.Addr())
+
 		var nodeID protocol.ID
+
 		if err == nil {
 			nodeID = res.ID
 			if !n.ID().IsZero() && n.ID() != nodeID {
@@ -25,10 +29,19 @@ func (c *crawler) runPing(ctx context.Context) {
 				err = errors.New("node responded with a mismatching ID")
 			}
 		}
+
 		if err != nil {
-			c.kTable.BatchCommand(ktable.DropNode{ID: nodeID, Reason: fmt.Errorf("failed to respond to ping: %w", err)})
+			c.kTable.BatchCommand(ktable.DropNode{
+				ID:     nodeID,
+				Reason: fmt.Errorf("failed to respond to ping: %w", err),
+			})
 		} else {
-			c.kTable.BatchCommand(ktable.PutNode{ID: nodeID, Addr: n.Addr(), Options: []ktable.NodeOption{ktable.NodeResponded()}})
+			c.kTable.BatchCommand(ktable.PutNode{
+				ID:      nodeID,
+				Addr:    n.Addr(),
+				Options: []ktable.NodeOption{ktable.NodeResponded()},
+			},
+			)
 		}
 	})
 }

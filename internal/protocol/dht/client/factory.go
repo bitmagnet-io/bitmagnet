@@ -1,13 +1,14 @@
 package client
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
+	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/server"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"time"
 )
 
 type Params struct {
@@ -34,7 +35,8 @@ func New(p Params) Result {
 					nodeID: p.NodeID,
 					server: s,
 				},
-				// we make way to many queries to usefully log everything, but having a sample is helpful:
+				// we make way to many queries to usefully log everything, but having a sample is
+				// helpful:
 				logger: p.Logger.WithOptions(zap.WrapCore(func(core zapcore.Core) zapcore.Core {
 					return zapcore.NewSamplerWithOptions(core, time.Minute, 10, 0)
 				})).Named("dht_client"),

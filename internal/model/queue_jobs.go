@@ -13,12 +13,15 @@ func NewQueueJob(queue string, payload any, opts ...QueueJobOption) (QueueJob, e
 	if err != nil {
 		return QueueJob{}, err
 	}
+
 	payloadStr := string(payloadBytes)
 	h := sha256.New()
+
 	_, err = io.WriteString(h, queue+payloadStr)
 	if err != nil {
 		return QueueJob{}, err
 	}
+
 	j := QueueJob{
 		Fingerprint:      fmt.Sprintf("%x", h.Sum(nil)),
 		Queue:            queue,
@@ -30,6 +33,7 @@ func NewQueueJob(queue string, payload any, opts ...QueueJobOption) (QueueJob, e
 	for _, opt := range opts {
 		opt(&j)
 	}
+
 	return j, nil
 }
 

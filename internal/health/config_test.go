@@ -12,6 +12,8 @@ import (
 )
 
 func TestWithPeriodicCheckConfig(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	expectedName := "test"
 	cfg := checkerConfig{checks: map[string]*Check{}}
@@ -23,11 +25,13 @@ func TestWithPeriodicCheckConfig(t *testing.T) {
 	WithPeriodicCheck(interval, initialDelay, check)(&cfg)
 
 	// Assert
-	assert.Equal(t, 1, len(cfg.checks))
+	assert.Len(t, cfg.checks, 1)
 	assert.True(t, reflect.DeepEqual(check, *cfg.checks[expectedName]))
 }
 
 func TestWithCheckConfig(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	expectedName := "test"
 	cfg := checkerConfig{checks: map[string]*Check{}}
@@ -37,11 +41,13 @@ func TestWithCheckConfig(t *testing.T) {
 	WithCheck(check)(&cfg)
 
 	// Assert
-	require.Equal(t, 1, len(cfg.checks))
+	require.Len(t, cfg.checks, 1)
 	assert.True(t, reflect.DeepEqual(&check, cfg.checks[expectedName]))
 }
 
 func TestWithCacheDurationConfig(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	cfg := checkerConfig{}
 	duration := 5 * time.Hour
@@ -54,6 +60,8 @@ func TestWithCacheDurationConfig(t *testing.T) {
 }
 
 func TestWithDisabledCacheConfig(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	cfg := checkerConfig{}
 
@@ -65,6 +73,8 @@ func TestWithDisabledCacheConfig(t *testing.T) {
 }
 
 func TestWithTimeoutStartConfig(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	cfg := checkerConfig{}
 
@@ -76,6 +86,8 @@ func TestWithTimeoutStartConfig(t *testing.T) {
 }
 
 func TestWithDisabledDetailsConfig(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	cfg := checkerConfig{}
 
@@ -83,14 +95,16 @@ func TestWithDisabledDetailsConfig(t *testing.T) {
 	WithDisabledDetails()(&cfg)
 
 	// Assert
-	assert.Equal(t, true, cfg.detailsDisabled)
+	assert.True(t, cfg.detailsDisabled)
 }
 
 func TestWithMiddlewareConfig(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	cfg := HandlerConfig{}
 	mw := func(MiddlewareFunc) MiddlewareFunc {
-		return func(r *http.Request) CheckerResult {
+		return func(*http.Request) CheckerResult {
 			return CheckerResult{nil, StatusUp, nil}
 		}
 	}
@@ -99,14 +113,16 @@ func TestWithMiddlewareConfig(t *testing.T) {
 	WithMiddleware(mw)(&cfg)
 
 	// Assert
-	assert.Equal(t, 1, len(cfg.middleware))
+	assert.Len(t, cfg.middleware, 1)
 }
 
 func TestWithInterceptorConfig(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	cfg := checkerConfig{}
 	interceptor := func(InterceptorFunc) InterceptorFunc {
-		return func(ctx context.Context, name string, state CheckState) CheckState {
+		return func(context.Context, string, CheckState) CheckState {
 			return CheckState{}
 		}
 	}
@@ -115,10 +131,12 @@ func TestWithInterceptorConfig(t *testing.T) {
 	WithInterceptors(interceptor)(&cfg)
 
 	// Assert
-	assert.Equal(t, 1, len(cfg.interceptors))
+	assert.Len(t, cfg.interceptors, 1)
 }
 
 func TestWithResultWriterConfig(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	cfg := HandlerConfig{}
 	w := resultWriterMock{}
@@ -131,22 +149,26 @@ func TestWithResultWriterConfig(t *testing.T) {
 }
 
 func TestWithStatusChangeListenerConfig(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	cfg := checkerConfig{}
 
 	// Act
 	// Use of non standard AvailabilityStatus codes.
-	WithStatusListener(func(ctx context.Context, state CheckerState) {})(&cfg)
+	WithStatusListener(func(context.Context, CheckerState) {})(&cfg)
 
 	// Assert
-	assert.NotNil(t, cfg.statusChangeListener)
 	// Not possible in Go to compare functions.
+	assert.NotNil(t, cfg.statusChangeListener)
 }
 
 func TestNewWithDefaults(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	configApplied := false
-	opt := func(config *checkerConfig) { configApplied = true }
+	opt := func(*checkerConfig) { configApplied = true }
 
 	// Act
 	checker := NewChecker(opt)
@@ -159,9 +181,11 @@ func TestNewWithDefaults(t *testing.T) {
 }
 
 func TestNewCheckerWithDefaults(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	configApplied := false
-	opt := func(config *checkerConfig) { configApplied = true }
+	opt := func(*checkerConfig) { configApplied = true }
 
 	// Act
 	checker := NewChecker(opt)
@@ -174,6 +198,8 @@ func TestNewCheckerWithDefaults(t *testing.T) {
 }
 
 func TestCheckerAutostartConfig(t *testing.T) {
+	t.Parallel()
+
 	// Arrange + Act
 	c := NewChecker()
 
@@ -182,6 +208,8 @@ func TestCheckerAutostartConfig(t *testing.T) {
 }
 
 func TestCheckerAutostartDisabledConfig(t *testing.T) {
+	t.Parallel()
+
 	// Arrange
 	c := NewChecker(WithDisabledAutostart())
 

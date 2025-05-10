@@ -1,12 +1,16 @@
 package keywords
 
 import (
-	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParser(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		input   []string
 		match   []string
@@ -29,7 +33,7 @@ func TestParser(t *testing.T) {
 		},
 		{
 			input: []string{"foo(bar"},
-			err:   ErrUnexpectedEof,
+			err:   ErrUnexpectedEOF,
 		},
 		{
 			input: []string{"foo\\(bar"},
@@ -42,16 +46,21 @@ func TestParser(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(strings.Join(test.input, ", "), func(t *testing.T) {
+			t.Parallel()
+
 			r, err := NewRegexFromKeywords(test.input...)
 			if test.err != nil {
 				assert.ErrorIs(t, err, test.err)
 				return
 			}
-			assert.NoError(t, err)
+
+			require.NoError(t, err)
 			t.Logf("regex: %s", r.String())
+
 			for _, m := range test.match {
 				assert.True(t, r.MatchString(m))
 			}
+
 			for _, nm := range test.nomatch {
 				assert.False(t, r.MatchString(nm))
 			}

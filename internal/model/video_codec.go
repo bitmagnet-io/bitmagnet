@@ -1,11 +1,12 @@
 package model
 
 import (
+	"regexp"
+	"strings"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/keywords"
 	"github.com/bitmagnet-io/bitmagnet/internal/regex"
 	"github.com/hedhyw/rex/pkg/rex"
-	"regexp"
-	"strings"
 )
 
 // VideoCodec represents the codec of a video
@@ -25,6 +26,7 @@ func createVideoCodecAndOptionalReleaseGroupRegex() *regexp.Regexp {
 	for videoCodec := range videoCodecAliases {
 		names = append(names, videoCodec)
 	}
+
 	return rex.New(
 		rex.Group.Composite(
 			rex.Chars.Begin(),
@@ -55,9 +57,11 @@ func InferVideoCodecAndReleaseGroup(input string) (NullVideoCodec, NullString) {
 		if videoCodec, parseErr := ParseVideoCodec(match[1]); parseErr == nil {
 			return NewNullVideoCodec(videoCodec), releaseGroup
 		}
+
 		if aliased, ok := videoCodecAliases[strings.ToLower(match[1])]; ok {
 			return NewNullVideoCodec(aliased), releaseGroup
 		}
 	}
+
 	return NullVideoCodec{}, NullString{}
 }

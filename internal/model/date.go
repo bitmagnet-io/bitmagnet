@@ -34,6 +34,7 @@ func NewDateFromIsoString(str string) (Date, error) {
 	if err != nil {
 		return Date{}, err
 	}
+
 	return NewDateFromTime(t), nil
 }
 
@@ -43,6 +44,7 @@ func (d Date) Time() time.Time {
 	if d.Year == 1 && d.Month == time.January && d.Day == 1 {
 		nsec = 1
 	}
+
 	return time.Date(int(d.Year), d.Month, int(d.Day), 0, 0, 0, nsec, time.UTC)
 }
 
@@ -55,7 +57,12 @@ func (d Date) IsNil() bool {
 }
 
 func (d Date) IsValid() bool {
-	return d.Year >= 1000 && d.Year <= 9999 && d.Month >= 1 && d.Month <= 12 && d.Day >= 1 && d.Day <= numDaysInMonth(d.Year, d.Month)
+	return d.Year >= 1000 &&
+		d.Year <= 9999 &&
+		d.Month >= 1 &&
+		d.Month <= 12 &&
+		d.Day >= 1 &&
+		d.Day <= numDaysInMonth(d.Year, d.Month)
 }
 
 func (d *Date) Scan(value interface{}) error {
@@ -64,15 +71,19 @@ func (d *Date) Scan(value interface{}) error {
 		if !t.IsZero() {
 			*d = NewDateFromTime(t)
 		}
+
 		return nil
 	}
+
 	return nil
 }
 
 func (d Date) Value() (driver.Value, error) {
 	if d.IsNil() {
+		//nolint:nilnil
 		return nil, nil
 	}
+
 	return d.Time(), nil
 }
 
@@ -89,13 +100,16 @@ func (d *Date) UnmarshalGQL(v interface{}) error {
 	if !strOk {
 		return errors.New("must be a string")
 	}
+
 	if len(str) > 0 {
 		nD, dErr := NewDateFromIsoString(str)
 		if dErr != nil {
 			return dErr
 		}
+
 		*d = nD
 	}
+
 	return nil
 }
 
@@ -104,6 +118,7 @@ func (d Date) MarshalGQL(w io.Writer) {
 		_, _ = w.Write([]byte("null"))
 		return
 	}
+
 	_, _ = w.Write([]byte(`"` + d.IsoDateString() + `"`))
 }
 
@@ -116,9 +131,10 @@ func numDaysInMonth(year Year, month time.Month) uint8 {
 	case time.February:
 		if year%4 == 0 {
 			return 29
-		} else {
-			return 28
 		}
+
+		return 28
 	}
+
 	return 0
 }

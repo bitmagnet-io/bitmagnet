@@ -3,16 +3,17 @@ package server
 import (
 	"context"
 	"fmt"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
+	"net/netip"
+	"time"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/responder"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"golang.org/x/time/rate"
-	"net/netip"
-	"time"
 )
 
 type Params struct {
@@ -33,8 +34,10 @@ type Result struct {
 	QueryConcurrency  prometheus.Collector                    `group:"prometheus_collectors"`
 }
 
-const namespace = "bitmagnet"
-const subsystem = "dht_server"
+const (
+	namespace = "bitmagnet"
+	subsystem = "dht_server"
+)
 
 func New(p Params) Result {
 	lastResponses := &concurrency.AtomicValue[LastResponses]{}
@@ -45,14 +48,17 @@ func New(p Params) Result {
 				prometheusCollector: collector,
 				server: healthCollector{
 					baseServer: &server{
-						stopped:          make(chan struct{}),
-						localAddr:        netip.AddrPortFrom(netip.IPv4Unspecified(), p.Config.Port),
+						stopped: make(chan struct{}),
+						localAddr: netip.AddrPortFrom(
+							netip.IPv4Unspecified(),
+							p.Config.Port,
+						),
 						socket:           NewSocket(),
 						queries:          make(map[string]chan dht.RecvMsg),
 						queryTimeout:     p.Config.QueryTimeout,
 						responder:        p.Responder,
 						responderTimeout: time.Second * 5,
-						idIssuer:         &variantIdIssuer{},
+						idIssuer:         &variantIDIssuer{},
 						logger:           p.Logger.Named(subsystem),
 					},
 					lastResponses: lastResponses,
@@ -63,8 +69,10 @@ func New(p Params) Result {
 		if err := s.start(); err != nil {
 			return nil, fmt.Errorf("could not start server: %w", err)
 		}
+
 		return s, nil
 	})
+
 	return Result{
 		Server: ls,
 		AppHook: fx.Hook{

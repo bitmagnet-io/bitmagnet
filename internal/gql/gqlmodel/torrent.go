@@ -2,6 +2,7 @@ package gqlmodel
 
 import (
 	"context"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
@@ -15,16 +16,22 @@ type TorrentQuery struct {
 	TorrentMetricsClient torrentmetrics.Client
 }
 
-func (t TorrentQuery) SuggestTags(ctx context.Context, input *gen.SuggestTagsQueryInput) (search.TorrentSuggestTagsResult, error) {
+func (t TorrentQuery) SuggestTags(
+	ctx context.Context,
+	input *gen.SuggestTagsQueryInput,
+) (search.TorrentSuggestTagsResult, error) {
 	suggestTagsQuery := search.SuggestTagsQuery{}
+
 	if input != nil {
 		if prefix, ok := input.Prefix.ValueOK(); ok && prefix != nil {
 			suggestTagsQuery.Prefix = *prefix
 		}
+
 		if exclusions, ok := input.Exclusions.ValueOK(); ok {
 			suggestTagsQuery.Exclusions = exclusions
 		}
 	}
+
 	return t.Search.TorrentSuggestTags(ctx, suggestTagsQuery)
 }
 
@@ -33,10 +40,12 @@ func (t TorrentQuery) ListSources(ctx context.Context) (gen.TorrentListSourcesRe
 	if err != nil {
 		return gen.TorrentListSourcesResult{}, err
 	}
+
 	sources := make([]model.TorrentSource, len(result))
 	for i := range result {
 		sources[i] = *result[i]
 	}
+
 	return gen.TorrentListSourcesResult{
 		Sources: sources,
 	}, nil

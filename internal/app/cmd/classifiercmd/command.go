@@ -3,12 +3,13 @@ package classifiercmd
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/lazy"
+	"io"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
+	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/fx"
 	"gopkg.in/yaml.v3"
-	"io"
 )
 
 type Params struct {
@@ -52,7 +53,11 @@ func New(p Params) (Result, error) {
 					&formatFlag,
 				},
 				Action: func(ctx *cli.Context) error {
-					return write(ctx.App.Writer, classifier.DefaultJsonSchema(), ctx.String("format"))
+					return write(
+						ctx.App.Writer,
+						classifier.DefaultJSONSchema(),
+						ctx.String("format"),
+					)
 				},
 			},
 		},
@@ -64,6 +69,7 @@ func write(writer io.Writer, src any, format string) error {
 		output    []byte
 		outputErr error
 	)
+
 	switch format {
 	case "json":
 		output, outputErr = json.MarshalIndent(src, "", "  ")
@@ -73,9 +79,12 @@ func write(writer io.Writer, src any, format string) error {
 	default:
 		outputErr = fmt.Errorf("unsupported format: %s", format)
 	}
+
 	if outputErr != nil {
 		return outputErr
 	}
+
 	_, writeErr := writer.Write(output)
+
 	return writeErr
 }

@@ -10,6 +10,7 @@ type AtomicValue[T any] struct {
 func (a *AtomicValue[T]) Get() T {
 	a.mutex.RLock()
 	defer a.mutex.RUnlock()
+
 	return a.value
 }
 
@@ -23,5 +24,6 @@ func (a *AtomicValue[T]) Update(fn func(T) T) T {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
 	a.value = fn(a.value)
+
 	return a.value
 }

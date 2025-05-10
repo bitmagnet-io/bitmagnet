@@ -196,9 +196,7 @@ func (s AvailabilityStatus) criticality() int {
 	}
 }
 
-var (
-	CheckTimeoutErr = errors.New("check timed out")
-)
+var ErrTimeout = errors.New("check timed out")
 
 func newChecker(cfg checkerConfig) *defaultChecker {
 	checkState := map[string]CheckState{}
@@ -230,8 +228,8 @@ func (ck *defaultChecker) Start() {
 		ck.startedAt = time.Now()
 		defer ck.startPeriodicChecks(ctx)
 
-		// We run the initial check execution in a separate goroutine so that server startup is not blocked in case of
-		// a bad check that runs for a longer period of time.
+		// We run the initial check execution in a separate goroutine so that server startup is not blocked in
+		// case of a bad check that runs for a longer period of time.
 		go ck.Check(ctx)
 	}
 
@@ -258,6 +256,7 @@ func (ck *defaultChecker) Stop() {
 func (ck *defaultChecker) GetRunningPeriodicCheckCount() int {
 	ck.mtx.Lock()
 	defer ck.mtx.Unlock()
+
 	return ck.periodicCheckCount
 }
 
@@ -265,6 +264,7 @@ func (ck *defaultChecker) GetRunningPeriodicCheckCount() int {
 func (ck *defaultChecker) IsStarted() bool {
 	ck.mtx.Lock()
 	defer ck.mtx.Unlock()
+
 	return ck.started
 }
 
@@ -272,6 +272,7 @@ func (ck *defaultChecker) IsStarted() bool {
 func (ck *defaultChecker) StartedAt() time.Time {
 	ck.mtx.Lock()
 	defer ck.mtx.Unlock()
+
 	return ck.startedAt
 }
 
@@ -296,8 +297,6 @@ func (ck *defaultChecker) runSynchronousChecks(ctx context.Context) {
 	)
 
 	for _, check := range ck.cfg.checks {
-		check := check
-
 		if !isPeriodicCheck(check) {
 			checkState := ck.state.CheckState[check.Name]
 
@@ -330,19 +329,18 @@ func (ck *defaultChecker) startPeriodicChecks(ctx context.Context) {
 
 	// Start periodic checks.
 	for _, check := range ck.cfg.checks {
-		check := check
-
 		if isPeriodicCheck(check) {
 			// ATTENTION: Access to check and ck.state.CheckState is not synchronized here,
 			// 	assuming that the accessed values are never changed, such as
 			//  - ck.state.CheckState[check.Name]
-			//  - check object itself (there will never be a new Check object created for the configured check)
+			// - check object itself (there will never be a new Check object created for the configured
+			// check)
 			//	- check.updateInterval (used by isPeriodicCheck)
 			//  - check.initialDelay
 			// ALSO:
-			//  - The check state itself is never synchronized on, since the only place where values can be changed are
+			// - The check state itself is never synchronized on, since the only place where values can be
+			// changed are
 			//    within this goroutine.
-
 			ck.periodicCheckCount++
 			ck.wg.Add(1)
 
@@ -365,15 +363,17 @@ func (ck *defaultChecker) startPeriodicChecks(ctx context.Context) {
 						// 	via "check.DisablePanicRecovery".
 						//
 						// ATTENTION: executeCheck is executed with its own copy of the checks
-						// 	state (see checkState above). This means that if there is a global status
-						//	listener that is configured by the user with health.WithStatusListener,
-						//	and that global status listener changes this checks state as long as
-						//  executeCheck is running, the modifications made by the global listener
-						//  will be lost after the function completes, since we overwrite the state
+						// 	state (see checkState above). This means that if there is a global
+						// status 	listener that is configured by the user with
+						// health.WithStatusListener, 	and that global status listener changes
+						// this checks state as long as executeCheck is running, the
+						// modifications made by the global listener will be lost after the
+						// function completes, since we overwrite the state
 						//  below using updateState.
 						//  This means that global listeners should not change the checks state
 						//  or accept losing their updates. This will be the case especially for
-						//  long-running checks. Hence, the checkState is read-only for interceptors.
+						// long-running checks. Hence, the checkState is read-only for
+						// interceptors.
 						ctx, checkState = executeCheck(ctx, &ck.cfg, check, checkState)
 
 						ck.mtx.Lock()
@@ -412,12 +412,15 @@ func (ck *defaultChecker) mapStateToCheckerResult() CheckerResult {
 
 	if numChecks > 0 && !ck.cfg.detailsDisabled {
 		checkResults = make(map[string]CheckResult, numChecks)
+
 		for _, check := range ck.cfg.checks {
 			checkState := ck.state.CheckState[check.Name]
+
 			timestamp := checkState.LastCheckedAt
 			if timestamp.IsZero() {
 				timestamp = ck.startedAt
 			}
+
 			checkResults[check.Name] = CheckResult{
 				Status:    checkState.Status,
 				Error:     checkState.Result,
@@ -455,6 +458,7 @@ func withCheckContext(ctx context.Context, check *Check, f func(checkCtx context
 	if check.Timeout > 0 {
 		ctx, cancel = context.WithTimeout(ctx, check.Timeout)
 	}
+
 	defer cancel()
 	f(ctx)
 }
@@ -479,10 +483,17 @@ func executeCheck(
 	interceptors = append(interceptors, check.Interceptors...)
 
 	if isActiveCheck(check) {
-		newState = withInterceptors(interceptors, func(ctx context.Context, _ string, state CheckState) CheckState {
-			checkFuncResult := executeCheckFunc(ctx, check)
-			return createNextCheckState(checkFuncResult, check, state)
-		})(ctx, check.Name, newState)
+		newState = withInterceptors(
+			interceptors,
+			func(ctx context.Context, _ string, state CheckState) CheckState {
+				checkFuncResult := executeCheckFunc(ctx, check)
+				return createNextCheckState(checkFuncResult, check, state)
+			},
+		)(
+			ctx,
+			check.Name,
+			newState,
+		)
 	} else {
 		newState.Status = StatusInactive
 	}
@@ -503,7 +514,8 @@ func executeCheckFunc(ctx context.Context, check *Check) error {
 		defer func() {
 			if !check.DisablePanicRecovery {
 				if r := recover(); r != nil {
-					// TODO: Provide a configurable panic handler configuration option, so developers can decide
+					// TODO: Provide a configurable panic handler configuration option, so
+					// developers can decide
 					// 	what to do with panics.
 					err, ok := r.(error)
 					if ok {
@@ -522,7 +534,7 @@ func executeCheckFunc(ctx context.Context, check *Check) error {
 	case err := <-res:
 		return err
 	case <-ctx.Done():
-		return CheckTimeoutErr
+		return ErrTimeout
 	}
 }
 

@@ -1,8 +1,9 @@
 package maps
 
 import (
-	"github.com/facette/natsort"
 	"sort"
+
+	"github.com/facette/natsort"
 )
 
 type StringMap[T interface{}] map[string]T
@@ -18,9 +19,11 @@ func (m StringMap[T]) OrderedEntries() []StringMapEntry[T] {
 			Value: v,
 		})
 	}
+
 	sort.Slice(entries, func(i, j int) bool {
 		return natsort.Compare(entries[i].Key, entries[j].Key)
 	})
+
 	return entries
 }
 

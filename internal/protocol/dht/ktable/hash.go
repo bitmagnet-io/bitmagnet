@@ -19,7 +19,7 @@ type hash struct {
 	id           ID
 	peers        map[string]HashPeer
 	discoveredAt time.Time
-	//lastRequestedAt time.Time
+	// lastRequestedAt time.Time
 	droppedReason error
 	reverseMap    *reverseMap
 }
@@ -71,6 +71,7 @@ func (h *hash) Peers() []HashPeer {
 	for _, p := range h.peers {
 		peers = append(peers, p)
 	}
+
 	return peers
 }
 

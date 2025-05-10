@@ -1,7 +1,7 @@
 package dhtfx
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/config/configfx"
+	"github.com/bitmagnet-io/bitmagnet/internal/config/configfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/client"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
@@ -16,10 +16,8 @@ func New() fx.Option {
 		configfx.NewConfigModule[server.Config]("dht_server", server.NewDefaultConfig()),
 		fx.Provide(
 			fx.Annotated{
-				Name: "dht_node_id",
-				Target: func() protocol.ID {
-					return protocol.RandomNodeIDWithClientSuffix()
-				},
+				Name:   "dht_node_id",
+				Target: protocol.RandomNodeIDWithClientSuffix,
 			},
 			client.New,
 			ktable.New,

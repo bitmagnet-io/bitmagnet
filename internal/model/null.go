@@ -29,13 +29,16 @@ func (n *NullInt) Scan(value interface{}) error {
 		n.Int = int(v)
 		n.Valid = true
 	}
+
 	return nil
 }
 
 func (n NullInt) Value() (driver.Value, error) {
 	if !n.Valid {
+		//nolint:nilnil
 		return nil, nil
 	}
+
 	return n.Int, nil
 }
 
@@ -60,31 +63,39 @@ func (n *NullString) Scan(value interface{}) error {
 		n.String = v
 		n.Valid = true
 	}
+
 	return nil
 }
 
 func (n NullString) Value() (driver.Value, error) {
 	if !n.Valid {
+		//nolint:nilnil
 		return nil, nil
 	}
+
 	return n.String, nil
 }
 
 func (n NullString) MarshalJSON() ([]byte, error) {
 	const nullStr = "null"
+
 	if n.Valid {
 		return json.Marshal(n.String)
 	}
+
 	return []byte(nullStr), nil
 }
 
 func (n *NullString) UnmarshalJSON(b []byte) error {
 	var x interface{}
+
 	err := json.Unmarshal(b, &x)
 	if err != nil {
 		return err
 	}
+
 	err = n.Scan(x)
+
 	return err
 }
 
@@ -93,6 +104,7 @@ func (n *NullString) UnmarshalGQL(v interface{}) error {
 		n.Valid = false
 		return nil
 	}
+
 	switch v := v.(type) {
 	case string:
 		n.String = v
@@ -101,7 +113,9 @@ func (n *NullString) UnmarshalGQL(v interface{}) error {
 	default:
 		return fmt.Errorf("wrong type")
 	}
+
 	n.Valid = true
+
 	return nil
 }
 
@@ -110,6 +124,7 @@ func (n NullString) MarshalGQL(w io.Writer) {
 		_, _ = w.Write([]byte("null"))
 		return
 	}
+
 	_, _ = fmt.Fprintf(w, "%q", n.String)
 }
 
@@ -134,13 +149,16 @@ func (n *NullBool) Scan(value interface{}) error {
 		n.Bool = v
 		n.Valid = true
 	}
+
 	return nil
 }
 
 func (n NullBool) Value() (driver.Value, error) {
 	if !n.Valid {
+		//nolint:nilnil
 		return nil, nil
 	}
+
 	return n.Bool, nil
 }
 
@@ -149,6 +167,7 @@ func (n *NullBool) UnmarshalGQL(v interface{}) error {
 		n.Valid = false
 		return nil
 	}
+
 	switch v := v.(type) {
 	case bool:
 		n.Bool = v
@@ -160,7 +179,9 @@ func (n *NullBool) UnmarshalGQL(v interface{}) error {
 	default:
 		return fmt.Errorf("wrong type")
 	}
+
 	n.Valid = true
+
 	return nil
 }
 
@@ -169,6 +190,7 @@ func (n NullBool) MarshalGQL(w io.Writer) {
 		_, _ = w.Write([]byte("null"))
 		return
 	}
+
 	_, _ = fmt.Fprintf(w, "%t", n.Bool)
 }
 
@@ -193,13 +215,16 @@ func (n *NullFloat32) Scan(value interface{}) error {
 		n.Float32 = float32(v)
 		n.Valid = true
 	}
+
 	return nil
 }
 
 func (n NullFloat32) Value() (driver.Value, error) {
 	if !n.Valid {
+		//nolint:nilnil
 		return nil, nil
 	}
+
 	return n.Float32, nil
 }
 
@@ -208,6 +233,7 @@ func (n *NullFloat32) UnmarshalGQL(v interface{}) error {
 		n.Valid = false
 		return nil
 	}
+
 	switch v := v.(type) {
 	case int:
 		n.Float32 = float32(v)
@@ -233,7 +259,9 @@ func (n *NullFloat32) UnmarshalGQL(v interface{}) error {
 	default:
 		return fmt.Errorf("wrong type")
 	}
+
 	n.Valid = true
+
 	return nil
 }
 
@@ -242,6 +270,7 @@ func (n NullFloat32) MarshalGQL(w io.Writer) {
 		_, _ = w.Write([]byte("null"))
 		return
 	}
+
 	_, _ = fmt.Fprintf(w, "%f", n.Float32)
 }
 
@@ -266,13 +295,16 @@ func (n *NullFloat64) Scan(value interface{}) error {
 		n.Float64 = v
 		n.Valid = true
 	}
+
 	return nil
 }
 
 func (n NullFloat64) Value() (driver.Value, error) {
 	if !n.Valid {
+		//nolint:nilnil
 		return nil, nil
 	}
+
 	return n.Float64, nil
 }
 
@@ -281,6 +313,7 @@ func (n *NullFloat64) UnmarshalGQL(v interface{}) error {
 		n.Valid = false
 		return nil
 	}
+
 	switch v := v.(type) {
 	case int:
 		n.Float64 = float64(v)
@@ -306,7 +339,9 @@ func (n *NullFloat64) UnmarshalGQL(v interface{}) error {
 	default:
 		return fmt.Errorf("wrong type")
 	}
+
 	n.Valid = true
+
 	return nil
 }
 
@@ -315,6 +350,7 @@ func (n NullFloat64) MarshalGQL(w io.Writer) {
 		_, _ = w.Write([]byte("null"))
 		return
 	}
+
 	_, _ = fmt.Fprintf(w, "%f", n.Float64)
 }
 
@@ -339,13 +375,16 @@ func (n *NullUint64) Scan(value interface{}) error {
 		n.Uint64 = v
 		n.Valid = true
 	}
+
 	return nil
 }
 
 func (n NullUint64) Value() (driver.Value, error) {
 	if !n.Valid {
+		//nolint:nilnil
 		return nil, nil
 	}
+
 	return n.Uint64, nil
 }
 
@@ -370,13 +409,16 @@ func (n *NullUint16) Scan(value interface{}) error {
 		n.Uint16 = uint16(v)
 		n.Valid = true
 	}
+
 	return nil
 }
 
 func (n NullUint16) Value() (driver.Value, error) {
 	if !n.Valid {
+		//nolint:nilnil
 		return nil, nil
 	}
+
 	return int64(n.Uint16), nil
 }
 
@@ -385,6 +427,7 @@ func (n *NullUint16) UnmarshalGQL(v interface{}) error {
 		n.Valid = false
 		return nil
 	}
+
 	switch v := v.(type) {
 	case int:
 		n.Uint16 = uint16(v)
@@ -410,7 +453,9 @@ func (n *NullUint16) UnmarshalGQL(v interface{}) error {
 	default:
 		return fmt.Errorf("wrong type")
 	}
+
 	n.Valid = true
+
 	return nil
 }
 
@@ -419,6 +464,7 @@ func (n NullUint16) MarshalGQL(w io.Writer) {
 		_, _ = w.Write([]byte("null"))
 		return
 	}
+
 	_, _ = fmt.Fprintf(w, "%d", n.Uint16)
 }
 
@@ -443,13 +489,16 @@ func (n *NullUint) Scan(value interface{}) error {
 		n.Uint = uint(v)
 		n.Valid = true
 	}
+
 	return nil
 }
 
 func (n NullUint) Value() (driver.Value, error) {
 	if !n.Valid {
+		//nolint:nilnil
 		return nil, nil
 	}
+
 	return n.Uint, nil
 }
 
@@ -458,6 +507,7 @@ func (n *NullUint) UnmarshalGQL(v interface{}) error {
 		n.Valid = false
 		return nil
 	}
+
 	switch v := v.(type) {
 	case int:
 		n.Uint = uint(v)
@@ -466,7 +516,7 @@ func (n *NullUint) UnmarshalGQL(v interface{}) error {
 	case int64:
 		n.Uint = uint(v)
 	case uint:
-		n.Uint = uint(v)
+		n.Uint = v
 	case uint32:
 		n.Uint = uint(v)
 	case uint64:
@@ -485,11 +535,14 @@ func (n *NullUint) UnmarshalGQL(v interface{}) error {
 		if err != nil {
 			return err
 		}
+
 		n.Uint = uint(i)
 	default:
 		return errors.New("wrong type")
 	}
+
 	n.Valid = true
+
 	return nil
 }
 
@@ -498,5 +551,6 @@ func (n NullUint) MarshalGQL(w io.Writer) {
 		_, _ = w.Write([]byte("null"))
 		return
 	}
+
 	_, _ = fmt.Fprintf(w, "%d", n.Uint)
 }

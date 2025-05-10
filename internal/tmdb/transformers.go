@@ -1,22 +1,29 @@
 package tmdb
 
 import (
+	"strconv"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
-	"strconv"
+	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 )
 
 func MovieDetailsToMovieModel(details MovieDetailsResponse) (movie model.Content, err error) {
 	releaseDate := model.Date{}
+
 	if details.ReleaseDate != "" {
 		parsedDate, parseDateErr := model.NewDateFromIsoString(details.ReleaseDate)
 		if parseDateErr != nil {
 			err = parseDateErr
 			return
 		}
+
 		releaseDate = parsedDate
 	}
+
+	//nolint:prealloc
 	var collections []model.ContentCollection
+
 	if details.BelongsToCollection.ID != 0 {
 		collections = append(collections, model.ContentCollection{
 			Type:   "franchise",
@@ -25,6 +32,7 @@ func MovieDetailsToMovieModel(details MovieDetailsResponse) (movie model.Content
 			Name:   details.BelongsToCollection.Name,
 		})
 	}
+
 	for _, genre := range details.Genres {
 		collections = append(collections, model.ContentCollection{
 			Type:   "genre",
@@ -33,6 +41,7 @@ func MovieDetailsToMovieModel(details MovieDetailsResponse) (movie model.Content
 			Name:   genre.Name,
 		})
 	}
+
 	var attributes []model.ContentAttribute
 	if details.IMDbID != "" {
 		attributes = append(attributes, model.ContentAttribute{
@@ -41,6 +50,7 @@ func MovieDetailsToMovieModel(details MovieDetailsResponse) (movie model.Content
 			Value:  details.IMDbID,
 		})
 	}
+
 	if details.PosterPath != "" {
 		attributes = append(attributes, model.ContentAttribute{
 			Source: "tmdb",
@@ -48,6 +58,7 @@ func MovieDetailsToMovieModel(details MovieDetailsResponse) (movie model.Content
 			Value:  details.PosterPath,
 		})
 	}
+
 	if details.BackdropPath != "" {
 		attributes = append(attributes, model.ContentAttribute{
 			Source: "tmdb",
@@ -55,6 +66,7 @@ func MovieDetailsToMovieModel(details MovieDetailsResponse) (movie model.Content
 			Value:  details.BackdropPath,
 		})
 	}
+
 	releaseYear := releaseDate.Year
 
 	contentType := model.ContentTypeMovie
@@ -91,24 +103,28 @@ func MovieDetailsToMovieModel(details MovieDetailsResponse) (movie model.Content
 
 func TvShowDetailsToTvShowModel(details TvDetailsResponse) (movie model.Content, err error) {
 	firstAirDate := model.Date{}
+
 	if details.FirstAirDate != "" {
 		parsedDate, parseDateErr := model.NewDateFromIsoString(details.FirstAirDate)
 		if parseDateErr != nil {
 			err = parseDateErr
 			return
 		}
+
 		firstAirDate = parsedDate
 	}
-	var collections []model.ContentCollection
-	for _, genre := range details.Genres {
-		collections = append(collections, model.ContentCollection{
+
+	collections := slice.Map(details.Genres, func(genre Genre) model.ContentCollection {
+		return model.ContentCollection{
 			Type:   "genre",
 			Source: model.SourceTmdb,
 			ID:     strconv.Itoa(int(genre.ID)),
 			Name:   genre.Name,
-		})
-	}
+		}
+	})
+
 	var attributes []model.ContentAttribute
+
 	if details.ExternalIDs.IMDbID != "" {
 		attributes = append(attributes, model.ContentAttribute{
 			Source: model.SourceImdb,
@@ -116,6 +132,7 @@ func TvShowDetailsToTvShowModel(details TvDetailsResponse) (movie model.Content,
 			Value:  details.ExternalIDs.IMDbID,
 		})
 	}
+
 	if details.ExternalIDs.TVDBID != 0 {
 		attributes = append(attributes, model.ContentAttribute{
 			Source: model.SourceTvdb,
@@ -123,7 +140,9 @@ func TvShowDetailsToTvShowModel(details TvDetailsResponse) (movie model.Content,
 			Value:  strconv.Itoa(int(details.ExternalIDs.TVDBID)),
 		})
 	}
+
 	releaseYear := firstAirDate.Year
+
 	if details.PosterPath != "" {
 		attributes = append(attributes, model.ContentAttribute{
 			Source: model.SourceTmdb,
@@ -131,6 +150,7 @@ func TvShowDetailsToTvShowModel(details TvDetailsResponse) (movie model.Content,
 			Value:  details.PosterPath,
 		})
 	}
+
 	if details.BackdropPath != "" {
 		attributes = append(attributes, model.ContentAttribute{
 			Source: model.SourceTmdb,
@@ -138,6 +158,7 @@ func TvShowDetailsToTvShowModel(details TvDetailsResponse) (movie model.Content,
 			Value:  details.BackdropPath,
 		})
 	}
+
 	return model.Content{
 		Type:             model.ContentTypeTvShow,
 		Source:           model.SourceTmdb,
@@ -159,19 +180,20 @@ func TvShowDetailsToTvShowModel(details TvDetailsResponse) (movie model.Content,
 	}, nil
 }
 
-func ExternalSource(ref model.ContentRef) (externalSource string, externalId string, err error) {
+func ExternalSource(ref model.ContentRef) (externalSource string, externalID string, err error) {
 	switch {
 	case (ref.Type == model.ContentTypeMovie ||
 		ref.Type == model.ContentTypeTvShow ||
 		ref.Type == model.ContentTypeXxx) &&
 		ref.Source == model.SourceImdb:
 		externalSource = "imdb_id"
-		externalId = ref.ID
+		externalID = ref.ID
 	case ref.Type == model.ContentTypeTvShow && ref.Source == model.SourceTvdb:
 		externalSource = "tvdb_id"
-		externalId = ref.ID
+		externalID = ref.ID
 	default:
 		err = classification.ErrUnmatched
 	}
+
 	return
 }

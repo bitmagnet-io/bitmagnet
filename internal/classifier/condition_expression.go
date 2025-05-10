@@ -3,8 +3,9 @@ package classifier
 import (
 	"errors"
 	"fmt"
-	"github.com/google/cel-go/cel"
 	"reflect"
+
+	"github.com/google/cel-go/cel"
 )
 
 const expressionName = "expression"
@@ -13,7 +14,7 @@ type expressionCondition struct{}
 
 var celProgramPayload = payloadTransformer[string, cel.Program]{
 	spec: payloadGeneric[string]{
-		jsonSchema: JsonSchema{
+		jsonSchema: JSONSchema{
 			"type":        "string",
 			"minLength":   1,
 			"description": "A CEL expression describing a condition",
@@ -25,7 +26,9 @@ var celProgramPayload = payloadTransformer[string, cel.Program]{
 			return nil, ctx.error(fmt.Errorf("type-check error: %w", issues.Err()))
 		}
 		if !reflect.DeepEqual(ast.OutputType(), cel.BoolType) {
-			return nil, ctx.error(fmt.Errorf("got %v, wanted %v output type", ast.OutputType(), cel.BoolType))
+			return nil, ctx.error(
+				fmt.Errorf("got %v, wanted %v output type", ast.OutputType(), cel.BoolType),
+			)
 		}
 		prg, prgErr := ctx.celEnv.Program(ast,
 			cel.EvalOptions(cel.OptOptimize),
@@ -47,15 +50,16 @@ var expressionConditionPayload = payloadUnion[cel.Program]{
 	},
 }
 
-func (c expressionCondition) name() string {
+func (expressionCondition) name() string {
 	return expressionName
 }
 
-func (c expressionCondition) compileCondition(ctx compilerContext) (condition, error) {
+func (expressionCondition) compileCondition(ctx compilerContext) (condition, error) {
 	prg, err := expressionConditionPayload.Unmarshal(ctx)
 	if err != nil {
 		return condition{}, ctx.error(err)
 	}
+
 	return condition{
 		check: func(ctx executionContext) (bool, error) {
 			vars := map[string]any{
@@ -78,6 +82,6 @@ func (c expressionCondition) compileCondition(ctx compilerContext) (condition, e
 	}, nil
 }
 
-func (c expressionCondition) JsonSchema() JsonSchema {
-	return expressionConditionPayload.JsonSchema()
+func (expressionCondition) JSONSchema() JSONSchema {
+	return expressionConditionPayload.JSONSchema()
 }

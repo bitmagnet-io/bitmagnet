@@ -5,10 +5,11 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func (f *TorrentHint) BeforeCreate(tx *gorm.DB) (err error) {
+func (*TorrentHint) BeforeCreate(tx *gorm.DB) (err error) {
 	tx.Statement.AddClause(clause.OnConflict{
 		UpdateAll: true,
 	})
+
 	return nil
 }
 
@@ -20,6 +21,7 @@ func (h TorrentHint) NullContentType() NullContentType {
 	if h.IsNil() {
 		return NullContentType{}
 	}
+
 	return NewNullContentType(h.ContentType)
 }
 
@@ -31,5 +33,6 @@ func (h TorrentHint) ContentRef() Maybe[ContentRef] {
 			ID:     h.ContentID.String,
 		})
 	}
+
 	return Maybe[ContentRef]{}
 }

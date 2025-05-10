@@ -30,9 +30,12 @@ func (l *Lexer) Read() (rune, bool) {
 		if errors.Is(err, io.EOF) {
 			return 0, false
 		}
+
 		panic(err)
 	}
+
 	l.pos++
+
 	return r, true
 }
 
@@ -40,21 +43,24 @@ func (l *Lexer) Backup() {
 	if err := l.reader.UnreadRune(); err != nil {
 		panic(err)
 	}
+
 	l.pos--
 }
 
 func (l *Lexer) BackupN(n int) {
-	for i := 0; i < n; i++ {
+	for range n {
 		l.Backup()
 	}
 }
 
-func (l *Lexer) IsEof() bool {
+func (l *Lexer) IsEOF() bool {
 	_, ok := l.Read()
 	if !ok {
 		return true
 	}
+
 	l.Backup()
+
 	return false
 }
 
@@ -63,37 +69,46 @@ func (l *Lexer) ReadIf(fn func(rune) bool) (rune, bool) {
 	if !ok {
 		return 0, false
 	}
+
 	if !fn(r) {
 		l.Backup()
 		return 0, false
 	}
+
 	return r, true
 }
 
 func (l *Lexer) ReadWhile(fn func(rune) bool) string {
 	var str string
+
 	for {
 		r, ok := l.ReadIf(fn)
 		if !ok {
 			break
 		}
-		str = str + string(r)
+
+		str += string(r)
 	}
+
 	return str
 }
 
 func (l *Lexer) ReadUntil(fn func(rune) bool) string {
 	var str string
+
 	for {
 		r, ok := l.Read()
 		if !ok {
 			break
 		}
-		str = str + string(r)
+
+		str += string(r)
+
 		if fn(r) {
 			break
 		}
 	}
+
 	return str
 }
 
@@ -102,10 +117,12 @@ func (l *Lexer) ReadInt() (int, bool) {
 	if str == "" {
 		return 0, false
 	}
+
 	n, err := strconv.Atoi(str)
 	if err != nil {
 		panic(err)
 	}
+
 	return n, true
 }
 

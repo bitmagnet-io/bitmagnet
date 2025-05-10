@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
+	"sync"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
-	"sort"
-	"sync"
 )
 
 type FacetConfig interface {
@@ -35,7 +36,9 @@ func (f FacetFilter) Values() []string {
 	for v := range f {
 		values = append(values, v)
 	}
+
 	sort.Strings(values)
+
 	return values
 }
 
@@ -61,6 +64,7 @@ func NewFacetConfig(options ...FacetOption) FacetConfig {
 	for _, option := range options {
 		c = option(c)
 	}
+
 	return c
 }
 
@@ -81,7 +85,7 @@ type AggregationGroup struct {
 type Aggregations = maps.StringMap[AggregationGroup]
 
 type FacetContext interface {
-	DbContext
+	DBContext
 	Context() context.Context
 	NewAggregationQuery(options ...Option) (SubQuery, error)
 }
@@ -112,11 +116,14 @@ func (ctx facetContext) NewAggregationQuery(options ...Option) (SubQuery, error)
 	if subErr != nil {
 		return nil, subErr
 	}
+
 	sq := ctx.optionBuilder.NewSubQuery(ctx.Context())
+
 	applyErr := subCtx.applyPre(sq, false)
 	if applyErr != nil {
 		return nil, applyErr
 	}
+
 	return sq, nil
 }
 
@@ -207,8 +214,10 @@ func (c facetConfig) TriggersCte() bool {
 
 func (b optionBuilder) createFacetsFilterCriteria() (c Criteria, err error) {
 	cs := make([]Criteria, 0, len(b.facets))
+
 	for _, facet := range b.facets {
 		cr := facet.Criteria(facet.Filter())
+
 		switch facet.Logic() {
 		case model.FacetLogicAnd:
 			cs = append(cs, AndCriteria{cr})
@@ -218,6 +227,7 @@ func (b optionBuilder) createFacetsFilterCriteria() (c Criteria, err error) {
 			}
 		}
 	}
+
 	return AndCriteria{cs}, nil
 }
 
@@ -232,18 +242,24 @@ func (b optionBuilder) calculateAggregations(ctx context.Context) (Aggregations,
 	aggregations := make(Aggregations, len(b.facets))
 	wgOuter := sync.WaitGroup{}
 	wgOuter.Add(len(b.facets))
+
 	mtx := sync.Mutex{}
+
 	var errs []error
+
 	addErr := func(err error) {
 		mtx.Lock()
 		defer mtx.Unlock()
+
 		errs = append(errs, err)
 	}
 	addAggregation := func(key string, aggregation AggregationGroup) {
 		mtx.Lock()
 		defer mtx.Unlock()
+
 		aggregations[key] = aggregation
 	}
+
 	for _, facet := range b.facets {
 		go (func(facet Facet) {
 			defer wgOuter.Done()
@@ -255,7 +271,9 @@ func (b optionBuilder) calculateAggregations(ctx context.Context) (Aggregations,
 				ctx:           ctx,
 			})
 			if valuesErr != nil {
-				addErr(fmt.Errorf("failed to get values for key '%s': %w", facet.Key(), valuesErr))
+				addErr(fmt.Errorf("failed to get values for key '%s': %w",
+					facet.Key(),
+					valuesErr))
 				return
 			}
 			filter := facet.Filter()
@@ -284,7 +302,10 @@ func (b optionBuilder) calculateAggregations(ctx context.Context) (Aggregations,
 						Where(criteria),
 					)(b)
 					if aggBuilderErr != nil {
-						addErr(fmt.Errorf("failed to create aggregation option for key '%s': %w", facet.Key(), aggBuilderErr))
+						addErr(
+							fmt.Errorf(
+								"failed to create aggregation option for key '%s': %w", facet.Key(), aggBuilderErr),
+						)
 						return
 					}
 					q := aggBuilder.NewSubQuery(ctx)
@@ -314,6 +335,8 @@ func (b optionBuilder) calculateAggregations(ctx context.Context) (Aggregations,
 			})
 		})(facet)
 	}
+
 	wgOuter.Wait()
+
 	return aggregations, errors.Join(errs...)
 }

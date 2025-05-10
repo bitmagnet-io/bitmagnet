@@ -2,6 +2,7 @@ package search
 
 import (
 	"context"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
@@ -61,8 +62,12 @@ func ContentCoreJoins() query.Option {
 			{
 				Table: q.ContentCollection,
 				On: []field.Expr{
-					q.ContentCollection.Type.EqCol(q.ContentCollectionContent.ContentCollectionType),
-					q.ContentCollection.Source.EqCol(q.ContentCollectionContent.ContentCollectionSource),
+					q.ContentCollection.Type.EqCol(
+						q.ContentCollectionContent.ContentCollectionType,
+					),
+					q.ContentCollection.Source.EqCol(
+						q.ContentCollectionContent.ContentCollectionSource,
+					),
 					q.ContentCollection.ID.EqCol(q.ContentCollectionContent.ContentCollectionID),
 				},
 				Type: query.TableJoinTypeInner,

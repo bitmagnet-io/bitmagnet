@@ -1,8 +1,8 @@
 package classifierfx
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/boilerplate/config/configfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
+	"github.com/bitmagnet-io/bitmagnet/internal/config/configfx"
 	"go.uber.org/fx"
 )
 

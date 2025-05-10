@@ -3,10 +3,11 @@ package client
 import (
 	"context"
 	"fmt"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
-	"go.uber.org/zap"
 	"net/netip"
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
+	"go.uber.org/zap"
 )
 
 type clientLogger struct {
@@ -18,6 +19,7 @@ func (l clientLogger) Ping(ctx context.Context, addr netip.AddrPort) (PingResult
 	start := time.Now()
 	res, err := l.client.Ping(ctx, addr)
 	l.log(dht.QPing, addr, start, err)
+
 	return res, err
 }
 
@@ -25,6 +27,7 @@ func (l clientLogger) FindNode(ctx context.Context, addr netip.AddrPort, target 
 	start := time.Now()
 	res, err := l.client.FindNode(ctx, addr, target)
 	l.log(dht.QFindNode, addr, start, err)
+
 	return res, err
 }
 
@@ -32,20 +35,31 @@ func (l clientLogger) GetPeers(ctx context.Context, addr netip.AddrPort, infoHas
 	start := time.Now()
 	res, err := l.client.GetPeers(ctx, addr, infoHash)
 	l.log(dht.QGetPeers, addr, start, err)
+
 	return res, err
 }
 
-func (l clientLogger) GetPeersScrape(ctx context.Context, addr netip.AddrPort, infoHash dht.ID) (GetPeersScrapeResult, error) {
+func (l clientLogger) GetPeersScrape(
+	ctx context.Context,
+	addr netip.AddrPort,
+	infoHash dht.ID,
+) (GetPeersScrapeResult, error) {
 	start := time.Now()
 	res, err := l.client.GetPeersScrape(ctx, addr, infoHash)
 	l.log(dht.QGetPeers+":scrape", addr, start, err)
+
 	return res, err
 }
 
-func (l clientLogger) SampleInfoHashes(ctx context.Context, addr netip.AddrPort, target dht.ID) (SampleInfoHashesResult, error) {
+func (l clientLogger) SampleInfoHashes(
+	ctx context.Context,
+	addr netip.AddrPort,
+	target dht.ID,
+) (SampleInfoHashesResult, error) {
 	start := time.Now()
 	res, err := l.client.SampleInfoHashes(ctx, addr, target)
 	l.log(dht.QSampleInfohashes, addr, start, err)
+
 	return res, err
 }
 

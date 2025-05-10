@@ -13,6 +13,8 @@ import (
 )
 
 func TestUnion_Query(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      string
 		operation func(db *gorm.DB) *gorm.DB
@@ -69,17 +71,24 @@ func TestUnion_Query(t *testing.T) {
 						},
 					}).Scan(nil)
 			},
-			want:     "SELECT * FROM `general_users` UNION SELECT * FROM `admin_users` UNION SELECT * FROM `guest_users`",
+			want: "SELECT * FROM `general_users` UNION SELECT * FROM " +
+				"`admin_users` UNION SELECT * FROM `guest_users`",
 			wantArgs: []driver.Value{},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			mockDB, mock, err := sqlmock.New()
 			if err != nil {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
-			defer mockDB.Close()
+
+			t.Cleanup(func() {
+				_ = mockDB.Close()
+			})
+
 			db, _ := gorm.Open(mysql.New(mysql.Config{
 				Conn:                      mockDB,
 				SkipInitializeWithVersion: true,
@@ -87,10 +96,15 @@ func TestUnion_Query(t *testing.T) {
 			if err := db.Use(New()); err != nil {
 				t.Fatalf("an error '%s' was not expected when using the database plugin", err)
 			}
-			mock.ExpectQuery(regexp.QuoteMeta(tt.want)).WithArgs(tt.wantArgs...).WillReturnRows(sqlmock.NewRows([]string{}))
+
+			mock.ExpectQuery(regexp.QuoteMeta(tt.want)).
+				WithArgs(tt.wantArgs...).
+				WillReturnRows(sqlmock.NewRows([]string{}))
+
 			if tt.operation != nil {
 				db = tt.operation(db)
 			}
+
 			if db.Error != nil {
 				t.Error(db.Error.Error())
 			}
@@ -99,20 +113,28 @@ func TestUnion_Query(t *testing.T) {
 }
 
 func TestNewUnion(t *testing.T) {
+	t.Parallel()
+
 	mockDB, _, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer mockDB.Close()
+
+	t.Cleanup(func() {
+		_ = mockDB.Close()
+	})
+
 	db, _ := gorm.Open(mysql.New(mysql.Config{
 		Conn:                      mockDB,
 		SkipInitializeWithVersion: true,
 	}))
 	db = db.Table("users")
+
 	type args struct {
 		subquery interface{}
 		args     []interface{}
 	}
+
 	tests := []struct {
 		name string
 		args args
@@ -156,6 +178,8 @@ func TestNewUnion(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			if got := NewUnion(tt.args.subquery, tt.args.args...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewUnion() = %v, want %v", got, tt.want)
 			}

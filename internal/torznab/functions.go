@@ -4,7 +4,7 @@ const (
 	FunctionCaps   = "caps"
 	FunctionSearch = "search"
 	FunctionMovie  = "movie"
-	FunctionTv     = "tvsearch"
+	FunctionTV     = "tvsearch"
 	FunctionMusic  = "music"
 	FunctionBook   = "book"
 )
