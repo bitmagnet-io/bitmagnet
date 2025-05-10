@@ -2,6 +2,8 @@ package classifier
 
 import (
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/adrg/xdg"
 	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
@@ -9,17 +11,17 @@ import (
 )
 
 func newSourceProvider(config Config, tmdbConfig tmdb.Config) sourceProvider {
-	return mergeSourceProvider{
-		providers: []sourceProvider{
-			yamlSourceProvider{rawSourceProvider: coreSourceProvider{}},
-			yamlSourceProvider{rawSourceProvider: xdgSourceProvider{}},
-			yamlSourceProvider{rawSourceProvider: cwdSourceProvider{}},
-			configSourceProvider{
-				config:      config,
-				tmdbEnabled: tmdbConfig.Enabled,
-			},
-		},
-	}
+	var providers []sourceProvider
+	providers = append(providers, coreSourceProvider{}.provider())
+	providers = append(providers, xdgSourceProvider{}.providers()...)
+	providers = append(providers, cwdSourceProvider{}.providers()...)
+	providers = append(providers, extraSourceProvider{}.providers()...)
+	providers = append(providers, configSourceProvider{
+		config:      config,
+		tmdbEnabled: tmdbConfig.Enabled,
+	})
+
+	return mergeSourceProvider{providers: providers}
 }
 
 type sourceProvider interface {
@@ -49,23 +51,19 @@ func (m mergeSourceProvider) source() (Source, error) {
 	return source, nil
 }
 
-type rawSourceProvider interface {
-	source() ([]byte, error)
-}
-
 type yamlSourceProvider struct {
-	rawSourceProvider
+	raw []byte
+	err error
 }
 
 func (y yamlSourceProvider) source() (Source, error) {
-	raw, err := y.rawSourceProvider.source()
-	if err != nil {
-		return Source{}, err
+	if y.err != nil {
+		return Source{}, y.err
 	}
 
 	rawWorkflow := make(map[string]interface{})
 
-	parseErr := yaml.Unmarshal(raw, &rawWorkflow)
+	parseErr := yaml.Unmarshal(y.raw, &rawWorkflow)
 	if parseErr != nil {
 		return Source{}, parseErr
 	}
@@ -86,34 +84,69 @@ func (y yamlSourceProvider) source() (Source, error) {
 
 type coreSourceProvider struct{}
 
-func (coreSourceProvider) source() ([]byte, error) {
-	return classifierCoreYaml, nil
+func (coreSourceProvider) provider() sourceProvider {
+	return yamlSourceProvider{raw: classifierCoreYaml}
 }
 
 type xdgSourceProvider struct{}
 
-func (xdgSourceProvider) source() ([]byte, error) {
-	if path, pathErr := xdg.ConfigFile("bitmagnet/classifier.yml"); pathErr == nil {
-		if bytes, readErr := os.ReadFile(path); readErr == nil {
-			return bytes, nil
-		} else if !os.IsNotExist(readErr) {
-			return nil, readErr
+func (yamlSourceProvider) providers(path string, wildcard bool) []sourceProvider {
+	glob := path
+
+	if wildcard {
+		dir, fname := filepath.Split(path)
+		glob = dir + "classifier*" + filepath.Ext(fname)
+	}
+
+	paths, err := filepath.Glob(glob)
+
+	if err != nil {
+		return []sourceProvider{yamlSourceProvider{err: err}}
+	}
+
+	providers := make([]sourceProvider, len(paths))
+
+	for i, path := range paths {
+		bytes, readErr := os.ReadFile(path)
+		providers[i] = yamlSourceProvider{raw: bytes, err: readErr}
+	}
+
+	return providers
+}
+
+func (xdgSourceProvider) providers() []sourceProvider {
+	path, err := xdg.ConfigFile("bitmagnet/classifier.yml")
+	if err != nil {
+		return []sourceProvider{yamlSourceProvider{err: err}}
+	}
+
+	return yamlSourceProvider{}.providers(path, true)
+}
+
+type extraSourceProvider struct{}
+
+func (extraSourceProvider) providers() []sourceProvider {
+	var extraConfigFiles []string
+
+	for _, rawEnvEntry := range os.Environ() {
+		parts := strings.SplitN(rawEnvEntry, "=", 2)
+		if parts[0] == extraFilesKey {
+			extraConfigFiles = strings.Split(parts[1], ",")
 		}
 	}
 
-	return []byte{'{', '}'}, nil
+	var providers []sourceProvider
+	for _, path := range extraConfigFiles {
+		providers = append(providers, yamlSourceProvider{}.providers(path, false)...)
+	}
+
+	return providers
 }
 
 type cwdSourceProvider struct{}
 
-func (cwdSourceProvider) source() ([]byte, error) {
-	if bytes, readErr := os.ReadFile("./classifier.yml"); readErr == nil {
-		return bytes, nil
-	} else if !os.IsNotExist(readErr) {
-		return nil, readErr
-	}
-
-	return []byte{'{', '}'}, nil
+func (cwdSourceProvider) providers() []sourceProvider {
+	return yamlSourceProvider{}.providers("./classifier.yml", true)
 }
 
 type configSourceProvider struct {
@@ -141,3 +174,5 @@ func (c configSourceProvider) source() (Source, error) {
 		Flags:      fs,
 	}, nil
 }
+
+const extraFilesKey = "EXTRA_CLASSIFIER_FILES"
