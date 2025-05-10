@@ -130,6 +130,7 @@ func (l *Languages) Scan(value interface{}) error {
 
 func (l Languages) Value() (driver.Value, error) {
 	if len(l) == 0 {
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -274,6 +275,7 @@ func (l *NullLanguage) Scan(value interface{}) error {
 
 func (l NullLanguage) Value() (driver.Value, error) {
 	if !l.Valid {
+		//nolint:nilnil
 		return nil, nil
 	}
 

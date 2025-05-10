@@ -39,6 +39,7 @@ func (s *StableBloomFilter) Scan(value interface{}) error {
 
 func (s StableBloomFilter) Value() (driver.Value, error) {
 	if s.Cells() == 0 {
+		//nolint:nilnil
 		return nil, nil
 	}
 

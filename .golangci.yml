@@ -29,6 +29,7 @@ linters:
     - gocritic
     #    - gocyclo
     #    - godot
+    #    - godox
     - gomoddirectives
     - goprintffuncname
     #    - gosec
@@ -40,9 +41,14 @@ linters:
     - ineffassign
     - intrange
     - loggercheck
+    #    - maintidx
+    - makezero
     - mirror
     - musttag
     #    - nestif
+    - nilerr
+    - nilnesserr
+    - nilnil
     - noctx
     - nolintlint
     - paralleltest
