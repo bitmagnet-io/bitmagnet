@@ -250,12 +250,12 @@ func exHandshake(rw io.ReadWriter) (metadataSize uint, utMetadata uint8, err err
 		return
 	}
 
-	if !(0 < rRootDict.MetadataSize && rRootDict.MetadataSize < maxMetadataSize) {
+	if 0 >= rRootDict.MetadataSize || rRootDict.MetadataSize >= maxMetadataSize {
 		err = errors.New("metadata too big or its size is less than or equal zero")
 		return
 	}
 
-	if !(0 < rRootDict.M.UTMetadata && rRootDict.M.UTMetadata < 255) {
+	if 0 >= rRootDict.M.UTMetadata || rRootDict.M.UTMetadata >= 255 {
 		err = errors.New("ut_metadata is not an uint8")
 		return
 	}
@@ -274,12 +274,11 @@ func requestAllPieces(w io.Writer, metadataSize uint, utMetadata uint8) error {
 			panic(err)
 		}
 
-		if _, writeErr := w.Write([]byte(fmt.Sprintf(
+		if _, writeErr := fmt.Fprintf(w,
 			"%s\x14%s%s",
 			uintToBigEndian4(uint(2+len(extDictDump))),
 			[]byte{utMetadata},
-			extDictDump,
-		))); writeErr != nil {
+			extDictDump); writeErr != nil {
 			return writeErr
 		}
 	}
@@ -340,7 +339,10 @@ func readAllPieces(r io.Reader, metadataSize uint) ([]byte, error) {
 			}
 
 			piece := rExtDict.Piece
-			copy(metadataBytes[piece*int(math.Pow(2, 14)):piece*int(math.Pow(2, 14))+len(metadataPiece)], metadataPiece)
+			copy(
+				metadataBytes[piece*int(math.Pow(2, 14)):piece*int(math.Pow(2, 14))+len(metadataPiece)],
+				metadataPiece,
+			)
 		}
 	}
 

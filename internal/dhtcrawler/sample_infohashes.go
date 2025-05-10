@@ -32,7 +32,10 @@ func (c *crawler) runSampleInfoHashes(ctx context.Context) {
 
 		res, err := c.client.SampleInfoHashes(ctx, n.Addr(), c.soughtNodeID.Get())
 		if err != nil {
-			c.kTable.BatchCommand(ktable.DropNode{ID: n.ID(), Reason: fmt.Errorf("sample_infohashes failed: %w", err)})
+			c.kTable.BatchCommand(
+				ktable.DropNode{ID: n.ID(), Reason: fmt.Errorf("sample_infohashes failed: %w", err)},
+			)
+
 			return
 		}
 
@@ -74,7 +77,8 @@ func (c *crawler) runSampleInfoHashes(ctx context.Context) {
 		}})
 
 		if len(res.Nodes) > 0 {
-			// block on the channel for up to a second trying to add sampled nodes to the discoveredNodes channel
+			// block on the channel for up to a second trying to add sampled nodes to the discoveredNodes
+			// channel
 			go func() {
 				timeoutCtx, cancel := context.WithTimeout(ctx, time.Second)
 				defer cancel()

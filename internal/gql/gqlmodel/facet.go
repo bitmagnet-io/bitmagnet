@@ -63,7 +63,12 @@ func toString(v any) string {
 }
 
 func torrentContentTypeFacet(input gen.ContentTypeFacetInput) q.Facet {
-	return facet(input.Aggregate, graphql.Omittable[*model.FacetLogic]{}, input.Filter, search.TorrentContentTypeFacet)
+	return facet(
+		input.Aggregate,
+		graphql.Omittable[*model.FacetLogic]{},
+		input.Filter,
+		search.TorrentContentTypeFacet,
+	)
 }
 
 func torrentSourceFacet(input gen.TorrentSourceFacetInput) q.Facet {
@@ -148,7 +153,12 @@ func languageFacet(input gen.LanguageFacetInput) q.Facet {
 		filter = graphql.OmittableOf[[]*model.Language](filterValues)
 	}
 
-	return facet(input.Aggregate, graphql.Omittable[*model.FacetLogic]{}, filter, search.TorrentContentLanguageFacet)
+	return facet(
+		input.Aggregate,
+		graphql.Omittable[*model.FacetLogic]{},
+		filter,
+		search.TorrentContentLanguageFacet,
+	)
 }
 
 func releaseYearFacet(input gen.ReleaseYearFacetInput) q.Facet {
@@ -202,6 +212,10 @@ func aggs[T any, Agg comparable](
 	parse func(string) (T, error),
 	newAgg func(value *T, label string, count uint, isEstimate bool) Agg,
 ) ([]Agg, error) {
+	if items == nil {
+		return nil, nil
+	}
+
 	r := make([]Agg, 0, len(items))
 	labelMap := make(map[Agg]string, len(items))
 
@@ -239,7 +253,12 @@ func contentTypeAggs(items q.AggregationItems) ([]gen.ContentTypeAgg, error) {
 func torrentSourceAggs(items q.AggregationItems) ([]gen.TorrentSourceAgg, error) {
 	return aggs(items, func(s string) (string, error) { return s, nil },
 		func(value *string, label string, count uint, isEstimate bool) gen.TorrentSourceAgg {
-			return gen.TorrentSourceAgg{Value: *value, Label: label, Count: int(count), IsEstimate: isEstimate}
+			return gen.TorrentSourceAgg{
+				Value:      *value,
+				Label:      label,
+				Count:      int(count),
+				IsEstimate: isEstimate,
+			}
 		})
 }
 
@@ -253,7 +272,12 @@ func torrentTagAggs(items q.AggregationItems) ([]gen.TorrentTagAgg, error) {
 func torrentFileTypeAggs(items q.AggregationItems) ([]gen.TorrentFileTypeAgg, error) {
 	return aggs(items, model.ParseFileType,
 		func(value *model.FileType, label string, count uint, isEstimate bool) gen.TorrentFileTypeAgg {
-			return gen.TorrentFileTypeAgg{Value: *value, Label: label, Count: int(count), IsEstimate: isEstimate}
+			return gen.TorrentFileTypeAgg{
+				Value:      *value,
+				Label:      label,
+				Count:      int(count),
+				IsEstimate: isEstimate,
+			}
 		})
 }
 
@@ -287,7 +311,12 @@ func releaseYearAggs(items q.AggregationItems) ([]gen.ReleaseYearAgg, error) {
 func videoResolutionAggs(items q.AggregationItems) ([]gen.VideoResolutionAgg, error) {
 	return aggs(items, model.ParseVideoResolution,
 		func(value *model.VideoResolution, label string, count uint, isEstimate bool) gen.VideoResolutionAgg {
-			return gen.VideoResolutionAgg{Value: value, Label: label, Count: int(count), IsEstimate: isEstimate}
+			return gen.VideoResolutionAgg{
+				Value:      value,
+				Label:      label,
+				Count:      int(count),
+				IsEstimate: isEstimate,
+			}
 		})
 }
 

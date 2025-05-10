@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest/observer"
 )
@@ -58,7 +57,7 @@ func TestGinzap(t *testing.T) {
 	res1 := httptest.NewRecorder()
 
 	ctx := context.Background()
-	req1, _ := http.NewRequestWithContext(ctx, "GET", testPath, nil)
+	req1, _ := http.NewRequestWithContext(ctx, http.MethodGet, testPath, nil)
 	r.ServeHTTP(res1, req1)
 
 	if len(utcLoggerObserved.All()) != 1 {
@@ -111,11 +110,11 @@ func TestGinzapWithConfig(t *testing.T) {
 
 	res1 := httptest.NewRecorder()
 	ctx := context.Background()
-	req1, _ := http.NewRequestWithContext(ctx, "GET", testPath, nil)
+	req1, _ := http.NewRequestWithContext(ctx, http.MethodGet, testPath, nil)
 	r.ServeHTTP(res1, req1)
 
 	res2 := httptest.NewRecorder()
-	req2, _ := http.NewRequestWithContext(ctx, "GET", "/no_log", nil)
+	req2, _ := http.NewRequestWithContext(ctx, http.MethodGet, "/no_log", nil)
 	r.ServeHTTP(res2, req2)
 
 	if res2.Code != 204 {

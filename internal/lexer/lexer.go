@@ -87,7 +87,7 @@ func (l *Lexer) ReadWhile(fn func(rune) bool) string {
 			break
 		}
 
-		str = str + string(r)
+		str += string(r)
 	}
 
 	return str
@@ -102,7 +102,7 @@ func (l *Lexer) ReadUntil(fn func(rune) bool) string {
 			break
 		}
 
-		str = str + string(r)
+		str += string(r)
 
 		if fn(r) {
 			break

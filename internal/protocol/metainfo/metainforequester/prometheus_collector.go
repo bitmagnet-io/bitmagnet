@@ -17,8 +17,10 @@ type prometheusCollector struct {
 	requestConcurrency  prometheus.Gauge
 }
 
-const namespace = "bitmagnet"
-const subsystem = "meta_info_requester"
+const (
+	namespace = "bitmagnet"
+	subsystem = "meta_info_requester"
+)
 
 func newPrometheusCollector(requester Requester) *prometheusCollector {
 	return &prometheusCollector{

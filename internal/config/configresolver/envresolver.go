@@ -29,7 +29,12 @@ func (r envResolver) Resolve(path []string, valueType reflect.Type) (interface{}
 	coercedValue, coerceErr := coerceStringValue(envValue, valueType)
 	if coerceErr != nil {
 		return nil, true, fmt.Errorf(
-			"error coercing env key '%s' with value '%s' to type %v: %w", envKey, envValue, valueType, coerceErr)
+			"error coercing env key '%s' with value '%s' to type %v: %w",
+			envKey,
+			envValue,
+			valueType,
+			coerceErr,
+		)
 	}
 
 	return coercedValue, true, nil

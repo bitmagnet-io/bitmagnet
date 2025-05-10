@@ -20,11 +20,6 @@ const (
 	ErrorCodeSequenceNumberLessThanCurrent = 302
 )
 
-var ErrorMethodUnknown = Error{
-	Code: ErrorCodeMethodUnknown,
-	Msg:  "Method Unknown",
-}
-
 // Represented as a string or list in bencode.
 type Error struct {
 	Code int

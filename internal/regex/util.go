@@ -96,11 +96,12 @@ func SearchStringToNormalizedTokens(input string) []string {
 
 	matches := searchTokenRegex.FindAllStringSubmatch(input, -1)
 	for _, match := range matches {
-		if len(match[1]) >= 1 {
+		switch {
+		case len(match[1]) >= 1:
 			tokens = append(tokens, match[1])
-		} else if len(match[3]) >= 1 {
+		case len(match[3]) >= 1:
 			tokens = append(tokens, match[3])
-		} else if len(match[5]) >= 1 {
+		case len(match[5]) >= 1:
 			tokens = append(tokens, strings.ToLower(match[5]))
 		}
 	}

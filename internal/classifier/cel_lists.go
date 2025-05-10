@@ -123,6 +123,7 @@ var zeroValuesOfSummableTypes = map[string]ref.Val{
 	"double":   types.Double(0.0),
 	"duration": types.Duration{Duration: 0},
 }
+
 var comparableTypes = []namedCELType{
 	{typeName: "int", celType: cel.IntType},
 	{typeName: "uint", celType: cel.UintType},
@@ -303,8 +304,8 @@ func indexOf(list ref.Val, item ref.Val) ref.Val {
 
 	sz := lister.Size().(types.Int)
 	for i := types.Int(0); i < sz; i++ {
-		if lister.Get(types.Int(i)).Equal(item) == types.True {
-			return types.Int(i)
+		if lister.Get(i).Equal(item) == types.True {
+			return i
 		}
 	}
 
@@ -320,8 +321,8 @@ func lastIndexOf(list ref.Val, item ref.Val) ref.Val {
 	sz := lister.Size().(types.Int)
 
 	for i := sz - 1; i >= 0; i-- {
-		if lister.Get(types.Int(i)).Equal(item) == types.True {
-			return types.Int(i)
+		if lister.Get(i).Equal(item) == types.True {
+			return i
 		}
 	}
 

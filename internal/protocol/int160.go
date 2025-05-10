@@ -30,7 +30,7 @@ func (i Int160) BitLen() int {
 	return a.BitLen()
 }
 
-//func (me *Int160) SetBytes(b []byte) {
+// func (me *Int160) SetBytes(b []byte) {
 //	nBuckets := copy(me.bits[:], b)
 //	if nBuckets != 20 {
 //		panic(nBuckets)

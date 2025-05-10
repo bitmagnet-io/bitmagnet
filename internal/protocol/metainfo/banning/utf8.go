@@ -8,8 +8,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
 )
 
-type utf8Checker struct {
-}
+type utf8Checker struct{}
 
 func (utf8Checker) Check(info metainfo.Info) error {
 	checkUtf8Strings := make([]string, 0, len(info.Files)+1)

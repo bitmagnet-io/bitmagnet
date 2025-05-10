@@ -87,6 +87,11 @@ type MovieDetailsRequest struct {
 	Language         model.NullString
 }
 
+type Genre struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
 type MovieDetailsResponse struct {
 	Adult               bool   `json:"adult"`
 	BackdropPath        string `json:"backdrop_path"`
@@ -96,11 +101,8 @@ type MovieDetailsResponse struct {
 		PosterPath   string `json:"poster_path"`
 		BackdropPath string `json:"backdrop_path"`
 	} `json:"belongs_to_collection"`
-	Budget int64 `json:"budget"`
-	Genres []struct {
-		ID   int64  `json:"id"`
-		Name string `json:"name"`
-	} `json:"genres"`
+	Budget              int64   `json:"budget"`
+	Genres              []Genre `json:"genres"`
 	Homepage            string  `json:"homepage"`
 	ID                  int64   `json:"id"`
 	IMDbID              string  `json:"imdb_id"`
@@ -149,12 +151,9 @@ type TvDetailsResponse struct {
 		Gender      int    `json:"gender"`
 		ProfilePath string `json:"profile_path"`
 	} `json:"created_by"`
-	EpisodeRunTime []int  `json:"episode_run_time"`
-	FirstAirDate   string `json:"first_air_date"`
-	Genres         []struct {
-		ID   int64  `json:"id"`
-		Name string `json:"name"`
-	} `json:"genres"`
+	EpisodeRunTime   []int    `json:"episode_run_time"`
+	FirstAirDate     string   `json:"first_air_date"`
+	Genres           []Genre  `json:"genres"`
 	Homepage         string   `json:"homepage"`
 	ID               int64    `json:"id"`
 	InProduction     bool     `json:"in_production"`

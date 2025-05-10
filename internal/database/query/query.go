@@ -432,7 +432,7 @@ func newQueryContext(dbCtx dbContext) OptionBuilder {
 }
 
 func (b optionBuilder) Table(name string) OptionBuilder {
-	b.dbContext.tableName = name
+	b.tableName = name
 
 	return b.Scope(func(db *gorm.DB) error {
 		db.Table(name)
@@ -669,7 +669,7 @@ func (b optionBuilder) applyPre(sq SubQuery, withOrderJoins bool) error {
 		}
 	}
 
-	joins, joinsErr := extractRequiredJoins(b.dbContext.tableName, b.joins, requiredJoins)
+	joins, joinsErr := extractRequiredJoins(b.tableName, b.joins, requiredJoins)
 	if joinsErr != nil {
 		return joinsErr
 	}

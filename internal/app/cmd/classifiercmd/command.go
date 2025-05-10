@@ -53,7 +53,11 @@ func New(p Params) (Result, error) {
 					&formatFlag,
 				},
 				Action: func(ctx *cli.Context) error {
-					return write(ctx.App.Writer, classifier.DefaultJSONSchema(), ctx.String("format"))
+					return write(
+						ctx.App.Writer,
+						classifier.DefaultJSONSchema(),
+						ctx.String("format"),
+					)
 				},
 			},
 		},

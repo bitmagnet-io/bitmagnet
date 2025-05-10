@@ -61,58 +61,79 @@ func searchRequestToQueryOptions(r torznab.SearchRequest) ([]query.Option, error
 	for _, cat := range r.Cats {
 		var catCriteria []query.Criteria
 
-		if torznab.CategoryMovies.Has(cat) {
+		switch {
+		case torznab.CategoryMovies.Has(cat):
 			if r.Type != torznab.FunctionMovie || torznab.CategoryMovies.ID == cat {
-				catCriteria = append(catCriteria, search.TorrentContentTypeCriteria(model.ContentTypeMovie))
+				catCriteria = append(
+					catCriteria,
+					search.TorrentContentTypeCriteria(model.ContentTypeMovie),
+				)
 			}
 
-			if torznab.CategoryMoviesSD.ID == cat {
-				catCriteria = append(catCriteria, search.VideoResolutionCriteria(model.VideoResolutionV480p))
-			} else if torznab.CategoryMoviesHD.ID == cat {
+			switch cat {
+			case torznab.CategoryMoviesSD.ID:
+				catCriteria = append(
+					catCriteria,
+					search.VideoResolutionCriteria(model.VideoResolutionV480p),
+				)
+			case torznab.CategoryMoviesHD.ID:
 				catCriteria = append(catCriteria, search.VideoResolutionCriteria(
 					model.VideoResolutionV720p,
 					model.VideoResolutionV1080p,
 					model.VideoResolutionV1440p,
 					model.VideoResolutionV2160p,
 				))
-			} else if torznab.CategoryMoviesUHD.ID == cat {
-				catCriteria = append(catCriteria, search.VideoResolutionCriteria(model.VideoResolutionV2160p))
-			} else if torznab.CategoryMovies3D.ID == cat {
+			case torznab.CategoryMoviesUHD.ID:
+				catCriteria = append(
+					catCriteria,
+					search.VideoResolutionCriteria(model.VideoResolutionV2160p),
+				)
+			case torznab.CategoryMovies3D.ID:
 				catCriteria = append(catCriteria, search.Video3DCriteria(
 					model.Video3DV3D,
 					model.Video3DV3DSBS,
 					model.Video3DV3DOU,
 				))
 			}
-		} else if torznab.CategoryTV.Has(cat) {
+		case torznab.CategoryTV.Has(cat):
 			if r.Type != torznab.FunctionTV || torznab.CategoryTV.ID == cat {
-				catCriteria = append(catCriteria, search.TorrentContentTypeCriteria(model.ContentTypeTvShow))
+				catCriteria = append(
+					catCriteria,
+					search.TorrentContentTypeCriteria(model.ContentTypeTvShow),
+				)
 			}
 
-			if torznab.CategoryTVSD.ID == cat {
-				catCriteria = append(catCriteria, search.VideoResolutionCriteria(model.VideoResolutionV480p))
-			} else if torznab.CategoryTVHD.ID == cat {
+			switch cat {
+			case torznab.CategoryTVSD.ID:
+				catCriteria = append(
+					catCriteria,
+					search.VideoResolutionCriteria(model.VideoResolutionV480p),
+				)
+			case torznab.CategoryTVHD.ID:
 				catCriteria = append(catCriteria, search.VideoResolutionCriteria(
 					model.VideoResolutionV720p,
 					model.VideoResolutionV1080p,
 					model.VideoResolutionV1440p,
 					model.VideoResolutionV2160p,
 				))
-			} else if torznab.CategoryTVUHD.ID == cat {
-				catCriteria = append(catCriteria, search.VideoResolutionCriteria(model.VideoResolutionV2160p))
+			case torznab.CategoryTVUHD.ID:
+				catCriteria = append(
+					catCriteria,
+					search.VideoResolutionCriteria(model.VideoResolutionV2160p),
+				)
 			}
-		} else if torznab.CategoryXXX.Has(cat) {
+		case torznab.CategoryXXX.Has(cat):
 			catCriteria = append(catCriteria, search.TorrentContentTypeCriteria(model.ContentTypeXxx))
-		} else if torznab.CategoryPC.Has(cat) {
+		case torznab.CategoryPC.Has(cat):
 			catCriteria = append(catCriteria,
 				search.TorrentContentTypeCriteria(model.ContentTypeSoftware, model.ContentTypeGame))
-		} else if torznab.CategoryAudioAudiobook.Has(cat) {
+		case torznab.CategoryAudioAudiobook.Has(cat):
 			catCriteria = append(catCriteria, search.TorrentContentTypeCriteria(model.ContentTypeAudiobook))
-		} else if torznab.CategoryAudio.Has(cat) {
+		case torznab.CategoryAudio.Has(cat):
 			catCriteria = append(catCriteria, search.TorrentContentTypeCriteria(model.ContentTypeMusic))
-		} else if torznab.CategoryBooksComics.Has(cat) {
+		case torznab.CategoryBooksComics.Has(cat):
 			catCriteria = append(catCriteria, search.TorrentContentTypeCriteria(model.ContentTypeComic))
-		} else if torznab.CategoryBooks.Has(cat) {
+		case torznab.CategoryBooks.Has(cat):
 			options = append(options, query.Where(search.TorrentContentTypeCriteria(
 				model.ContentTypeEbook,
 				model.ContentTypeComic,

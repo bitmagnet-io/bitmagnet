@@ -31,7 +31,7 @@ func (l *ftsLexer) readQuotedString(quoteChar rune) (string, error) {
 			break
 		}
 
-		str = str + string(ch)
+		str += string(ch)
 	}
 
 	return str, nil

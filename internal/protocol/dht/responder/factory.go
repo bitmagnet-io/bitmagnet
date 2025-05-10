@@ -29,8 +29,10 @@ type Result struct {
 	QueryConcurrency  prometheus.Collector `group:"prometheus_collectors"`
 }
 
-const namespace = "bitmagnet"
-const subsystem = "dht_responder"
+const (
+	namespace = "bitmagnet"
+	subsystem = "dht_responder"
+)
 
 func New(p Params) Result {
 	collector := newPrometheusCollector(responderLimiter{

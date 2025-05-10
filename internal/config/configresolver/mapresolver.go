@@ -58,7 +58,11 @@ func (r mapResolver) Resolve(path []string, valueType reflect.Type) (any, bool, 
 
 		mapV, mapOk := rawV.(map[string]interface{})
 		if !mapOk {
-			return nil, true, fmt.Errorf("expected map[string]interface{} at path %v, got %T", currentPath, rawV)
+			return nil, true, fmt.Errorf(
+				"expected map[string]interface{} at path %v, got %T",
+				currentPath,
+				rawV,
+			)
 		}
 
 		v = mapV
@@ -72,7 +76,7 @@ func (r mapResolver) resolveSlice(currentPath []string, sliceV []any, valueType 
 		return nil, fmt.Errorf("received slice at path '%s', expected %s", currentPath, valueType.String())
 	}
 
-	var resolvedSlice []any
+	resolvedSlice := make([]any, 0, len(sliceV))
 
 	for _, sliceItem := range sliceV {
 		resolvedValue := reflect.New(valueType.Elem())

@@ -26,7 +26,9 @@ var celProgramPayload = payloadTransformer[string, cel.Program]{
 			return nil, ctx.error(fmt.Errorf("type-check error: %w", issues.Err()))
 		}
 		if !reflect.DeepEqual(ast.OutputType(), cel.BoolType) {
-			return nil, ctx.error(fmt.Errorf("got %v, wanted %v output type", ast.OutputType(), cel.BoolType))
+			return nil, ctx.error(
+				fmt.Errorf("got %v, wanted %v output type", ast.OutputType(), cel.BoolType),
+			)
 		}
 		prg, prgErr := ctx.celEnv.Program(ast,
 			cel.EvalOptions(cel.OptOptimize),

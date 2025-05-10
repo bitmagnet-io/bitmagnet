@@ -196,9 +196,7 @@ func (s AvailabilityStatus) criticality() int {
 	}
 }
 
-var (
-	ErrTimeout = errors.New("check timed out")
-)
+var ErrTimeout = errors.New("check timed out")
 
 func newChecker(cfg checkerConfig) *defaultChecker {
 	checkState := map[string]CheckState{}
@@ -230,8 +228,8 @@ func (ck *defaultChecker) Start() {
 		ck.startedAt = time.Now()
 		defer ck.startPeriodicChecks(ctx)
 
-		// We run the initial check execution in a separate goroutine so that server startup is not blocked in case of
-		// a bad check that runs for a longer period of time.
+		// We run the initial check execution in a separate goroutine so that server startup is not blocked in
+		// case of a bad check that runs for a longer period of time.
 		go ck.Check(ctx)
 	}
 
@@ -335,11 +333,13 @@ func (ck *defaultChecker) startPeriodicChecks(ctx context.Context) {
 			// ATTENTION: Access to check and ck.state.CheckState is not synchronized here,
 			// 	assuming that the accessed values are never changed, such as
 			//  - ck.state.CheckState[check.Name]
-			//  - check object itself (there will never be a new Check object created for the configured check)
+			// - check object itself (there will never be a new Check object created for the configured
+			// check)
 			//	- check.updateInterval (used by isPeriodicCheck)
 			//  - check.initialDelay
 			// ALSO:
-			//  - The check state itself is never synchronized on, since the only place where values can be changed are
+			// - The check state itself is never synchronized on, since the only place where values can be
+			// changed are
 			//    within this goroutine.
 			ck.periodicCheckCount++
 			ck.wg.Add(1)
@@ -363,15 +363,17 @@ func (ck *defaultChecker) startPeriodicChecks(ctx context.Context) {
 						// 	via "check.DisablePanicRecovery".
 						//
 						// ATTENTION: executeCheck is executed with its own copy of the checks
-						// 	state (see checkState above). This means that if there is a global status
-						//	listener that is configured by the user with health.WithStatusListener,
-						//	and that global status listener changes this checks state as long as
-						//  executeCheck is running, the modifications made by the global listener
-						//  will be lost after the function completes, since we overwrite the state
+						// 	state (see checkState above). This means that if there is a global
+						// status 	listener that is configured by the user with
+						// health.WithStatusListener, 	and that global status listener changes
+						// this checks state as long as executeCheck is running, the
+						// modifications made by the global listener will be lost after the
+						// function completes, since we overwrite the state
 						//  below using updateState.
 						//  This means that global listeners should not change the checks state
 						//  or accept losing their updates. This will be the case especially for
-						//  long-running checks. Hence, the checkState is read-only for interceptors.
+						// long-running checks. Hence, the checkState is read-only for
+						// interceptors.
 						ctx, checkState = executeCheck(ctx, &ck.cfg, check, checkState)
 
 						ck.mtx.Lock()
@@ -481,10 +483,17 @@ func executeCheck(
 	interceptors = append(interceptors, check.Interceptors...)
 
 	if isActiveCheck(check) {
-		newState = withInterceptors(interceptors, func(ctx context.Context, _ string, state CheckState) CheckState {
-			checkFuncResult := executeCheckFunc(ctx, check)
-			return createNextCheckState(checkFuncResult, check, state)
-		})(ctx, check.Name, newState)
+		newState = withInterceptors(
+			interceptors,
+			func(ctx context.Context, _ string, state CheckState) CheckState {
+				checkFuncResult := executeCheckFunc(ctx, check)
+				return createNextCheckState(checkFuncResult, check, state)
+			},
+		)(
+			ctx,
+			check.Name,
+			newState,
+		)
 	} else {
 		newState.Status = StatusInactive
 	}
@@ -505,7 +514,8 @@ func executeCheckFunc(ctx context.Context, check *Check) error {
 		defer func() {
 			if !check.DisablePanicRecovery {
 				if r := recover(); r != nil {
-					// TODO: Provide a configurable panic handler configuration option, so developers can decide
+					// TODO: Provide a configurable panic handler configuration option, so
+					// developers can decide
 					// 	what to do with panics.
 					err, ok := r.(error)
 					if ok {

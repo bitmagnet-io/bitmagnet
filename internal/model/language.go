@@ -81,8 +81,10 @@ func LanguageValueStrings() []string {
 }
 
 func newLanguagesRegex() *regexp.Regexp {
-	var tokens []string
-	for _, lang := range LanguageValues() {
+	languages := LanguageValues()
+	tokens := make([]string, 0, len(languages)*4)
+
+	for _, lang := range languages {
 		tokens = append(tokens, lang.Alpha2()+"dub")
 		tokens = append(tokens, lang.Alpha3())
 		tokens = append(tokens, strings.ToLower(lang.Name()))
@@ -128,6 +130,7 @@ func (l *Languages) Scan(value interface{}) error {
 
 func (l Languages) Value() (driver.Value, error) {
 	if len(l) == 0 {
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -272,6 +275,7 @@ func (l *NullLanguage) Scan(value interface{}) error {
 
 func (l NullLanguage) Value() (driver.Value, error) {
 	if !l.Valid {
+		//nolint:nilnil
 		return nil, nil
 	}
 

@@ -2,6 +2,7 @@ package tmdb
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -25,15 +26,14 @@ func (r requester) Request(
 		SetQueryParams(queryParams).
 		SetResult(&result).
 		Get(path)
-	if err == nil {
-		if !res.IsSuccess() {
-			if res.StatusCode() == 401 {
-				err = ErrUnauthorized
-			} else if res.StatusCode() == 404 {
-				err = ErrNotFound
-			} else {
-				err = newError(res.Status())
-			}
+	if err == nil && !res.IsSuccess() {
+		switch res.StatusCode() {
+		case http.StatusUnauthorized:
+			err = ErrUnauthorized
+		case http.StatusNotFound:
+			err = ErrNotFound
+		default:
+			err = newError(res.Status())
 		}
 	}
 

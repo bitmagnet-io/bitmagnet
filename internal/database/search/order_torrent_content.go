@@ -50,7 +50,8 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderB
 					Name:  "updated_at",
 				},
 				Desc: desc,
-			}}, {
+			},
+		}, {
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
 					Table: model.TableNameTorrentContent,
@@ -67,7 +68,8 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderB
 					Name:  "size",
 				},
 				Desc: desc,
-			}}, {
+			},
+		}, {
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
 					Table: model.TableNameTorrentContent,
@@ -84,7 +86,8 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderB
 					Raw:  true,
 				},
 				Desc: desc,
-			}}, {
+			},
+		}, {
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
 					Table: model.TableNameTorrentContent,
@@ -138,7 +141,8 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderB
 				},
 				Desc: desc,
 			},
-			RequiredJoins: []string{model.TableNameTorrent}}}
+			RequiredJoins: []string{model.TableNameTorrent},
+		}}
 	case TorrentContentOrderByInfoHash:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{

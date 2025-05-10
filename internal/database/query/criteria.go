@@ -1,15 +1,16 @@
 package query
 
 import (
-	"strings"
-
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
-	"github.com/bitmagnet-io/bitmagnet/internal/regex"
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 )
 
 func Where(conditions ...Criteria) Option {
+	if len(conditions) == 0 {
+		return Options()
+	}
+
 	return func(b OptionBuilder) (OptionBuilder, error) {
 		rawCriteria := make([]RawCriteria, 0, len(conditions))
 		joins := maps.NewInsertMap[string, struct{}]()
@@ -184,30 +185,4 @@ func (c GenCriteria) Raw(ctx DBContext) (RawCriteria, error) {
 	}
 
 	return cc.Raw(ctx)
-}
-
-func queryStringCriteriaFromTokens(str string, tokens []string) Criteria {
-	if len(tokens) == 0 {
-		return OrCriteria{}
-	}
-
-	return GenCriteria(func(ctx DBContext) (Criteria, error) {
-		return DBCriteria{
-			SQL: strings.Join([]string{
-				ctx.TableName() + ".tsv @@ plainto_tsquery('simple', ?)",
-				ctx.TableName() + ".tsv @@ websearch_to_tsquery('simple', ?)",
-				ctx.TableName() + ".search_string LIKE ?",
-			}, " OR "),
-			Args: []interface{}{
-				strings.Join(tokens, " "),
-				strings.Join(tokens, " "),
-				"%" + strings.TrimSpace(str) + "%",
-			},
-		}, nil
-	})
-}
-
-func SearchStringCriteria(str string) Criteria {
-	queryStringTokens := regex.SearchStringToNormalizedTokens(str)
-	return queryStringCriteriaFromTokens(str, queryStringTokens)
 }

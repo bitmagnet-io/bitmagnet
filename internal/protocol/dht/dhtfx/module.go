@@ -16,10 +16,8 @@ func New() fx.Option {
 		configfx.NewConfigModule[server.Config]("dht_server", server.NewDefaultConfig()),
 		fx.Provide(
 			fx.Annotated{
-				Name: "dht_node_id",
-				Target: func() protocol.ID {
-					return protocol.RandomNodeIDWithClientSuffix()
-				},
+				Name:   "dht_node_id",
+				Target: protocol.RandomNodeIDWithClientSuffix,
 			},
 			client.New,
 			ktable.New,

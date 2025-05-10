@@ -131,7 +131,8 @@ func resolveStructNode(
 		return ResolvedNode{}, errors.New("default value must be a struct")
 	}
 
-	thisPath := append(parentPath, key)
+	thisPath := parentPath
+	thisPath = append(thisPath, key)
 	defaultValue := value.Interface()
 	children := make(map[string]ResolvedNode)
 
@@ -142,7 +143,14 @@ func resolveStructNode(
 
 		switch field.Type.Kind() {
 		case reflect.Struct:
-			structResolved, err := resolveStructNode(resolvers, val, thisPath, fieldKey, field.Name, fieldValue)
+			structResolved, err := resolveStructNode(
+				resolvers,
+				val,
+				thisPath,
+				fieldKey,
+				field.Name,
+				fieldValue,
+			)
 			if err != nil {
 				return ResolvedNode{}, err
 			}
@@ -227,7 +235,8 @@ func resolveStructNode(
 }
 
 func createValueLabel(value interface{}) string {
-	label := ""
+	var label string
+
 	switch value.(type) {
 	case string:
 		label = fmt.Sprintf("'%s'", value)

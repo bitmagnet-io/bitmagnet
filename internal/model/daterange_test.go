@@ -3,9 +3,8 @@ package model
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewDateRangeFromString(t *testing.T) {
@@ -17,7 +16,7 @@ func TestNewDateRangeFromString(t *testing.T) {
 		expectedEnd   Date
 	}
 
-	var parseTests = []parseTest{
+	parseTests := []parseTest{
 		{
 			inputString:   "2020-01-01",
 			expectedStart: Date{Year: 2020, Month: 1, Day: 1},

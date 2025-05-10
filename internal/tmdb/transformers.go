@@ -5,6 +5,7 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 )
 
 func MovieDetailsToMovieModel(details MovieDetailsResponse) (movie model.Content, err error) {
@@ -20,7 +21,9 @@ func MovieDetailsToMovieModel(details MovieDetailsResponse) (movie model.Content
 		releaseDate = parsedDate
 	}
 
+	//nolint:prealloc
 	var collections []model.ContentCollection
+
 	if details.BelongsToCollection.ID != 0 {
 		collections = append(collections, model.ContentCollection{
 			Type:   "franchise",
@@ -111,17 +114,17 @@ func TvShowDetailsToTvShowModel(details TvDetailsResponse) (movie model.Content,
 		firstAirDate = parsedDate
 	}
 
-	var collections []model.ContentCollection
-	for _, genre := range details.Genres {
-		collections = append(collections, model.ContentCollection{
+	collections := slice.Map(details.Genres, func(genre Genre) model.ContentCollection {
+		return model.ContentCollection{
 			Type:   "genre",
 			Source: model.SourceTmdb,
 			ID:     strconv.Itoa(int(genre.ID)),
 			Name:   genre.Name,
-		})
-	}
+		}
+	})
 
 	var attributes []model.ContentAttribute
+
 	if details.ExternalIDs.IMDbID != "" {
 		attributes = append(attributes, model.ContentAttribute{
 			Source: model.SourceImdb,

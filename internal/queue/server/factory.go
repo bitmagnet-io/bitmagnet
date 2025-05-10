@@ -15,7 +15,7 @@ import (
 type Params struct {
 	fx.In
 	Query lazy.Lazy[*dao.Query]
-	//PgxPool  lazy.Lazy[*pgxpool.Pool]
+	// PgxPool  lazy.Lazy[*pgxpool.Pool]
 	Handlers []lazy.Lazy[handler.Handler] `group:"queue_handlers"`
 	Logger   *zap.SugaredLogger
 }
@@ -33,10 +33,10 @@ func New(p Params) Result {
 			"queue_server",
 			fx.Hook{
 				OnStart: func(context.Context) error {
-					//pool, err := p.PgxPool.Get()
-					//if err != nil {
-					//	return err
-					//}
+					// pool, err := p.PgxPool.Get()
+					// if err != nil {
+					// 	return err
+					// }
 					query, err := p.Query.Get()
 					if err != nil {
 						return err
@@ -52,7 +52,7 @@ func New(p Params) Result {
 					srv := server{
 						stopped: stopped,
 						query:   query,
-						//pool:       pool,
+						// pool:       pool,
 						handlers:   handlers,
 						gcInterval: time.Minute * 10,
 						logger:     p.Logger.Named("queue"),

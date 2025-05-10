@@ -42,7 +42,8 @@ func New(p Params) Result {
 		Requester: requestLimiter{
 			requester: requestLogger{
 				requester: collector,
-				// we make way to many requests to usefully log everything, but having a sample is helpful:
+				// we make way to many requests to usefully log everything, but having a sample is
+				// helpful:
 				logger: p.Logger.WithOptions(zap.WrapCore(func(core zapcore.Core) zapcore.Core {
 					return zapcore.NewSamplerWithOptions(core, time.Minute, 10, 0)
 				})).Named("meta_info_requester"),

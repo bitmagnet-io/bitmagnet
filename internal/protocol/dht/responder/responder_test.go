@@ -75,10 +75,10 @@ func (m mockedHash) ID() protocol.ID {
 }
 
 func (m mockedHash) Peers() []ktable.HashPeer {
-	var peers []ktable.HashPeer
+	peers := make([]ktable.HashPeer, 0, len(m.nodeInfos))
 	for _, nodeInfo := range m.nodeInfos {
 		peers = append(peers, ktable.HashPeer{
-			//ID:   nodeInfo.ID,
+			// ID:   nodeInfo.ID,
 			Addr: nodeInfo.Addr.ToAddrPort(),
 		})
 	}

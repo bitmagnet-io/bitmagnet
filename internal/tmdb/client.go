@@ -15,8 +15,10 @@ func newError(msg string) error {
 	return fmt.Errorf("TMDB request failed: %s", msg)
 }
 
-var ErrUnauthorized = newError("401 Unauthorized")
-var ErrNotFound = newError("404 Not Found")
+var (
+	ErrUnauthorized = newError("401 Unauthorized")
+	ErrNotFound     = newError("404 Not Found")
+)
 
 func (c client) ValidateAPIKey(ctx context.Context) error {
 	_, err := c.requester.Request(ctx, "/authentication", nil, nil)

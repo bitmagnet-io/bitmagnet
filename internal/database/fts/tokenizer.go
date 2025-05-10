@@ -50,7 +50,7 @@ func (l *tokenizerLexer) readPhrase() []string {
 		}
 	}
 	appendStr := func(str string) {
-		lexeme = lexeme + str
+		lexeme += str
 	}
 
 	for {
@@ -64,8 +64,9 @@ func (l *tokenizerLexer) readPhrase() []string {
 			if ch < unicode.MaxASCII {
 				appendStr(string(ch))
 			} else {
-				// if the character is determined to be a language with unspaced words (e.g. Chinese, Japanese),
-				// each character will become a token; using this cutoff might not be perfect...
+				// If the character is determined to be a language with unspaced words
+				// (e.g. Chinese, Japanese), each character will become a token;
+				// using this cutoff might not be perfect.
 				isNonBreakingLang := ch > '\u1FFF'
 				if isNonBreakingLang {
 					breakWord()

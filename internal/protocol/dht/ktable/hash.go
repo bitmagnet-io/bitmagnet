@@ -19,7 +19,7 @@ type hash struct {
 	id           ID
 	peers        map[string]HashPeer
 	discoveredAt time.Time
-	//lastRequestedAt time.Time
+	// lastRequestedAt time.Time
 	droppedReason error
 	reverseMap    *reverseMap
 }

@@ -58,7 +58,8 @@ func New(p Params) (Result, error) {
 			// todo: Fix!
 			//nolint:contextcheck
 			go (func() {
-				// the following hack fixes a weird bug where the CLI does not terminate when calling with just --help
+				// the following hack fixes a weird bug where the CLI does not terminate when calling
+				// with just --help
 				args := p.Args
 				if len(args) == 2 && (args[1] == "-h" || args[1] == "--help") {
 					args = []string{args[0]}

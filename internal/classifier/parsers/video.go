@@ -187,11 +187,13 @@ func ParseVideoContent(torrent model.Torrent, result classification.Result) (cla
 	}
 
 	ct := model.NullContentType{}
-	if result.ContentType.Valid {
+
+	switch {
+	case result.ContentType.Valid:
 		ct = model.NullContentType{Valid: true, ContentType: result.ContentType.ContentType}
-	} else if len(episodes) > 0 || result.Date.IsValid() {
+	case len(episodes) > 0 || result.Date.IsValid():
 		ct = model.NullContentType{Valid: true, ContentType: model.ContentTypeTvShow}
-	} else if !year.IsNil() {
+	case !year.IsNil():
 		ct = model.NullContentType{Valid: true, ContentType: model.ContentTypeMovie}
 	}
 

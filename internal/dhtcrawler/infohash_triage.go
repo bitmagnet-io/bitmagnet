@@ -92,7 +92,7 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 					case c.getPeers.In() <- r:
 						continue
 					}
-				} else if !(t.Seeders.Valid && t.Leechers.Valid) ||
+				} else if (!t.Seeders.Valid || !t.Leechers.Valid) ||
 					t.UpdatedAt.Before(time.Now().Add(-c.rescrapeThreshold)) {
 					select {
 					case <-ctx.Done():

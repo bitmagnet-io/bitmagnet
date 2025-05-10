@@ -152,15 +152,15 @@ type httpError interface {
 	httpErrorCode() int
 }
 
-type errProfileNotFound struct {
+type profileNotFoundError struct {
 	name string
 }
 
-func (e errProfileNotFound) Error() string {
+func (e profileNotFoundError) Error() string {
 	return fmt.Sprintf("profile not found: %s", e.name)
 }
 
-func (errProfileNotFound) httpErrorCode() int {
+func (profileNotFoundError) httpErrorCode() int {
 	return http.StatusNotFound
 }
 
@@ -172,7 +172,7 @@ func (h handler) getProfile(c *gin.Context) (torznab.Profile, error) {
 	default:
 		profile, ok := h.config.GetProfile(profilePathPart)
 		if !ok {
-			return profile, errProfileNotFound{name: profilePathPart}
+			return profile, profileNotFoundError{name: profilePathPart}
 		}
 
 		return profile, nil

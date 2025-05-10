@@ -5,7 +5,6 @@ tasks:
     cmds:
       - task gen-go
       - task gen-gorm
-      - task gen-torznab-categories
       - task gen-gql-enums
       - task gen-gql
       - task gen-protoc
@@ -20,10 +19,6 @@ tasks:
   gen-gorm:
     cmds:
       - go run ./internal/dev gorm gen
-
-  gen-torznab-categories:
-    cmds:
-      - go run ./internal/torznab/gencategories/gencategories.go
 
   gen-gql-enums:
     cmds:
