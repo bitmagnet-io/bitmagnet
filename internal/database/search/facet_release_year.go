@@ -60,7 +60,10 @@ func (yearFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 			var or []query.Criteria
 			if len(years) > 0 {
 				or = append(or, query.RawCriteria{
-					Query: ctx.Query().Content.UnderlyingDB().Where(yearCondition(yearField, years...).RawExpr()),
+					Query: ctx.Query().
+						Content.
+						UnderlyingDB().
+						Where(yearCondition(yearField, years...).RawExpr()),
 					Joins: joins,
 				})
 			}

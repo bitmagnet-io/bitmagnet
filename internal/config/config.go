@@ -143,7 +143,14 @@ func resolveStructNode(
 
 		switch field.Type.Kind() {
 		case reflect.Struct:
-			structResolved, err := resolveStructNode(resolvers, val, thisPath, fieldKey, field.Name, fieldValue)
+			structResolved, err := resolveStructNode(
+				resolvers,
+				val,
+				thisPath,
+				fieldKey,
+				field.Name,
+				fieldValue,
+			)
 			if err != nil {
 				return ResolvedNode{}, err
 			}

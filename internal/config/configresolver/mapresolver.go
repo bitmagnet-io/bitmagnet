@@ -58,7 +58,11 @@ func (r mapResolver) Resolve(path []string, valueType reflect.Type) (any, bool, 
 
 		mapV, mapOk := rawV.(map[string]interface{})
 		if !mapOk {
-			return nil, true, fmt.Errorf("expected map[string]interface{} at path %v, got %T", currentPath, rawV)
+			return nil, true, fmt.Errorf(
+				"expected map[string]interface{} at path %v, got %T",
+				currentPath,
+				rawV,
+			)
 		}
 
 		v = mapV

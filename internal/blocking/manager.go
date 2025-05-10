@@ -120,7 +120,8 @@ func (m *manager) flush(ctx context.Context) error {
 
 	var nullOid sql.NullInt32
 
-	err = tx.QueryRow(ctx, "SELECT oid FROM bloom_filters WHERE key = $1", blockedTorrentsBloomFilterKey).Scan(&nullOid)
+	err = tx.QueryRow(ctx, "SELECT oid FROM bloom_filters WHERE key = $1", blockedTorrentsBloomFilterKey).
+		Scan(&nullOid)
 	if err == nil {
 		found = true
 

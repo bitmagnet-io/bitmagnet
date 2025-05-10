@@ -64,12 +64,18 @@ func searchRequestToQueryOptions(r torznab.SearchRequest) ([]query.Option, error
 		switch {
 		case torznab.CategoryMovies.Has(cat):
 			if r.Type != torznab.FunctionMovie || torznab.CategoryMovies.ID == cat {
-				catCriteria = append(catCriteria, search.TorrentContentTypeCriteria(model.ContentTypeMovie))
+				catCriteria = append(
+					catCriteria,
+					search.TorrentContentTypeCriteria(model.ContentTypeMovie),
+				)
 			}
 
 			switch cat {
 			case torznab.CategoryMoviesSD.ID:
-				catCriteria = append(catCriteria, search.VideoResolutionCriteria(model.VideoResolutionV480p))
+				catCriteria = append(
+					catCriteria,
+					search.VideoResolutionCriteria(model.VideoResolutionV480p),
+				)
 			case torznab.CategoryMoviesHD.ID:
 				catCriteria = append(catCriteria, search.VideoResolutionCriteria(
 					model.VideoResolutionV720p,
@@ -78,7 +84,10 @@ func searchRequestToQueryOptions(r torznab.SearchRequest) ([]query.Option, error
 					model.VideoResolutionV2160p,
 				))
 			case torznab.CategoryMoviesUHD.ID:
-				catCriteria = append(catCriteria, search.VideoResolutionCriteria(model.VideoResolutionV2160p))
+				catCriteria = append(
+					catCriteria,
+					search.VideoResolutionCriteria(model.VideoResolutionV2160p),
+				)
 			case torznab.CategoryMovies3D.ID:
 				catCriteria = append(catCriteria, search.Video3DCriteria(
 					model.Video3DV3D,
@@ -88,12 +97,18 @@ func searchRequestToQueryOptions(r torznab.SearchRequest) ([]query.Option, error
 			}
 		case torznab.CategoryTV.Has(cat):
 			if r.Type != torznab.FunctionTV || torznab.CategoryTV.ID == cat {
-				catCriteria = append(catCriteria, search.TorrentContentTypeCriteria(model.ContentTypeTvShow))
+				catCriteria = append(
+					catCriteria,
+					search.TorrentContentTypeCriteria(model.ContentTypeTvShow),
+				)
 			}
 
 			switch cat {
 			case torznab.CategoryTVSD.ID:
-				catCriteria = append(catCriteria, search.VideoResolutionCriteria(model.VideoResolutionV480p))
+				catCriteria = append(
+					catCriteria,
+					search.VideoResolutionCriteria(model.VideoResolutionV480p),
+				)
 			case torznab.CategoryTVHD.ID:
 				catCriteria = append(catCriteria, search.VideoResolutionCriteria(
 					model.VideoResolutionV720p,
@@ -102,7 +117,10 @@ func searchRequestToQueryOptions(r torznab.SearchRequest) ([]query.Option, error
 					model.VideoResolutionV2160p,
 				))
 			case torznab.CategoryTVUHD.ID:
-				catCriteria = append(catCriteria, search.VideoResolutionCriteria(model.VideoResolutionV2160p))
+				catCriteria = append(
+					catCriteria,
+					search.VideoResolutionCriteria(model.VideoResolutionV2160p),
+				)
 			}
 		case torznab.CategoryXXX.Has(cat):
 			catCriteria = append(catCriteria, search.TorrentContentTypeCriteria(model.ContentTypeXxx))

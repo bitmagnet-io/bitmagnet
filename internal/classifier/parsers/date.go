@@ -71,7 +71,8 @@ func (l *dateLexer) lexDate() model.Date {
 						i++
 
 						part3 := parts[i]
-						if !part3.IsNil() && (i == len(parts)-1 || parts[i+1].format == datePartNonWordChars) {
+						if !part3.IsNil() &&
+							(i == len(parts)-1 || parts[i+1].format == datePartNonWordChars) {
 							if date := findFirstValidDate(part1.Date, part2.Date, part3.Date); !date.IsNil() {
 								return date
 							}

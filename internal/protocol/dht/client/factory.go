@@ -35,7 +35,8 @@ func New(p Params) Result {
 					nodeID: p.NodeID,
 					server: s,
 				},
-				// we make way to many queries to usefully log everything, but having a sample is helpful:
+				// we make way to many queries to usefully log everything, but having a sample is
+				// helpful:
 				logger: p.Logger.WithOptions(zap.WrapCore(func(core zapcore.Core) zapcore.Core {
 					return zapcore.NewSamplerWithOptions(core, time.Minute, 10, 0)
 				})).Named("dht_client"),

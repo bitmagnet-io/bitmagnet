@@ -44,7 +44,7 @@ func New(p Params) (Result, error) {
 					if err := p.Workers.Start(ctx.Context); err != nil {
 						return err
 					}
-					<-ctx.Context.Done()
+					<-ctx.Done()
 					return nil
 				},
 				After: func(ctx *cli.Context) error {

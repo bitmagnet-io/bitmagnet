@@ -109,11 +109,7 @@ func ParseTsvector(str string) (Tsvector, error) {
 	l := tsvectorLexer{newLexer(strings.TrimSpace(str))}
 	tsv := Tsvector{}
 
-	for {
-		if l.IsEOF() {
-			break
-		}
-
+	for !l.IsEOF() {
 		word, posWeights, err := l.readTsvPart()
 		if err != nil {
 			return nil, fmt.Errorf("error at position %d: %w", l.Pos(), err)

@@ -76,7 +76,7 @@ func (b builder) handle(ctx *gin.Context, i importer.Importer) {
 
 	count := 0
 	writeCount := func() {
-		_, _ = ctx.Writer.WriteString(fmt.Sprintf("%d items imported\n", count))
+		_, _ = fmt.Fprintf(ctx.Writer, "%d items imported\n", count)
 	}
 	addItem := func() error {
 		item := importer.Item{}

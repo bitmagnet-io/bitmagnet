@@ -78,7 +78,8 @@ func TestMarshalUnmarshalMsg(t *testing.T) {
 		T: "\x8c%",
 		R: &Return{},
 	}, "d1:rd2:id20:\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00e1:t2:\x8c%1:y1:re")
-	testMarshalUnmarshalMsg(t,
+	testMarshalUnmarshalMsg(
+		t,
 		Msg{
 			Y: "r",
 			T: "\x8c%",
@@ -90,7 +91,8 @@ func TestMarshalUnmarshalMsg(t *testing.T) {
 				},
 			},
 		},
-		"d1:rd2:id20:\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x005:nodes26:\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x02\x03\x04\x124e1:t2:\x8c%1:y1:re")
+		"d1:rd2:id20:\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x005:nodes26:\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x02\x03\x04\x124e1:t2:\x8c%1:y1:re",
+	)
 	testMarshalUnmarshalMsg(t, Msg{
 		Y: "r",
 		T: "\x8c%",
@@ -145,18 +147,23 @@ func TestMsgReadOnly(t *testing.T) {
 	var m Msg
 
 	require.NoError(t, bencode.Unmarshal([]byte("de"), &m))
-	require.EqualValues(t, Msg{}, m)
+	require.Equal(t, Msg{}, m)
 	require.NoError(t, bencode.Unmarshal([]byte("d2:roi1ee"), &m))
-	require.EqualValues(t, Msg{ReadOnly: true}, m)
+	require.Equal(t, Msg{ReadOnly: true}, m)
 	require.NoError(t, bencode.Unmarshal([]byte("d2:roi0ee"), &m))
-	require.EqualValues(t, Msg{}, m)
+	require.Equal(t, Msg{}, m)
 }
 
 func TestUnmarshalGetPeersResponse(t *testing.T) {
 	t.Parallel()
 
 	var msg Msg
-	err := bencode.Unmarshal([]byte("d1:rd6:valuesl6:\x01\x02\x03\x04\x05\x066:\x07\x08\x09\x0a\x0b\x0ce5:nodes52:\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x02\x03\x04\x05\x06\x07\x08\x09\x02\x03\x04\x05\x06\x07\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x02\x03\x04\x05\x06\x07\x08\x09\x02\x03\x04\x05\x06\x07ee"), &msg)
+	err := bencode.Unmarshal(
+		[]byte(
+			"d1:rd6:valuesl6:\x01\x02\x03\x04\x05\x066:\x07\x08\x09\x0a\x0b\x0ce5:nodes52:\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x02\x03\x04\x05\x06\x07\x08\x09\x02\x03\x04\x05\x06\x07\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x02\x03\x04\x05\x06\x07\x08\x09\x02\x03\x04\x05\x06\x07ee",
+		),
+		&msg,
+	)
 	require.NoError(t, err)
 	assert.Len(t, msg.R.Values, 2)
 	assert.Len(t, msg.R.Nodes, 2)
@@ -190,7 +197,7 @@ BFAF2E9E BFFFFEEC D67ADBF7 C67F17EF D5D75EBA 6FFEBA7F FF47A91E B1BFBB53 E8ABFB57
 FD8F72EF
 `))
 	require.NoError(t, err)
-	assert.EqualValues(t, expected, f[:])
+	assert.Equal(t, expected, f[:])
 	assert.InDelta(t, 1224.9308, floorDecimals(f.EstimateCount(), 4), 0)
 }
 
@@ -204,7 +211,7 @@ func TestEmptyScrapeBloomFilterEstimatedCount(t *testing.T) {
 
 	var f ScrapeBloomFilter
 
-	assert.EqualValues(t, 0, int(math.Floor(f.EstimateCount())))
+	assert.Equal(t, 0, int(math.Floor(f.EstimateCount())))
 }
 
 func marshalAndReturnUnmarshaledMsg(t *testing.T, m Msg, expected string) (ret Msg) {
@@ -223,7 +230,8 @@ func marshalAndReturnUnmarshaledMsg(t *testing.T, m Msg, expected string) (ret M
 func TestBep51EmptySampleField(t *testing.T) {
 	t.Parallel()
 
-	testMarshalUnmarshalMsg(t,
+	testMarshalUnmarshalMsg(
+		t,
 		Msg{
 			R: &Return{},
 		},

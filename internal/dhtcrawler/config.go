@@ -7,8 +7,8 @@ import (
 type Config struct {
 	// ScalingFactor is a rough proxy for resource usage of the crawler; concurrency and buffer size of the various
 	// pipeline channels are multiplied by this value. Diminishing returns may result from exceeding the
-	// default value of 10. Since the software has not been tested on a wide variety of hardware and network conditions
-	// your mileage may vary here...
+	// default value of 10. Since the software has not been tested on a wide variety of hardware and network
+	// conditions; your mileage may vary here...
 	ScalingFactor                uint
 	BootstrapNodes               []string
 	ReseedBootstrapNodesInterval time.Duration

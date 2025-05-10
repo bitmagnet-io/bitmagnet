@@ -126,7 +126,8 @@ func (s *server) runGarbageCollection(ctx context.Context) {
 	for {
 		tx := s.query.QueueJob.WithContext(ctx).Where(
 			s.query.QueueJob.Status.In(string(model.QueueJobStatusProcessed), string(model.QueueJobStatusFailed)),
-		).UnderlyingDB().Where(
+		).
+			UnderlyingDB().Where(
 			"queue_jobs.ran_at + queue_jobs.archival_duration < ?::timestamptz",
 			time.Now(),
 		).Delete(&model.QueueJob{})
@@ -195,9 +196,13 @@ func (h *serverHandler) handleJob(
 ) (jobID string, processed bool, err error) {
 	err = h.query.Transaction(func(tx *dao.Query) error {
 		job, findErr := tx.QueueJob.WithContext(ctx).Where(
-			append(conds,
+			append(
+				conds,
 				h.query.QueueJob.Queue.Eq(h.Queue),
-				h.query.QueueJob.Status.In(string(model.QueueJobStatusPending), string(model.QueueJobStatusRetry)),
+				h.query.QueueJob.Status.In(
+					string(model.QueueJobStatusPending),
+					string(model.QueueJobStatusRetry),
+				),
 				h.query.QueueJob.RunAfter.Lte(time.Now()),
 			)...,
 		).Order(

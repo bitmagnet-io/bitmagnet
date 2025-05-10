@@ -299,7 +299,9 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 			contentCollections,
 			&field.RelateConfig{
 				GORMTag: field.GormTag{
-					"foreignKey": {"ContentCollectionType,ContentCollectionSource,ContentCollectionID"},
+					"foreignKey": {
+						"ContentCollectionType,ContentCollectionSource,ContentCollectionID",
+					},
 					"references": {"Type,Source,ID"},
 				},
 			},

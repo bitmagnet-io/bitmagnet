@@ -72,7 +72,7 @@ func doTestHandler(t *testing.T,
 	handler.ServeHTTP(response, request)
 
 	// Assert
-	ckr.Mock.AssertNumberOfCalls(t, "Check", 1)
+	ckr.AssertNumberOfCalls(t, "Check", 1)
 	assert.Equal(t, "application/json; charset=utf-8", response.Header().Get("content-type"))
 	assert.Equal(t, expectedStatusCode, response.Code)
 

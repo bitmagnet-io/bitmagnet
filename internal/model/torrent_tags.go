@@ -17,7 +17,11 @@ func ValidateTagName(name string) error {
 	}
 
 	if len(name) > tagNameMaxLength {
-		return fmt.Errorf("invalid tag name: '%s' (must be no longer than %d characters)", name, tagNameMaxLength)
+		return fmt.Errorf(
+			"invalid tag name: '%s' (must be no longer than %d characters)",
+			name,
+			tagNameMaxLength,
+		)
 	}
 
 	return nil

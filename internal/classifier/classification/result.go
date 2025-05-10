@@ -15,7 +15,7 @@ func (r *Result) ApplyHint(h model.TorrentHint) {
 
 func (r *Result) AttachContent(content *model.Content) {
 	r.Content = content
-	r.ContentAttributes.ContentType = model.NewNullContentType(content.Type)
+	r.ContentType = model.NewNullContentType(content.Type)
 
 	if content.OriginalLanguage.Valid {
 		if len(r.Languages) == 0 || r.LanguageMulti {
