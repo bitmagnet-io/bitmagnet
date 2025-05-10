@@ -151,14 +151,8 @@ formatters:
     - golines
   settings:
     golines:
-      # Target maximum line length.
-      # Default: 100
       max-len: 120
-      # Length of a tabulation.
-      # Default: 4
       tab-len: 8
-      # Shorten single-line comments.
-      # Default: false
       shorten-comments: true
   exclusions:
     generated: lax
