@@ -34,8 +34,10 @@ type Result struct {
 	QueryConcurrency  prometheus.Collector                    `group:"prometheus_collectors"`
 }
 
-const namespace = "bitmagnet"
-const subsystem = "dht_server"
+const (
+	namespace = "bitmagnet"
+	subsystem = "dht_server"
+)
 
 func New(p Params) Result {
 	lastResponses := &concurrency.AtomicValue[LastResponses]{}
@@ -46,8 +48,11 @@ func New(p Params) Result {
 				prometheusCollector: collector,
 				server: healthCollector{
 					baseServer: &server{
-						stopped:          make(chan struct{}),
-						localAddr:        netip.AddrPortFrom(netip.IPv4Unspecified(), p.Config.Port),
+						stopped: make(chan struct{}),
+						localAddr: netip.AddrPortFrom(
+							netip.IPv4Unspecified(),
+							p.Config.Port,
+						),
 						socket:           NewSocket(),
 						queries:          make(map[string]chan dht.RecvMsg),
 						queryTimeout:     p.Config.QueryTimeout,

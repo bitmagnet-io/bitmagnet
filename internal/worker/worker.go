@@ -4,9 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
+	"slices"
 	"sort"
 	"sync"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -126,23 +129,16 @@ type registry struct {
 }
 
 func (r *registry) Workers() []Worker {
-	var workers []Worker
-
 	r.mutex.RLock()
 	defer r.mutex.RUnlock()
 
-	keys := make([]string, 0, len(r.workers))
-	for k := range r.workers {
-		keys = append(keys, k)
-	}
+	keys := slices.Collect(maps.Keys(r.workers))
 
 	sort.Strings(keys)
 
-	for _, k := range keys {
-		workers = append(workers, r.workers[k])
-	}
-
-	return workers
+	return slice.Map(keys, func(s string) Worker {
+		return r.workers[s]
+	})
 }
 
 func (r *registry) Enable(names ...string) error {
@@ -195,7 +191,7 @@ func (r *registry) DisableAll() {
 	}
 }
 
-var ErrorNoWorkersEnabled = errors.New("no workers enabled")
+var ErrNoWorkersEnabled = errors.New("no workers enabled")
 
 func (r *registry) Start(ctx context.Context) error {
 	r.mutex.Lock()
@@ -225,7 +221,7 @@ func (r *registry) Start(ctx context.Context) error {
 	}
 
 	if i == 0 {
-		return ErrorNoWorkersEnabled
+		return ErrNoWorkersEnabled
 	}
 
 	return nil

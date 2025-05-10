@@ -1,5 +1,7 @@
 package model
 
-const SourceTmdb = "tmdb"
-const SourceImdb = "imdb"
-const SourceTvdb = "tvdb"
+const (
+	SourceTmdb = "tmdb"
+	SourceImdb = "imdb"
+	SourceTvdb = "tvdb"
+)

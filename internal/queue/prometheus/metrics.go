@@ -21,12 +21,10 @@ type queueMetricsCollector struct {
 	logger *zap.SugaredLogger
 }
 
-var (
-	tasksQueuedDesc = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "jobs_total"),
-		"Number of tasks enqueued; broken down by queue and status.",
-		[]string{"queue", "status"}, nil,
-	)
+var tasksQueuedDesc = prometheus.NewDesc(
+	prometheus.BuildFQName(namespace, "", "jobs_total"),
+	"Number of tasks enqueued; broken down by queue and status.",
+	[]string{"queue", "status"}, nil,
 )
 
 func (qmc *queueMetricsCollector) Describe(ch chan<- *prometheus.Desc) {

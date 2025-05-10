@@ -11,9 +11,11 @@ type StableBloomFilter struct {
 	boom.StableBloomFilter
 }
 
-const defaultCapacity = 100_000_000
-const defaultD = 2
-const defaultFpRate = 0.001
+const (
+	defaultCapacity = 100_000_000
+	defaultD        = 2
+	defaultFpRate   = 0.001
+)
 
 func NewDefaultStableBloomFilter() *StableBloomFilter {
 	return &StableBloomFilter{*boom.NewStableBloomFilter(defaultCapacity, defaultD, defaultFpRate)}
@@ -37,6 +39,7 @@ func (s *StableBloomFilter) Scan(value interface{}) error {
 
 func (s StableBloomFilter) Value() (driver.Value, error) {
 	if s.Cells() == 0 {
+		//nolint:nilnil
 		return nil, nil
 	}
 

@@ -99,7 +99,11 @@ func TestCaps(t *testing.T) {
 			h.engine.ServeHTTP(h.responseRecorder, req)
 
 			assert.Equal(t, http.StatusOK, h.responseRecorder.Code)
-			assert.Equal(t, "application/xml; charset=utf-8", h.responseRecorder.Header().Get("Content-Type"))
+			assert.Equal(
+				t,
+				"application/xml; charset=utf-8",
+				h.responseRecorder.Header().Get("Content-Type"),
+			)
 
 			expectedXML, err := testCase.profile.Caps().XML()
 			require.NoError(t, err)

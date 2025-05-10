@@ -35,6 +35,7 @@ func (n *NullInt) Scan(value interface{}) error {
 
 func (n NullInt) Value() (driver.Value, error) {
 	if !n.Valid {
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -68,6 +69,7 @@ func (n *NullString) Scan(value interface{}) error {
 
 func (n NullString) Value() (driver.Value, error) {
 	if !n.Valid {
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -153,6 +155,7 @@ func (n *NullBool) Scan(value interface{}) error {
 
 func (n NullBool) Value() (driver.Value, error) {
 	if !n.Valid {
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -218,6 +221,7 @@ func (n *NullFloat32) Scan(value interface{}) error {
 
 func (n NullFloat32) Value() (driver.Value, error) {
 	if !n.Valid {
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -297,6 +301,7 @@ func (n *NullFloat64) Scan(value interface{}) error {
 
 func (n NullFloat64) Value() (driver.Value, error) {
 	if !n.Valid {
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -376,6 +381,7 @@ func (n *NullUint64) Scan(value interface{}) error {
 
 func (n NullUint64) Value() (driver.Value, error) {
 	if !n.Valid {
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -409,6 +415,7 @@ func (n *NullUint16) Scan(value interface{}) error {
 
 func (n NullUint16) Value() (driver.Value, error) {
 	if !n.Valid {
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -488,6 +495,7 @@ func (n *NullUint) Scan(value interface{}) error {
 
 func (n NullUint) Value() (driver.Value, error) {
 	if !n.Valid {
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -508,7 +516,7 @@ func (n *NullUint) UnmarshalGQL(v interface{}) error {
 	case int64:
 		n.Uint = uint(v)
 	case uint:
-		n.Uint = uint(v)
+		n.Uint = v
 	case uint32:
 		n.Uint = uint(v)
 	case uint64:

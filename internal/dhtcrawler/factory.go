@@ -37,9 +37,11 @@ type Params struct {
 
 type Result struct {
 	fx.Out
-	Worker           worker.Worker                  `group:"workers"`
-	PersistedTotal   prometheus.Collector           `group:"prometheus_collectors"`
+	Worker worker.Worker `group:"workers"`
+
 	DhtCrawlerActive *concurrency.AtomicValue[bool] `name:"dht_crawler_active"`
+
+	PersistedTotal prometheus.Collector `group:"prometheus_collectors"`
 }
 
 func New(params Params) Result {
@@ -88,7 +90,9 @@ func New(params Params) Result {
 						nodesForFindNode: concurrency.NewBufferedConcurrentChannel[ktable.Node](
 							10*scalingFactor, 10*scalingFactor),
 						nodesForSampleInfoHashes: concurrency.NewBufferedConcurrentChannel[ktable.Node](
-							10*scalingFactor, 10*scalingFactor),
+							10*scalingFactor,
+							10*scalingFactor,
+						),
 						infoHashTriage: concurrency.NewBatchingChannel[nodeHasPeersForHash](
 							10*scalingFactor, 1000, 20*time.Second),
 						getPeers: concurrency.NewBufferedConcurrentChannel[nodeHasPeersForHash](
@@ -96,7 +100,9 @@ func New(params Params) Result {
 						scrape: concurrency.NewBufferedConcurrentChannel[nodeHasPeersForHash](
 							10*scalingFactor, 20*scalingFactor),
 						requestMetaInfo: concurrency.NewBufferedConcurrentChannel[infoHashWithPeers](
-							10*scalingFactor, 40*scalingFactor),
+							10*scalingFactor,
+							40*scalingFactor,
+						),
 						persistTorrents: concurrency.NewBatchingChannel[infoHashWithMetaInfo](
 							1000,
 							1000,

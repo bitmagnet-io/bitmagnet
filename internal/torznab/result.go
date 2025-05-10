@@ -58,13 +58,13 @@ func (r RSSDate) String() string {
 var rssDateFormats = []string{
 	RssDateDefaultFormat,
 	// if parsing is needed in future we might need these:
-	//time.RFC850,
-	//time.RFC822,
-	//time.RFC822Z,
-	//time.RFC1123,
-	//time.RFC1123Z,
-	//"02 Jan 2006 15:04:05 MST",
-	//"02 Jan 2006 15:04:05 -0700",
+	// time.RFC850,
+	// time.RFC822,
+	// time.RFC822Z,
+	// time.RFC1123,
+	// time.RFC1123Z,
+	// "02 Jan 2006 15:04:05 MST",
+	// "02 Jan 2006 15:04:05 -0700",
 }
 
 func (r *RSSDate) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {

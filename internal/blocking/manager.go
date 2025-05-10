@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"maps"
+	"slices"
 	"sync"
 	"time"
 
@@ -40,7 +42,7 @@ func (m *manager) Filter(ctx context.Context, hashes []protocol.ID) ([]protocol.
 		}
 	}
 
-	var filtered []protocol.ID
+	filtered := make([]protocol.ID, 0, len(hashes))
 
 	for _, hash := range hashes {
 		if _, ok := m.buffer[hash]; ok {
@@ -88,10 +90,7 @@ func (m *manager) Flush(ctx context.Context) error {
 const blockedTorrentsBloomFilterKey = "blocked_torrents"
 
 func (m *manager) flush(ctx context.Context) error {
-	var hashes []protocol.ID
-	for hash := range m.buffer {
-		hashes = append(hashes, hash)
-	}
+	hashes := slices.Collect(maps.Keys(m.buffer))
 
 	tx, err := m.pool.BeginTx(ctx, pgx.TxOptions{
 		AccessMode: pgx.ReadWrite,
@@ -121,7 +120,8 @@ func (m *manager) flush(ctx context.Context) error {
 
 	var nullOid sql.NullInt32
 
-	err = tx.QueryRow(ctx, "SELECT oid FROM bloom_filters WHERE key = $1", blockedTorrentsBloomFilterKey).Scan(&nullOid)
+	err = tx.QueryRow(ctx, "SELECT oid FROM bloom_filters WHERE key = $1", blockedTorrentsBloomFilterKey).
+		Scan(&nullOid)
 	if err == nil {
 		found = true
 

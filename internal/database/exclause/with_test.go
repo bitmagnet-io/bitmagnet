@@ -56,11 +56,14 @@ func TestWith_Query(t *testing.T) {
 			name: "When has specific fields, then should be used with columns specified",
 			operation: func(db *gorm.DB) *gorm.DB {
 				return db.Clauses(With{
-					CTEs: []CTE{{
-						Name:     "cte",
-						Columns:  []string{"id", "name"},
-						Subquery: Subquery{DB: db.Table("users")}},
-					}}).Table("cte").Scan(nil)
+					CTEs: []CTE{
+						{
+							Name:     "cte",
+							Columns:  []string{"id", "name"},
+							Subquery: Subquery{DB: db.Table("users")},
+						},
+					},
+				}).Table("cte").Scan(nil)
 			},
 			want:     "WITH `cte` (`id`,`name`) AS (SELECT * FROM `users`) SELECT * FROM `cte`",
 			wantArgs: []driver.Value{},
@@ -74,13 +77,15 @@ func TestWith_Query(t *testing.T) {
 						CTEs: []CTE{{
 							Name:     "cte1",
 							Subquery: Subquery{DB: db.Table("users")},
-						}}}).
+						}},
+					}).
 					Clauses(With{
 						Recursive: false,
 						CTEs: []CTE{{
 							Name:     "cte2",
 							Subquery: Subquery{DB: db.Table("users")},
-						}}}).
+						}},
+					}).
 					Table("cte").Scan(nil)
 			},
 			want: "WITH RECURSIVE `cte1` AS (SELECT * FROM `users`)," +
@@ -114,7 +119,9 @@ func TestWith_Query(t *testing.T) {
 				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 			}
 
-			defer mockDB.Close()
+			t.Cleanup(func() {
+				_ = mockDB.Close()
+			})
 
 			db, _ := gorm.Open(mysql.New(mysql.Config{
 				Conn:                      mockDB,
@@ -147,7 +154,10 @@ func TestNewWith(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	defer mockDB.Close()
+	t.Cleanup(func() {
+		_ = mockDB.Close()
+	})
+
 	db, _ := gorm.Open(mysql.New(mysql.Config{
 		Conn:                      mockDB,
 		SkipInitializeWithVersion: true,

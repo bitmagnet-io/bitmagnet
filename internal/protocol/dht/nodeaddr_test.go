@@ -13,5 +13,5 @@ func TestUnmarshalNodeAddr(t *testing.T) {
 	var na NodeAddr
 
 	require.NoError(t, na.UnmarshalBinary([]byte("\x01\x02\x03\x04\x05\x06")))
-	assert.EqualValues(t, "1.2.3.4", na.IP.String())
+	assert.Equal(t, "1.2.3.4", na.IP.String())
 }

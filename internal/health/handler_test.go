@@ -50,15 +50,16 @@ func (ck *resultWriterMock) Write(result *CheckerResult, statusCode int, w http.
 	return ck.Called(result, statusCode, w, r).Get(0).(error)
 }
 
-//var testTimestamp = time.Now()
+// var testTimestamp = time.Now()
 
 func doTestHandler(t *testing.T,
-	statusCodeUp, statusCodeDown int, expectedStatus CheckerResult, expectedStatusCode int) {
+	statusCodeUp, statusCodeDown int, expectedStatus CheckerResult, expectedStatusCode int,
+) {
 	t.Helper()
 
 	// Arrange
 	response := httptest.NewRecorder()
-	request := httptest.NewRequest("GET", "https://localhost/foo", nil)
+	request := httptest.NewRequest(http.MethodGet, "https://localhost/foo", nil)
 
 	ckr := checkerMock{}
 	ckr.On("IsStarted").Return(false)
@@ -71,7 +72,7 @@ func doTestHandler(t *testing.T,
 	handler.ServeHTTP(response, request)
 
 	// Assert
-	ckr.Mock.AssertNumberOfCalls(t, "Check", 1)
+	ckr.AssertNumberOfCalls(t, "Check", 1)
 	assert.Equal(t, "application/json; charset=utf-8", response.Header().Get("content-type"))
 	assert.Equal(t, expectedStatusCode, response.Code)
 

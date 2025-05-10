@@ -119,7 +119,10 @@ func TestNewExcept(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	defer mockDB.Close()
+	t.Cleanup(func() {
+		_ = mockDB.Close()
+	})
+
 	db, _ := gorm.Open(mysql.New(mysql.Config{
 		Conn:                      mockDB,
 		SkipInitializeWithVersion: true,

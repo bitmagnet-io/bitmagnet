@@ -21,10 +21,10 @@ func ReleaseYearFacet(options ...query.FacetOption) query.Facet {
 				query.FacetUsesOrLogic(),
 				// avoids counting different versions of the same piece of content,
 				// but has issues when combined with other filters:
-				//query.FacetHasAggregationOption(
-				//	query.Table(model.TableNameContent),
-				//	ContentCoreJoins(),
-				//),
+				// query.FacetHasAggregationOption(
+				// 	query.Table(model.TableNameContent),
+				// 	ContentCoreJoins(),
+				// ),
 			}, options...)...,
 		),
 		field: "release_year",
@@ -60,7 +60,10 @@ func (yearFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 			var or []query.Criteria
 			if len(years) > 0 {
 				or = append(or, query.RawCriteria{
-					Query: ctx.Query().Content.UnderlyingDB().Where(yearCondition(yearField, years...).RawExpr()),
+					Query: ctx.Query().
+						Content.
+						UnderlyingDB().
+						Where(yearCondition(yearField, years...).RawExpr()),
 					Joins: joins,
 				})
 			}

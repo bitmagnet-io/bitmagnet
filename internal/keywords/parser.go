@@ -48,7 +48,7 @@ func NewRexTokensFromKeywords(kws ...string) ([]dialect.Token, error) {
 		return nil, errors.New("no keywords provided")
 	}
 
-	var tokens []dialect.Token
+	tokens := make([]dialect.Token, 0, len(kws))
 
 	usedKeywords := make(map[string]struct{})
 	for _, kw := range kws {
@@ -58,8 +58,8 @@ func NewRexTokensFromKeywords(kws ...string) ([]dialect.Token, error) {
 
 		usedKeywords[kw] = struct{}{}
 		l := keywordsLexer{Lexer: lexer.NewLexer(kw)}
-		group, err := l.lexGroupToken(false)
 
+		group, err := l.lexGroupToken(false)
 		if err != nil {
 			return nil, fmt.Errorf("error in keyword '%s' at position %d: %w", kw, l.Pos(), err)
 		}
@@ -83,9 +83,11 @@ type keywordsLexer struct {
 	lexer.Lexer
 }
 
-var ErrEOF = errors.New("EOF")
-var ErrUnexpectedEOF = errors.New("unexpected EOF")
-var ErrUnexpectedChar = errors.New("unexpected character")
+var (
+	ErrEOF            = errors.New("EOF")
+	ErrUnexpectedEOF  = errors.New("unexpected EOF")
+	ErrUnexpectedChar = errors.New("unexpected character")
+)
 
 func (l *keywordsLexer) lexGroupToken(parens bool) (base.GroupToken, error) {
 	var groupTokens []dialect.Token

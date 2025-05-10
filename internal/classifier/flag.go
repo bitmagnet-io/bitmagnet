@@ -116,7 +116,11 @@ func (t FlagType) celVal(rawVal any) (ref.Val, error) {
 				if strVal != "unknown" {
 					parsed, parseErr := model.ParseContentType(strVal)
 					if parseErr != nil {
-						return nil, fmt.Errorf("could not parse content type %s: %w", strVal, parseErr)
+						return nil, fmt.Errorf(
+							"could not parse content type %s: %w",
+							strVal,
+							parseErr,
+						)
 					}
 
 					ct = model.NewNullContentType(parsed)

@@ -44,7 +44,7 @@ func (l localSearch) ContentByID(ctx context.Context, ref model.ContentRef) (mod
 		))
 	}
 
-	result, err := l.Search.Content(ctx, options...)
+	result, err := l.Content(ctx, options...)
 	if err != nil {
 		return model.Content{}, err
 	}
@@ -71,10 +71,13 @@ func (l localSearch) ContentBySearch(
 		search.ContentDefaultHydrate(),
 	}
 	if !year.IsNil() {
-		options = append(options, query.Where(search.ContentReleaseDateCriteria(model.NewDateRangeFromYear(year))))
+		options = append(
+			options,
+			query.Where(search.ContentReleaseDateCriteria(model.NewDateRangeFromYear(year))),
+		)
 	}
 
-	result, searchErr := l.Search.Content(
+	result, searchErr := l.Content(
 		ctx,
 		options...,
 	)

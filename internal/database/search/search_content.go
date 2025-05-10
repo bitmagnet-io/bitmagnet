@@ -62,8 +62,12 @@ func ContentCoreJoins() query.Option {
 			{
 				Table: q.ContentCollection,
 				On: []field.Expr{
-					q.ContentCollection.Type.EqCol(q.ContentCollectionContent.ContentCollectionType),
-					q.ContentCollection.Source.EqCol(q.ContentCollectionContent.ContentCollectionSource),
+					q.ContentCollection.Type.EqCol(
+						q.ContentCollectionContent.ContentCollectionType,
+					),
+					q.ContentCollection.Source.EqCol(
+						q.ContentCollectionContent.ContentCollectionSource,
+					),
 					q.ContentCollection.ID.EqCol(q.ContentCollectionContent.ContentCollectionID),
 				},
 				Type: query.TableJoinTypeInner,

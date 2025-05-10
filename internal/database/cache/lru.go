@@ -23,7 +23,11 @@ type Result struct {
 func NewInMemoryCacher(p Params) Result {
 	return Result{
 		Cacher: &inMemoryCacher{
-			lru:    expirable.NewLRU[string, *caches.Query](int(p.Config.MaxKeys), nil, p.Config.TTL),
+			lru: expirable.NewLRU[string, *caches.Query](
+				int(p.Config.MaxKeys),
+				nil,
+				p.Config.TTL,
+			),
 			logger: p.Logger.Named("gorm_cache"),
 		},
 	}

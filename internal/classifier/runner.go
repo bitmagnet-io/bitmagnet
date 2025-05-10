@@ -29,7 +29,11 @@ func (r runner) Run(ctx context.Context, workflow string, flags Flags, t model.T
 		if runtimeRawVal, ok := flags[k]; ok {
 			rcf, err := d.celVal(runtimeRawVal)
 			if err != nil {
-				return classification.Result{}, fmt.Errorf("invalid value for runtime flag '%s': %w", k, err)
+				return classification.Result{}, fmt.Errorf(
+					"invalid value for runtime flag '%s': %w",
+					k,
+					err,
+				)
 			}
 
 			cfs[k] = rcf

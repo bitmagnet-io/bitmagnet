@@ -71,7 +71,8 @@ func (l *dateLexer) lexDate() model.Date {
 						i++
 
 						part3 := parts[i]
-						if !part3.IsNil() && (i == len(parts)-1 || parts[i+1].format == datePartNonWordChars) {
+						if !part3.IsNil() &&
+							(i == len(parts)-1 || parts[i+1].format == datePartNonWordChars) {
 							if date := findFirstValidDate(part1.Date, part2.Date, part3.Date); !date.IsNil() {
 								return date
 							}
@@ -159,9 +160,11 @@ func (l *dateLexer) lexDateParts() []datePart {
 	return parts
 }
 
-var regex1Digit = regexp.MustCompile(`^\d$`)
-var regex2Digits = regexp.MustCompile(`^\d{2}$`)
-var regex4Digits = regexp.MustCompile(`^\d{4}$`)
+var (
+	regex1Digit  = regexp.MustCompile(`^\d$`)
+	regex2Digits = regexp.MustCompile(`^\d{2}$`)
+	regex4Digits = regexp.MustCompile(`^\d{4}$`)
+)
 
 func (l *dateLexer) lexDatePart() datePart {
 	str := l.ReadWhile(lexer.IsWordChar)

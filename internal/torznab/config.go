@@ -1,18 +1,19 @@
 package torznab
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/slice"
+)
 
 type Config struct {
 	Profiles []Profile
 }
 
 func (c Config) MergeDefaults() Config {
-	var profiles []Profile
-	for _, p := range c.Profiles {
-		profiles = append(profiles, p.MergeDefaults())
-	}
-
-	c.Profiles = profiles
+	c.Profiles = slice.Map(c.Profiles, func(profile Profile) Profile {
+		return profile.MergeDefaults()
+	})
 
 	return c
 }

@@ -64,6 +64,7 @@ func (y *Year) Scan(src interface{}) error {
 
 func (y Year) Value() (interface{}, error) {
 	if y.IsNil() {
+		//nolint:nilnil
 		return nil, nil
 	}
 

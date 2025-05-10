@@ -14,38 +14,38 @@ package bloom
 // - At a stable state the false positive rate is 0.09023%
 //
 //
-//import (
+// import (
 //	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 //	"testing"
-//)
+// )
 //
-//func TestNewDefaultStableBloomFilter(t *testing.T) {
-//	hashes := make(map[protocol.ID]struct{})
-//	bf := NewDefaultStableBloomFilter()
-//	bytes, _ := bf.GobEncode()
-//	t.Log(len(bytes))
-//	for i := 0; i < 10_000_000; i++ {
-//		id := protocol.RandomNodeID()
-//		bf.Add(id[:])
-//	}
-//	for i := 0; i < 1_000_000; i++ {
-//		id := protocol.RandomNodeID()
-//		hashes[id] = struct{}{}
-//		bf.Add(id[:])
-//	}
-//	fn := 0
-//	for h := range hashes {
-//		if !bf.Test(h[:]) {
-//			fn++
-//		}
-//	}
-//	t.Log("fn", fn)
-//	fps := make(map[protocol.ID]struct{})
-//	for i := 0; i < 10_000_000; i++ {
-//		id := protocol.RandomNodeID()
-//		if bf.Test(id[:]) {
-//			fps[id] = struct{}{}
-//		}
-//	}
-//	t.Log("fp", len(fps))
-//}
+// func TestNewDefaultStableBloomFilter(t *testing.T) {
+// 	hashes := make(map[protocol.ID]struct{})
+// 	bf := NewDefaultStableBloomFilter()
+// 	bytes, _ := bf.GobEncode()
+// 	t.Log(len(bytes))
+// 	for i := 0; i < 10_000_000; i++ {
+// 		id := protocol.RandomNodeID()
+// 		bf.Add(id[:])
+// 	}
+// 	for i := 0; i < 1_000_000; i++ {
+// 		id := protocol.RandomNodeID()
+// 		hashes[id] = struct{}{}
+// 		bf.Add(id[:])
+// 	}
+// 	fn := 0
+// 	for h := range hashes {
+// 		if !bf.Test(h[:]) {
+// 			fn++
+// 		}
+// 	}
+// 	t.Log("fn", fn)
+// 	fps := make(map[protocol.ID]struct{})
+// 	for i := 0; i < 10_000_000; i++ {
+// 		id := protocol.RandomNodeID()
+// 		if bf.Test(id[:]) {
+// 			fps[id] = struct{}{}
+// 		}
+// 	}
+// 	t.Log("fp", len(fps))
+// }

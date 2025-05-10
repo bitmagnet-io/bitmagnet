@@ -22,7 +22,7 @@ func torrentContentResultToTorznabResult(
 			Title: req.Profile.Title,
 			Response: torznab.SearchResultResponse{
 				Offset: req.Offset.Uint,
-				//Total:  res.TotalCount,
+				// Total:  res.TotalCount,
 			},
 			Items: entries,
 		},

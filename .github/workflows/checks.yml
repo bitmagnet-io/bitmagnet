@@ -24,9 +24,9 @@ jobs:
           nix develop --ignore-environment --keep HOME . --command task lint
       # Adding golang-ci lint as a separate step as the Nix package is currently broken
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v8
         with:
-          version: v1.61
+          version: v2.1.6
           args: --timeout=10m
 
   test:
@@ -77,6 +77,7 @@ jobs:
           nix develop --ignore-environment --command task install-webui
           nix develop --ignore-environment --keep HOME --keep POSTGRES_PASSWORD . --command task migrate
           nix develop --ignore-environment --keep HOME --keep POSTGRES_PASSWORD . --command task gen
+          nix develop --ignore-environment --keep HOME . --command go fmt ./...
           nix develop --ignore-environment . --command task i18n-extract
           nix develop --ignore-environment . --command task build-webui
         env:

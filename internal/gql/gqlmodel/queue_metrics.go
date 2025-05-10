@@ -2,7 +2,6 @@ package gqlmodel
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
@@ -19,7 +18,12 @@ func (qq QueueQuery) Metrics(
 	ctx context.Context,
 	input gen.QueueMetricsQueryInput,
 ) (*gen.QueueMetricsQueryResult, error) {
-	req := queuemetrics.Request{}
+	req := queuemetrics.Request{
+		StartTime: nilToZero(input.StartTime.Value()),
+		EndTime:   nilToZero(input.EndTime.Value()),
+		Statuses:  input.Statuses.Value(),
+		Queues:    input.Queues.Value(),
+	}
 
 	switch input.BucketDuration {
 	case gen.MetricsBucketDurationMinute:
@@ -28,24 +32,6 @@ func (qq QueueQuery) Metrics(
 		req.BucketDuration = "hour"
 	case gen.MetricsBucketDurationDay:
 		req.BucketDuration = "day"
-	default:
-		return nil, fmt.Errorf("invalid bucket duration: %s", input.BucketDuration)
-	}
-
-	if t, ok := input.StartTime.ValueOK(); ok && !t.IsZero() {
-		req.StartTime = *t
-	}
-
-	if t, ok := input.EndTime.ValueOK(); ok && !t.IsZero() {
-		req.EndTime = *t
-	}
-
-	if statuses, ok := input.Statuses.ValueOK(); ok {
-		req.Statuses = statuses
-	}
-
-	if queues, ok := input.Queues.ValueOK(); ok {
-		req.Queues = queues
 	}
 
 	buckets, err := qq.QueueMetricsClient.Request(ctx, req)

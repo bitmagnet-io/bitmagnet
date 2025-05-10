@@ -80,6 +80,7 @@ func (d *Date) Scan(value interface{}) error {
 
 func (d Date) Value() (driver.Value, error) {
 	if d.IsNil() {
+		//nolint:nilnil
 		return nil, nil
 	}
 

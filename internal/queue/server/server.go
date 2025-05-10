@@ -25,7 +25,7 @@ import (
 type server struct {
 	stopped chan struct{}
 	query   *dao.Query
-	//pool       *pgxpool.Pool
+	// pool       *pgxpool.Pool
 	handlers   []handler.Handler
 	gcInterval time.Duration
 	logger     *zap.SugaredLogger
@@ -39,12 +39,12 @@ func (s *server) Start(ctx context.Context) (err error) {
 			cancel()
 		}
 	}()
-	//pListenerConn, listenerConnErr := s.newListenerConn(ctx)
-	//if listenerConnErr != nil {
-	//	err = listenerConnErr
-	//	return
-	//}
-	//listenerConn := pListenerConn.Conn()
+	// pListenerConn, listenerConnErr := s.newListenerConn(ctx)
+	// if listenerConnErr != nil {
+	// 	err = listenerConnErr
+	// 	return
+	// }
+	// listenerConn := pListenerConn.Conn()
 	handlers := make([]serverHandler, len(s.handlers))
 	listenerChans := make(map[string]chan pgconn.Notification)
 
@@ -54,13 +54,13 @@ func (s *server) Start(ctx context.Context) (err error) {
 			Handler: h,
 			sem:     semaphore.NewWeighted(int64(h.Concurrency)),
 			query:   s.query,
-			//listenerConn: listenerConn,
+			// listenerConn: listenerConn,
 			listenerChan: listenerChan,
 			logger:       s.logger.With("queue", h.Queue),
 		}
 		handlers[i] = sh
 		listenerChans[h.Queue] = listenerChan
-		//if _, listenErr := listenerConn.Exec(ctx, fmt.Sprintf(`LISTEN %q`, h.Queue)); listenErr != nil {
+		// if _, listenErr := listenerConn.Exec(ctx, fmt.Sprintf(`LISTEN %q`, h.Queue)); listenErr != nil {
 		//	err = listenErr
 		//	return
 		//}
@@ -73,44 +73,44 @@ func (s *server) Start(ctx context.Context) (err error) {
 			case <-s.stopped:
 				cancel()
 			case <-ctx.Done():
-				//pListenerConn.Release()
+				// pListenerConn.Release()
 				return
 			}
 		}
 	}()
-	//go func() {
-	//	for {
-	//		select {
-	//		case <-ctx.Done():
-	//			return
-	//		default:
-	//			notification, waitErr := listenerConn.WaitForNotification(ctx)
-	//			if waitErr != nil {
-	//				if !errors.Is(waitErr, context.Canceled) {
-	//					s.logger.Errorf("Error waiting for notification: %s", waitErr)
-	//				}
-	//				continue
-	//			}
-	//			ch, ok := listenerChans[notification.Channel]
-	//			if !ok {
-	//				s.logger.Errorf("Received notification for unknown channel: %s", notification.Channel)
-	//				continue
-	//			}
-	//			select {
-	//			case <-ctx.Done():
-	//				return
-	//			case ch <- *notification:
-	//				continue
-	//			}
-	//		}
-	//	}
-	//}()
+	// go func() {
+	// 	for {
+	// 		select {
+	// 		case <-ctx.Done():
+	// 			return
+	// 		default:
+	// 			notification, waitErr := listenerConn.WaitForNotification(ctx)
+	// 			if waitErr != nil {
+	// 				if !errors.Is(waitErr, context.Canceled) {
+	// 					s.logger.Errorf("Error waiting for notification: %s", waitErr)
+	// 				}
+	// 				continue
+	// 			}
+	// 			ch, ok := listenerChans[notification.Channel]
+	// 			if !ok {
+	// 				s.logger.Errorf("Received notification for unknown channel: %s", notification.Channel)
+	// 				continue
+	// 			}
+	// 			select {
+	// 			case <-ctx.Done():
+	// 				return
+	// 			case ch <- *notification:
+	// 				continue
+	// 			}
+	// 		}
+	// 	}
+	// }()
 	go s.runGarbageCollection(ctx)
 
 	return
 }
 
-//func (s *server) newListenerConn(ctx context.Context) (*pgxpool.Conn, error) {
+// func (s *server) newListenerConn(ctx context.Context) (*pgxpool.Conn, error) {
 //	conn, err := s.pool.Acquire(ctx)
 //	if err != nil {
 //		return nil, err
@@ -126,7 +126,8 @@ func (s *server) runGarbageCollection(ctx context.Context) {
 	for {
 		tx := s.query.QueueJob.WithContext(ctx).Where(
 			s.query.QueueJob.Status.In(string(model.QueueJobStatusProcessed), string(model.QueueJobStatusFailed)),
-		).UnderlyingDB().Where(
+		).
+			UnderlyingDB().Where(
 			"queue_jobs.ran_at + queue_jobs.archival_duration < ?::timestamptz",
 			time.Now(),
 		).Delete(&model.QueueJob{})
@@ -148,7 +149,7 @@ type serverHandler struct {
 	handler.Handler
 	sem   *semaphore.Weighted
 	query *dao.Query
-	//listenerConn *pgx.Conn
+	// listenerConn *pgx.Conn
 	listenerChan chan pgconn.Notification
 	logger       *zap.SugaredLogger
 }
@@ -195,9 +196,13 @@ func (h *serverHandler) handleJob(
 ) (jobID string, processed bool, err error) {
 	err = h.query.Transaction(func(tx *dao.Query) error {
 		job, findErr := tx.QueueJob.WithContext(ctx).Where(
-			append(conds,
+			append(
+				conds,
 				h.query.QueueJob.Queue.Eq(h.Queue),
-				h.query.QueueJob.Status.In(string(model.QueueJobStatusPending), string(model.QueueJobStatusRetry)),
+				h.query.QueueJob.Status.In(
+					string(model.QueueJobStatusPending),
+					string(model.QueueJobStatusRetry),
+				),
 				h.query.QueueJob.RunAfter.Lte(time.Now()),
 			)...,
 		).Order(
