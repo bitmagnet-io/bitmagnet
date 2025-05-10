@@ -235,7 +235,8 @@ func resolveStructNode(
 }
 
 func createValueLabel(value interface{}) string {
-	label := ""
+	var label string
+
 	switch value.(type) {
 	case string:
 		label = fmt.Sprintf("'%s'", value)

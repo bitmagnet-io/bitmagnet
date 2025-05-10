@@ -53,14 +53,25 @@ linters:
     - nolintlint
     - paralleltest
     - prealloc
+    - predeclared
+    #    - promlinter
+    - protogetter
+    - reassign
     - revive
+    - rowserrcheck
+    - sqlclosecheck
     - staticcheck
+    - tagalign
     - testifylint
     #    - testpackage
     - thelper
+    - tparallel
     - unconvert
     - unused
     - usestdlibvars
+    - usetesting
+    - wastedassign
+    - whitespace
     - wsl
   settings:
     revive:
