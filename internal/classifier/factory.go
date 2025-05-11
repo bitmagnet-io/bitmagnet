@@ -42,7 +42,10 @@ func New(params Params) Result {
 				celEnvOption,
 			},
 			dependencies: dependencies{
-				search:     localSearch{s},
+				search: localSearchSemaphore{
+					search:    localSearch{s},
+					semaphore: make(chan struct{}, 1),
+				},
 				tmdbClient: tmdbClient,
 			},
 		}, nil
@@ -72,7 +75,15 @@ func New(params Params) Result {
 			if err != nil {
 				return nil, err
 			}
-			return c.Compile(src)
+			r, err := c.Compile(src)
+			if err != nil {
+				return nil, err
+			}
+
+			return runnerSemaphore{
+				runner:    r,
+				semaphore: make(chan struct{}, params.Config.Concurrency),
+			}, nil
 		}),
 	}
 }
