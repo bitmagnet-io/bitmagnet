@@ -116,15 +116,13 @@ outer:
 			}
 			token := tokens[i]
 			addExpr := func(expr string) {
-				switch operator {
-				case OperatorAnd:
-					parts = append(parts, "&")
-				case OperatorOr:
-					parts = append(parts, "|")
-				case OperatorFollowedBy:
-					parts = append(parts, "<->")
-				default:
-					if len(parts) > 0 {
+				if len(parts) > 0 {
+					switch operator {
+					case OperatorOr:
+						parts = append(parts, "|")
+					case OperatorFollowedBy:
+						parts = append(parts, "<->")
+					default:
 						parts = append(parts, "&")
 					}
 				}
