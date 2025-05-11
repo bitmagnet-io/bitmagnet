@@ -7,6 +7,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 	"gorm.io/gorm/clause"
 )
 
@@ -54,12 +55,6 @@ func (c processor) persist(ctx context.Context, payload persistPayload) error {
 			return blockErr
 		}
 	}
-	// a semaphore is used here to avoid a Postgres deadlock being detected
-	// when multiple processes are trying to persist
-	if err := c.persistSemaphore.Acquire(ctx, 1); err != nil {
-		return err
-	}
-	defer c.persistSemaphore.Release(1)
 
 	return c.dao.Transaction(func(tx *dao.Query) error {
 		if len(contentsPtr) > 0 {
@@ -100,10 +95,9 @@ func (c processor) persist(ctx context.Context, payload persistPayload) error {
 		}
 
 		if len(payload.deleteInfoHashes) > 0 {
-			valuers := make([]driver.Valuer, 0, len(payload.deleteInfoHashes))
-			for _, infoHash := range payload.deleteInfoHashes {
-				valuers = append(valuers, infoHash)
-			}
+			valuers := slice.Map(payload.deleteInfoHashes, func(infoHash protocol.ID) driver.Valuer {
+				return infoHash
+			})
 
 			if _, deleteErr := tx.Torrent.WithContext(ctx).Where(
 				c.dao.Torrent.InfoHash.In(valuers...),

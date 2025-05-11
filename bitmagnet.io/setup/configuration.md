@@ -22,7 +22,6 @@ nav_order: 2
 - `log.file_rotator.enabled` (default: `false`): If true, logs will be output to rotating log files at level `log.file_rotator.level` in the `log.file_rotator.path` directory, allowing forwarding to a logs aggregator (see [the observability guide](/guides/observability-telemetry.html)).
 - `http_server.options` (default `["*"]`): A list of enabled HTTP server components. By default all are enabled. Components include: `cors`, `pprof`, `graphql`, `import`, `prometheus`, `torznab`, `status`, `webui`.
 - `dht_crawler.scaling_factor` (default: `10`): There are various rate and concurrency limits associated with the DHT crawler. This parameter is a rough proxy for resource usage of the crawler; concurrency and buffer size of the various pipeline channels are multiplied by this value. Diminishing returns may result from exceeding the default value of 10. Since the software has not been tested on a wide variety of hardware and network conditions your mileage may vary here...
-- `processor.concurrency` (default: `1`): Defines the maximum number of torrents to be processed/classified simultaneously. The default setting of `1` aims to support the widest range of systems. Increasing the setting (for example to `3`) may improve throughput of the processor queue but is known to cause slowdowns on less powerful systems.
 
 To see a full list of available configuration options using the CLI, run:
 

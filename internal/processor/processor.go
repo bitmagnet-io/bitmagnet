@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
@@ -13,7 +14,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"golang.org/x/sync/semaphore"
 	"gorm.io/gen/field"
 	"gorm.io/gorm/clause"
 )
@@ -23,13 +23,11 @@ type Processor interface {
 }
 
 type processor struct {
-	defaultWorkflow  string
-	search           search.Search
-	runner           classifier.Runner
-	dao              *dao.Query
-	blockingManager  blocking.Manager
-	processSemaphore *semaphore.Weighted
-	persistSemaphore *semaphore.Weighted
+	defaultWorkflow string
+	search          search.Search
+	runner          classifier.Runner
+	dao             *dao.Query
+	blockingManager blocking.Manager
 }
 
 type MissingHashesError struct {
@@ -41,11 +39,6 @@ func (e MissingHashesError) Error() string {
 }
 
 func (c processor) Process(ctx context.Context, params MessageParams) error {
-	if err := c.processSemaphore.Acquire(ctx, 1); err != nil {
-		return err
-	}
-	defer c.processSemaphore.Release(1)
-
 	workflowName := params.ClassifierWorkflow
 	if workflowName == "" {
 		workflowName = c.defaultWorkflow
@@ -88,7 +81,17 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		}
 	}
 
-	var errs []error
+	var (
+		mtx                sync.Mutex
+		wg                 sync.WaitGroup
+		errs               []error
+		idsToDelete        []string
+		infoHashesToDelete []protocol.ID
+	)
+
+	tcs := make([]model.TorrentContent, 0, len(searchResult.Torrents))
+
+	tagsToAdd := make(map[protocol.ID]map[string]struct{})
 
 	failedHashes := make([]protocol.ID, 0, len(searchResult.MissingInfoHashes))
 	failedHashes = append(failedHashes, searchResult.MissingInfoHashes...)
@@ -97,61 +100,63 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		errs = append(errs, MissingHashesError{InfoHashes: failedHashes})
 	}
 
-	tcs := make([]model.TorrentContent, 0, len(searchResult.Torrents))
-
-	var idsToDelete []string
-
-	var infoHashesToDelete []protocol.ID
-
-	tagsToAdd := make(map[protocol.ID]map[string]struct{})
-
 	for _, torrent := range searchResult.Torrents {
-		thisDeleteIDs := make(map[string]struct{}, len(torrent.Contents))
-		foundMatch := false
+		wg.Add(1)
 
-		for _, tc := range torrent.Contents {
-			thisDeleteIDs[tc.ID] = struct{}{}
+		go func(torrent model.Torrent) {
+			defer wg.Done()
 
-			if !foundMatch &&
-				!torrent.Hint.ContentSource.Valid &&
-				params.ClassifyMode != ClassifyModeRematch &&
-				tc.ContentType.Valid &&
-				tc.ContentSource.Valid &&
-				(torrent.Hint.IsNil() || torrent.Hint.ContentType == tc.ContentType.ContentType) {
-				torrent.Hint.ContentType = tc.ContentType.ContentType
-				torrent.Hint.ContentSource = tc.ContentSource
-				torrent.Hint.ContentID = tc.ContentID
-				foundMatch = true
+			thisDeleteIDs := make(map[string]struct{}, len(torrent.Contents))
+			foundMatch := false
+
+			for _, tc := range torrent.Contents {
+				thisDeleteIDs[tc.ID] = struct{}{}
+
+				if !foundMatch &&
+					!torrent.Hint.ContentSource.Valid &&
+					params.ClassifyMode != ClassifyModeRematch &&
+					tc.ContentType.Valid &&
+					tc.ContentSource.Valid &&
+					(torrent.Hint.IsNil() || torrent.Hint.ContentType == tc.ContentType.ContentType) {
+					torrent.Hint.ContentType = tc.ContentType.ContentType
+					torrent.Hint.ContentSource = tc.ContentSource
+					torrent.Hint.ContentID = tc.ContentID
+					foundMatch = true
+				}
 			}
-		}
 
-		cl, classifyErr := c.runner.Run(ctx, workflowName, params.ClassifierFlags, torrent)
-		if classifyErr != nil {
-			if errors.Is(classifyErr, classification.ErrDeleteTorrent) {
-				infoHashesToDelete = append(infoHashesToDelete, torrent.InfoHash)
+			cl, classifyErr := c.runner.Run(ctx, workflowName, params.ClassifierFlags, torrent)
+
+			mtx.Lock()
+			defer mtx.Unlock()
+
+			if classifyErr != nil {
+				if errors.Is(classifyErr, classification.ErrDeleteTorrent) {
+					infoHashesToDelete = append(infoHashesToDelete, torrent.InfoHash)
+				} else {
+					failedHashes = append(failedHashes, torrent.InfoHash)
+					errs = append(errs, classifyErr)
+				}
 			} else {
-				failedHashes = append(failedHashes, torrent.InfoHash)
-				errs = append(errs, classifyErr)
+				torrentContent := newTorrentContent(torrent, cl)
+
+				tcID := torrentContent.InferID()
+				for id := range thisDeleteIDs {
+					if id != tcID {
+						idsToDelete = append(idsToDelete, id)
+					}
+				}
+
+				tcs = append(tcs, torrentContent)
+
+				if len(cl.Tags) > 0 {
+					tagsToAdd[torrent.InfoHash] = cl.Tags
+				}
 			}
-
-			continue
-		}
-
-		torrentContent := newTorrentContent(torrent, cl)
-
-		tcID := torrentContent.InferID()
-		for id := range thisDeleteIDs {
-			if id != tcID {
-				idsToDelete = append(idsToDelete, id)
-			}
-		}
-
-		tcs = append(tcs, torrentContent)
-
-		if len(cl.Tags) > 0 {
-			tagsToAdd[torrent.InfoHash] = cl.Tags
-		}
+		}(torrent)
 	}
+
+	wg.Wait()
 
 	if len(failedHashes) > 0 {
 		if len(tcs) == 0 {
