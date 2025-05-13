@@ -21,4 +21,5 @@ const (
 	AttrTeam       = "team"
 	AttrImdb       = "imdb"
 	AttrTmdb       = "tmdb"
+	AttrCoverURL   = "coverurl"
 )

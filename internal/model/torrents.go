@@ -28,6 +28,10 @@ func (t *Torrent) AfterFind(_ *gorm.DB) error {
 	return nil
 }
 
+func (t Torrent) PermaLink(baseURL string) string {
+	return baseURL + "/webui/torrents/permalink/" + t.InfoHash.String()
+}
+
 // Seeders returns the highest number of seeders from all sources
 // todo: Add up bloom filters
 func (t Torrent) Seeders() NullUint {
