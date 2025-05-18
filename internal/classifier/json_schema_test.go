@@ -27,7 +27,7 @@ func TestJSONSchema(t *testing.T) {
 	require.NoError(t, err)
 	assert.True(t, metaResult.Valid())
 
-	coreClassifier, err := yamlSourceProvider{rawSourceProvider: coreSourceProvider{}}.source()
+	coreClassifier, err := coreSourceProvider{}.provider().source()
 	require.NoError(t, err)
 	coreClassifierJSON, err := json.Marshal(coreClassifier)
 	require.NoError(t, err)
