@@ -117,8 +117,11 @@ func New(params Params) Result {
 						savePieces:         params.Config.SavePieces,
 						rescrapeThreshold:  params.Config.RescrapeThreshold,
 						dao:                query,
-						ignoreHashes: &ignoreHashes{
+						ignoreHashes: &ignoreFilter{
 							bloom: boom.NewStableBloomFilter(10_000_000, 2, 0.001),
+						},
+						ignoreNodes: &ignoreFilter{
+							bloom: boom.NewStableBloomFilter(200_000*uint(scalingFactor), 2, 0.001),
 						},
 						blockingManager: blockingManager,
 						soughtNodeID:    &concurrency.AtomicValue[protocol.ID]{},

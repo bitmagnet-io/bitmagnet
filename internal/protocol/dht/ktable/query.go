@@ -1,7 +1,6 @@
 package ktable
 
 import (
-	"net/netip"
 	"sort"
 	"time"
 )
@@ -38,24 +37,6 @@ func (c GetOldestPeers) execReturn(t *table) []Node {
 	}
 
 	return peers
-}
-
-var _ Query[[]netip.Addr] = FilterKnownAddrs{}
-
-type FilterKnownAddrs struct {
-	Addrs []netip.Addr
-}
-
-func (c FilterKnownAddrs) execReturn(t *table) []netip.Addr {
-	var unknown []netip.Addr
-
-	for _, addr := range c.Addrs {
-		if _, ok := t.addrs.addrs[addr.String()]; !ok {
-			unknown = append(unknown, addr)
-		}
-	}
-
-	return unknown
 }
 
 var _ Query[[]Node] = GetNodesForSampleInfoHashes{}

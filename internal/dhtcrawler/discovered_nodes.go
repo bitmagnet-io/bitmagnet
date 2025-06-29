@@ -45,11 +45,16 @@ func (c *crawler) runDiscoveredNodes(ctx context.Context) {
 					addrs = append(addrs, p.Addr().Addr())
 				}
 			}
-			// for any discovered node not already in the routing table,
-			// we will block until it can be sent to any one of the pipeline channels.
-			unknownAddrs := c.kTable.FilterKnownAddrs(addrs)
-			for _, addr := range unknownAddrs {
+
+			// For any newly discovered node, we will block until it can be
+			// sent to any one of the pipeline channels.
+			for _, addr := range addrs {
 				p := m[addr.String()]
+
+				if c.ignoreNodes.testAndAdd(p.ID()) {
+					continue
+				}
+
 				select {
 				case <-ctx.Done():
 					return
