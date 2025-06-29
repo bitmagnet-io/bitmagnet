@@ -51,7 +51,7 @@ func (c *crawler) runDiscoveredNodes(ctx context.Context) {
 			for _, addr := range addrs {
 				p := m[addr.String()]
 
-				if c.ignoreNodes.testAndAdd(p.ID()) {
+				if c.ignoreNodes.test(p.ID()) {
 					continue
 				}
 
@@ -60,6 +60,7 @@ func (c *crawler) runDiscoveredNodes(ctx context.Context) {
 					return
 				case c.nodesForFindNode.In() <- p:
 				case c.nodesForSampleInfoHashes.In() <- p:
+					c.ignoreNodes.add(p.ID())
 				case c.nodesForPing.In() <- p:
 				}
 			}

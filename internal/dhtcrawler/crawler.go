@@ -114,6 +114,20 @@ func (i *ignoreFilter) testAndAdd(id protocol.ID) bool {
 	return i.bloom.TestAndAdd(id[:])
 }
 
+func (i *ignoreFilter) test(id protocol.ID) bool {
+	i.mutex.Lock()
+	defer i.mutex.Unlock()
+
+	return i.bloom.Test(id[:])
+}
+
+func (i *ignoreFilter) add(id protocol.ID) {
+	i.mutex.Lock()
+	defer i.mutex.Unlock()
+
+	i.bloom.Add(id[:])
+}
+
 func (c *crawler) rotateSoughtNodeID(ctx context.Context) {
 	for {
 		select {
