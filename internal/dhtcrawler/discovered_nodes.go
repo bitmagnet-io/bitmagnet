@@ -7,6 +7,7 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
+	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
 )
 
@@ -51,18 +52,25 @@ func (c *crawler) runDiscoveredNodes(ctx context.Context) {
 			for _, addr := range addrs {
 				p := m[addr.String()]
 
+				var result string
+
 				if c.ignoreNodes.test(p.ID()) {
-					continue
+					result = "ignored"
+				} else {
+					select {
+					case <-ctx.Done():
+						return
+					case c.nodesForFindNode.In() <- p:
+						result = "find_node"
+					case c.nodesForSampleInfoHashes.In() <- p:
+						c.ignoreNodes.add(p.ID())
+						result = "sample_infohashes"
+					case c.nodesForPing.In() <- p:
+						result = "ping"
+					}
 				}
 
-				select {
-				case <-ctx.Done():
-					return
-				case c.nodesForFindNode.In() <- p:
-				case c.nodesForSampleInfoHashes.In() <- p:
-					c.ignoreNodes.add(p.ID())
-				case c.nodesForPing.In() <- p:
-				}
+				c.discoveredNodesTotal.With(prometheus.Labels{"result": result}).Inc()
 			}
 		}
 	}

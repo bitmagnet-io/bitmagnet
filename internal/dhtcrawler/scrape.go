@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 func (c *crawler) runScrape(ctx context.Context) {
@@ -47,17 +48,26 @@ func (c *crawler) requestScrape(
 		Options: []ktable.NodeOption{ktable.NodeResponded()},
 	})
 
+	c.scrapePeerCount.Observe(float64(len(res.Values)))
+	c.scrapeNodeCount.Observe(float64(len(res.Nodes)))
+
 	if len(res.Nodes) > 0 {
 		cancelCtx, cancel := context.WithTimeout(ctx, time.Second)
 
+		processed := 0
+
+	nodes:
 		for _, n := range res.Nodes {
 			select {
 			case <-cancelCtx.Done():
-				break
+				break nodes
 			case c.discoveredNodes.In() <- ktable.NewNode(n.ID, n.Addr):
-				continue
+				processed++
 			}
 		}
+
+		c.scrapeNodeTotal.With(prometheus.Labels{"result": "discovered_nodes"}).Add(float64(processed))
+		c.scrapeNodeTotal.With(prometheus.Labels{"result": "skipped"}).Add(float64(len(res.Nodes) - processed))
 
 		cancel()
 	}

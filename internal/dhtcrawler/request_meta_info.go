@@ -8,6 +8,7 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainforequester"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 func (c *crawler) runRequestMetaInfo(ctx context.Context) {
@@ -49,11 +50,14 @@ func (c *crawler) doRequestMetaInfo(
 
 		if banErr := c.banningChecker.Check(res.Info); banErr != nil {
 			_ = c.blockingManager.Block(ctx, []protocol.ID{hash}, false)
+			c.requestMetaInfoTotal.With(prometheus.Labels{"result": "blocked"}).Inc()
 			return metainforequester.Response{}, banErr
 		}
 
+		c.requestMetaInfoTotal.With(prometheus.Labels{"result": "persist_torrents"}).Inc()
 		return res, nil
 	}
 
+	c.requestMetaInfoTotal.With(prometheus.Labels{"result": "error"}).Inc()
 	return metainforequester.Response{}, errors.Join(errs...)
 }
