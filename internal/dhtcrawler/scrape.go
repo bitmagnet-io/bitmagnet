@@ -48,7 +48,6 @@ func (c *crawler) requestScrape(
 		Options: []ktable.NodeOption{ktable.NodeResponded()},
 	})
 
-	c.scrapePeerCount.Observe(float64(len(res.Values)))
 	c.scrapeNodeCount.Observe(float64(len(res.Nodes)))
 
 	if len(res.Nodes) > 0 {

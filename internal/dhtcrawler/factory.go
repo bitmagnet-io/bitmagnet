@@ -53,7 +53,6 @@ type Result struct {
 	SampleInfohashesHashTotal prometheus.Collector `group:"prometheus_collectors"`
 	SampleInfohashesNodeCount prometheus.Collector `group:"prometheus_collectors"`
 	SampleInfohashesNodeTotal prometheus.Collector `group:"prometheus_collectors"`
-	ScrapePeerCount           prometheus.Collector `group:"prometheus_collectors"`
 	ScrapeNodeCount           prometheus.Collector `group:"prometheus_collectors"`
 	ScrapeNodeTotal           prometheus.Collector `group:"prometheus_collectors"`
 }
@@ -158,14 +157,6 @@ func New(params Params) Result {
 		Help:      "Total number of nodes found by sample_infohashes requests.",
 	}, []string{"result"})
 
-	scrapePeerCount := prometheus.NewHistogram(prometheus.HistogramOpts{
-		Namespace: namespace,
-		Subsystem: subsystem,
-		Name:      "scrape_peer_count",
-		Help:      "Number of peers found by scrape requests.",
-		Buckets:   []float64{0, 1, 2, 5, 10, 20, 50, 100},
-	})
-
 	scrapeNodeCount := prometheus.NewHistogram(prometheus.HistogramOpts{
 		Namespace: namespace,
 		Subsystem: subsystem,
@@ -263,7 +254,6 @@ func New(params Params) Result {
 						sampleInfohashesHashTotal: sampleInfohashesHashTotal,
 						sampleInfohashesNodeCount: sampleInfohashesNodeCount,
 						sampleInfohashesNodeTotal: sampleInfohashesNodeTotal,
-						scrapePeerCount:           scrapePeerCount,
 						scrapeNodeCount:           scrapeNodeCount,
 						scrapeNodeTotal:           scrapeNodeTotal,
 						logger:                    params.Logger.Named("dht_crawler"),
@@ -296,7 +286,6 @@ func New(params Params) Result {
 		SampleInfohashesHashTotal: sampleInfohashesHashTotal,
 		SampleInfohashesNodeCount: sampleInfohashesNodeCount,
 		SampleInfohashesNodeTotal: sampleInfohashesNodeTotal,
-		ScrapePeerCount:           scrapePeerCount,
 		ScrapeNodeCount:           scrapeNodeCount,
 		ScrapeNodeTotal:           scrapeNodeTotal,
 		DhtCrawlerActive:          active,

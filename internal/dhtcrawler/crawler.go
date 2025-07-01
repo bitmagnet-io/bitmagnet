@@ -67,7 +67,6 @@ type crawler struct {
 	sampleInfohashesHashTotal *prometheus.CounterVec
 	sampleInfohashesNodeCount prometheus.Histogram
 	sampleInfohashesNodeTotal *prometheus.CounterVec
-	scrapePeerCount           prometheus.Histogram
 	scrapeNodeCount           prometheus.Histogram
 	scrapeNodeTotal           *prometheus.CounterVec
 	logger                    *zap.SugaredLogger
