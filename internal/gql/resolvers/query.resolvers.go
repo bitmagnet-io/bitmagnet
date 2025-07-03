@@ -105,6 +105,14 @@ func (r *queryResolver) TorrentContent(ctx context.Context) (gqlmodel.TorrentCon
 	}, nil
 }
 
+// SendToConfig is the resolver for the sendToConfig field.
+func (r *queryResolver) SendToConfig(ctx context.Context) (gen.ClientSendToConfigQuery, error) {
+	return gen.ClientSendToConfigQuery{
+		Enabled: r.ClientConfig.Enabled,
+		SendTo:  r.ClientConfig.All(),
+	}, nil
+}
+
 // Files is the resolver for the files field.
 func (r *torrentQueryResolver) Files(ctx context.Context, obj *gqlmodel.TorrentQuery, input gqlmodel.TorrentFilesQueryInput) (query.GenericResult[model.TorrentFile], error) {
 	return gqlmodel.TorrentQuery{

@@ -3,7 +3,9 @@
     animationDuration="0"
     class="tab-group-bulk-actions"
     [selectedIndex]="selectedTabIndex"
-    (focusChange)="selectTab($event.index == 5 ? 0 : $event.index)"
+    (focusChange)="
+      selectTab($event.index == (sendToEnabled ? 6 : 5) ? 0 : $event.index)
+    "
     [mat-stretch-tabs]="false"
   >
     <mat-tab
@@ -169,6 +171,34 @@
         </mat-card>
       </ng-template>
     </mat-tab>
+    @if (sendToEnabled) {
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>arrow_top_right</mat-icon>
+          @if (breakpoints.sizeAtLeast("Medium")) {
+            <span class="label">{{ t("torrents.sendto") }}</span>
+          }
+        </ng-template>
+
+        <ng-template matTabContent>
+          <mat-card>
+            <mat-card-actions class="button-row">
+              @for (target of sendToTargets; let j = $index; track target) {
+                <button
+                  mat-stroked-button
+                  color="warn"
+                  [disabled]="!selectedItems.length"
+                  (click)="sendToTorrents(target)"
+                >
+                  <mat-icon>arrow_top_right</mat-icon>{{ target }}
+                </button>
+              }
+            </mat-card-actions>
+          </mat-card>
+        </ng-template>
+      </mat-tab>
+    }
+
     @if (selectedTabIndex > 0) {
       <mat-tab>
         <ng-template mat-tab-label>

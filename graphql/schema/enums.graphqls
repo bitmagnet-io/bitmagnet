@@ -170,3 +170,9 @@ enum QueueJobsOrderByField {
   ran_at
   priority
 }
+
+enum ClientID {
+  QBittorrent
+  Transmission
+  Ntfy
+}

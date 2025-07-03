@@ -5,6 +5,7 @@
       "audiobook": "Audiollibres",
       "comic": "Còmics",
       "ebook": "Llibres electrònics",
+      "game": "Jocs",
       "movie": "Pel·lícules",
       "music": "Música",
       "null": "Desconegut",
@@ -16,14 +17,22 @@
       "audiobook": "Audiollibre",
       "comic": "Còmic",
       "ebook": "Llibre electrònic",
+      "game": "Joc",
       "movie": "Pel·lícula",
       "music": "Música",
+      "null": "Desconegut",
       "software": "Desconegut",
       "tv_show": "Programa de TV",
       "xxx": "XXX"
     }
   },
   "dashboard": {
+    "event": {
+      "created": "Creat",
+      "failed": "Error",
+      "processed": "Processat",
+      "updated": "Actualitzat"
+    },
     "interval": {
       "all": "Tot",
       "days": "Dies",
@@ -58,6 +67,7 @@
       "jobs_enqueued": "Tasques encuades",
       "latency": "Latència",
       "payload": "Contingut",
+      "pending": "Pendent",
       "priority": "Prioritat",
       "process_orphaned_torrents_only": "Processa només els torrents orfes",
       "processed": "Processat",
@@ -67,6 +77,7 @@
       "queue_purged": "Cua purgada",
       "queues": "Cues",
       "ran_at": "Executat a",
+      "retry": "Torna a intentar",
       "total_counts_by_status": "Recompte total per estat"
     }
   },
@@ -75,6 +86,8 @@
     "file_type": "Tipus de Fitxer",
     "genre": "Gènere",
     "language": "Idioma",
+    "queue": "Cua",
+    "status": "Estat",
     "torrent_source": "Origen del Torrent",
     "torrent_tag": "Etiqueta del Torrent",
     "video_resolution": "Resolució del Vídeo",
@@ -109,6 +122,9 @@
       "postgres": "Postgres",
       "tmdb": "TMDB"
     },
+    "dismiss": "Descarta",
+    "error": "Error",
+    "status": "Estat",
     "statuses": {
       "degraded": "Degradat",
       "down": "Caigut",
@@ -200,6 +216,7 @@
   },
   "paginator": {
     "first_page": "Primera pàgina",
+    "items_per_page": "Elements per pàgina",
     "last_page": "Elements per pàgina",
     "next_page": "Pàgina següent",
     "page_x": "Pàgina {{x}}",
@@ -233,7 +250,9 @@
     "file_size": "Mida del fitxer",
     "file_type": "Tipus de fitxer",
     "files": "Fitxers",
+    "files_count_n": "{{count}} fitxers",
     "files_no_info": "{{count}} fitxers",
+    "files_single": "Fitxer únic",
     "genres": "Gèneres",
     "info_hash": "Informació del resum",
     "info_hashes": "Informació dels resums",
@@ -271,6 +290,7 @@
     "search": "Cerca",
     "seeders": "Sembradors",
     "select_all": "Seleccionar-ho tot",
+    "sendto": "Envia a",
     "showing_x_of_y_files": "Mostrant {{x}} de {{y}} fitxers",
     "size": "Mida",
     "source": "Origen del torrent",

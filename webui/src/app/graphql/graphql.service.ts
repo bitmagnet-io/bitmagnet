@@ -81,6 +81,31 @@ export class GraphQLService {
       })
       .pipe(map((r) => r.data.torrent.suggestTags));
   }
+
+  clientSendToTarget(
+    input: generated.ClientSendToMutationVariables,
+  ): Observable<void> {
+    return this.apollo
+      .mutate<
+        generated.ClientSendToMutation,
+        generated.ClientSendToMutationVariables
+      >({
+        mutation: generated.ClientSendToDocument,
+        variables: input,
+        fetchPolicy,
+      })
+      .pipe(map(() => void 0));
+  }
+
+  clentSendToConfig(): Observable<generated.ClientSendToConfigQuery> {
+    return this.apollo
+      .query<generated.SendToConfigQuery, generated.SendToConfigQueryVariables>(
+        {
+          query: generated.SendToConfigDocument,
+        },
+      )
+      .pipe(map((r) => r.data.sendToConfig));
+  }
 }
 
 const fetchPolicy = "no-cache";

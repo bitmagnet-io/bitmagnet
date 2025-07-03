@@ -1,6 +1,7 @@
 package enums
 
 import (
+	clientmodel "github.com/bitmagnet-io/bitmagnet/internal/client/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
@@ -31,4 +32,5 @@ var Enums = []enum{
 	newEnum("TorrentContentOrderByField", search.TorrentContentOrderByNames()),
 	newEnum("TorrentFilesOrderByField", search.TorrentFilesOrderByNames()),
 	newEnum("QueueJobsOrderByField", search.QueueJobsOrderByNames()),
+	newEnum("ClientID", clientmodel.IDNames()),
 }

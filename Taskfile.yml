@@ -38,7 +38,7 @@ tasks:
 
   gen-classifier-schema:
     cmds:
-      - go run . classifier schema --format json > ./bitmagnet.io/schemas/classifier-0.1.json
+      - go run . classifier schema --format json > ./bitmagnet.io/schemas/classifier-0.1
 
   gen-webui-graphql:
     dir: ./webui

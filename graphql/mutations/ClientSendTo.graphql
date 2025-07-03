@@ -1,0 +1,5 @@
+mutation ClientSendTo($clientID: ClientID, $infoHashes: [Hash20!]!) {
+  client {
+    sendTo(clientID: $clientID, infoHashes: $infoHashes)
+  }
+}

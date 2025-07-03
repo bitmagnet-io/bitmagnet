@@ -9,22 +9,28 @@ import (
 	"time"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/bitmagnet-io/bitmagnet/internal/client/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/queuemetrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics"
-	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	model1 "github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
+type ClientSendToConfigQuery struct {
+	Enabled bool       `json:"enabled"`
+	SendTo  []model.ID `json:"sendTo"`
+}
+
 type ContentTypeAgg struct {
-	Value      *model.ContentType `json:"value,omitempty"`
-	Label      string             `json:"label"`
-	Count      int                `json:"count"`
-	IsEstimate bool               `json:"isEstimate"`
+	Value      *model1.ContentType `json:"value,omitempty"`
+	Label      string              `json:"label"`
+	Count      int                 `json:"count"`
+	IsEstimate bool                `json:"isEstimate"`
 }
 
 type ContentTypeFacetInput struct {
-	Aggregate graphql.Omittable[*bool]                `json:"aggregate,omitempty"`
-	Filter    graphql.Omittable[[]*model.ContentType] `json:"filter,omitempty"`
+	Aggregate graphql.Omittable[*bool]                 `json:"aggregate,omitempty"`
+	Filter    graphql.Omittable[[]*model1.ContentType] `json:"filter,omitempty"`
 }
 
 type GenreAgg struct {
@@ -35,9 +41,9 @@ type GenreAgg struct {
 }
 
 type GenreFacetInput struct {
-	Aggregate graphql.Omittable[*bool]             `json:"aggregate,omitempty"`
-	Logic     graphql.Omittable[*model.FacetLogic] `json:"logic,omitempty"`
-	Filter    graphql.Omittable[[]string]          `json:"filter,omitempty"`
+	Aggregate graphql.Omittable[*bool]              `json:"aggregate,omitempty"`
+	Logic     graphql.Omittable[*model1.FacetLogic] `json:"logic,omitempty"`
+	Filter    graphql.Omittable[[]string]           `json:"filter,omitempty"`
 }
 
 type HealthCheck struct {
@@ -53,15 +59,15 @@ type HealthQuery struct {
 }
 
 type LanguageAgg struct {
-	Value      model.Language `json:"value"`
-	Label      string         `json:"label"`
-	Count      int            `json:"count"`
-	IsEstimate bool           `json:"isEstimate"`
+	Value      model1.Language `json:"value"`
+	Label      string          `json:"label"`
+	Count      int             `json:"count"`
+	IsEstimate bool            `json:"isEstimate"`
 }
 
 type LanguageFacetInput struct {
-	Aggregate graphql.Omittable[*bool]            `json:"aggregate,omitempty"`
-	Filter    graphql.Omittable[[]model.Language] `json:"filter,omitempty"`
+	Aggregate graphql.Omittable[*bool]             `json:"aggregate,omitempty"`
+	Filter    graphql.Omittable[[]model1.Language] `json:"filter,omitempty"`
 }
 
 type Mutation struct {
@@ -82,14 +88,14 @@ type QueueJobQueueFacetInput struct {
 }
 
 type QueueJobStatusAgg struct {
-	Value model.QueueJobStatus `json:"value"`
-	Label string               `json:"label"`
-	Count int                  `json:"count"`
+	Value model1.QueueJobStatus `json:"value"`
+	Label string                `json:"label"`
+	Count int                   `json:"count"`
 }
 
 type QueueJobStatusFacetInput struct {
-	Aggregate graphql.Omittable[*bool]                  `json:"aggregate,omitempty"`
-	Filter    graphql.Omittable[[]model.QueueJobStatus] `json:"filter,omitempty"`
+	Aggregate graphql.Omittable[*bool]                   `json:"aggregate,omitempty"`
+	Filter    graphql.Omittable[[]model1.QueueJobStatus] `json:"filter,omitempty"`
 }
 
 type QueueJobsAggregations struct {
@@ -108,11 +114,11 @@ type QueueJobsOrderByInput struct {
 }
 
 type QueueMetricsQueryInput struct {
-	BucketDuration MetricsBucketDuration                     `json:"bucketDuration"`
-	Statuses       graphql.Omittable[[]model.QueueJobStatus] `json:"statuses,omitempty"`
-	Queues         graphql.Omittable[[]string]               `json:"queues,omitempty"`
-	StartTime      graphql.Omittable[*time.Time]             `json:"startTime,omitempty"`
-	EndTime        graphql.Omittable[*time.Time]             `json:"endTime,omitempty"`
+	BucketDuration MetricsBucketDuration                      `json:"bucketDuration"`
+	Statuses       graphql.Omittable[[]model1.QueueJobStatus] `json:"statuses,omitempty"`
+	Queues         graphql.Omittable[[]string]                `json:"queues,omitempty"`
+	StartTime      graphql.Omittable[*time.Time]              `json:"startTime,omitempty"`
+	EndTime        graphql.Omittable[*time.Time]              `json:"endTime,omitempty"`
 }
 
 type QueueMetricsQueryResult struct {
@@ -120,15 +126,15 @@ type QueueMetricsQueryResult struct {
 }
 
 type ReleaseYearAgg struct {
-	Value      *model.Year `json:"value,omitempty"`
-	Label      string      `json:"label"`
-	Count      int         `json:"count"`
-	IsEstimate bool        `json:"isEstimate"`
+	Value      *model1.Year `json:"value,omitempty"`
+	Label      string       `json:"label"`
+	Count      int          `json:"count"`
+	IsEstimate bool         `json:"isEstimate"`
 }
 
 type ReleaseYearFacetInput struct {
-	Aggregate graphql.Omittable[*bool]         `json:"aggregate,omitempty"`
-	Filter    graphql.Omittable[[]*model.Year] `json:"filter,omitempty"`
+	Aggregate graphql.Omittable[*bool]          `json:"aggregate,omitempty"`
+	Filter    graphql.Omittable[[]*model1.Year] `json:"filter,omitempty"`
 }
 
 type SuggestTagsQueryInput struct {
@@ -166,16 +172,16 @@ type TorrentContentOrderByInput struct {
 }
 
 type TorrentFileTypeAgg struct {
-	Value      model.FileType `json:"value"`
-	Label      string         `json:"label"`
-	Count      int            `json:"count"`
-	IsEstimate bool           `json:"isEstimate"`
+	Value      model1.FileType `json:"value"`
+	Label      string          `json:"label"`
+	Count      int             `json:"count"`
+	IsEstimate bool            `json:"isEstimate"`
 }
 
 type TorrentFileTypeFacetInput struct {
-	Aggregate graphql.Omittable[*bool]             `json:"aggregate,omitempty"`
-	Logic     graphql.Omittable[*model.FacetLogic] `json:"logic,omitempty"`
-	Filter    graphql.Omittable[[]model.FileType]  `json:"filter,omitempty"`
+	Aggregate graphql.Omittable[*bool]              `json:"aggregate,omitempty"`
+	Logic     graphql.Omittable[*model1.FacetLogic] `json:"logic,omitempty"`
+	Filter    graphql.Omittable[[]model1.FileType]  `json:"filter,omitempty"`
 }
 
 type TorrentFilesOrderByInput struct {
@@ -184,7 +190,7 @@ type TorrentFilesOrderByInput struct {
 }
 
 type TorrentListSourcesResult struct {
-	Sources []model.TorrentSource `json:"sources"`
+	Sources []model1.TorrentSource `json:"sources"`
 }
 
 type TorrentMetricsQueryInput struct {
@@ -214,9 +220,9 @@ type TorrentSourceAgg struct {
 }
 
 type TorrentSourceFacetInput struct {
-	Aggregate graphql.Omittable[*bool]             `json:"aggregate,omitempty"`
-	Logic     graphql.Omittable[*model.FacetLogic] `json:"logic,omitempty"`
-	Filter    graphql.Omittable[[]string]          `json:"filter,omitempty"`
+	Aggregate graphql.Omittable[*bool]              `json:"aggregate,omitempty"`
+	Logic     graphql.Omittable[*model1.FacetLogic] `json:"logic,omitempty"`
+	Filter    graphql.Omittable[[]string]           `json:"filter,omitempty"`
 }
 
 type TorrentTagAgg struct {
@@ -227,33 +233,33 @@ type TorrentTagAgg struct {
 }
 
 type TorrentTagFacetInput struct {
-	Aggregate graphql.Omittable[*bool]             `json:"aggregate,omitempty"`
-	Logic     graphql.Omittable[*model.FacetLogic] `json:"logic,omitempty"`
-	Filter    graphql.Omittable[[]string]          `json:"filter,omitempty"`
+	Aggregate graphql.Omittable[*bool]              `json:"aggregate,omitempty"`
+	Logic     graphql.Omittable[*model1.FacetLogic] `json:"logic,omitempty"`
+	Filter    graphql.Omittable[[]string]           `json:"filter,omitempty"`
 }
 
 type VideoResolutionAgg struct {
-	Value      *model.VideoResolution `json:"value,omitempty"`
-	Label      string                 `json:"label"`
-	Count      int                    `json:"count"`
-	IsEstimate bool                   `json:"isEstimate"`
+	Value      *model1.VideoResolution `json:"value,omitempty"`
+	Label      string                  `json:"label"`
+	Count      int                     `json:"count"`
+	IsEstimate bool                    `json:"isEstimate"`
 }
 
 type VideoResolutionFacetInput struct {
-	Aggregate graphql.Omittable[*bool]                    `json:"aggregate,omitempty"`
-	Filter    graphql.Omittable[[]*model.VideoResolution] `json:"filter,omitempty"`
+	Aggregate graphql.Omittable[*bool]                     `json:"aggregate,omitempty"`
+	Filter    graphql.Omittable[[]*model1.VideoResolution] `json:"filter,omitempty"`
 }
 
 type VideoSourceAgg struct {
-	Value      *model.VideoSource `json:"value,omitempty"`
-	Label      string             `json:"label"`
-	Count      int                `json:"count"`
-	IsEstimate bool               `json:"isEstimate"`
+	Value      *model1.VideoSource `json:"value,omitempty"`
+	Label      string              `json:"label"`
+	Count      int                 `json:"count"`
+	IsEstimate bool                `json:"isEstimate"`
 }
 
 type VideoSourceFacetInput struct {
-	Aggregate graphql.Omittable[*bool]                `json:"aggregate,omitempty"`
-	Filter    graphql.Omittable[[]*model.VideoSource] `json:"filter,omitempty"`
+	Aggregate graphql.Omittable[*bool]                 `json:"aggregate,omitempty"`
+	Filter    graphql.Omittable[[]*model1.VideoSource] `json:"filter,omitempty"`
 }
 
 type Worker struct {

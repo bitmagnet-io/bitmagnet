@@ -2,6 +2,7 @@ package resolvers
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
+	"github.com/bitmagnet-io/bitmagnet/internal/client"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
@@ -26,4 +27,5 @@ type Resolver struct {
 	TorrentMetricsClient torrentmetrics.Client
 	Processor            processor.Processor
 	BlockingManager      blocking.Manager
+	ClientConfig         client.Config
 }

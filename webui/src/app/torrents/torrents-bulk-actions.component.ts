@@ -40,12 +40,21 @@ export class TorrentsBulkActionsComponent implements OnInit {
   selectedItems = new Array<generated.TorrentContent>();
   selectedInfoHashes = new Array<string>();
 
+  sendToEnabled = false;
+  sendToTargets = new Array<generated.ClientId>();
+
   ngOnInit() {
     this.selectedItems$.subscribe((items) => {
       this.selectedItems = items;
       this.selectedInfoHashes = items.map((i) => i.infoHash);
     });
     this.newTagCtrl.reset();
+    this.graphQLService.clentSendToConfig().subscribe({
+      next: (config: generated.ClientSendToConfigQuery) => {
+        this.sendToTargets = config.sendTo;
+        this.sendToEnabled = config.enabled && config.sendTo.length > 0;
+      },
+    });
   }
 
   selectTab(index: number): void {
@@ -190,6 +199,24 @@ export class TorrentsBulkActionsComponent implements OnInit {
           this.errorsService.addError(
             `Error deleting torrents: ${err.message}`,
           );
+          return EMPTY;
+        }),
+      )
+      .pipe(
+        tap(() => {
+          this.updated.emit();
+        }),
+      )
+      .subscribe();
+  }
+
+  sendToTorrents(sendTo: generated.ClientId) {
+    const infoHashes = this.selectedItems.map(({ infoHash }) => infoHash);
+    this.graphQLService
+      .clientSendToTarget({ clientID: sendTo, infoHashes: infoHashes })
+      .pipe(
+        catchError((err: Error) => {
+          this.errorsService.addError(`Error sending torrents: ${err.message}`);
           return EMPTY;
         }),
       )

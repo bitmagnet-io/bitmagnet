@@ -5,6 +5,7 @@ type Query {
   queue: QueueQuery!
   torrent: TorrentQuery!
   torrentContent: TorrentContentQuery!
+  sendToConfig: ClientSendToConfigQuery!
 }
 
 type TorrentQuery {
@@ -66,4 +67,9 @@ type HealthCheck {
 type HealthQuery {
   status: HealthStatus!
   checks: [HealthCheck!]!
+}
+
+type ClientSendToConfigQuery {
+  enabled: Boolean!
+  sendTo: [ClientID!]!
 }

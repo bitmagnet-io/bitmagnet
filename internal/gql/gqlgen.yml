@@ -180,3 +180,5 @@ models:
   TorrentMetricsBucket:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics.Bucket
+  ClientID:
+    model: github.com/bitmagnet-io/bitmagnet/internal/client/model.ID

@@ -1,0 +1,6 @@
+query SendToConfig {
+  sendToConfig {
+    enabled
+    sendTo
+  }
+}
