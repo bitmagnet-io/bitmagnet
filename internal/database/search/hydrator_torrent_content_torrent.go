@@ -46,7 +46,7 @@ func (h torrentContentTorrentHydrator) GetSubs(
 	dbCtx query.DBContext,
 	ids []protocol.ID,
 ) ([]model.Torrent, error) {
-	result, err := search{dbCtx.Query()}.
+	result, err := search{dbCtx}.
 		Torrents(ctx,
 			query.Where(TorrentInfoHashCriteria(ids...)),
 			query.Preload(func(q *dao.Query) []field.RelationField {

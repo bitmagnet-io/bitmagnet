@@ -30,7 +30,7 @@ type TorrentSearch interface {
 func (s search) Torrents(ctx context.Context, options ...query.Option) (TorrentsResult, error) {
 	return query.GenericQuery[model.Torrent](
 		ctx,
-		s.q,
+		s.daoProvider,
 		query.Options(append([]query.Option{query.SelectAll()}, options...)...),
 		model.TableNameTorrent,
 		func(ctx context.Context, q *dao.Query) query.SubQuery {
@@ -123,7 +123,7 @@ func (s search) TorrentSuggestTags(
 
 	result, resultErr := query.GenericQuery[SuggestedTag](
 		ctx,
-		s.q,
+		s.daoProvider,
 		query.Options(append([]query.Option{
 			query.Select(
 				clause.Expr{

@@ -91,33 +91,37 @@ type FacetContext interface {
 }
 
 type facetContext struct {
-	optionBuilder OptionBuilder
-	ctx           context.Context
+	OptionBuilder
+	ctx context.Context
 }
 
-func (ctx facetContext) Query() *dao.Query {
-	return ctx.optionBuilder.Query()
-}
-
-func (ctx facetContext) TableName() string {
-	return ctx.optionBuilder.TableName()
-}
-
-func (ctx facetContext) NewSubQuery(c context.Context) SubQuery {
-	return ctx.optionBuilder.NewSubQuery(c)
-}
+// func (ctx facetContext) Query() *dao.Query {
+//	return ctx.optionBuilder.Query()
+//}
+//
+// func (ctx facetContext) Dao() (*dao.Query, error) {
+//	return ctx.optionBuilder.Dao()
+//}
+//
+// func (ctx facetContext) TableName() string {
+//	return ctx.optionBuilder.TableName()
+//}
+//
+// func (ctx facetContext) NewSubQuery(c context.Context) SubQuery {
+//	return ctx.optionBuilder.NewSubQuery(c)
+//}
 
 func (ctx facetContext) Context() context.Context {
 	return ctx.ctx
 }
 
 func (ctx facetContext) NewAggregationQuery(options ...Option) (SubQuery, error) {
-	subCtx, subErr := Options(options...)(ctx.optionBuilder)
+	subCtx, subErr := Options(options...)(ctx.OptionBuilder)
 	if subErr != nil {
 		return nil, subErr
 	}
 
-	sq := ctx.optionBuilder.NewSubQuery(ctx.Context())
+	sq := ctx.NewSubQuery(ctx.Context())
 
 	applyErr := subCtx.applyPre(sq, false)
 	if applyErr != nil {
@@ -267,7 +271,7 @@ func (b optionBuilder) calculateAggregations(ctx context.Context) (Aggregations,
 				return
 			}
 			values, valuesErr := facet.Values(facetContext{
-				optionBuilder: b,
+				OptionBuilder: b,
 				ctx:           ctx,
 			})
 			if valuesErr != nil {

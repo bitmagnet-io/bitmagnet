@@ -1,7 +1,6 @@
 package slice_test
 
 import (
-	"slices"
 	"strconv"
 	"testing"
 
@@ -87,35 +86,6 @@ var _ = Describe("Slice Utils", func() {
 
 		It("returns the unique elements", func() {
 			Expect(slice.Unique([]int{1, 2, 1, 2, 3, 2})).To(HaveExactElements(1, 2, 3))
-		})
-	})
-
-	DescribeTable("CollectChunks",
-		func(input []int, n int, expected [][]int) {
-			var result [][]int
-			for chunks := range slice.CollectChunks(slices.Values(input), n) {
-				result = append(result, chunks)
-			}
-			Expect(result).To(Equal(expected))
-		},
-		Entry("returns empty slice (nil) for an empty input", []int{}, 1, nil),
-		Entry("returns the slice in one chunk if len < chunkSize", []int{1, 2, 3}, 10, [][]int{{1, 2, 3}}),
-		Entry("breaks up the slice if len > chunkSize", []int{1, 2, 3, 4, 5}, 3, [][]int{{1, 2, 3}, {4, 5}}),
-	)
-
-	Describe("SeqFunc", func() {
-		It("returns empty slice for an empty input", func() {
-			it := slice.SeqFunc([]int{}, func(v int) int { return v })
-
-			result := slices.Collect(it)
-			Expect(result).To(BeEmpty())
-		})
-
-		It("returns a new slice with mapped elements", func() {
-			it := slice.SeqFunc([]int{1, 2, 3, 4}, func(v int) string { return strconv.Itoa(v * 2) })
-
-			result := slices.Collect(it)
-			Expect(result).To(ConsistOf("2", "4", "6", "8"))
 		})
 	})
 })

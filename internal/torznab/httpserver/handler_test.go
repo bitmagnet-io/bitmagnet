@@ -1,7 +1,6 @@
 package httpserver_test
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -9,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab/httpserver"
@@ -43,14 +41,9 @@ func newTestHarness(t *testing.T) *testHarness {
 	t.Helper()
 
 	clientMock := torznab_mocks.NewClient(t)
-	lazyClient := lazy.New[torznab.Client](func() (torznab.Client, error) {
-		return clientMock, nil
-	})
 
 	engine := gin.New()
-	err := httpserver.New(lazyClient, testCfg).Apply(engine)
-
-	require.NoError(t, err)
+	httpserver.New(clientMock, testCfg).Apply(engine)
 
 	return &testHarness{
 		t:                t,
@@ -93,7 +86,7 @@ func TestCaps(t *testing.T) {
 
 			h := newTestHarness(t)
 
-			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, testCase.url, nil)
+			req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, testCase.url, nil)
 			require.NoError(t, err)
 
 			h.engine.ServeHTTP(h.responseRecorder, req)
@@ -194,7 +187,7 @@ func TestSearch(t *testing.T) {
 				testCase.expectedRequest,
 			).Return(result, nil).Times(1)
 
-			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, testCase.url, nil)
+			req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, testCase.url, nil)
 			require.NoError(t, err)
 
 			h.engine.ServeHTTP(h.responseRecorder, req)

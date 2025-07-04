@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/exclause"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/fts"
@@ -36,12 +37,17 @@ type SubQueryFactory = func(context.Context, *dao.Query) SubQuery
 
 // GenericQuery executes queries for any type of search and returns a GenericResult
 func GenericQuery[T interface{}](
-	_ctx context.Context,
-	daoQ *dao.Query,
+	ctx context.Context,
+	daoP database.DaoProvider,
 	option Option,
 	tableName string,
 	factory SubQueryFactory,
 ) (GenericResult[T], error) {
+	daoQ, err := daoP.Dao()
+	if err != nil {
+		return GenericResult[T]{}, err
+	}
+
 	gq := genericQuery[T]{
 		daoQ:    daoQ,
 		factory: factory,
@@ -56,7 +62,7 @@ func GenericQuery[T interface{}](
 		return gq.result, optionErr
 	}
 
-	gq.ctx = builder.createContext(_ctx)
+	gq.ctx = builder.createContext(ctx)
 	gq.builder = builder
 	wg := sync.WaitGroup{}
 	wg.Add(3)
@@ -320,6 +326,7 @@ type Scope = func(*gorm.DB) error
 type GormScope = func(gen.Dao) gen.Dao
 
 type DBContext interface {
+	database.DaoProvider
 	Query() *dao.Query
 	TableName() string
 	NewSubQuery(context.Context) SubQuery
@@ -333,6 +340,10 @@ type dbContext struct {
 
 func (db dbContext) Query() *dao.Query {
 	return db.q
+}
+
+func (db dbContext) Dao() (*dao.Query, error) {
+	return db.q, nil
 }
 
 func (db dbContext) TableName() string {

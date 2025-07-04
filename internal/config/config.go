@@ -11,23 +11,13 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/iancoleman/strcase"
-	"go.uber.org/fx"
 )
 
-type Params struct {
-	fx.In
-	Specs     []Spec                    `group:"config_specs"`
-	Resolvers []configresolver.Resolver `group:"config_resolvers"`
-	Validate  *validator.Validate
-}
-
-type Result struct {
-	fx.Out
-	Resolved ResolvedConfig
-}
-
-func New(p Params) (r Result, err error) {
-	resolvers := p.Resolvers
+func New(
+	specs []Spec,
+	resolvers []configresolver.Resolver,
+	validate *validator.Validate,
+) (ResolvedConfig, error) {
 	sort.Slice(resolvers, func(i, j int) bool {
 		if resolvers[i].Priority() == resolvers[j].Priority() {
 			return strings.Compare(resolvers[i].Key(), resolvers[j].Key()) < 0
@@ -40,19 +30,16 @@ func New(p Params) (r Result, err error) {
 		NodeMap: make(map[string]ResolvedNode),
 	}
 
-	for _, spec := range p.Specs {
-		resolved, resolveErr := resolveRootNode(resolvers, p.Validate, spec)
-		if resolveErr != nil {
-			err = resolveErr
-			return
+	for _, spec := range specs {
+		resolved, err := resolveRootNode(resolvers, validate, spec)
+		if err != nil {
+			return ResolvedConfig{}, err
 		}
 
 		res.NodeMap[spec.Key] = resolved
 	}
 
-	r.Resolved = *res
-
-	return
+	return *res, nil
 }
 
 type Spec struct {

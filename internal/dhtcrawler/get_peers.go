@@ -10,9 +10,9 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 )
 
-func (c *crawler) runGetPeers(ctx context.Context) {
-	_ = c.getPeers.Run(ctx, func(req nodeHasPeersForHash) {
-		pfh, pfhErr := c.requestPeersForHash(ctx, req)
+func (cr *crawler) runGetPeers(ctx context.Context) error {
+	return cr.getPeers.Run(ctx, func(req nodeHasPeersForHash) {
+		pfh, pfhErr := cr.requestPeersForHash(ctx, req)
 		if pfhErr != nil {
 			return
 		}
@@ -27,13 +27,13 @@ func (c *crawler) runGetPeers(ctx context.Context) {
 			})
 		}
 
-		c.kTable.BatchCommand(
+		cr.kTable.BatchCommand(
 			ktable.PutHash{ID: req.infoHash, Peers: hashPeers},
 		)
 		select {
 		case <-ctx.Done():
 			return
-		case c.requestMetaInfo.In() <- infoHashWithPeers{
+		case cr.requestMetaInfo.In() <- infoHashWithPeers{
 			nodeHasPeersForHash: req,
 			peers:               peers,
 		}:
@@ -42,13 +42,13 @@ func (c *crawler) runGetPeers(ctx context.Context) {
 	})
 }
 
-func (c *crawler) requestPeersForHash(
+func (cr *crawler) requestPeersForHash(
 	ctx context.Context,
 	req nodeHasPeersForHash,
 ) (infoHashWithPeers, error) {
-	res, err := c.client.GetPeers(ctx, req.node, req.infoHash)
+	res, err := cr.client.GetPeers(ctx, req.node, req.infoHash)
 	if err != nil {
-		c.kTable.BatchCommand(ktable.DropAddr{
+		cr.kTable.BatchCommand(ktable.DropAddr{
 			Addr:   req.node.Addr(),
 			Reason: fmt.Errorf("failed to get peers: %w", err),
 		})
@@ -56,7 +56,7 @@ func (c *crawler) requestPeersForHash(
 		return infoHashWithPeers{}, err
 	}
 
-	c.kTable.BatchCommand(ktable.PutNode{
+	cr.kTable.BatchCommand(ktable.PutNode{
 		ID:      res.ID,
 		Addr:    req.node,
 		Options: []ktable.NodeOption{ktable.NodeResponded()},
@@ -70,7 +70,7 @@ func (c *crawler) requestPeersForHash(
 			select {
 			case <-cancelCtx.Done():
 				break
-			case c.discoveredNodes.In() <- ktable.NewNode(n.ID, n.Addr):
+			case cr.discoveredNodes.In() <- ktable.NewNode(n.ID, n.Addr):
 				continue
 			}
 		}

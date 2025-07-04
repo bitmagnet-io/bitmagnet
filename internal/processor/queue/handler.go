@@ -9,39 +9,25 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/handler"
-	"go.uber.org/fx"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 )
 
-type Params struct {
-	fx.In
-	Processor lazy.Lazy[processor.Processor]
-}
-
-type Result struct {
-	fx.Out
-	Handler lazy.Lazy[handler.Handler] `group:"queue_handlers"`
-}
-
-func New(p Params) Result {
-	return Result{
-		Handler: lazy.New(func() (handler.Handler, error) {
-			pr, err := p.Processor.Get()
-			if err != nil {
-				return handler.Handler{}, err
-			}
-			return handler.New(
-				processor.MessageName,
-				func(ctx context.Context, job model.QueueJob) (err error) {
+func New(proc processor.Processor) lazy.Lazy[handler.Handler] {
+	return lazy.New(func() (handler.Handler, error) {
+		return handler.New(
+			processor.MessageName,
+			func(job model.QueueJob) runner.Runner {
+				return func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
 					msg := &processor.MessageParams{}
 					if err := json.Unmarshal([]byte(job.Payload), msg); err != nil {
-						return err
+						return runner.NopShutdowner, err
 					}
 
-					return pr.Process(ctx, *msg)
-				},
-				handler.JobTimeout(time.Second*60*10),
-				handler.Concurrency(1),
-			), nil
-		}),
-	}
+					return proc.NewJob(*msg)(ctx, cancel)
+				}
+			},
+			handler.JobTimeout(time.Second*60*10),
+			handler.Concurrency(1),
+		), nil
+	})
 }

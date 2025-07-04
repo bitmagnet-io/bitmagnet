@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"go.uber.org/fx"
 	"go.uber.org/zap"
 	gormlogger "gorm.io/gorm/logger"
 	"gorm.io/gorm/utils"
@@ -17,24 +16,11 @@ type Config struct {
 	LogLevel      gormlogger.LogLevel
 }
 
-type Params struct {
-	fx.In
-	Config    Config
-	ZapLogger *zap.SugaredLogger
-}
-
-type Result struct {
-	fx.Out
-	GormLogger gormlogger.Interface
-}
-
-func New(p Params) Result {
-	return Result{
-		GormLogger: &customLogger{
-			logLevel:      p.Config.LogLevel,
-			slowThreshold: p.Config.SlowThreshold,
-			zap:           p.ZapLogger.Named("gorm"),
-		},
+func New(zapLogger *zap.SugaredLogger, cfg Config) gormlogger.Interface {
+	return &customLogger{
+		logLevel:      cfg.LogLevel,
+		slowThreshold: cfg.SlowThreshold,
+		zap:           zapLogger.Named("gorm"),
 	}
 }
 

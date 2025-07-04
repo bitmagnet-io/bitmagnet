@@ -17,7 +17,7 @@ type QueueJobSearch interface {
 func (s search) QueueJobs(ctx context.Context, options ...query.Option) (result QueueJobResult, err error) {
 	return query.GenericQuery[model.QueueJob](
 		ctx,
-		s.q,
+		s.daoProvider,
 		query.Options(append([]query.Option{query.SelectAll()}, options...)...),
 		model.TableNameQueueJob,
 		func(ctx context.Context, q *dao.Query) query.SubQuery {

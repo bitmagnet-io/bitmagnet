@@ -25,7 +25,7 @@ func (torrentContentContentHydrator) GetSubs(
 	dbCtx query.DBContext,
 	ids []model.ContentRef,
 ) ([]model.Content, error) {
-	contentResult, contentErr := search{dbCtx.Query()}.Content(
+	contentResult, contentErr := search{dbCtx}.Content(
 		ctx,
 		query.Where(ContentCanonicalIdentifierCriteria(ids...)),
 		ContentDefaultPreload(),

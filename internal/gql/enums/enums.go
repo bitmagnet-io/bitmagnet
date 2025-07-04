@@ -3,6 +3,7 @@ package enums
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
 )
 
 type enum struct {
@@ -31,4 +32,5 @@ var Enums = []enum{
 	newEnum("TorrentContentOrderByField", search.TorrentContentOrderByNames()),
 	newEnum("TorrentFilesOrderByField", search.TorrentFilesOrderByNames()),
 	newEnum("QueueJobsOrderByField", search.QueueJobsOrderByNames()),
+	newEnum("WorkerState", worker.StateNames()),
 }

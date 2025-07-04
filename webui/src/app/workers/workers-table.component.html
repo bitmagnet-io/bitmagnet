@@ -1,0 +1,72 @@
+<ng-container *transloco="let t">
+    <table class="table-workers">
+      <thead>
+      <tr>
+        <th></th>
+        <th>{{ t("workers.worker") }}</th>
+        <th>{{ t("general.status") }}</th>
+        @if (actions) {
+          <th colspan="2">Actions</th>
+        }
+        @if (workers.result.workerError) {
+          <th>{{ t("general.error") }}</th>
+        }
+      </tr>
+      </thead>
+      <tbody>
+        @for (worker of workers.result.workers; track worker.key) {
+          <tr>
+            <td class="td-icon">
+              <mat-icon>{{ worker.icon }}</mat-icon>
+            </td>
+            <th scope="row">
+              {{ t("workers.names." + worker.key) }}
+            </th>
+            <td>
+              {{
+                t(
+                  "workers.states." + worker.state
+                )
+              }}
+            </td>
+            @if (actions) {
+              <td>
+                @if (worker.state === "running") {
+                  <button
+                    mat-icon-button
+                    (click)="confirm('shutdown', worker.key)"
+                    [disabled]="worker.key == 'http_server' || worker.requiredBy.includes('http_server')"
+                    [matTooltip]="t('workers.actions.shutdown')"
+                  >
+                    <mat-icon>stop</mat-icon>
+                  </button>
+                } @else {
+                  <button
+                    mat-icon-button
+                    (click)="confirm('start', worker.key)"
+                    [disabled]="worker.state != 'idle'"
+                    [matTooltip]="t('workers.actions.start')"
+                  >
+                    <mat-icon>play_arrow</mat-icon>
+                  </button>
+                }
+              </td>
+              <td>
+                  <button
+                    mat-icon-button
+                    (click)="confirm('restart', worker.key)"
+                    [disabled]="worker.state != 'running'"
+                    [matTooltip]="t('workers.actions.restart')"
+                  >
+                    <mat-icon>replay</mat-icon>
+                  </button>
+              </td>
+            }
+            @if (workers.result.workerError) {
+              <td>{{ worker.error }}</td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+</ng-container>

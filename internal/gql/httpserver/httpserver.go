@@ -10,47 +10,26 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
-	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/gin-gonic/gin"
 	"github.com/vektah/gqlparser/v2/ast"
-	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
-type Params struct {
-	fx.In
-	Schema lazy.Lazy[graphql.ExecutableSchema]
-	Logger *zap.SugaredLogger
-}
-
-type Result struct {
-	fx.Out
-	Option httpserver.Option `group:"http_server_options"`
-}
-
-func New(p Params) Result {
-	return Result{
-		Option: &builder{
-			schema: p.Schema,
-		},
+func New(schema graphql.ExecutableSchema) httpserver.Option {
+	return &builder{
+		schema: schema,
 	}
 }
 
 type builder struct {
-	schema lazy.Lazy[graphql.ExecutableSchema]
+	schema graphql.ExecutableSchema
 }
 
 func (builder) Key() string {
 	return "graphql"
 }
 
-func (b builder) Apply(e *gin.Engine) error {
-	schema, err := b.schema.Get()
-	if err != nil {
-		return err
-	}
-
-	gql := newServer(schema)
+func (b builder) Apply(e *gin.Engine) {
+	gql := newServer(b.schema)
 
 	e.POST("/graphql", func(c *gin.Context) {
 		gql.ServeHTTP(c.Writer, c.Request)
@@ -61,8 +40,6 @@ func (b builder) Apply(e *gin.Engine) error {
 	e.GET("/graphql", func(c *gin.Context) {
 		pg.ServeHTTP(c.Writer, c.Request)
 	})
-
-	return nil
 }
 
 func newServer(es graphql.ExecutableSchema) *handler.Server {

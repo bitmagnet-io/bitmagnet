@@ -1,9 +1,13 @@
 .table-health {
+  width: 100%;
   th,
   td {
     padding-right: 20px;
   }
   th {
     text-align: left;
+  }
+  thead th {
+    padding-bottom: 10px;
   }
 }

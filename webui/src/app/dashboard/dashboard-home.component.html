@@ -9,7 +9,7 @@
     <mat-card-content>
       <mat-divider></mat-divider>
       <div class="grid-container">
-        <mat-grid-list cols="1" rowHeight="500px">
+        <mat-grid-list [cols]="breakpoints.sizeAtLeast('Medium') ? 2 : 1" rowHeight="500px">
           <mat-grid-tile [colspan]="1" [rowspan]="1">
             <app-health-card></app-health-card>
           </mat-grid-tile>

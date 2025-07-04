@@ -2,17 +2,24 @@ package manager
 
 import (
 	"context"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 )
 
 func (m manager) PurgeJobs(ctx context.Context, req PurgeJobsRequest) error {
-	if len(req.Queues) == 0 && len(req.Statuses) == 0 {
-		_, err := m.db.WithContext(ctx).Raw("TRUNCATE TABLE queue_jobs;").Rows()
+	db, err := m.db.GormDB()
+	if err != nil {
 		return err
 	}
 
-	q := m.dao.QueueJob.WithContext(ctx)
+	if len(req.Queues) == 0 && len(req.Statuses) == 0 {
+		_, err := db.WithContext(ctx).Raw("TRUNCATE TABLE queue_jobs;").Rows()
+		return err
+	}
+
+	q := dao.Use(db).QueueJob.WithContext(ctx)
 	if len(req.Queues) > 0 {
-		q = q.Where(m.dao.QueueJob.Queue.In(req.Queues...))
+		q = q.Where(dao.QueueJob.Queue.In(req.Queues...))
 	}
 
 	if len(req.Statuses) > 0 {
@@ -21,10 +28,10 @@ func (m manager) PurgeJobs(ctx context.Context, req PurgeJobsRequest) error {
 			statuses[i] = string(s)
 		}
 
-		q = q.Where(m.dao.QueueJob.Status.In(statuses...))
+		q = q.Where(dao.QueueJob.Status.In(statuses...))
 	}
 
-	_, err := q.Delete()
+	_, err = q.Delete()
 
 	return err
 }

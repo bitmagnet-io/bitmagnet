@@ -18,7 +18,7 @@ tasks:
 
   gen-gorm:
     cmds:
-      - go run ./internal/dev gorm gen
+      - go run -tags dev . dev gorm-gen
 
   gen-gql-enums:
     cmds:
@@ -38,7 +38,7 @@ tasks:
 
   gen-classifier-schema:
     cmds:
-      - go run . classifier schema --format json > ./bitmagnet.io/schemas/classifier-0.1.json
+      - go run . --no-banner classifier schema --format json > ./bitmagnet.io/schemas/classifier-0.1.json
 
   gen-webui-graphql:
     dir: ./webui
@@ -88,7 +88,7 @@ tasks:
 
   migrate:
     cmds:
-      - go run ./internal/dev migrate up
+      - go run -tags dev . dev migrate up
 
   build:
     cmds:

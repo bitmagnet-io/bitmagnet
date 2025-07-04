@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
-	"gorm.io/gorm"
 )
 
 type Bucket struct {
@@ -30,10 +30,15 @@ type Client interface {
 }
 
 type client struct {
-	db *gorm.DB
+	dbProvider database.GormDBProvider
 }
 
 func (c client) Request(ctx context.Context, req Request) ([]Bucket, error) {
+	db, err := c.dbProvider.GormDB()
+	if err != nil {
+		return nil, err
+	}
+
 	params := []any{
 		req.BucketDuration,
 	}
@@ -69,7 +74,7 @@ func (c client) Request(ctx context.Context, req Request) ([]Bucket, error) {
 	}
 
 	var result []Bucket
-	if err := c.db.WithContext(ctx).Raw(`select
+	if err := db.WithContext(ctx).Raw(`select
         source,
         date_trunc(?, updated_at) as bucket,
         updated_at > (created_at + interval '1 hour') as updated,

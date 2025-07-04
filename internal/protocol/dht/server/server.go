@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/netip"
 	"sync"
 	"time"
@@ -11,20 +10,21 @@ import (
 	"github.com/anacrolix/torrent/bencode"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/responder"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/socket"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"go.uber.org/zap"
 )
 
+const Namespace = "dht_server"
+
 type Server interface {
-	start() error
-	stop()
+	runner.Interface
 	Query(ctx context.Context, addr netip.AddrPort, q string, args dht.MsgArgs) (dht.RecvMsg, error)
 }
 
 type server struct {
-	stopped          chan struct{}
 	mutex            sync.Mutex
-	localAddr        netip.AddrPort
-	socket           Socket
+	socket           socket.Socket
 	queryTimeout     time.Duration
 	queries          map[string]chan dht.RecvMsg
 	responder        responder.Responder
@@ -33,28 +33,32 @@ type server struct {
 	logger           *zap.SugaredLogger
 }
 
-func (s *server) start() error {
-	if err := s.socket.Open(s.localAddr); err != nil {
-		return fmt.Errorf("could not open socket: %w", err)
-	}
+func (s *server) Runner(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
+	shutdown := make(chan struct{})
 
 	go func() {
-		ctx, cancel := context.WithCancel(context.Background())
-		go s.read(ctx)
-		<-s.stopped
-		cancel()
+		err := s.read(ctx)
 
-		_ = s.socket.Close()
+		select {
+		case <-shutdown:
+			if errors.Is(err, context.Canceled) {
+				err = nil
+			}
+		default:
+		}
+
+		cancel(err)
 	}()
 
-	return nil
+	return func(context.Context) error {
+		close(shutdown)
+		cancel(runner.ErrShutdownRequested)
+
+		return nil
+	}, nil
 }
 
-func (s *server) stop() {
-	close(s.stopped)
-}
-
-func (s *server) read(ctx context.Context) {
+func (s *server) read(ctx context.Context) error {
 	/*   The field size sets a theoretical limit of 65,535 bytes (8 byte header + 65,527 bytes of
 	 * data) for a UDP datagram. However the actual limit for the data length, which is imposed by
 	 * the underlying IPv4 protocol, is 65,507 bytes (65,535 − 8 byte UDP header − 20 byte IP
@@ -69,18 +73,19 @@ func (s *server) read(ctx context.Context) {
 	buffer := make([]byte, 65507)
 
 	for {
-		if ctx.Err() != nil {
-			return
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
 		}
 
 		n, from, err := s.socket.Receive(buffer)
 		if err != nil {
-			// Socket is probably closed; if we're not shutting down then panic
-			if ctx.Err() == nil {
-				panic(fmt.Errorf("socket read error: %w", err))
+			if errors.Is(err, runner.ErrShutdownRequested) {
+				return nil
 			}
 
-			return
+			return err
 		}
 
 		if n == 0 {

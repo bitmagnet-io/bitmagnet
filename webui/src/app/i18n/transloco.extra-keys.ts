@@ -66,7 +66,6 @@
  * t(health.statuses.inactive)
  * t(health.statuses.unknown)
  * t(health.statuses.up)
- * t(health.statuses.started)
  * t(languages.af)
  * t(languages.ar)
  * t(languages.az)
@@ -138,4 +137,9 @@
  * t(torrents.ordering.seeders)
  * t(torrents.ordering.size)
  * t(torrents.ordering.updated_at)
+ * t(workers.states.idle)
+ * t(workers.states.startup)
+ * t(workers.states.running)
+ * t(workers.states.shutdown)
+ * t(workers.states.error)
  */

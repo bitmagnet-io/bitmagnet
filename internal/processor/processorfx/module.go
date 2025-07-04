@@ -12,8 +12,14 @@ func New() fx.Option {
 		"processor",
 		fx.Provide(
 			processor.New,
-			processorqueue.New,
-			batchqueue.New,
+			fx.Annotate(
+				processorqueue.New,
+				fx.ResultTags(`group:"queue_handlers"`),
+			),
+			fx.Annotate(
+				batchqueue.New,
+				fx.ResultTags(`group:"queue_handlers"`),
+			),
 		),
 	)
 }

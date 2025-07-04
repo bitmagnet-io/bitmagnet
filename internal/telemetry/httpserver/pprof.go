@@ -14,7 +14,7 @@ func (pprofBuilder) Key() string {
 	return "pprof"
 }
 
-func (pprofBuilder) Apply(e *gin.Engine) error {
+func (pprofBuilder) Apply(e *gin.Engine) {
 	runtime.SetMutexProfileFraction(5)
 	runtime.SetBlockProfileRate(5)
 	e.Any("/debug/pprof/", func(c *gin.Context) {
@@ -44,6 +44,4 @@ func (pprofBuilder) Apply(e *gin.Engine) error {
 	e.Any("/debug/pprof/:profile", func(c *gin.Context) {
 		pprof.Handler(c.Param("profile")).ServeHTTP(c.Writer, c.Request)
 	})
-
-	return nil
 }

@@ -9,17 +9,26 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
 	"github.com/bitmagnet-io/bitmagnet/internal/bloom"
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
+	"github.com/bitmagnet-io/bitmagnet/internal/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/client"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/banning"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainforequester"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/concat"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"github.com/prometheus/client_golang/prometheus"
 	boom "github.com/tylertreat/BoomFilters"
 	"go.uber.org/zap"
 )
+
+const Namespace = "dht_crawler"
+
+type Crawler interface {
+	runner.Interface
+	IsActive() bool
+}
 
 type crawler struct {
 	kTable                       ktable.Table
@@ -43,41 +52,38 @@ type crawler struct {
 	rescrapeThreshold            time.Duration
 	saveFilesThreshold           uint
 	savePieces                   bool
-	dao                          *dao.Query
+	daoProvider                  database.DaoTransactionProvider
 	// ignoreHashes is a thread-safe bloom filter that the crawler keeps in memory,
 	// containing every hash it has already encountered.
 	// This avoids multiple attempts to crawl the same hash, and takes a lot of load off the database query
 	// that checks if a hash has already been indexed.
 	ignoreHashes    *ignoreHashes
-	blockingManager blocking.Manager
+	blockingManager blocking.Blocker
 	// soughtNodeID is a random node ID used as the target for find_node and sample_infohashes requests.
 	// It is rotated every 10 seconds.
 	soughtNodeID   *concurrency.AtomicValue[protocol.ID]
-	stopped        chan struct{}
 	persistedTotal *prometheus.CounterVec
 	logger         *zap.SugaredLogger
 }
 
-func (c *crawler) start() {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	// start the various pipeline workers
-	go c.rotateSoughtNodeID(ctx)
-	go c.runDiscoveredNodes(ctx)
-	go c.runPing(ctx)
-	go c.runFindNode(ctx)
-	go c.getNodesForFindNode(ctx)
-	go c.runSampleInfoHashes(ctx)
-	go c.getNodesForSampleInfoHashes(ctx)
-	go c.runInfoHashTriage(ctx)
-	go c.runGetPeers(ctx)
-	go c.runRequestMetaInfo(ctx)
-	go c.runScrape(ctx)
-	go c.reseedBootstrapNodes(ctx)
-	go c.runPersistTorrents(ctx)
-	go c.runPersistSources(ctx)
-	go c.getOldNodes(ctx)
-	<-c.stopped
+func (cr *crawler) Runner(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
+	return concat.Runners(
+		cr.runPersistSources,
+		cr.runPersistTorrents,
+		runner.SimpleRunner(cr.rotateSoughtNodeID),
+		runner.SimpleRunner(cr.runDiscoveredNodes),
+		runner.SimpleRunner(cr.runPing),
+		runner.SimpleRunner(cr.runFindNode),
+		runner.SimpleRunner(cr.getNodesForFindNode),
+		runner.SimpleRunner(cr.runSampleInfoHashes),
+		runner.SimpleRunner(cr.getNodesForSampleInfoHashes),
+		runner.SimpleRunner(cr.runInfoHashTriage),
+		runner.SimpleRunner(cr.runGetPeers),
+		runner.SimpleRunner(cr.runRequestMetaInfo),
+		runner.SimpleRunner(cr.runScrape),
+		runner.SimpleRunner(cr.reseedBootstrapNodes),
+		runner.SimpleRunner(cr.getOldNodes),
+	)(ctx, cancel)
 }
 
 type nodeHasPeersForHash struct {
@@ -113,13 +119,17 @@ func (i *ignoreHashes) testAndAdd(id protocol.ID) bool {
 	return i.bloom.TestAndAdd(id[:])
 }
 
-func (c *crawler) rotateSoughtNodeID(ctx context.Context) {
+func (cr *crawler) rotateSoughtNodeID(ctx context.Context) error {
+	interval := time.Duration(0)
+
 	for {
 		select {
 		case <-ctx.Done():
-			return
-		case <-time.After(10 * time.Second):
-			c.soughtNodeID.Set(protocol.RandomNodeID())
+			return ctx.Err()
+		case <-time.After(interval):
+			cr.soughtNodeID.Set(protocol.RandomNodeID())
 		}
+
+		interval = time.Minute
 	}
 }

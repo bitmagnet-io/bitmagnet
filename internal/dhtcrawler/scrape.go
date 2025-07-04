@@ -8,15 +8,15 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 )
 
-func (c *crawler) runScrape(ctx context.Context) {
-	_ = c.scrape.Run(ctx, func(req nodeHasPeersForHash) {
-		pfh, pfhErr := c.requestScrape(ctx, req)
+func (cr *crawler) runScrape(ctx context.Context) error {
+	return cr.scrape.Run(ctx, func(req nodeHasPeersForHash) {
+		pfh, pfhErr := cr.requestScrape(ctx, req)
 		if pfhErr != nil {
 			return
 		}
 		select {
 		case <-ctx.Done():
-		case c.persistSources.In() <- infoHashWithScrape{
+		case cr.persistSources.In() <- infoHashWithScrape{
 			nodeHasPeersForHash: req,
 			bfsd:                pfh.bfsd,
 			bfpe:                pfh.bfpe,
@@ -27,13 +27,13 @@ func (c *crawler) runScrape(ctx context.Context) {
 
 // requestScrape requests a scrape from a node to find seeders/leechers for a given info hash;
 // see https://www.bittorrent.org/beps/bep_0033.html
-func (c *crawler) requestScrape(
+func (cr *crawler) requestScrape(
 	ctx context.Context,
 	req nodeHasPeersForHash,
 ) (infoHashWithScrape, error) {
-	res, err := c.client.GetPeersScrape(ctx, req.node, req.infoHash)
+	res, err := cr.client.GetPeersScrape(ctx, req.node, req.infoHash)
 	if err != nil {
-		c.kTable.BatchCommand(ktable.DropAddr{
+		cr.kTable.BatchCommand(ktable.DropAddr{
 			Addr:   req.node.Addr(),
 			Reason: fmt.Errorf("failed to get peers from p: %w", err),
 		})
@@ -41,7 +41,7 @@ func (c *crawler) requestScrape(
 		return infoHashWithScrape{}, err
 	}
 
-	c.kTable.BatchCommand(ktable.PutNode{
+	cr.kTable.BatchCommand(ktable.PutNode{
 		ID:      res.ID,
 		Addr:    req.node,
 		Options: []ktable.NodeOption{ktable.NodeResponded()},
@@ -54,7 +54,7 @@ func (c *crawler) requestScrape(
 			select {
 			case <-cancelCtx.Done():
 				break
-			case c.discoveredNodes.In() <- ktable.NewNode(n.ID, n.Addr):
+			case cr.discoveredNodes.In() <- ktable.NewNode(n.ID, n.Addr):
 				continue
 			}
 		}

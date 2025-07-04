@@ -8,6 +8,11 @@ import (
 func New() fx.Option {
 	return fx.Module(
 		"validation",
-		fx.Provide(validation.New),
+		fx.Provide(
+			fx.Annotate(
+				validation.New,
+				fx.ParamTags(`group:"validator_options"`),
+			),
+		),
 	)
 }

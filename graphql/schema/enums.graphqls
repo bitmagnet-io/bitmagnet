@@ -170,3 +170,11 @@ enum QueueJobsOrderByField {
   ran_at
   priority
 }
+
+enum WorkerState {
+  idle
+  startup
+  running
+  shutdown
+  error
+}

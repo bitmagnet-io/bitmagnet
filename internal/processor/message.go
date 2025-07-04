@@ -19,11 +19,15 @@ const (
 	ClassifyModeRematch
 )
 
-type MessageParams struct {
+type ClassifierParams struct {
 	ClassifyMode       ClassifyMode     `json:"ClassifyMode,omitempty"`
 	ClassifierWorkflow string           `json:"ClassifierWorkflow,omitempty"`
 	ClassifierFlags    classifier.Flags `json:"ClassifierFlags,omitempty"`
-	InfoHashes         []protocol.ID    `json:"InfoHashes"`
+}
+
+type MessageParams struct {
+	ClassifierParams
+	InfoHashes []protocol.ID `json:"InfoHashes"`
 }
 
 func NewQueueJob(msg MessageParams, options ...model.QueueJobOption) (model.QueueJob, error) {

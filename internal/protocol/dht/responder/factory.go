@@ -16,7 +16,7 @@ import (
 type Params struct {
 	fx.In
 	KTable          ktable.Table
-	DiscoveredNodes concurrency.BatchingChannel[ktable.Node] `name:"dht_discovered_nodes"`
+	DiscoveredNodes concurrency.BatchingChannel[ktable.Node]
 	Logger          *zap.SugaredLogger
 }
 

@@ -218,7 +218,7 @@ func TestClassifier(t *testing.T) {
 				tc.prepareMocks(mocks)
 			}
 
-			result, runErr := workflow.Run(context.Background(), "default", tc.flags, tc.torrent)
+			result, runErr := workflow.Run(t.Context(), "default", tc.flags, tc.torrent)
 			if runErr != nil {
 				assert.Equal(t, tc.expectedErr, runErr)
 				t.Log(runErr)

@@ -3,14 +3,17 @@ package importer
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"errors"
 	"sync"
 	"time"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 	"gorm.io/gorm/clause"
 )
 
@@ -18,34 +21,12 @@ type Importer interface {
 	New(ctx context.Context, info Info) ActiveImport
 }
 
-type Item struct {
-	Source          string
-	InfoHash        protocol.ID
-	Name            string
-	Size            uint
-	Private         bool
-	ContentType     model.NullContentType
-	ContentSource   model.NullString
-	ContentID       model.NullString
-	Title           model.NullString
-	ReleaseDate     model.Date
-	ReleaseYear     model.Year
-	Episodes        model.Episodes
-	VideoResolution model.NullVideoResolution
-	VideoSource     model.NullVideoSource
-	VideoCodec      model.NullVideoCodec
-	Video3D         model.NullVideo3D
-	VideoModifier   model.NullVideoModifier
-	ReleaseGroup    model.NullString
-	PublishedAt     time.Time
-}
-
 type Info struct {
 	ID string
 }
 
 type importer struct {
-	dao         *dao.Query
+	daoProvider database.DaoTransactionProvider
 	bufferSize  uint
 	maxWaitTime time.Duration
 }
@@ -58,7 +39,7 @@ func (i importer) New(ctx context.Context, info Info) ActiveImport {
 		wg:              &sync.WaitGroup{},
 		mutex:           &sync.RWMutex{},
 		info:            info,
-		itemChan:        make(chan Item),
+		itemChan:        make(chan Torrent),
 		importedSources: make(map[string]struct{}),
 	}
 	ai.run(ctx)
@@ -67,7 +48,7 @@ func (i importer) New(ctx context.Context, info Info) ActiveImport {
 }
 
 type ActiveImport interface {
-	Import(items ...Item) error
+	Import(items ...Torrent) error
 	Drain()
 	Closed() bool
 	Close() error
@@ -75,7 +56,7 @@ type ActiveImport interface {
 }
 
 type ImportItemsError struct {
-	Items []Item
+	Items []Torrent
 	Err   error
 }
 
@@ -109,8 +90,8 @@ type activeImport struct {
 	ctx             context.Context
 	stop            context.CancelFunc
 	info            Info
-	itemChan        chan Item
-	itemBuffer      []Item
+	itemChan        chan Torrent
+	itemBuffer      []Torrent
 	importedSources map[string]struct{}
 	errors          ImportErrors
 }
@@ -140,7 +121,7 @@ func (i *activeImport) run(ctx context.Context) {
 	})()
 }
 
-func (i *activeImport) buffer(item Item) {
+func (i *activeImport) buffer(item Torrent) {
 	defer i.wg.Done()
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
@@ -170,17 +151,19 @@ func (i *activeImport) flushLocked() {
 		})
 	}
 
-	i.itemBuffer = make([]Item, 0, i.bufferSize)
+	i.itemBuffer = make([]Torrent, 0, i.bufferSize)
 }
 
-func (i *activeImport) persistItems(items ...Item) error {
+func (i *activeImport) persistItems(items ...Torrent) error {
 	var sources []*model.TorrentSource
 
 	sourcesMap := make(map[string]struct{})
 	torrents := make([]*model.Torrent, 0, len(items))
 	torrentsTorrentSources := make([]*model.TorrentsTorrentSource, 0, len(items))
 	torrentHints := make([]*model.TorrentHint, 0, len(items))
+	torrentFiles := make([]*model.TorrentFile, 0, len(items))
 	infoHashes := make([]protocol.ID, 0, len(items))
+	infoHashesWithFiles := make([]protocol.ID, 0, len(items))
 
 	for _, item := range items {
 		if _, ok1 := i.importedSources[item.Source]; !ok1 {
@@ -200,14 +183,27 @@ func (i *activeImport) persistItems(items ...Item) error {
 			torrent.Hint = model.TorrentHint{}
 		}
 
-		for _, s := range torrent.Sources {
-			src := s
-			torrentsTorrentSources = append(torrentsTorrentSources, &src)
-		}
+		torrentsTorrentSources = append(torrentsTorrentSources,
+			slice.Map(torrent.Sources, func(s model.TorrentsTorrentSource) *model.TorrentsTorrentSource {
+				return &s
+			})...,
+		)
+
+		torrentFiles = append(torrentFiles,
+			slice.Map(torrent.Files, func(f model.TorrentFile) *model.TorrentFile {
+				return &f
+			})...,
+		)
 
 		torrent.Sources = nil
+		torrent.Files = nil
+
 		torrents = append(torrents, &torrent)
 		infoHashes = append(infoHashes, item.InfoHash)
+
+		if torrent.FilesStatus != model.FilesStatusNoInfo {
+			infoHashesWithFiles = append(infoHashesWithFiles, item.InfoHash)
+		}
 	}
 
 	job, jobErr := processor.NewQueueJob(processor.MessageParams{
@@ -217,7 +213,17 @@ func (i *activeImport) persistItems(items ...Item) error {
 		return jobErr
 	}
 
-	return i.dao.Transaction(func(tx *dao.Query) error {
+	return i.daoProvider.DaoTransaction(func(tx *dao.Query) error {
+		if len(infoHashesWithFiles) > 0 {
+			if _, deleteErr := tx.TorrentFile.WithContext(i.ctx).Where(
+				tx.TorrentFile.InfoHash.In(slice.Map(infoHashesWithFiles, func(id protocol.ID) driver.Valuer {
+					return id
+				})...)).
+				Delete(); deleteErr != nil {
+				return deleteErr
+			}
+		}
+
 		if len(sources) > 0 {
 			if createSourcesErr := tx.TorrentSource.WithContext(i.ctx).Clauses(clause.OnConflict{
 				DoNothing: true,
@@ -250,17 +256,64 @@ func (i *activeImport) persistItems(items ...Item) error {
 			return createTorrentsTorrentSourcesErr
 		}
 
+		if len(torrentFiles) > 0 {
+			if createTorrentFilesErr := tx.TorrentFile.WithContext(i.ctx).Clauses(clause.OnConflict{
+				UpdateAll: true,
+			}).CreateInBatches(torrentFiles, 100); createTorrentFilesErr != nil {
+				return createTorrentFilesErr
+			}
+		}
+
 		return tx.QueueJob.Create(&job)
 	})
 }
 
-func createTorrentModel(info Info, item Item) model.Torrent {
+func createTorrentModel(info Info, item Torrent) model.Torrent {
+	filesStatus := model.FilesStatusNoInfo
+
+	files := make([]model.TorrentFile, 0, len(item.Files))
+
+	var filesCount model.NullUint
+
+	for i, f := range item.Files {
+		index := uint(i)
+		if f.Index.Valid {
+			index = f.Index.Uint
+		}
+
+		files = append(files, model.TorrentFile{
+			InfoHash: item.InfoHash,
+			Index:    index,
+			Path:     f.Path,
+			Size:     f.Size,
+		})
+	}
+
+	actualFilesCount := uint(len(files))
+
+	if item.FilesCount.Valid {
+		filesCount = item.FilesCount
+		if filesCount.Uint == 0 {
+			filesCount.Valid = false
+			filesStatus = model.FilesStatusSingle
+		} else if actualFilesCount >= filesCount.Uint {
+			filesCount.Uint = actualFilesCount
+			filesStatus = model.FilesStatusMulti
+		} else if actualFilesCount < filesCount.Uint {
+			filesStatus = model.FilesStatusOverThreshold
+		}
+	} else if actualFilesCount > 0 {
+		filesCount = model.NewNullUint(actualFilesCount)
+	}
+
 	t := model.Torrent{
 		InfoHash:    item.InfoHash,
 		Name:        item.Name,
 		Size:        item.Size,
 		Private:     item.Private,
-		FilesStatus: model.FilesStatusNoInfo,
+		FilesCount:  filesCount,
+		FilesStatus: filesStatus,
+		Files:       files,
 		Sources: []model.TorrentsTorrentSource{
 			{
 				InfoHash: item.InfoHash,
@@ -294,7 +347,7 @@ func createTorrentModel(info Info, item Item) model.Torrent {
 	return t
 }
 
-func (i *activeImport) Import(items ...Item) error {
+func (i *activeImport) Import(items ...Torrent) error {
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
 

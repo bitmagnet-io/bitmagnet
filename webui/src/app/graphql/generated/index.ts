@@ -258,6 +258,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   queue: QueueMutation;
   torrent: TorrentMutation;
+  worker: WorkerMutation;
 };
 
 export type Query = {
@@ -267,7 +268,7 @@ export type Query = {
   torrent: TorrentQuery;
   torrentContent: TorrentContentQuery;
   version: Scalars['String']['output'];
-  workers: WorkersQuery;
+  worker: WorkerQuery;
 };
 
 export type QueueEnqueueReprocessTorrentsBatchInput = {
@@ -848,19 +849,51 @@ export type VideoSourceFacetInput = {
 
 export type Worker = {
   __typename?: 'Worker';
+  dependsOn: Array<Scalars['String']['output']>;
+  error?: Maybe<Scalars['String']['output']>;
   key: Scalars['String']['output'];
-  started: Scalars['Boolean']['output'];
+  requiredBy: Array<Scalars['String']['output']>;
+  state: WorkerState;
 };
 
-export type WorkersListAllQueryResult = {
-  __typename?: 'WorkersListAllQueryResult';
+export type WorkerListAllQueryResult = {
+  __typename?: 'WorkerListAllQueryResult';
   workers: Array<Worker>;
 };
 
-export type WorkersQuery = {
-  __typename?: 'WorkersQuery';
-  listAll: WorkersListAllQueryResult;
+export type WorkerMutation = {
+  __typename?: 'WorkerMutation';
+  restart: WorkerListAllQueryResult;
+  shutdown: WorkerListAllQueryResult;
+  start: WorkerListAllQueryResult;
 };
+
+
+export type WorkerMutationRestartArgs = {
+  keys: Array<Scalars['String']['input']>;
+};
+
+
+export type WorkerMutationShutdownArgs = {
+  keys: Array<Scalars['String']['input']>;
+};
+
+
+export type WorkerMutationStartArgs = {
+  keys: Array<Scalars['String']['input']>;
+};
+
+export type WorkerQuery = {
+  __typename?: 'WorkerQuery';
+  listAll: WorkerListAllQueryResult;
+};
+
+export type WorkerState =
+  | 'error'
+  | 'idle'
+  | 'running'
+  | 'shutdown'
+  | 'startup';
 
 export type ContentFragment = { __typename?: 'Content', type: ContentType, source: string, id: string, title: string, releaseDate?: string | null, releaseYear?: number | null, overview?: string | null, runtime?: number | null, voteAverage?: number | null, voteCount?: number | null, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string }, originalLanguage?: { __typename?: 'LanguageInfo', id: string, name: string } | null, attributes: Array<{ __typename?: 'ContentAttribute', source: string, key: string, value: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, collections: Array<{ __typename?: 'ContentCollection', type: string, source: string, id: string, name: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, externalLinks: Array<{ __typename?: 'ExternalLink', url: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }> };
 
@@ -877,6 +910,8 @@ export type TorrentContentSearchResultFragment = { __typename?: 'TorrentContentS
 export type TorrentFileFragment = { __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string };
 
 export type TorrentFilesQueryResultFragment = { __typename?: 'TorrentFilesQueryResult', totalCount: number, hasNextPage?: boolean | null, items: Array<{ __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string }> };
+
+export type WorkerFragment = { __typename?: 'Worker', key: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> };
 
 export type QueueEnqueueReprocessTorrentsBatchMutationVariables = Exact<{
   input: QueueEnqueueReprocessTorrentsBatchInput;
@@ -930,10 +965,31 @@ export type TorrentSetTagsMutationVariables = Exact<{
 
 export type TorrentSetTagsMutation = { __typename?: 'Mutation', torrent: { __typename?: 'TorrentMutation', setTags?: void | null } };
 
+export type WorkersRestartMutationVariables = Exact<{
+  keys: Array<Scalars['String']['input']> | Scalars['String']['input'];
+}>;
+
+
+export type WorkersRestartMutation = { __typename?: 'Mutation', worker: { __typename?: 'WorkerMutation', restart: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', key: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
+
+export type WorkersShutdownMutationVariables = Exact<{
+  keys: Array<Scalars['String']['input']> | Scalars['String']['input'];
+}>;
+
+
+export type WorkersShutdownMutation = { __typename?: 'Mutation', worker: { __typename?: 'WorkerMutation', shutdown: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', key: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
+
+export type WorkersStartMutationVariables = Exact<{
+  keys: Array<Scalars['String']['input']> | Scalars['String']['input'];
+}>;
+
+
+export type WorkersStartMutation = { __typename?: 'Mutation', worker: { __typename?: 'WorkerMutation', start: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', key: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
+
 export type HealthCheckQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type HealthCheckQuery = { __typename?: 'Query', health: { __typename?: 'HealthQuery', status: HealthStatus, checks: Array<{ __typename?: 'HealthCheck', key: string, status: HealthStatus, timestamp: string, error?: string | null }> }, workers: { __typename?: 'WorkersQuery', listAll: { __typename?: 'WorkersListAllQueryResult', workers: Array<{ __typename?: 'Worker', key: string, started: boolean }> } } };
+export type HealthCheckQuery = { __typename?: 'Query', health: { __typename?: 'HealthQuery', status: HealthStatus, checks: Array<{ __typename?: 'HealthCheck', key: string, status: HealthStatus, timestamp: string, error?: string | null }> } };
 
 export type QueueJobsQueryVariables = Exact<{
   input: QueueJobsQueryInput;
@@ -981,6 +1037,11 @@ export type VersionQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type VersionQuery = { __typename?: 'Query', version: string };
+
+export type WorkersQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type WorkersQuery = { __typename?: 'Query', worker: { __typename?: 'WorkerQuery', listAll: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', key: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
 
 export const QueueJobFragmentDoc = gql`
     fragment QueueJob on QueueJob {
@@ -1216,6 +1277,15 @@ export const TorrentFilesQueryResultFragmentDoc = gql`
   hasNextPage
 }
     ${TorrentFileFragmentDoc}`;
+export const WorkerFragmentDoc = gql`
+    fragment Worker on Worker {
+  key
+  state
+  error
+  requiredBy
+  dependsOn
+}
+    `;
 export const QueueEnqueueReprocessTorrentsBatchDocument = gql`
     mutation QueueEnqueueReprocessTorrentsBatch($input: QueueEnqueueReprocessTorrentsBatchInput!) {
   queue {
@@ -1342,6 +1412,72 @@ export const TorrentSetTagsDocument = gql`
       super(apollo);
     }
   }
+export const WorkersRestartDocument = gql`
+    mutation WorkersRestart($keys: [String!]!) {
+  worker {
+    restart(keys: $keys) {
+      workers {
+        ...Worker
+      }
+    }
+  }
+}
+    ${WorkerFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class WorkersRestartGQL extends Apollo.Mutation<WorkersRestartMutation, WorkersRestartMutationVariables> {
+    override document = WorkersRestartDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const WorkersShutdownDocument = gql`
+    mutation WorkersShutdown($keys: [String!]!) {
+  worker {
+    shutdown(keys: $keys) {
+      workers {
+        ...Worker
+      }
+    }
+  }
+}
+    ${WorkerFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class WorkersShutdownGQL extends Apollo.Mutation<WorkersShutdownMutation, WorkersShutdownMutationVariables> {
+    override document = WorkersShutdownDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const WorkersStartDocument = gql`
+    mutation WorkersStart($keys: [String!]!) {
+  worker {
+    start(keys: $keys) {
+      workers {
+        ...Worker
+      }
+    }
+  }
+}
+    ${WorkerFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class WorkersStartGQL extends Apollo.Mutation<WorkersStartMutation, WorkersStartMutationVariables> {
+    override document = WorkersStartDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const HealthCheckDocument = gql`
     query HealthCheck {
   health {
@@ -1351,14 +1487,6 @@ export const HealthCheckDocument = gql`
       status
       timestamp
       error
-    }
-  }
-  workers {
-    listAll {
-      workers {
-        key
-        started
-      }
     }
   }
 }
@@ -1526,6 +1654,28 @@ export const VersionDocument = gql`
   })
   export class VersionGQL extends Apollo.Query<VersionQuery, VersionQueryVariables> {
     override document = VersionDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const WorkersDocument = gql`
+    query Workers {
+  worker {
+    listAll {
+      workers {
+        ...Worker
+      }
+    }
+  }
+}
+    ${WorkerFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class WorkersGQL extends Apollo.Query<WorkersQuery, WorkersQueryVariables> {
+    override document = WorkersDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

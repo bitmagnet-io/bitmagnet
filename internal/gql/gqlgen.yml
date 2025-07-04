@@ -180,3 +180,6 @@ models:
   TorrentMetricsBucket:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics.Bucket
+  WorkerState:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/workers/worker.State

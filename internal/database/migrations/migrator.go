@@ -4,43 +4,18 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	migrationssql "github.com/bitmagnet-io/bitmagnet/migrations"
-	goose "github.com/pressly/goose/v3"
-	"go.uber.org/fx"
+	"github.com/pressly/goose/v3"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
-type Params struct {
-	fx.In
-	DB     lazy.Lazy[*gorm.DB]
-	Logger *zap.SugaredLogger
-}
+func New(db *sql.DB, logger *zap.SugaredLogger) Migrator {
+	logger = logger.Named("migrator")
+	initGoose(logger)
 
-type Result struct {
-	fx.Out
-	Migrator lazy.Lazy[Migrator]
-}
-
-func New(p Params) Result {
-	return Result{
-		Migrator: lazy.New(func() (Migrator, error) {
-			g, err := p.DB.Get()
-			if err != nil {
-				return nil, err
-			}
-			db, err := g.DB()
-			if err != nil {
-				return nil, err
-			}
-			logger := p.Logger.Named("migrator")
-			initGoose(logger)
-			return &migrator{
-				db:     db,
-				logger: logger,
-			}, nil
-		}),
+	return &migrator{
+		db:     db,
+		logger: logger,
 	}
 }
 

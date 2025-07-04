@@ -11,11 +11,11 @@ type gooseLogger struct {
 }
 
 func (l gooseLogger) Fatal(v ...interface{}) {
-	l.l.Fatal(v...)
+	l.l.Error(v...)
 }
 
 func (l gooseLogger) Fatalf(format string, v ...interface{}) {
-	l.l.Fatalf(strings.TrimSpace(format), v...)
+	l.l.Errorf(strings.TrimSpace(format), v...)
 }
 
 func (l gooseLogger) Print(v ...interface{}) {
@@ -33,5 +33,8 @@ func (l gooseLogger) Printf(format string, v ...interface{}) {
 		fn = l.l.Infof
 	}
 
-	fn(strings.TrimSpace(format), v...)
+	format = strings.TrimPrefix(format, "goose: ")
+	format = strings.TrimSpace(format)
+
+	fn(format, v...)
 }

@@ -40,17 +40,20 @@ func New() fx.Option {
 	}
 
 	options = append(options,
-		fx.Provide(config.New),
-		fx.Provide(fx.Annotated{
-			Group: "config_resolvers",
-			Target: func() (configresolver.Resolver, error) {
-				return configresolver.NewEnv(
-					osEnv,
-					configresolver.WithPriority(-len(extraConfigFiles)),
-				), nil
-			},
-		}),
 		fx.Provide(
+			fx.Annotate(
+				config.New,
+				fx.ParamTags(`group:"config_specs"`, `group:"config_resolvers"`),
+			),
+			fx.Annotated{
+				Group: "config_resolvers",
+				Target: func() (configresolver.Resolver, error) {
+					return configresolver.NewEnv(
+						osEnv,
+						configresolver.WithPriority(-len(extraConfigFiles)),
+					), nil
+				},
+			},
 			fx.Annotated{
 				Group: "config_resolvers",
 				Target: func(val *validator.Validate) (configresolver.Resolver, error) {

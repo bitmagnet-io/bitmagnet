@@ -1,72 +1,57 @@
 package webui
 
 import (
-	"errors"
-	"io/fs"
-	"net/http"
+  "errors"
+  "io/fs"
+  "net/http"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
-	"github.com/bitmagnet-io/bitmagnet/webui"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/fx"
-	"go.uber.org/zap"
+  "github.com/bitmagnet-io/bitmagnet/internal/httpserver"
+  "github.com/bitmagnet-io/bitmagnet/internal/logging"
+  "github.com/bitmagnet-io/bitmagnet/webui"
+  "github.com/gin-gonic/gin"
 )
 
-type Params struct {
-	fx.In
-	Logger *zap.SugaredLogger
-}
+const Namespace = "webui"
 
-type Result struct {
-	fx.Out
-	Option httpserver.Option `group:"http_server_options"`
-}
-
-func New(p Params) Result {
-	return Result{
-		Option: &builder{
-			logger: p.Logger.Named("webui"),
-		},
-	}
+func New(logger logging.Logger) httpserver.Option {
+  return &builder{
+    logger: logger,
+  }
 }
 
 type builder struct {
-	logger *zap.SugaredLogger
+  logger logging.Logger
 }
 
 func (*builder) Key() string {
-	return "webui"
+  return Namespace
 }
 
-func (b *builder) Apply(e *gin.Engine) error {
-	webuiFS := webui.StaticFS()
+func (b *builder) Apply(e *gin.Engine) {
+  webuiFS := webui.StaticFS()
 
-	appRoot, appRootErr := fs.Sub(webuiFS, "dist/bitmagnet/browser")
-	if appRootErr != nil {
-		b.logger.Errorf(
-			"the webui app root directory is missing; run `npm run build` within the `webui` folder: %v",
-			appRootErr)
+  appRoot, appRootErr := fs.Sub(webuiFS, "dist/bitmagnet/browser")
+  if appRootErr != nil {
+    b.logger.Errorf(
+      "the webui app root directory is missing; run `npm run build` within the `webui` folder: %v",
+      appRootErr)
+  }
 
-		return nil
-	}
-
-	e.StaticFS("/webui", wrappedFs{http.FS(appRoot)})
-	e.GET("/", func(c *gin.Context) {
-		c.Redirect(301, "/webui")
-	})
-
-	return nil
+  e.StaticFS("/webui", wrappedFs{http.FS(appRoot)})
+  e.GET("/", func(c *gin.Context) {
+    c.Redirect(301, "/webui")
+  })
 }
 
 type wrappedFs struct {
-	http.FileSystem
+  http.FileSystem
 }
 
 func (w wrappedFs) Open(name string) (http.File, error) {
-	f, err := w.FileSystem.Open(name)
-	if err != nil && errors.Is(err, fs.ErrNotExist) {
-		return w.FileSystem.Open("/index.html")
-	}
+  f, err := w.FileSystem.Open(name)
+  if err != nil && errors.Is(err, fs.ErrNotExist) {
+    return w.FileSystem.Open("/index.html")
+  }
 
-	return f, err
+  return f, err
 }

@@ -11,25 +11,58 @@ import (
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/bloom"
+	"github.com/bitmagnet-io/bitmagnet/internal/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Manager interface {
+const Namespace = "blocker"
+
+type Blocker interface {
+	runner.Interface
 	Filter(ctx context.Context, hashes []protocol.ID) ([]protocol.ID, error)
 	Block(ctx context.Context, hashes []protocol.ID, flush bool) error
-	Flush(ctx context.Context) error
 }
 
 type manager struct {
 	mutex         sync.Mutex
-	pool          *pgxpool.Pool
+	active        bool
+	pool          database.PoolProvider
 	buffer        map[protocol.ID]struct{}
 	filter        *bloom.StableBloomFilter
 	maxBufferSize int
 	lastFlushedAt time.Time
 	maxFlushWait  time.Duration
+}
+
+func (m *manager) Runner(ctx context.Context, _ context.CancelCauseFunc) (runner.Shutdowner, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	if m.active {
+		return runner.NopShutdowner, fmt.Errorf("%w: %w", Err, runner.ErrAlreadyRunning)
+	}
+
+	m.active = true
+
+	err := m.flush(ctx)
+	if err != nil {
+		return runner.NopShutdowner, err
+	}
+
+	return func(ctx context.Context) error {
+		m.mutex.Lock()
+		defer m.mutex.Unlock()
+
+		m.active = false
+
+		if len(m.buffer) == 0 {
+			return nil
+		}
+
+		return m.flush(ctx)
+	}, nil
 }
 
 func (m *manager) Filter(ctx context.Context, hashes []protocol.ID) ([]protocol.ID, error) {
@@ -76,23 +109,17 @@ func (m *manager) Block(ctx context.Context, hashes []protocol.ID, flush bool) e
 	return nil
 }
 
-func (m *manager) Flush(ctx context.Context) error {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-
-	if len(m.buffer) == 0 {
-		return nil
-	}
-
-	return m.flush(ctx)
-}
-
 const blockedTorrentsBloomFilterKey = "blocked_torrents"
 
 func (m *manager) flush(ctx context.Context) error {
+	pool, err := m.pool.Pool()
+	if err != nil {
+		return err
+	}
+
 	hashes := slices.Collect(maps.Keys(m.buffer))
 
-	tx, err := m.pool.BeginTx(ctx, pgx.TxOptions{
+	tx, err := pool.BeginTx(ctx, pgx.TxOptions{
 		AccessMode: pgx.ReadWrite,
 	})
 	if err != nil {
@@ -153,18 +180,20 @@ func (m *manager) flush(ctx context.Context) error {
 		}
 	}
 
-	for _, hash := range hashes {
-		bf.Add(hash[:])
-	}
+	if len(hashes) > 0 {
+		for _, hash := range hashes {
+			bf.Add(hash[:])
+		}
 
-	obj, err := lobs.Open(ctx, oid, pgx.LargeObjectModeWrite)
-	if err != nil {
-		return fmt.Errorf("failed to open large object for writing: %w", err)
-	}
+		obj, err := lobs.Open(ctx, oid, pgx.LargeObjectModeWrite)
+		if err != nil {
+			return fmt.Errorf("failed to open large object for writing: %w", err)
+		}
 
-	_, err = bf.WriteTo(obj)
-	if err != nil {
-		return fmt.Errorf("failed to write to large object: %w", err)
+		_, err = bf.WriteTo(obj)
+		if err != nil {
+			return fmt.Errorf("failed to write to large object: %w", err)
+		}
 	}
 
 	now := time.Now()
@@ -197,5 +226,5 @@ func (m *manager) flush(ctx context.Context) error {
 }
 
 func (m *manager) shouldFlush() bool {
-	return len(m.buffer) >= m.maxBufferSize || time.Since(m.lastFlushedAt) >= m.maxFlushWait
+	return len(m.buffer) >= m.maxBufferSize || (len(m.buffer) > 0 && time.Since(m.lastFlushedAt) >= m.maxFlushWait)
 }

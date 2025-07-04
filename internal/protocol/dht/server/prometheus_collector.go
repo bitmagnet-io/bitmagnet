@@ -24,26 +24,26 @@ func newPrometheusCollector() prometheusCollector {
 	return prometheusCollector{
 		queryDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 			Namespace: namespace,
-			Subsystem: subsystem,
+			Subsystem: Namespace,
 			Name:      "query_duration_seconds",
 			Help:      "A histogram of successful DHT query durations in seconds.",
 			Buckets:   prometheus.ExponentialBuckets(0.1, 1.5, 5),
 		}, labelNames),
 		querySuccessTotal: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Namespace: namespace,
-			Subsystem: subsystem,
+			Subsystem: Namespace,
 			Name:      "query_success_total",
 			Help:      "A counter of successful DHT queries.",
 		}, labelNames),
 		queryErrorTotal: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Namespace: namespace,
-			Subsystem: subsystem,
+			Subsystem: Namespace,
 			Name:      "query_error_total",
 			Help:      "A counter of failed DHT queries.",
 		}, labelNames),
 		queryConcurrency: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace,
-			Subsystem: subsystem,
+			Subsystem: Namespace,
 			Name:      "query_concurrency",
 			Help:      "Number of concurrent DHT queries.",
 		}, labelNames),
@@ -52,15 +52,7 @@ func newPrometheusCollector() prometheusCollector {
 
 type prometheusServerWrapper struct {
 	prometheusCollector
-	server Server
-}
-
-func (s prometheusServerWrapper) start() error {
-	return s.server.start()
-}
-
-func (s prometheusServerWrapper) stop() {
-	s.server.stop()
+	Server
 }
 
 func (s prometheusServerWrapper) Query(
@@ -73,7 +65,7 @@ func (s prometheusServerWrapper) Query(
 	s.queryConcurrency.With(labels).Inc()
 
 	start := time.Now()
-	res, err := s.server.Query(ctx, addr, q, args)
+	res, err := s.Server.Query(ctx, addr, q, args)
 	s.queryConcurrency.With(labels).Dec()
 
 	if err == nil {

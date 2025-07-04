@@ -10,8 +10,11 @@ func New() fx.Option {
 	return fx.Module(
 		"importer",
 		fx.Provide(
-			httpserver.New,
 			importer.New,
+			fx.Annotate(
+				httpserver.New,
+				fx.ResultTags(`group:"http_server_options"`),
+			),
 		),
 	)
 }

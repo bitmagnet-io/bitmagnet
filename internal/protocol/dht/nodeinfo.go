@@ -153,7 +153,7 @@ func marshalBinarySlice(slice elemSizer) (ret []byte, err error) {
 		}
 
 		if len(b) != slice.ElemSize() {
-			panic(fmt.Sprintf("marshalled %d bytes, but expected %d", len(b), slice.ElemSize()))
+			return nil, fmt.Errorf("marshalled %d bytes, but expected %d", len(b), slice.ElemSize())
 		}
 
 		ret = append(ret, b...)

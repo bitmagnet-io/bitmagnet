@@ -134,13 +134,6 @@ func WithResultWriter(writer ResultWriter) HandlerOption {
 	}
 }
 
-// WithDisabledAutostart disables automatic startup of a Checker instance.
-func WithDisabledAutostart() CheckerOption {
-	return func(cfg *checkerConfig) {
-		cfg.autostartDisabled = true
-	}
-}
-
 // WithDisabledCache disabled the check cache. This is not recommended in most cases.
 // This will effectively lead to a health endpoint that initiates a new health check for each incoming HTTP request.
 // This may have an impact on the systems that are being checked (especially if health checks are expensive).

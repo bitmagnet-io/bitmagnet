@@ -1,0 +1,11 @@
+#import "../fragments/Worker"
+
+query Workers {
+  worker {
+    listAll {
+      workers {
+        ...Worker
+      }
+    }
+  }
+}

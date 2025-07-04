@@ -1,10 +1,21 @@
 package main
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/app"
+	"context"
+	"os"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/cli"
 	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
-	app.New().Run()
+	err := cli.App.Run(context.Background(), os.Args)
+
+	exitCode := 0
+
+	if err != nil {
+		exitCode = 1
+	}
+
+	os.Exit(exitCode)
 }

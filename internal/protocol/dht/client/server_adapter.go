@@ -124,8 +124,14 @@ func extractNodes(msg dht.Msg) []NodeInfo {
 	}
 
 	nodes := make([]NodeInfo, 0, len(msg.R.Nodes))
+
 	for _, n := range msg.R.Nodes {
-		nodes = append(nodes, NodeInfo{ID: n.ID, Addr: n.Addr.ToAddrPort()})
+		addrPort := n.Addr.ToAddrPort()
+		if addrPort.Addr().IsUnspecified() || addrPort.Addr().IsLoopback() {
+			continue
+		}
+
+		nodes = append(nodes, NodeInfo{ID: n.ID, Addr: addrPort})
 	}
 
 	return nodes

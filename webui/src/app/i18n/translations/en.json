@@ -106,6 +106,8 @@
   },
   "general": {
     "all": "All",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
     "dismiss": "Dismiss",
     "error": "Error",
     "none": "None",
@@ -120,7 +122,8 @@
     "components": {
       "dht": "DHT",
       "postgres": "Postgres",
-      "tmdb": "TMDB"
+      "tmdb": "TMDB",
+      "workers": "Workers"
     },
     "dismiss": "Dismiss",
     "error": "Error",
@@ -130,17 +133,10 @@
       "down": "Down",
       "error": "Error",
       "inactive": "Inactive",
-      "started": "Started",
       "unknown": "Pending",
       "up": "Up"
     },
-    "summary": "Health summary",
-    "worker": "Worker",
-    "workers": {
-      "dht_crawler": "DHT crawler",
-      "http_server": "HTTP server",
-      "queue_server": "Queue server"
-    }
+    "summary": "Health summary"
   },
   "languages": {
     "af": "Afrikaans",
@@ -231,7 +227,8 @@
     "jobs": "Jobs",
     "queues": "Queues",
     "torrents": "Torrents",
-    "visualize": "Visualize"
+    "visualize": "Visualize",
+    "workers": "Workers"
   },
   "torrents": {
     "classification": "Classification",
@@ -310,5 +307,35 @@
   "version": {
     "bitmagnet_version": "bitmagnet version {{version}}",
     "unknown": "unknown"
+  },
+  "workers": {
+    "worker": "Worker",
+    "names": {
+      "dht_crawler": "DHT crawler",
+      "http_server": "HTTP server",
+      "queue_server": "Queue server",
+      "blocker": "Blocker",
+      "database": "Database",
+      "dht_server": "DHT server",
+      "dht_socket": "DHT socket",
+      "health_checker": "Health checker",
+      "logger": "Logger"
+    },
+    "states": {
+      "idle": "Idle",
+      "startup": "Startup",
+      "running": "Running",
+      "shutdown": "Shutdown",
+      "error": "Error"
+    },
+    "actions": {
+      "start": "Start",
+      "shutdown": "Shutdown",
+      "restart": "Restart"
+    },
+    "warnings":{
+      "depends_on": "This action will also start the following services:",
+      "required_by": "This action will affect the following dependent services:"
+    }
   }
 }

@@ -1,0 +1,11 @@
+#import "../fragments/Worker"
+
+mutation WorkersStart($keys: [String!]!) {
+  worker {
+    start(keys: $keys) {
+      workers {
+        ...Worker
+      }
+    }
+  }
+}

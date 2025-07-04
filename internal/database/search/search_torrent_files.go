@@ -17,7 +17,7 @@ type TorrentFilesSearch interface {
 func (s search) TorrentFiles(ctx context.Context, options ...query.Option) (TorrentFilesResult, error) {
 	return query.GenericQuery[model.TorrentFile](
 		ctx,
-		s.q,
+		s.daoProvider,
 		query.Options(append([]query.Option{query.SelectAll()}, options...)...),
 		model.TableNameTorrentFile,
 		func(ctx context.Context, q *dao.Query) query.SubQuery {

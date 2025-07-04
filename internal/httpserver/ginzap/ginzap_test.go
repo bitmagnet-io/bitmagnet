@@ -1,7 +1,6 @@
 package ginzap
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -56,7 +55,7 @@ func TestGinzap(t *testing.T) {
 
 	res1 := httptest.NewRecorder()
 
-	ctx := context.Background()
+	ctx := t.Context()
 	req1, _ := http.NewRequestWithContext(ctx, http.MethodGet, testPath, nil)
 	r.ServeHTTP(res1, req1)
 
@@ -109,7 +108,7 @@ func TestGinzapWithConfig(t *testing.T) {
 	})
 
 	res1 := httptest.NewRecorder()
-	ctx := context.Background()
+	ctx := t.Context()
 	req1, _ := http.NewRequestWithContext(ctx, http.MethodGet, testPath, nil)
 	r.ServeHTTP(res1, req1)
 

@@ -23,6 +23,16 @@
           <li>
             <a
               mat-button
+              routerLink="workers"
+              routerLinkActive
+              #linkWorkers="routerLinkActive"
+              [class]="linkWorkers.isActive ? 'active' : ''"
+            ><mat-icon>manufacturing</mat-icon>{{ t("routes.workers") }}</a
+            >
+          </li>
+          <li>
+            <a
+              mat-button
               routerLink="queues"
               routerLinkActive
               #linkQueues="routerLinkActive"

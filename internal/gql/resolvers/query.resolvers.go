@@ -22,20 +22,10 @@ func (r *queryResolver) Version(ctx context.Context) (string, error) {
 	return version.GitTag, nil
 }
 
-// Workers is the resolver for the workers field.
-func (r *queryResolver) Workers(ctx context.Context) (gen.WorkersQuery, error) {
-	var workers []gen.Worker
-	for _, w := range r.Resolver.Workers.Workers() {
-		workers = append(workers, gen.Worker{
-			Key:     w.Key(),
-			Started: w.Started(),
-		})
-	}
-
-	return gen.WorkersQuery{
-		ListAll: gen.WorkersListAllQueryResult{
-			Workers: workers,
-		},
+// Worker is the resolver for the worker field.
+func (r *queryResolver) Worker(ctx context.Context) (gqlmodel.WorkerQuery, error) {
+	return gqlmodel.WorkerQuery{
+		Registry: r.Workers,
 	}, nil
 }
 
@@ -91,8 +81,13 @@ func (r *queryResolver) Queue(ctx context.Context) (gqlmodel.QueueQuery, error) 
 
 // Torrent is the resolver for the torrent field.
 func (r *queryResolver) Torrent(ctx context.Context) (gqlmodel.TorrentQuery, error) {
+	dao, err := r.DaoProvider.Dao()
+	if err != nil {
+		return gqlmodel.TorrentQuery{}, err
+	}
+
 	return gqlmodel.TorrentQuery{
-		Dao:                  r.Dao,
+		Dao:                  dao,
 		Search:               r.Search,
 		TorrentMetricsClient: r.TorrentMetricsClient,
 	}, nil

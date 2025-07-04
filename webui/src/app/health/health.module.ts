@@ -8,7 +8,7 @@ import { MatButton, MatIconButton } from "@angular/material/button";
 import {
   MatCard,
   MatCardContent,
-  MatCardHeader,
+  MatCardHeader, MatCardSubtitle,
   MatCardTitle,
 } from "@angular/material/card";
 import { MatGridTile } from "@angular/material/grid-list";
@@ -18,6 +18,8 @@ import { HealthCardComponent } from "./health-card.component";
 import { HealthSummaryComponent } from "./health-summary.component";
 import { HealthWidgetComponent } from "./health-widget.component";
 import { HealthService } from "./health.service";
+import {WorkersModule} from "../workers/workers.module";
+import {MatDivider} from "@angular/material/divider";
 
 @NgModule({
   imports: [
@@ -37,6 +39,8 @@ import { HealthService } from "./health.service";
     MatGridTile,
     MatMenu,
     MatMenuItem,
+    MatCardSubtitle,
+    MatDivider,
   ],
   declarations: [
     HealthCardComponent,

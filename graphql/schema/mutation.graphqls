@@ -1,6 +1,7 @@
 type Mutation {
   torrent: TorrentMutation!
   queue: QueueMutation!
+  worker: WorkerMutation!
 }
 
 type TorrentMutation {

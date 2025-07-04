@@ -4,68 +4,39 @@ import (
 	"context"
 	"time"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
+	"github.com/bitmagnet-io/bitmagnet/internal/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/handler"
-	"github.com/bitmagnet-io/bitmagnet/internal/worker"
-	"go.uber.org/fx"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"go.uber.org/zap"
 )
 
-type Params struct {
-	fx.In
-	Query lazy.Lazy[*dao.Query]
-	// PgxPool  lazy.Lazy[*pgxpool.Pool]
-	Handlers []lazy.Lazy[handler.Handler] `group:"queue_handlers"`
-	Logger   *zap.SugaredLogger
-}
+func New(
+	daoProvider database.DaoTransactionProvider,
+	logger *zap.SugaredLogger,
+	lazyHandlers ...lazy.Lazy[handler.Handler],
+) runner.Runner {
+	return func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
+		handlers := make([]handler.Handler, 0, len(lazyHandlers))
 
-type Result struct {
-	fx.Out
-	Worker worker.Worker `group:"workers"`
-}
+		for _, lh := range lazyHandlers {
+			h, err := lh.Get()
+			if err != nil {
+				return runner.NopShutdowner, err
+			}
 
-func New(p Params) Result {
-	stopped := make(chan struct{})
+			handlers = append(handlers, h)
+		}
 
-	return Result{
-		Worker: worker.NewWorker(
-			"queue_server",
-			fx.Hook{
-				OnStart: func(context.Context) error {
-					// pool, err := p.PgxPool.Get()
-					// if err != nil {
-					// 	return err
-					// }
-					query, err := p.Query.Get()
-					if err != nil {
-						return err
-					}
-					handlers := make([]handler.Handler, 0, len(p.Handlers))
-					for _, lh := range p.Handlers {
-						h, err := lh.Get()
-						if err != nil {
-							return err
-						}
-						handlers = append(handlers, h)
-					}
-					srv := server{
-						stopped: stopped,
-						query:   query,
-						// pool:       pool,
-						handlers:   handlers,
-						gcInterval: time.Minute * 10,
-						logger:     p.Logger.Named("queue"),
-					}
-					// todo: Fix!
-					//nolint:contextcheck
-					return srv.Start(context.Background())
-				},
-				OnStop: func(context.Context) error {
-					close(stopped)
-					return nil
-				},
-			},
-		),
+		srv := server{
+			daoProvider: daoProvider,
+			handlers:    handlers,
+			gcInterval:  time.Minute * 10,
+			gcSemaphore: make(chan struct{}, 1),
+			draining:    make(chan struct{}),
+			logger:      logger,
+		}
+
+		return srv.Start(ctx, cancel)
 	}
 }

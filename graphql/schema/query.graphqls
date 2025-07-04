@@ -1,6 +1,6 @@
 type Query {
   version: String!
-  workers: WorkersQuery!
+  worker: WorkerQuery!
   health: HealthQuery!
   queue: QueueQuery!
   torrent: TorrentQuery!
@@ -34,19 +34,6 @@ type SuggestedTag {
 
 type TorrentContentQuery {
   search(input: TorrentContentSearchQueryInput!): TorrentContentSearchResult!
-}
-
-type Worker {
-  key: String!
-  started: Boolean!
-}
-
-type WorkersListAllQueryResult {
-  workers: [Worker!]!
-}
-
-type WorkersQuery {
-  listAll: WorkersListAllQueryResult!
 }
 
 enum HealthStatus {

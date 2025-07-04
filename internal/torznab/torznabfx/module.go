@@ -3,7 +3,6 @@ package torznabfx
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/config/configfx"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
-	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab/adapter"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab/httpserver"
@@ -15,15 +14,8 @@ func New() fx.Option {
 		"torznab",
 		configfx.NewConfigModule[torznab.Config]("torznab", torznab.NewDefaultConfig()),
 		fx.Provide(
-			func(lazySearch lazy.Lazy[search.Search]) lazy.Lazy[torznab.Client] {
-				return lazy.New[torznab.Client](func() (torznab.Client, error) {
-					s, err := lazySearch.Get()
-					if err != nil {
-						return nil, err
-					}
-
-					return adapter.New(s), nil
-				})
+			func(s search.Search) torznab.Client {
+				return adapter.New(s)
 			},
 			fx.Annotate(
 				httpserver.New,

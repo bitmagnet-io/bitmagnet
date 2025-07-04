@@ -13,6 +13,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
 )
 
 type ContentTypeAgg struct {
@@ -257,16 +258,15 @@ type VideoSourceFacetInput struct {
 }
 
 type Worker struct {
-	Key     string `json:"key"`
-	Started bool   `json:"started"`
+	Key        string       `json:"key"`
+	State      worker.State `json:"state"`
+	Error      *string      `json:"error,omitempty"`
+	RequiredBy []string     `json:"requiredBy"`
+	DependsOn  []string     `json:"dependsOn"`
 }
 
-type WorkersListAllQueryResult struct {
+type WorkerListAllQueryResult struct {
 	Workers []Worker `json:"workers"`
-}
-
-type WorkersQuery struct {
-	ListAll WorkersListAllQueryResult `json:"listAll"`
 }
 
 type HealthStatus string

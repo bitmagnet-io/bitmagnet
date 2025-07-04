@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+const Namespace = "tmdb"
+
 type client struct {
 	requester Requester
 }

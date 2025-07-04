@@ -1,143 +1,111 @@
-// the listener connection code has been disabled:
-// it would rarely be used anyway since a delay is now added to crawler jobs;
-// if re-enabled in the future, some work is needed to gracefully handle disconnection
-
 package server
 
 import (
 	"context"
 	"database/sql"
 	"errors"
+	"sync"
 	"time"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/handler"
-	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"go.uber.org/zap"
-	"golang.org/x/sync/semaphore"
 	"gorm.io/gen"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
 type server struct {
-	stopped chan struct{}
-	query   *dao.Query
-	// pool       *pgxpool.Pool
-	handlers   []handler.Handler
-	gcInterval time.Duration
-	logger     *zap.SugaredLogger
+	daoProvider database.DaoTransactionProvider
+	handlers    []handler.Handler
+	gcInterval  time.Duration
+	gcSemaphore chan struct{}
+	draining    chan struct{}
+	logger      *zap.SugaredLogger
 }
 
-func (s *server) Start(ctx context.Context) (err error) {
-	ctx, cancel := context.WithCancel(ctx)
-
-	defer func() {
-		if err != nil {
-			cancel()
-		}
-	}()
-	// pListenerConn, listenerConnErr := s.newListenerConn(ctx)
-	// if listenerConnErr != nil {
-	// 	err = listenerConnErr
-	// 	return
-	// }
-	// listenerConn := pListenerConn.Conn()
+func (s *server) Start(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
 	handlers := make([]serverHandler, len(s.handlers))
-	listenerChans := make(map[string]chan pgconn.Notification)
 
 	for i, h := range s.handlers {
-		listenerChan := make(chan pgconn.Notification)
 		sh := serverHandler{
-			Handler: h,
-			sem:     semaphore.NewWeighted(int64(h.Concurrency)),
-			query:   s.query,
-			// listenerConn: listenerConn,
-			listenerChan: listenerChan,
-			logger:       s.logger.With("queue", h.Queue),
+			Handler:     h,
+			sem:         make(chan struct{}, h.Concurrency),
+			draining:    s.draining,
+			daoProvider: s.daoProvider,
+			logger:      s.logger.With("queue", h.Queue),
 		}
+
 		handlers[i] = sh
-		listenerChans[h.Queue] = listenerChan
-		// if _, listenErr := listenerConn.Exec(ctx, fmt.Sprintf(`LISTEN %q`, h.Queue)); listenErr != nil {
-		//	err = listenErr
-		//	return
-		//}
+
 		go sh.start(ctx)
 	}
 
-	go func() {
-		for {
-			select {
-			case <-s.stopped:
-				cancel()
-			case <-ctx.Done():
-				// pListenerConn.Release()
-				return
-			}
-		}
-	}()
-	// go func() {
-	// 	for {
-	// 		select {
-	// 		case <-ctx.Done():
-	// 			return
-	// 		default:
-	// 			notification, waitErr := listenerConn.WaitForNotification(ctx)
-	// 			if waitErr != nil {
-	// 				if !errors.Is(waitErr, context.Canceled) {
-	// 					s.logger.Errorf("Error waiting for notification: %s", waitErr)
-	// 				}
-	// 				continue
-	// 			}
-	// 			ch, ok := listenerChans[notification.Channel]
-	// 			if !ok {
-	// 				s.logger.Errorf("Received notification for unknown channel: %s", notification.Channel)
-	// 				continue
-	// 			}
-	// 			select {
-	// 			case <-ctx.Done():
-	// 				return
-	// 			case ch <- *notification:
-	// 				continue
-	// 			}
-	// 		}
-	// 	}
-	// }()
 	go s.runGarbageCollection(ctx)
 
-	return
-}
+	return func(ctx context.Context) error {
+		defer cancel(runner.ErrShutdownRequested)
 
-// func (s *server) newListenerConn(ctx context.Context) (*pgxpool.Conn, error) {
-//	conn, err := s.pool.Acquire(ctx)
-//	if err != nil {
-//		return nil, err
-//	}
-//	_, err = conn.Exec(ctx, "SET idle_in_transaction_session_timeout = 0")
-//	if err != nil {
-//		return nil, err
-//	}
-//	return conn, nil
-//}
+		close(s.draining)
+
+		var wg sync.WaitGroup
+
+		wg.Add(len(handlers))
+
+		for _, h := range handlers {
+			go func(h serverHandler) {
+				defer wg.Done()
+				h.drain(ctx)
+			}(h)
+		}
+
+		s.gcSemaphore <- struct{}{}
+
+		wg.Wait()
+
+		return nil
+	}, nil
+}
 
 func (s *server) runGarbageCollection(ctx context.Context) {
 	for {
-		tx := s.query.QueueJob.WithContext(ctx).Where(
-			s.query.QueueJob.Status.In(string(model.QueueJobStatusProcessed), string(model.QueueJobStatusFailed)),
+		select {
+		case <-ctx.Done():
+			return
+		case <-s.draining:
+			return
+		case s.gcSemaphore <- struct{}{}:
+		}
+
+		daoQ, err := s.daoProvider.Dao()
+		if err != nil {
+			s.logger.Errorw("error getting dao", "error", err)
+		}
+
+		tx := daoQ.QueueJob.WithContext(ctx).Where(
+			daoQ.QueueJob.Status.In(string(model.QueueJobStatusProcessed), string(model.QueueJobStatusFailed)),
 		).
 			UnderlyingDB().Where(
 			"queue_jobs.ran_at + queue_jobs.archival_duration < ?::timestamptz",
 			time.Now(),
 		).Delete(&model.QueueJob{})
+
 		if tx.Error != nil {
 			s.logger.Errorw("error deleting old queue jobs", "error", tx.Error)
 		} else if tx.RowsAffected > 0 {
 			s.logger.Debugw("deleted old queue jobs", "count", tx.RowsAffected)
 		}
+
+		<-s.gcSemaphore
+
 		select {
 		case <-ctx.Done():
+			return
+		case <-s.draining:
 			return
 		case <-time.After(s.gcInterval):
 			continue
@@ -147,11 +115,11 @@ func (s *server) runGarbageCollection(ctx context.Context) {
 
 type serverHandler struct {
 	handler.Handler
-	sem   *semaphore.Weighted
-	query *dao.Query
-	// listenerConn *pgx.Conn
-	listenerChan chan pgconn.Notification
-	logger       *zap.SugaredLogger
+	sem         chan struct{}
+	draining    chan struct{}
+	daoProvider database.DaoTransactionProvider
+	// listenerChan chan pgconn.Notification
+	logger *zap.SugaredLogger
 }
 
 func (h *serverHandler) start(ctx context.Context) {
@@ -161,30 +129,28 @@ func (h *serverHandler) start(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			return
-		case notification := <-h.listenerChan:
-			if semErr := h.sem.Acquire(ctx, 1); semErr != nil {
-				return
-			}
-
-			go func() {
-				defer h.sem.Release(1)
-				_, _, _ = h.handleJob(ctx, h.query.QueueJob.ID.Eq(notification.Payload))
-			}()
+		case <-h.draining:
+			return
 		case <-checkTicker.C:
-			if semErr := h.sem.Acquire(ctx, 1); semErr != nil {
+			select {
+			case <-ctx.Done():
 				return
+			case <-h.draining:
+				return
+			case h.sem <- struct{}{}:
 			}
 
 			checkTicker.Reset(h.CheckInterval)
 
 			go func() {
-				defer h.sem.Release(1)
 				jobID, _, err := h.handleJob(ctx)
 				// if a job was found, we should check straight away for another job,
 				// otherwise we wait for the check interval
 				if err == nil && jobID != "" {
 					checkTicker.Reset(1)
 				}
+
+				<-h.sem
 			}()
 		}
 	}
@@ -194,21 +160,21 @@ func (h *serverHandler) handleJob(
 	ctx context.Context,
 	conds ...gen.Condition,
 ) (jobID string, processed bool, err error) {
-	err = h.query.Transaction(func(tx *dao.Query) error {
+	err = h.daoProvider.DaoTransaction(func(tx *dao.Query) error {
 		job, findErr := tx.QueueJob.WithContext(ctx).Where(
 			append(
 				conds,
-				h.query.QueueJob.Queue.Eq(h.Queue),
-				h.query.QueueJob.Status.In(
+				tx.QueueJob.Queue.Eq(h.Queue),
+				tx.QueueJob.Status.In(
 					string(model.QueueJobStatusPending),
 					string(model.QueueJobStatusRetry),
 				),
-				h.query.QueueJob.RunAfter.Lte(time.Now()),
+				tx.QueueJob.RunAfter.Lte(time.Now()),
 			)...,
 		).Order(
-			h.query.QueueJob.Status.Eq(string(model.QueueJobStatusRetry)),
-			h.query.QueueJob.Priority,
-			h.query.QueueJob.RunAfter,
+			tx.QueueJob.Status.Eq(string(model.QueueJobStatusRetry)),
+			tx.QueueJob.Priority,
+			tx.QueueJob.RunAfter,
 		).Clauses(clause.Locking{
 			Strength: "UPDATE",
 			Options:  "SKIP LOCKED",
@@ -233,8 +199,8 @@ func (h *serverHandler) handleJob(
 			if job.Status != model.QueueJobStatusPending {
 				job.Retries++
 			}
-			// execute the queue handler of this job
-			jobErr = handler.Exec(ctx, h.Handler, *job)
+
+			jobErr = h.executeJob(ctx, *job)
 		}
 
 		job.RanAt = sql.NullTime{Time: time.Now(), Valid: true}
@@ -260,7 +226,7 @@ func (h *serverHandler) handleJob(
 		return updateErr
 	})
 	if err != nil {
-		h.logger.Error("error handling job", "error", err)
+		h.logger.Errorw("error handling job", "error", err, "job_id", jobID)
 	} else if processed {
 		h.logger.Debugw("job processed", "job_id", jobID)
 	}
@@ -268,4 +234,49 @@ func (h *serverHandler) handleJob(
 	return
 }
 
-var ErrJobExceededDeadline = errors.New("the job did not complete before its deadline")
+func (h *serverHandler) executeJob(ctx context.Context, job model.QueueJob) error {
+	run := h.Func(job)
+
+	runCtx, runCancel := context.WithCancelCause(ctx)
+
+	shutdowner, err := run(runCtx, runCancel)
+	if err != nil {
+		runCancel(err)
+		return errors.Join(err, shutdowner(ctx))
+	}
+
+	select {
+	case <-runCtx.Done():
+		return extractContextCause(runCtx)
+	case <-time.After(h.JobTimeout):
+		runCancel(ErrJobExceededTimeout)
+		return ErrJobExceededTimeout
+	case <-h.draining:
+		return shutdowner(runCtx)
+	}
+}
+
+func extractContextCause(ctx context.Context) error {
+	cause := context.Cause(ctx)
+
+	if errors.Is(cause, runner.ErrCompleted) {
+		return nil
+	}
+
+	return cause
+}
+
+func (h *serverHandler) drain(ctx context.Context) {
+	for range h.Concurrency {
+		select {
+		case <-ctx.Done():
+			return
+		case h.sem <- struct{}{}:
+		}
+	}
+}
+
+var (
+	ErrJobExceededDeadline = errors.New("the job did not complete before its deadline")
+	ErrJobExceededTimeout  = errors.New("the job exceeded its timeout")
+)

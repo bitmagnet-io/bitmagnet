@@ -42,6 +42,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: "workers",
+        loadComponent: () =>
+          import("./dashboard/workers/dashboard-workers.component").then(
+            (c) => c.DashboardWorkersComponent,
+          ),
+      },
+      {
         path: "queues",
         pathMatch: "full",
         redirectTo: "queues/visualize",

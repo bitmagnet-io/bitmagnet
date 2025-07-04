@@ -2,6 +2,7 @@ import { inject } from "@angular/core";
 import { Apollo } from "apollo-angular";
 import { BehaviorSubject, map } from "rxjs";
 import * as generated from "../graphql/generated";
+import {WorkerState} from "../graphql/generated";
 
 export type HealthStatus =
   | generated.HealthStatus
@@ -9,7 +10,7 @@ export type HealthStatus =
   | "error"
   | "degraded";
 
-const icons: Record<HealthStatus, string> = {
+const statusIcons: Record<HealthStatus, string> = {
   error: "error",
   degraded: "warning",
   down: "warning",
@@ -23,14 +24,9 @@ type Check = generated.HealthCheck & {
   icon: string;
 };
 
-type Worker = generated.Worker & {
-  icon: string;
-};
-
 type Result = {
   status: HealthStatus;
   checks: Check[];
-  workers: Worker[];
   error: Error | null;
   icon: string;
 };
@@ -38,8 +34,7 @@ type Result = {
 const initialResult: Result = {
   status: "unknown",
   checks: [],
-  icon: icons.unknown,
-  workers: [],
+  icon: statusIcons.unknown,
   error: null,
 };
 
@@ -80,13 +75,9 @@ export class HealthService {
                 : r.data.health.status,
             checks: r.data.health.checks.map((c) => ({
               ...c,
-              icon: icons[c.status],
+              icon: statusIcons[c.status],
             })),
-            workers: r.data.workers.listAll.workers.map((w) => ({
-              ...w,
-              icon: icons[w.started ? "started" : "inactive"],
-            })),
-            icon: icons[r.data.health.status],
+            icon: statusIcons[r.data.health.status],
             error: null,
           }),
         ),
@@ -97,9 +88,8 @@ export class HealthService {
           this.resultSubject.next({
             status: "error",
             checks: [],
-            workers: [],
             error,
-            icon: icons.error,
+            icon: statusIcons.error,
           });
           setTimeout(this.watchQuery.bind(this), pollInterval);
         },

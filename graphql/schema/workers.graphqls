@@ -1,0 +1,21 @@
+type Worker {
+  key: String!
+  state: WorkerState!
+  error: String
+  requiredBy: [String!]!
+  dependsOn: [String!]!
+}
+
+type WorkerListAllQueryResult {
+  workers: [Worker!]!
+}
+
+type WorkerQuery {
+  listAll: WorkerListAllQueryResult!
+}
+
+type WorkerMutation {
+  start(keys: [String!]!): WorkerListAllQueryResult!
+  shutdown(keys: [String!]!): WorkerListAllQueryResult!
+  restart(keys: [String!]!): WorkerListAllQueryResult!
+}

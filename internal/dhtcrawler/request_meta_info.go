@@ -10,15 +10,15 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainforequester"
 )
 
-func (c *crawler) runRequestMetaInfo(ctx context.Context) {
-	_ = c.requestMetaInfo.Run(ctx, func(req infoHashWithPeers) {
-		mi, reqErr := c.doRequestMetaInfo(ctx, req.infoHash, req.peers)
+func (cr *crawler) runRequestMetaInfo(ctx context.Context) error {
+	return cr.requestMetaInfo.Run(ctx, func(req infoHashWithPeers) {
+		mi, reqErr := cr.doRequestMetaInfo(ctx, req.infoHash, req.peers)
 		if reqErr != nil {
 			return
 		}
 		select {
 		case <-ctx.Done():
-		case c.persistTorrents.In() <- infoHashWithMetaInfo{
+		case cr.persistTorrents.In() <- infoHashWithMetaInfo{
 			nodeHasPeersForHash: req.nodeHasPeersForHash,
 			metaInfo:            mi.Info,
 		}:
@@ -26,7 +26,7 @@ func (c *crawler) runRequestMetaInfo(ctx context.Context) {
 	})
 }
 
-func (c *crawler) doRequestMetaInfo(
+func (cr *crawler) doRequestMetaInfo(
 	ctx context.Context,
 	hash protocol.ID,
 	peers []netip.AddrPort,
@@ -41,14 +41,14 @@ func (c *crawler) doRequestMetaInfo(
 	}
 
 	for _, p := range peers {
-		res, err := c.metainfoRequester.Request(ctx, hash, p)
+		res, err := cr.metainfoRequester.Request(ctx, hash, p)
 		if err != nil {
 			addErr(err)
 			continue
 		}
 
-		if banErr := c.banningChecker.Check(res.Info); banErr != nil {
-			_ = c.blockingManager.Block(ctx, []protocol.ID{hash}, false)
+		if banErr := cr.banningChecker.Check(res.Info); banErr != nil {
+			_ = cr.blockingManager.Block(ctx, []protocol.ID{hash}, false)
 			return metainforequester.Response{}, banErr
 		}
 

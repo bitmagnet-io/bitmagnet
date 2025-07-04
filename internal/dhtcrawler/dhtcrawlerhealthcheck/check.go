@@ -11,13 +11,13 @@ import (
 )
 
 func NewCheck(
-	dhtCrawlerActive *concurrency.AtomicValue[bool],
+	isActive *concurrency.AtomicValue[bool],
 	lastResponses *concurrency.AtomicValue[server.LastResponses],
 ) health.Check {
 	return health.Check{
 		Name: "dht",
 		IsActive: func() bool {
-			return dhtCrawlerActive.Get()
+			return isActive.Get()
 		},
 		Timeout: time.Second,
 		Check: func(context.Context) error {

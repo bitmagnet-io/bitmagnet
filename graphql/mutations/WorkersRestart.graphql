@@ -1,0 +1,11 @@
+#import "../fragments/Worker"
+
+mutation WorkersRestart($keys: [String!]!) {
+  worker {
+    restart(keys: $keys) {
+      workers {
+        ...Worker
+      }
+    }
+  }
+}

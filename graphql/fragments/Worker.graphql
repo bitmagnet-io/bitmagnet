@@ -1,0 +1,7 @@
+fragment Worker on Worker {
+  key
+  state
+  error
+  requiredBy
+  dependsOn
+}

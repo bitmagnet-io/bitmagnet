@@ -24,7 +24,7 @@ type ContentSearch interface {
 func (s search) Content(ctx context.Context, options ...query.Option) (result ContentResult, err error) {
 	return query.GenericQuery[ContentResultItem](
 		ctx,
-		s.q,
+		s.daoProvider,
 		query.Options(append([]query.Option{query.SelectAll()}, options...)...),
 		model.TableNameContent,
 		func(ctx context.Context, q *dao.Query) query.SubQuery {

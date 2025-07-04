@@ -1,24 +1,28 @@
 package app
 
 import (
+	"context"
+	"io"
+
+	"github.com/bitmagnet-io/bitmagnet/internal"
 	"github.com/bitmagnet-io/bitmagnet/internal/app/appfx"
-	"github.com/bitmagnet-io/bitmagnet/internal/app/cli/hooks"
 	"github.com/bitmagnet-io/bitmagnet/internal/logging/loggingfx"
-	"github.com/urfave/cli/v2"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
-func New() *fx.App {
+func New(
+	ctx context.Context,
+	stdout io.Writer,
+	opts ...fx.Option,
+) *fx.App {
 	return fx.New(
-		appfx.New(),
-		loggingfx.WithLogger(),
-		fx.Invoke(func(
-			logger *zap.SugaredLogger,
-			_ *cli.App,
-			_ hooks.AttachedHooks,
-		) {
-			logger.Debug("app invoked")
-		}),
+		append([]fx.Option{
+			appfx.New(),
+			loggingfx.WithLogger(),
+			fx.Supply(
+				fx.Annotate(ctx, fx.As(new(internal.BackgroundContext))),
+				fx.Annotate(stdout, fx.As(new(internal.Stdout))),
+			),
+		}, opts...)...,
 	)
 }

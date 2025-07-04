@@ -19,12 +19,12 @@ import (
 //  3. The hash is in the database, but the seeders/leechers are not known or are outdated,
 //     so it is forwarded to the scrape channel.
 //  4. The hash is in the database and the seeders/leechers are known and up to date, so it is discarded.
-func (c *crawler) runInfoHashTriage(ctx context.Context) {
+func (cr *crawler) runInfoHashTriage(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return
-		case reqs := <-c.infoHashTriage.Out():
+			return ctx.Err()
+		case reqs := <-cr.infoHashTriage.Out():
 			allHashes := make([]protocol.ID, 0, len(reqs))
 
 			reqMap := make(map[protocol.ID]nodeHasPeersForHash, len(reqs))
@@ -37,9 +37,9 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 				reqMap[r.infoHash] = r
 			}
 
-			filteredHashes, filterErr := c.blockingManager.Filter(ctx, allHashes)
+			filteredHashes, filterErr := cr.blockingManager.Filter(ctx, allHashes)
 			if filterErr != nil {
-				c.logger.Errorf("failed to filter infohashes: %s", filterErr.Error())
+				cr.logger.Errorf("failed to filter infohashes: %s", filterErr.Error())
 				break
 			}
 
@@ -56,22 +56,28 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 				valuers = append(valuers, h)
 			}
 
+			dao, err := cr.daoProvider.Dao()
+			if err != nil {
+				cr.logger.Errorf("failed to acquire database: %s", err.Error())
+				break
+			}
+
 			var result []*triageResult
-			if queryErr := c.dao.Torrent.WithContext(ctx).Select(
-				c.dao.Torrent.InfoHash,
-				c.dao.Torrent.FilesStatus,
-				c.dao.Torrent.FilesCount,
-				c.dao.TorrentsTorrentSource.Seeders,
-				c.dao.TorrentsTorrentSource.Leechers,
-				c.dao.TorrentsTorrentSource.UpdatedAt,
+			if queryErr := dao.Torrent.WithContext(ctx).Select(
+				dao.Torrent.InfoHash,
+				dao.Torrent.FilesStatus,
+				dao.Torrent.FilesCount,
+				dao.TorrentsTorrentSource.Seeders,
+				dao.TorrentsTorrentSource.Leechers,
+				dao.TorrentsTorrentSource.UpdatedAt,
 			).LeftJoin(
-				c.dao.TorrentsTorrentSource,
-				c.dao.Torrent.InfoHash.EqCol(c.dao.TorrentsTorrentSource.InfoHash),
-				c.dao.TorrentsTorrentSource.Source.Eq("dht"),
+				dao.TorrentsTorrentSource,
+				dao.Torrent.InfoHash.EqCol(dao.TorrentsTorrentSource.InfoHash),
+				dao.TorrentsTorrentSource.Source.Eq("dht"),
 			).Where(
-				c.dao.Torrent.InfoHash.In(valuers...),
+				dao.Torrent.InfoHash.In(valuers...),
 			).UnderlyingDB().Find(&result).Error; queryErr != nil {
-				c.logger.Errorf("failed to search existing torrents: %s", queryErr.Error())
+				cr.logger.Errorf("failed to search existing torrents: %s", queryErr.Error())
 				break
 			}
 
@@ -85,19 +91,19 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 				if t, ok := foundTorrents[r.infoHash]; !ok ||
 					t.FilesStatus == model.FilesStatusNoInfo ||
 					(t.FilesStatus != model.FilesStatusSingle && !t.FilesCount.Valid) ||
-					(t.FilesStatus == model.FilesStatusOverThreshold && t.FilesCount.Uint <= c.saveFilesThreshold) {
+					(t.FilesStatus == model.FilesStatusOverThreshold && t.FilesCount.Uint <= cr.saveFilesThreshold) {
 					select {
 					case <-ctx.Done():
-						return
-					case c.getPeers.In() <- r:
+						return ctx.Err()
+					case cr.getPeers.In() <- r:
 						continue
 					}
 				} else if (!t.Seeders.Valid || !t.Leechers.Valid) ||
-					t.UpdatedAt.Before(time.Now().Add(-c.rescrapeThreshold)) {
+					t.UpdatedAt.Before(time.Now().Add(-cr.rescrapeThreshold)) {
 					select {
 					case <-ctx.Done():
-						return
-					case c.scrape.In() <- r:
+						return ctx.Err()
+					case cr.scrape.In() <- r:
 						continue
 					}
 				}

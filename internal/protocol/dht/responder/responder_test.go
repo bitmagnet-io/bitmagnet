@@ -1,7 +1,6 @@
 package responder
 
 import (
-	"context"
 	"net/netip"
 	"testing"
 	"time"
@@ -103,7 +102,7 @@ func TestResponder_ping(t *testing.T) {
 			},
 		},
 	}
-	ret, err := mocks.responder.Respond(context.Background(), msg)
+	ret, err := mocks.responder.Respond(t.Context(), msg)
 	assert.Equal(t, dht.Return{ID: mocks.nodeID}, ret)
 	assert.NoError(t, err)
 }
@@ -118,7 +117,7 @@ func TestResponder_ping__missing_args(t *testing.T) {
 			Q: "ping",
 		},
 	}
-	_, err := mocks.responder.Respond(context.Background(), msg)
+	_, err := mocks.responder.Respond(t.Context(), msg)
 	assert.Equal(t, ErrMissingArguments, err)
 }
 
@@ -148,7 +147,7 @@ func TestResponder_find_node(t *testing.T) {
 		mockedPeer{nodes[2]},
 	}
 	mocks.table.On("GetClosestNodes", target).Return(peers)
-	ret, err := mocks.responder.Respond(context.Background(), msg)
+	ret, err := mocks.responder.Respond(t.Context(), msg)
 	assert.Equal(t, dht.Return{
 		ID:    mocks.nodeID,
 		Nodes: nodes,
@@ -169,7 +168,7 @@ func TestResponder_find_node__missing_target(t *testing.T) {
 			},
 		},
 	}
-	_, err := mocks.responder.Respond(context.Background(), msg)
+	_, err := mocks.responder.Respond(t.Context(), msg)
 	assert.Equal(t, ErrMissingArguments, err)
 }
 
@@ -199,7 +198,7 @@ func TestResponder_get_peers__values(t *testing.T) {
 		Found: true,
 	})
 
-	ret, err := mocks.responder.Respond(context.Background(), msg)
+	ret, err := mocks.responder.Respond(t.Context(), msg)
 	assert.Equal(t, dht.Return{
 		ID: mocks.nodeID,
 		Values: []dht.NodeAddr{
@@ -243,7 +242,7 @@ func TestResponder_get_peers__nodes(t *testing.T) {
 		ClosestNodes: peers,
 	})
 
-	ret, err := mocks.responder.Respond(context.Background(), msg)
+	ret, err := mocks.responder.Respond(t.Context(), msg)
 	assert.Equal(t, dht.Return{
 		ID:     mocks.nodeID,
 		Values: nil,
@@ -266,7 +265,7 @@ func TestResponder_get_peers__missing_info_hash(t *testing.T) {
 			},
 		},
 	}
-	_, err := mocks.responder.Respond(context.Background(), msg)
+	_, err := mocks.responder.Respond(t.Context(), msg)
 	assert.Equal(t, ErrMissingArguments, err)
 }
 
@@ -296,7 +295,7 @@ func TestResponder_announce_peer__implied_port(t *testing.T) {
 		}},
 	}).Return(nil)
 
-	ret, err := mocks.responder.Respond(context.Background(), msg)
+	ret, err := mocks.responder.Respond(t.Context(), msg)
 	assert.Equal(t, dht.Return{
 		ID: mocks.nodeID,
 	}, ret)
@@ -330,7 +329,7 @@ func TestResponder_announce_peer__specified_port(t *testing.T) {
 		}},
 	}).Return(nil)
 
-	ret, err := mocks.responder.Respond(context.Background(), msg)
+	ret, err := mocks.responder.Respond(t.Context(), msg)
 	assert.Equal(t, dht.Return{
 		ID: mocks.nodeID,
 	}, ret)
@@ -372,7 +371,7 @@ func TestResponder_sample_infohashes(t *testing.T) {
 		TotalHashes: int(num),
 	})
 
-	ret, err := mocks.responder.Respond(context.Background(), msg)
+	ret, err := mocks.responder.Respond(t.Context(), msg)
 	assert.Equal(t, dht.Return{
 		ID:    mocks.nodeID,
 		Nodes: nodes,
@@ -402,6 +401,6 @@ func TestResponder_unknown_method(t *testing.T) {
 			},
 		},
 	}
-	_, err := mocks.responder.Respond(context.Background(), msg)
+	_, err := mocks.responder.Respond(t.Context(), msg)
 	assert.Equal(t, err, ErrMethodUnknown)
 }

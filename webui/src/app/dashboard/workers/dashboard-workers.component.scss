@@ -1,0 +1,28 @@
+.grid-container {
+  margin: 20px;
+}
+
+.more-button {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+}
+
+app-health-card {
+  width: 100%;
+  height: 100%;
+  mat-card {
+    height: 100%;
+  }
+}
+
+mat-grid-tile mat-card {
+  width: 100%;
+}
+
+mat-toolbar h2 mat-icon {
+  position: relative;
+  top: 3px;
+  margin-right: 14px;
+  margin-left: 32px;
+}

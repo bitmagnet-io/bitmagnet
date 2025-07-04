@@ -8,32 +8,36 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 )
 
-func (c *crawler) getNodesForFindNode(ctx context.Context) {
+func (cr *crawler) getNodesForFindNode(ctx context.Context) error {
 	for {
-		peers := c.kTable.GetOldestNodes(time.Now().Add(-(5 * time.Second)), 10)
+		peers := cr.kTable.GetOldestNodes(time.Now().Add(-(5 * time.Second)), 10)
 		for _, p := range peers {
 			select {
 			case <-ctx.Done():
-				return
-			case c.nodesForFindNode.In() <- p:
+				return ctx.Err()
+			case cr.nodesForFindNode.In() <- p:
 				continue
 			}
 		}
 
-		<-time.After(time.Second)
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(time.Second):
+		}
 	}
 }
 
-func (c *crawler) runFindNode(ctx context.Context) {
-	_ = c.nodesForFindNode.Run(ctx, func(p ktable.Node) {
-		res, err := c.client.FindNode(ctx, p.Addr(), c.soughtNodeID.Get())
+func (cr *crawler) runFindNode(ctx context.Context) error {
+	return cr.nodesForFindNode.Run(ctx, func(p ktable.Node) {
+		res, err := cr.client.FindNode(ctx, p.Addr(), cr.soughtNodeID.Get())
 		if err != nil {
-			c.kTable.BatchCommand(ktable.DropNode{
+			cr.kTable.BatchCommand(ktable.DropNode{
 				ID:     p.ID(),
 				Reason: fmt.Errorf("find_node failed: %w", err),
 			})
 		} else {
-			c.kTable.BatchCommand(ktable.PutNode{
+			cr.kTable.BatchCommand(ktable.PutNode{
 				ID:      p.ID(),
 				Addr:    p.Addr(),
 				Options: []ktable.NodeOption{ktable.NodeResponded()},
@@ -43,7 +47,7 @@ func (c *crawler) runFindNode(ctx context.Context) {
 				select {
 				case <-ctx.Done():
 					return
-				case c.discoveredNodes.In() <- ktable.NewNode(n.ID, n.Addr):
+				case cr.discoveredNodes.In() <- ktable.NewNode(n.ID, n.Addr):
 					continue
 				}
 			}
