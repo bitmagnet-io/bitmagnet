@@ -9,12 +9,10 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 )
 
-const Namespace = "concat"
-
 // Runners combines zero or more Runner functions into a single Runner.
 // Each Runner is invoked in the provided order, with Shutdowner functions invoked in reverse order.
-func Runners(runners ...runner.Runner) runner.Runner {
-	return func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
+func Runners(providers ...runner.Provider) runner.Provider {
+	return runner.Runner(func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
 		var (
 			shutdowners []runner.Shutdowner
 			startupErrs []error
@@ -23,9 +21,9 @@ func Runners(runners ...runner.Runner) runner.Runner {
 			waitGroup   sync.WaitGroup
 		)
 
-		waitGroup.Add(len(runners))
+		waitGroup.Add(len(providers))
 
-		for _, run := range runners {
+		for _, provider := range providers {
 			runCtx, childCancel := context.WithCancelCause(ctx)
 
 			var once sync.Once
@@ -44,7 +42,7 @@ func Runners(runners ...runner.Runner) runner.Runner {
 				})
 			}
 
-			shutdowner, err := run(runCtx, runCancel)
+			shutdowner, err := provider.Runner()(runCtx, runCancel)
 			if err != nil {
 				runCancel(err)
 
@@ -80,7 +78,7 @@ func Runners(runners ...runner.Runner) runner.Runner {
 		startupErr := errors.Join(startupErrs...)
 
 		if startupErr != nil {
-			if len(startupErrs) < len(runners) {
+			if len(startupErrs) < len(providers) {
 				startupErr = fmt.Errorf("%w: %w", ErrPartial, startupErr)
 			}
 
@@ -96,7 +94,7 @@ func Runners(runners ...runner.Runner) runner.Runner {
 
 			shutdownErr := errors.Join(shutdownErrs...)
 			if shutdownErr != nil {
-				if len(shutdownErrs) < len(runners) {
+				if len(shutdownErrs) < len(providers) {
 					shutdownErr = fmt.Errorf("%w: %w", ErrPartial, shutdownErr)
 				}
 
@@ -105,5 +103,5 @@ func Runners(runners ...runner.Runner) runner.Runner {
 
 			return shutdownErr
 		}), startupErr
-	}
+	})
 }

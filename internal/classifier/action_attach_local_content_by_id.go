@@ -26,13 +26,13 @@ func (attachLocalContentByIDAction) compileAction(ctx compilerContext) (action, 
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result
-			if ctx.torrent.Hint.IsNil() || !ctx.torrent.Hint.ContentSource.Valid {
+			if cl.Torrent.Hint.IsNil() || !cl.Torrent.Hint.ContentSource.Valid {
 				return cl, classification.ErrUnmatched
 			}
 			content, err := ctx.search.ContentByID(ctx, model.ContentRef{
-				Type:   ctx.torrent.Hint.ContentType,
-				Source: ctx.torrent.Hint.ContentSource.String,
-				ID:     ctx.torrent.Hint.ContentID.String,
+				Type:   cl.Torrent.Hint.ContentType,
+				Source: cl.Torrent.Hint.ContentSource.String,
+				ID:     cl.Torrent.Hint.ContentID.String,
 			})
 			if err != nil {
 				return cl, err

@@ -1,0 +1,8 @@
+{
+  "terminal.integrated.profiles.linux": {
+    "nix-shell": {
+      "path": "bash",
+      "args": ["-c", "nix develop --command zsh"]
+    }
+  }
+}

@@ -16,7 +16,7 @@ type LastResponses struct {
 }
 
 type healthCollector struct {
-	Server
+	serverRunner
 	lastResponses *concurrency.AtomicValue[LastResponses]
 }
 
@@ -26,7 +26,7 @@ func (c healthCollector) Query(
 	q string,
 	args dht.MsgArgs,
 ) (dht.RecvMsg, error) {
-	res, err := c.Server.Query(ctx, addr, q, args)
+	res, err := c.serverRunner.Query(ctx, addr, q, args)
 	c.lastResponses.Update(func(lr LastResponses) LastResponses {
 		lr.LastResponse = time.Now()
 		if err == nil {

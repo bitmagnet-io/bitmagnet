@@ -42,7 +42,9 @@ func (r runner) Run(ctx context.Context, workflow string, flags Flags, t model.T
 		}
 	}
 
-	cl := classification.Result{}
+	cl := classification.Result{
+		Torrent: t,
+	}
 	if !t.Hint.IsNil() {
 		cl.ApplyHint(t.Hint)
 	}
@@ -68,7 +70,6 @@ func (r runner) Run(ctx context.Context, workflow string, flags Flags, t model.T
 		dependencies: r.dependencies,
 		workflows:    r.workflows,
 		flags:        cfs,
-		torrent:      t,
 		torrentPb:    protobuf.NewTorrent(t),
 		result:       cl,
 	}

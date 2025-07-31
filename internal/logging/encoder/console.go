@@ -20,5 +20,5 @@ var consoleEncoderConfig = zapcore.EncoderConfig{
 	EncodeDuration:   zapcore.StringDurationEncoder,
 	EncodeCaller:     zapcore.ShortCallerEncoder,
 	ConsoleSeparator: "  ",
-	EncodeName:       paddedNameEncoder(22),
+	EncodeName:       paddedNameEncoder(40),
 }

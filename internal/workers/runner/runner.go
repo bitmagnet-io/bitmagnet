@@ -6,16 +6,14 @@ import (
 	"fmt"
 )
 
-const Namespace = "runner"
-
-type Interface interface {
-	Runner(ctx context.Context, cancel context.CancelCauseFunc) (Shutdowner, error)
+type Provider interface {
+	Runner() Runner
 }
 
 type Runner func(ctx context.Context, cancel context.CancelCauseFunc) (Shutdowner, error)
 
-func (r Runner) Runner(ctx context.Context, cancel context.CancelCauseFunc) (Shutdowner, error) {
-	return r(ctx, cancel)
+func (r Runner) Runner() Runner {
+	return r
 }
 
 func (r Runner) Run(ctx context.Context) error {
@@ -30,7 +28,7 @@ func (r Runner) Run(ctx context.Context) error {
 	<-ctx.Done()
 
 	cause := context.Cause(ctx)
-	if !errors.Is(cause, ErrCompleted) {
+	if !errors.Is(cause, ErrCompleted) && !errors.Is(cause, ErrShutdownRequested) {
 		return cause
 	}
 

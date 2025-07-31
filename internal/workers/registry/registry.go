@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
 	"go.uber.org/zap"
 )
@@ -51,6 +52,16 @@ func (r *Registry) validate() error {
 	return nil
 }
 
+func (r *Registry) Runner() runner.Runner {
+	return func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
+		err := r.Autostart(ctx)
+
+		return func(ctx context.Context) error {
+			return r.ShutdownAll(ctx)
+		}, err
+	}
+}
+
 func (r *Registry) Workers() []string {
 	workers := slices.Collect(maps.Keys(r.workers))
 	slices.Sort(workers)
@@ -65,6 +76,7 @@ func (r *Registry) WorkersState() map[string]WorkerState {
 			StateInfo:  v.State(),
 			DependsOn:  r.dependenciesForward(k),
 			RequiredBy: r.dependenciesBackward(k),
+			Autostart:  r.workers[k].Autostart(),
 		}
 	}
 
@@ -145,6 +157,12 @@ func (r *Registry) Start(ctx context.Context, workers ...string) error {
 	}
 
 	return err
+}
+
+func (r *Registry) Autostart(ctx context.Context) error {
+	return r.Start(ctx, slice.Filter(r.Workers(), func(key string) bool {
+		return r.workers[key].Autostart()
+	})...)
 }
 
 func (r *Registry) workerMap(forward bool, workers ...string) (map[string]*worker.Worker, error) {

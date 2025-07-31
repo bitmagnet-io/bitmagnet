@@ -7,17 +7,16 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/internal/importer"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
-func New(importer importer.Importer, logger *zap.SugaredLogger) httpserver.Option {
-	return &builder{
+func New(importer importer.Importer, logger *zap.SugaredLogger) gin.OptionFunc {
+	return builder{
 		importer: importer,
 		logger:   logger.Named("importer"),
-	}
+	}.Apply
 }
 
 const ImportIDHeader = "X-Import-Id"
@@ -25,10 +24,6 @@ const ImportIDHeader = "X-Import-Id"
 type builder struct {
 	importer importer.Importer
 	logger   *zap.SugaredLogger
-}
-
-func (builder) Key() string {
-	return "import"
 }
 
 func (b builder) Apply(e *gin.Engine) {

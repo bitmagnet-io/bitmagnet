@@ -20,7 +20,7 @@ func New(
 			nil,
 			ttl,
 		),
-		logger: logger.Named("gorm_cache"),
+		logger: logger,
 	}
 }
 

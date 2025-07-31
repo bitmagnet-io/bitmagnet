@@ -4,6 +4,7 @@ import "github.com/bitmagnet-io/bitmagnet/internal/model"
 
 type Result struct {
 	ContentAttributes
+	Torrent model.Torrent
 	Content *model.Content
 	Tags    map[string]struct{}
 }
@@ -26,6 +27,49 @@ func (r *Result) AttachContent(content *model.Content) {
 			r.Languages[content.OriginalLanguage.Language] = struct{}{}
 		}
 	}
+}
+
+func (r *Result) ToTorrentContent() model.TorrentContent {
+	t := r.Torrent
+	var filesCount model.NullUint
+
+	if t.FilesCount.Valid {
+		filesCount = t.FilesCount
+	} else if t.FilesStatus == model.FilesStatusSingle {
+		filesCount = model.NewNullUint(1)
+	}
+
+	tc := model.TorrentContent{
+		Torrent:         t,
+		InfoHash:        t.InfoHash,
+		ContentType:     r.ContentType,
+		Languages:       r.Languages,
+		Episodes:        r.Episodes,
+		VideoResolution: r.VideoResolution,
+		VideoSource:     r.VideoSource,
+		VideoCodec:      r.VideoCodec,
+		Video3D:         r.Video3D,
+		VideoModifier:   r.VideoModifier,
+		ReleaseGroup:    r.ReleaseGroup,
+		Size:            t.Size,
+		FilesCount:      filesCount,
+		Seeders:         t.Seeders(),
+		Leechers:        t.Leechers(),
+		PublishedAt:     t.PublishedAt(),
+	}
+
+	if r.Content != nil {
+		content := *r.Content
+		content.UpdateTsv()
+		tc.ContentType = model.NewNullContentType(content.Type)
+		tc.ContentSource = model.NewNullString(content.Source)
+		tc.ContentID = model.NewNullString(content.ID)
+		tc.Content = content
+	}
+
+	tc.UpdateTsv()
+
+	return tc
 }
 
 type ContentAttributes struct {

@@ -29,82 +29,84 @@ type socketUnix struct {
 	fd        int
 }
 
-func (s *socketUnix) Runner(
-	_ context.Context,
-	cancel context.CancelCauseFunc,
-) (shutdowner runner.Shutdowner, err error) {
-	defer func() {
-		if err != nil {
-			cancel(err)
-		}
-	}()
+func (s *socketUnix) Runner() runner.Runner {
+	return func(
+		_ context.Context,
+		cancel context.CancelCauseFunc,
+	) (shutdowner runner.Shutdowner, err error) {
+		defer func() {
+			if err != nil {
+				cancel(err)
+			}
+		}()
 
-	shutdowner = runner.NopShutdowner
+		shutdowner = runner.NopShutdowner
 
-	s.mtx.Lock()
-	defer s.mtx.Unlock()
-
-	if s.fd != 0 {
-		err = fmt.Errorf("%w: %w: %w", Err, ErrOpenFailed, runner.ErrAlreadyRunning)
-		return
-	}
-
-	sAddr, err := addrPortToSockaddr(s.localAddr)
-	if err != nil {
-		err = fmt.Errorf("%w: %w: %w", Err, ErrOpenFailed, err)
-		return
-	}
-
-	fd, err := unix.Socket(unix.AF_INET, unix.SOCK_DGRAM, unix.IPPROTO_UDP)
-	if err != nil {
-		err = fmt.Errorf("%w: %w: %w: %w", Err, ErrOpenFailed, ErrCreateFailed, err)
-		return
-	}
-
-	// Avoid address already in use error when restarting:
-	err = unix.SetsockoptInt(fd, unix.SOL_SOCKET, unix.SO_REUSEADDR, 1)
-	if err != nil {
-		err = fmt.Errorf(
-			"%w: %w: %w: %w",
-			Err,
-			ErrOpenFailed,
-			ErrSetOptionFailed,
-			errors.Join(err, unix.Close(fd)),
-		)
-
-		return
-	}
-
-	err = unix.Bind(fd, sAddr)
-	if err != nil {
-		err = fmt.Errorf(
-			"%w: %w: %w: %w",
-			Err,
-			ErrOpenFailed,
-			ErrBindFailed,
-			errors.Join(err, unix.Close(fd)),
-		)
-
-		return
-	}
-
-	s.fd = fd
-
-	shutdowner = func(context.Context) error {
 		s.mtx.Lock()
 		defer s.mtx.Unlock()
 
-		s.fd = 0
-
-		err := unix.Close(fd)
-		if err != nil {
-			return fmt.Errorf("%w: %w: %w", Err, ErrCloseFailed, err)
+		if s.fd != 0 {
+			err = fmt.Errorf("%w: %w: %w", Err, ErrOpenFailed, runner.ErrAlreadyRunning)
+			return
 		}
 
-		return nil
-	}
+		sAddr, err := addrPortToSockaddr(s.localAddr)
+		if err != nil {
+			err = fmt.Errorf("%w: %w: %w", Err, ErrOpenFailed, err)
+			return
+		}
 
-	return
+		fd, err := unix.Socket(unix.AF_INET, unix.SOCK_DGRAM, unix.IPPROTO_UDP)
+		if err != nil {
+			err = fmt.Errorf("%w: %w: %w: %w", Err, ErrOpenFailed, ErrCreateFailed, err)
+			return
+		}
+
+		// Avoid address already in use error when restarting:
+		err = unix.SetsockoptInt(fd, unix.SOL_SOCKET, unix.SO_REUSEADDR, 1)
+		if err != nil {
+			err = fmt.Errorf(
+				"%w: %w: %w: %w",
+				Err,
+				ErrOpenFailed,
+				ErrSetOptionFailed,
+				errors.Join(err, unix.Close(fd)),
+			)
+
+			return
+		}
+
+		err = unix.Bind(fd, sAddr)
+		if err != nil {
+			err = fmt.Errorf(
+				"%w: %w: %w: %w",
+				Err,
+				ErrOpenFailed,
+				ErrBindFailed,
+				errors.Join(err, unix.Close(fd)),
+			)
+
+			return
+		}
+
+		s.fd = fd
+
+		shutdowner = func(context.Context) error {
+			s.mtx.Lock()
+			defer s.mtx.Unlock()
+
+			s.fd = 0
+
+			err := unix.Close(fd)
+			if err != nil {
+				return fmt.Errorf("%w: %w: %w", Err, ErrCloseFailed, err)
+			}
+
+			return nil
+		}
+
+		return
+	}
 }
 
 func (s *socketUnix) Send(remoteAddr netip.AddrPort, data []byte) error {

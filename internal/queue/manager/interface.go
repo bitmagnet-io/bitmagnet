@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
+	"github.com/bitmagnet-io/bitmagnet/internal/indexer"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
-	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 )
 
 type PurgeJobsRequest struct {
@@ -19,7 +19,7 @@ type EnqueueReprocessTorrentsBatchRequest struct {
 	ChunkSize           uint
 	ContentTypes        []model.NullContentType
 	Orphans             bool
-	ClassifyMode        processor.ClassifyMode
+	ClassifyMode        indexer.ClassifyMode
 	ClassifierWorkflow  string
 	ClassifierFlags     classifier.Flags
 	ApisDisabled        bool

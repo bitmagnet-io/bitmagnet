@@ -17,3 +17,9 @@ func WithDependencies(keys ...string) Option {
 		}
 	}
 }
+
+func WithAutostart() Option {
+	return func(w *Worker) {
+		w.autostart = true
+	}
+}

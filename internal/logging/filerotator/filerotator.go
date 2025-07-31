@@ -12,8 +12,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 )
 
-const Namespace = "filerotator"
-
 func New(
 	config Config,
 ) *FileRotator {
@@ -42,56 +40,58 @@ type FileRotator struct {
 	err        chan error
 }
 
-func (r *FileRotator) Runner(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
-	r.mutex.Lock()
-	defer r.mutex.Unlock()
+func (r *FileRotator) Runner() runner.Runner {
+	return func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
+		r.mutex.Lock()
+		defer r.mutex.Unlock()
 
-	if r.started {
-		return runner.NopShutdowner, fmt.Errorf("%w: %w: %w", Err, ErrStart, runner.ErrAlreadyRunning)
-	}
-
-	r.started = true
-	r.err = make(chan error, 1)
-
-	shutdown := make(chan struct{})
-
-	go func() {
-		var err error
-
-		select {
-		case <-ctx.Done():
-			err = fmt.Errorf("%w: %w", Err, ctx.Err())
-		case <-shutdown:
-		case err = <-r.err:
+		if r.started {
+			return runner.NopShutdowner, fmt.Errorf("%w: %w: %w", Err, ErrStart, runner.ErrAlreadyRunning)
 		}
 
-		r.mutex.Lock()
-		defer r.mutex.Unlock()
+		r.started = true
+		r.err = make(chan error, 1)
 
-		r.started = false
-		r.file = nil
+		shutdown := make(chan struct{})
 
-		cancel(err)
-	}()
+		go func() {
+			var err error
 
-	return func(context.Context) error {
-		r.mutex.Lock()
-		defer r.mutex.Unlock()
-
-		if r.file != nil {
-			err := r.file.close()
-			if err != nil {
-				return fmt.Errorf("%w: %w: %w", Err, ErrShutdown, err)
+			select {
+			case <-ctx.Done():
+				err = fmt.Errorf("%w: %w", Err, ctx.Err())
+			case <-shutdown:
+			case err = <-r.err:
 			}
-		}
 
-		r.started = false
-		r.file = nil
+			r.mutex.Lock()
+			defer r.mutex.Unlock()
 
-		close(shutdown)
+			r.started = false
+			r.file = nil
 
-		return nil
-	}, nil
+			cancel(err)
+		}()
+
+		return func(context.Context) error {
+			r.mutex.Lock()
+			defer r.mutex.Unlock()
+
+			if r.file != nil {
+				err := r.file.close()
+				if err != nil {
+					return fmt.Errorf("%w: %w: %w", Err, ErrShutdown, err)
+				}
+			}
+
+			r.started = false
+			r.file = nil
+
+			close(shutdown)
+
+			return nil
+		}, nil
+	}
 }
 
 func (r *FileRotator) Write(output []byte) (int, error) {

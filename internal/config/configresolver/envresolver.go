@@ -19,7 +19,7 @@ func NewEnv(e map[string]string, options ...Option) Resolver {
 }
 
 func (r envResolver) Resolve(path []string, valueType reflect.Type) (interface{}, bool, error) {
-	envKey := strings.ToUpper(strings.Join(path, "_"))
+	envKey := strings.ToUpper(strings.ReplaceAll(strings.Join(path, "_"), ".", "_"))
 
 	envValue, ok := r.e[envKey]
 	if !ok {

@@ -25,7 +25,7 @@ func (parseDateAction) compileAction(ctx compilerContext) (action, error) {
 
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
-			parsed := parsers.ParseDate(ctx.torrent.Name)
+			parsed := parsers.ParseDate(ctx.result.Torrent.Name)
 			if parsed.IsNil() {
 				return ctx.result, classification.ErrUnmatched
 			}

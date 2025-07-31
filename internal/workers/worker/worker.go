@@ -12,8 +12,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 )
 
-const Namespace = "worker"
-
 type StateInfo struct {
 	State
 	Err error
@@ -31,18 +29,19 @@ func (m DependencyMap) Slice() []string {
 type Worker struct {
 	mtx        sync.RWMutex
 	state      State
-	fn         runner.Runner
+	runner     runner.Provider
 	nextState  chan struct{}
 	shutdowner runner.Shutdowner
 	err        error
 	logger     logging.Logger
 	dependsOn  DependencyMap
+	autostart  bool
 }
 
-func NewWorker(fn runner.Runner, options ...Option) *Worker {
+func NewWorker(runner runner.Provider, options ...Option) *Worker {
 	wrk := &Worker{
 		state:     StateIdle,
-		fn:        fn,
+		runner:    runner,
 		logger:    logging.NopLogger,
 		dependsOn: make(DependencyMap),
 	}
@@ -122,8 +121,9 @@ func (w *Worker) Start(ctx context.Context) (runner.Shutdowner, error) {
 
 		w.logger.Debugf("starting")
 
-		shutdown, err := w.fn(runCtx, func(err error) {
-			isEndedWithError := err != nil && !errors.Is(err, runner.ErrShutdownRequested)
+		shutdown, err := w.runner.Runner()(runCtx, func(err error) {
+			isShutdownRequested := errors.Is(err, runner.ErrShutdownRequested)
+			isEndedWithError := err != nil && !isShutdownRequested
 
 			if isEndedWithError {
 				w.logger.Errorf("ended with error: %s", err)
@@ -147,8 +147,8 @@ func (w *Worker) Start(ctx context.Context) (runner.Shutdowner, error) {
 			}
 
 			doClose()
-			w.mtx.Unlock()
 			runCancel(err)
+			w.mtx.Unlock()
 		})
 
 		if err == nil {
@@ -179,7 +179,12 @@ func (w *Worker) Start(ctx context.Context) (runner.Shutdowner, error) {
 			return nil, err
 		}
 
-		w.state = StateRunning
+		switch w.state {
+		case StateStartup:
+			w.state = StateRunning
+		case StateIdle:
+			w.logger.Infof("completed")
+		}
 
 		w.mtx.Unlock()
 
@@ -315,4 +320,8 @@ func (w *Worker) DependsOn(key string) bool {
 	_, ok := w.dependsOn[key]
 
 	return ok
+}
+
+func (w *Worker) Autostart() bool {
+	return w.autostart
 }

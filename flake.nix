@@ -1,6 +1,6 @@
 {
   description = "bitmagnet dev shell";
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
   outputs = {
@@ -18,6 +18,7 @@
         default = pkgs.mkShell {
           packages = with pkgs; [
             bundler
+            git
             go
             go-task
             golangci-lint
@@ -26,7 +27,9 @@
             nodePackages.prettier
             protobuf
             protoc-gen-go
+            starship
             ruby
+            zsh
           ] ++ (if stdenv.isLinux then [
             chromium
           ] else []);

@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	Err                       = errors.New(Namespace)
+	Err                       = errors.New("dht socket")
 	ErrUnknownAdapter         = errors.New("unknown adapter")
 	ErrOpenFailed             = errors.New("open failed")
 	ErrCreateFailed           = errors.New("create failed")

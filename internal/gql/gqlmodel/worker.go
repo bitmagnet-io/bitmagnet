@@ -4,14 +4,14 @@ import (
 	"cmp"
 	"context"
 	"fmt"
-	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 	"slices"
 	"strings"
 	"time"
 
-	"github.com/bitmagnet-io/bitmagnet/internal"
+	"github.com/bitmagnet-io/bitmagnet/internal/env"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
-	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/http_server"
+	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
 )
 
@@ -24,7 +24,7 @@ func (q *WorkerQuery) ListAll(_ context.Context) (gen.WorkerListAllQueryResult, 
 }
 
 type WorkerMutation struct {
-	Context  internal.BackgroundContext
+	Context  env.Context
 	Registry *registry.Registry
 }
 
@@ -38,17 +38,17 @@ func (m *WorkerMutation) Start(_ context.Context, keys []string) (gen.WorkerList
 }
 
 func (m *WorkerMutation) Shutdown(ctx context.Context, keys []string) (gen.WorkerListAllQueryResult, error) {
-	if slices.Contains(keys, httpserver.Namespace) {
+	if slices.Contains(keys, http_server.Ref.String()) {
 		return gen.WorkerListAllQueryResult{}, fmt.Errorf(
 			`"%s" worker cannot be shutdown via the API`,
-			httpserver.Namespace,
+			http_server.Ref.String(),
 		)
 	}
 
 	state := m.Registry.WorkersState()
 	dependentKeys := slice.Filter(keys, func(key string) bool {
 		if info, ok := state[key]; ok {
-			if _, ok := info.RequiredBy[httpserver.Namespace]; ok {
+			if _, ok := info.RequiredBy[http_server.Ref.String()]; ok {
 				return true
 			}
 		}
@@ -59,7 +59,7 @@ func (m *WorkerMutation) Shutdown(ctx context.Context, keys []string) (gen.Worke
 	if len(dependentKeys) > 0 {
 		return gen.WorkerListAllQueryResult{}, fmt.Errorf(
 			`cannot shutdown workers because they are required by the "%s" worker: "%s"`,
-			httpserver.Namespace,
+			http_server.Ref.String(),
 			strings.Join(keys, `", "`),
 		)
 	}

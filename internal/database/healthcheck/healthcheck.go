@@ -9,12 +9,12 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
 )
 
-func New(p database.Provider) health.CheckerOption {
+func New(name string, p database.Provider) health.CheckerOption {
 	return health.WithPeriodicCheck(
 		time.Second*30,
 		time.Second*1,
 		health.Check{
-			Name:    "postgres",
+			Name:    name,
 			Timeout: time.Second * 5,
 			IsActive: func() bool {
 				return p.IsActive()

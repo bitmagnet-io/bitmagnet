@@ -7,22 +7,17 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/database/cache"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/exclause"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/logger"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/migrations"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
-	caches "github.com/mgdigital/gorm-cache/v2"
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	gormlogger "gorm.io/gorm/logger"
 )
-
-const Namespace = "database"
 
 type PoolProvider interface {
 	Pool() (*pgxpool.Pool, error)
@@ -55,7 +50,7 @@ type Provider interface {
 
 type RunnerProvider interface {
 	Provider
-	runner.Interface
+	runner.Provider
 }
 
 type instances struct {
@@ -65,135 +60,128 @@ type instances struct {
 	dao    *dao.Query
 }
 
-func New(dsn string, cacheConfig cache.Config, logger *zap.SugaredLogger) RunnerProvider {
+func New(dsn string, plugins []gorm.Plugin, logger *zap.Logger) RunnerProvider {
 	return &provider{
-		dsn:         dsn,
-		cacheConfig: cacheConfig,
-		logger:      logger.Named(Namespace),
+		dsn:     dsn,
+		logger:  logger,
+		plugins: plugins,
 	}
 }
 
 type provider struct {
-	mtx         sync.RWMutex
-	dsn         string
-	cacheConfig cache.Config
-	instances   *instances
-	err         error
-	logger      *zap.SugaredLogger
+	mtx       sync.RWMutex
+	dsn       string
+	plugins   []gorm.Plugin
+	instances *instances
+	err       error
+	logger    *zap.Logger
 }
 
-func (p *provider) Runner(
-	ctx context.Context,
-	cancel context.CancelCauseFunc,
-) (shutdowner runner.Shutdowner, err error) {
-	shutdowner = runner.NopShutdowner
+func (p *provider) Runner() runner.Runner {
+	return func(
+		ctx context.Context,
+		cancel context.CancelCauseFunc,
+	) (shutdowner runner.Shutdowner, err error) {
+		shutdowner = runner.NopShutdowner
 
-	var inst instances
+		var inst instances
 
-	p.mtx.Lock()
+		p.mtx.Lock()
 
-	defer func() {
-		p.err = err
+		defer func() {
+			p.err = err
 
-		if err != nil {
-			p.instances = nil
+			if err != nil {
+				p.instances = nil
 
-			if inst.pool != nil {
-				inst.pool.Close()
+				if inst.pool != nil {
+					inst.pool.Close()
+				}
+
+				cancel(err)
+			} else {
+				p.instances = &inst
 			}
 
-			cancel(err)
-		} else {
-			p.instances = &inst
+			p.mtx.Unlock()
+		}()
+
+		if p.instances != nil {
+			err = fmt.Errorf("%w: %w", Err, runner.ErrAlreadyRunning)
+
+			return
 		}
 
-		p.mtx.Unlock()
-	}()
-
-	if p.instances != nil {
-		err = fmt.Errorf("%w: %w", Err, runner.ErrAlreadyRunning)
-
-		return
-	}
-
-	inst.pool, err = pgxpool.New(ctx, p.dsn)
-	if err != nil {
-		err = fmt.Errorf("%w: %w", Err, err)
-
-		return
-	}
-
-	p.logger.Debug("waiting for database to be ready")
-
-	err = waitForPool(ctx, inst.pool)
-	if err != nil {
-		err = fmt.Errorf("%w: %w", Err, err)
-	}
-
-	p.logger.Debug("database is ready")
-
-	inst.sqlDB = stdlib.OpenDBFromPool(inst.pool)
-
-	err = migrations.New(inst.sqlDB, p.logger).Up(ctx)
-	if err != nil {
-		err = fmt.Errorf("%w: %w", Err, err)
-	}
-
-	inst.gormDB, err = gorm.Open(
-		postgres.New(postgres.Config{
-			Conn: inst.sqlDB,
-		}),
-		&gorm.Config{
-			Logger: logger.New(
-				p.logger,
-				logger.Config{
-					LogLevel:      gormlogger.Info,
-					SlowThreshold: time.Second * 30,
-				},
-			),
-			DisableAutomaticPing: true,
-		},
-	)
-
-	err = inst.gormDB.Use(exclause.New())
-	if err != nil {
-		err = fmt.Errorf("%w: %w", Err, err)
-
-		return
-	}
-
-	if p.cacheConfig.CacheEnabled {
-		err = inst.gormDB.Use(&caches.Caches{Conf: &caches.Config{
-			Cacher: cache.New(
-				p.cacheConfig.TTL,
-				int(p.cacheConfig.MaxKeys),
-				p.logger,
-			),
-		}})
+		inst.pool, err = pgxpool.New(ctx, p.dsn)
 		if err != nil {
 			err = fmt.Errorf("%w: %w", Err, err)
 
 			return
 		}
+
+		p.logger.Debug("waiting for database to be ready")
+
+		err = waitForPool(ctx, inst.pool, p.logger)
+		if err != nil {
+			err = fmt.Errorf("%w: %w", Err, err)
+
+			return
+		}
+
+		p.logger.Debug("database is ready")
+
+		inst.sqlDB = stdlib.OpenDBFromPool(inst.pool)
+
+		inst.gormDB, err = gorm.Open(
+			postgres.New(postgres.Config{
+				Conn: inst.sqlDB,
+			}),
+			&gorm.Config{
+				Logger: logger.New(
+					p.logger,
+					logger.Config{
+						LogLevel:      gormlogger.Info,
+						SlowThreshold: time.Second * 30,
+					},
+				),
+				DisableAutomaticPing: true,
+			},
+		)
+
+		err = inst.gormDB.Use(exclause.New())
+		if err != nil {
+			err = fmt.Errorf("%w: %w", Err, err)
+
+			return
+		}
+
+		for _, plugin := range p.plugins {
+			err = inst.gormDB.Use(plugin)
+			if err != nil {
+				err = fmt.Errorf("%w: plugin failed: %w", Err, err)
+
+				return
+			}
+		}
+
+		inst.dao = dao.Use(inst.gormDB)
+
+		shutdowner = func(context.Context) error {
+			p.mtx.Lock()
+			defer p.mtx.Unlock()
+
+			inst.pool.Close()
+
+			p.instances = nil
+
+			return nil
+		}
+
+		return
 	}
-
-	inst.dao = dao.Use(inst.gormDB)
-
-	shutdowner = func(context.Context) error {
-		p.mtx.Lock()
-		defer p.mtx.Unlock()
-
-		inst.pool.Close()
-
-		p.instances = nil
-
-		return nil
-	}
-
-	return
 }
 
-func waitForPool(ctx context.Context, pool *pgxpool.Pool) error {
+func waitForPool(ctx context.Context, pool *pgxpool.Pool, logger *zap.Logger) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 
@@ -214,6 +202,8 @@ outer:
 			if err == nil {
 				break outer
 			}
+
+			logger.Warn("no ping response, waiting to try again...")
 		}
 
 		waitFor = time.Second

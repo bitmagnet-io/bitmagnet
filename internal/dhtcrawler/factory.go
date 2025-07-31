@@ -1,130 +1,133 @@
 package dhtcrawler
 
 import (
-	"context"
-	"time"
-
-	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
-	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
-	"github.com/bitmagnet-io/bitmagnet/internal/database"
-	"github.com/bitmagnet-io/bitmagnet/internal/dhtcrawler/dhtcrawlerhealthcheck"
-	"github.com/bitmagnet-io/bitmagnet/internal/health"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/client"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/server"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/banning"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainforequester"
-	"github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
-	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
-	"github.com/prometheus/client_golang/prometheus"
-	boom "github.com/tylertreat/BoomFilters"
-	"go.uber.org/zap"
 )
 
-func New(
-	config Config,
-	kTable ktable.Table,
-	client client.Client,
-	metainfoRequester metainforequester.Requester,
-	banningChecker banning.Checker,
-	daoProvider database.DaoTransactionProvider,
-	blocker blocking.Blocker,
-	discoveredNodes concurrency.BatchingChannel[ktable.Node],
-	dhtServerLastResponses *concurrency.AtomicValue[server.LastResponses],
-	logger *zap.SugaredLogger,
-) (registry.Option, health.CheckerOption, prometheus.Collector) {
-	logger = logger.Named(Namespace)
+type Runner runner.Provider
 
-	persistedTotal := prometheus.NewCounterVec(prometheus.CounterOpts{
-		Namespace: "bitmagnet",
-		Subsystem: Namespace,
-		Name:      "persisted_total",
-		Help:      "A counter of persisted database entities.",
-	}, []string{"entity"})
+// func New(
+// 	config Config,
+// 	kTable ktable.Table,
+// 	client client.Client,
+// 	metainfoRequester metainforequester.Requester,
+// 	banningChecker banning.Checker,
+// 	daoProvider database.DaoTransactionProvider,
+// 	queueJobProvider queue.JobProvider[processor.MessageParams],
+// 	classifier classifier.Runner,
+// 	persister persister.Adder,
+// 	blocker blocking.Blocker,
+// 	discoveredNodes concurrency.BatchingChannel[ktable.Node],
+// 	logger *zap.SugaredLogger,
+// ) (Runner, prometheus.Collector) {
+// 	logger = logger.Named(Namespace)
 
-	isActive := &concurrency.AtomicValue[bool]{}
+// 	// persistedTotal := prometheus.NewCounterVec(prometheus.CounterOpts{
+// 	// 	Namespace: "bitmagnet",
+// 	// 	Subsystem: Namespace,
+// 	// 	Name:      "persisted_total",
+// 	// 	Help:      "A counter of persisted database entities.",
+// 	// }, []string{"entity"})
 
-	run := func(ctx context.Context, cancel context.CancelCauseFunc) (shutdowner runner.Shutdowner, err error) {
-		isActive.Set(true)
+// 	isActive := &concurrency.AtomicValue[bool]{}
 
-		defer func() {
-			if err != nil {
-				isActive.Set(false)
-			}
-		}()
+// 	run := func(ctx context.Context, cancel context.CancelCauseFunc) (shutdowner runner.Shutdowner, err error) {
+// 		isActive.Set(true)
 
-		scalingFactor := int(config.ScalingFactor)
+// 		defer func() {
+// 			if err != nil {
+// 				isActive.Set(false)
+// 			}
+// 		}()
 
-		cr := &crawler{
-			kTable:                       kTable,
-			client:                       client,
-			metainfoRequester:            metainfoRequester,
-			banningChecker:               banningChecker,
-			bootstrapNodes:               config.BootstrapNodes,
-			reseedBootstrapNodesInterval: time.Minute * 10,
-			getOldestNodesInterval:       time.Second * 10,
-			oldPeerThreshold:             time.Minute * 15,
-			discoveredNodes:              discoveredNodes,
-			nodesForPing: concurrency.NewBufferedConcurrentChannel[ktable.Node](
-				scalingFactor, scalingFactor),
-			nodesForFindNode: concurrency.NewBufferedConcurrentChannel[ktable.Node](
-				10*scalingFactor, 10*scalingFactor),
-			nodesForSampleInfoHashes: concurrency.NewBufferedConcurrentChannel[ktable.Node](
-				10*scalingFactor,
-				10*scalingFactor,
-			),
-			infoHashTriage: concurrency.NewBatchingChannel[nodeHasPeersForHash](
-				10*scalingFactor, 1000, 20*time.Second),
-			getPeers: concurrency.NewBufferedConcurrentChannel[nodeHasPeersForHash](
-				10*scalingFactor, 20*scalingFactor),
-			scrape: concurrency.NewBufferedConcurrentChannel[nodeHasPeersForHash](
-				10*scalingFactor, 20*scalingFactor),
-			requestMetaInfo: concurrency.NewBufferedConcurrentChannel[infoHashWithPeers](
-				10*scalingFactor,
-				40*scalingFactor,
-			),
-			persistTorrents: concurrency.NewBatchingChannel[infoHashWithMetaInfo](
-				1000,
-				1000,
-				time.Minute,
-			),
-			persistSources: concurrency.NewBatchingChannel[infoHashWithScrape](
-				1000,
-				1000,
-				time.Minute,
-			),
-			saveFilesThreshold: config.SaveFilesThreshold,
-			savePieces:         config.SavePieces,
-			rescrapeThreshold:  config.RescrapeThreshold,
-			daoProvider:        daoProvider,
-			ignoreHashes: &ignoreHashes{
-				bloom: boom.NewStableBloomFilter(10_000_000, 2, 0.001),
-			},
-			blockingManager: blocker,
-			soughtNodeID:    &concurrency.AtomicValue[protocol.ID]{},
-			persistedTotal:  persistedTotal,
-			logger:          logger,
-		}
+// 		scalingFactor := int(config.ScalingFactor)
 
-		shutdowner, err = cr.Runner(ctx, cancel)
+// 		ept := newEnqueueProcessTorrentWorker(
+// 			queueJobProvider,
+// 			persister,
+// 		)
 
-		doShutdown := shutdowner
-		shutdowner = func(ctx context.Context) error {
-			isActive.Set(false)
+// 		pinger := newPingWorker(client, kTable, scalingFactor, time.Minute*15)
 
-			return doShutdown(ctx)
-		}
+// 		scraper := newScrapeWorker(client, kTable, persister, ept, 10*scalingFactor)
 
-		return
-	}
+// 		cr := &crawler{
+// 			kTable:                       kTable,
+// 			client:                       client,
+// 			metainfoRequester:            metainfoRequester,
+// 			banningChecker:               banningChecker,
+// 			bootstrapNodes:               config.BootstrapNodes,
+// 			reseedBootstrapNodesInterval: time.Minute * 10,
+// 			getOldestNodesInterval:       time.Second * 10,
+// 			// oldPeerThreshold:             time.Minute * 15,
+// 			discoveredNodes: discoveredNodes,
+// 			// nodesForPing: concurrency.NewBufferedConcurrentChannel[ktable.Node](
+// 			// 	scalingFactor, scalingFactor),
+// 			ping: pinger,
+// 			nodesForFindNode: concurrency.NewBufferedConcurrentChannel[ktable.Node](
+// 				10*scalingFactor, 10*scalingFactor),
+// 			nodesForSampleInfoHashes: concurrency.NewBufferedConcurrentChannel[ktable.Node](
+// 				10*scalingFactor,
+// 				10*scalingFactor,
+// 			),
+// 			infoHashTriage: concurrency.NewBatchingChannel[nodesHavePeersForHash](
+// 				10*scalingFactor, 1000, 20*time.Second),
+// 			getPeers: concurrency.NewBufferedConcurrentChannel[nodesHavePeersForHash](
+// 				10*scalingFactor, 20*scalingFactor),
+// 			// scrape: concurrency.NewBufferedConcurrentChannel[nodeHasPeersForHash](
+// 			// 	10*scalingFactor, 20*scalingFactor),
+// 			requestMetaInfo: concurrency.NewBufferedConcurrentChannel[infoHashWithPeers](
+// 				10*scalingFactor,
+// 				40*scalingFactor,
+// 			),
+// 			persistTorrents: newPersistTorrentsWorker(
+// 				10,
+// 				classifier,
+// 				persister,
+// 				ept,
+// 				scraper,
+// 				config.SavePieces,
+// 				int(config.SaveFilesThreshold),
+// 				logger,
+// 			),
+// 			// classifyTorrents: concurrency.NewBufferedConcurrentChannel[infoHashWithMetaInfo](
+// 			// 	10*scalingFactor,
+// 			// 	10*scalingFactor,
+// 			// ),
+// 			enqueueProcessTorrents: ept,
+// 			scrape:                 scraper,
+// 			persistSources: concurrency.NewBatchingChannel[infoHashWithScrape](
+// 				1000,
+// 				1000,
+// 				time.Minute,
+// 			),
+// 			classifier:         classifier,
+// 			persister:          persister,
+// 			saveFilesThreshold: config.SaveFilesThreshold,
+// 			savePieces:         config.SavePieces,
+// 			rescrapeThreshold:  config.RescrapeThreshold,
+// 			daoProvider:        daoProvider,
+// 			ignoreHashes: &ignoreHashes{
+// 				bloom: boom.NewStableBloomFilter(10_000_000, 2, 0.001),
+// 			},
+// 			blockingManager:  blocker,
+// 			soughtNodeID:     &concurrency.AtomicValue[protocol.ID]{},
+// 			queueJobProvider: queueJobProvider,
+// 			persistedTotal:   persistedTotal,
+// 			logger:           logger,
+// 		}
 
-	return registry.WithWorker(
-			Namespace,
-			run,
-			worker.WithDependencies(server.Namespace, database.Namespace, blocking.Namespace),
-		),
-		dhtcrawlerhealthcheck.New(dhtServerLastResponses, isActive),
-		persistedTotal
-}
+// 		shutdowner, err = cr.Runner(ctx, cancel)
+
+// 		doShutdown := shutdowner
+// 		shutdowner = func(ctx context.Context) error {
+// 			isActive.Set(false)
+
+// 			return doShutdown(ctx)
+// 		}
+
+// 		return
+// 	}
+
+// 	return run, persistedTotal
+// }

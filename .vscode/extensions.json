@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "bbenoist.nix",
+        "editorconfig.editorconfig",
+        "golang.go",
+        "ms-azuretools.vscode-containers",
+        "ms-vscode-remote.remote-containers"
+    ]
+}

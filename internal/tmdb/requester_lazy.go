@@ -42,10 +42,6 @@ func (r *requesterLazy) Request(
 }
 
 func newRequester(ctx context.Context, config Config, logger *zap.SugaredLogger) (Requester, error) {
-	if !config.Enabled {
-		return nil, errors.New("TMDB is disabled")
-	}
-
 	if config.APIKey == defaultTmdbAPIKey {
 		logger.Warn(
 			"you are using the default TMDB API key; TMDB requests will be limited to 1 per second; " +

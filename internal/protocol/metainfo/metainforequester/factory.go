@@ -29,7 +29,7 @@ type Result struct {
 }
 
 func New(p Params) Result {
-	collector := newPrometheusCollector(requester{
+	collector := newPrometheusCollector(&requester{
 		clientID: protocol.RandomPeerID(),
 		timeout:  p.Config.RequestTimeout,
 		dialer: &net.Dialer{
@@ -39,9 +39,12 @@ func New(p Params) Result {
 	})
 
 	return Result{
-		Requester: requestLimiter{
-			requester: requestLogger{
-				requester: collector,
+		Requester: &requestLimiter{
+			requester: &requestLogger{
+				requester: &requesterSemaphore{
+					requester: collector,
+					semaphore: make(chan struct{}, p.Config.MaxConcurrency),
+				},
 				// we make way to many requests to usefully log everything, but having a sample is
 				// helpful:
 				logger: p.Logger.WithOptions(zap.WrapCore(func(core zapcore.Core) zapcore.Core {

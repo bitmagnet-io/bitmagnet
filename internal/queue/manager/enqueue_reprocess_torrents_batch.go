@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
-	"github.com/bitmagnet-io/bitmagnet/internal/processor/batch"
+	"github.com/bitmagnet-io/bitmagnet/internal/indexer/batch"
 	"gorm.io/gorm"
 )
 
@@ -24,7 +24,7 @@ func (m manager) EnqueueReprocessTorrentsBatch(ctx context.Context, req EnqueueR
 		flags["local_search_enabled"] = false
 	}
 
-	job, err := batch.NewQueueJob(batch.MessageParams{
+	job, err := m.batchJobProvider(batch.MessageParams{
 		ClassifyMode:    req.ClassifyMode,
 		ClassifierFlags: flags,
 		ChunkSize:       req.ChunkSize,

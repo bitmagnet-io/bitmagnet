@@ -9,12 +9,14 @@ import (
 )
 
 func New(
+	name string,
+	isActive func() bool,
 	dhtServerLastResponses *concurrency.AtomicValue[server.LastResponses],
-	isActive *concurrency.AtomicValue[bool],
+	// isActive *concurrency.AtomicValue[bool],
 ) health.CheckerOption {
 	return health.WithPeriodicCheck(
 		time.Second*10,
 		time.Second*1,
-		NewCheck(isActive, dhtServerLastResponses),
+		NewCheck(name, isActive, dhtServerLastResponses),
 	)
 }

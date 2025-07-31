@@ -162,34 +162,24 @@ func (_c *Checker_IsStarted_Call) RunAndReturn(run func() bool) *Checker_IsStart
 	return _c
 }
 
-// Runner provides a mock function with given fields: ctx, cancel
-func (_m *Checker) Runner(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
-	ret := _m.Called(ctx, cancel)
+// Runner provides a mock function with no fields
+func (_m *Checker) Runner() runner.Runner {
+	ret := _m.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for Runner")
 	}
 
-	var r0 runner.Shutdowner
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, context.CancelCauseFunc) (runner.Shutdowner, error)); ok {
-		return rf(ctx, cancel)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, context.CancelCauseFunc) runner.Shutdowner); ok {
-		r0 = rf(ctx, cancel)
+	var r0 runner.Runner
+	if rf, ok := ret.Get(0).(func() runner.Runner); ok {
+		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(runner.Shutdowner)
+			r0 = ret.Get(0).(runner.Runner)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, context.CancelCauseFunc) error); ok {
-		r1 = rf(ctx, cancel)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // Checker_Runner_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Runner'
@@ -198,25 +188,23 @@ type Checker_Runner_Call struct {
 }
 
 // Runner is a helper method to define mock.On call
-//   - ctx context.Context
-//   - cancel context.CancelCauseFunc
-func (_e *Checker_Expecter) Runner(ctx interface{}, cancel interface{}) *Checker_Runner_Call {
-	return &Checker_Runner_Call{Call: _e.mock.On("Runner", ctx, cancel)}
+func (_e *Checker_Expecter) Runner() *Checker_Runner_Call {
+	return &Checker_Runner_Call{Call: _e.mock.On("Runner")}
 }
 
-func (_c *Checker_Runner_Call) Run(run func(ctx context.Context, cancel context.CancelCauseFunc)) *Checker_Runner_Call {
+func (_c *Checker_Runner_Call) Run(run func()) *Checker_Runner_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(context.CancelCauseFunc))
+		run()
 	})
 	return _c
 }
 
-func (_c *Checker_Runner_Call) Return(_a0 runner.Shutdowner, _a1 error) *Checker_Runner_Call {
-	_c.Call.Return(_a0, _a1)
+func (_c *Checker_Runner_Call) Return(_a0 runner.Runner) *Checker_Runner_Call {
+	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *Checker_Runner_Call) RunAndReturn(run func(context.Context, context.CancelCauseFunc) (runner.Shutdowner, error)) *Checker_Runner_Call {
+func (_c *Checker_Runner_Call) RunAndReturn(run func() runner.Runner) *Checker_Runner_Call {
 	_c.Call.Return(run)
 	return _c
 }

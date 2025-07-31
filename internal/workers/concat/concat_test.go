@@ -19,13 +19,13 @@ type concatTest struct {
 	minRuntime      time.Duration
 }
 
-func (t *concatTest) runner() runner.Runner {
-	runners := make([]runner.Runner, 0, len(t.runners))
+func (t *concatTest) Runner() runner.Runner {
+	runners := make([]runner.Provider, 0, len(t.runners))
 	for _, w := range t.runners {
 		runners = append(runners, w.Runner())
 	}
 
-	return concat.Runners(runners...)
+	return concat.Runners(runners...).Runner()
 }
 
 func TestConcat(t *testing.T) {
@@ -67,7 +67,7 @@ func TestConcat(t *testing.T) {
 			t.Run(test.name, func(t *testing.T) {
 				t.Parallel()
 
-				run := test.runner()
+				run := test.Runner()
 
 				ctx, cancel := context.WithCancelCause(t.Context())
 				t.Cleanup(func() { cancel(nil) })

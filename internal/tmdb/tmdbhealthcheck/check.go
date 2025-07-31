@@ -9,18 +9,15 @@ import (
 )
 
 func New(
-	enabled bool,
+	name string,
 	client tmdb.Client,
 ) health.CheckerOption {
 	return health.WithPeriodicCheck(
 		time.Minute*5,
 		time.Second*5,
 		health.Check{
-			Name:    "tmdb",
+			Name:    name,
 			Timeout: time.Second * 30,
-			IsActive: func() bool {
-				return enabled
-			},
 			Check: func(ctx context.Context) error {
 				return client.ValidateAPIKey(ctx)
 			},

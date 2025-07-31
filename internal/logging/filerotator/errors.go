@@ -3,7 +3,7 @@ package filerotator
 import "errors"
 
 var (
-	Err                = errors.New(Namespace)
+	Err                = errors.New("log file rotator")
 	ErrStart           = errors.New("failed to start")
 	ErrShutdown        = errors.New("failed to shutdown")
 	ErrWriteFile       = errors.New("failed to write file")

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/netip"
+	"sync"
 	"syscall"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
@@ -25,53 +26,52 @@ type socketWindows struct {
 	fd        windows.Handle
 }
 
-func (s *socketWindows) Runner(
-	_ context.Context,
-	cancel context.CancelCauseFunc,
-) (shutdowner runner.Shutdowner, err error) {
-	defer func() {
-		if err != nil {
-			cancel(err)
-		}
-	}()
+func (s *socketWindows) Runner() runner.Runner {
+	return func(ctx context.Context, cancel context.CancelCauseFunc) (shutdowner runner.Shutdowner, err error) {
+		defer func() {
+			if err != nil {
+				cancel(err)
+			}
+		}()
 
-	shutdowner = runner.NopShutdowner
+		shutdowner = runner.NopShutdowner
 
-	s.mtx.Lock()
-	defer s.mtx.Unlock()
-
-	if s.fd != 0 {
-		return runner.NopShutdowner, fmt.Errorf("%w: %w: %w", Err, runner.ErrAlreadyRunning)
-	}
-
-	sAddr, err := addrPortToSockaddr(localAddr)
-	if err != nil {
-		return runner.NopShutdowner, fmt.Errorf("%w: %w: %w", Err, ErrOpenFailed, err)
-	}
-
-	fd, err := windows.Socket(windows.AF_INET, windows.SOCK_DGRAM, windows.IPPROTO_UDP)
-	if err != nil {
-		return runner.NopShutdowner,
-			fmt.Errorf("%w: %w: %w", Err, ErrCreateFailed, errors.Join(err, windows.Close(fd)))
-	}
-
-	s.fd = fd
-
-	shutdowner = func(context.Context) error {
 		s.mtx.Lock()
 		defer s.mtx.Unlock()
 
-		s.fd = 0
-
-		err := windows.Close(fd)
-		if err != nil {
-			return fmt.Errorf("%w: %w: %w", Err, ErrCloseFailed, err)
+		if s.fd != 0 {
+			return runner.NopShutdowner, fmt.Errorf("%w: %w: %w", Err, runner.ErrAlreadyRunning)
 		}
 
-		return nil
-	}
+		// sAddr, err := addrPortToSockaddr(s.localAddr)
+		// if err != nil {
+		// 	return runner2.NopShutdowner, fmt.Errorf("%w: %w: %w", Err, ErrOpenFailed, err)
+		// }
 
-	return
+		fd, err := windows.Socket(windows.AF_INET, windows.SOCK_DGRAM, windows.IPPROTO_UDP)
+		if err != nil {
+			return runner.NopShutdowner,
+				fmt.Errorf("%w: %w: %w", Err, ErrCreateFailed, errors.Join(err, windows.Close(fd)))
+		}
+
+		s.fd = fd
+
+		shutdowner = func(context.Context) error {
+			s.mtx.Lock()
+			defer s.mtx.Unlock()
+
+			s.fd = 0
+
+			err := windows.Close(fd)
+			if err != nil {
+				return fmt.Errorf("%w: %w: %w", Err, ErrCloseFailed, err)
+			}
+
+			return nil
+		}
+
+		return
+	}
 }
 
 func (s *socketWindows) Send(remoteAddr netip.AddrPort, data []byte) error {
@@ -105,7 +105,7 @@ func (s *socketWindows) Send(remoteAddr netip.AddrPort, data []byte) error {
 	return nil
 }
 
-func (s *socket) Receive(data []byte) (int, netip.AddrPort, error) {
+func (s *socketWindows) Receive(data []byte) (int, netip.AddrPort, error) {
 	s.mtx.RLock()
 	fd := s.fd
 	s.mtx.RUnlock()

@@ -72,9 +72,13 @@ func (t Torrent) PublishedAt() time.Time {
 			dt = source.PublishedAt.Time
 		}
 
-		if dt.Before(publishedAt) {
+		if dt.Before(publishedAt) && dt.After(cutoff) {
 			publishedAt = dt
 		}
+	}
+
+	if !publishedAt.After(cutoff) {
+		publishedAt = time.Now()
 	}
 
 	return publishedAt

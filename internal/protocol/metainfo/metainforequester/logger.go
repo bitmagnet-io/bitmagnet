@@ -14,7 +14,7 @@ type requestLogger struct {
 	requester Requester
 }
 
-func (r requestLogger) Request(ctx context.Context, infoHash protocol.ID, addr netip.AddrPort) (Response, error) {
+func (r *requestLogger) Request(ctx context.Context, infoHash protocol.ID, addr netip.AddrPort) (Response, error) {
 	start := time.Now()
 	resp, err := r.requester.Request(ctx, infoHash, addr)
 	keyValues := []interface{}{

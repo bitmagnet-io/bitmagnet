@@ -10,10 +10,10 @@ import (
 
 type Params struct {
 	fx.In
-	Config     Config
-	TmdbConfig tmdb.Config
-	Search     search.Search
-	TmdbClient tmdb.Client
+	Config      Config
+	Search      search.Search
+	TmdbClient  tmdb.Client
+	TmdbEnabled tmdb.Enabled
 }
 
 type Result struct {
@@ -24,7 +24,7 @@ type Result struct {
 }
 
 func New(params Params) (Result, error) {
-	src, err := newSourceProvider(params.Config, params.TmdbConfig).source()
+	src, err := newSourceProvider(params.Config, params.TmdbEnabled).source()
 	if err != nil {
 		return Result{}, err
 	}

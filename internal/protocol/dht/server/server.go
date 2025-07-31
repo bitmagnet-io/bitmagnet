@@ -18,8 +18,12 @@ import (
 const Namespace = "dht_server"
 
 type Server interface {
-	runner.Interface
 	Query(ctx context.Context, addr netip.AddrPort, q string, args dht.MsgArgs) (dht.RecvMsg, error)
+}
+
+type Runner interface {
+	Server
+	runner.Provider
 }
 
 type server struct {
@@ -33,29 +37,31 @@ type server struct {
 	logger           *zap.SugaredLogger
 }
 
-func (s *server) Runner(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
-	shutdown := make(chan struct{})
+func (s *server) Runner() runner.Runner {
+	return func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
+		shutdown := make(chan struct{})
 
-	go func() {
-		err := s.read(ctx)
+		go func() {
+			err := s.read(ctx)
 
-		select {
-		case <-shutdown:
-			if errors.Is(err, context.Canceled) {
-				err = nil
+			select {
+			case <-shutdown:
+				if errors.Is(err, context.Canceled) {
+					err = nil
+				}
+			default:
 			}
-		default:
-		}
 
-		cancel(err)
-	}()
+			cancel(err)
+		}()
 
-	return func(context.Context) error {
-		close(shutdown)
-		cancel(runner.ErrShutdownRequested)
+		return func(context.Context) error {
+			close(shutdown)
+			cancel(runner.ErrShutdownRequested)
 
-		return nil
-	}, nil
+			return nil
+		}, nil
+	}
 }
 
 func (s *server) read(ctx context.Context) error {

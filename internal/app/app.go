@@ -1,28 +1,42 @@
 package app
 
 import (
-	"context"
-	"io"
-
-	"github.com/bitmagnet-io/bitmagnet/internal"
-	"github.com/bitmagnet-io/bitmagnet/internal/app/appfx"
-	"github.com/bitmagnet-io/bitmagnet/internal/logging/loggingfx"
-	"go.uber.org/fx"
+	"github.com/bitmagnet-io/bitmagnet/internal/env"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin/bundle"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin/cmd/root"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin/registry"
 )
 
-func New(
-	ctx context.Context,
-	stdout io.Writer,
-	opts ...fx.Option,
-) *fx.App {
-	return fx.New(
-		append([]fx.Option{
-			appfx.New(),
-			loggingfx.WithLogger(),
-			fx.Supply(
-				fx.Annotate(ctx, fx.As(new(internal.BackgroundContext))),
-				fx.Annotate(stdout, fx.As(new(internal.Stdout))),
-			),
-		}, opts...)...,
+func Run(env env.Env, bundles ...bundle.Bundle) (int, error) {
+	app, err := New(bundles...)
+	if err != nil {
+		return 1, err
+	}
+
+	return app.Run(env)
+}
+
+type App struct {
+	registry *registry.Builder
+}
+
+func New(bundles ...bundle.Bundle) (*App, error) {
+	registry, err := registry.New(
+		append(
+			[]bundle.Bundle{bundle.Core},
+			bundles...,
+		)...,
 	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &App{
+		registry: registry,
+	}, nil
+}
+
+func (k *App) Run(env env.Env) (int, error) {
+	return root.NewFactpry(k.registry).Run(env)
 }

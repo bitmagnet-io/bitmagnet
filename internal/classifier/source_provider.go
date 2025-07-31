@@ -8,7 +8,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func newSourceProvider(config Config, tmdbConfig tmdb.Config) sourceProvider {
+func newSourceProvider(
+	config Config,
+	tmdbEnabled tmdb.Enabled,
+) sourceProvider {
 	return mergeSourceProvider{
 		providers: []sourceProvider{
 			yamlSourceProvider{rawSourceProvider: coreSourceProvider{}},
@@ -16,7 +19,7 @@ func newSourceProvider(config Config, tmdbConfig tmdb.Config) sourceProvider {
 			yamlSourceProvider{rawSourceProvider: cwdSourceProvider{}},
 			configSourceProvider{
 				config:      config,
-				tmdbEnabled: tmdbConfig.Enabled,
+				tmdbEnabled: tmdbEnabled,
 			},
 		},
 	}
@@ -118,7 +121,7 @@ func (cwdSourceProvider) source() ([]byte, error) {
 
 type configSourceProvider struct {
 	config      Config
-	tmdbEnabled bool
+	tmdbEnabled tmdb.Enabled
 }
 
 func (c configSourceProvider) source() (Source, error) {

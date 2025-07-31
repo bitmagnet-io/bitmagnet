@@ -8,8 +8,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 )
 
-const Namespace = "http_server"
-
 func New(
 	handler http.Handler,
 	localAddress string,

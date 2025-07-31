@@ -41,7 +41,6 @@ type executionContext struct {
 	dependencies
 	flags     map[string]ref.Val
 	workflows map[string]action
-	torrent   model.Torrent
 	torrentPb *protobuf.Torrent
 	result    classification.Result
 	resultPb  *protobuf.Classification

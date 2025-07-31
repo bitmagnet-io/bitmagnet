@@ -25,7 +25,7 @@ func (parseVideoContentAction) compileAction(ctx compilerContext) (action, error
 
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
-			parsed, err := parsers.ParseVideoContent(ctx.torrent, ctx.result)
+			parsed, err := parsers.ParseVideoContent(ctx.result)
 			cl := ctx.result
 			if err != nil {
 				return cl, err

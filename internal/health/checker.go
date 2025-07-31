@@ -10,8 +10,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 )
 
-const Namespace = "health_checker"
-
 type (
 	checkerConfig struct {
 		timeout              time.Duration
@@ -46,7 +44,7 @@ type (
 
 	// Checker is the main checker interface. It provides all health checking logic.
 	Checker interface {
-		runner.Interface
+		runner.Provider
 		// Check runs all synchronous (i.e., non-periodic) check functions.
 		// It returns the aggregated health status (combined from the results
 		// of this executions synchronous checks and the previously reported
@@ -98,36 +96,38 @@ func newChecker(cfg checkerConfig) *defaultChecker {
 	}
 }
 
-func (ck *defaultChecker) Runner(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
-	ck.mtx.Lock()
-
-	if ck.started {
-		return runner.NopShutdowner, fmt.Errorf("%w: %w", Err, runner.ErrAlreadyRunning)
-	}
-
-	ck.started = true
-	ck.startedAt = time.Now()
-
-	ck.mtx.Unlock()
-
-	ck.startPeriodicChecks(ctx)
-
-	go ck.Check(ctx)
-
-	return func(context.Context) error {
-		cancel(nil)
-
-		ck.wg.Wait()
-
+func (ck *defaultChecker) Runner() runner.Runner {
+	return func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
 		ck.mtx.Lock()
 
-		ck.started = false
-		ck.periodicCheckCount = 0
+		if ck.started {
+			return runner.NopShutdowner, fmt.Errorf("%w: %w", Err, runner.ErrAlreadyRunning)
+		}
+
+		ck.started = true
+		ck.startedAt = time.Now()
 
 		ck.mtx.Unlock()
 
-		return nil
-	}, nil
+		ck.startPeriodicChecks(ctx)
+
+		go ck.Check(ctx)
+
+		return func(context.Context) error {
+			cancel(nil)
+
+			ck.wg.Wait()
+
+			ck.mtx.Lock()
+
+			ck.started = false
+			ck.periodicCheckCount = 0
+
+			ck.mtx.Unlock()
+
+			return nil
+		}, nil
+	}
 }
 
 // GetRunningPeriodicCheckCount implements Checker.GetRunningPeriodicCheckCount.

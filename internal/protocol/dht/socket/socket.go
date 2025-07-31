@@ -6,8 +6,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 )
 
-const Namespace = "dht_socket"
-
 type Socket interface {
 	Send(netip.AddrPort, []byte) error
 	Receive([]byte) (int, netip.AddrPort, error)
@@ -15,5 +13,5 @@ type Socket interface {
 
 type Runner interface {
 	Socket
-	runner.Interface
+	runner.Provider
 }

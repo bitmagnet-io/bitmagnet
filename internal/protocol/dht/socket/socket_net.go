@@ -26,43 +26,45 @@ type socketNet struct {
 	conn      *net.UDPConn
 }
 
-func (s *socketNet) Runner(
-	_ context.Context,
-	cancel context.CancelCauseFunc,
-) (shutdowner runner.Shutdowner, err error) {
-	defer func() {
-		if err != nil {
-			cancel(err)
-		}
-	}()
+func (s *socketNet) Runner() runner.Runner {
+	return func(
+		_ context.Context,
+		cancel context.CancelCauseFunc,
+	) (shutdowner runner.Shutdowner, err error) {
+		defer func() {
+			if err != nil {
+				cancel(err)
+			}
+		}()
 
-	s.mtx.Lock()
-	defer s.mtx.Unlock()
-
-	if s.conn != nil {
-		err = fmt.Errorf("%w: %w: %w", Err, ErrOpenFailed, runner.ErrAlreadyRunning)
-		return
-	}
-
-	conn, err := net.ListenUDP("udp", net.UDPAddrFromAddrPort(s.localAddr))
-	if err != nil {
-		err = fmt.Errorf("%w: %w: %w", Err, ErrOpenFailed, err)
-		return
-	}
-
-	s.conn = conn
-
-	shutdowner = func(context.Context) error {
 		s.mtx.Lock()
 		defer s.mtx.Unlock()
 
-		err := s.conn.Close()
-		s.conn = nil
+		if s.conn != nil {
+			err = fmt.Errorf("%w: %w: %w", Err, ErrOpenFailed, runner.ErrAlreadyRunning)
+			return
+		}
 
-		return err
+		conn, err := net.ListenUDP("udp", net.UDPAddrFromAddrPort(s.localAddr))
+		if err != nil {
+			err = fmt.Errorf("%w: %w: %w", Err, ErrOpenFailed, err)
+			return
+		}
+
+		s.conn = conn
+
+		shutdowner = func(context.Context) error {
+			s.mtx.Lock()
+			defer s.mtx.Unlock()
+
+			err := s.conn.Close()
+			s.conn = nil
+
+			return err
+		}
+
+		return
 	}
-
-	return
 }
 
 func (s *socketNet) Send(remoteAddr netip.AddrPort, data []byte) error {

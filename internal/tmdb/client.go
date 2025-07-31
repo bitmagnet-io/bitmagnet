@@ -2,22 +2,22 @@ package tmdb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 )
-
-const Namespace = "tmdb"
 
 type client struct {
 	requester Requester
 }
 
 func newError(msg string) error {
-	return fmt.Errorf("TMDB request failed: %s", msg)
+	return fmt.Errorf("%w: request failed: %s", Err, msg)
 }
 
 var (
+	Err             = errors.New("tmdb")
 	ErrUnauthorized = newError("401 Unauthorized")
 	ErrNotFound     = newError("404 Not Found")
 )

@@ -24,7 +24,7 @@ type Params struct {
 
 type Result struct {
 	fx.Out
-	Server            Server
+	Server            Runner
 	QueryDuration     prometheus.Collector `group:"prometheus_collectors"`
 	QuerySuccessTotal prometheus.Collector `group:"prometheus_collectors"`
 	QueryErrorTotal   prometheus.Collector `group:"prometheus_collectors"`
@@ -39,10 +39,10 @@ func New(p Params) Result {
 	collector := newPrometheusCollector()
 
 	s := queryLimiter{
-		Server: prometheusServerWrapper{
+		serverRunner: serverRunner{prometheusServerWrapper{
 			prometheusCollector: collector,
-			Server: healthCollector{
-				Server: &server{
+			serverRunner: serverRunner{healthCollector{
+				serverRunner: serverRunner{&server{
 					socket:           p.Socket,
 					queries:          make(map[string]chan dht.RecvMsg),
 					queryTimeout:     p.Config.QueryTimeout,
@@ -50,10 +50,10 @@ func New(p Params) Result {
 					responderTimeout: time.Second * 5,
 					idIssuer:         &VariantIDIssuer{},
 					logger:           p.Logger.Named(Namespace),
-				},
+				}},
 				lastResponses: p.LastResponses,
 			},
-		},
+			}}},
 		queryLimiter: concurrency.NewKeyedLimiter(rate.Every(time.Second), 4, 1000, time.Second*20),
 	}
 

@@ -17,6 +17,10 @@ func (n Maybe[T]) IsDefined() bool {
 	return n.Valid
 }
 
+func (n Maybe[T]) ValueOK() (T, bool) {
+	return n.Val, n.Valid
+}
+
 func (n Maybe[T]) Addr() *T {
 	if !n.Valid {
 		return nil

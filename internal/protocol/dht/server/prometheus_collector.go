@@ -52,7 +52,7 @@ func newPrometheusCollector() prometheusCollector {
 
 type prometheusServerWrapper struct {
 	prometheusCollector
-	Server
+	serverRunner
 }
 
 func (s prometheusServerWrapper) Query(
@@ -65,7 +65,7 @@ func (s prometheusServerWrapper) Query(
 	s.queryConcurrency.With(labels).Inc()
 
 	start := time.Now()
-	res, err := s.Server.Query(ctx, addr, q, args)
+	res, err := s.serverRunner.Query(ctx, addr, q, args)
 	s.queryConcurrency.With(labels).Dec()
 
 	if err == nil {

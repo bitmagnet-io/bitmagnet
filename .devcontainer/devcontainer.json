@@ -1,0 +1,16 @@
+{
+  "name": "bitmagnet",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "bitmagnet-dev",
+  "workspaceFolder": "/home/bitmagnet/code",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "nix-shell"
+      }
+    }
+  },
+  "onCreateCommand": "cd ~/code && nix develop --install && ln -s $(nix develop -c which go) ~/.local/bin/go",
+  "waitFor": "onCreateCommand",
+  "remoteUser": "bitmagnet"
+}

@@ -16,18 +16,18 @@ type Config struct {
 	LogLevel      gormlogger.LogLevel
 }
 
-func New(zapLogger *zap.SugaredLogger, cfg Config) gormlogger.Interface {
+func New(logger *zap.Logger, cfg Config) gormlogger.Interface {
 	return &customLogger{
 		logLevel:      cfg.LogLevel,
 		slowThreshold: cfg.SlowThreshold,
-		zap:           zapLogger.Named("gorm"),
+		zap:           logger,
 	}
 }
 
 type customLogger struct {
 	logLevel      gormlogger.LogLevel
 	slowThreshold time.Duration
-	zap           *zap.SugaredLogger
+	zap           *zap.Logger
 }
 
 func (l *customLogger) LogMode(level gormlogger.LogLevel) gormlogger.Interface {
@@ -38,15 +38,15 @@ func (l *customLogger) LogMode(level gormlogger.LogLevel) gormlogger.Interface {
 }
 
 func (l *customLogger) Info(_ context.Context, msg string, data ...interface{}) {
-	l.zap.Debugw("gorm", "msg", msg, "data", data)
+	l.zap.Debug(msg, zap.Any("data", data))
 }
 
 func (l *customLogger) Warn(_ context.Context, msg string, data ...interface{}) {
-	l.zap.Warnw("gorm", "msg", msg, "data", data)
+	l.zap.Warn(msg, zap.Any("data", data))
 }
 
 func (l *customLogger) Error(_ context.Context, msg string, data ...interface{}) {
-	l.zap.Errorw("gorm", "msg", msg, "data", data)
+	l.zap.Error(msg, zap.Any("data", data))
 }
 
 func (l *customLogger) Trace(_ context.Context, begin time.Time, fc func() (string, int64), err error) {
@@ -61,27 +61,27 @@ func (l *customLogger) Trace(_ context.Context, begin time.Time, fc func() (stri
 		!errors.Is(err, gormlogger.ErrRecordNotFound) &&
 		!errors.Is(err, context.Canceled):
 		sql, rows := fc()
-		l.zap.Errorw("gorm trace",
-			"location", utils.FileWithLineNum(),
-			"error", err,
-			"elapsed", float64(elapsed.Nanoseconds())/1e6,
-			"sql", sql,
-			"rows", rows)
+		l.zap.Error("gorm trace",
+			zap.String("location", utils.FileWithLineNum()),
+			zap.Error(err),
+			zap.Float64("elapsed", float64(elapsed.Nanoseconds())/1e6),
+			zap.String("sql", sql),
+			zap.Int64("rows", rows))
 	case elapsed > l.slowThreshold && l.slowThreshold != 0 && l.logLevel >= gormlogger.Warn:
 		sql, rows := fc()
 		slowLog := fmt.Sprintf("SLOW SQL >= %v", l.slowThreshold)
-		l.zap.Warnw("gorm trace",
-			"location", utils.FileWithLineNum(),
-			"slowLog", slowLog,
-			"elapsed", float64(elapsed.Nanoseconds())/1e6,
-			"sql", sql,
-			"rows", rows)
+		l.zap.Warn("gorm trace",
+			zap.String("location", utils.FileWithLineNum()),
+			zap.String("slowLog", slowLog),
+			zap.Float64("elapsed", float64(elapsed.Nanoseconds())/1e6),
+			zap.String("sql", sql),
+			zap.Int64("rows", rows))
 	case l.logLevel == gormlogger.Info:
 		sql, rows := fc()
-		l.zap.Debugw("gorm trace",
-			"location", utils.FileWithLineNum(),
-			"elapsed", float64(elapsed.Nanoseconds())/1e6,
-			"sql", sql,
-			"rows", rows)
+		l.zap.Debug("gorm trace",
+			zap.String("location", utils.FileWithLineNum()),
+			zap.Float64("elapsed", float64(elapsed.Nanoseconds())/1e6),
+			zap.String("sql", sql),
+			zap.Int64("rows", rows))
 	}
 }

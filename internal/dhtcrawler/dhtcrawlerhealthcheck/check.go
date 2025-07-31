@@ -11,15 +11,15 @@ import (
 )
 
 func NewCheck(
-	isActive *concurrency.AtomicValue[bool],
+	name string,
+	isActive func() bool,
+	//isActive *concurrency.AtomicValue[bool],
 	lastResponses *concurrency.AtomicValue[server.LastResponses],
 ) health.Check {
 	return health.Check{
-		Name: "dht",
-		IsActive: func() bool {
-			return isActive.Get()
-		},
-		Timeout: time.Second,
+		Name:     name,
+		IsActive: isActive,
+		Timeout:  time.Second,
 		Check: func(context.Context) error {
 			lr := lastResponses.Get()
 			if lr.StartTime.IsZero() {

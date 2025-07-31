@@ -1,0 +1,45 @@
+services:
+
+  bitmagnet-dev:
+    container_name: bitmagnet-dev
+    build:
+      context: ../
+      dockerfile: Dockerfile_dev
+    volumes:
+#      - bitmagnet-nix-store:/nix/store
+      - ../:/home/bitmagnet/code
+      - bitmagnet-cache:/home/bitmagnet/.cache
+      - bitmagnet-gocache:/home/bitmagnet/go/pkg/mod
+      - ./.zshrc:/home/bitmagnet/.zshrc
+    environment:
+      CORE_DATABASE_POSTGRES_PASSWORD: postgres
+      CORE_DATABASE_POSTGRES_HOST: postgres
+    ports:
+      - 3333:3333
+      - 3334:3334
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: bitmagnet-postgres
+    volumes:
+      - bitmagnet-postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=bitmagnet
+      - PGUSER=postgres
+    shm_size: 1g
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready
+      start_period: 20s
+      interval: 10s
+
+volumes:
+  bitmagnet-nix-store:
+  bitmagnet-cache:
+  bitmagnet-gocache:
+  bitmagnet-postgres:

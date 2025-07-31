@@ -45,7 +45,7 @@ func TestAdapters(t *testing.T) {
 				runnerCancel(nil)
 			})
 
-			shutdown, err := sock.Runner(ctx, runnerCancel)
+			shutdown, err := sock.Runner()(ctx, runnerCancel)
 			require.NoError(t, err)
 
 			t.Cleanup(func() {

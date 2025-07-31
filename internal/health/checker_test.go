@@ -129,7 +129,7 @@ func TestStartStopManualPeriodicChecks(t *testing.T) {
 	ctx, cancel := context.WithCancelCause(t.Context())
 	defer cancel(nil)
 
-	shutdowner, err := ckr.Runner(ctx, cancel)
+	shutdowner, err := ckr.Runner()(ctx, cancel)
 	require.NoError(t, err)
 
 	assert.Equal(t, 1, ckr.GetRunningPeriodicCheckCount())

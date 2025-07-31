@@ -9,7 +9,7 @@ import (
 )
 
 type queryLimiter struct {
-	Server
+	serverRunner
 	queryLimiter concurrency.KeyedLimiter
 }
 
@@ -23,5 +23,5 @@ func (s queryLimiter) Query(
 		return r, limitErr
 	}
 
-	return s.Server.Query(ctx, addr, q, args)
+	return s.serverRunner.Query(ctx, addr, q, args)
 }

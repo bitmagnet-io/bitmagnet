@@ -6,4 +6,5 @@ type WorkerState struct {
 	worker.StateInfo
 	RequiredBy worker.DependencyMap
 	DependsOn  worker.DependencyMap
+	Autostart  bool
 }

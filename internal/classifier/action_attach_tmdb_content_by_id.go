@@ -29,7 +29,7 @@ func (attachTMDBContentByIDAction) compileAction(ctx compilerContext) (action, e
 		run: func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result
 			var ref model.ContentRef
-			maybeRef := ctx.torrent.Hint.ContentRef()
+			maybeRef := cl.Torrent.Hint.ContentRef()
 			if !maybeRef.Valid {
 				return cl, classification.ErrUnmatched
 			}

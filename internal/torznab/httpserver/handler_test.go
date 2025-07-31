@@ -43,7 +43,7 @@ func newTestHarness(t *testing.T) *testHarness {
 	clientMock := torznab_mocks.NewClient(t)
 
 	engine := gin.New()
-	httpserver.New(clientMock, testCfg).Apply(engine)
+	engine.Use(httpserver.Handler(testCfg, clientMock))
 
 	return &testHarness{
 		t:                t,

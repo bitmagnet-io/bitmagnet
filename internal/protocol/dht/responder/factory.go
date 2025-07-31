@@ -3,7 +3,6 @@ package responder
 import (
 	"time"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"github.com/prometheus/client_golang/prometheus"
@@ -15,9 +14,9 @@ import (
 
 type Params struct {
 	fx.In
-	KTable          ktable.Table
-	DiscoveredNodes concurrency.BatchingChannel[ktable.Node]
-	Logger          *zap.SugaredLogger
+	KTable ktable.Table
+	// DiscoveredNodes dht.DiscoveredNodesWorker
+	Logger *zap.SugaredLogger
 }
 
 type Result struct {
@@ -46,15 +45,21 @@ func New(p Params) Result {
 	})
 
 	return Result{
-		Responder: responderNodeDiscovery{
-			responder: responderLogger{
-				responder: collector,
-				logger: p.Logger.WithOptions(zap.WrapCore(func(core zapcore.Core) zapcore.Core {
-					return zapcore.NewSamplerWithOptions(core, time.Minute, 10, 0)
-				})).Named(subsystem),
-			},
-			discoveredNodes: p.DiscoveredNodes.In(),
+		Responder: responderLogger{
+			responder: collector,
+			logger: p.Logger.WithOptions(zap.WrapCore(func(core zapcore.Core) zapcore.Core {
+				return zapcore.NewSamplerWithOptions(core, time.Minute, 10, 0)
+			})).Named(subsystem),
 		},
+		// Responder: responderNodeDiscovery{
+		// 	responder: responderLogger{
+		// 		responder: collector,
+		// 		logger: p.Logger.WithOptions(zap.WrapCore(func(core zapcore.Core) zapcore.Core {
+		// 			return zapcore.NewSamplerWithOptions(core, time.Minute, 10, 0)
+		// 		})).Named(subsystem),
+		// 	},
+		// 	discoveredNodes: p.DiscoveredNodes,
+		// },
 		QueryDuration:     collector.queryDuration,
 		QuerySuccessTotal: collector.querySuccessTotal,
 		QueryErrorTotal:   collector.queryErrorTotal,

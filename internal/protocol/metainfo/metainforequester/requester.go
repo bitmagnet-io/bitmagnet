@@ -83,7 +83,7 @@ type Response struct {
 	Info metainfo.Info
 }
 
-func (r requester) Request(ctx context.Context, infoHash protocol.ID, addr netip.AddrPort) (Response, error) {
+func (r *requester) Request(ctx context.Context, infoHash protocol.ID, addr netip.AddrPort) (Response, error) {
 	timeoutCtx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
 

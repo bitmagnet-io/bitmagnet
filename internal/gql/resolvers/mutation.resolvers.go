@@ -11,7 +11,8 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
-	"github.com/bitmagnet-io/bitmagnet/internal/processor"
+	"github.com/bitmagnet-io/bitmagnet/internal/indexer"
+	"github.com/bitmagnet-io/bitmagnet/internal/persister"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
@@ -35,7 +36,14 @@ func (r *mutationResolver) Worker(ctx context.Context) (gqlmodel.WorkerMutation,
 
 // Delete is the resolver for the delete field.
 func (r *torrentMutationResolver) Delete(ctx context.Context, obj *gqlmodel.TorrentMutation, infoHashes []protocol.ID) (*string, error) {
-	err := r.Blocker.Block(ctx, infoHashes, true)
+	err := r.PersisterAdder.Add(
+		ctx,
+		persister.Inputs{
+			persister.InputDeleteInfoHashes(infoHashes...),
+			persister.InputFlush,
+		}.Input(),
+	)
+	// err := r.Blocker.Block(ctx, infoHashes, true)
 	return nil, err
 }
 
@@ -71,9 +79,9 @@ func (r *torrentMutationResolver) DeleteTags(ctx context.Context, obj *gqlmodel.
 
 // Reprocess is the resolver for the reprocess field.
 func (r *torrentMutationResolver) Reprocess(ctx context.Context, obj *gqlmodel.TorrentMutation, input gen.TorrentReprocessInput) (*string, error) {
-	params := processor.MessageParams{
+	params := indexer.MessageParams{
 		InfoHashes: input.InfoHashes,
-		ClassifierParams: processor.ClassifierParams{
+		ClassifierParams: indexer.ClassifierParams{
 			ClassifierFlags: make(classifier.Flags),
 		},
 	}
@@ -82,7 +90,7 @@ func (r *torrentMutationResolver) Reprocess(ctx context.Context, obj *gqlmodel.T
 	}
 
 	if r, ok := input.ClassifierRematch.ValueOK(); ok && *r {
-		params.ClassifyMode = processor.ClassifyModeRematch
+		params.ClassifyMode = indexer.ClassifyModeRematch
 	}
 
 	if apisDisabled, ok := input.ApisDisabled.ValueOK(); ok {
@@ -93,7 +101,7 @@ func (r *torrentMutationResolver) Reprocess(ctx context.Context, obj *gqlmodel.T
 		params.ClassifierFlags["local_search_enabled"] = !*localSearchDisabled
 	}
 
-	return nil, r.Processor.NewJob(params).Run(ctx)
+	return nil, r.Indexer.NewJob(params).Run(ctx)
 }
 
 // Mutation returns gql.MutationResolver implementation.

@@ -12,36 +12,46 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type handler struct {
-	config torznab.Config
-	client torznab.Client
-}
+func Option(cfg torznab.Config, client torznab.Client) gin.OptionFunc {
+	handler := Handler(cfg, client)
 
-func (h handler) handleRequest(ctx *gin.Context) {
-	profile, err := h.getProfile(ctx)
-	if err != nil {
-		h.writeError(ctx, err)
-		return
-	}
-
-	tp := ctx.Query(torznab.ParamType)
-
-	switch tp {
-	case "":
-		h.writeError(ctx, torznab.Error{
-			Code:        200,
-			Description: fmt.Sprintf("missing parameter (%s)", torznab.ParamType),
-		})
-
-	case torznab.FunctionCaps:
-		h.writeXML(ctx, profile.Caps())
-
-	default:
-		h.handleSearch(ctx, profile, tp)
+	return func(engine *gin.Engine) {
+		engine.GET("/torznab/*any", handler)
 	}
 }
 
-func (h handler) handleSearch(ctx *gin.Context, profile torznab.Profile, tp string) {
+func Handler(cfg torznab.Config, client torznab.Client) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		profile, err := getProfile(ctx, cfg)
+		if err != nil {
+			writeError(ctx, err)
+			return
+		}
+
+		tp := ctx.Query(torznab.ParamType)
+
+		switch tp {
+		case "":
+			writeError(ctx, torznab.Error{
+				Code:        200,
+				Description: fmt.Sprintf("missing parameter (%s)", torznab.ParamType),
+			})
+
+		case torznab.FunctionCaps:
+			writeXML(ctx, profile.Caps())
+
+		default:
+			handleSearch(ctx, client, profile, tp)
+		}
+	}
+}
+
+func handleSearch(
+	ctx *gin.Context,
+	client torznab.Client,
+	profile torznab.Profile,
+	tp string,
+) {
 	var cats []int
 
 	for _, csvCat := range ctx.QueryArray(torznab.ParamCat) {
@@ -93,7 +103,7 @@ func (h handler) handleSearch(ctx *gin.Context, profile torznab.Profile, tp stri
 		offset.Uint = uint(intOffset)
 	}
 
-	result, searchErr := h.client.Search(ctx, torznab.SearchRequest{
+	result, searchErr := client.Search(ctx, torznab.SearchRequest{
 		Profile: profile,
 		Query:   ctx.Query(torznab.ParamQuery),
 		Type:    tp,
@@ -106,17 +116,17 @@ func (h handler) handleSearch(ctx *gin.Context, profile torznab.Profile, tp stri
 		Offset:  offset,
 	})
 	if searchErr != nil {
-		h.writeError(ctx, fmt.Errorf("failed to search: %w", searchErr))
+		writeError(ctx, fmt.Errorf("failed to search: %w", searchErr))
 		return
 	}
 
-	h.writeXML(ctx, result)
+	writeXML(ctx, result)
 }
 
-func (h handler) writeXML(ctx *gin.Context, obj torznab.XMLer) {
+func writeXML(ctx *gin.Context, obj torznab.XMLer) {
 	body, err := obj.XML()
 	if err != nil {
-		h.writeHTTPError(ctx, fmt.Errorf("failed to encode xml: %w", err))
+		writeHTTPError(ctx, fmt.Errorf("failed to encode xml: %w", err))
 		return
 	}
 
@@ -125,16 +135,16 @@ func (h handler) writeXML(ctx *gin.Context, obj torznab.XMLer) {
 	_, _ = ctx.Writer.Write(body)
 }
 
-func (h handler) writeError(ctx *gin.Context, err error) {
+func writeError(ctx *gin.Context, err error) {
 	var torznabErr torznab.Error
 	if ok := errors.As(err, &torznabErr); ok {
-		h.writeXML(ctx, torznabErr)
+		writeXML(ctx, torznabErr)
 	} else {
-		h.writeHTTPError(ctx, err)
+		writeHTTPError(ctx, err)
 	}
 }
 
-func (handler) writeHTTPError(ctx *gin.Context, err error) {
+func writeHTTPError(ctx *gin.Context, err error) {
 	code := http.StatusInternalServerError
 
 	var httpErr httpError
@@ -164,13 +174,13 @@ func (profileNotFoundError) httpErrorCode() int {
 	return http.StatusNotFound
 }
 
-func (h handler) getProfile(c *gin.Context) (torznab.Profile, error) {
-	profilePathPart := strings.ToLower(strings.Split(strings.Trim(c.Param("any"), "/"), "/")[0])
+func getProfile(ctx *gin.Context, cfg torznab.Config) (torznab.Profile, error) {
+	profilePathPart := strings.ToLower(strings.Split(strings.Trim(ctx.Param("any"), "/"), "/")[0])
 	switch profilePathPart {
 	case "", "api", torznab.ProfileDefault.ID:
 		return torznab.ProfileDefault, nil
 	default:
-		profile, ok := h.config.GetProfile(profilePathPart)
+		profile, ok := cfg.GetProfile(profilePathPart)
 		if !ok {
 			return profile, profileNotFoundError{name: profilePathPart}
 		}
