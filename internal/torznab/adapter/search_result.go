@@ -55,6 +55,8 @@ func torrentContentResultItemToTorznabResultItem(item search.TorrentContentResul
 			categoryID = torznab.CategoryPC.ID
 		case model.ContentTypeGame:
 			categoryID = torznab.CategoryPCGames.ID
+		case model.ContentTypeXxx:
+			categoryID = torznab.CategoryXXX.ID
 		}
 	}
 
