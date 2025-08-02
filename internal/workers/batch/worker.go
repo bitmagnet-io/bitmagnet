@@ -6,9 +6,8 @@ import (
 	"sync"
 	"time"
 
-	runner2 "github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
-
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 )
 
 type Keyer[K comparable, V any] func(V) K
@@ -28,7 +27,7 @@ type Adder[V any] interface {
 }
 
 type Worker[V any] interface {
-	runner2.Provider
+	runner.Provider
 	Adder[V]
 }
 
@@ -78,19 +77,19 @@ func (w *worker[K, V]) Add(ctx context.Context, items ...V) error {
 	case <-ctx.Done():
 		return ctx.Err()
 	case <-shutdown:
-		return fmt.Errorf("%w: %w", Err, runner2.ErrShutdownRequested)
+		return fmt.Errorf("%w: %w", Err, runner.ErrShutdownRequested)
 	case ch <- items:
 		return nil
 	}
 }
 
-func (w *worker[K, V]) Runner() runner2.Runner {
-	return func(ctx context.Context, cancel context.CancelCauseFunc) (runner2.Shutdowner, error) {
+func (w *worker[K, V]) Runner() runner.Runner {
+	return func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
 		w.mtx.Lock()
 		defer w.mtx.Unlock()
 
 		if w.ch != nil {
-			return runner2.NopShutdowner, runner2.ErrAlreadyRunning
+			return runner.NopShutdowner, runner.ErrAlreadyRunning
 		}
 
 		ch := make(chan []V, 1)
@@ -170,7 +169,7 @@ func (w *worker[K, V]) Runner() runner2.Runner {
 			var err error
 
 			if w.quickShutdown {
-				cancel(runner2.ErrShutdownRequested)
+				cancel(runner.ErrShutdownRequested)
 			} else {
 				select {
 				case <-shutdownCtx.Done():
