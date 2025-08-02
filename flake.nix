@@ -29,10 +29,16 @@
             protoc-gen-go
             starship
             ruby
+            vim
             zsh
           ] ++ (if stdenv.isLinux then [
             chromium
           ] else []);
+
+          shellHook = ''
+            export SHELL=$(which zsh)
+            exec $SHELL
+          '';
         };
       };
     });
