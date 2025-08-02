@@ -12,7 +12,7 @@ import (
 
 func New(
 	daoProvider database.DaoTransactionProvider,
-	logger *zap.SugaredLogger,
+	logger *zap.Logger,
 	handlers ...handler.Handler,
 ) runner.Runner {
 	return func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {

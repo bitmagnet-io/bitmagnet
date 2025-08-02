@@ -2,21 +2,21 @@ package dhtcrawler
 
 import (
 	"context"
-	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"net"
 	"time"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/logging"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/channel"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/periodic"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
+	"go.uber.org/zap"
 )
 
 func newBootstrapNodesWorker(
 	interval time.Duration,
 	bootstrapNodes []string,
 	discoveredNodesAdder channel.Adder[ktable.Node],
-	logger logging.Logger,
+	logger *zap.Logger,
 ) runner.Provider {
 	return periodic.New(
 		interval,
@@ -24,7 +24,7 @@ func newBootstrapNodesWorker(
 			for _, strAddr := range bootstrapNodes {
 				addr, err := net.ResolveUDPAddr("udp", strAddr)
 				if err != nil {
-					logger.Warnf("failed to resolve bootstrap node address: %s", err)
+					logger.Warn("failed to resolve bootstrap node address", zap.Error(err))
 					continue
 				}
 

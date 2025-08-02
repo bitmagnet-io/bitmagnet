@@ -25,7 +25,7 @@ type server struct {
 	gcInterval  time.Duration
 	gcSemaphore chan struct{}
 	draining    chan struct{}
-	logger      *zap.SugaredLogger
+	logger      *zap.Logger
 }
 
 func (s *server) Start(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
@@ -37,7 +37,7 @@ func (s *server) Start(ctx context.Context, cancel context.CancelCauseFunc) (run
 			sem:         make(chan struct{}, h.Concurrency),
 			draining:    s.draining,
 			daoProvider: s.daoProvider,
-			logger:      s.logger.With("queue", h.Queue),
+			logger:      s.logger.With(zap.String("queue", h.Queue)),
 		}
 
 		handlers[i] = sh
@@ -83,7 +83,7 @@ func (s *server) runGarbageCollection(ctx context.Context) {
 
 		daoQ, err := s.daoProvider.Dao()
 		if err != nil {
-			s.logger.Errorw("error getting dao", "error", err)
+			s.logger.Error("error getting dao", zap.Error(err))
 		}
 
 		tx := daoQ.QueueJob.WithContext(ctx).Where(
@@ -95,9 +95,9 @@ func (s *server) runGarbageCollection(ctx context.Context) {
 		).Delete(&model.QueueJob{})
 
 		if tx.Error != nil {
-			s.logger.Errorw("error deleting old queue jobs", "error", tx.Error)
+			s.logger.Error("error deleting old queue jobs", zap.Error(tx.Error))
 		} else if tx.RowsAffected > 0 {
-			s.logger.Debugw("deleted old queue jobs", "count", tx.RowsAffected)
+			s.logger.Debug("deleted old queue jobs", zap.Int64("count", tx.RowsAffected))
 		}
 
 		<-s.gcSemaphore
@@ -119,7 +119,7 @@ type serverHandler struct {
 	draining    chan struct{}
 	daoProvider database.DaoTransactionProvider
 	// listenerChan chan pgconn.Notification
-	logger *zap.SugaredLogger
+	logger *zap.Logger
 }
 
 func (h *serverHandler) start(ctx context.Context) {
@@ -193,7 +193,7 @@ func (h *serverHandler) handleJob(
 		if job.Deadline.Valid && job.Deadline.Time.Before(time.Now()) {
 			jobErr = ErrJobExceededDeadline
 
-			h.logger.Debugw("job deadline is in the past, skipping", "job_id", job.ID)
+			h.logger.Debug("job deadline is in the past, skipping", zap.String("job_id", job.ID))
 		} else {
 			// check if the job is being retried and increment retry count accordingly
 			if job.Status != model.QueueJobStatusPending {
@@ -206,7 +206,7 @@ func (h *serverHandler) handleJob(
 		job.RanAt = sql.NullTime{Time: time.Now(), Valid: true}
 
 		if jobErr != nil {
-			h.logger.Errorw("job failed", "error", jobErr)
+			h.logger.Error("job failed", zap.Error(jobErr))
 
 			if job.Retries < job.MaxRetries {
 				job.Status = model.QueueJobStatusRetry
@@ -226,9 +226,9 @@ func (h *serverHandler) handleJob(
 		return updateErr
 	})
 	if err != nil {
-		h.logger.Errorw("error handling job", "error", err, "job_id", jobID)
+		h.logger.Error("error handling job", zap.String("job_id", jobID), zap.Error(err))
 	} else if processed {
-		h.logger.Debugw("job processed", "job_id", jobID)
+		h.logger.Debug("job processed", zap.String("job_id", jobID))
 	}
 
 	return

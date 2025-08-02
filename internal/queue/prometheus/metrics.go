@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/database"
-	"github.com/bitmagnet-io/bitmagnet/internal/logging"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/prometheus/client_golang/prometheus"
+	"go.uber.org/zap"
 )
 
 // namespace used in fully-qualified metrics names.
@@ -17,7 +17,7 @@ const namespace = "bitmagnet_queue"
 // It implements prometheus.Collector interface.
 type queueMetricsCollector struct {
 	daoProvider database.DaoProvider
-	logger      logging.Logger
+	logger      *zap.Logger
 }
 
 var tasksQueuedDesc = prometheus.NewDesc(
@@ -33,7 +33,7 @@ func (qmc *queueMetricsCollector) Describe(ch chan<- *prometheus.Desc) {
 func (qmc *queueMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 	queueInfos, err := qmc.collectQueueStatusInfos()
 	if err != nil {
-		qmc.logger.Errorf("Failed to collect metrics data: %s", err)
+		qmc.logger.Error("failed to collect metrics data", zap.Error(err))
 	}
 
 	for _, info := range queueInfos {

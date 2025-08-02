@@ -37,5 +37,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Refactored info hash blocker to use Postgres streaming large objects for saving the bloom filter of blocked info hashes, which is significantly more memory efficient than saving these as Gorm models (#396).
 - Deprecated the `bitmagnet worker run` command in favour of `bitmagnet start` (#?).
 - Introduced stricter linting rules (#409, #421).
+- Standardized on structured logging and removed most uss of `zap.SugaredLogger` (#?).
 
 ## [0.10.0] - 2025-03-02

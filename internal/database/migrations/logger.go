@@ -1,40 +1,30 @@
 package migrations
 
 import (
+	"fmt"
 	"strings"
 
 	"go.uber.org/zap"
 )
 
 type gooseLogger struct {
-	l *zap.SugaredLogger
-}
-
-func (l gooseLogger) Fatal(v ...interface{}) {
-	l.l.Error(v...)
+	l *zap.Logger
 }
 
 func (l gooseLogger) Fatalf(format string, v ...interface{}) {
-	l.l.Errorf(strings.TrimSpace(format), v...)
-}
-
-func (l gooseLogger) Print(v ...interface{}) {
-	l.l.Debug(v...)
-}
-
-func (l gooseLogger) Println(v ...interface{}) {
-	l.l.Debug(v...)
+	l.l.Error(fmt.Sprintf(strings.TrimSpace(format), v...))
 }
 
 func (l gooseLogger) Printf(format string, v ...interface{}) {
-	fn := l.l.Debugf
+	fn := l.l.Debug
+
 	if strings.HasPrefix(format, "goose: successfully migrated") ||
 		strings.HasPrefix(format, "goose: no migrations to run") {
-		fn = l.l.Infof
+		fn = l.l.Info
 	}
 
 	format = strings.TrimPrefix(format, "goose: ")
 	format = strings.TrimSpace(format)
 
-	fn(format, v...)
+	fn(fmt.Sprintf(format, v...))
 }

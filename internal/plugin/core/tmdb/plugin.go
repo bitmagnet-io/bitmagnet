@@ -33,7 +33,7 @@ var (
 		),
 		builder.WithDefaultConfig[Config, deps](Config(tmdb.NewDefaultConfig())),
 		builder.WithFxOption[Config, deps](
-			fx.Decorate(func(cfg Config, logger *zap.SugaredLogger, _ tmdb.Client) tmdb.Client {
+			fx.Decorate(func(cfg Config, logger *zap.Logger, _ tmdb.Client) tmdb.Client {
 				return tmdb.New(tmdb.Config(cfg), logger.Named(Ref.String()))
 			}),
 			fx.Decorate(func(tmdb.Enabled) tmdb.Enabled {

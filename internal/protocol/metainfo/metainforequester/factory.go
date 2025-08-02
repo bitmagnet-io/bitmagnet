@@ -16,7 +16,7 @@ import (
 type Params struct {
 	fx.In
 	Config Config
-	Logger *zap.SugaredLogger
+	Logger *zap.Logger
 }
 
 type Result struct {

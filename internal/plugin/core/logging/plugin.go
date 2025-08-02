@@ -64,9 +64,6 @@ var (
 
 					return zap.New(core, opts...)
 				},
-				func(logger *zap.Logger) *zap.SugaredLogger {
-					return logger.Sugar()
-				},
 			),
 			// fx.Invoke(func(
 			// 	logger *zap.Logger,

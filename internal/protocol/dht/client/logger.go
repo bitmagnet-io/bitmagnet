@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"net/netip"
 	"time"
 
@@ -12,7 +11,7 @@ import (
 
 type clientLogger struct {
 	client Client
-	logger *zap.SugaredLogger
+	logger *zap.Logger
 }
 
 func (l clientLogger) Ping(ctx context.Context, addr netip.AddrPort) (PingResult, error) {
@@ -65,8 +64,15 @@ func (l clientLogger) SampleInfoHashes(
 
 func (l clientLogger) log(query string, addr netip.AddrPort, start time.Time, err error) {
 	if err == nil {
-		l.logger.Debugw(query, "addr", addr, "duration", time.Since(start))
+		l.logger.Debug("query succeeded",
+			zap.String("query", query),
+			zap.Stringer("address", addr),
+			zap.Duration("duration", time.Since(start)))
 	} else {
-		l.logger.Debugw(fmt.Sprintf("%s failed", query), "addr", addr, "duration", time.Since(start), "error", err)
+		l.logger.Debug("query failed",
+			zap.String("query", query),
+			zap.Stringer("address", addr),
+			zap.Duration("duration", time.Since(start)),
+			zap.Error(err))
 	}
 }

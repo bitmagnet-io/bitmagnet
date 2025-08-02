@@ -16,7 +16,7 @@ type Params struct {
 	fx.In
 	KTable ktable.Table
 	// DiscoveredNodes dht.DiscoveredNodesWorker
-	Logger *zap.SugaredLogger
+	Logger *zap.Logger
 }
 
 type Result struct {

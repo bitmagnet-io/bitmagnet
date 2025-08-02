@@ -12,7 +12,7 @@ import (
 func New(
 	nodeID protocol.ID,
 	server server.Server,
-	logger *zap.SugaredLogger,
+	logger *zap.Logger,
 ) Client {
 	return clientLogger{
 		client: serverAdapter{

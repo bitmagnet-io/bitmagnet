@@ -12,7 +12,7 @@ import (
 func New(
 	ttl time.Duration,
 	maxKeys int,
-	logger *zap.SugaredLogger,
+	logger *zap.Logger,
 ) caches.Cacher {
 	return &inMemoryCacher{
 		lru: expirable.NewLRU[string, *caches.Query](
@@ -46,7 +46,7 @@ const ModeKey modeKey = "gorm_cache_mode"
 
 type inMemoryCacher struct {
 	lru    *expirable.LRU[string, *caches.Query]
-	logger *zap.SugaredLogger
+	logger *zap.Logger
 }
 
 func (c *inMemoryCacher) Get(ctx context.Context, key string) *caches.Query {
@@ -60,7 +60,7 @@ func (c *inMemoryCacher) Get(ctx context.Context, key string) *caches.Query {
 		return nil
 	}
 
-	c.logger.Debugw("cache hit", "key", key)
+	c.logger.Debug("cache hit", zap.String("key", key))
 
 	return val
 }

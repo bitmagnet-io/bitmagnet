@@ -1,6 +1,7 @@
 package cors
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
@@ -17,7 +18,7 @@ import (
 
 type deps struct {
 	fx.In
-	Logger *zap.SugaredLogger
+	Logger *zap.Logger
 }
 
 var (
@@ -57,9 +58,9 @@ var (
 )
 
 type corsLogger struct {
-	logger *zap.SugaredLogger
+	logger *zap.Logger
 }
 
 func (c corsLogger) Printf(format string, v ...interface{}) {
-	c.logger.Debugf(format, v...)
+	c.logger.Debug(fmt.Sprintf(format, v...))
 }

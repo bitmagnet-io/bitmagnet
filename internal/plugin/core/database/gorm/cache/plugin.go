@@ -16,7 +16,7 @@ type (
 
 	deps struct {
 		fx.In
-		Logger *zap.SugaredLogger
+		Logger *zap.Logger
 	}
 )
 

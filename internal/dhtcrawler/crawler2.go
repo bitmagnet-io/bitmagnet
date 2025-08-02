@@ -35,7 +35,7 @@ func New(
 	classifier classifier.Runner,
 	persisterAdder persister.Adder,
 	blockerBlocker blocker.Blocker,
-	logger *zap.SugaredLogger,
+	logger *zap.Logger,
 ) Runner {
 	return runner.Runner(
 		func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {

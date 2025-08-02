@@ -1,10 +1,10 @@
 package worker
 
-import "github.com/bitmagnet-io/bitmagnet/internal/logging"
+import "go.uber.org/zap"
 
 type Option func(*Worker)
 
-func WithLogger(logger logging.Logger) Option {
+func WithLogger(logger *zap.Logger) Option {
 	return func(w *Worker) {
 		w.logger = logger
 	}

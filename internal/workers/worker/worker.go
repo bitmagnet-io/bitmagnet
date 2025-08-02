@@ -8,8 +8,8 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/logging"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
+	"go.uber.org/zap"
 )
 
 type StateInfo struct {
@@ -33,7 +33,7 @@ type Worker struct {
 	nextState  chan struct{}
 	shutdowner runner.Shutdowner
 	err        error
-	logger     logging.Logger
+	logger     *zap.Logger
 	dependsOn  DependencyMap
 	autostart  bool
 }
@@ -42,12 +42,15 @@ func NewWorker(runner runner.Provider, options ...Option) *Worker {
 	wrk := &Worker{
 		state:     StateIdle,
 		runner:    runner,
-		logger:    logging.NopLogger,
 		dependsOn: make(DependencyMap),
 	}
 
 	for _, option := range options {
 		option(wrk)
+	}
+
+	if wrk.logger == nil {
+		wrk.logger = zap.NewNop()
 	}
 
 	return wrk
@@ -119,14 +122,14 @@ func (w *Worker) Start(ctx context.Context) (runner.Shutdowner, error) {
 
 		runCtx, runCancel := context.WithCancelCause(ctx)
 
-		w.logger.Debugf("starting")
+		w.logger.Debug("starting")
 
 		shutdown, err := w.runner.Runner()(runCtx, func(err error) {
 			isShutdownRequested := errors.Is(err, runner.ErrShutdownRequested)
 			isEndedWithError := err != nil && !isShutdownRequested
 
 			if isEndedWithError {
-				w.logger.Errorf("ended with error: %s", err)
+				w.logger.Error("ended with error", zap.Error(err))
 			}
 
 			sentinel := fmt.Errorf("%w: %w", Err, ErrStopped)
@@ -152,9 +155,9 @@ func (w *Worker) Start(ctx context.Context) (runner.Shutdowner, error) {
 		})
 
 		if err == nil {
-			w.logger.Infof("started")
+			w.logger.Info("started")
 		} else {
-			w.logger.Errorf("failed to start: %s", err)
+			w.logger.Error("failed to start", zap.Error(err))
 		}
 
 		w.mtx.Lock()
@@ -183,7 +186,7 @@ func (w *Worker) Start(ctx context.Context) (runner.Shutdowner, error) {
 		case StateStartup:
 			w.state = StateRunning
 		case StateIdle:
-			w.logger.Infof("completed")
+			w.logger.Info("completed")
 		}
 
 		w.mtx.Unlock()
@@ -248,7 +251,7 @@ func (w *Worker) newShutdowner(runCancel context.CancelCauseFunc, shutdown runne
 
 			w.mtx.Unlock()
 
-			w.logger.Debugf("shutting down")
+			w.logger.Debug("shutting down")
 
 			var err error
 
@@ -261,9 +264,9 @@ func (w *Worker) newShutdowner(runCancel context.CancelCauseFunc, shutdown runne
 			}
 
 			if err == nil {
-				w.logger.Infof("stopped")
+				w.logger.Info("stopped")
 			} else {
-				w.logger.Errorf("shutdown failed: %s", err)
+				w.logger.Error("shutdown failed", zap.Error(err))
 			}
 
 			w.mtx.Lock()

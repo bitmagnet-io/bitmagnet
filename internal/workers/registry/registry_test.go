@@ -22,7 +22,7 @@ func TestRegistry(t *testing.T) {
 	}
 	test2 := test1
 	r, err := registry.NewRegistry(
-		zap.NewNop().Sugar(),
+		zap.NewNop(),
 		registry.WithWorker("test1", test1.Runner()),
 		registry.WithWorker("test2", test2.Runner()),
 	)

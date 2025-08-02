@@ -30,7 +30,7 @@ var (
 				fx.Annotate(
 					func(
 						options []registry.Option,
-						logger *zap.SugaredLogger,
+						logger *zap.Logger,
 					) (*registry.Registry, error) {
 						return registry.NewRegistry(
 							logger.Named(Ref.String()),

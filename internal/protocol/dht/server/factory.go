@@ -17,7 +17,7 @@ type Params struct {
 	fx.In
 	Config        Config
 	Responder     responder.Responder
-	Logger        *zap.SugaredLogger
+	Logger        *zap.Logger
 	LastResponses *concurrency.AtomicValue[LastResponses]
 	Socket        socket.Socket
 }

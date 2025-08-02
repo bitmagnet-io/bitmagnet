@@ -16,10 +16,10 @@ import (
 
 type Registry struct {
 	workers map[string]*worker.Worker
-	logger  *zap.SugaredLogger
+	logger  *zap.Logger
 }
 
-func NewRegistry(logger *zap.SugaredLogger, options ...Option) (*Registry, error) {
+func NewRegistry(logger *zap.Logger, options ...Option) (*Registry, error) {
 	r := &Registry{
 		logger:  logger,
 		workers: make(map[string]*worker.Worker),

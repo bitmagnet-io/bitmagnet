@@ -25,7 +25,7 @@ type (
 	deps struct {
 		fx.In
 		DaoProvider database.DaoTransactionProvider
-		Logger      *zap.SugaredLogger
+		Logger      *zap.Logger
 		Handlers    []handler.Handler `group:"queue_handlers"`
 	}
 )

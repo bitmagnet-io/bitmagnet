@@ -19,7 +19,7 @@ import (
 type requesterLazy struct {
 	once      sync.Once
 	config    Config
-	logger    *zap.SugaredLogger
+	logger    *zap.Logger
 	err       error
 	requester Requester
 }
@@ -41,7 +41,7 @@ func (r *requesterLazy) Request(
 	return r.requester.Request(ctx, path, queryParams, result)
 }
 
-func newRequester(ctx context.Context, config Config, logger *zap.SugaredLogger) (Requester, error) {
+func newRequester(ctx context.Context, config Config, logger *zap.Logger) (Requester, error) {
 	if config.APIKey == defaultTmdbAPIKey {
 		logger.Warn(
 			"you are using the default TMDB API key; TMDB requests will be limited to 1 per second; " +
@@ -65,7 +65,7 @@ func newRequester(ctx context.Context, config Config, logger *zap.SugaredLogger)
 							SetRetryMaxWaitTime(20 * time.Second).
 							SetTimeout(10 * time.Second).
 							EnableTrace().
-							SetLogger(logger),
+							SetLogger(logger.Sugar()),
 					},
 					limiter: rate.NewLimiter(rate.Every(config.RateLimit), config.RateLimitBurst),
 				},
@@ -82,7 +82,7 @@ func newRequester(ctx context.Context, config Config, logger *zap.SugaredLogger)
 			return r, fmt.Errorf("default API key is invalid: %w", err)
 		}
 
-		logger.Errorw("invalid API key, falling back to default", "error", err)
+		logger.Error("invalid API key, falling back to default", zap.Error(err))
 
 		config.APIKey = defaultTmdbAPIKey
 

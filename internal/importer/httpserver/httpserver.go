@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func New(importer importer.Importer, logger *zap.SugaredLogger) gin.OptionFunc {
+func New(importer importer.Importer, logger *zap.Logger) gin.OptionFunc {
 	return builder{
 		importer: importer,
 		logger:   logger.Named("importer"),
@@ -23,7 +23,7 @@ const ImportIDHeader = "X-Import-Id"
 
 type builder struct {
 	importer importer.Importer
-	logger   *zap.SugaredLogger
+	logger   *zap.Logger
 }
 
 func (b builder) Apply(e *gin.Engine) {
@@ -54,7 +54,7 @@ func (b builder) handle(ctx *gin.Context, i importer.Importer) {
 	addItem := func() error {
 		item := importer.Torrent{}
 		if err := json.Unmarshal([]byte(string(currentLine)), &item); err != nil {
-			b.logger.Errorw("error adding item", "error", err)
+			b.logger.Error("failed to add item", zap.Error(err))
 			ctx.Status(400)
 			_, _ = ctx.Writer.WriteString(err.Error())
 
@@ -62,7 +62,7 @@ func (b builder) handle(ctx *gin.Context, i importer.Importer) {
 		}
 
 		if err := ai.Import(item); err != nil {
-			b.logger.Errorw("error importing item", "error", err)
+			b.logger.Error("feiled to import item", zap.Error(err))
 			ctx.Status(400)
 			_, _ = ctx.Writer.WriteString(err.Error())
 
@@ -104,7 +104,7 @@ func (b builder) handle(ctx *gin.Context, i importer.Importer) {
 	ai.Drain()
 
 	if err := ai.Close(); err != nil {
-		b.logger.Errorw("error closing import", "error", err)
+		b.logger.Error("failed to close import", zap.Error(err))
 		ctx.Status(400)
 		_, _ = ctx.Writer.WriteString(err.Error())
 

@@ -34,7 +34,7 @@ type server struct {
 	responder        responder.Responder
 	responderTimeout time.Duration
 	idIssuer         IDIssuer
-	logger           *zap.SugaredLogger
+	logger           *zap.Logger
 }
 
 func (s *server) Runner() runner.Runner {
@@ -105,7 +105,7 @@ func (s *server) read(ctx context.Context) error {
 
 		err = bencode.Unmarshal(buffer[:n], &msg)
 		if err != nil {
-			s.logger.Debugw("could not unmarshal packet data", "error", err)
+			s.logger.Debug("failed to unmarshal packet data", zap.Error(err))
 			continue
 		}
 
@@ -132,10 +132,10 @@ func (s *server) handleQuery(ctx context.Context, msg dht.RecvMsg) {
 		Y: dht.YResponse,
 	}
 
-	ret, retErr := s.responder.Respond(ctx, msg)
-	if retErr != nil {
+	ret, err := s.responder.Respond(ctx, msg)
+	if err != nil {
 		dhtErr := &dht.Error{}
-		if ok := errors.As(retErr, dhtErr); ok {
+		if ok := errors.As(err, dhtErr); ok {
 			res.E = dhtErr
 		} else {
 			res.E = &dht.Error{
@@ -143,14 +143,14 @@ func (s *server) handleQuery(ctx context.Context, msg dht.RecvMsg) {
 				Msg:  "server error",
 			}
 
-			s.logger.Errorw("server error", "msg", msg, "retErr", retErr)
+			s.logger.Error("server error", zap.Any("msg", msg), zap.Error(err))
 		}
 	} else {
 		res.R = &ret
 	}
 
-	if sendErr := s.send(msg.From, res); sendErr != nil {
-		s.logger.Debugw("could not send response", "msg", msg, "retErr", sendErr)
+	if err = s.send(msg.From, res); err != nil {
+		s.logger.Debug("failed to send response", zap.Any("msg", msg), zap.Error(err))
 	}
 }
 
@@ -191,9 +191,8 @@ func (s *server) Query(
 		A: &args,
 		Y: dht.YQuery,
 	}
-	if sendErr := s.send(addr, msg); sendErr != nil {
-		s.logger.Debugw("could not send query", "msg", msg, "sendErr", sendErr)
-		err = sendErr
+	if err = s.send(addr, msg); err != nil {
+		s.logger.Debug("failed to send query", zap.Any("msg", msg), zap.Error(err))
 
 		return
 	}

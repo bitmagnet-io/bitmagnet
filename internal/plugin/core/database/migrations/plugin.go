@@ -22,7 +22,7 @@ type (
 	deps struct {
 		fx.In
 		database_internal.SQLDBProvider
-		Logger *zap.SugaredLogger
+		Logger *zap.Logger
 	}
 )
 

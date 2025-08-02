@@ -4,7 +4,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func New(config Config, logger *zap.SugaredLogger) Client {
+func New(config Config, logger *zap.Logger) Client {
 	return client{
 		requester: &requesterLazy{
 			config: config,

@@ -19,7 +19,7 @@ type (
 	deps struct {
 		fx.In
 		Importer importer.Importer
-		Logger   *zap.SugaredLogger
+		Logger   *zap.Logger
 	}
 )
 

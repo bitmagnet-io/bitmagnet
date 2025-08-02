@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func New(db *sql.DB, logger *zap.SugaredLogger) Migrator {
+func New(db *sql.DB, logger *zap.Logger) Migrator {
 	logger = logger.Named("migrator")
 	initGoose(logger)
 
@@ -19,7 +19,7 @@ func New(db *sql.DB, logger *zap.SugaredLogger) Migrator {
 	}
 }
 
-func initGoose(logger *zap.SugaredLogger) {
+func initGoose(logger *zap.Logger) {
 	goose.SetLogger(gooseLogger{logger})
 	goose.SetBaseFS(migrationssql.FS)
 
@@ -38,7 +38,7 @@ type Migrator interface {
 
 type migrator struct {
 	db     *sql.DB
-	logger *zap.SugaredLogger
+	logger *zap.Logger
 }
 
 func (m *migrator) Up(ctx context.Context) error {
