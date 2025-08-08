@@ -11,7 +11,7 @@ import (
 
 // Runners combines zero or more Runner functions into a single Runner.
 // Each Runner is invoked in the provided order, with Shutdowner functions invoked in reverse order.
-func Runners(providers ...runner.Provider) runner.Provider {
+func Runners(providers ...runner.Provider) runner.Runner {
 	return runner.Runner(func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
 		var (
 			shutdowners []runner.Shutdowner

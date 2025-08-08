@@ -1,7 +1,7 @@
 package ref
 
 import (
-	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 	"sync"
@@ -10,22 +10,36 @@ import (
 var mtx sync.Mutex
 
 type Ref struct {
-	name   string
-	valid  bool
-	parent *Ref
-	subs   map[string]Ref
+	name      string
+	canonical bool
+	parent    *Ref
+	subs      map[string]Ref
 }
 
 var Root = Ref{
-	name:  "[root]",
-	valid: true,
-	subs:  make(map[string]Ref),
+	name:      "[root]",
+	canonical: true,
+	subs:      make(map[string]Ref),
 }
 
-func NewNameNode(name string) Ref {
+func MustNew(name string) Ref {
+	ref, err := New(name)
+	if err != nil {
+		panic(err)
+	}
+
+	return ref
+}
+
+func New(name string) (Ref, error) {
+	if !regexName.MatchString(name) {
+		return Ref{}, fmt.Errorf("%w: %w: %s", Err, ErrInvalidName, name)
+	}
+
 	return Ref{
 		name: name,
-	}
+		subs: make(map[string]Ref),
+	}, nil
 }
 
 func MustParse(name string) Ref {
@@ -39,11 +53,11 @@ func MustParse(name string) Ref {
 
 func Parse(name string) (Ref, error) {
 	parts := strings.Split(name, ".")
-	if len(parts) == 0 {
-		return Ref{}, errors.New("invalid name")
-	}
 
-	result := NewNameNode(parts[0])
+	result, err := New(parts[0])
+	if err != nil {
+		return Ref{}, err
+	}
 
 	for i := 0; i < len(parts); i++ {
 		nextResult, err := result.sub(parts[i])
@@ -67,17 +81,18 @@ func (n Ref) Sub(name string) (Ref, error) {
 
 func (n Ref) sub(name string) (Ref, error) {
 	if !regexName.MatchString(name) {
-		return Ref{}, errors.New("invalid name")
+		return Ref{}, fmt.Errorf("%w: %w: %s.%s", Err, ErrInvalidName, n.String(), name)
 	}
 
 	if _, ok := n.subs[name]; ok {
-		return Ref{}, errors.New("name already exists")
+		return Ref{}, fmt.Errorf("%w: %w: %s.%s", Err, ErrNameAlreadyExists, n.String(), name)
 	}
 
 	return Ref{
-		name:   name,
-		parent: &n,
-		valid:  n.valid,
+		name:      name,
+		parent:    &n,
+		subs:      make(map[string]Ref),
+		canonical: n.canonical,
 	}, nil
 }
 
@@ -96,7 +111,7 @@ func (n Ref) Name() string {
 
 func (n Ref) Path() []string {
 	var result []string
-	for current := &n; current != nil && !current.IsRoot(); current = current.parent {
+	for current := &n; !current.IsRoot(); current = current.parent {
 		result = append([]string{current.name}, result...)
 	}
 
@@ -117,8 +132,8 @@ func (n Ref) IsDescendentOf(other Ref) bool {
 	return false
 }
 
-func (n Ref) IsValid() bool {
-	return n.valid
+func (n Ref) IsCanonical() bool {
+	return n.canonical
 }
 
 func (n Ref) String() string {

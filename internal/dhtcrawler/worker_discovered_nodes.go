@@ -2,12 +2,11 @@ package dhtcrawler
 
 import (
 	"context"
-	"sync"
 	"time"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/deduplicator"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/channel"
-	boom "github.com/tylertreat/BoomFilters"
 )
 
 func newDiscoveredNodesWorker(
@@ -15,19 +14,12 @@ func newDiscoveredNodesWorker(
 	timeout time.Duration,
 	size int,
 ) channel.Worker[ktable.Node] {
-	ignoreNodeIDs := boom.NewStableBloomFilter(10_000, 2, 0.001)
-	var mtx sync.Mutex
-
-	hasRecentlySeenNode := func(node ktable.Node) bool {
-		mtx.Lock()
-		defer mtx.Unlock()
-
-		return ignoreNodeIDs.TestAndAdd([]byte(node.Addr().String()))
-	}
+	seenNodes := deduplicator.New[string](100_000, time.Hour)
 
 	return channel.NewWorker(
 		func(ctx context.Context, node ktable.Node) error {
-			if hasRecentlySeenNode(node) {
+			// Skip recently seen nodes; bootstrap nodes have a zero value ID and are not skipped.
+			if !node.ID().IsZero() && !seenNodes.Add(node.Addr().String()) {
 				return nil
 			}
 

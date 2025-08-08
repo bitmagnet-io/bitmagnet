@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 )
 
@@ -17,10 +19,13 @@ type Worker[T any] interface {
 	Adder[T]
 }
 
-func NewWorker[T any](fn func(context.Context, T) error, options ...Option[T]) Worker[T] {
+type Func[T any] func(context.Context, T) error
+
+func NewWorker[T any](fn Func[T], options ...Option[T]) Worker[T] {
 	wrk := &worker[T]{
-		size: 1,
-		fn:   fn,
+		size:    1,
+		fn:      fn,
+		metrics: metrics.Nop,
 	}
 
 	for _, opt := range options {
@@ -33,10 +38,11 @@ func NewWorker[T any](fn func(context.Context, T) error, options ...Option[T]) W
 type worker[T any] struct {
 	mtx           sync.RWMutex
 	size          int
-	fn            func(context.Context, T) error
+	fn            Func[T]
 	ch            chan []T
 	shutdown      chan struct{}
 	quickShutdown bool
+	metrics       metrics.Adapter
 }
 
 func (w *worker[T]) Add(ctx context.Context, items ...T) error {
@@ -85,6 +91,7 @@ func (w *worker[T]) Runner() runner.Runner {
 				}
 
 				cancel(nil)
+				w.metrics.Reset()
 			}()
 
 			for {
@@ -96,6 +103,10 @@ func (w *worker[T]) Runner() runner.Runner {
 						return
 					}
 
+					timeAdded := time.Now()
+
+					w.metrics.IncrAdded(len(items))
+
 					for _, item := range items {
 						select {
 						case <-ctx.Done():
@@ -106,10 +117,16 @@ func (w *worker[T]) Runner() runner.Runner {
 									<-sem
 								}()
 
+								w.metrics.IncrDequeued(time.Since(timeAdded))
+
 								err := w.fn(ctx, item)
 								if err != nil {
 									cancel(fmt.Errorf("%w: %w: %w", Err, ErrItem, err))
+
+									return
 								}
+
+								w.metrics.IncrFlushed(time.Since(timeAdded))
 							}(item)
 						}
 					}
@@ -118,6 +135,9 @@ func (w *worker[T]) Runner() runner.Runner {
 		}()
 
 		return func(shutdownCtx context.Context) error {
+			w.mtx.Lock()
+			defer w.mtx.Unlock()
+
 			close(shutdown)
 
 			if w.quickShutdown {
@@ -130,10 +150,8 @@ func (w *worker[T]) Runner() runner.Runner {
 				}
 			}
 
-			w.mtx.Lock()
 			w.ch = nil
 			w.shutdown = nil
-			w.mtx.Unlock()
 
 			close(ch)
 

@@ -4,11 +4,15 @@ import (
 	"context"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/blocker"
+	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/banning"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainforequester"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/channel"
+	workers_metrics "github.com/bitmagnet-io/bitmagnet/internal/workers/metrics"
 )
+
+const MetricRequestMetaInfo = "request_meta_info"
 
 func newRequestMetaInfoWorker(
 	banningChecker banning.Checker,
@@ -16,6 +20,7 @@ func newRequestMetaInfoWorker(
 	metainfoRequester metainforequester.Requester,
 	persistTorrentsAdder channel.Adder[infoHashWithMetaInfo],
 	size int,
+	metrics *metrics.Component,
 ) channel.Worker[infoHashWithPeers] {
 	return channel.NewWorker(
 		func(ctx context.Context, req infoHashWithPeers) error {
@@ -48,5 +53,8 @@ func newRequestMetaInfoWorker(
 		},
 		channel.WithSize[infoHashWithPeers](size),
 		channel.WithQuickShutdown[infoHashWithPeers](),
+		channel.WithMetricsAdapter[infoHashWithPeers](
+			workers_metrics.MustNew(metrics.MustSub(MetricRequestMetaInfo)),
+		),
 	)
 }

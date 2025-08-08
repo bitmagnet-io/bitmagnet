@@ -4,14 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"time"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/client"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/channel"
+	workers_metrics "github.com/bitmagnet-io/bitmagnet/internal/workers/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/periodic"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 )
 
 func newPingWorker(
@@ -19,6 +22,7 @@ func newPingWorker(
 	kTable ktable.Table,
 	size int,
 	oldPeerThreshold time.Duration,
+	metrics *metrics.Component,
 ) channel.Worker[ktable.Node] {
 	return channel.NewWorker(
 		func(ctx context.Context, node ktable.Node) error {
@@ -58,6 +62,9 @@ func newPingWorker(
 		},
 		channel.WithSize[ktable.Node](size),
 		channel.WithQuickShutdown[ktable.Node](),
+		channel.WithMetricsAdapter[ktable.Node](
+			workers_metrics.MustNew(metrics.MustSub(dht.QPing)),
+		),
 	)
 }
 

@@ -3,16 +3,20 @@ package dhtcrawler
 import (
 	"context"
 	"fmt"
-	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/client"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/batch"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/channel"
+	workers_metrics "github.com/bitmagnet-io/bitmagnet/internal/workers/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/periodic"
 )
 
@@ -36,6 +40,7 @@ func newSampleInfoHashesWorker(
 	discoveredNodesAdder channel.Adder[ktable.Node],
 	soughtNodeID *concurrency.AtomicValue[protocol.ID],
 	size int,
+	metrics *metrics.Component,
 ) channel.Worker[ktable.Node] {
 	return channel.NewWorker(
 		func(ctx context.Context, node ktable.Node) error {
@@ -92,6 +97,9 @@ func newSampleInfoHashesWorker(
 		},
 		channel.WithSize[ktable.Node](size),
 		channel.WithQuickShutdown[ktable.Node](),
+		channel.WithMetricsAdapter[ktable.Node](
+			workers_metrics.MustNew(metrics.MustSub(dht.QSampleInfohashes)),
+		),
 	)
 }
 

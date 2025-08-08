@@ -5,6 +5,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/dhtcrawler"
 	"github.com/bitmagnet-io/bitmagnet/internal/dhtcrawler/dhtcrawlerhealthcheck"
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
+	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database/info_hash_blocker"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database/postgres"
@@ -53,6 +54,12 @@ var (
 		builder.WithDefaultConfig[Config, deps](dhtcrawler.NewDefaultConfig()),
 		builder.WithFxOption[Config, deps](
 			fx.Provide(
+				fx.Private,
+				func(metrics *metrics.Registry) (*metrics.Component, error) {
+					return metrics.NewComponent(Ref)
+				},
+			),
+			fx.Provide(
 				dhtcrawler.New,
 			),
 		),
@@ -60,7 +67,11 @@ var (
 			return registry.WithWorker(
 				Ref.String(),
 				deps.Runner,
-				worker.WithDependencies(postgres.Ref.String(), plugin_dht_server.Ref.String()),
+				worker.WithDependencies(
+					info_hash_blocker.Ref.String(),
+					postgres.Ref.String(),
+					plugin_dht_server.Ref.String(),
+				),
 				worker.WithAutostart(),
 			)
 		}),

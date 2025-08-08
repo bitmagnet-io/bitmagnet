@@ -9,6 +9,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/indexer"
+	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/persister"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/client"
@@ -20,7 +21,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/concat"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/periodic"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
-	boom "github.com/tylertreat/BoomFilters"
 	"go.uber.org/zap"
 )
 
@@ -36,12 +36,10 @@ func New(
 	persisterAdder persister.Adder,
 	blockerBlocker blocker.Blocker,
 	logger *zap.Logger,
+	metrics *metrics.Component,
 ) Runner {
 	return runner.Runner(
 		func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
-			setupComplete := make(chan struct{})
-			defer close(setupComplete)
-
 			soughtNodeID := &concurrency.AtomicValue[protocol.ID]{}
 			soughtNodeID.Set(protocol.RandomNodeID())
 
@@ -56,6 +54,7 @@ func New(
 				persisterAdder,
 				enqueueProcessTorrents,
 				100,
+				metrics,
 			)
 
 			persistTorrents := newPersistTorrentsWorker(
@@ -68,9 +67,8 @@ func New(
 				int(config.SaveFilesThreshold),
 			)
 
-			ignoreHashes := &ignoreHashes{
-				bloom: boom.NewStableBloomFilter(10_000_000, 2, 0.001),
-			}
+			setupComplete := make(chan struct{})
+			defer close(setupComplete)
 
 			var discoveredNodesAdders []channel.Adder[ktable.Node]
 
@@ -89,6 +87,7 @@ func New(
 				kTable,
 				100,
 				time.Minute*15,
+				metrics,
 			)
 
 			findNodes := newFindNodesWorker(
@@ -97,6 +96,7 @@ func New(
 				discoveredNodes,
 				soughtNodeID,
 				1000,
+				metrics,
 			)
 
 			requestMetaInfo := newRequestMetaInfoWorker(
@@ -105,6 +105,7 @@ func New(
 				metainfoRequester,
 				persistTorrents,
 				1000,
+				metrics,
 			)
 
 			getPeers := newGetPeersWorker(
@@ -113,11 +114,11 @@ func New(
 				requestMetaInfo,
 				discoveredNodes,
 				1000,
+				metrics,
 			)
 
 			infoHashTriage := newInfoHashTriageWorker(
 				daoProvider,
-				ignoreHashes,
 				blockerBlocker,
 				scraper,
 				config.RescrapeThreshold,
@@ -125,6 +126,7 @@ func New(
 				getPeers,
 				1000,
 				time.Second*5,
+				metrics,
 			)
 
 			sampleInfoHashes := newSampleInfoHashesWorker(
@@ -134,6 +136,7 @@ func New(
 				discoveredNodes,
 				soughtNodeID,
 				1000,
+				metrics,
 			)
 
 			discoveredNodesAdders = append(discoveredNodesAdders,
@@ -143,34 +146,34 @@ func New(
 			)
 
 			return concat.Runners(
-				enqueueProcessTorrents.Runner(),
-				persistTorrents.Runner(),
-				discoveredNodes.Runner(),
-				ping.Runner(),
-				findNodes.Runner(),
-				newGetNodesForFindNodeWorker(kTable, findNodes).Runner(),
-				sampleInfoHashes.Runner(),
+				enqueueProcessTorrents,
+				persistTorrents,
+				discoveredNodes,
+				ping,
+				findNodes,
+				newGetNodesForFindNodeWorker(kTable, findNodes),
+				sampleInfoHashes,
 				newNodesForSampleInfoHashesWorker(
 					kTable,
 					time.Second,
 					sampleInfoHashes,
-				).Runner(),
-				infoHashTriage.Runner(),
-				getPeers.Runner(),
-				requestMetaInfo.Runner(),
-				scraper.Runner(),
+				),
+				infoHashTriage,
+				getPeers,
+				requestMetaInfo,
+				scraper,
 				newBootstrapNodesWorker(
 					config.ReseedBootstrapNodesInterval,
 					config.BootstrapNodes,
 					discoveredNodes,
 					logger,
-				).Runner(),
+				),
 				newOldNodesWorker(
 					kTable,
 					time.Second*10,
 					time.Minute*15,
 					ping,
-				).Runner(),
+				),
 				periodic.New(
 					time.Minute,
 					func(context.Context) error {
@@ -178,7 +181,7 @@ func New(
 
 						return nil
 					},
-				).Runner(),
-			).Runner()(ctx, cancel)
+				),
+			)(ctx, cancel)
 		})
 }

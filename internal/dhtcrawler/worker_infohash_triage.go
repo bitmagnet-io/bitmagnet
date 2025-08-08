@@ -8,15 +8,19 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/internal/blocker"
 	"github.com/bitmagnet-io/bitmagnet/internal/database"
+	"github.com/bitmagnet-io/bitmagnet/internal/deduplicator"
+	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/batch"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/channel"
+	workers_metrics "github.com/bitmagnet-io/bitmagnet/internal/workers/metrics"
 )
+
+const MetricInfoHashTriage = "info_hash_triage"
 
 func newInfoHashTriageWorker(
 	daoProvider database.DaoProvider,
-	ignoreHashes *ignoreHashes,
 	blockerBlocker blocker.Blocker,
 	scrapeAdder channel.Adder[nodeHasPeersForHash],
 	rescrapeThreshold time.Duration,
@@ -24,20 +28,11 @@ func newInfoHashTriageWorker(
 	getPeersAdder channel.Adder[nodeHasPeersForHash],
 	maxSize int,
 	maxWait time.Duration,
+	metrics *metrics.Component,
 ) batch.Worker[nodeHasPeersForHash] {
+	seenHashes := deduplicator.New[protocol.ID](100_000, time.Hour)
+
 	return batch.NewWorker(
-		// batch.WithValuesAsKeys[protocol.ID](),
-		batch.WithKeyer(func(pfh nodeHasPeersForHash) protocol.ID {
-			return pfh.infoHash
-		}),
-		batch.WithMaxSize[protocol.ID, nodeHasPeersForHash](maxSize),
-		batch.WithMaxWait[protocol.ID, nodeHasPeersForHash](maxWait),
-		batch.WithQuickShutdown[protocol.ID, nodeHasPeersForHash](),
-		batch.WithFilter(
-			func(hash protocol.ID, _ nodeHasPeersForHash) bool {
-				return !ignoreHashes.testAndAdd(hash)
-			},
-		),
 		batch.WithFlusher[protocol.ID](
 			func(ctx context.Context, reqs []nodeHasPeersForHash) error {
 				allHashes := make([]protocol.ID, 0, len(reqs))
@@ -125,7 +120,22 @@ func newInfoHashTriageWorker(
 					getPeersAdder.Add(ctx, getPeers...),
 					scrapeAdder.Add(ctx, scrapes...),
 				)
-			}),
+			},
+		),
+		batch.WithKeyer(func(pfh nodeHasPeersForHash) protocol.ID {
+			return pfh.infoHash
+		}),
+		batch.WithMaxSize[protocol.ID, nodeHasPeersForHash](maxSize),
+		batch.WithMaxWait[protocol.ID, nodeHasPeersForHash](maxWait),
+		batch.WithQuickShutdown[protocol.ID, nodeHasPeersForHash](),
+		batch.WithFilter(
+			func(hash protocol.ID, _ nodeHasPeersForHash) bool {
+				return seenHashes.Add(hash)
+			},
+		),
+		batch.WithMetricsAdapter[protocol.ID, nodeHasPeersForHash](
+			workers_metrics.MustNew(metrics.MustSub(MetricInfoHashTriage)),
+		),
 	)
 }
 

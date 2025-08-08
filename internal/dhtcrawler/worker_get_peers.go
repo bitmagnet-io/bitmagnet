@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/client"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/channel"
+	workers_metrics "github.com/bitmagnet-io/bitmagnet/internal/workers/metrics"
 )
 
 func newGetPeersWorker(
@@ -17,6 +20,7 @@ func newGetPeersWorker(
 	metaInfoRequestAdder channel.Adder[infoHashWithPeers],
 	discoveredNodesAdder channel.Adder[ktable.Node],
 	size int,
+	metrics *metrics.Component,
 ) channel.Worker[nodeHasPeersForHash] {
 	return channel.NewWorker(
 		func(ctx context.Context, req nodeHasPeersForHash) error {
@@ -59,6 +63,9 @@ func newGetPeersWorker(
 		},
 		channel.WithSize[nodeHasPeersForHash](size),
 		channel.WithQuickShutdown[nodeHasPeersForHash](),
+		channel.WithMetricsAdapter[nodeHasPeersForHash](
+			workers_metrics.MustNew(metrics.MustSub(dht.QGetPeers)),
+		),
 	)
 }
 

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 )
 
@@ -38,6 +39,7 @@ func NewWorker[K comparable, V any](options ...Option[K, V]) Worker[V] {
 		merger:  defaultMerger[V],
 		flusher: defaultFlusher[V],
 		maxSize: 1,
+		metrics: metrics.Nop,
 	}
 
 	for _, opt := range options {
@@ -58,6 +60,7 @@ type worker[K comparable, V any] struct {
 	maxSize       int
 	maxWait       time.Duration
 	quickShutdown bool
+	metrics       metrics.Adapter
 }
 
 func (w *worker[K, V]) Add(ctx context.Context, items ...V) error {
@@ -92,101 +95,20 @@ func (w *worker[K, V]) Runner() runner.Runner {
 			return runner.NopShutdowner, runner.ErrAlreadyRunning
 		}
 
-		ch := make(chan []V, 1)
-		shutdown := make(chan struct{})
-		buff := maps.NewInsertMap[K, V]()
-		lastFlush := time.Now()
+		w.ch = make(chan []V, 1)
+		w.shutdown = make(chan struct{})
 
-		w.ch = ch
-		w.shutdown = shutdown
-
-		addItemsAndCheckFlush := func(ctx context.Context, items []V, forceFlush bool) error {
-			w.mtx.Lock()
-
-			for _, item := range items {
-				key := w.keyer(item)
-
-				if !w.filter(key, item) {
-					continue
-				}
-
-				if existing, ok := buff.Get(key); ok {
-					item = w.merger(existing, item)
-				}
-				buff.Set(key, item)
-			}
-
-			size := buff.Len()
-
-			shouldFlush := size > 0 && (forceFlush || size > w.maxSize || time.Since(lastFlush) > w.maxWait)
-
-			if shouldFlush {
-				items = buff.Values()
-				buff.Clear()
-			}
-
-			lastFlush = time.Now()
-
-			w.mtx.Unlock()
-
-			if shouldFlush {
-				err := w.flusher(ctx, items)
-				if err != nil {
-					return fmt.Errorf("%w: %w: %w", Err, ErrFlush, err)
-				}
-			}
-
-			return nil
+		wr := workerRunner[K, V]{
+			worker:    w,
+			ctx:       ctx,
+			cancel:    cancel,
+			buffer:    maps.NewInsertMap[K, value[V]](),
+			lastFlush: time.Now(),
 		}
 
-		go func() {
-			defer cancel(nil)
+		go wr.run()
 
-			for {
-				select {
-				case <-shutdown:
-					_ = addItemsAndCheckFlush(ctx, nil, true)
-					return
-				case <-time.After(w.maxWait):
-					_ = addItemsAndCheckFlush(ctx, nil, true)
-				case items, ok := <-ch:
-					if !ok {
-						return
-					}
-
-					err := addItemsAndCheckFlush(ctx, items, false)
-					if err != nil {
-						cancel(err)
-						return
-					}
-				}
-			}
-		}()
-
-		return func(shutdownCtx context.Context) error {
-			close(shutdown)
-
-			var err error
-
-			if w.quickShutdown {
-				cancel(runner.ErrShutdownRequested)
-			} else {
-				select {
-				case <-shutdownCtx.Done():
-					err = fmt.Errorf("%w: %w: %w", Err, ErrShutdown, shutdownCtx.Err())
-				case <-ctx.Done():
-				}
-			}
-
-			w.mtx.Lock()
-			w.ch = nil
-			w.shutdown = nil
-			w.mtx.Unlock()
-
-			close(ch)
-
-			return err
-		}, nil
+		return wr.shutdowner, nil
 	}
 }
 

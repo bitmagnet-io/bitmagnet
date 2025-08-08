@@ -1,10 +1,14 @@
 package prometheus
 
 import (
+	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/metrics"
+	plugin_metrics "github.com/bitmagnet-io/bitmagnet/internal/plugin/core/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/telemetry/httpserver"
 	"github.com/gin-gonic/gin"
+	sink "github.com/hashicorp/go-metrics/prometheus"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"go.uber.org/fx"
@@ -20,7 +24,7 @@ type (
 )
 
 var (
-	Ref = metrics.Ref.MustSub("prometheus")
+	Ref = plugin_metrics.Ref.MustSub("prometheus")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
@@ -48,6 +52,20 @@ var (
 						return registry, nil
 					},
 					fx.ParamTags(`group:"prometheus_collectors"`),
+				),
+				func(registry *prometheus.Registry) (*sink.PrometheusSink, error) {
+					return sink.NewPrometheusSinkFrom(
+						sink.PrometheusOpts{
+							Expiration: 60 * time.Minute,
+							Registerer: registry,
+						},
+					)
+				},
+				fx.Annotate(
+					func(sink *sink.PrometheusSink) metrics.Option {
+						return metrics.WithSink(sink)
+					},
+					fx.ResultTags(`group:"metrics_options"`),
 				),
 			),
 		),

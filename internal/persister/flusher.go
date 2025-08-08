@@ -2,9 +2,8 @@ package persister
 
 import (
 	"context"
-	"time"
-
 	"database/sql/driver"
+	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/blocker"
 	"github.com/bitmagnet-io/bitmagnet/internal/database"

@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/database"
-	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
+	"github.com/bitmagnet-io/bitmagnet/internal/metrics/bucket"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
 
@@ -18,7 +18,7 @@ type Bucket struct {
 }
 
 type Request struct {
-	BucketDuration metrics.BucketDuration
+	BucketDuration bucket.BucketDuration
 	Sources        []string
 	StartTime      time.Time
 	EndTime        time.Time

@@ -3,6 +3,8 @@ package batch
 import (
 	"sync"
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/metrics"
 )
 
 type Option[K comparable, V any] func(*worker[K, V])
@@ -72,5 +74,11 @@ func WithSequentialKeys[V any]() Option[int, V] {
 func WithQuickShutdown[K comparable, V any]() Option[K, V] {
 	return func(wrk *worker[K, V]) {
 		wrk.quickShutdown = true
+	}
+}
+
+func WithMetricsAdapter[K comparable, V any](adapter metrics.Adapter) Option[K, V] {
+	return func(wrk *worker[K, V]) {
+		wrk.metrics = adapter
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/persister"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
@@ -11,7 +12,10 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/batch"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/channel"
+	workers_metrics "github.com/bitmagnet-io/bitmagnet/internal/workers/metrics"
 )
+
+const MetricScrape = "scrape"
 
 func newScrapeWorker(
 	cl client.Client,
@@ -19,6 +23,7 @@ func newScrapeWorker(
 	persisterAdder persister.Adder,
 	processorAdder batch.Adder[protocol.ID],
 	size int,
+	metrics *metrics.Component,
 ) channel.Worker[nodeHasPeersForHash] {
 	return channel.NewWorker(
 		func(ctx context.Context, req nodeHasPeersForHash) error {
@@ -58,6 +63,9 @@ func newScrapeWorker(
 		},
 		channel.WithSize[nodeHasPeersForHash](size),
 		channel.WithQuickShutdown[nodeHasPeersForHash](),
+		channel.WithMetricsAdapter[nodeHasPeersForHash](
+			workers_metrics.MustNew(metrics.MustSub(MetricScrape)),
+		),
 	)
 }
 
