@@ -3,6 +3,7 @@ package persister
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/blocker"
 	internal_database "github.com/bitmagnet-io/bitmagnet/internal/database"
+	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/persister"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database"
@@ -10,6 +11,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database/migrations"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database/postgres"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/logging"
+	plugin_metrics "github.com/bitmagnet-io/bitmagnet/internal/plugin/core/metrics"
 	plugin_worker "github.com/bitmagnet-io/bitmagnet/internal/plugin/core/worker"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
@@ -34,6 +36,7 @@ var (
 		builder.WithDependencies[Config, deps](
 			info_hash_blocker.Ref,
 			logging.Ref,
+			plugin_metrics.Ref,
 			migrations.Ref,
 			plugin_worker.Ref,
 			postgres.Ref,
@@ -47,12 +50,14 @@ var (
 						daoProvider internal_database.DaoTransactionProvider,
 						blockerBlocker blocker.Blocker,
 						logger *zap.Logger,
+						metrics *metrics.Registry,
 					) persister.Persister {
 						return persister.New(
 							config,
 							daoProvider,
 							blockerBlocker,
 							logger.Named(Ref.String()),
+							metrics.MustNewComponent(Ref),
 						)
 					},
 					fx.As(new(persister.Adder)),

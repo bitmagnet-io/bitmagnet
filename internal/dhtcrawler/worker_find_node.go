@@ -65,6 +65,7 @@ func newFindNodesWorker(
 	soughtNodeID *concurrency.AtomicValue[protocol.ID],
 	size int,
 	metrics *metrics.Component,
+	bootstrap func(context.Context) error,
 ) channel.Worker[ktable.Node] {
 	return channel.NewWorker(
 		func(ctx context.Context, node ktable.Node) error {
@@ -94,6 +95,8 @@ func newFindNodesWorker(
 		channel.WithMetricsAdapter[ktable.Node](
 			workers_metrics.MustNew(metrics.MustSub(dht.QFindNode)),
 		),
+		// If this worker becomes idle we should bootstrap again:
+		channel.WithOnIdle[ktable.Node](bootstrap),
 	)
 }
 

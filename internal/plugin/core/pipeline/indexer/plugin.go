@@ -20,7 +20,7 @@ type (
 
 	deps struct {
 		fx.In
-		Processor indexer.Processor
+		Indexer indexer.Indexer
 	}
 )
 
@@ -54,7 +54,7 @@ var (
 								return runner.NopShutdowner, err
 							}
 
-							return deps.Processor.NewJob(*msg)(ctx, cancel)
+							return deps.Indexer.NewJob(*msg)(ctx, cancel)
 						}
 					},
 					handler.JobTimeout(time.Second*60*10),

@@ -20,14 +20,15 @@ import (
 
 type Resolver struct {
 	fx.In
-	Context              env.Context
-	DaoProvider          database.DaoProvider
-	Search               search.Search
-	Workers              *registry.Registry
-	Checker              health.Checker
-	QueueMetricsClient   queuemetrics.Client
-	QueueManager         manager.Manager
-	TorrentMetricsClient torrentmetrics.Client
-	Indexer              indexer.Processor
+	Context            env.Context
+	DaoProvider        database.DaoProvider
+	Search             search.Search
+	Workers            *registry.Registry
+	Checker            health.Checker
+	QueueMetricsClient queuemetrics.Client
+	QueueManager       manager.Manager
+	// todo: Fix this
+	TorrentMetricsClient torrentmetrics.Client `optional:"true"`
+	Indexer              indexer.Indexer
 	PersisterAdder       persister.Adder
 }

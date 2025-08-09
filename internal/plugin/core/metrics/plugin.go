@@ -2,7 +2,6 @@ package metrics
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
-	"github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
 	"go.uber.org/fx"
@@ -27,7 +26,7 @@ var (
 					fx.ParamTags(`group:"metrics_options"`),
 				),
 				// todo: Move this
-				torrentmetrics.New,
+				// torrentmetrics.New,
 			),
 		),
 	)

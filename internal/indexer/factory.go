@@ -17,8 +17,8 @@ func New(
 	runner classifier.Runner,
 	queueJobProvider queue.JobProvider[MessageParams],
 	persister persister.Adder,
-) Processor {
-	return processor{
+) Indexer {
+	return indexer{
 		searchClient:     searchClient,
 		daoProvider:      daoProvider,
 		blocker:          blockerBlocker,

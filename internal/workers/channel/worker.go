@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/semaphore"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 )
@@ -26,6 +27,9 @@ func NewWorker[T any](fn Func[T], options ...Option[T]) Worker[T] {
 		size:    1,
 		fn:      fn,
 		metrics: metrics.Nop,
+		onIdle: func(context.Context) error {
+			return nil
+		},
 	}
 
 	for _, opt := range options {
@@ -43,6 +47,7 @@ type worker[T any] struct {
 	shutdown      chan struct{}
 	quickShutdown bool
 	metrics       metrics.Adapter
+	onIdle        func(context.Context) error
 }
 
 func (w *worker[T]) Add(ctx context.Context, items ...T) error {
@@ -79,16 +84,14 @@ func (w *worker[T]) Runner() runner.Runner {
 
 		ch := make(chan []T)
 		shutdown := make(chan struct{})
-		sem := make(chan struct{}, w.size)
+		sem := semaphore.New(w.size)
 
 		w.ch = ch
 		w.shutdown = shutdown
 
 		go func() {
 			defer func() {
-				for range w.size {
-					sem <- struct{}{}
-				}
+				sem.Acquire(ctx, w.size)
 
 				cancel(nil)
 				w.metrics.Reset()
@@ -108,27 +111,34 @@ func (w *worker[T]) Runner() runner.Runner {
 					w.metrics.IncrAdded(len(items))
 
 					for _, item := range items {
-						select {
-						case <-ctx.Done():
+						if err := sem.Acquire(ctx, 1); err != nil {
 							return
-						case sem <- struct{}{}:
-							go func(item T) {
-								defer func() {
-									<-sem
-								}()
-
-								w.metrics.IncrDequeued(time.Since(timeAdded))
-
-								err := w.fn(ctx, item)
-								if err != nil {
-									cancel(fmt.Errorf("%w: %w: %w", Err, ErrItem, err))
-
-									return
-								}
-
-								w.metrics.IncrFlushed(time.Since(timeAdded))
-							}(item)
 						}
+						go func(item T) {
+							defer func() {
+								if n := sem.Release(1); n == 1 {
+									select {
+									case <-shutdown:
+										return
+									default:
+										if err := w.onIdle(ctx); err != nil {
+											cancel(err)
+										}
+									}
+								}
+							}()
+
+							w.metrics.IncrDequeued(time.Since(timeAdded))
+
+							err := w.fn(ctx, item)
+							if err != nil {
+								cancel(fmt.Errorf("%w: %w: %w", Err, ErrItem, err))
+
+								return
+							}
+
+							w.metrics.IncrFlushed(time.Since(timeAdded))
+						}(item)
 					}
 				}
 			}

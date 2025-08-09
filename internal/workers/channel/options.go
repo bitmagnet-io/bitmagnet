@@ -1,6 +1,8 @@
 package channel
 
 import (
+	"context"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/metrics"
 )
 
@@ -21,5 +23,11 @@ func WithQuickShutdown[T any]() Option[T] {
 func WithMetricsAdapter[T any](adapter metrics.Adapter) Option[T] {
 	return func(wrk *worker[T]) {
 		wrk.metrics = adapter
+	}
+}
+
+func WithOnIdle[T any](onIdle func(context.Context) error) Option[T] {
+	return func(wrk *worker[T]) {
+		wrk.onIdle = onIdle
 	}
 }

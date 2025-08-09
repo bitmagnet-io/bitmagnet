@@ -26,11 +26,11 @@ import (
 
 const Namespace = "processor"
 
-type Processor interface {
+type Indexer interface {
 	NewJob(params MessageParams) runner.Runner
 }
 
-type processor struct {
+type indexer struct {
 	searchClient     search.Search
 	daoProvider      database.DaoTransactionProvider
 	blocker          blocker.Blocker
@@ -42,7 +42,7 @@ type processor struct {
 
 const concurrency = 10
 
-func (c processor) NewJob(params MessageParams) runner.Runner {
+func (c indexer) NewJob(params MessageParams) runner.Runner {
 	return func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
 		shutdown := make(chan struct{})
 
@@ -112,7 +112,7 @@ func (c processor) NewJob(params MessageParams) runner.Runner {
 	}
 }
 
-func (c processor) getTorrentsToClassify(
+func (c indexer) getTorrentsToClassify(
 	ctx context.Context,
 	params MessageParams,
 ) (search.TorrentsWithMissingInfoHashesResult, error) {
@@ -156,7 +156,7 @@ func (c processor) getTorrentsToClassify(
 	return searchResult, nil
 }
 
-func (c processor) handleTorrents(
+func (c indexer) handleTorrents(
 	ctx context.Context,
 	shutdown <-chan struct{},
 	params ClassifierParams,
@@ -307,7 +307,7 @@ type handleTorrentResult struct {
 	tagsToAdd      map[string]struct{}
 }
 
-func (c processor) handleTorrent(
+func (c indexer) handleTorrent(
 	ctx context.Context,
 	params ClassifierParams,
 	torrent model.Torrent,

@@ -21,7 +21,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/concat"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/periodic"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
-	"go.uber.org/zap"
 )
 
 func New(
@@ -35,7 +34,6 @@ func New(
 	classifier classifier.Runner,
 	persisterAdder persister.Adder,
 	blockerBlocker blocker.Blocker,
-	logger *zap.Logger,
 	metrics *metrics.Component,
 ) Runner {
 	return runner.Runner(
@@ -48,7 +46,7 @@ func New(
 				persisterAdder,
 			)
 
-			scraper := newScrapeWorker(
+			scrape := newScrapeWorker(
 				client,
 				kTable,
 				persisterAdder,
@@ -61,7 +59,7 @@ func New(
 				classifier,
 				persisterAdder,
 				enqueueProcessTorrents,
-				scraper,
+				scrape,
 				10,
 				config.SavePieces,
 				int(config.SaveFilesThreshold),
@@ -82,6 +80,11 @@ func New(
 				100,
 			)
 
+			bootstrap := newBootstrapper(
+				config.BootstrapNodes,
+				discoveredNodes,
+			)
+
 			ping := newPingWorker(
 				client,
 				kTable,
@@ -97,6 +100,7 @@ func New(
 				soughtNodeID,
 				1000,
 				metrics,
+				bootstrap,
 			)
 
 			requestMetaInfo := newRequestMetaInfoWorker(
@@ -120,7 +124,7 @@ func New(
 			infoHashTriage := newInfoHashTriageWorker(
 				daoProvider,
 				blockerBlocker,
-				scraper,
+				scrape,
 				config.RescrapeThreshold,
 				config.SaveFilesThreshold,
 				getPeers,
@@ -137,6 +141,7 @@ func New(
 				soughtNodeID,
 				1000,
 				metrics,
+				bootstrap,
 			)
 
 			discoveredNodesAdders = append(discoveredNodesAdders,
@@ -161,18 +166,18 @@ func New(
 				infoHashTriage,
 				getPeers,
 				requestMetaInfo,
-				scraper,
-				newBootstrapNodesWorker(
-					config.ReseedBootstrapNodesInterval,
-					config.BootstrapNodes,
-					discoveredNodes,
-					logger,
-				),
+				scrape,
 				newOldNodesWorker(
 					kTable,
 					time.Second*10,
 					time.Minute*15,
 					ping,
+				),
+				periodic.New(
+					config.ReseedBootstrapNodesInterval,
+					bootstrap,
+					periodic.WithInitialInterval(0),
+					periodic.WithQuickShutdown(),
 				),
 				periodic.New(
 					time.Minute,

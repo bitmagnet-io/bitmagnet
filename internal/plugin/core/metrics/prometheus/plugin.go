@@ -32,18 +32,15 @@ var (
 		builder.WithFxOption[config, deps](
 			fx.Provide(
 				fx.Annotate(
-					func(cs []prometheus.Collector) (*prometheus.Registry, error) {
-						cs = append(
-							[]prometheus.Collector{
-								collectors.NewGoCollector(),
-								collectors.NewProcessCollector(collectors.ProcessCollectorOpts{
-									Namespace: "bitmagnet",
-								}),
-							}, cs...)
-
+					func() (*prometheus.Registry, error) {
 						registry := prometheus.NewRegistry()
 
-						for _, c := range cs {
+						for _, c := range []prometheus.Collector{
+							collectors.NewGoCollector(),
+							collectors.NewProcessCollector(collectors.ProcessCollectorOpts{
+								Namespace: "bitmagnet",
+							}),
+						} {
 							if err := registry.Register(c); err != nil {
 								return nil, err
 							}
@@ -51,7 +48,6 @@ var (
 
 						return registry, nil
 					},
-					fx.ParamTags(`group:"prometheus_collectors"`),
 				),
 				func(registry *prometheus.Registry) (*sink.PrometheusSink, error) {
 					return sink.NewPrometheusSinkFrom(

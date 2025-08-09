@@ -11,13 +11,17 @@ import (
 )
 
 type worker struct {
-	*flusher
+	iflusher
 	mtx      sync.RWMutex
 	in       chan Input
 	shutdown chan struct{}
 	maxSize  int
 	maxWait  time.Duration
 	logger   *zap.Logger
+}
+
+type iflusher interface {
+	flush(ctx context.Context, payload *payload) (AllTablesStats, error)
 }
 
 func (w *worker) Add(ctx context.Context, payload Input) error {
@@ -72,25 +76,17 @@ func (w *worker) Runner() runner.Runner {
 				return nil
 			}
 
-			job := persistJob{
-				flusher: w.flusher,
-				payload: *payload,
-				stats:   make(AllTablesStats),
-			}
-
-			payload = newPayload()
-
 			w.logger.Debug("flushing", zap.Int("size", size))
 
-			err := job.run(ctx)
+			_, err := w.flush(ctx, payload)
+
+			payload = newPayload()
 
 			if err != nil {
 				w.logger.Error("flush failed", zap.Error(err))
 
 				return err
 			}
-
-			w.logger.Info("flushed", job.stats.LogFields()...)
 
 			lastFlush = time.Now()
 

@@ -20,11 +20,9 @@ type flusher struct {
 	sem         chan struct{}
 }
 
-func (p *flusher) Flush(ctx context.Context, payloads ...Input) (AllTablesStats, error) {
-	payload := newPayload(payloads...)
-
+func (f *flusher) flush(ctx context.Context, payload *payload) (AllTablesStats, error) {
 	job := persistJob{
-		flusher: p,
+		flusher: f,
 		payload: *payload,
 		stats:   make(AllTablesStats),
 	}
@@ -43,32 +41,32 @@ type persistJob struct {
 	stats AllTablesStats
 }
 
-func (p persistJob) run(ctx context.Context) error {
-	if p.len() == 0 {
+func (j persistJob) run(ctx context.Context) error {
+	if j.len() == 0 {
 		return nil
 	}
 
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
-	case p.sem <- struct{}{}:
+	case j.sem <- struct{}{}:
 	}
 
-	defer func() { <-p.sem }()
+	defer func() { <-j.sem }()
 
-	if p.deleteInfoHashes.Len() > 0 {
-		if blockErr := p.blocker.Block(ctx, p.deleteInfoHashes.Keys(), false); blockErr != nil {
+	if j.deleteInfoHashes.Len() > 0 {
+		if blockErr := j.blocker.Block(ctx, j.deleteInfoHashes.Keys(), false); blockErr != nil {
 			return blockErr
 		}
 	}
 
-	return p.daoProvider.DaoTransaction(func(tx *dao.Query) error {
+	return j.daoProvider.DaoTransaction(func(tx *dao.Query) error {
 		startTime := time.Now()
 
 		var torrentSourceStats TableStats
 
-		if p.torrentSources.Len() > 0 {
-			torrentSourcesPtr := sliceToPointers(p.torrentSources.Values())
+		if j.torrentSources.Len() > 0 {
+			torrentSourcesPtr := sliceToPointers(j.torrentSources.Values())
 
 			result := tx.TorrentSource.WithContext(ctx).Clauses(
 				clause.Returning{
@@ -95,9 +93,9 @@ func (p persistJob) run(ctx context.Context) error {
 
 		var torrentStats TableStats
 
-		if p.torrents.Len() > 0 {
+		if j.torrents.Len() > 0 {
 			// todo: check for all scenerios!
-			torrentsPtr := sliceToPointers(p.torrents.Values())
+			torrentsPtr := sliceToPointers(j.torrents.Values())
 
 			result := tx.Torrent.WithContext(ctx).Clauses(
 				clause.Returning{
@@ -130,7 +128,7 @@ func (p persistJob) run(ctx context.Context) error {
 			}
 		}
 
-		missingInfoHashes, err := p.payload.missingInfoHashes(ctx, tx)
+		missingInfoHashes, err := j.payload.missingInfoHashes(ctx, tx)
 		if err != nil {
 			return err
 		}
@@ -138,9 +136,9 @@ func (p persistJob) run(ctx context.Context) error {
 		var torrentPiecesStats TableStats
 
 		if torrentPieces := slice.Filter(
-			p.torrentPieces.Values(),
+			j.torrentPieces.Values(),
 			func(m model.TorrentPieces) bool {
-				if _, ok := missingInfoHashes[m.InfoHash]; ok || p.payload.deleteInfoHashes.Has(m.InfoHash) {
+				if _, ok := missingInfoHashes[m.InfoHash]; ok || j.payload.deleteInfoHashes.Has(m.InfoHash) {
 					torrentPiecesStats.Ignored++
 					return false
 				}
@@ -174,14 +172,14 @@ func (p persistJob) run(ctx context.Context) error {
 			}
 		}
 
-		p.stats.Add(tx.TorrentPieces.TableName(), torrentPiecesStats)
+		j.stats.Add(tx.TorrentPieces.TableName(), torrentPiecesStats)
 
 		var torrentsTorrentSourcesStats TableStats
 
 		if torrentsTorrentSources := slice.Filter(
-			p.torrentsTorrentSources.Values(),
+			j.torrentsTorrentSources.Values(),
 			func(m model.TorrentsTorrentSource) bool {
-				if _, ok := missingInfoHashes[m.InfoHash]; ok || p.payload.deleteInfoHashes.Has(m.InfoHash) {
+				if _, ok := missingInfoHashes[m.InfoHash]; ok || j.payload.deleteInfoHashes.Has(m.InfoHash) {
 					torrentsTorrentSourcesStats.Ignored++
 					return false
 				}
@@ -225,14 +223,14 @@ func (p persistJob) run(ctx context.Context) error {
 			}
 		}
 
-		p.stats.Add(tx.TorrentsTorrentSource.TableName(), torrentsTorrentSourcesStats)
+		j.stats.Add(tx.TorrentsTorrentSource.TableName(), torrentsTorrentSourcesStats)
 
 		var torrentFilesStats TableStats
 
 		if torrentFiles := slice.Filter(
-			p.torrentFiles.Values(),
+			j.torrentFiles.Values(),
 			func(m model.TorrentFile) bool {
-				if _, ok := missingInfoHashes[m.InfoHash]; ok || p.payload.deleteInfoHashes.Has(m.InfoHash) {
+				if _, ok := missingInfoHashes[m.InfoHash]; ok || j.payload.deleteInfoHashes.Has(m.InfoHash) {
 					torrentFilesStats.Ignored++
 					return false
 				}
@@ -266,12 +264,12 @@ func (p persistJob) run(ctx context.Context) error {
 			}
 		}
 
-		p.stats.Add(tx.TorrentFile.TableName(), torrentFilesStats)
+		j.stats.Add(tx.TorrentFile.TableName(), torrentFilesStats)
 
 		var contentStats TableStats
 
-		if p.content.Len() > 0 {
-			contentPtr := sliceToPointers(p.content.Values())
+		if j.content.Len() > 0 {
+			contentPtr := sliceToPointers(j.content.Values())
 
 			result := tx.Content.WithContext(ctx).Clauses(
 				clause.Returning{
@@ -297,14 +295,14 @@ func (p persistJob) run(ctx context.Context) error {
 			}
 		}
 
-		p.stats.Add(tx.Content.TableName(), contentStats)
+		j.stats.Add(tx.Content.TableName(), contentStats)
 
 		var torrentContentStats TableStats
 
-		if p.deleteTorrentContent.Len() > 0 {
+		if j.deleteTorrentContent.Len() > 0 {
 			result, err := tx.TorrentContent.WithContext(ctx).Where(
 				tx.TorrentContent.ID.In(slice.Map(
-					p.deleteTorrentContent.Keys(),
+					j.deleteTorrentContent.Keys(),
 					func(ref model.TorrentContentRef) string {
 						return ref.InferID()
 					},
@@ -319,9 +317,9 @@ func (p persistJob) run(ctx context.Context) error {
 		}
 
 		if torrentContents := slice.Filter(
-			p.torrentContents.Values(),
+			j.torrentContents.Values(),
 			func(m model.TorrentContent) bool {
-				if _, ok := missingInfoHashes[m.InfoHash]; ok || p.payload.deleteInfoHashes.Has(m.InfoHash) {
+				if _, ok := missingInfoHashes[m.InfoHash]; ok || j.payload.deleteInfoHashes.Has(m.InfoHash) {
 					torrentContentStats.Ignored++
 					return false
 				}
@@ -355,14 +353,14 @@ func (p persistJob) run(ctx context.Context) error {
 			}
 		}
 
-		p.stats.Add(tx.TorrentContent.TableName(), torrentContentStats)
+		j.stats.Add(tx.TorrentContent.TableName(), torrentContentStats)
 
 		var torrentTagsStats TableStats
 
 		if torrentTags := slice.Filter(
-			p.torrentTags.Values(),
+			j.torrentTags.Values(),
 			func(m model.TorrentTag) bool {
-				if _, ok := missingInfoHashes[m.InfoHash]; ok || p.payload.deleteInfoHashes.Has(m.InfoHash) {
+				if _, ok := missingInfoHashes[m.InfoHash]; ok || j.payload.deleteInfoHashes.Has(m.InfoHash) {
 					torrentTagsStats.Ignored++
 					return false
 				}
@@ -397,10 +395,10 @@ func (p persistJob) run(ctx context.Context) error {
 			}
 		}
 
-		p.stats.Add(tx.TorrentTag.TableName(), torrentTagsStats)
+		j.stats.Add(tx.TorrentTag.TableName(), torrentTagsStats)
 
-		if p.deleteInfoHashes.Len() > 0 {
-			valuers := slice.Map(p.deleteInfoHashes.Keys(), func(infoHash protocol.ID) driver.Valuer {
+		if j.deleteInfoHashes.Len() > 0 {
+			valuers := slice.Map(j.deleteInfoHashes.Keys(), func(infoHash protocol.ID) driver.Valuer {
 				return infoHash
 			})
 
@@ -415,17 +413,17 @@ func (p persistJob) run(ctx context.Context) error {
 			torrentStats.Deleted += int(result.RowsAffected)
 		}
 
-		p.stats.Add(tx.Torrent.TableName(), torrentStats)
+		j.stats.Add(tx.Torrent.TableName(), torrentStats)
 
 		var queueJobStats TableStats
 
-		if p.queueJobs.Len() > 0 {
+		if j.queueJobs.Len() > 0 {
 			result := tx.QueueJob.WithContext(ctx).Clauses(
 				clause.OnConflict{
 					DoNothing: true,
 				},
 			).UnderlyingDB().
-				CreateInBatches(slice.Map(p.queueJobs.Values(), func(j model.QueueJob) *model.QueueJob {
+				CreateInBatches(slice.Map(j.queueJobs.Values(), func(j model.QueueJob) *model.QueueJob {
 					return &j
 				}), 100)
 			if result.Error != nil {

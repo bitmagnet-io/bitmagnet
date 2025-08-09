@@ -12,6 +12,10 @@ func (c *Counter) Incr(labels ...LabelValue) {
 
 // IncrN increments the counter by n with the specified labels
 func (c *Counter) IncrN(n int, labels ...LabelValue) {
+	if n == 0 {
+		return
+	}
+
 	c.registry.metrics.IncrCounterWithLabels(c.Ref().Path(), float32(n), c.metricsLabels(labels))
 }
 

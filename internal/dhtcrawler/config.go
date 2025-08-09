@@ -1,8 +1,9 @@
 package dhtcrawler
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/bootstrap"
 	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/bootstrap"
 )
 
 type Config struct {
