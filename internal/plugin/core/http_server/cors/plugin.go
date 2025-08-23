@@ -18,7 +18,8 @@ import (
 
 type deps struct {
 	fx.In
-	Logger *zap.Logger
+	AllowedOrigins AllowedOrigins
+	Logger         *zap.Logger
 }
 
 var (
@@ -26,31 +27,24 @@ var (
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithEnabledByDefault[Config, deps](),
-		builder.WithDependencies[Config, deps](
+		builder.WithEnabledByDefault[deps](),
+		builder.WithDependencies[deps](
 			config.Ref,
 			logging.Ref,
 		),
-		builder.WithDefaultConfig[Config, deps](NewDefaultConfig()),
+		// builder.WithDefaultConfig[deps](NewDefaultConfig()),
+		builder.WithConfigParam[deps](Ref.MustSub("allowed_origins"), ParamAllowedOrigins),
 		builder.WithGinOption(
 			Ref,
-			func(cfg Config, deps deps) gin.OptionFunc {
+			func(deps deps) gin.OptionFunc {
 				return func(engine *gin.Engine) {
 					engine.Use(gincors.New(cors.Options{
-						AllowedOrigins:       cfg.AllowedOrigins,
-						AllowedMethods:       cfg.AllowedMethods,
-						AllowedHeaders:       cfg.AllowedHeaders,
-						ExposedHeaders:       cfg.ExposedHeaders,
-						MaxAge:               cfg.MaxAge,
-						AllowCredentials:     cfg.AllowCredentials,
-						AllowPrivateNetwork:  cfg.AllowPrivateNetwork,
-						OptionsPassthrough:   cfg.OptionsPassthrough,
-						OptionsSuccessStatus: cfg.OptionsSuccessStatus,
-						Debug:                cfg.Debug,
+						AllowedOrigins: deps.AllowedOrigins,
+						Debug:          true,
 						// we don't need every request logged so apply sampling
 						Logger: corsLogger{deps.Logger.WithOptions(zap.WrapCore(func(core zapcore.Core) zapcore.Core {
 							return zapcore.NewSamplerWithOptions(core, time.Hour, 10, 0)
-						})).Named("cors")},
+						})).Named(Ref.String())},
 					}))
 				}
 			}),

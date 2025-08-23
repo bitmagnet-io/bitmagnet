@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
@@ -37,7 +37,7 @@ func newSampleInfoHashesWorker(
 	kTable ktable.Table,
 	infoHashTriageAdder batch.Adder[nodeHasPeersForHash],
 	discoveredNodesAdder channel.Adder[ktable.Node],
-	soughtNodeID *concurrency.AtomicValue[protocol.ID],
+	soughtNodeID *atomic.Value[protocol.ID],
 	size int,
 	metrics *metrics.Component,
 	bootstrap func(context.Context) error,

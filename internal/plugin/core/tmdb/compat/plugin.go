@@ -7,18 +7,17 @@ import (
 	"go.uber.org/fx"
 )
 
-type (
-	config struct{}
-	deps   struct{}
-)
+type deps struct {
+	fx.In
+}
 
 var (
 	Ref = tmdb.Ref.MustSub("compat")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithEnabledByDefault[config, deps](),
-		builder.WithFxOption[config, deps](
+		builder.WithEnabledByDefault[deps](),
+		builder.WithFxOption[deps](
 			fx.Provide(
 				fx.Annotate(
 					func() (client internaltmdb.Client, config internaltmdb.Config, enabled internaltmdb.Enabled) {

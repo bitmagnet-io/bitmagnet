@@ -26,7 +26,7 @@ func TestAdapters(t *testing.T) {
 	idIssuer := &server.VariantIDIssuer{}
 
 	for i, name := range adapterNames {
-		t.Run(name, func(t *testing.T) {
+		t.Run(string(name), func(t *testing.T) {
 			t.Parallel()
 
 			ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)

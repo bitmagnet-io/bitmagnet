@@ -4,24 +4,43 @@ import (
 	"context"
 	"time"
 
-	"github.com/hashicorp/golang-lru/v2/expirable"
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
+	"github.com/bitmagnet-io/bitmagnet/internal/lru"
 	caches "github.com/mgdigital/gorm-cache/v2"
 	"go.uber.org/zap"
 )
 
 func New(
-	ttl time.Duration,
-	maxKeys int,
+	ttl *atomic.Value[TTL],
+	maxKeys *atomic.Value[MaxKeys],
 	logger *zap.Logger,
 ) caches.Cacher {
-	return &inMemoryCacher{
-		lru: expirable.NewLRU[string, *caches.Query](
-			maxKeys,
+	currentTTL, currentMaxKeys := ttl.Get(), maxKeys.Get()
+
+	cacher := &inMemoryCacher{
+		lru: lru.New[string, *caches.Query](
+			int(currentMaxKeys),
 			nil,
-			ttl,
+			time.Duration(currentTTL),
 		),
 		logger: logger,
 	}
+
+	ttl.Subscribe(func(ttl TTL) {
+		if ttl != currentTTL {
+			currentTTL = ttl
+			cacher.lru.SetTTL(time.Duration(currentTTL))
+		}
+	})
+
+	maxKeys.Subscribe(func(maxKeys MaxKeys) {
+		if maxKeys != currentMaxKeys {
+			currentMaxKeys = maxKeys
+			cacher.lru.Resize(int(currentMaxKeys))
+		}
+	})
+
+	return cacher
 }
 
 type Mode int
@@ -38,14 +57,14 @@ const (
 	ModeWarm
 )
 
-type modeKey string
+type modeKeyType string
 
-// The ModeKey context value specifies the caching Mode for a particular query.
+// The modeKey context value specifies the caching Mode for a particular query.
 // I don't really like storing this in the context, but it's the simplest way for now.
-const ModeKey modeKey = "gorm_cache_mode"
+const modeKey modeKeyType = "gorm_cache_mode"
 
 type inMemoryCacher struct {
-	lru    *expirable.LRU[string, *caches.Query]
+	lru    *lru.LRU[string, *caches.Query]
 	logger *zap.Logger
 }
 
@@ -74,8 +93,12 @@ func (c *inMemoryCacher) Store(ctx context.Context, key string, val *caches.Quer
 	return nil
 }
 
+func ContextWithCacheMode(ctx context.Context, mode Mode) context.Context {
+	return context.WithValue(ctx, modeKey, mode)
+}
+
 func cacheModeFromContext(ctx context.Context) Mode {
-	ctxValue := ctx.Value(ModeKey)
+	ctxValue := ctx.Value(modeKey)
 
 	m, isOk := ctxValue.(Mode)
 	if !isOk {

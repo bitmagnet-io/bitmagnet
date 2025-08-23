@@ -5,7 +5,7 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 )
 
@@ -17,7 +17,7 @@ type LastResponses struct {
 
 type healthCollector struct {
 	serverRunner
-	lastResponses *concurrency.AtomicValue[LastResponses]
+	lastResponses *atomic.Value[LastResponses]
 }
 
 func (c healthCollector) Query(

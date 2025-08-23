@@ -23,7 +23,7 @@ func newPersistTorrentsWorker(
 	processorAdder batch.Adder[protocol.ID],
 	scrapeAdder channel.Adder[nodeHasPeersForHash],
 	size int,
-	savePieces bool,
+	savePieces SavePieces,
 	saveFilesThreshold int,
 ) channel.Worker[infoHashWithMetaInfo] {
 	return channel.NewWorker(
@@ -188,7 +188,7 @@ func newPersistTorrentsWorker(
 func createTorrentModel(
 	hash protocol.ID,
 	info metainfo.Info,
-	savePieces bool,
+	savePieces SavePieces,
 	saveFilesThreshold int,
 ) model.Torrent {
 	name := info.BestName()

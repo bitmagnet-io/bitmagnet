@@ -7,17 +7,16 @@ import (
 	"go.uber.org/fx"
 )
 
-type (
-	config struct{}
-	deps   struct{}
-)
+type deps struct {
+	fx.In
+}
 
 var (
 	Ref = core.Ref.MustSub("metrics")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithFxOption[config, deps](
+		builder.WithFxOption[deps](
 			fx.Provide(
 				fx.Annotate(
 					func(options []metrics.Option) (*metrics.Registry, error) {

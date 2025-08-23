@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/semaphore"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
@@ -24,7 +25,6 @@ type Func[T any] func(context.Context, T) error
 
 func NewWorker[T any](fn Func[T], options ...Option[T]) Worker[T] {
 	wrk := &worker[T]{
-		size:    1,
 		fn:      fn,
 		metrics: metrics.Nop,
 		onIdle: func(context.Context) error {
@@ -36,12 +36,16 @@ func NewWorker[T any](fn Func[T], options ...Option[T]) Worker[T] {
 		opt(wrk)
 	}
 
+	if wrk.size == nil {
+		wrk.size = atomic.NewValue(1)
+	}
+
 	return wrk
 }
 
 type worker[T any] struct {
 	mtx           sync.RWMutex
-	size          int
+	size          *atomic.Value[int]
 	fn            Func[T]
 	ch            chan []T
 	shutdown      chan struct{}
@@ -84,14 +88,14 @@ func (w *worker[T]) Runner() runner.Runner {
 
 		ch := make(chan []T)
 		shutdown := make(chan struct{})
-		sem := semaphore.New(w.size)
+		sem, semUnsubscribe := semaphore.NewAtomic(w.size)
 
 		w.ch = ch
 		w.shutdown = shutdown
 
 		go func() {
 			defer func() {
-				sem.Acquire(ctx, w.size)
+				sem.Acquire(ctx, semUnsubscribe())
 
 				cancel(nil)
 				w.metrics.Reset()

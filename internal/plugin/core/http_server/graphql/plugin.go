@@ -19,22 +19,18 @@ import (
 	"go.uber.org/fx"
 )
 
-type (
-	config struct{}
-
-	deps struct {
-		fx.In
-		Schema graphql.ExecutableSchema
-	}
-)
+type deps struct {
+	fx.In
+	Schema graphql.ExecutableSchema
+}
 
 var (
 	Ref = http_server.Ref.MustSub("graphql")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithEnabledByDefault[config, deps](),
-		builder.WithDependencies[config, deps](
+		builder.WithEnabledByDefault[deps](),
+		builder.WithDependencies[deps](
 			health.Ref,
 			metrics.Ref,
 			persister.Ref,
@@ -44,7 +40,7 @@ var (
 			search.Ref,
 			worker.Ref,
 		),
-		builder.WithFxOption[config, deps](
+		builder.WithFxOption[deps](
 			fx.Provide(
 				func(
 					resolverRoot resolvers.Resolver,
@@ -57,7 +53,7 @@ var (
 		),
 		builder.WithGinOption(
 			Ref,
-			func(_ config, deps deps) gin.OptionFunc {
+			func(deps deps) gin.OptionFunc {
 				return httpserver.New(deps.Schema)
 			},
 		),

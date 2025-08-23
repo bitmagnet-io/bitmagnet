@@ -15,8 +15,6 @@ import (
 	"go.uber.org/zap"
 )
 
-const Namespace = "dht_server"
-
 type Server interface {
 	Query(ctx context.Context, addr netip.AddrPort, q string, args dht.MsgArgs) (dht.RecvMsg, error)
 }

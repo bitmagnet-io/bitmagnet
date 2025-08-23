@@ -11,6 +11,7 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/internal/cmd"
 	"github.com/bitmagnet-io/bitmagnet/internal/env"
+	"github.com/bitmagnet-io/bitmagnet/internal/fs"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/app"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"go.uber.org/fx"
@@ -171,13 +172,15 @@ func envOption(envEnv env.Env) fx.Option {
 	return fx.Supply(
 		fx.Annotate(
 			envEnv,
+			fx.As(new(env.Env)),
 			fx.As(new(env.Context)),
 			fx.As(new(env.Stdin)),
 			fx.As(new(env.Stdout)),
 			fx.As(new(env.Stderr)),
+			fx.As(new(env.VarsLookup)),
 			fx.As(new(env.ArgsProvider)),
 			fx.As(new(env.SignalsProvider)),
-			fx.As(fx.Self()),
+			fx.As(new(fs.FSProvider)),
 		),
 	)
 }

@@ -5,6 +5,8 @@ import (
 	"context"
 	"io"
 	"os"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/fs"
 )
 
 type Option func(*environment)
@@ -25,6 +27,7 @@ func WithDefaults() Option {
 		WithOSSignalsProvider(),
 		WithVarsFromEnviron(),
 		WithVarsFromDotEnv(),
+		WithXDGFSProvider("bitmagnet"),
 	)
 }
 
@@ -98,6 +101,18 @@ func WithOSSignalsProvider() Option {
 	}
 }
 
+func WithFSProvider(provider fs.FSProvider) Option {
+	return func(e *environment) {
+		e.FSProvider = provider
+	}
+}
+
+func WithXDGFSProvider(subPath string) Option {
+	return func(e *environment) {
+		e.FSProvider = fs.NewFSProviderXDG(subPath)
+	}
+}
+
 func ensureValues() Option {
 	return func(e *environment) {
 		if e.Context == nil {
@@ -118,6 +133,10 @@ func ensureValues() Option {
 
 		if e.SignalsProvider == nil {
 			e.SignalsProvider = nopSignalsProvider{}
+		}
+
+		if e.FSProvider == nil {
+			e.FSProvider = fs.FSProviderNop{}
 		}
 	}
 }

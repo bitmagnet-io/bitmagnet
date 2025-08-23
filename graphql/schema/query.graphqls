@@ -1,5 +1,6 @@
 type Query {
   version: String!
+  config: ConfigQuery!
   worker: WorkerQuery!
   health: HealthQuery!
   queue: QueueQuery!

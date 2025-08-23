@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"io"
 	"math"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/anacrolix/torrent/bencode"
 	"github.com/anacrolix/torrent/peer_protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo"
 )
@@ -23,9 +23,9 @@ type Requester interface {
 }
 
 type requester struct {
-	clientID protocol.ID
-	timeout  time.Duration
-	dialer   *net.Dialer
+	clientID       protocol.ID
+	dialTimeout    *atomic.Value[DialTimeout]
+	requestTimeout *atomic.Value[RequestTimeout]
 }
 
 type ExtensionBit uint
@@ -84,40 +84,40 @@ type Response struct {
 }
 
 func (r *requester) Request(ctx context.Context, infoHash protocol.ID, addr netip.AddrPort) (Response, error) {
-	timeoutCtx, cancel := context.WithTimeout(ctx, r.timeout)
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(r.requestTimeout.Get()))
 	defer cancel()
 
-	conn, connErr := r.connect(timeoutCtx, addr)
-	if connErr != nil {
-		return Response{}, connErr
+	conn, err := r.connect(ctx, addr)
+	if err != nil {
+		return Response{}, fmt.Errorf("%w: %w: %w", Err, ErrConnect, err)
 	}
 
 	defer func() {
 		_ = conn.Close()
 	}()
 
-	hsInfo, btHandshakeErr := btHandshake(conn, infoHash, r.clientID)
-	if btHandshakeErr != nil {
-		return Response{}, btHandshakeErr
+	hsInfo, err := btHandshake(conn, infoHash, r.clientID)
+	if err != nil {
+		return Response{}, fmt.Errorf("%w: %w: %w", Err, ErrHandshake, err)
 	}
 
-	metadataSize, utMetadata, exHandshakeErr := exHandshake(conn)
-	if exHandshakeErr != nil {
-		return Response{}, exHandshakeErr
+	metadataSize, utMetadata, err := exHandshake(conn)
+	if err != nil {
+		return Response{}, fmt.Errorf("%w: %w: %w", Err, ErrExHandshake, err)
 	}
 
-	if requestAllPiecesErr := requestAllPieces(conn, metadataSize, utMetadata); requestAllPiecesErr != nil {
-		return Response{}, requestAllPiecesErr
+	if err = requestAllPieces(conn, metadataSize, utMetadata); err != nil {
+		return Response{}, fmt.Errorf("%w: %w: %w", Err, ErrRequestPieces, err)
 	}
 
-	pieces, readAllPiecesErr := readAllPieces(conn, metadataSize)
-	if readAllPiecesErr != nil {
-		return Response{}, readAllPiecesErr
+	pieces, err := readAllPieces(conn, metadataSize)
+	if err != nil {
+		return Response{}, fmt.Errorf("%w: %w: %w", Err, ErrReadPieces, err)
 	}
 
-	parsed, parseErr := metainfo.ParseMetaInfoBytes(infoHash, pieces)
-	if parseErr != nil {
-		return Response{}, parseErr
+	parsed, err := metainfo.ParseMetaInfoBytes(infoHash, pieces)
+	if err != nil {
+		return Response{}, fmt.Errorf("%w: %w: %w", Err, ErrParse, err)
 	}
 
 	return Response{
@@ -126,11 +126,15 @@ func (r *requester) Request(ctx context.Context, infoHash protocol.ID, addr neti
 	}, nil
 }
 
-func (r requester) connect(ctx context.Context, addr netip.AddrPort) (conn *net.TCPConn, err error) {
-	c, dialErr := r.dialer.DialContext(ctx, "tcp4", addr.String())
-	if dialErr != nil {
-		err = dialErr
-		return
+func (r requester) connect(ctx context.Context, addr netip.AddrPort) (*net.TCPConn, error) {
+	dialer := &net.Dialer{
+		Timeout:   time.Duration(r.dialTimeout.Get()),
+		KeepAlive: -1,
+	}
+
+	c, err := dialer.DialContext(ctx, "tcp4", addr.String())
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrDial, err)
 	}
 
 	tcpConn := c.(*net.TCPConn)
@@ -138,22 +142,18 @@ func (r requester) connect(ctx context.Context, addr netip.AddrPort) (conn *net.
 		_ = tcpConn.Close()
 	}
 	// If sec == 0, operating system discards any unsent or unacknowledged data [after Close() has been called].
-	if setLingerErr := tcpConn.SetLinger(0); setLingerErr != nil {
-		err = setLingerErr
-
+	if err := tcpConn.SetLinger(0); err != nil {
 		closeConn()
 
-		return
+		return nil, fmt.Errorf("%w: %w", ErrSetLinger, err)
 	}
 
 	deadline, ok := ctx.Deadline()
 	if ok {
-		if setDeadlineErr := tcpConn.SetDeadline(deadline); setDeadlineErr != nil {
-			err = setDeadlineErr
-
+		if err := tcpConn.SetDeadline(deadline); err != nil {
 			closeConn()
 
-			return
+			return nil, fmt.Errorf("%w: %w", ErrSetDeadline, err)
 		}
 	}
 
@@ -169,20 +169,17 @@ func btHandshake(rw io.ReadWriter, infoHash protocol.ID, clientID protocol.ID) (
 	handshakeBytes = append(handshakeBytes, infoHash[:]...)
 	handshakeBytes = append(handshakeBytes, clientID[:]...)
 
-	if n, hsErr := rw.Write(handshakeBytes); hsErr != nil {
-		return HandshakeInfo{}, hsErr
-	} else if n != 68 {
-		panic("handshake bytes must have length 68")
+	if _, err := rw.Write(handshakeBytes); err != nil {
+		return HandshakeInfo{}, fmt.Errorf("%w: %w", ErrWrite, err)
 	}
 
 	handshakeResponse := make([]byte, 68)
-	if n, hsErr := io.ReadFull(rw, handshakeResponse); hsErr != nil {
-		return HandshakeInfo{},
-			fmt.Errorf("failed to read all handshake bytes (%d): %w / %s", n, hsErr, infoHash.String())
+	if _, err := io.ReadFull(rw, handshakeResponse); err != nil {
+		return HandshakeInfo{}, fmt.Errorf("%w: %w", ErrRead, err)
 	}
 
 	if !bytes.HasPrefix(handshakeResponse, []byte(peer_protocol.Protocol)) {
-		return HandshakeInfo{}, errors.New("invalid handshake response received")
+		return HandshakeInfo{}, ErrInvalidResponse
 	}
 
 	var peerExBits PeerExtensionBits
@@ -190,7 +187,7 @@ func btHandshake(rw io.ReadWriter, infoHash protocol.ID, clientID protocol.ID) (
 	copy(peerExBits[:], handshakeResponse[20:28])
 
 	if !peerExBits.GetBit(ExtensionBitLtep) {
-		return HandshakeInfo{}, errors.New("peer does not support the extension protocol")
+		return HandshakeInfo{}, ErrUnsupported
 	}
 
 	var resHash protocol.ID
@@ -198,7 +195,7 @@ func btHandshake(rw io.ReadWriter, infoHash protocol.ID, clientID protocol.ID) (
 	copy(resHash[:], handshakeResponse[28:48])
 
 	if resHash != infoHash {
-		return HandshakeInfo{}, errors.New("infohash mismatch")
+		return HandshakeInfo{}, ErrInfoHashMismatch
 	}
 
 	var resPeerID protocol.ID
@@ -227,37 +224,32 @@ type extDict struct {
 
 const maxMetadataSize = 10 * 1024 * 1024
 
-func exHandshake(rw io.ReadWriter) (metadataSize uint, utMetadata uint8, err error) {
-	if _, writeErr := rw.Write([]byte("\x00\x00\x00\x1a\x14\x00d1:md11:ut_metadatai1eee")); err != nil {
-		err = writeErr
-		return
+func exHandshake(rw io.ReadWriter) (uint, uint8, error) {
+	if _, err := rw.Write([]byte("\x00\x00\x00\x1a\x14\x00d1:md11:ut_metadatai1eee")); err != nil {
+		return 0, 0, fmt.Errorf("%w: %w", ErrWrite, err)
 	}
 
-	rExMessage, readErr := readExMessage(rw)
-	if readErr != nil {
-		err = readErr
-		return
+	rExMessage, err := readExMessage(rw)
+	if err != nil {
+		return 0, 0, fmt.Errorf("%w: %w", ErrRead, err)
 	}
+
 	// Extension Handshake has the Extension Message id = 0x00
 	if rExMessage[1] != 0 {
-		err = errors.New("first extension message is not an extension handshake")
-		return
+		return 0, 0, fmt.Errorf("%w: %w", ErrInvalidResponse, ErrFirstExMessage)
 	}
 
 	rRootDict := new(rootDict)
-	if unmarshalErr := bencode.Unmarshal(rExMessage[2:], rRootDict); unmarshalErr != nil {
-		err = unmarshalErr
-		return
+	if err := bencode.Unmarshal(rExMessage[2:], rRootDict); err != nil {
+		return 0, 0, fmt.Errorf("%w: %w: %w", ErrInvalidResponse, ErrUnmarshal, err)
 	}
 
 	if 0 >= rRootDict.MetadataSize || rRootDict.MetadataSize >= maxMetadataSize {
-		err = errors.New("metadata too big or its size is less than or equal zero")
-		return
+		return 0, 0, fmt.Errorf("%w: %w", ErrInvalidResponse, ErrSize)
 	}
 
 	if 0 >= rRootDict.M.UTMetadata || rRootDict.M.UTMetadata >= 255 {
-		err = errors.New("ut_metadata is not an uint8")
-		return
+		return 0, 0, fmt.Errorf("%w: %w", ErrInvalidResponse, ErrUTMetadata)
 	}
 
 	return uint(rRootDict.MetadataSize), uint8(rRootDict.M.UTMetadata), nil
@@ -274,12 +266,12 @@ func requestAllPieces(w io.Writer, metadataSize uint, utMetadata uint8) error {
 			panic(err)
 		}
 
-		if _, writeErr := fmt.Fprintf(w,
+		if _, err = fmt.Fprintf(w,
 			"%s\x14%s%s",
 			uintToBigEndian4(uint(2+len(extDictDump))),
 			[]byte{utMetadata},
-			extDictDump); writeErr != nil {
-			return writeErr
+			extDictDump); err != nil {
+			return err
 		}
 	}
 
@@ -306,12 +298,12 @@ func readAllPieces(r io.Reader, metadataSize uint) ([]byte, error) {
 		rMessageBuf := bytes.NewBuffer(rUmMessage[2:])
 		rExtDict := new(extDict)
 
-		if decodeErr := bencode.NewDecoder(rMessageBuf).Decode(rExtDict); decodeErr != nil {
-			return nil, decodeErr
+		if err = bencode.NewDecoder(rMessageBuf).Decode(rExtDict); err != nil {
+			return nil, fmt.Errorf("%w: %w: %w", ErrInvalidResponse, ErrUnmarshal, err)
 		}
 
 		if rExtDict.MsgType == 2 { // reject
-			return nil, errors.New("remote peer rejected sending metadataBytes")
+			return nil, ErrRejected
 		}
 
 		if rExtDict.MsgType == 1 { // data
@@ -324,18 +316,18 @@ func readAllPieces(r io.Reader, metadataSize uint) ([]byte, error) {
 			// Hence...
 			//   ... if the length of metadataPiece is more than 16kiB, we err.
 			if len(metadataPiece) > 16*1024 {
-				return nil, errors.New("metadataPiece > 16kiB")
+				return nil, fmt.Errorf("%w: %w: > 16kiB", ErrInvalidResponse, ErrSize)
 			}
 
 			receivedSize += uint(len(metadataPiece))
 			// ... if the length of @metadataPiece is less than 16kiB AND metadataBytes is NOT
 			// complete then we err.
 			if len(metadataPiece) < 16*1024 && receivedSize != metadataSize {
-				return nil, errors.New("metadataPiece < 16 kiB but incomplete")
+				return nil, fmt.Errorf("%w: %w: < 16 kiB but incomplete", ErrInvalidResponse, ErrSize)
 			}
 
 			if receivedSize > metadataSize {
-				return nil, errors.New("receivedSize > metadataSize")
+				return nil, fmt.Errorf("%w: %w: received > handshake", ErrInvalidResponse, ErrSize)
 			}
 
 			piece := rExtDict.Piece
@@ -397,7 +389,7 @@ func readMessage(r io.Reader) ([]byte, error) {
 	// This is a crude check that does not let it happen (i.e. boundary can probably be
 	// tightened a lot more.)
 	if length > maxMetadataSize {
-		return nil, errors.New("message is longer than max allowed metadata size")
+		return nil, fmt.Errorf("%w: %w: > %d", ErrInvalidResponse, ErrSize, maxMetadataSize)
 	}
 
 	messageBytes := make([]byte, length)

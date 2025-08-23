@@ -22,10 +22,23 @@ var (
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithEnabledByDefault[Config, deps](),
-		builder.WithDefaultConfig[Config, deps](NewDefaultConfig()),
-		builder.WithFxOption[Config, deps](
+		builder.WithEnabledByDefault[deps](),
+		builder.WithConfigParam[deps](Ref.MustSub("dsn"), ParamDSN),
+		builder.WithConfigParam[deps](Ref.MustSub("host"), ParamHost),
+		builder.WithConfigParam[deps](Ref.MustSub("port"), ParamPort),
+		builder.WithConfigParam[deps](Ref.MustSub("user"), ParamUser),
+		builder.WithConfigParam[deps](Ref.MustSub("password"), ParamPassword),
+		builder.WithConfigParam[deps](Ref.MustSub("database"), ParamDatabase),
+		builder.WithFxOption[deps](
 			fx.Provide(
+				fx.Annotate(
+					func(
+						plugins []gorm.Plugin,
+					) []gorm.Plugin {
+						return plugins
+					},
+					fx.ParamTags(`group:"gorm_plugins"`),
+				),
 				fx.Annotate(
 					func(
 						plugins []gorm.Plugin,
@@ -33,12 +46,11 @@ var (
 						logger *zap.Logger,
 					) database.RunnerProvider {
 						return database.New(
-							cfg.CreateDSN(),
+							string(cfg.CreateDSN()),
 							plugins,
 							logger,
 						)
 					},
-					fx.ParamTags(`group:"gorm_plugins"`),
 					fx.As(new(database.PoolProvider)),
 					fx.As(new(database.SQLDBProvider)),
 					fx.As(new(database.GormDBProvider)),
@@ -49,13 +61,13 @@ var (
 				),
 			),
 		),
-		builder.WithWorkerRegistryOption(func(_ Config, deps deps) registry.Option {
+		builder.WithWorkerRegistryOption(func(deps deps) registry.Option {
 			return registry.WithWorker(
 				Ref.String(),
 				deps.Provider,
 			)
 		}),
-		builder.WithHealthCheckerOption(func(_ Config, deps deps) health.CheckerOption {
+		builder.WithHealthCheckerOption(func(deps deps) health.CheckerOption {
 			return healthcheck.New(Ref.String(), deps.Provider)
 		}),
 	)

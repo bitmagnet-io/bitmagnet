@@ -18,7 +18,7 @@ type Compiler interface {
 }
 
 type Runner interface {
-	Run(ctx context.Context, workflow string, flags Flags, t model.Torrent) (classification.Result, error)
+	Run(ctx context.Context, workflow Workflow, flags Flags, t model.Torrent) (classification.Result, error)
 }
 
 type compiler struct {
@@ -31,7 +31,7 @@ type compilerContext struct {
 	celEnv        *cel.Env
 	source        any
 	path          []string
-	workflowNames map[string]struct{}
+	workflowNames map[Workflow]struct{}
 }
 
 type compilerOption func(Source, *compilerContext) error
@@ -40,7 +40,7 @@ type executionContext struct {
 	context.Context
 	dependencies
 	flags     map[string]ref.Val
-	workflows map[string]action
+	workflows map[Workflow]action
 	torrentPb *protobuf.Torrent
 	result    classification.Result
 	resultPb  *protobuf.Classification
@@ -102,10 +102,10 @@ func (c compiler) Compile(source Source) (Runner, error) {
 	}
 
 	workflowsCtx := ctx.child("workflows", source.Workflows)
-	workflows := make(map[string]action)
+	workflows := make(map[Workflow]action)
 
 	for name, src := range source.Workflows {
-		a, err := ctx.compileAction(workflowsCtx.child(name, src))
+		a, err := ctx.compileAction(workflowsCtx.child(string(name), src))
 		if err != nil {
 			return nil, ctx.fatal(err)
 		}

@@ -10,11 +10,11 @@ import (
 
 func New(
 	handler http.Handler,
-	localAddress string,
+	localAddress LocalAddress,
 ) runner.Runner {
 	return func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
 		srv := &http.Server{
-			Addr:    localAddress,
+			Addr:    string(localAddress),
 			Handler: handler,
 		}
 

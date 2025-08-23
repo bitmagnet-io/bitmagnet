@@ -10,47 +10,39 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/pipeline/persister"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/handler"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/manager"
-	"github.com/bitmagnet-io/bitmagnet/internal/queue/prometheus"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/server"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
-	prom "github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
-type (
-	config struct{}
-
-	deps struct {
-		fx.In
-		DaoProvider database.DaoTransactionProvider
-		Logger      *zap.Logger
-		Handlers    []handler.Handler `group:"queue_handlers"`
-	}
-)
+type deps struct {
+	fx.In
+	DaoProvider database.DaoTransactionProvider
+	Logger      *zap.Logger
+	Handlers    []handler.Handler `group:"queue_handlers"`
+}
 
 var (
 	Ref = core.Ref.MustSub("queue")
 
-	refMetrics = Ref.MustSub("metrics")
-
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithEnabledByDefault[config, deps](),
-		builder.WithDependencies[config, deps](
+		builder.WithEnabledByDefault[deps](),
+		builder.WithDependencies[deps](
 			logging.Ref,
 			persister.Ref,
 			postgres.Ref,
 		),
-		builder.WithFxOption[config, deps](
+		builder.WithFxOption[deps](
 			fx.Provide(
 				manager.New,
 				queuemetrics.New,
 			),
 		),
 		builder.WithWorkerRegistryOption(
-			func(cfg config, deps deps) registry.Option {
+			func(deps deps) registry.Option {
 				return registry.WithWorker(
 					Ref.String(),
 					server.New(
@@ -65,10 +57,10 @@ var (
 				)
 			},
 		),
-		builder.WithPrometheusCollector(
-			func(cfg config, deps deps) prom.Collector {
-				return prometheus.New(deps.DaoProvider, deps.Logger.Named(refMetrics.String()))
-			},
-		),
+		// builder.WithPrometheusCollector(
+		// 	func(cfg config, deps deps) prom.Collector {
+		// 		return prometheus.New(deps.DaoProvider, deps.Logger.Named(refMetrics.String()))
+		// 	},
+		// ),
 	)
 )

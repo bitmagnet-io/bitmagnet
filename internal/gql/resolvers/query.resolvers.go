@@ -22,6 +22,13 @@ func (r *queryResolver) Version(ctx context.Context) (string, error) {
 	return version.GitTag, nil
 }
 
+// Config is the resolver for the config field.
+func (r *queryResolver) Config(ctx context.Context) (gqlmodel.ConfigQuery, error) {
+	return gqlmodel.ConfigQuery{
+		Manager: r.ConfigManager,
+	}, nil
+}
+
 // Worker is the resolver for the worker field.
 func (r *queryResolver) Worker(ctx context.Context) (gqlmodel.WorkerQuery, error) {
 	return gqlmodel.WorkerQuery{

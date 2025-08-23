@@ -24,8 +24,8 @@ func (s Source) merge(other Source) (Source, error) {
 	}, nil
 }
 
-func (s Source) workflowNames() map[string]struct{} {
-	result := make(map[string]struct{})
+func (s Source) workflowNames() map[Workflow]struct{} {
+	result := make(map[Workflow]struct{})
 	for k := range s.Workflows {
 		result[k] = struct{}{}
 	}
@@ -77,7 +77,7 @@ func (g extensionGroups) merge(other extensionGroups) extensionGroups {
 	return result
 }
 
-type workflowSources map[string]any
+type workflowSources map[Workflow]any
 
 func (s workflowSources) merge(other workflowSources) workflowSources {
 	result := make(workflowSources)

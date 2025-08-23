@@ -36,7 +36,7 @@ func (runWorkflowAction) compileAction(ctx compilerContext) (action, error) {
 	}
 
 	for _, name := range names {
-		if _, ok := ctx.workflowNames[name]; !ok {
+		if _, ok := ctx.workflowNames[Workflow(name)]; !ok {
 			return action{}, ctx.fatal(fmt.Errorf("workflow %s not found", name))
 		}
 	}
@@ -46,7 +46,7 @@ func (runWorkflowAction) compileAction(ctx compilerContext) (action, error) {
 			var err error
 			cl := ctx.result
 			for _, name := range names {
-				cl, err = ctx.workflows[name].run(ctx.withResult(cl))
+				cl, err = ctx.workflows[Workflow(name)].run(ctx.withResult(cl))
 				if err != nil {
 					return cl, err
 				}

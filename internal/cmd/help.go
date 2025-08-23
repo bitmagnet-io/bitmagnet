@@ -35,7 +35,7 @@ func (i *instance) printUsage(wr io.Writer) error {
 
 	var cmdPath []string
 
-	for curr := i; curr != nil; curr = i.parent {
+	for curr := i; curr != nil; curr = curr.parent {
 		cmdPath = append(cmdPath, curr.Spec.Name)
 	}
 
@@ -60,7 +60,7 @@ func (i *instance) printUsage(wr io.Writer) error {
 			hw.print(" " + tmpl)
 		}
 	}
-
+	println(4)
 	// positionals?
 
 	if len(i.Subcommands()) > 0 {

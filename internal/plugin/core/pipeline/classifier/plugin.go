@@ -10,22 +10,46 @@ import (
 	"go.uber.org/fx"
 )
 
-type (
-	Config = classifier.Config
-	deps   = classifier.Params
-)
+type deps = classifier.Params
 
 var (
 	Ref = pipeline.Ref.MustSub("classifier")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithDependencies[Config, deps](
+		builder.WithDependencies[deps](
 			config.Ref,
 			search.Ref,
 			tmdb_compat.Ref,
 		),
-		builder.WithDefaultConfig[Config, deps](classifier.NewDefaultConfig()),
-		builder.WithFxOption[Config, deps](fx.Provide(classifier.New)),
+		// builder.WithDefaultConfig[deps](classifier.NewDefaultConfig()),
+		builder.WithConfigParam[deps](Ref.MustSub("workflow"), classifier.ParamWorkflow),
+		builder.WithConfigParam[deps](Ref.MustSub("keywords"), classifier.ParamKeywords),
+		builder.WithConfigParam[deps](Ref.MustSub("extensions"), classifier.ParamExtensions),
+		builder.WithConfigParam[deps](Ref.MustSub("flags"), classifier.ParamFlags),
+		builder.WithConfigParam[deps](Ref.MustSub("delete_xxx"), classifier.ParamDeleteXXX),
+		builder.WithConfigParam[deps](Ref.MustSub("concurrency"), classifier.ParamConcurrency),
+		builder.WithFxOption[deps](
+			fx.Provide(
+				func(
+					workflow classifier.Workflow,
+					keywords classifier.Keywords,
+					extensions classifier.Extensions,
+					flags classifier.FlagValues,
+					deleteXXX classifier.DeleteXXX,
+					concurrency classifier.Concurrency,
+				) classifier.Config {
+					return classifier.Config{
+						Workflow:    workflow,
+						Keywords:    keywords,
+						Extensions:  extensions,
+						Flags:       flags,
+						DeleteXXX:   deleteXXX,
+						Concurrency: concurrency,
+					}
+				},
+				classifier.New,
+			),
+		),
 	)
 )

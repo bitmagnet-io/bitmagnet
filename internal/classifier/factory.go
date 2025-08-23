@@ -8,6 +8,7 @@ import (
 	"go.uber.org/fx"
 )
 
+// todo: Refactor constructor
 type Params struct {
 	fx.In
 	Config      Config

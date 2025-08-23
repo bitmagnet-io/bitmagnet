@@ -30,7 +30,6 @@ import (
 	pipeline_indexer "github.com/bitmagnet-io/bitmagnet/internal/plugin/core/pipeline/indexer"
 	pipeline_persister "github.com/bitmagnet-io/bitmagnet/internal/plugin/core/pipeline/persister"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/queue"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/tmdb"
 	tmdb_compat "github.com/bitmagnet-io/bitmagnet/internal/plugin/core/tmdb/compat"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/torznab"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/validation"
@@ -67,7 +66,7 @@ var Core = MustNew(
 	pipeline_persister.Plugin,
 	pipeline_indexer.Plugin,
 	queue.Plugin,
-	tmdb.Plugin,
+	// tmdb.Plugin,
 	tmdb_compat.Plugin,
 	torznab.Plugin,
 	validation.Plugin,

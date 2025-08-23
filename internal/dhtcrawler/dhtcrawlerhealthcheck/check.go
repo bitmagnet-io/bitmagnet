@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/server"
 )
@@ -13,8 +13,8 @@ import (
 func NewCheck(
 	name string,
 	isActive func() bool,
-	//isActive *concurrency.AtomicValue[bool],
-	lastResponses *concurrency.AtomicValue[server.LastResponses],
+	//isActive *concurrency.Value[bool],
+	lastResponses *atomic.Value[server.LastResponses],
 ) health.Check {
 	return health.Check{
 		Name:     name,

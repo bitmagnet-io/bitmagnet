@@ -14,22 +14,18 @@ import (
 	"go.uber.org/fx"
 )
 
-type (
-	config struct{}
-
-	deps struct {
-		fx.In
-		Registry *prometheus.Registry
-	}
-)
+type deps struct {
+	fx.In
+	Registry *prometheus.Registry
+}
 
 var (
 	Ref = plugin_metrics.Ref.MustSub("prometheus")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithEnabledByDefault[config, deps](),
-		builder.WithFxOption[config, deps](
+		builder.WithEnabledByDefault[deps](),
+		builder.WithFxOption[deps](
 			fx.Provide(
 				fx.Annotate(
 					func() (*prometheus.Registry, error) {
@@ -67,14 +63,14 @@ var (
 		),
 		builder.WithGinOption(
 			Ref.MustSub("pprof"),
-			func(config, deps) gin.OptionFunc {
+			func(deps) gin.OptionFunc {
 				return httpserver.NewPProf()
 			},
 		),
 		// todo: Move this
 		builder.WithGinOption(
 			Ref,
-			func(_ config, deps deps) gin.OptionFunc {
+			func(deps deps) gin.OptionFunc {
 				return httpserver.NewPrometheus(deps.Registry)
 			},
 		),

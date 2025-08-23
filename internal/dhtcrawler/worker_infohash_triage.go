@@ -23,8 +23,8 @@ func newInfoHashTriageWorker(
 	daoProvider database.DaoProvider,
 	blockerBlocker blocker.Blocker,
 	scrapeAdder channel.Adder[nodeHasPeersForHash],
-	rescrapeThreshold time.Duration,
-	saveFilesThreshold uint,
+	rescrapeThreshold RescrapeThreshold,
+	saveFilesThreshold SaveFilesThreshold,
 	getPeersAdder channel.Adder[nodeHasPeersForHash],
 	maxSize int,
 	maxWait time.Duration,
@@ -103,7 +103,7 @@ func newInfoHashTriageWorker(
 					if t, ok := foundTorrents[r.infoHash]; !ok ||
 						t.FilesStatus == model.FilesStatusNoInfo ||
 						(t.FilesStatus != model.FilesStatusSingle && !t.FilesCount.Valid) ||
-						(t.FilesStatus == model.FilesStatusOverThreshold && t.FilesCount.Uint <= saveFilesThreshold) {
+						(t.FilesStatus == model.FilesStatusOverThreshold && t.FilesCount.Int <= int(saveFilesThreshold)) {
 
 						if !ok {
 							r.isVerifiedAbsentFromDB = true
@@ -111,7 +111,7 @@ func newInfoHashTriageWorker(
 
 						getPeers = append(getPeers, r)
 					} else if (!t.Seeders.Valid || !t.Leechers.Valid) ||
-						t.UpdatedAt.Before(time.Now().Add(-rescrapeThreshold)) {
+						t.UpdatedAt.Before(time.Now().Add(-time.Duration(rescrapeThreshold))) {
 						scrapes = append(scrapes, r)
 					}
 				}
@@ -251,8 +251,8 @@ func newInfoHashTriageWorker(
 type triageResult struct {
 	InfoHash    protocol.ID
 	FilesStatus model.FilesStatus
-	FilesCount  model.NullUint
-	Seeders     model.NullUint
-	Leechers    model.NullUint
+	FilesCount  model.NullInt
+	Seeders     model.NullInt
+	Leechers    model.NullInt
 	UpdatedAt   time.Time
 }

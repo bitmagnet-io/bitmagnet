@@ -1,7 +1,7 @@
 package server
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/dht/socket"
@@ -15,23 +15,19 @@ import (
 	"go.uber.org/fx"
 )
 
-type (
-	config struct{}
-
-	deps struct {
-		fx.In
-		Config server.Config
-		Server server.Runner
-	}
-)
+type deps struct {
+	fx.In
+	Server server.Runner
+}
 
 var (
 	Ref = dht.Ref.MustSub("server")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithDependencies[config, deps](socket.Ref),
-		builder.WithFxOption[config, deps](fx.Provide(
+		builder.WithDependencies[deps](socket.Ref),
+		builder.WithConfigParam[deps](Ref.MustSub("query_timeout"), server.ParamQueryTimeout),
+		builder.WithFxOption[deps](fx.Provide(
 			fx.Annotate(
 				protocol.RandomNodeIDWithClientSuffix,
 				fx.ResultTags(`name:"dht_node_id"`),
@@ -46,11 +42,11 @@ var (
 			func(rnr server.Runner) server.Server {
 				return rnr
 			},
-			func() *concurrency.AtomicValue[server.LastResponses] {
-				return &concurrency.AtomicValue[server.LastResponses]{}
+			func() *atomic.Value[server.LastResponses] {
+				return &atomic.Value[server.LastResponses]{}
 			},
 		)),
-		builder.WithWorkerRegistryOption[config, deps](func(cfg config, deps deps) registry.Option {
+		builder.WithWorkerRegistryOption[deps](func(deps deps) registry.Option {
 			return registry.WithWorker(
 				Ref.String(),
 				deps.Server,

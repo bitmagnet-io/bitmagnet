@@ -1,15 +1,27 @@
 package cache
 
-import "time"
+import (
+	"time"
 
-type Config struct {
+	"github.com/bitmagnet-io/bitmagnet/internal/config/param"
+)
+
+type (
 	TTL     time.Duration
-	MaxKeys uint
-}
+	MaxKeys int
+)
 
-func NewDefaultConfig() Config {
-	return Config{
-		TTL:     time.Minute * 10,
-		MaxKeys: 1000,
-	}
-}
+var (
+	ParamTTL = param.MustNew(
+		param.WithDynamic(
+			param.WithDefault(TTL(time.Minute)),
+		),
+	)
+
+	ParamMaxKeys = param.MustNew(
+		param.WithDynamic(
+			param.WithDefault(MaxKeys(1000)),
+			param.WithGreaterThan(MaxKeys(0)),
+		),
+	)
+)

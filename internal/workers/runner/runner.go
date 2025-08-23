@@ -40,6 +40,10 @@ func SimpleRunner(fn func(context.Context) error) Runner {
 		go func() {
 			err := fn(ctx)
 
+			if err == nil {
+				err = ErrCompleted
+			}
+
 			cancel(err)
 		}()
 

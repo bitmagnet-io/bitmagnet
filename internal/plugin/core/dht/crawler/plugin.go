@@ -1,7 +1,7 @@
 package crawler
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/dhtcrawler"
 	"github.com/bitmagnet-io/bitmagnet/internal/dhtcrawler/dhtcrawlerhealthcheck"
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
@@ -23,24 +23,20 @@ import (
 	"go.uber.org/fx"
 )
 
-type (
-	Config = dhtcrawler.Config
-
-	deps struct {
-		fx.In
-		Runner         dhtcrawler.Runner
-		LastResponses  *concurrency.AtomicValue[server.LastResponses]
-		WorkerRegistry registry.StateProvider
-	}
-)
+type deps struct {
+	fx.In
+	Runner         dhtcrawler.Runner
+	LastResponses  *atomic.Value[server.LastResponses]
+	WorkerRegistry registry.StateProvider
+}
 
 var (
 	Ref = dht.Ref.MustSub("crawler")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithEnabledByDefault[Config, deps](),
-		builder.WithDependencies[Config, deps](
+		builder.WithEnabledByDefault[deps](),
+		builder.WithDependencies[deps](
 			classifier.Ref,
 			info_hash_blocker.Ref,
 			logging.Ref,
@@ -51,8 +47,12 @@ var (
 			indexer.Ref,
 			plugin_worker.Ref,
 		),
-		builder.WithDefaultConfig[Config, deps](dhtcrawler.NewDefaultConfig()),
-		builder.WithFxOption[Config, deps](
+		builder.WithConfigParam[deps](Ref.MustSub("bootstrap_nodes"), dhtcrawler.ParamBootstrapNodes),
+		builder.WithConfigParam[deps](Ref.MustSub("reseed_bootstrap_nodes_interval"), dhtcrawler.ParamReseedBootstrapNodesInterval),
+		builder.WithConfigParam[deps](Ref.MustSub("save_files_threshold"), dhtcrawler.ParamSaveFilesThreshold),
+		builder.WithConfigParam[deps](Ref.MustSub("save_pieces"), dhtcrawler.ParamSavePieces),
+		builder.WithConfigParam[deps](Ref.MustSub("rescrape_threshold"), dhtcrawler.ParamRescrapeThreshold),
+		builder.WithFxOption[deps](
 			fx.Provide(
 				fx.Private,
 				func(metrics *metrics.Registry) (*metrics.Component, error) {
@@ -63,7 +63,7 @@ var (
 				dhtcrawler.New,
 			),
 		),
-		builder.WithWorkerRegistryOption(func(cfg Config, deps deps) registry.Option {
+		builder.WithWorkerRegistryOption(func(deps deps) registry.Option {
 			return registry.WithWorker(
 				Ref.String(),
 				deps.Runner,
@@ -75,7 +75,7 @@ var (
 				worker.WithAutostart(),
 			)
 		}),
-		builder.WithHealthCheckerOption(func(cfg Config, deps deps) health.CheckerOption {
+		builder.WithHealthCheckerOption(func(deps deps) health.CheckerOption {
 			return dhtcrawlerhealthcheck.New(Ref.String(), func() bool {
 				return deps.WorkerRegistry.WorkersState()[Ref.String()].State != worker.StateIdle
 			}, deps.LastResponses)

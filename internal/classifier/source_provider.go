@@ -130,7 +130,7 @@ func (c configSourceProvider) source() (Source, error) {
 		fs[k] = v
 	}
 
-	if c.config.DeleteXxx {
+	if c.config.DeleteXXX {
 		fs["delete_xxx"] = true
 	}
 
@@ -139,8 +139,8 @@ func (c configSourceProvider) source() (Source, error) {
 	}
 
 	return Source{
-		Keywords:   c.config.Keywords,
-		Extensions: c.config.Extensions,
+		Keywords:   map[string][]string(c.config.Keywords),
+		Extensions: map[string][]string(c.config.Extensions),
 		Flags:      fs,
 	}, nil
 }

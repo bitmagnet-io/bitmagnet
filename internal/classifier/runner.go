@@ -14,10 +14,10 @@ type runner struct {
 	dependencies
 	flagDefinitions
 	compiledFlags
-	workflows map[string]action
+	workflows map[Workflow]action
 }
 
-func (r runner) Run(ctx context.Context, workflow string, flags Flags, t model.Torrent) (classification.Result, error) {
+func (r runner) Run(ctx context.Context, workflow Workflow, flags Flags, t model.Torrent) (classification.Result, error) {
 	w, ok := r.workflows[workflow]
 	if !ok {
 		return classification.Result{}, fmt.Errorf("workflow not found: %s", workflow)

@@ -12,27 +12,23 @@ import (
 	"go.uber.org/zap"
 )
 
-type (
-	config struct{}
-
-	deps struct {
-		fx.In
-		Logger *zap.Logger
-	}
-)
+type deps struct {
+	fx.In
+	Logger *zap.Logger
+}
 
 var (
 	Ref = http_server.Ref.MustSub("logging")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithEnabledByDefault[config, deps](),
-		builder.WithDependencies[config, deps](
+		builder.WithEnabledByDefault[deps](),
+		builder.WithDependencies[deps](
 			logging.Ref,
 		),
 		builder.WithGinOption(
 			Ref,
-			func(_ config, deps deps) gin.OptionFunc {
+			func(deps deps) gin.OptionFunc {
 				return func(engine *gin.Engine) {
 					engine.Use(ginzap.Ginzap(deps.Logger, time.RFC3339, true))
 				}

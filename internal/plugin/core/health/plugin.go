@@ -10,22 +10,18 @@ import (
 	"go.uber.org/fx"
 )
 
-type (
-	config struct{}
-
-	deps struct {
-		fx.In
-		Checker health.Checker
-	}
-)
+type deps struct {
+	fx.In
+	Checker health.Checker
+}
 
 var (
 	Ref = core.Ref.MustSub("health")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithEnabledByDefault[config, deps](),
-		builder.WithFxOption[config, deps](
+		builder.WithEnabledByDefault[deps](),
+		builder.WithFxOption[deps](
 			fx.Provide(
 				fx.Annotate(
 					func(options []health.CheckerOption) health.Checker {
@@ -58,11 +54,11 @@ var (
 			),
 		),
 		builder.WithWorkerRegistryOption(
-			func(cfg config, deps deps) registry.Option {
+			func(deps deps) registry.Option {
 				return registry.WithWorker(Ref.String(), deps.Checker)
 			},
 		),
-		builder.WithGinOption(Ref, func(cfg config, deps deps) gin.OptionFunc {
+		builder.WithGinOption(Ref, func(deps deps) gin.OptionFunc {
 			return health.NewHTTPOption(deps.Checker)
 		}),
 	)

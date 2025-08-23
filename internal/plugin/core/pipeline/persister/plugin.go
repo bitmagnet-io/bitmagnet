@@ -19,21 +19,17 @@ import (
 	"go.uber.org/zap"
 )
 
-type (
-	Config = persister.Config
-
-	deps struct {
-		fx.In
-		Worker persister.Persister
-	}
-)
+type deps struct {
+	fx.In
+	Worker persister.Persister
+}
 
 var (
 	Ref = database.Ref.MustSub("persister")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithDependencies[Config, deps](
+		builder.WithDependencies[deps](
 			info_hash_blocker.Ref,
 			logging.Ref,
 			plugin_metrics.Ref,
@@ -41,19 +37,22 @@ var (
 			plugin_worker.Ref,
 			postgres.Ref,
 		),
-		builder.WithDefaultConfig[Config, deps](persister.NewDefaultConfig()),
-		builder.WithFxOption[Config, deps](
+		builder.WithConfigParam[deps](Ref.MustSub("max_size"), persister.ParamMaxSize),
+		builder.WithConfigParam[deps](Ref.MustSub("max_wait"), persister.ParamMaxWait),
+		builder.WithFxOption[deps](
 			fx.Provide(
 				fx.Annotate(
 					func(
-						config Config,
+						maxSize persister.MaxSize,
+						maxWait persister.MaxWait,
 						daoProvider internal_database.DaoTransactionProvider,
 						blockerBlocker blocker.Blocker,
 						logger *zap.Logger,
 						metrics *metrics.Registry,
 					) persister.Persister {
 						return persister.New(
-							config,
+							maxSize,
+							maxWait,
 							daoProvider,
 							blockerBlocker,
 							logger.Named(Ref.String()),
@@ -66,7 +65,7 @@ var (
 			),
 		),
 		builder.WithWorkerRegistryOption(
-			func(_ Config, deps deps) registry.Option {
+			func(deps deps) registry.Option {
 				return registry.WithWorker(
 					Ref.String(),
 					deps.Worker,

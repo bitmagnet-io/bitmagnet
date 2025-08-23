@@ -1,0 +1,19 @@
+type ConfigParam {
+  ref: String!
+  doc: String
+  value: String!
+  source: String!
+  default: String!
+  dynamic: Boolean!
+  pending: Boolean!
+}
+
+type ConfigQuery {
+  params: [ConfigParam!]!
+  pending: Boolean!
+}
+
+type ConfigMutation {
+  save(key: String!, value: String!): ConfigParam!
+  delete(key: String!): ConfigParam
+}

@@ -10,7 +10,7 @@ import (
 )
 
 func New(
-	config classifier.Config,
+	defaultWorkflow classifier.Workflow,
 	searchClient search.Search,
 	daoProvider database.DaoTransactionProvider,
 	blockerBlocker blocker.Blocker,
@@ -23,7 +23,7 @@ func New(
 		daoProvider:      daoProvider,
 		blocker:          blockerBlocker,
 		runner:           runner,
-		defaultWorkflow:  config.Workflow,
+		defaultWorkflow:  defaultWorkflow,
 		queueJobProvider: queueJobProvider,
 		persister:        persister,
 	}

@@ -7,20 +7,17 @@ import (
 	"go.uber.org/fx"
 )
 
-type (
-	config struct{}
-	deps   struct {
-		fx.In
-	}
-)
+type deps struct {
+	fx.In
+}
 
 var (
 	Ref = http_server.Ref.MustSub("recovery")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithEnabledByDefault[config, deps](),
-		builder.WithGinOption(Ref, func(config, deps) gin.OptionFunc {
+		builder.WithEnabledByDefault[deps](),
+		builder.WithGinOption(Ref, func(deps) gin.OptionFunc {
 			return func(engine *gin.Engine) {
 				engine.Use(gin.Recovery())
 			}

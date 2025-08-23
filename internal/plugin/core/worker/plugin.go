@@ -10,22 +10,18 @@ import (
 	"go.uber.org/zap"
 )
 
-type (
-	config struct{}
-
-	deps struct {
-		fx.In
-		HealthCheck *workershealthcheck.WorkersHealthCheck
-	}
-)
+type deps struct {
+	fx.In
+	HealthCheck *workershealthcheck.WorkersHealthCheck
+}
 
 var (
 	Ref = core.Ref.MustSub("worker")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithEnabledByDefault[config, deps](),
-		builder.WithFxOption[config, deps](
+		builder.WithEnabledByDefault[deps](),
+		builder.WithFxOption[deps](
 			fx.Provide(
 				fx.Annotate(
 					func(
@@ -53,10 +49,10 @@ var (
 			),
 		),
 		builder.WithHealthCheckerOption(
-			func(_ config, deps deps) health.CheckerOption {
+			func(deps deps) health.CheckerOption {
 				return health.WithCheck(deps.HealthCheck.Check())
 			},
 		),
-		builder.WithCliCommand[config, deps](NewStartCommand()),
+		builder.WithCliCommand[deps](NewStartCommand()),
 	)
 )

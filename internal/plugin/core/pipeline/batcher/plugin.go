@@ -17,27 +17,23 @@ import (
 	"go.uber.org/fx"
 )
 
-type (
-	config struct{}
-
-	deps struct {
-		fx.In
-		DaoProvider        database.DaoProvider
-		ProcessJobProvider queue.JobProvider[indexer.MessageParams]
-		BatchJobProvider   queue.JobProvider[batch.MessageParams]
-	}
-)
+type deps struct {
+	fx.In
+	DaoProvider        database.DaoProvider
+	ProcessJobProvider queue.JobProvider[indexer.MessageParams]
+	BatchJobProvider   queue.JobProvider[batch.MessageParams]
+}
 
 var (
 	Ref = pipeline.Ref.MustSub("batcher")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithDependencies[config, deps](
+		builder.WithDependencies[deps](
 			postgres.Ref,
 			plugin_indexer.Ref,
 		),
-		builder.WithFxOption[config, deps](
+		builder.WithFxOption[deps](
 			fx.Provide(func() queue.JobProvider[batch.MessageParams] {
 				return func(msg batch.MessageParams, options ...model.QueueJobOption) (model.QueueJob, error) {
 					if msg.BatchSize == 0 {
@@ -57,7 +53,7 @@ var (
 			}),
 		),
 		builder.WithQueueHandler(
-			func(cfg config, deps deps) handler.Handler {
+			func(deps deps) handler.Handler {
 				return handler.New(
 					Ref.String(),
 					batch_queue.New(deps.DaoProvider, deps.ProcessJobProvider, deps.BatchJobProvider),

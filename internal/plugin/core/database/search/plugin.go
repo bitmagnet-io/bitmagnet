@@ -8,21 +8,20 @@ import (
 	"go.uber.org/fx"
 )
 
-type (
-	config struct{}
-	deps   struct{}
-)
+type deps struct {
+	fx.In
+}
 
 var (
 	Ref = database.Ref.MustSub("search")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithEnabledByDefault[config, deps](),
-		builder.WithDependencies[config, deps](
+		builder.WithEnabledByDefault[deps](),
+		builder.WithDependencies[deps](
 			postgres.Ref,
 		),
-		builder.WithFxOption[config, deps](
+		builder.WithFxOption[deps](
 			fx.Provide(search.New),
 		),
 	)

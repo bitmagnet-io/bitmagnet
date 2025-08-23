@@ -16,27 +16,23 @@ import (
 	"go.uber.org/zap"
 )
 
-type (
-	config struct{}
-
-	deps struct {
-		fx.In
-		database_internal.SQLDBProvider
-		Logger *zap.Logger
-	}
-)
+type deps struct {
+	fx.In
+	database_internal.SQLDBProvider
+	Logger *zap.Logger
+}
 
 var (
 	Ref = database.Ref.MustSub("migrations")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithEnabledByDefault[config, deps](),
-		builder.WithDependencies[config, deps](
+		builder.WithEnabledByDefault[deps](),
+		builder.WithDependencies[deps](
 			postgres.Ref,
 		),
 		builder.WithWorkerRegistryOption(
-			func(_ config, deps deps) registry.Option {
+			func(deps deps) registry.Option {
 				return registry.WithWorker(
 					Ref.String(),
 					deps.runner(),

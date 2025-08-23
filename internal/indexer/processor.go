@@ -37,7 +37,7 @@ type indexer struct {
 	runner           classifier.Runner
 	queueJobProvider queue.JobProvider[MessageParams]
 	persister        persister.Adder
-	defaultWorkflow  string
+	defaultWorkflow  classifier.Workflow
 }
 
 const concurrency = 10

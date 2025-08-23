@@ -12,16 +12,16 @@ type Adapter func(netip.AddrPort) Runner
 
 var adaptersMu sync.Mutex
 
-var adapters = make(map[string]Adapter)
+var adapters = make(map[AdapterName]Adapter)
 
-func addAdapter(name string, adapter Adapter) {
+func addAdapter(name AdapterName, adapter Adapter) {
 	adaptersMu.Lock()
 	defer adaptersMu.Unlock()
 
 	adapters[name] = adapter
 }
 
-func AdapterNames() []string {
+func AdapterNames() []AdapterName {
 	names := slices.Collect(maps.Keys(adapters))
 
 	slices.Sort(names)
@@ -29,7 +29,7 @@ func AdapterNames() []string {
 	return names
 }
 
-func GetAdapter(name string) (Adapter, error) {
+func GetAdapter(name AdapterName) (Adapter, error) {
 	adaptersMu.Lock()
 	defer adaptersMu.Unlock()
 

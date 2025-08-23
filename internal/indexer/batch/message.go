@@ -13,7 +13,7 @@ type MessageParams struct {
 	InfoHashGreaterThan protocol.ID             `json:"InfoHashGreaterThan,omitempty"`
 	UpdatedBefore       time.Time               `json:"UpdatedBefore,omitempty"`
 	ClassifyMode        indexer.ClassifyMode    `json:"ClassifyMode,omitempty"`
-	ClassifierWorkflow  string                  `json:"ClassifierWorkflow,omitempty"`
+	ClassifierWorkflow  classifier.Workflow     `json:"ClassifierWorkflow,omitempty"`
 	ClassifierFlags     classifier.Flags        `json:"ClassifierFlags,omitempty"`
 	ChunkSize           uint                    `json:"ChunkSize,omitempty"`
 	BatchSize           uint                    `json:"BatchSize,omitempty"`

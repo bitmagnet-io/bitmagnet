@@ -13,33 +13,29 @@ import (
 	"go.uber.org/zap"
 )
 
-type (
-	cfg struct{}
-
-	deps struct {
-		fx.In
-		Importer importer.Importer
-		Logger   *zap.Logger
-	}
-)
+type deps struct {
+	fx.In
+	Importer importer.Importer
+	Logger   *zap.Logger
+}
 
 var (
 	Ref = core.Ref.MustSub("importer")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithEnabledByDefault[cfg, deps](),
-		builder.WithDependencies[cfg, deps](
+		builder.WithEnabledByDefault[deps](),
+		builder.WithDependencies[deps](
 			logging.Ref,
 			postgres.Ref,
 			indexer.Ref,
 		),
-		builder.WithFxOption[cfg, deps](
+		builder.WithFxOption[deps](
 			fx.Provide(importer.New),
 		),
 		builder.WithGinOption(
 			Ref,
-			func(cfg cfg, deps deps) gin.OptionFunc {
+			func(deps deps) gin.OptionFunc {
 				return httpserver.New(deps.Importer, deps.Logger.Named(Ref.String()))
 			},
 		),

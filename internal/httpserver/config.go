@@ -1,15 +1,9 @@
 package httpserver
 
-type Config struct {
-	LocalAddress string
-	GinMode      string
-	Options      []string
-}
+import "github.com/bitmagnet-io/bitmagnet/internal/config/param"
 
-func NewDefaultConfig() Config {
-	return Config{
-		LocalAddress: ":3333",
-		GinMode:      "release",
-		Options:      []string{"*"},
-	}
-}
+type LocalAddress string
+
+var ParamLocalAddress = param.MustNew(
+	param.WithDefault(LocalAddress(":3333")),
+)

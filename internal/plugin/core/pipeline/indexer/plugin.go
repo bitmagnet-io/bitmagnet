@@ -15,21 +15,17 @@ import (
 	"go.uber.org/fx"
 )
 
-type (
-	config struct{}
-
-	deps struct {
-		fx.In
-		Indexer indexer.Indexer
-	}
-)
+type deps struct {
+	fx.In
+	Indexer indexer.Indexer
+}
 
 var (
 	Ref = pipeline.Ref.MustSub("processor")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithFxOption[config, deps](
+		builder.WithFxOption[deps](
 			fx.Provide(
 				indexer.New,
 				func() queue.JobProvider[indexer.MessageParams] {
@@ -44,7 +40,7 @@ var (
 			),
 		),
 		builder.WithQueueHandler(
-			func(cfg config, deps deps) handler.Handler {
+			func(deps deps) handler.Handler {
 				return handler.New(
 					Ref.String(),
 					func(job model.QueueJob) runner.Runner {

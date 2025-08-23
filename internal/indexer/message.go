@@ -17,9 +17,9 @@ const (
 )
 
 type ClassifierParams struct {
-	ClassifyMode       ClassifyMode     `json:"ClassifyMode,omitempty"`
-	ClassifierWorkflow string           `json:"ClassifierWorkflow,omitempty"`
-	ClassifierFlags    classifier.Flags `json:"ClassifierFlags,omitempty"`
+	ClassifyMode       ClassifyMode        `json:"ClassifyMode,omitempty"`
+	ClassifierWorkflow classifier.Workflow `json:"ClassifierWorkflow,omitempty"`
+	ClassifierFlags    classifier.Flags    `json:"ClassifierFlags,omitempty"`
 }
 
 type MessageParams struct {

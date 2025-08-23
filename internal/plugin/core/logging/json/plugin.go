@@ -9,23 +9,19 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-type (
-	config struct{}
-
-	deps struct {
-		fx.In
-		Writer env.Stdout
-		Level  zapcore.LevelEnabler
-	}
-)
+type deps struct {
+	fx.In
+	Writer env.Stdout
+	Level  zapcore.LevelEnabler
+}
 
 var (
 	Ref = logging.Ref.MustSub("json")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithDependencies[config, deps](logging.Ref),
-		builder.WithZapCore(func(config config, deps deps) zapcore.Core {
+		builder.WithDependencies[deps](logging.Ref),
+		builder.WithZapCore(func(deps deps) zapcore.Core {
 			return zapcore.NewCore(
 				encoder.NewJSON(),
 				zapcore.AddSync(deps.Writer),

@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
-	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
-
-	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/client"
@@ -17,6 +15,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/channel"
 	workers_metrics "github.com/bitmagnet-io/bitmagnet/internal/workers/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/periodic"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 )
 
 // func (cr *crawler) getNodesForFindNode(ctx context.Context) error {
@@ -62,7 +61,7 @@ func newFindNodesWorker(
 	cl client.Client,
 	kTable ktable.Table,
 	discoveredNodesAdder channel.Adder[ktable.Node],
-	soughtNodeID *concurrency.AtomicValue[protocol.ID],
+	soughtNodeID *atomic.Value[protocol.ID],
 	size int,
 	metrics *metrics.Component,
 	bootstrap func(context.Context) error,

@@ -16,6 +16,16 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
 )
 
+type ConfigParam struct {
+	Ref     string  `json:"ref"`
+	Doc     *string `json:"doc,omitempty"`
+	Value   string  `json:"value"`
+	Source  string  `json:"source"`
+	Default string  `json:"default"`
+	Dynamic bool    `json:"dynamic"`
+	Pending bool    `json:"pending"`
+}
+
 type ContentTypeAgg struct {
 	Value      *model.ContentType `json:"value,omitempty"`
 	Label      string             `json:"label"`

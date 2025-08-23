@@ -2,72 +2,86 @@ package postgres
 
 import (
 	"fmt"
+	"slices"
 	"strings"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/config/param"
+	"go.uber.org/fx"
+)
+
+type (
+	DSN      string
+	Host     string
+	Port     int
+	User     string
+	Password string
+	Database string
+)
+
+var (
+	ParamDSN = param.MustNew[DSN]()
+
+	ParamHost = param.MustNew(
+		param.WithDefault(Host("localhost")),
+	)
+
+	ParamPort = param.MustNew(
+		param.WithDefault(Port(5432)),
+	)
+
+	ParamUser = param.MustNew(
+		param.WithDefault(User("postgres")),
+	)
+
+	ParamPassword = param.MustNew(
+		param.WithDefault(Password("postgres")),
+	)
+
+	ParamDatabase = param.MustNew(
+		param.WithDefault(Database("bitmagnet")),
+	)
 )
 
 type Config struct {
-	DSN               string
-	Host              string
-	User              string
-	Port              uint
-	Name              string
-	ConnectionTimeout uint
-	Password          string
-	SSLMode           string
-	SSLCertPath       string
-	SSLKeyPath        string
-	SSLRootCertPath   string
+	fx.In
+	DSN      DSN
+	Host     Host
+	Port     Port
+	User     User
+	Password Password
+	Database Database
 }
 
-func NewDefaultConfig() Config {
-	return Config{
-		Host: "localhost",
-		User: "postgres",
-		Port: 5432,
-		Name: "bitmagnet",
-	}
-}
-
-func (c *Config) CreateDSN() string {
+func (c Config) CreateDSN() DSN {
 	if c.DSN != "" {
 		return c.DSN
 	}
 
-	vals := dbValues(c)
-	p := make([]string, 0, len(vals))
+	var values []string
 
-	for k, v := range vals {
-		p = append(p, fmt.Sprintf("%s=%s", k, v))
+	for k, v := range c.values() {
+		values = append(values, fmt.Sprintf("%s=%s", k, v))
 	}
 
-	return strings.Join(p, " ")
+	slices.Sort(values)
+
+	return DSN(strings.Join(values, " "))
 }
 
-func setIfNotEmpty(m map[string]string, key string, val interface{}) {
+func (c Config) values() map[string]string {
+	p := map[string]string{}
+	setIfNotEmpty(p, "dbname", c.Database)
+	setIfNotEmpty(p, "user", c.User)
+	setIfNotEmpty(p, "host", c.Host)
+	setIfNotEmpty(p, "port", fmt.Sprintf("%d", c.Port))
+	setIfNotEmpty(p, "password", c.Password)
+
+	return p
+}
+
+func setIfNotEmpty(m map[string]string, key string, val any) {
 	strVal := fmt.Sprintf("%v", val)
 	if strVal != "" {
 		m[key] = strVal
 	}
-}
-
-func setIfPositive(m map[string]string, key string, val uint) {
-	if val > 0 {
-		m[key] = fmt.Sprintf("%d", val)
-	}
-}
-
-func dbValues(cfg *Config) map[string]string {
-	p := map[string]string{}
-	setIfNotEmpty(p, "dbname", cfg.Name)
-	setIfNotEmpty(p, "user", cfg.User)
-	setIfNotEmpty(p, "host", cfg.Host)
-	setIfNotEmpty(p, "port", fmt.Sprintf("%d", cfg.Port))
-	setIfNotEmpty(p, "sslmode", cfg.SSLMode)
-	setIfPositive(p, "connect_timeout", cfg.ConnectionTimeout)
-	setIfNotEmpty(p, "password", cfg.Password)
-	setIfNotEmpty(p, "sslcert", cfg.SSLCertPath)
-	setIfNotEmpty(p, "sslkey", cfg.SSLKeyPath)
-	setIfNotEmpty(p, "sslrootcert", cfg.SSLRootCertPath)
-
-	return p
 }

@@ -12,13 +12,10 @@ import (
 	"go.uber.org/fx"
 )
 
-type (
-	config struct{}
-	deps   struct {
-		fx.In
-		FS FS
-	}
-)
+type deps struct {
+	fx.In
+	FS FS
+}
 
 type FS fs.FS
 
@@ -27,8 +24,8 @@ var (
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithEnabledByDefault[config, deps](),
-		builder.WithFxOption[config, deps](
+		builder.WithEnabledByDefault[deps](),
+		builder.WithFxOption[deps](
 			fx.Provide(
 				func() (FS, error) {
 					return fs.Sub(webui.StaticFs, "dist/bitmagnet/browser")
@@ -37,7 +34,7 @@ var (
 		),
 		builder.WithGinOption(
 			Ref,
-			func(_ config, deps deps) gin.OptionFunc {
+			func(deps deps) gin.OptionFunc {
 				return func(e *gin.Engine) {
 					e.StaticFS("/webui", wrappedFs{http.FS(deps.FS)})
 					e.GET("/", func(c *gin.Context) {

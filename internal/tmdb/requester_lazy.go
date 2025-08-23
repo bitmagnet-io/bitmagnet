@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/go-resty/resty/v2"
 	"go.uber.org/zap"
 	"golang.org/x/sync/semaphore"
@@ -71,7 +71,7 @@ func newRequester(ctx context.Context, config Config, logger *zap.Logger) (Reque
 				},
 				semaphore: semaphore.NewWeighted(2),
 			},
-			isUnauthorized: &concurrency.AtomicValue[bool]{},
+			isUnauthorized: &atomic.Value[bool]{},
 		},
 		logger: logger,
 	}

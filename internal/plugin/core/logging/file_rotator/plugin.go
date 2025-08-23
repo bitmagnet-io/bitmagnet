@@ -1,7 +1,8 @@
 package file_rotator
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/logging/filerotator"
+	"github.com/bitmagnet-io/bitmagnet/internal/fs"
+	"github.com/bitmagnet-io/bitmagnet/internal/logging/file_rotator"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/logging"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
@@ -11,19 +12,32 @@ import (
 
 type deps struct {
 	fx.In
-	FileRotator *filerotator.FileRotator
+	FileRotator *file_rotator.FileRotator
 }
 
 var (
 	Ref = logging.Ref.MustSub("file_rotator")
-
+	// todo: Where's the zap core?
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithDependencies[Config, deps](logging.Ref),
-		builder.WithDefaultConfig[Config, deps](NewDefaultConfig()),
-		builder.WithFxOption[Config, deps](fx.Provide(filerotator.New)),
+		builder.WithDependencies[deps](logging.Ref),
+		builder.WithConfigParam[deps](Ref.MustSub("level"), file_rotator.ParamLevel),
+		builder.WithConfigParam[deps](Ref.MustSub("sub_path"), file_rotator.ParamSubPath),
+		builder.WithConfigParam[deps](Ref.MustSub("base_name"), file_rotator.ParamBaseName),
+		builder.WithConfigParam[deps](Ref.MustSub("max_age"), file_rotator.ParamMaxAge),
+		builder.WithConfigParam[deps](Ref.MustSub("max_size"), file_rotator.ParamMaxSize),
+		builder.WithConfigParam[deps](Ref.MustSub("max_backups"), file_rotator.ParamMaxBackups),
+		builder.WithConfigParam[deps](Ref.MustSub("buffer_size"), file_rotator.ParamBufferSize),
+		builder.WithFxOption[deps](
+			fx.Provide(
+				func(fsProvider fs.FSProvider) file_rotator.FS {
+					return fsProvider.FSData()
+				},
+				file_rotator.New,
+			),
+		),
 		builder.WithWorkerRegistryOption(
-			func(cfg Config, deps deps) registry.Option {
+			func(deps deps) registry.Option {
 				return registry.WithWorker(
 					Ref.String(),
 					deps.FileRotator,

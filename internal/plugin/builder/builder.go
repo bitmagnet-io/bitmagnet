@@ -1,7 +1,11 @@
 package builder
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/config/configfx"
+	"errors"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/config/param"
+	config_registry "github.com/bitmagnet-io/bitmagnet/internal/config/registry"
+	"github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
 	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
@@ -15,17 +19,16 @@ import (
 	"gorm.io/gorm"
 )
 
-type builder[Config any, Deps any] struct {
+type builder[Deps any] struct {
 	ref              ref.Ref
 	enabledByDefault bool
 	dependencies     []ref.Ref
-	config           Config
 	options          []fx.Option
 	commands         []plugin.Command
 }
 
-func CreatePlugin[Config any, Deps any](ref ref.Ref, options ...Option[Config, Deps]) plugin.Plugin {
-	b := &builder[Config, Deps]{
+func CreatePlugin[Deps any](ref ref.Ref, options ...Option[Deps]) plugin.Plugin {
+	b := &builder[Deps]{
 		ref: ref,
 	}
 
@@ -33,50 +36,76 @@ func CreatePlugin[Config any, Deps any](ref ref.Ref, options ...Option[Config, D
 		option(b)
 	}
 
-	WithFxOption[Config, Deps](configfx.NewConfigModule[Config](ref.String(), b.config))(b)
+	// WithFxOption[Deps](configfx.NewConfigModule[Config](ref, b.config))(b)
 
 	return plugin.NewPlugin(ref, b.enabledByDefault, b.dependencies, fx.Options(b.options...), b.commands)
 }
 
-type Option[Config any, Deps any] func(*builder[Config, Deps])
+type Option[Deps any] func(*builder[Deps])
 
-func WithDependencies[Config any, Deps any](dependencies ...ref.Ref) Option[Config, Deps] {
-	return func(b *builder[Config, Deps]) {
+func WithDependencies[Deps any](dependencies ...ref.Ref) Option[Deps] {
+	return func(b *builder[Deps]) {
 		b.dependencies = append(b.dependencies, dependencies...)
 	}
 }
 
-func WithEnabledByDefault[Config any, Deps any]() Option[Config, Deps] {
-	return func(b *builder[Config, Deps]) {
+func WithEnabledByDefault[Deps any]() Option[Deps] {
+	return func(b *builder[Deps]) {
 		b.enabledByDefault = true
 	}
 }
 
-func WithDefaultConfig[Config any, Deps any](config Config) Option[Config, Deps] {
-	return func(b *builder[Config, Deps]) {
-		b.config = config
-	}
+func WithConfigParam[Deps any, T any](ref ref.Ref, param param.Param[T]) Option[Deps] {
+	return WithFxOption[Deps](
+		fx.Supply(
+			fx.Annotate(
+				config_registry.WithParam(ref, param),
+				fx.ResultTags(`group:"config_registry_options"`),
+			),
+		),
+		fx.Provide(
+			func(allResolved resolver.Resolved) (T, error) {
+				var (
+					resolved *resolver.Param
+					value    T
+					ok       bool
+				)
+
+				resolved, ok = allResolved.Param(ref)
+				if !ok {
+					return value, errors.New("missing from resolved")
+				}
+
+				value, ok = resolved.Value().(T)
+				if !ok {
+					return value, errors.New("cast failed")
+				}
+
+				return value, nil
+			},
+		),
+	)
 }
 
-func WithFxOption[Config any, Deps any](options ...fx.Option) Option[Config, Deps] {
-	return func(b *builder[Config, Deps]) {
+func WithFxOption[Deps any](options ...fx.Option) Option[Deps] {
+	return func(b *builder[Deps]) {
 		b.options = append(b.options, options...)
 	}
 }
 
-func WithGinOption[Config any, Deps any](ref ref.Ref, provider func(Config, Deps) gin.OptionFunc) Option[Config, Deps] {
-	return WithFxOption[Config, Deps](fx.Provide(
+func WithGinOption[Deps any](ref ref.Ref, provider func(Deps) gin.OptionFunc) Option[Deps] {
+	return WithFxOption[Deps](fx.Provide(
 		fx.Annotate(
-			func(cfg Config, deps Deps) httpserver.Option {
-				return httpserver.NewOption(ref.String(), provider(cfg, deps))
+			func(deps Deps) httpserver.Option {
+				return httpserver.NewOption(ref.String(), provider(deps))
 			},
 			fx.ResultTags(`group:"http_server_options"`),
 		),
 	))
 }
 
-func WithGormPlugin[Config any, Deps any](provider func(Config, Deps) gorm.Plugin) Option[Config, Deps] {
-	return WithFxOption[Config, Deps](fx.Provide(
+func WithGormPlugin[Deps any](provider func(Deps) gorm.Plugin) Option[Deps] {
+	return WithFxOption[Deps](fx.Provide(
 		fx.Annotate(
 			provider,
 			fx.ResultTags(`group:"gorm_plugins"`),
@@ -84,8 +113,8 @@ func WithGormPlugin[Config any, Deps any](provider func(Config, Deps) gorm.Plugi
 	))
 }
 
-func WithZapCore[Config any, Deps any](provider func(Config, Deps) zapcore.Core) Option[Config, Deps] {
-	return WithFxOption[Config, Deps](fx.Provide(
+func WithZapCore[Deps any](provider func(Deps) zapcore.Core) Option[Deps] {
+	return WithFxOption[Deps](fx.Provide(
 		fx.Annotate(
 			provider,
 			fx.ResultTags(`group:"zap_cores"`),
@@ -93,8 +122,8 @@ func WithZapCore[Config any, Deps any](provider func(Config, Deps) zapcore.Core)
 	))
 }
 
-func WithWorkerRegistryOption[Config any, Deps any](provider func(Config, Deps) workers_registry.Option) Option[Config, Deps] {
-	return WithFxOption[Config, Deps](fx.Provide(
+func WithWorkerRegistryOption[Deps any](provider func(Deps) workers_registry.Option) Option[Deps] {
+	return WithFxOption[Deps](fx.Provide(
 		fx.Annotate(
 			provider,
 			fx.ResultTags(`group:"worker_options"`),
@@ -102,8 +131,8 @@ func WithWorkerRegistryOption[Config any, Deps any](provider func(Config, Deps) 
 	))
 }
 
-func WithHealthCheckerOption[Config any, Deps any](provider func(Config, Deps) health.CheckerOption) Option[Config, Deps] {
-	return WithFxOption[Config, Deps](fx.Provide(
+func WithHealthCheckerOption[Deps any](provider func(Deps) health.CheckerOption) Option[Deps] {
+	return WithFxOption[Deps](fx.Provide(
 		fx.Annotate(
 			provider,
 			fx.ResultTags(`group:"health_check_options"`),
@@ -111,8 +140,8 @@ func WithHealthCheckerOption[Config any, Deps any](provider func(Config, Deps) h
 	))
 }
 
-func WithQueueHandler[Config any, Deps any](provider func(Config, Deps) handler.Handler) Option[Config, Deps] {
-	return WithFxOption[Config, Deps](fx.Provide(
+func WithQueueHandler[Deps any](provider func(Deps) handler.Handler) Option[Deps] {
+	return WithFxOption[Deps](fx.Provide(
 		fx.Annotate(
 			provider,
 			fx.ResultTags(`group:"queue_handlers"`),
@@ -120,8 +149,8 @@ func WithQueueHandler[Config any, Deps any](provider func(Config, Deps) handler.
 	))
 }
 
-func WithPrometheusCollector[Config any, Deps any](provider func(Config, Deps) prometheus.Collector) Option[Config, Deps] {
-	return WithFxOption[Config, Deps](fx.Provide(
+func WithPrometheusCollector[Deps any](provider func(Deps) prometheus.Collector) Option[Deps] {
+	return WithFxOption[Deps](fx.Provide(
 		fx.Annotate(
 			provider,
 			fx.ResultTags(`group:"prometheus_collectors"`),
@@ -129,10 +158,10 @@ func WithPrometheusCollector[Config any, Deps any](provider func(Config, Deps) p
 	))
 }
 
-func WithCliCommand[Config any, Deps any](
+func WithCliCommand[Deps any](
 	commands ...plugin.Command,
-) Option[Config, Deps] {
-	return func(b *builder[Config, Deps]) {
+) Option[Deps] {
+	return func(b *builder[Deps]) {
 		b.commands = append(b.commands, commands...)
 	}
 }

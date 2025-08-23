@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/blocker"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
-	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/indexer"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
@@ -38,7 +38,7 @@ func New(
 ) Runner {
 	return runner.Runner(
 		func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
-			soughtNodeID := &concurrency.AtomicValue[protocol.ID]{}
+			soughtNodeID := &atomic.Value[protocol.ID]{}
 			soughtNodeID.Set(protocol.RandomNodeID())
 
 			enqueueProcessTorrents := newEnqueueProcessTorrentWorker(
@@ -174,7 +174,7 @@ func New(
 					ping,
 				),
 				periodic.New(
-					config.ReseedBootstrapNodesInterval,
+					time.Duration(config.ReseedBootstrapNodesInterval),
 					bootstrap,
 					periodic.WithInitialInterval(0),
 					periodic.WithQuickShutdown(),

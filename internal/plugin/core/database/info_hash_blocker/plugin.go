@@ -11,30 +11,26 @@ import (
 	"go.uber.org/fx"
 )
 
-type (
-	config struct{}
-
-	deps struct {
-		fx.In
-		Blocker blocker.Blocker
-	}
-)
+type deps struct {
+	fx.In
+	Blocker blocker.Blocker
+}
 
 var (
 	Ref = database.Ref.MustSub("info_hash_blocker")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithDependencies[config, deps](
+		builder.WithDependencies[deps](
 			migrations.Ref,
 			postgres.Ref,
 		),
-		builder.WithEnabledByDefault[config, deps](),
-		builder.WithFxOption[config, deps](
+		builder.WithEnabledByDefault[deps](),
+		builder.WithFxOption[deps](
 			fx.Provide(blocker.New),
 		),
 		builder.WithWorkerRegistryOption(
-			func(cfg config, deps deps) registry.Option {
+			func(deps deps) registry.Option {
 				return registry.WithWorker(
 					Ref.String(),
 					deps.Blocker,

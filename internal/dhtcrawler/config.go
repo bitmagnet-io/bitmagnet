@@ -3,36 +3,71 @@ package dhtcrawler
 import (
 	"time"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/config/param"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/bootstrap"
+	"go.uber.org/fx"
+)
+
+type (
+	BootstrapNodes []string
+
+	ReseedBootstrapNodesInterval time.Duration
+
+	SaveFilesThreshold int
+
+	SavePieces bool
+
+	RescrapeThreshold time.Duration
+)
+
+var (
+	ParamBootstrapNodes = param.MustNew(
+		param.WithNewDefault(func() BootstrapNodes {
+			return bootstrap.DefaultBootstrapNodes
+		}),
+		param.MinLength[any, string, BootstrapNodes](1),
+	)
+
+	ParamReseedBootstrapNodesInterval = param.MustNew(
+		param.WithDefault(ReseedBootstrapNodesInterval(time.Minute*10)),
+		param.WithMin(ReseedBootstrapNodesInterval(time.Minute)),
+	)
+
+	ParamSaveFilesThreshold = param.MustNew(
+		param.WithDefault(SaveFilesThreshold(100)),
+	)
+
+	ParamSavePieces = param.MustNew[SavePieces]()
+
+	ParamRescrapeThreshold = param.MustNew(
+		param.WithDefault(RescrapeThreshold(time.Hour*24*30)),
+		param.WithMin(RescrapeThreshold(time.Hour*24)),
+	)
 )
 
 type Config struct {
-	// ScalingFactor is a rough proxy for resource usage of the crawler; concurrency and buffer size of the various
-	// pipeline channels are multiplied by this value. Diminishing returns may result from exceeding the
-	// default value of 10. Since the software has not been tested on a wide variety of hardware and network
-	// conditions; your mileage may vary here...
-	ScalingFactor                uint
-	BootstrapNodes               []string
-	ReseedBootstrapNodesInterval time.Duration
+	fx.In
+	BootstrapNodes               BootstrapNodes
+	ReseedBootstrapNodesInterval ReseedBootstrapNodesInterval
 	// SaveFilesThreshold specifies a maximum number of files in a torrent before file information is discarded.
 	// Some torrents contain thousands of files which can severely impact performance and uses a lot of disk space.
-	SaveFilesThreshold uint
+	SaveFilesThreshold SaveFilesThreshold
 	// SavePieces when true, torrent pieces will be persisted to the database.
 	// The pieces take up quite a lot of space, and aren't currently very useful,
 	// but they may be used by future features.
-	SavePieces bool
+	SavePieces SavePieces
 	// RescrapeThreshold is the amount of time that must pass before a torrent is rescraped
 	// to count seeders and leechers.
-	RescrapeThreshold time.Duration
+	RescrapeThreshold RescrapeThreshold
 }
 
-func NewDefaultConfig() Config {
-	return Config{
-		ScalingFactor:                10,
-		BootstrapNodes:               bootstrap.DefaultBootstrapNodes,
-		ReseedBootstrapNodesInterval: time.Minute * 10,
-		SaveFilesThreshold:           100,
-		SavePieces:                   false,
-		RescrapeThreshold:            time.Hour * 24 * 30,
-	}
-}
+// func NewDefaultConfig() Config {
+// 	return Config{
+// 		ScalingFactor:                10,
+// 		BootstrapNodes:               bootstrap.DefaultBootstrapNodes,
+// 		ReseedBootstrapNodesInterval: time.Minute * 10,
+// 		SaveFilesThreshold:           100,
+// 		SavePieces:                   false,
+// 		RescrapeThreshold:            time.Hour * 24 * 30,
+// 	}
+// }

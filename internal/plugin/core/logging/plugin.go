@@ -1,6 +1,7 @@
 package logging
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/logging/level"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
@@ -10,20 +11,8 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-type (
-	Config struct {
-		Level       level.Level
-		Development bool
-	}
-
-	deps struct{}
-)
-
-func NewDefaultConfig() Config {
-	return Config{
-		Level:       "info",
-		Development: false,
-	}
+type deps struct {
+	fx.In
 }
 
 var (
@@ -31,16 +20,20 @@ var (
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithEnabledByDefault[Config, deps](),
-		builder.WithDependencies[Config, deps](
+		builder.WithEnabledByDefault[deps](),
+		builder.WithDependencies[deps](
 			config.Ref,
 		),
-		builder.WithDefaultConfig[Config, deps](NewDefaultConfig()),
-		builder.WithFxOption[Config, deps](
+		builder.WithConfigParam[deps](Ref.MustSub("level"), level.Param),
+		builder.WithFxOption[deps](
 			fx.Provide(
 				fx.Annotate(
-					func(cfg Config) zap.AtomicLevel {
-						return zap.NewAtomicLevelAt(cfg.Level.ToZapLevel())
+					func(lvl *atomic.Value[level.Level]) zap.AtomicLevel {
+						zapLevel := zap.NewAtomicLevel()
+						lvl.Subscribe(func(lvl level.Level) {
+							zapLevel.SetLevel(lvl.ToZapLevel())
+						})
+						return zapLevel
 					},
 					fx.As(new(zapcore.LevelEnabler)),
 					fx.As(fx.Self()),
@@ -53,13 +46,10 @@ var (
 					},
 					fx.ParamTags(`group:"zap_cores"`),
 				),
-				func(cfg Config, core zapcore.Core) *zap.Logger {
+				func(core zapcore.Core) *zap.Logger {
 					opts := []zap.Option{
 						zap.AddStacktrace(zapcore.ErrorLevel),
 						zap.AddCaller(),
-					}
-					if cfg.Development {
-						opts = append(opts, zap.Development())
 					}
 
 					return zap.New(core, opts...)

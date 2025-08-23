@@ -2,23 +2,24 @@ package metainforequester
 
 import (
 	"context"
-	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"fmt"
 	"net/netip"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/semaphore"
 )
 
 type requesterSemaphore struct {
-	requester Requester
-	semaphore chan struct{}
+	Requester
+	semaphore semaphore.Semaphore
 }
 
-func (r *requesterSemaphore) Request(ctx context.Context, infoHash protocol.ID, node netip.AddrPort) (Response, error) {
-	select {
-	case <-ctx.Done():
-		return Response{}, ctx.Err()
-	case r.semaphore <- struct{}{}:
+func (r *requesterSemaphore) Request(ctx context.Context, infoHash protocol.ID, addr netip.AddrPort) (Response, error) {
+	if err := r.semaphore.Acquire(ctx, 1); err != nil {
+		return Response{}, fmt.Errorf("%w: %w: %w", Err, ErrAcquireSemaphore, err)
 	}
 
-	defer func() { <-r.semaphore }()
+	defer r.semaphore.Release(1)
 
-	return r.requester.Request(ctx, infoHash, node)
+	return r.Requester.Request(ctx, infoHash, addr)
 }

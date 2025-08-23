@@ -13,27 +13,24 @@ import (
 	"go.uber.org/fx"
 )
 
-type (
-	Config = torznab.Config
-
-	deps struct {
-		fx.In
-		Client torznab.Client
-	}
-)
+// todo: Profiles!
+type deps struct {
+	fx.In
+	Client torznab.Client
+}
 
 var (
 	Ref = core.Ref.MustSub("torznab")
 
 	Plugin = builder.CreatePlugin(
 		Ref,
-		builder.WithEnabledByDefault[Config, deps](),
-		builder.WithDependencies[Config, deps](
+		builder.WithEnabledByDefault[deps](),
+		builder.WithDependencies[deps](
 			config.Ref,
 			search.Ref,
 		),
-		builder.WithDefaultConfig[Config, deps](torznab.NewDefaultConfig()),
-		builder.WithFxOption[Config, deps](
+		// builder.WithDefaultConfig[deps](torznab.NewDefaultConfig()),
+		builder.WithFxOption[deps](
 			fx.Provide(
 				func(s internalsearch.Search) torznab.Client {
 					return adapter.New(s)
@@ -42,8 +39,8 @@ var (
 		),
 		builder.WithGinOption(
 			Ref,
-			func(cfg Config, deps deps) gin.OptionFunc {
-				return httpserver.Option(cfg, deps.Client)
+			func(deps deps) gin.OptionFunc {
+				return httpserver.Option(torznab.Config{}, deps.Client)
 			},
 		),
 	)

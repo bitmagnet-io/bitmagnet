@@ -88,12 +88,16 @@ func (n Ref) sub(name string) (Ref, error) {
 		return Ref{}, fmt.Errorf("%w: %w: %s.%s", Err, ErrNameAlreadyExists, n.String(), name)
 	}
 
-	return Ref{
+	sub := Ref{
 		name:      name,
 		parent:    &n,
 		subs:      make(map[string]Ref),
 		canonical: n.canonical,
-	}, nil
+	}
+
+	n.subs[name] = sub
+
+	return sub, nil
 }
 
 func (n Ref) MustSub(name string) Ref {

@@ -167,7 +167,7 @@ func Context(fn func(ctx context.Context) context.Context) Option {
 
 func CacheMode(mode cache.Mode) Option {
 	return Context(func(ctx context.Context) context.Context {
-		return context.WithValue(ctx, cache.ModeKey, mode)
+		return cache.ContextWithCacheMode(ctx, mode)
 	})
 }
 

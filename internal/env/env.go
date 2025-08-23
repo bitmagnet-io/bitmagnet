@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 	"slices"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/fs"
 )
 
 type (
@@ -12,6 +14,20 @@ type (
 	Stdin   io.Reader
 	Stdout  io.Writer
 	Stderr  io.Writer
+
+	Reader interface {
+		Stdin
+	}
+
+	Writer interface {
+		Stdout
+		Stderr() Stderr
+	}
+
+	ReadWriter interface {
+		Reader
+		Writer
+	}
 
 	VarsLookup interface {
 		LookupVar(key string) (string, bool)
@@ -29,12 +45,11 @@ type (
 
 	Env interface {
 		Context
-		Stdin
-		Stdout
+		ReadWriter
 		VarsLookup
 		ArgsProvider
 		SignalsProvider
-		Stderr() Stderr
+		fs.FSProvider
 	}
 )
 
@@ -57,6 +72,7 @@ type environment struct {
 	io.Reader
 	io.Writer
 	SignalsProvider
+	fs.FSProvider
 	env    map[string]string
 	args   []string
 	stderr io.Writer
