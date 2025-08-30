@@ -2,7 +2,7 @@ import { inject } from "@angular/core";
 import { Apollo } from "apollo-angular";
 import { BehaviorSubject, map } from "rxjs";
 import * as generated from "../graphql/generated";
-import {WorkerState} from "../graphql/generated";
+import { WorkerState } from "../graphql/generated";
 
 const workerStateIcons: Record<WorkerState, string> = {
   error: "error",
@@ -10,7 +10,7 @@ const workerStateIcons: Record<WorkerState, string> = {
   running: "play_circle",
   shutdown: "pending",
   startup: "pending",
-}
+};
 
 type Worker = generated.Worker & {
   icon: string;
@@ -48,10 +48,7 @@ export class WorkersService {
 
   private watchQuery() {
     this.apollo
-      .watchQuery<
-        generated.WorkersQuery,
-        generated.WorkersQueryVariables
-      >({
+      .watchQuery<generated.WorkersQuery, generated.WorkersQueryVariables>({
         query: generated.WorkersDocument,
         fetchPolicy: "no-cache",
         pollInterval,
@@ -70,8 +67,8 @@ export class WorkersService {
       )
       .subscribe({
         next: (result) => {
-          this.resultSubject.next(result)
-          setTimeout(this.watchQuery.bind(this), pollInterval)
+          this.resultSubject.next(result);
+          setTimeout(this.watchQuery.bind(this), pollInterval);
         },
         error: (error: Error) => {
           this.resultSubject.next({
@@ -84,56 +81,90 @@ export class WorkersService {
       });
   }
 
-  public startWorkers(...keys: string[]) {
-    this.apollo.mutate<generated.WorkersStartMutation, generated.WorkersStartMutationVariables>({
-      mutation: generated.WorkersStartDocument,
-      variables: {
-        keys
-      }
-    }).pipe(map((result) => this.resultSubject.next({
-      workers: result.data?.worker.start.workers?.map((w) => ({
-        ...w,
-        icon: workerStateIcons[w.state],
-      })) ?? [],
-      workerError: result.data?.worker.start.workers?.some((w) => w.error) ?? false,
-      error: null,
-    }))).subscribe()
+  public startWorkers(...refs: string[]) {
+    this.apollo
+      .mutate<
+        generated.WorkersStartMutation,
+        generated.WorkersStartMutationVariables
+      >({
+        mutation: generated.WorkersStartDocument,
+        variables: {
+          refs,
+        },
+      })
+      .pipe(
+        map((result) =>
+          this.resultSubject.next({
+            workers:
+              result.data?.worker.start.workers?.map((w) => ({
+                ...w,
+                icon: workerStateIcons[w.state],
+              })) ?? [],
+            workerError:
+              result.data?.worker.start.workers?.some((w) => w.error) ?? false,
+            error: null,
+          }),
+        ),
+      )
+      .subscribe();
   }
 
-  public shutdownWorkers(...keys: string[]) {
-    this.apollo.mutate<generated.WorkersShutdownMutation, generated.WorkersShutdownMutationVariables>({
-      mutation: generated.WorkersShutdownDocument,
-      variables: {
-        keys
-      }
-    }).pipe(map((result) =>
-      this.resultSubject.next({
-        workers: result.data?.worker.shutdown.workers?.map((w) => ({
-          ...w,
-          icon: workerStateIcons[w.state],
-        })) ?? [],
-        workerError: result.data?.worker.shutdown.workers?.some((w) => w.error) ?? false,
-        error: null,
+  public shutdownWorkers(...refs: string[]) {
+    this.apollo
+      .mutate<
+        generated.WorkersShutdownMutation,
+        generated.WorkersShutdownMutationVariables
+      >({
+        mutation: generated.WorkersShutdownDocument,
+        variables: {
+          refs,
+        },
       })
-    )).subscribe()
+      .pipe(
+        map((result) =>
+          this.resultSubject.next({
+            workers:
+              result.data?.worker.shutdown.workers?.map((w) => ({
+                ...w,
+                icon: workerStateIcons[w.state],
+              })) ?? [],
+            workerError:
+              result.data?.worker.shutdown.workers?.some((w) => w.error) ??
+              false,
+            error: null,
+          }),
+        ),
+      )
+      .subscribe();
   }
 
-  public restartWorkers(...keys: string[]) {
-    this.apollo.mutate<generated.WorkersRestartMutation, generated.WorkersRestartMutationVariables>({
-      mutation: generated.WorkersRestartDocument,
-      variables: {
-        keys
-      }
-    }).pipe(map((result) => {
-      this.resultSubject.next({
-        workers: result.data?.worker.restart.workers?.map((w) => ({
-          ...w,
-          icon: workerStateIcons[w.state],
-        })) ?? [],
-        workerError: result.data?.worker.restart.workers?.some((w) => w.error) ?? false,
-        error: null,
+  public restartWorkers(...refs: string[]) {
+    this.apollo
+      .mutate<
+        generated.WorkersRestartMutation,
+        generated.WorkersRestartMutationVariables
+      >({
+        mutation: generated.WorkersRestartDocument,
+        variables: {
+          refs,
+        },
       })
-      setTimeout(this.watchQuery.bind(this), 2000);
-    })).subscribe()
+      .pipe(
+        map((result) => {
+          this.resultSubject.next({
+            workers:
+              result.data?.worker.restart.workers?.map((w) => ({
+                ...w,
+                icon: workerStateIcons[w.state],
+              })) ?? [],
+            workerError:
+              result.data?.worker.restart.workers?.some((w) => w.error) ??
+              false,
+            error: null,
+          });
+          setTimeout(this.watchQuery.bind(this), 2000);
+        }),
+      )
+      .subscribe();
   }
 }

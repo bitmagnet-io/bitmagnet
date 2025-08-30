@@ -33,6 +33,7 @@ func (r *mutationResolver) Worker(ctx context.Context) (gqlmodel.WorkerMutation,
 func (r *mutationResolver) Config(ctx context.Context) (gqlmodel.ConfigMutation, error) {
 	return gqlmodel.ConfigMutation{
 		Manager: r.ConfigManager,
+		I18n:    r.I18n,
 	}, nil
 }
 

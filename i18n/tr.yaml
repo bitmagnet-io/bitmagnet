@@ -1,0 +1,186 @@
+core.config:
+    description: description for plugin core.config
+    other: Yapılandırma işlevselliği sağlar
+core.config.plugin_enabled:
+    description: description for plugin enabled param
+    other: ""
+core.database.gorm.cache:
+    description: description for plugin core.database.gorm.cache
+    other: Postgres sorgu sonucu önbellekleme sağlar
+core.database.gorm.cache.max_items:
+    description: description for config core.database.gorm.cache.max_items
+    other: Önbelleğe alınacak maksimum öğe sayısı
+core.database.gorm.cache.ttl:
+    description: description for config core.database.gorm.cache.ttl
+    other: Önbellek için TTL
+core.database.info_hash_blocker:
+    description: description for plugin core.database.info_hash_blocker
+    other: Silinmiş ve engellenmiş bilgi hash'lerinin kararlı bir bloom filtresini korur, tekrar taranmalarını önler
+core.database.migrator:
+    description: description for plugin core.database.migrator
+    other: ""
+core.database.persister:
+    description: description for plugin core.database.persister
+    other: ""
+core.database.persister.max_size:
+    description: description for config core.database.persister.max_size
+    other: Maksimum arabellek boyutu
+core.database.persister.max_wait:
+    description: description for config core.database.persister.max_wait
+    other: Temizlemeden önce öğeleri arabelleğe alma maksimum süresi
+core.database.postgres:
+    description: description for plugin core.database.postgres
+    other: Postgres veritabanı bağlantısını başlatır ve yönetir
+core.database.postgres.database:
+    description: description for config core.database.postgres.database
+    other: Postgres veritabanı adı
+core.database.postgres.dsn:
+    description: description for config core.database.postgres.dsn
+    other: Postgres Veri Kaynağı Adı (belirtilirse, bu eklenti için diğer tüm seçenekler yok sayılır)
+core.database.postgres.host:
+    description: description for config core.database.postgres.host
+    other: Postgres host
+core.database.postgres.password:
+    description: description for config core.database.postgres.password
+    other: Postgres şifresi
+core.database.postgres.port:
+    description: description for config core.database.postgres.port
+    other: Postgres port numarası
+core.database.postgres.user:
+    description: description for config core.database.postgres.user
+    other: Postgres kullanıcı adı
+core.database.search:
+    description: description for plugin core.database.search
+    other: Postgres veritabanı aracılığıyla arama işlevselliği sağlar
+core.dht.crawler:
+    description: description for plugin core.dht.crawler
+    other: Torrentler için DHT'yi tarar
+core.dht.crawler.autostart:
+    description: description for config core.dht.crawler.autostart
+    other: Worker'ı otomatik olarak başlat
+core.dht.crawler.bootstrap_nodes:
+    description: description for config core.dht.crawler.bootstrap_nodes
+    other: DHT tarayıcısını başlatmak için düğüm adreslerinin listesi
+core.dht.crawler.rescrape_threshold:
+    description: description for config core.dht.crawler.rescrape_threshold
+    other: DHT'den seeder ve leecher sayılarını yeniden sorgulamadan önceki minimum aralık
+core.dht.crawler.reseed_bootstrap_nodes_interval:
+    description: description for config core.dht.crawler.reseed_bootstrap_nodes_interval
+    other: Bootstrap düğümlerinin yeniden tohumlanması arasındaki aralık
+core.dht.crawler.save_files_threshold:
+    description: description for config core.dht.crawler.save_files_threshold
+    other: DHT tarayıcısının her torrent ile kaydettiği dosya sayısının maksimum sınırı
+core.dht.crawler.save_pieces:
+    description: description for config core.dht.crawler.save_pieces
+    other: Her torrent ile torrent parçalarını kaydet (çok disk alanı kullanır)
+core.dht.server:
+    description: description for plugin core.dht.server
+    other: DHT sunucu düğümü çalıştırır
+core.dht.server.query_timeout:
+    description: description for config core.dht.server.query_timeout
+    other: Sorgu zaman aşımı
+core.dht.socket:
+    description: description for plugin core.dht.socket
+    other: DHT sunucusu için UDP soketi çalıştırır
+core.dht.socket.adapter:
+    description: description for config core.dht.socket.adapter
+    other: Soket bağdaştırıcı adı
+core.dht.socket.port:
+    description: description for config core.dht.socket.port
+    other: Soket port numarası
+core.health:
+    description: description for plugin core.health
+    other: Sağlık kontrolü işlevselliği sağlar
+core.http_server:
+    description: description for plugin core.http_server
+    other: HTTP sunucusunu çalıştırır
+core.http_server.cors:
+    description: description for plugin core.http_server.cors
+    other: HTTP sunucusu için CORS middleware sağlar
+core.http_server.cors.allowed_origins:
+    description: description for config core.http_server.cors.allowed_origins
+    other: CORS izin verilen kaynaklar
+core.http_server.docs:
+    description: description for plugin core.http_server.docs
+    other: /docs uç noktasında dokümantasyon web sitesinin bir örneğini çalıştırır
+core.http_server.graphql:
+    description: description for plugin core.http_server.graphql
+    other: GraphQL API sunucusunu çalıştırır
+core.http_server.local_address:
+    description: description for config core.http_server.local_address
+    other: Dinlenecek yerel adres
+core.http_server.logging:
+    description: description for plugin core.http_server.logging
+    other: HTTP sunucusu için günlükleme sağlar
+core.http_server.recovery:
+    description: description for plugin core.http_server.recovery
+    other: HTTP sunucusunun paniklerden kurtulmasına izin verir
+core.http_server.webui:
+    description: description for plugin core.http_server.webui
+    other: /webui uç noktasında web kullanıcı arayüzünü çalıştırır
+core.i18n:
+    description: description for plugin core.i18n
+    other: Arka uç hizmetleri için çeviriler sağlar
+core.importer:
+    description: description for plugin core.importer
+    other: /import uç noktasında bir içe aktarma tesisi çalıştırır
+core.logging:
+    description: description for plugin core.logging
+    other: Günlükleme hizmetleri sağlar
+core.logging.console:
+    description: description for plugin core.logging.console
+    other: Konsol biçimlendirmesiyle günlükler çıkarır
+core.logging.level:
+    description: description for config core.logging.level
+    other: Günlük seviyesi
+core.meta_info:
+    description: description for plugin core.meta_info
+    other: Eşlerden torrent meta bilgilerini indirmek için hizmetler sağlar
+core.meta_info.dial_timeout:
+    description: description for config core.meta_info.dial_timeout
+    other: Arama zaman aşımı
+core.meta_info.max_concurrency:
+    description: description for config core.meta_info.max_concurrency
+    other: Maksimum istek eşzamanlılığı
+core.meta_info.request_timeout:
+    description: description for config core.meta_info.request_timeout
+    other: İstek zaman aşımı
+core.metrics:
+    description: description for plugin core.metrics
+    other: Ölçümler sağlar
+core.metrics.prometheus:
+    description: description for plugin core.metrics.prometheus
+    other: ""
+core.pipeline.classifier:
+    description: description for plugin core.pipeline.classifier
+    other: Torrent sınıflandırıcı hizmeti sağlar
+core.pipeline.classifier.concurrency:
+    description: description for config core.pipeline.classifier.concurrency
+    other: Paralel çalıştırılacak maksimum sınıflandırma sayısı
+core.pipeline.classifier.delete_xxx:
+    description: description for config core.pipeline.classifier.delete_xxx
+    other: XXX içeriğinin sınıflandırıcı tarafından silinmesi gerektiğini belirten boolean bayrak
+core.pipeline.classifier.extensions:
+    description: description for config core.pipeline.classifier.extensions
+    other: Dosya türlerinden bunlarla ilişkili dosya uzantılarına eşleme
+core.pipeline.classifier.flags:
+    description: description for config core.pipeline.classifier.flags
+    other: Sınıflandırıcı iş akışlarını yapılandırmak için bayrak anahtarlarından bayrak değerlerine eşleme
+core.pipeline.classifier.keywords:
+    description: description for config core.pipeline.classifier.keywords
+    other: Kategori adlarından farklı torrent türleriyle ilişkili anahtar kelimelere eşleme
+core.pipeline.classifier.workflow:
+    description: description for config core.pipeline.classifier.workflow
+    other: Varsayılan sınıflandırıcı iş akışı
+core.pipeline.processor:
+    description: description for plugin core.pipeline.processor
+    other: Torrentleri sınıflandıran ve indeksleyen işlemci hizmeti sağlar
+core.queue:
+    description: description for plugin core.queue
+    other: Kuyruk iş çalışanını çalıştırır
+core.torznab:
+    description: description for plugin core.torznab
+    other: /torznab uç noktasında Torznab API sunucusunu çalıştırır
+core.worker:
+    description: description for plugin core.worker
+    other: Çalışanları yönetir

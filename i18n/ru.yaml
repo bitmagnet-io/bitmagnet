@@ -1,0 +1,186 @@
+core.config:
+    description: description for plugin core.config
+    other: Предоставляет функциональность конфигурации
+core.config.plugin_enabled:
+    description: description for plugin enabled param
+    other: ""
+core.database.gorm.cache:
+    description: description for plugin core.database.gorm.cache
+    other: Предоставляет кэширование результатов запросов Postgres
+core.database.gorm.cache.max_items:
+    description: description for config core.database.gorm.cache.max_items
+    other: Максимальное количество элементов для кэширования
+core.database.gorm.cache.ttl:
+    description: description for config core.database.gorm.cache.ttl
+    other: TTL для кэша
+core.database.info_hash_blocker:
+    description: description for plugin core.database.info_hash_blocker
+    other: Поддерживает стабильный фильтр Блума информационных хешей, которые были удалены и заблокированы, предотвращая их повторное сканирование
+core.database.migrator:
+    description: description for plugin core.database.migrator
+    other: ""
+core.database.persister:
+    description: description for plugin core.database.persister
+    other: ""
+core.database.persister.max_size:
+    description: description for config core.database.persister.max_size
+    other: Максимальный размер буфера
+core.database.persister.max_wait:
+    description: description for config core.database.persister.max_wait
+    other: Максимальное время буферизации элементов перед сбросом
+core.database.postgres:
+    description: description for plugin core.database.postgres
+    other: Инициирует и управляет подключением к базе данных Postgres
+core.database.postgres.database:
+    description: description for config core.database.postgres.database
+    other: Имя базы данных Postgres
+core.database.postgres.dsn:
+    description: description for config core.database.postgres.dsn
+    other: Имя источника данных Postgres (если указано, все остальные параметры для этого плагина игнорируются)
+core.database.postgres.host:
+    description: description for config core.database.postgres.host
+    other: Хост Postgres
+core.database.postgres.password:
+    description: description for config core.database.postgres.password
+    other: Пароль Postgres
+core.database.postgres.port:
+    description: description for config core.database.postgres.port
+    other: Номер порта Postgres
+core.database.postgres.user:
+    description: description for config core.database.postgres.user
+    other: Имя пользователя Postgres
+core.database.search:
+    description: description for plugin core.database.search
+    other: Предоставляет функциональность поиска через базу данных Postgres
+core.dht.crawler:
+    description: description for plugin core.dht.crawler
+    other: Сканирует DHT в поисках торрентов
+core.dht.crawler.autostart:
+    description: description for config core.dht.crawler.autostart
+    other: Автоматически запускать воркер
+core.dht.crawler.bootstrap_nodes:
+    description: description for config core.dht.crawler.bootstrap_nodes
+    other: Список адресов узлов для загрузки DHT-краулера
+core.dht.crawler.rescrape_threshold:
+    description: description for config core.dht.crawler.rescrape_threshold
+    other: Минимальный интервал перед повторным запросом количества сидеров и личеров из DHT
+core.dht.crawler.reseed_bootstrap_nodes_interval:
+    description: description for config core.dht.crawler.reseed_bootstrap_nodes_interval
+    other: Интервал между пересидами узлов загрузки
+core.dht.crawler.save_files_threshold:
+    description: description for config core.dht.crawler.save_files_threshold
+    other: Максимальный лимит количества файлов, сохраняемых DHT-краулером с каждым торрентом
+core.dht.crawler.save_pieces:
+    description: description for config core.dht.crawler.save_pieces
+    other: Сохранять части торрента с каждым торрентом (использует много дискового пространства)
+core.dht.server:
+    description: description for plugin core.dht.server
+    other: Запускает узел DHT-сервера
+core.dht.server.query_timeout:
+    description: description for config core.dht.server.query_timeout
+    other: Таймаут запроса
+core.dht.socket:
+    description: description for plugin core.dht.socket
+    other: Запускает UDP-сокет для DHT-сервера
+core.dht.socket.adapter:
+    description: description for config core.dht.socket.adapter
+    other: Имя адаптера сокета
+core.dht.socket.port:
+    description: description for config core.dht.socket.port
+    other: Номер порта сокета
+core.health:
+    description: description for plugin core.health
+    other: Предоставляет функциональность проверки работоспособности
+core.http_server:
+    description: description for plugin core.http_server
+    other: Запускает HTTP-сервер
+core.http_server.cors:
+    description: description for plugin core.http_server.cors
+    other: Предоставляет CORS middleware для HTTP-сервера
+core.http_server.cors.allowed_origins:
+    description: description for config core.http_server.cors.allowed_origins
+    other: Разрешенные источники CORS
+core.http_server.docs:
+    description: description for plugin core.http_server.docs
+    other: Запускает экземпляр сайта документации на эндпоинте /docs
+core.http_server.graphql:
+    description: description for plugin core.http_server.graphql
+    other: Запускает сервер GraphQL API
+core.http_server.local_address:
+    description: description for config core.http_server.local_address
+    other: Локальный адрес для прослушивания
+core.http_server.logging:
+    description: description for plugin core.http_server.logging
+    other: Предоставляет логирование для HTTP-сервера
+core.http_server.recovery:
+    description: description for plugin core.http_server.recovery
+    other: Позволяет HTTP-серверу восстанавливаться после паник
+core.http_server.webui:
+    description: description for plugin core.http_server.webui
+    other: Запускает веб-интерфейс пользователя на эндпоинте /webui
+core.i18n:
+    description: description for plugin core.i18n
+    other: Предоставляет переводы для бэкенд сервисов
+core.importer:
+    description: description for plugin core.importer
+    other: Запускает средство импорта на эндпоинте /import
+core.logging:
+    description: description for plugin core.logging
+    other: Предоставляет сервисы логирования
+core.logging.console:
+    description: description for plugin core.logging.console
+    other: Выводит логи с форматированием консоли
+core.logging.level:
+    description: description for config core.logging.level
+    other: Уровень логирования
+core.meta_info:
+    description: description for plugin core.meta_info
+    other: Предоставляет сервисы для загрузки мета-информации торрентов с пиров
+core.meta_info.dial_timeout:
+    description: description for config core.meta_info.dial_timeout
+    other: Таймаут подключения
+core.meta_info.max_concurrency:
+    description: description for config core.meta_info.max_concurrency
+    other: Максимальная конкурентность запросов
+core.meta_info.request_timeout:
+    description: description for config core.meta_info.request_timeout
+    other: Таймаут запроса
+core.metrics:
+    description: description for plugin core.metrics
+    other: Предоставляет метрики
+core.metrics.prometheus:
+    description: description for plugin core.metrics.prometheus
+    other: ""
+core.pipeline.classifier:
+    description: description for plugin core.pipeline.classifier
+    other: Предоставляет сервис классификации торрентов
+core.pipeline.classifier.concurrency:
+    description: description for config core.pipeline.classifier.concurrency
+    other: Максимальное количество классификаций для параллельного выполнения
+core.pipeline.classifier.delete_xxx:
+    description: description for config core.pipeline.classifier.delete_xxx
+    other: Булев флаг, указывающий, что XXX контент должен быть удален классификатором
+core.pipeline.classifier.extensions:
+    description: description for config core.pipeline.classifier.extensions
+    other: Карта типов файлов к связанным с ними расширениям файлов
+core.pipeline.classifier.flags:
+    description: description for config core.pipeline.classifier.flags
+    other: Карта ключей флагов к значениям флагов для настройки рабочих процессов классификатора
+core.pipeline.classifier.keywords:
+    description: description for config core.pipeline.classifier.keywords
+    other: Карта имен категорий к ключевым словам, связанным с различными типами торрентов
+core.pipeline.classifier.workflow:
+    description: description for config core.pipeline.classifier.workflow
+    other: Рабочий процесс классификатора по умолчанию
+core.pipeline.processor:
+    description: description for plugin core.pipeline.processor
+    other: Предоставляет сервис процессора, который классифицирует и индексирует торренты
+core.queue:
+    description: description for plugin core.queue
+    other: Запускает воркер задач очереди
+core.torznab:
+    description: description for plugin core.torznab
+    other: Запускает сервер Torznab API на эндпоинте /torznab
+core.worker:
+    description: description for plugin core.worker
+    other: Управляет воркерами

@@ -12,7 +12,10 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/handler"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	workers_registry "github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
 	"github.com/gin-gonic/gin"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
 	"go.uber.org/zap/zapcore"
@@ -20,28 +23,90 @@ import (
 )
 
 type builder[Deps any] struct {
-	ref              ref.Ref
-	enabledByDefault bool
-	dependencies     []ref.Ref
-	options          []fx.Option
-	commands         []plugin.Command
+	ref          ref.Ref
+	description  string
+	activation   plugin.Activation
+	dependencies []ref.Ref
+	params       []config_registry.Param
+	fxOptions    []fx.Option
+	commands     []plugin.Command
 }
 
-func CreatePlugin[Deps any](ref ref.Ref, options ...Option[Deps]) plugin.Plugin {
+// var paramEnabled = param.MustNew(
+// 	param.Description[bool]("Enabled"),
+// 	param.Bool[bool](),
+// 	param.Default(plugin.EnabledByDefault()),
+// )
+
+func NewPlugin[Deps any](rf ref.Ref, options ...Option[Deps]) plugin.Plugin {
 	b := &builder[Deps]{
-		ref: ref,
+		ref:        rf,
+		activation: plugin.ActivationAuto,
 	}
 
 	for _, option := range options {
 		option(b)
 	}
 
-	// WithFxOption[Deps](configfx.NewConfigModule[Config](ref, b.config))(b)
+	var activationRef ref.Nullable
 
-	return plugin.NewPlugin(ref, b.enabledByDefault, b.dependencies, fx.Options(b.options...), b.commands)
+	params := b.params
+
+	if b.activation != plugin.ActivationAlways {
+		activationRef = ref.NewNullable(rf.MustSub(plugin.KeyActivation))
+		params = append(params, config_registry.Param{
+			Ref:    activationRef.Ref,
+			Plugin: rf,
+			Untyped: param.MustNew(
+				param.Description[plugin.Activation]("Activation"),
+				param.EnumValues(
+					plugin.ActivationEnabled,
+					plugin.ActivationDisabled,
+					plugin.ActivationAuto,
+				),
+				param.Default(b.activation),
+			),
+		})
+	}
+
+	return plugin.NewPlugin(
+		rf,
+		activationRef,
+		b.dependencies,
+		params,
+		b.commands,
+		fx.Options(b.fxOptions...),
+	)
 }
 
 type Option[Deps any] func(*builder[Deps])
+
+func options[Deps any](options ...Option[Deps]) Option[Deps] {
+	return func(b *builder[Deps]) {
+		for _, option := range options {
+			option(b)
+		}
+	}
+}
+
+func WithDescription[Deps any](description string) Option[Deps] {
+	return func(b *builder[Deps]) {
+		b.description = description
+
+		WithFxOption[Deps](
+			fx.Supply(
+				fx.Annotate(
+					&i18n.Message{
+						ID:          b.ref.String(),
+						Description: "description for plugin " + b.ref.String(),
+						Other:       description,
+					},
+					fx.ResultTags(`group:"i18n_messages"`),
+				),
+			),
+		)(b)
+	}
+}
 
 func WithDependencies[Deps any](dependencies ...ref.Ref) Option[Deps] {
 	return func(b *builder[Deps]) {
@@ -49,55 +114,68 @@ func WithDependencies[Deps any](dependencies ...ref.Ref) Option[Deps] {
 	}
 }
 
-func WithEnabledByDefault[Deps any]() Option[Deps] {
+func WithActivation[Deps any](activation plugin.Activation) Option[Deps] {
 	return func(b *builder[Deps]) {
-		b.enabledByDefault = true
+		b.activation = activation
 	}
 }
 
-func WithConfigParam[Deps any, T any](ref ref.Ref, param param.Param[T]) Option[Deps] {
-	return WithFxOption[Deps](
-		fx.Supply(
-			fx.Annotate(
-				config_registry.WithParam(ref, param),
-				fx.ResultTags(`group:"config_registry_options"`),
+func WithConfig[Deps any, T any](ref ref.Ref, param param.Param[T]) Option[Deps] {
+	return options(
+		func(b *builder[Deps]) {
+			b.params = append(b.params, config_registry.Param{
+				Ref:     ref,
+				Plugin:  b.ref,
+				Untyped: param,
+			})
+		},
+		WithFxOption[Deps](
+			fx.Supply(
+				fx.Annotate(
+					&i18n.Message{
+						ID:          ref.String(),
+						Description: "description for config " + ref.String(),
+						Other:       param.Description(),
+					},
+					fx.ResultTags(`group:"i18n_messages"`),
+				),
 			),
-		),
-		fx.Provide(
-			func(allResolved resolver.Resolved) (T, error) {
-				var (
-					resolved *resolver.Param
-					value    T
-					ok       bool
-				)
+			fx.Provide(
+				func(allResolved resolver.Resolved) (T, error) {
+					var (
+						resolved *resolver.Param
+						value    T
+						ok       bool
+					)
 
-				resolved, ok = allResolved.Param(ref)
-				if !ok {
-					return value, errors.New("missing from resolved")
-				}
+					resolved, ok = allResolved.Param(ref)
+					if !ok {
+						return value, errors.New("missing from resolved")
+					}
 
-				value, ok = resolved.Value().(T)
-				if !ok {
-					return value, errors.New("cast failed")
-				}
+					value, ok = resolved.Value().(T)
+					if !ok {
+						return value, errors.New("cast failed")
+					}
 
-				return value, nil
-			},
+					return value, nil
+				},
+			),
 		),
 	)
 }
 
 func WithFxOption[Deps any](options ...fx.Option) Option[Deps] {
 	return func(b *builder[Deps]) {
-		b.options = append(b.options, options...)
+		b.fxOptions = append(b.fxOptions, options...)
 	}
 }
 
-func WithGinOption[Deps any](ref ref.Ref, provider func(Deps) gin.OptionFunc) Option[Deps] {
+func WithGinOption[Deps any](ref ref.Ref, phase httpserver.Phase, provider func(Deps) gin.OptionFunc) Option[Deps] {
 	return WithFxOption[Deps](fx.Provide(
 		fx.Annotate(
 			func(deps Deps) httpserver.Option {
-				return httpserver.NewOption(ref.String(), provider(deps))
+				return httpserver.NewOption(ref.String(), phase, provider(deps))
 			},
 			fx.ResultTags(`group:"http_server_options"`),
 		),
@@ -122,13 +200,27 @@ func WithZapCore[Deps any](provider func(Deps) zapcore.Core) Option[Deps] {
 	))
 }
 
-func WithWorkerRegistryOption[Deps any](provider func(Deps) workers_registry.Option) Option[Deps] {
-	return WithFxOption[Deps](fx.Provide(
-		fx.Annotate(
-			provider,
-			fx.ResultTags(`group:"worker_options"`),
-		),
-	))
+func WithWorker[Deps any](provider func(Deps) (runner.Provider, worker.Option)) Option[Deps] {
+	return func(b *builder[Deps]) {
+		b.fxOptions = append(b.fxOptions, fx.Provide(
+			fx.Annotate(
+				func(deps Deps) workers_registry.Option {
+					runner, option := provider(deps)
+
+					if option == nil {
+						option = worker.Options()
+					}
+
+					return workers_registry.WithWorker(
+						b.ref,
+						runner,
+						option,
+					)
+				},
+				fx.ResultTags(`group:"worker_options"`),
+			),
+		))
+	}
 }
 
 func WithHealthCheckerOption[Deps any](provider func(Deps) health.CheckerOption) Option[Deps] {

@@ -1,9 +1,9 @@
 type Worker {
-  key: String!
+  ref: Ref!
   state: WorkerState!
   error: String
-  requiredBy: [String!]!
-  dependsOn: [String!]!
+  requiredBy: [Ref!]!
+  dependsOn: [Ref!]!
 }
 
 type WorkerListAllQueryResult {
@@ -15,7 +15,7 @@ type WorkerQuery {
 }
 
 type WorkerMutation {
-  start(keys: [String!]!): WorkerListAllQueryResult!
-  shutdown(keys: [String!]!): WorkerListAllQueryResult!
-  restart(keys: [String!]!): WorkerListAllQueryResult!
+  start(refs: [Ref!]!): WorkerListAllQueryResult!
+  shutdown(refs: [Ref!]!): WorkerListAllQueryResult!
+  restart(refs: [Ref!]!): WorkerListAllQueryResult!
 }

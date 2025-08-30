@@ -1,3 +1,7 @@
+type TorrentContentQuery {
+  search(input: TorrentContentSearchQueryInput!): TorrentContentSearchResult!
+}
+
 input TorrentContentSearchQueryInput {
   queryString: String
   limit: Int

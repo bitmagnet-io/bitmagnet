@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"go.uber.org/zap"
 )
@@ -15,8 +16,8 @@ type worker struct {
 	mtx      sync.RWMutex
 	in       chan Input
 	shutdown chan struct{}
-	maxSize  int
-	maxWait  time.Duration
+	maxSize  *atomic.Value[MaxSize]
+	maxWait  *atomic.Value[MaxWait]
 	logger   *zap.Logger
 }
 
@@ -71,8 +72,8 @@ func (w *worker) Runner() runner.Runner {
 			}
 
 			if !payload.shouldFlush &&
-				size < w.maxSize &&
-				time.Since(lastFlush) < w.maxWait {
+				size < int(w.maxSize.Get()) &&
+				time.Since(lastFlush) < time.Duration(w.maxWait.Get()) {
 				return nil
 			}
 
@@ -102,7 +103,7 @@ func (w *worker) Runner() runner.Runner {
 					return
 				case <-shutdown:
 					return
-				case <-time.After(w.maxWait - time.Since(lastFlush)):
+				case <-time.After(time.Duration(w.maxWait.Get()) - time.Since(lastFlush)):
 					_ = checkFlush(ctx)
 				case item, ok := <-w.in:
 					if !ok {

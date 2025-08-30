@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
-	"github.com/bitmagnet-io/bitmagnet/internal/indexer/batch"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor/batch"
 	"gorm.io/gorm"
 )
 

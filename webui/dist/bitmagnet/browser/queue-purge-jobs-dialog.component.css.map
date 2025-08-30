@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/dashboard/queue/queue-purge-jobs-dialog.component.scss"],
+  "sourcesContent": ["mat-dialog-content {\n  min-height: 240px;\n  overflow: visible;\n}\n\nmat-grid-tile mat-card {\n  width: 100%;\n  height: 100%;\n}\n"],
+  "mappings": ";AAAA;AACE,cAAA;AACA,YAAA;;AAGF,cAAA;AACE,SAAA;AACA,UAAA;;",
+  "names": []
+}

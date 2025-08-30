@@ -4,29 +4,21 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"maps"
-	"slices"
 	"sync"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"go.uber.org/zap"
 )
 
 type StateInfo struct {
+	Ref ref.Ref
 	State
 	Err error
 }
 
-type DependencyMap map[string]struct{}
-
-func (m DependencyMap) Slice() []string {
-	result := slices.Collect(maps.Keys(m))
-	slices.Sort(result)
-
-	return result
-}
-
 type Worker struct {
+	ref        ref.Ref
 	mtx        sync.RWMutex
 	state      State
 	runner     runner.Provider
@@ -34,15 +26,17 @@ type Worker struct {
 	shutdowner runner.Shutdowner
 	err        error
 	logger     *zap.Logger
-	dependsOn  DependencyMap
+	dependsOn  ref.Set
 	autostart  bool
+	shortLived bool
 }
 
-func NewWorker(runner runner.Provider, options ...Option) *Worker {
+func NewWorker(rf ref.Ref, runner runner.Provider, options ...Option) *Worker {
 	wrk := &Worker{
+		ref:       rf,
 		state:     StateIdle,
 		runner:    runner,
-		dependsOn: make(DependencyMap),
+		dependsOn: ref.NewSet(),
 	}
 
 	for _, option := range options {
@@ -56,11 +50,16 @@ func NewWorker(runner runner.Provider, options ...Option) *Worker {
 	return wrk
 }
 
+func (w *Worker) Ref() ref.Ref {
+	return w.ref
+}
+
 func (w *Worker) State() StateInfo {
 	w.mtx.RLock()
 	defer w.mtx.RUnlock()
 
 	return StateInfo{
+		Ref:   w.ref,
 		State: w.state,
 		Err:   w.err,
 	}
@@ -122,7 +121,11 @@ func (w *Worker) Start(ctx context.Context) (runner.Shutdowner, error) {
 
 		runCtx, runCancel := context.WithCancelCause(ctx)
 
-		w.logger.Debug("starting")
+		if w.shortLived {
+			w.logger.Info("starting")
+		} else {
+			w.logger.Debug("starting")
+		}
 
 		shutdown, err := w.runner.Runner()(runCtx, func(err error) {
 			isShutdownRequested := errors.Is(err, runner.ErrShutdownRequested)
@@ -155,7 +158,11 @@ func (w *Worker) Start(ctx context.Context) (runner.Shutdowner, error) {
 		})
 
 		if err == nil {
-			w.logger.Info("started")
+			if w.shortLived {
+				w.logger.Debug("started")
+			} else {
+				w.logger.Info("started")
+			}
 		} else {
 			w.logger.Error("failed to start", zap.Error(err))
 		}
@@ -307,22 +314,12 @@ func (w *Worker) newShutdowner(runCancel context.CancelCauseFunc, shutdown runne
 	}
 }
 
-func (w *Worker) Dependencies() []string {
-	result := make([]string, 0, len(w.dependsOn))
-
-	for dep := range w.dependsOn {
-		result = append(result, dep)
-	}
-
-	slices.Sort(result)
-
-	return result
+func (w *Worker) Dependencies() []ref.Ref {
+	return w.dependsOn.Refs()
 }
 
-func (w *Worker) DependsOn(key string) bool {
-	_, ok := w.dependsOn[key]
-
-	return ok
+func (w *Worker) DependsOn(ref ref.Ref) bool {
+	return w.dependsOn.Has(ref)
 }
 
 func (w *Worker) Autostart() bool {

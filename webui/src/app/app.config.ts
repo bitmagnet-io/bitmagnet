@@ -10,7 +10,8 @@ import {
   provideHttpClient,
   withInterceptorsFromDi,
 } from "@angular/common/http";
-import { provideTransloco } from "@jsverse/transloco";
+import { setContext } from "@apollo/client/link/context";
+import { provideTransloco, TranslocoService } from "@jsverse/transloco";
 import { provideCharts, withDefaultRegisterables } from "ng2-charts";
 import { provideApollo } from "apollo-angular";
 import { HttpLink } from "apollo-angular/http";
@@ -28,8 +29,19 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     provideApollo(() => {
       const httpLink = inject(HttpLink);
+      const transloco = inject(TranslocoService);
+
+      const contextLink = setContext((_, { headers }) => {
+        return {
+          headers: {
+            ...headers,
+            "Accept-Language": transloco.getActiveLang(),
+          },
+        };
+      });
+
       return {
-        link: httpLink.create({ uri: graphqlEndpoint }),
+        link: contextLink.concat(httpLink.create({ uri: graphqlEndpoint })),
         cache: new InMemoryCache({
           typePolicies: {
             Query: {

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/torrents/torrent-chips.component.scss"],
+  "sourcesContent": ["mat-chip-set {\n  mat-icon {\n    position: relative;\n    left: 4px;\n  }\n}\n"],
+  "mappings": ";AACE,aAAA;AACE,YAAA;AACA,QAAA;;",
+  "names": []
+}

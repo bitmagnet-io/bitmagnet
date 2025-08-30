@@ -2,7 +2,7 @@ package manager
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database"
-	"github.com/bitmagnet-io/bitmagnet/internal/indexer/batch"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor/batch"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue"
 )
 

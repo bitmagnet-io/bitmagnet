@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/torrents/torrents-bulk-actions.component.scss"],
+  "sourcesContent": ["mat-tab-group {\n  padding-left: 10px;\n}\n\n.mat-mdc-card {\n  margin-bottom: 10px;\n}\n\nbutton {\n  margin-right: 10px;\n}\n\np {\n  margin-top: 0;\n}\n\n::ng-deep .mdc-tab {\n  &[aria-labelledby=\"hidden\"] {\n    display: none;\n  }\n}\n"],
+  "mappings": ";AAAA;AACE,gBAAA;;AAGF,CAAA;AACE,iBAAA;;AAGF;AACE,gBAAA;;AAGF;AACE,cAAA;;AAIA,UAAA,CAAA,OAAA,CAAA;AACE,WAAA;;",
+  "names": []
+}

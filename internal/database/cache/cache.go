@@ -12,14 +12,14 @@ import (
 
 func New(
 	ttl *atomic.Value[TTL],
-	maxKeys *atomic.Value[MaxKeys],
+	maxItems *atomic.Value[MaxItems],
 	logger *zap.Logger,
 ) caches.Cacher {
-	currentTTL, currentMaxKeys := ttl.Get(), maxKeys.Get()
+	currentTTL, currentMaxItems := ttl.Get(), maxItems.Get()
 
 	cacher := &inMemoryCacher{
 		lru: lru.New[string, *caches.Query](
-			int(currentMaxKeys),
+			int(currentMaxItems),
 			nil,
 			time.Duration(currentTTL),
 		),
@@ -33,10 +33,10 @@ func New(
 		}
 	})
 
-	maxKeys.Subscribe(func(maxKeys MaxKeys) {
-		if maxKeys != currentMaxKeys {
-			currentMaxKeys = maxKeys
-			cacher.lru.Resize(int(currentMaxKeys))
+	maxItems.Subscribe(func(maxItems MaxItems) {
+		if maxItems != currentMaxItems {
+			currentMaxItems = maxItems
+			cacher.lru.Resize(int(currentMaxItems))
 		}
 	})
 

@@ -1,6 +1,7 @@
 package compat
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/tmdb"
 	internaltmdb "github.com/bitmagnet-io/bitmagnet/internal/tmdb"
@@ -14,9 +15,9 @@ type deps struct {
 var (
 	Ref = tmdb.Ref.MustSub("compat")
 
-	Plugin = builder.CreatePlugin(
+	Plugin = builder.NewPlugin(
 		Ref,
-		builder.WithEnabledByDefault[deps](),
+		builder.WithActivation[deps](plugin.ActivationAlways),
 		builder.WithFxOption[deps](
 			fx.Provide(
 				fx.Annotate(

@@ -1,14 +1,15 @@
 package plugin
 
 import (
+	config_registry "github.com/bitmagnet-io/bitmagnet/internal/config/registry"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/app"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/cmd"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"go.uber.org/fx"
 )
 
-type FXOptionProvider interface {
-	FXOption() fx.Option
+type ParamProvider interface {
+	Params() []config_registry.Param
 }
 
 type Command func(app.Builder) cmd.Command
@@ -17,48 +18,60 @@ type CommandProvider interface {
 	Commands() []Command
 }
 
+type FXOptionProvider interface {
+	FXOption() fx.Option
+}
+
 type Plugin interface {
 	Ref() ref.Ref
-	EnabledByDefault() bool
+	ActivationRef() ref.Nullable
 	Dependencies() []ref.Ref
-	FXOptionProvider
+	ParamProvider
 	CommandProvider
+	FXOptionProvider
 }
 
 func NewPlugin(
 	ref ref.Ref,
-	enabledByDefault bool,
+	activation ref.Nullable,
 	dependencies []ref.Ref,
-	fxOption fx.Option,
+	configParams []config_registry.Param,
 	cliCommands []Command,
+	fxOption fx.Option,
 ) Plugin {
 	return &plugin{
-		ref:              ref,
-		enabledByDefault: enabledByDefault,
-		dependencies:     dependencies,
-		fxOption:         fxOption,
-		cliCcommands:     cliCommands,
+		ref:          ref,
+		activation:   activation,
+		dependencies: dependencies,
+		params:       configParams,
+		cliCcommands: cliCommands,
+		fxOption:     fxOption,
 	}
 }
 
 type plugin struct {
-	ref              ref.Ref
-	enabledByDefault bool
-	dependencies     []ref.Ref
-	fxOption         fx.Option
-	cliCcommands     []Command
+	ref          ref.Ref
+	activation   ref.Nullable
+	dependencies []ref.Ref
+	params       []config_registry.Param
+	cliCcommands []Command
+	fxOption     fx.Option
 }
 
 func (p *plugin) Ref() ref.Ref {
 	return p.ref
 }
 
-func (p *plugin) EnabledByDefault() bool {
-	return p.enabledByDefault
+func (p *plugin) ActivationRef() ref.Nullable {
+	return p.activation
 }
 
 func (p *plugin) Dependencies() []ref.Ref {
 	return p.dependencies
+}
+
+func (p *plugin) Params() []config_registry.Param {
+	return p.params
 }
 
 func (p *plugin) FXOption() fx.Option {

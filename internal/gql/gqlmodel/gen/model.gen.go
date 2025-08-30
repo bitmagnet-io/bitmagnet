@@ -9,21 +9,25 @@ import (
 	"time"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/queuemetrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
 )
 
 type ConfigParam struct {
-	Ref     string  `json:"ref"`
-	Doc     *string `json:"doc,omitempty"`
-	Value   string  `json:"value"`
-	Source  string  `json:"source"`
-	Default string  `json:"default"`
-	Dynamic bool    `json:"dynamic"`
-	Pending bool    `json:"pending"`
+	Ref         ref.Ref                `json:"ref"`
+	Plugin      ref.Ref                `json:"plugin"`
+	Description *string                `json:"description,omitempty"`
+	Value       json_schema.JSONValue  `json:"value"`
+	Source      string                 `json:"source"`
+	Default     json_schema.JSONValue  `json:"default"`
+	Dynamic     bool                   `json:"dynamic"`
+	Pending     bool                   `json:"pending"`
+	JSONSchema  json_schema.JSONSchema `json:"jsonSchema"`
 }
 
 type ContentTypeAgg struct {
@@ -54,7 +58,7 @@ type GenreFacetInput struct {
 type HealthCheck struct {
 	Key       string       `json:"key"`
 	Status    HealthStatus `json:"status"`
-	Timestamp time.Time    `json:"timestamp"`
+	Timestamp *time.Time   `json:"timestamp,omitempty"`
 	Error     *string      `json:"error,omitempty"`
 }
 
@@ -76,6 +80,14 @@ type LanguageFacetInput struct {
 }
 
 type Mutation struct {
+}
+
+type PluginInfo struct {
+	Ref         ref.Ref   `json:"ref"`
+	Description *string   `json:"description,omitempty"`
+	Enabled     bool      `json:"enabled"`
+	DependsOn   []ref.Ref `json:"dependsOn"`
+	RequiredBy  []ref.Ref `json:"requiredBy"`
 }
 
 type Query struct {
@@ -268,11 +280,11 @@ type VideoSourceFacetInput struct {
 }
 
 type Worker struct {
-	Key        string       `json:"key"`
+	Ref        ref.Ref      `json:"ref"`
 	State      worker.State `json:"state"`
 	Error      *string      `json:"error,omitempty"`
-	RequiredBy []string     `json:"requiredBy"`
-	DependsOn  []string     `json:"dependsOn"`
+	RequiredBy []ref.Ref    `json:"requiredBy"`
+	DependsOn  []ref.Ref    `json:"dependsOn"`
 }
 
 type WorkerListAllQueryResult struct {

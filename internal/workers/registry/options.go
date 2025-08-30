@@ -1,18 +1,20 @@
 package registry
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
 )
 
 type Option func(*Registry)
 
-func WithWorker(name string, run runner.Provider, options ...worker.Option) Option {
+func WithWorker(ref ref.Ref, run runner.Provider, options ...worker.Option) Option {
 	return func(r *Registry) {
-		r.workers[name] = worker.NewWorker(
+		r.workers.Set(ref, worker.NewWorker(
+			ref,
 			run,
-			append(options, worker.WithLogger(r.logger.Named(name)))...,
-		)
+			append(options, worker.WithLogger(r.logger.Named(ref.String())))...,
+		))
 	}
 }
 

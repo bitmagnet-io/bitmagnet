@@ -66,6 +66,18 @@ func (p *Param) ValueYAML() yaml.Node {
 	return node
 }
 
+func (p *Param) ValueYAMLAny() any {
+	p.mtx.RLock()
+	defer p.mtx.RUnlock()
+
+	value, err := p.EncodeYAMLAnyAny(p.value)
+	if err != nil {
+		panic(err)
+	}
+
+	return value
+}
+
 func (p *Param) Prev() (*Param, bool) {
 	p.mtx.RLock()
 	defer p.mtx.RUnlock()
@@ -98,14 +110,22 @@ func (p *Param) Last() *Param {
 	}
 }
 
-func (p *Param) Save(value any) {
+// todo: error checking needed here?
+func (p *Param) Save(value any) error {
 	p.mtx.Lock()
 	defer p.mtx.Unlock()
 
 	chainCopy := p.chain
 
 	if reflected, ok := atomic.ReflectValue(reflect.ValueOf(p.value)); ok {
-		reflected.SetAny(value)
+		// if valueReflected, ok := atomic.ReflectValue(reflect.ValueOf(value)); ok {
+		// 	value = valueReflected.GetAny()
+		// }
+
+		err := reflected.SetAny(value)
+		if err != nil {
+			return err
+		}
 
 		if p.chain.source != config.SourceDynamic {
 			p.chain = &chain{
@@ -125,16 +145,24 @@ func (p *Param) Save(value any) {
 		p.value = value
 		p.pending = true
 	}
+
+	return nil
 }
 
-func (p *Param) Delete() {
+func (p *Param) Delete() error {
 	p.mtx.Lock()
 	defer p.mtx.Unlock()
 
 	if reflected, ok := atomic.ReflectValue(reflect.ValueOf(p.value)); ok {
-		if p.source == config.SourceDynamic {
-			reflected.SetAny(p.initialValue)
-			p.chain = p.chain.prev
+		if p.source == config.SourceDynamic || p.source == config.SourcePersisted {
+			prev := p.chain.prev
+
+			err := reflected.SetAny(prev.initialValue)
+			if err != nil {
+				return err
+			}
+
+			p.chain = prev
 		}
 	} else {
 		if p.source == config.SourcePending || p.source == config.SourcePersisted {
@@ -142,6 +170,8 @@ func (p *Param) Delete() {
 			p.chain = p.chain.prev
 		}
 	}
+
+	return nil
 }
 
 func (p *Param) IsPending() bool {

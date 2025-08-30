@@ -1,8 +1,7 @@
 package persister
 
 import (
-	"time"
-
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/blocker"
 	"github.com/bitmagnet-io/bitmagnet/internal/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
@@ -10,8 +9,8 @@ import (
 )
 
 func New(
-	maxSize MaxSize,
-	maxWait MaxWait,
+	maxSize *atomic.Value[MaxSize],
+	maxWait *atomic.Value[MaxWait],
 	daoProvider database.DaoTransactionProvider,
 	blockerBlocker blocker.Blocker,
 	logger *zap.Logger,
@@ -27,8 +26,8 @@ func New(
 			metrics,
 		),
 		shutdown: make(chan struct{}),
-		maxSize:  int(maxSize),
-		maxWait:  time.Duration(maxWait),
+		maxSize:  maxSize,
+		maxWait:  maxWait,
 		logger:   logger,
 	}
 }

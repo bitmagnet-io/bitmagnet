@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/themes/theme-emitter.component.scss"],
+  "sourcesContent": [":host {\n  display: none;\n}\n\n.theme-emitter-color.background {\n  color: var(--mat-app-background-color);\n}\n\n.theme-emitter-color.foreground {\n  color: var(--mat-app-text-color);\n}\n"],
+  "mappings": ";AAAA;AACE,WAAA;;AAGF,CAAA,mBAAA,CAAA;AACE,SAAA,IAAA;;AAGF,CAJA,mBAIA,CAAA;AACE,SAAA,IAAA;;",
+  "names": []
+}

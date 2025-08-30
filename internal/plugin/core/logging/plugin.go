@@ -3,6 +3,7 @@ package logging
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/logging/level"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/config"
@@ -18,13 +19,14 @@ type deps struct {
 var (
 	Ref = core.Ref.MustSub("logging")
 
-	Plugin = builder.CreatePlugin(
+	Plugin = builder.NewPlugin(
 		Ref,
-		builder.WithEnabledByDefault[deps](),
+		builder.WithDescription[deps]("Provides logging services"),
+		builder.WithActivation[deps](plugin.ActivationAlways),
 		builder.WithDependencies[deps](
 			config.Ref,
 		),
-		builder.WithConfigParam[deps](Ref.MustSub("level"), level.Param),
+		builder.WithConfig[deps](Ref.MustSub("level"), level.Param),
 		builder.WithFxOption[deps](
 			fx.Provide(
 				fx.Annotate(

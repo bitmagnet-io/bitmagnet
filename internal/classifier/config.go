@@ -13,26 +13,35 @@ type (
 
 var (
 	ParamWorkflow = param.MustNew(
-		param.WithDefault(Workflow("default")),
+		param.Description[Workflow]("The default classifier workflow"),
+		param.Default(Workflow("default")),
 	)
 
 	ParamKeywords = param.MustNew(
-		param.WithMapstructure[Keywords](),
+		param.Description[Keywords]("A map of category names to keywords associated with different types of torrents"),
+		param.Mapstructure[Keywords](),
 	)
 
 	ParamExtensions = param.MustNew(
-		param.WithMapstructure[Extensions](),
+		param.Description[Extensions]("A map of file types to file extensions associated with them"),
+		param.Mapstructure[Extensions](),
 	)
 
 	ParamFlags = param.MustNew(
-		param.WithMapstructure[FlagValues](),
+		param.Description[FlagValues]("A map of flag keys to flag values for configuring classifier workflows"),
+		param.Mapstructure[FlagValues](),
 	)
 
-	ParamDeleteXXX = param.MustNew[DeleteXXX]()
+	ParamDeleteXXX = param.MustNew(
+		param.Description[DeleteXXX]("A boolean flag indicating that XXX content should be deleted by the classifier"),
+		param.Bool[DeleteXXX](),
+	)
 
 	ParamConcurrency = param.MustNew(
-		param.WithDefault(Concurrency(100)),
-		param.WithGreaterThan(Concurrency(0)),
+		param.Description[Concurrency]("Maximum number of classifications to run in parallel"),
+		param.Int[Concurrency](),
+		param.Default(Concurrency(100)),
+		param.GreaterThan(Concurrency(0)),
 	)
 )
 

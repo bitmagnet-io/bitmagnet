@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/httpserver/ginzap"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/http_server"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/logging"
@@ -20,14 +21,16 @@ type deps struct {
 var (
 	Ref = http_server.Ref.MustSub("logging")
 
-	Plugin = builder.CreatePlugin(
+	Plugin = builder.NewPlugin(
 		Ref,
-		builder.WithEnabledByDefault[deps](),
+		builder.WithDescription[deps]("Provides logging for the HTTP server"),
+		builder.WithActivation[deps](plugin.ActivationAlways),
 		builder.WithDependencies[deps](
 			logging.Ref,
 		),
 		builder.WithGinOption(
 			Ref,
+			0,
 			func(deps deps) gin.OptionFunc {
 				return func(engine *gin.Engine) {
 					engine.Use(ginzap.Ginzap(deps.Logger, time.RFC3339, true))

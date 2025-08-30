@@ -22,6 +22,9 @@ func addAdapter(name AdapterName, adapter Adapter) {
 }
 
 func AdapterNames() []AdapterName {
+	adaptersMu.Lock()
+	defer adaptersMu.Unlock()
+
 	names := slices.Collect(maps.Keys(adapters))
 
 	slices.Sort(names)

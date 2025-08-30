@@ -7,30 +7,32 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/config"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/lookup"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/registry"
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"gopkg.in/yaml.v3"
 )
 
 type Resolver struct {
-	registry registry.Registry
-	lookup   lookup.Lookup
+	lookup lookup.Lookup
+	params []registry.Param
 }
 
-func New(registry registry.Registry, lookup lookup.Lookup) Resolver {
+func New(lookup lookup.Lookup, params ...registry.Param) Resolver {
 	return Resolver{
-		registry: registry,
-		lookup:   lookup,
+		lookup: lookup,
+		params: params,
 	}
 }
 
 func (r Resolver) Resolve() (Resolved, error) {
-	params := make(map[string]*Param)
-	for _, param := range r.registry.All() {
+	params := ref.NewMap[*Param]()
+
+	for _, param := range r.params {
 		resolved, err := r.resolve(param)
 		if err != nil {
 			return Resolved{}, err
 		}
 
-		params[param.Ref.String()] = resolved
+		params.Set(param.Ref, resolved)
 	}
 
 	return Resolved{params: params}, nil

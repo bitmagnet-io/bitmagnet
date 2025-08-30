@@ -8,9 +8,9 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/blocker"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/database"
-	"github.com/bitmagnet-io/bitmagnet/internal/indexer"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/persister"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/client"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
@@ -30,7 +30,7 @@ func New(
 	metainfoRequester metainforequester.Requester,
 	banningChecker banning.Checker,
 	daoProvider database.DaoTransactionProvider,
-	queueJobProvider queue.JobProvider[indexer.MessageParams],
+	queueJobProvider queue.JobProvider[processor.MessageParams],
 	classifier classifier.Runner,
 	persisterAdder persister.Adder,
 	blockerBlocker blocker.Blocker,

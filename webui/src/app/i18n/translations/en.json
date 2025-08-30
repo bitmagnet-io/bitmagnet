@@ -222,6 +222,7 @@
   },
   "routes": {
     "admin": "Admin",
+    "config": "Config",
     "dashboard": "Dashboard",
     "home": "Home",
     "jobs": "Jobs",

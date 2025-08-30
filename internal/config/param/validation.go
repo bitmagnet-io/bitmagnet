@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
+	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 )
 
@@ -15,8 +17,8 @@ type Validator[T any] interface {
 }
 
 func Validate[T any](validators ...Validator[T]) Option[T] {
-	return func(v *param[T]) error {
-		v.validators = append(v.validators, validators...)
+	return func(p *param[T]) error {
+		p.validators = append(p.validators, validators...)
 
 		return nil
 	}
@@ -51,40 +53,83 @@ func (v Validators[T]) Validate(val T) error {
 	return nil
 }
 
-type lengthable[K comparable, V any] interface {
-	~[]V | ~string | ~map[K]V
-}
-
-type minLengthValidator[K comparable, V any, T lengthable[K, V]] struct {
+type minLengthValidator[T ~string] struct {
 	min int
 }
 
-func (v minLengthValidator[K, V, T]) Doc() string {
+func (v minLengthValidator[T]) Doc() string {
 	return fmt.Sprintf("must have minimum length %d", v.min)
 }
 
-func (v minLengthValidator[K, V, T]) Evaluate(val T) bool {
+func (v minLengthValidator[T]) Evaluate(val T) bool {
 	return len(val) >= v.min
 }
 
-type maxLengthValidator[K comparable, V any, T lengthable[K, V]] struct {
+func MinLength[T ~string](min int) Option[T] {
+	return Options(
+		JSONSchemaOption[T](
+			json_schema.MinLength(min),
+			json_schema.Required(true),
+		),
+		Validate(minLengthValidator[T]{min: min}),
+	)
+}
+
+type maxLengthValidator[T ~string] struct {
 	max int
 }
 
-func (v maxLengthValidator[K, V, T]) Doc() string {
+func (v maxLengthValidator[T]) Doc() string {
 	return fmt.Sprintf("must have maximum length %d", v.max)
 }
 
-func (v maxLengthValidator[K, V, T]) Evaluate(val T) bool {
+func (v maxLengthValidator[T]) Evaluate(val T) bool {
 	return len(val) <= v.max
 }
 
-func MinLength[K comparable, V any, T lengthable[K, V]](min int) Option[T] {
-	return Validate(minLengthValidator[K, V, T]{min: min})
+func MaxLength[T ~string](max int) Option[T] {
+	return Options(
+		JSONSchemaOption[T](json_schema.MaxLength(max)),
+		Validate(maxLengthValidator[T]{max: max}),
+	)
 }
 
-func MaxLength[K comparable, V any, T lengthable[K, V]](max int) Option[T] {
-	return Validate(maxLengthValidator[K, V, T]{max: max})
+type validatorMinItems[E any, T ~[]E] struct {
+	min int
+}
+
+func (v validatorMinItems[E, T]) Doc() string {
+	return fmt.Sprintf("must have minimum items %d", v.min)
+}
+
+func (v validatorMinItems[E, T]) Evaluate(val T) bool {
+	return len(val) >= v.min
+}
+
+func MinItems[E any, T ~[]E](min int) Option[T] {
+	return Options(
+		JSONSchemaOption[T](json_schema.MinItems(min)),
+		Validate(validatorMinItems[E, T]{min: min}),
+	)
+}
+
+type validatorMaxItems[E any, T ~[]E] struct {
+	max int
+}
+
+func (v validatorMaxItems[E, T]) Doc() string {
+	return fmt.Sprintf("must have maximum items %d", v.max)
+}
+
+func (v validatorMaxItems[E, T]) Evaluate(val T) bool {
+	return len(val) <= v.max
+}
+
+func MaxItems[E any, T ~[]E](max int) Option[T] {
+	return Options(
+		JSONSchemaOption[T](json_schema.MaxItems(max)),
+		Validate(validatorMaxItems[E, T]{max: max}),
+	)
 }
 
 type validatorOneOf[T any] struct {
@@ -118,6 +163,120 @@ func (v validatorRegex[T]) Evaluate(val T) bool {
 	return v.MatchString(string(val))
 }
 
-func WithValidatorRegex[T ~string](regex *regexp.Regexp) Option[T] {
-	return Validate(validatorRegex[T]{Regexp: regex})
+func Regex[T ~string](regex *regexp.Regexp) Option[T] {
+	return Options(
+		JSONSchemaOption[T](json_schema.Pattern(regex)),
+		Validate(validatorRegex[T]{Regexp: regex}),
+	)
+}
+
+type validatorSlice[E any, T ~[]E] struct {
+	elementValidator Validator[E]
+}
+
+func (v validatorSlice[E, T]) Doc() string {
+	return "each element " + v.elementValidator.Doc()
+}
+
+func (v validatorSlice[E, T]) Evaluate(val T) bool {
+	return !slice.Some(val, func(item E) bool {
+		return !v.elementValidator.Evaluate(item)
+	})
+}
+
+type validatorDynamic[T any] struct {
+	elementValidator Validator[T]
+}
+
+func (v validatorDynamic[T]) Doc() string {
+	return "each element " + v.elementValidator.Doc()
+}
+
+func (v validatorDynamic[T]) Evaluate(val *atomic.Value[T]) bool {
+	return v.elementValidator.Evaluate(val.Get())
+}
+
+type validatorRequired[T comparable] struct{}
+
+func (v validatorRequired[T]) Doc() string {
+	return "required"
+}
+
+func (v validatorRequired[T]) Evaluate(val T) bool {
+	var zero T
+	return val != zero
+}
+
+func Required[T comparable]() Option[T] {
+	return Options(
+		JSONSchemaOption[T](json_schema.Required(true)),
+		Validate(validatorRequired[T]{}),
+	)
+}
+
+type validatorGreaterThan[T number] struct {
+	value T
+}
+
+func (v validatorGreaterThan[T]) Doc() string {
+	return fmt.Sprintf("must be greater than %v", v.value)
+}
+
+func (v validatorGreaterThan[T]) Evaluate(val T) bool {
+	return val > v.value
+}
+
+func GreaterThan[T number](min T) Option[T] {
+	return Options(
+		JSONSchemaOption[T](json_schema.ExclusiveMinimum(float64(min))),
+		Validate(validatorGreaterThan[T]{value: min}),
+	)
+}
+
+type validatorLessThan[T number] struct {
+	value T
+}
+
+func (v validatorLessThan[T]) Doc() string {
+	return fmt.Sprintf("must be less than %v", v.value)
+}
+
+func (v validatorLessThan[T]) Evaluate(val T) bool {
+	return val < v.value
+}
+
+func LessThan[T number](max T) Option[T] {
+	return Validate(validatorLessThan[T]{value: max})
+}
+
+type validatorMin[T number] struct {
+	value T
+}
+
+func (v validatorMin[T]) Doc() string {
+	return fmt.Sprintf("must be at least %v", v.value)
+}
+
+func (v validatorMin[T]) Evaluate(val T) bool {
+	return val >= v.value
+}
+
+func Min[T number](min T) Option[T] {
+	return Validate(validatorMin[T]{value: min})
+}
+
+type validatorMax[T number] struct {
+	value T
+}
+
+func (v validatorMax[T]) Doc() string {
+	return fmt.Sprintf("must be at most %v", v.value)
+}
+
+func (v validatorMax[T]) Evaluate(val T) bool {
+	return val <= v.value
+}
+
+func Max[T number](max T) Option[T] {
+	return Validate(validatorMax[T]{value: max})
 }

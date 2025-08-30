@@ -1,0 +1,15 @@
+#import "./JSONSchema"
+
+fragment ConfigParam on ConfigParam {
+  ref
+  plugin
+  description
+  value
+  source
+  default
+  dynamic
+  pending
+  jsonSchema {
+    ...JSONSchema
+  }
+}

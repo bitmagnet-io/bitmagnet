@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	plugin_metrics "github.com/bitmagnet-io/bitmagnet/internal/plugin/core/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/telemetry/httpserver"
@@ -22,9 +23,10 @@ type deps struct {
 var (
 	Ref = plugin_metrics.Ref.MustSub("prometheus")
 
-	Plugin = builder.CreatePlugin(
+	Plugin = builder.NewPlugin(
 		Ref,
-		builder.WithEnabledByDefault[deps](),
+		builder.WithDescription[deps]("Provides a Prometheus metrics endpoint at /metrics"),
+		builder.WithActivation[deps](plugin.ActivationEnabled),
 		builder.WithFxOption[deps](
 			fx.Provide(
 				fx.Annotate(
@@ -63,6 +65,7 @@ var (
 		),
 		builder.WithGinOption(
 			Ref.MustSub("pprof"),
+			0,
 			func(deps) gin.OptionFunc {
 				return httpserver.NewPProf()
 			},
@@ -70,6 +73,7 @@ var (
 		// todo: Move this
 		builder.WithGinOption(
 			Ref,
+			0,
 			func(deps deps) gin.OptionFunc {
 				return httpserver.NewPrometheus(deps.Registry)
 			},

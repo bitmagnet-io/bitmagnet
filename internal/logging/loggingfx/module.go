@@ -3,6 +3,7 @@ package loggingfx
 import (
 	"context"
 	"errors"
+
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
 	"go.uber.org/zap"

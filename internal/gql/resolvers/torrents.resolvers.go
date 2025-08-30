@@ -8,11 +8,13 @@ import (
 	"context"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
-	"github.com/bitmagnet-io/bitmagnet/internal/indexer"
+	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/persister"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
@@ -61,9 +63,9 @@ func (r *torrentMutationResolver) DeleteTags(ctx context.Context, obj *gqlmodel.
 
 // Reprocess is the resolver for the reprocess field.
 func (r *torrentMutationResolver) Reprocess(ctx context.Context, obj *gqlmodel.TorrentMutation, input gen.TorrentReprocessInput) (*string, error) {
-	params := indexer.MessageParams{
+	params := processor.MessageParams{
 		InfoHashes: input.InfoHashes,
-		ClassifierParams: indexer.ClassifierParams{
+		ClassifierParams: processor.ClassifierParams{
 			ClassifierFlags: make(classifier.Flags),
 		},
 	}
@@ -72,7 +74,7 @@ func (r *torrentMutationResolver) Reprocess(ctx context.Context, obj *gqlmodel.T
 	}
 
 	if r, ok := input.ClassifierRematch.ValueOK(); ok && *r {
-		params.ClassifyMode = indexer.ClassifyModeRematch
+		params.ClassifyMode = processor.ClassifyModeRematch
 	}
 
 	if apisDisabled, ok := input.ApisDisabled.ValueOK(); ok {
@@ -86,7 +88,18 @@ func (r *torrentMutationResolver) Reprocess(ctx context.Context, obj *gqlmodel.T
 	return nil, r.Indexer.NewJob(params).Run(ctx)
 }
 
+// Files is the resolver for the files field.
+func (r *torrentQueryResolver) Files(ctx context.Context, obj *gqlmodel.TorrentQuery, input gqlmodel.TorrentFilesQueryInput) (query.GenericResult[model.TorrentFile], error) {
+	return gqlmodel.TorrentQuery{
+		Search: r.Search,
+	}.Files(ctx, input)
+}
+
 // TorrentMutation returns gql.TorrentMutationResolver implementation.
 func (r *Resolver) TorrentMutation() gql.TorrentMutationResolver { return &torrentMutationResolver{r} }
 
+// TorrentQuery returns gql.TorrentQueryResolver implementation.
+func (r *Resolver) TorrentQuery() gql.TorrentQueryResolver { return &torrentQueryResolver{r} }
+
 type torrentMutationResolver struct{ *Resolver }
+type torrentQueryResolver struct{ *Resolver }

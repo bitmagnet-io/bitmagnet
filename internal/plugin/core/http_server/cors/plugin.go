@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/config"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/http_server"
@@ -25,17 +26,18 @@ type deps struct {
 var (
 	Ref = http_server.Ref.MustSub("cors")
 
-	Plugin = builder.CreatePlugin(
+	Plugin = builder.NewPlugin(
 		Ref,
-		builder.WithEnabledByDefault[deps](),
+		builder.WithDescription[deps]("Provides CORS middleware for the HTTP server"),
+		builder.WithActivation[deps](plugin.ActivationAlways),
 		builder.WithDependencies[deps](
 			config.Ref,
 			logging.Ref,
 		),
-		// builder.WithDefaultConfig[deps](NewDefaultConfig()),
-		builder.WithConfigParam[deps](Ref.MustSub("allowed_origins"), ParamAllowedOrigins),
+		builder.WithConfig[deps](Ref.MustSub("allowed_origins"), ParamAllowedOrigins),
 		builder.WithGinOption(
 			Ref,
+			0,
 			func(deps deps) gin.OptionFunc {
 				return func(engine *gin.Engine) {
 					engine.Use(gincors.New(cors.Options{

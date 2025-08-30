@@ -9,6 +9,8 @@ import (
 )
 
 type (
+	Autostart bool
+
 	BootstrapNodes []string
 
 	ReseedBootstrapNodesInterval time.Duration
@@ -21,27 +23,43 @@ type (
 )
 
 var (
+	ParamAutostart = param.MustNew(
+		param.Description[Autostart]("Start the DHT crawler automatically"),
+		param.Bool[Autostart](),
+		param.Default(Autostart(true)),
+	)
+
 	ParamBootstrapNodes = param.MustNew(
-		param.WithNewDefault(func() BootstrapNodes {
+		param.Description[BootstrapNodes]("A list of node addresses for bootstrapping the DHT crawler"),
+		param.Slice[string, BootstrapNodes](),
+		param.NewDefault(func() BootstrapNodes {
 			return bootstrap.DefaultBootstrapNodes
 		}),
-		param.MinLength[any, string, BootstrapNodes](1),
+		param.MinItems[string, BootstrapNodes](1),
 	)
 
 	ParamReseedBootstrapNodesInterval = param.MustNew(
-		param.WithDefault(ReseedBootstrapNodesInterval(time.Minute*10)),
-		param.WithMin(ReseedBootstrapNodesInterval(time.Minute)),
+		param.Description[ReseedBootstrapNodesInterval]("Interval between reseeding of the bootstrap nodes"),
+		param.Duration[ReseedBootstrapNodesInterval](true),
+		param.Default(ReseedBootstrapNodesInterval(time.Minute*10)),
 	)
 
 	ParamSaveFilesThreshold = param.MustNew(
-		param.WithDefault(SaveFilesThreshold(100)),
+		param.Description[SaveFilesThreshold]("The maximum limit for the number of files saved by the DHT crawler with each torrent"),
+		param.Int[SaveFilesThreshold](),
+		param.Default(SaveFilesThreshold(100)),
+		param.Min[SaveFilesThreshold](0),
 	)
 
-	ParamSavePieces = param.MustNew[SavePieces]()
+	ParamSavePieces = param.MustNew(
+		param.Description[SavePieces]("Save torrent pieces with each torrent (uses a lot of disk space)"),
+		param.Bool[SavePieces](),
+	)
 
 	ParamRescrapeThreshold = param.MustNew(
-		param.WithDefault(RescrapeThreshold(time.Hour*24*30)),
-		param.WithMin(RescrapeThreshold(time.Hour*24)),
+		param.Description[RescrapeThreshold]("The minimum interval before re-querying seeder and leecher numbers from the DHT"),
+		param.Default(RescrapeThreshold(time.Hour*24*30)),
+		param.Duration[RescrapeThreshold](true),
 	)
 )
 
@@ -49,25 +67,7 @@ type Config struct {
 	fx.In
 	BootstrapNodes               BootstrapNodes
 	ReseedBootstrapNodesInterval ReseedBootstrapNodesInterval
-	// SaveFilesThreshold specifies a maximum number of files in a torrent before file information is discarded.
-	// Some torrents contain thousands of files which can severely impact performance and uses a lot of disk space.
-	SaveFilesThreshold SaveFilesThreshold
-	// SavePieces when true, torrent pieces will be persisted to the database.
-	// The pieces take up quite a lot of space, and aren't currently very useful,
-	// but they may be used by future features.
-	SavePieces SavePieces
-	// RescrapeThreshold is the amount of time that must pass before a torrent is rescraped
-	// to count seeders and leechers.
-	RescrapeThreshold RescrapeThreshold
+	SaveFilesThreshold           SaveFilesThreshold
+	SavePieces                   SavePieces
+	RescrapeThreshold            RescrapeThreshold
 }
-
-// func NewDefaultConfig() Config {
-// 	return Config{
-// 		ScalingFactor:                10,
-// 		BootstrapNodes:               bootstrap.DefaultBootstrapNodes,
-// 		ReseedBootstrapNodesInterval: time.Minute * 10,
-// 		SaveFilesThreshold:           100,
-// 		SavePieces:                   false,
-// 		RescrapeThreshold:            time.Hour * 24 * 30,
-// 	}
-// }

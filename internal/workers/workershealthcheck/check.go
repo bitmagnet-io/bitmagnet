@@ -27,7 +27,7 @@ func (c *WorkersHealthCheck) Check() health.Check {
 			state := c.registry.WorkersState()
 
 			var errs []error
-			for _, st := range state {
+			for _, st := range state.Values() {
 				errs = append(errs, st.Err)
 			}
 

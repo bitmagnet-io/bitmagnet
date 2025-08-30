@@ -3,10 +3,12 @@ package registry
 import (
 	"errors"
 	"sync"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 )
 
 type StateProvider interface {
-	WorkersState() map[string]WorkerState
+	WorkersState() ref.Map[WorkerState]
 }
 
 var _ StateProvider = (*Registry)(nil)
@@ -28,7 +30,7 @@ type circuitBreaker struct {
 	registry *Registry
 }
 
-func (c *circuitBreaker) WorkersState() map[string]WorkerState {
+func (c *circuitBreaker) WorkersState() ref.Map[WorkerState] {
 	<-c.received
 	return c.registry.WorkersState()
 }

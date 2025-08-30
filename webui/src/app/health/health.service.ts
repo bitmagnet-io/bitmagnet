@@ -2,7 +2,6 @@ import { inject } from "@angular/core";
 import { Apollo } from "apollo-angular";
 import { BehaviorSubject, map } from "rxjs";
 import * as generated from "../graphql/generated";
-import {WorkerState} from "../graphql/generated";
 
 export type HealthStatus =
   | generated.HealthStatus

@@ -33,7 +33,7 @@ The following options are available:
 
 From within the admin dashboard of the web UI, the "Enqueue torrent processing batch" dialog allows you to re-queue torrents and apply the latest classifier updates to their content records.
 
-![Enqueue torrent processing batch](/assets/images/webui-reprocess.png)
+![Enqueue torrent processing batch]({{ site.baseurl }}/assets/images/webui-reprocess.png)
 
 The following options are available:
 

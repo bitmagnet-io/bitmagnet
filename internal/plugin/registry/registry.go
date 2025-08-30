@@ -2,19 +2,25 @@ package registry
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/cmd"
+	config_resolver "github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 	"go.uber.org/fx"
 )
 
-type Registry struct {
-	pluginInfos []PluginInfo
-	commands    []plugin.Command
-	fxOption    fx.Option
-}
+type (
+	Registry struct {
+		config
+		pluginInfos []plugin.PluginInfo
+		commands    []plugin.Command
+		fxOption    fx.Option
+	}
 
-func (r *Registry) PluginInfos() []PluginInfo {
-	return append([]PluginInfo(nil), r.pluginInfos...)
+	config = config_resolver.Resolved
+)
+
+func (r *Registry) PluginInfos() []plugin.PluginInfo {
+	return append([]plugin.PluginInfo(nil), r.pluginInfos...)
 }
 
 func (r *Registry) Commands() []cmd.Command {

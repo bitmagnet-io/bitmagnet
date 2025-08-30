@@ -31,7 +31,7 @@ func (cmd *RootCommand) Setup(env env.Env) error {
 	}
 
 	registry, err := cmd.builder.Resolve(
-		registry.WithDefaultPlugins(),
+		env,
 		registry.WithEnabledPlugins(cmd.Plugins...),
 		registry.WithDisabledPlugins(cmd.DisabledPlugins...),
 	)

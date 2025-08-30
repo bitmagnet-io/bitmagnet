@@ -10,8 +10,8 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/internal/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
-	"github.com/bitmagnet-io/bitmagnet/internal/indexer"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
@@ -29,7 +29,7 @@ type Info struct {
 type importer struct {
 	// todo: Use persister
 	daoProvider      database.DaoTransactionProvider
-	queueJobProvider queue.JobProvider[indexer.MessageParams]
+	queueJobProvider queue.JobProvider[processor.MessageParams]
 	bufferSize       uint
 	maxWaitTime      time.Duration
 }
@@ -209,7 +209,7 @@ func (i *activeImport) persistItems(items ...Torrent) error {
 		}
 	}
 
-	job, jobErr := i.queueJobProvider(indexer.MessageParams{
+	job, jobErr := i.queueJobProvider(processor.MessageParams{
 		InfoHashes: infoHashes,
 	}, model.QueueJobPriority(20))
 	if jobErr != nil {

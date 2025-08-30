@@ -10,7 +10,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/responder"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/server"
-	"github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
 	"go.uber.org/fx"
 )
@@ -23,10 +23,11 @@ type deps struct {
 var (
 	Ref = dht.Ref.MustSub("server")
 
-	Plugin = builder.CreatePlugin(
+	Plugin = builder.NewPlugin(
 		Ref,
+		builder.WithDescription[deps]("Runs a DHT server node"),
 		builder.WithDependencies[deps](socket.Ref),
-		builder.WithConfigParam[deps](Ref.MustSub("query_timeout"), server.ParamQueryTimeout),
+		builder.WithConfig[deps](Ref.MustSub("query_timeout"), server.ParamQueryTimeout),
 		builder.WithFxOption[deps](fx.Provide(
 			fx.Annotate(
 				protocol.RandomNodeIDWithClientSuffix,
@@ -46,12 +47,10 @@ var (
 				return &atomic.Value[server.LastResponses]{}
 			},
 		)),
-		builder.WithWorkerRegistryOption[deps](func(deps deps) registry.Option {
-			return registry.WithWorker(
-				Ref.String(),
-				deps.Server,
-				worker.WithDependencies(socket.Ref.String()),
-			)
-		}),
+		builder.WithWorker(
+			func(deps deps) (runner.Provider, worker.Option) {
+				return deps.Server, worker.WithDependencies(socket.Ref)
+			},
+		),
 	)
 )

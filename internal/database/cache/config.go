@@ -7,21 +7,25 @@ import (
 )
 
 type (
-	TTL     time.Duration
-	MaxKeys int
+	TTL      time.Duration
+	MaxItems int
 )
 
 var (
 	ParamTTL = param.MustNew(
-		param.WithDynamic(
-			param.WithDefault(TTL(time.Minute)),
+		param.Dynamic(
+			param.Description[TTL]("TTL for the cache"),
+			param.Duration[TTL](true),
+			param.Default(TTL(time.Minute)),
 		),
 	)
 
-	ParamMaxKeys = param.MustNew(
-		param.WithDynamic(
-			param.WithDefault(MaxKeys(1000)),
-			param.WithGreaterThan(MaxKeys(0)),
+	ParamMaxItems = param.MustNew(
+		param.Dynamic(
+			param.Description[MaxItems]("Maximum number of items to cache"),
+			param.Int[MaxItems](),
+			param.Default(MaxItems(1000)),
+			param.GreaterThan(MaxItems(0)),
 		),
 	)
 )

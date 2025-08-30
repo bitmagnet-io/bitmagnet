@@ -20,42 +20,52 @@ type (
 
 var (
 	ParamLevel = param.MustNew(
-		param.WithDynamic(
-			param.WithEnumValues(slice.Map(level.LevelValues(), func(lvl level.Level) Level {
+		param.Dynamic(
+			param.Description[Level]("The logging level"),
+			param.EnumValues(slice.Map(level.LevelValues(), func(lvl level.Level) Level {
 				return Level(lvl)
 			})...),
-			param.WithDefault(Level(level.LevelInfo)),
+			param.Default(Level(level.LevelInfo)),
 		),
 	)
 
 	ParamSubPath = param.MustNew(
-		param.WithDefault(SubPath("logs")),
-		param.WithRequired[SubPath](),
+		param.Description[SubPath]("Subpath within the data folder to write log files"),
+		param.Default(SubPath("logs")),
+		param.Required[SubPath](),
 	)
 
 	ParamBaseName = param.MustNew(
-		param.WithDefault(BaseName("bitmagnet")),
-		param.WithRequired[BaseName](),
+		param.Description[BaseName]("Base name for log files"),
+		param.Default(BaseName("bitmagnet")),
+		param.Required[BaseName](),
 	)
 
 	ParamMaxAge = param.MustNew(
-		param.WithDefault(MaxAge(time.Minute*60)),
-		param.WithGreaterThan(MaxAge(0)),
+		param.Description[MaxAge]("Maximum age of log files to retain"),
+		param.Duration[MaxAge](true),
+		param.Default(MaxAge(time.Minute*60)),
 	)
 
 	ParamMaxSize = param.MustNew(
-		param.WithDefault(MaxSize(100_000_000)),
-		param.WithGreaterThan(MaxSize(0)),
+		param.Description[MaxSize]("Maximum size of a log file before writing to a new file"),
+		param.Int[MaxSize](),
+		param.Default(MaxSize(100_000_000)),
+		param.GreaterThan(MaxSize(0)),
 	)
 
 	ParamMaxBackups = param.MustNew(
-		param.WithDefault(MaxBackups(5)),
-		param.WithMin(MaxBackups(0)),
+		param.Description[MaxBackups]("Maximum number of log files to retain before deleting"),
+		param.Int[MaxBackups](),
+		param.Default(MaxBackups(5)),
+		param.Min(MaxBackups(0)),
 	)
 
 	ParamBufferSize = param.MustNew(
-		param.WithDefault(BufferSize(1_000)),
-		param.WithGreaterThan(BufferSize(0)),
+		param.Description[BufferSize]("Maximum number of logs to keep in memory before writing"),
+		param.Int[BufferSize](),
+		param.Default(BufferSize(1_000)),
+		param.GreaterThan(BufferSize(0)),
 	)
 )
 

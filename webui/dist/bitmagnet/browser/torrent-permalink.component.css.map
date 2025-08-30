@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/torrents/torrent-permalink.component.scss"],
+  "sourcesContent": [".torrent-permalink {\n  max-width: 900px;\n  margin: 20px auto;\n  mat-card-title {\n    h2 {\n      margin: 0;\n      font-size: 24px;\n      word-break: break-word;\n      overflow-wrap: break-word;\n      padding-right: 80px;\n    }\n    .magnet-link {\n      position: absolute;\n      right: 20px;\n      top: 20px;\n    }\n  }\n  .mat-mdc-card-avatar {\n    font-size: 44px;\n    margin-top: -10px;\n    border-radius: 0;\n    overflow: visible;\n  }\n  mat-card-subtitle {\n    margin: 16px 0 14px -56px;\n    font-size: 6px;\n  }\n}\n"],
+  "mappings": ";AAAA,CAAA;AACE,aAAA;AACA,UAAA,KAAA;;AAEE,CAJJ,kBAII,eAAA;AACE,UAAA;AACA,aAAA;AACA,cAAA;AACA,iBAAA;AACA,iBAAA;;AAEF,CAXJ,kBAWI,eAAA,CAAA;AACE,YAAA;AACA,SAAA;AACA,OAAA;;AAGJ,CAjBF,kBAiBE,CAAA;AACE,aAAA;AACA,cAAA;AACA,iBAAA;AACA,YAAA;;AAEF,CAvBF,kBAuBE;AACE,UAAA,KAAA,EAAA,KAAA;AACA,aAAA;;",
+  "names": []
+}

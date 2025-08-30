@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/dashboard/queue/queue-dashboard.component.scss"],
+  "sourcesContent": ["mat-card-header {\n  flex-wrap: wrap;\n  h2 {\n    font-size: 18px;\n    margin: 0 60px 0 48px;\n    height: 48px;\n    line-height: 48px;\n    mat-icon {\n      position: relative;\n      top: 6px;\n      margin-right: 14px;\n      line-height: 1.25rem;\n    }\n  }\n  nav {\n    flex: 0 0 100%;\n    a {\n      margin-top: 2px;\n      mat-icon {\n        margin-right: 12px;\n      }\n    }\n  }\n}\n"],
+  "mappings": ";AAAA;AACE,aAAA;;AACA,gBAAA;AACE,aAAA;AACA,UAAA,EAAA,KAAA,EAAA;AACA,UAAA;AACA,eAAA;;AACA,gBAAA,GAAA;AACE,YAAA;AACA,OAAA;AACA,gBAAA;AACA,eAAA;;AAGJ,gBAAA;AACE,QAAA,EAAA,EAAA;;AACA,gBAAA,IAAA;AACE,cAAA;;AACA,gBAAA,IAAA,EAAA;AACE,gBAAA;;",
+  "names": []
+}

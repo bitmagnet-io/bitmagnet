@@ -4,9 +4,11 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/healthcheck"
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	plugin_database "github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database"
-	"github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -20,15 +22,16 @@ type deps struct {
 var (
 	Ref = plugin_database.Ref.MustSub("postgres")
 
-	Plugin = builder.CreatePlugin(
+	Plugin = builder.NewPlugin(
 		Ref,
-		builder.WithEnabledByDefault[deps](),
-		builder.WithConfigParam[deps](Ref.MustSub("dsn"), ParamDSN),
-		builder.WithConfigParam[deps](Ref.MustSub("host"), ParamHost),
-		builder.WithConfigParam[deps](Ref.MustSub("port"), ParamPort),
-		builder.WithConfigParam[deps](Ref.MustSub("user"), ParamUser),
-		builder.WithConfigParam[deps](Ref.MustSub("password"), ParamPassword),
-		builder.WithConfigParam[deps](Ref.MustSub("database"), ParamDatabase),
+		builder.WithDescription[deps]("Initiates and manages the Postgres database connection"),
+		builder.WithActivation[deps](plugin.ActivationAlways),
+		builder.WithConfig[deps](Ref.MustSub("dsn"), ParamDSN),
+		builder.WithConfig[deps](Ref.MustSub("host"), ParamHost),
+		builder.WithConfig[deps](Ref.MustSub("port"), ParamPort),
+		builder.WithConfig[deps](Ref.MustSub("user"), ParamUser),
+		builder.WithConfig[deps](Ref.MustSub("password"), ParamPassword),
+		builder.WithConfig[deps](Ref.MustSub("database"), ParamDatabase),
 		builder.WithFxOption[deps](
 			fx.Provide(
 				fx.Annotate(
@@ -61,12 +64,11 @@ var (
 				),
 			),
 		),
-		builder.WithWorkerRegistryOption(func(deps deps) registry.Option {
-			return registry.WithWorker(
-				Ref.String(),
-				deps.Provider,
-			)
-		}),
+		builder.WithWorker(
+			func(deps deps) (runner.Provider, worker.Option) {
+				return deps.Provider, nil
+			},
+		),
 		builder.WithHealthCheckerOption(func(deps deps) health.CheckerOption {
 			return healthcheck.New(Ref.String(), deps.Provider)
 		}),

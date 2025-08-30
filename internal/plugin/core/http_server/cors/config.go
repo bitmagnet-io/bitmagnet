@@ -7,7 +7,12 @@ type (
 )
 
 var ParamAllowedOrigins = param.MustNew(
-	param.WithNewDefault(func() AllowedOrigins {
+	param.Description[AllowedOrigins]("CORS allowed origins"),
+	param.Slice[string, AllowedOrigins](
+		param.MinLength[string](1),
+	),
+	param.MinItems[string, AllowedOrigins](1),
+	param.NewDefault(func() AllowedOrigins {
 		return AllowedOrigins{"*"}
 	}),
 )

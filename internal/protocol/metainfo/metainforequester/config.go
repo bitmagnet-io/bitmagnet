@@ -14,26 +14,27 @@ type (
 
 var (
 	ParamDialTimeout = param.MustNew(
-		param.WithDynamic(
-			param.WithDoc[DialTimeout]("dial timeout"),
-			param.WithDefault(DialTimeout(time.Second*2)),
-			param.WithGreaterThan(DialTimeout(0)),
+		param.Dynamic(
+			param.Description[DialTimeout]("Dial timeout"),
+			param.Duration[DialTimeout](true),
+			param.Default(DialTimeout(time.Second*2)),
 		),
 	)
 
 	ParamRequestTimeout = param.MustNew(
-		param.WithDynamic(
-			param.WithDoc[RequestTimeout]("request timeout"),
-			param.WithDefault(RequestTimeout(time.Second*6)),
-			param.WithGreaterThan(RequestTimeout(0)),
+		param.Dynamic(
+			param.Description[RequestTimeout]("Request timeout"),
+			param.Duration[RequestTimeout](true),
+			param.Default(RequestTimeout(time.Second*6)),
 		),
 	)
 
 	ParamMaxConcurrency = param.MustNew(
-		param.WithDynamic(
-			param.WithDoc[MaxConcurrency]("max concurrency"),
-			param.WithDefault(MaxConcurrency(1000)),
-			param.WithGreaterThan(MaxConcurrency(0)),
+		param.Dynamic(
+			param.Description[MaxConcurrency]("Maximum request concurrency"),
+			param.Int[MaxConcurrency](),
+			param.Default(MaxConcurrency(1000)),
+			param.GreaterThan(MaxConcurrency(0)),
 		),
 	)
 )

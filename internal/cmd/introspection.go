@@ -55,7 +55,9 @@ func introspect(cmd Command) (Spec, error) {
 		return spec, fmt.Errorf("%w: %w", ErrCompilation, ErrCmdNotEmbedded)
 	}
 
-	if spec.Name == "" {
+	if namer, ok := cmd.(interface{ Name() string }); ok {
+		spec.Name = namer.Name()
+	} else {
 		name := strcase.ToKebab(t.Name())
 		name = strings.TrimSuffix(name, "-cmd")
 		name = strings.TrimSuffix(name, "-command")

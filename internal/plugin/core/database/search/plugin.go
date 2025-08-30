@@ -2,6 +2,7 @@ package search
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database/postgres"
@@ -15,9 +16,10 @@ type deps struct {
 var (
 	Ref = database.Ref.MustSub("search")
 
-	Plugin = builder.CreatePlugin(
+	Plugin = builder.NewPlugin(
 		Ref,
-		builder.WithEnabledByDefault[deps](),
+		builder.WithDescription[deps]("Provides search functionality via the Postgres database"),
+		builder.WithActivation[deps](plugin.ActivationAlways),
 		builder.WithDependencies[deps](
 			postgres.Ref,
 		),

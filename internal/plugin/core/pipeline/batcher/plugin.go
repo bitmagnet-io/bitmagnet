@@ -4,14 +4,15 @@ import (
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/database"
-	"github.com/bitmagnet-io/bitmagnet/internal/indexer"
-	"github.com/bitmagnet-io/bitmagnet/internal/indexer/batch"
-	batch_queue "github.com/bitmagnet-io/bitmagnet/internal/indexer/batch/queue"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database/postgres"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/pipeline"
-	plugin_indexer "github.com/bitmagnet-io/bitmagnet/internal/plugin/core/pipeline/indexer"
+	plugin_indexer "github.com/bitmagnet-io/bitmagnet/internal/plugin/core/pipeline/processor"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor/batch"
+	batch_queue "github.com/bitmagnet-io/bitmagnet/internal/processor/batch/queue"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/handler"
 	"go.uber.org/fx"
@@ -20,15 +21,17 @@ import (
 type deps struct {
 	fx.In
 	DaoProvider        database.DaoProvider
-	ProcessJobProvider queue.JobProvider[indexer.MessageParams]
+	ProcessJobProvider queue.JobProvider[processor.MessageParams]
 	BatchJobProvider   queue.JobProvider[batch.MessageParams]
 }
 
 var (
 	Ref = pipeline.Ref.MustSub("batcher")
 
-	Plugin = builder.CreatePlugin(
+	Plugin = builder.NewPlugin(
 		Ref,
+		builder.WithDescription[deps]("Provides a queue worker for batch torrent processing jobs"),
+		builder.WithActivation[deps](plugin.ActivationAlways),
 		builder.WithDependencies[deps](
 			postgres.Ref,
 			plugin_indexer.Ref,

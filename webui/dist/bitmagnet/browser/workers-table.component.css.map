@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/workers/workers-table.component.scss"],
+  "sourcesContent": [".table-workers {\n  width: 100%;\n  th,\n  td {\n    padding-right: 20px;\n  }\n  th {\n    text-align: left;\n  }\n  thead th {\n    padding-bottom: 10px;\n  }\n}\n"],
+  "mappings": ";AAAA,CAAA;AACE,SAAA;;AACA,CAFF,cAEE;AAAA,CAFF,cAEE;AAEE,iBAAA;;AAEF,CANF,cAME;AACE,cAAA;;AAEF,CATF,cASE,MAAA;AACE,kBAAA;;",
+  "names": []
+}

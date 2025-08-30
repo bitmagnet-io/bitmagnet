@@ -1,0 +1,186 @@
+core.config:
+    description: description for plugin core.config
+    other: يوفر وظائف التكوين
+core.config.plugin_enabled:
+    description: description for plugin enabled param
+    other: ""
+core.database.gorm.cache:
+    description: description for plugin core.database.gorm.cache
+    other: يوفر تخزين مؤقت لنتائج استعلامات Postgres
+core.database.gorm.cache.max_items:
+    description: description for config core.database.gorm.cache.max_items
+    other: العدد الأقصى للعناصر المراد تخزينها مؤقتاً
+core.database.gorm.cache.ttl:
+    description: description for config core.database.gorm.cache.ttl
+    other: مدة البقاء للتخزين المؤقت
+core.database.info_hash_blocker:
+    description: description for plugin core.database.info_hash_blocker
+    other: يحافظ على مرشح بلوم مستقر لهاشات المعلومات التي تم حذفها وحظرها، مما يمنع الزحف إليها مرة أخرى
+core.database.migrator:
+    description: description for plugin core.database.migrator
+    other: ""
+core.database.persister:
+    description: description for plugin core.database.persister
+    other: ""
+core.database.persister.max_size:
+    description: description for config core.database.persister.max_size
+    other: الحد الأقصى لحجم المخزن المؤقت
+core.database.persister.max_wait:
+    description: description for config core.database.persister.max_wait
+    other: الحد الأقصى لوقت تخزين العناصر مؤقتاً قبل التفريغ
+core.database.postgres:
+    description: description for plugin core.database.postgres
+    other: يبدأ ويدير اتصال قاعدة بيانات Postgres
+core.database.postgres.database:
+    description: description for config core.database.postgres.database
+    other: اسم قاعدة بيانات Postgres
+core.database.postgres.dsn:
+    description: description for config core.database.postgres.dsn
+    other: اسم مصدر البيانات Postgres (إذا تم تحديده، فسيتم تجاهل جميع الخيارات الأخرى لهذا البرنامج المساعد)
+core.database.postgres.host:
+    description: description for config core.database.postgres.host
+    other: مضيف Postgres
+core.database.postgres.password:
+    description: description for config core.database.postgres.password
+    other: كلمة مرور Postgres
+core.database.postgres.port:
+    description: description for config core.database.postgres.port
+    other: رقم منفذ Postgres
+core.database.postgres.user:
+    description: description for config core.database.postgres.user
+    other: اسم مستخدم Postgres
+core.database.search:
+    description: description for plugin core.database.search
+    other: يوفر وظائف البحث عبر قاعدة بيانات Postgres
+core.dht.crawler:
+    description: description for plugin core.dht.crawler
+    other: يزحف إلى DHT للحصول على التورنت
+core.dht.crawler.autostart:
+    description: description for config core.dht.crawler.autostart
+    other: بدء تشغيل العامل تلقائياً
+core.dht.crawler.bootstrap_nodes:
+    description: description for config core.dht.crawler.bootstrap_nodes
+    other: قائمة بعناوين العقد لبدء تشغيل زاحف DHT
+core.dht.crawler.rescrape_threshold:
+    description: description for config core.dht.crawler.rescrape_threshold
+    other: الحد الأدنى للفترة قبل إعادة الاستعلام عن أرقام المصادر والمُحملين من DHT
+core.dht.crawler.reseed_bootstrap_nodes_interval:
+    description: description for config core.dht.crawler.reseed_bootstrap_nodes_interval
+    other: الفترة بين إعادة تشغيل عقد البداية
+core.dht.crawler.save_files_threshold:
+    description: description for config core.dht.crawler.save_files_threshold
+    other: الحد الأقصى لعدد الملفات المحفوظة بواسطة زاحف DHT مع كل تورنت
+core.dht.crawler.save_pieces:
+    description: description for config core.dht.crawler.save_pieces
+    other: حفظ قطع التورنت مع كل تورنت (يستخدم مساحة قرص كبيرة)
+core.dht.server:
+    description: description for plugin core.dht.server
+    other: يشغل عقدة خادم DHT
+core.dht.server.query_timeout:
+    description: description for config core.dht.server.query_timeout
+    other: مهلة الاستعلام
+core.dht.socket:
+    description: description for plugin core.dht.socket
+    other: يشغل مقبس UDP لخادم DHT
+core.dht.socket.adapter:
+    description: description for config core.dht.socket.adapter
+    other: اسم محول المقبس
+core.dht.socket.port:
+    description: description for config core.dht.socket.port
+    other: رقم منفذ المقبس
+core.health:
+    description: description for plugin core.health
+    other: يوفر وظائف فحص الصحة
+core.http_server:
+    description: description for plugin core.http_server
+    other: يشغل خادم HTTP
+core.http_server.cors:
+    description: description for plugin core.http_server.cors
+    other: يوفر برمجية وسطية CORS لخادم HTTP
+core.http_server.cors.allowed_origins:
+    description: description for config core.http_server.cors.allowed_origins
+    other: الأصول المسموحة لـ CORS
+core.http_server.docs:
+    description: description for plugin core.http_server.docs
+    other: يشغل مثيل موقع الوثائق في نقطة النهاية /docs
+core.http_server.graphql:
+    description: description for plugin core.http_server.graphql
+    other: يشغل خادم GraphQL API
+core.http_server.local_address:
+    description: description for config core.http_server.local_address
+    other: العنوان المحلي للاستماع عليه
+core.http_server.logging:
+    description: description for plugin core.http_server.logging
+    other: يوفر التسجيل لخادم HTTP
+core.http_server.recovery:
+    description: description for plugin core.http_server.recovery
+    other: يسمح لخادم HTTP بالتعافي من الأخطاء الفادحة
+core.http_server.webui:
+    description: description for plugin core.http_server.webui
+    other: يشغل واجهة المستخدم الويب في نقطة النهاية /webui
+core.i18n:
+    description: description for plugin core.i18n
+    other: يوفر الترجمات لخدمات الخلفية
+core.importer:
+    description: description for plugin core.importer
+    other: يشغل مرفق استيراد في نقطة النهاية /import
+core.logging:
+    description: description for plugin core.logging
+    other: يوفر خدمات التسجيل
+core.logging.console:
+    description: description for plugin core.logging.console
+    other: يخرج السجلات بتنسيق وحدة التحكم
+core.logging.level:
+    description: description for config core.logging.level
+    other: مستوى التسجيل
+core.meta_info:
+    description: description for plugin core.meta_info
+    other: يوفر خدمات تحميل معلومات التورنت الوصفية من الأقران
+core.meta_info.dial_timeout:
+    description: description for config core.meta_info.dial_timeout
+    other: مهلة الاتصال
+core.meta_info.max_concurrency:
+    description: description for config core.meta_info.max_concurrency
+    other: الحد الأقصى لتزامن الطلبات
+core.meta_info.request_timeout:
+    description: description for config core.meta_info.request_timeout
+    other: مهلة الطلب
+core.metrics:
+    description: description for plugin core.metrics
+    other: يوفر المقاييس
+core.metrics.prometheus:
+    description: description for plugin core.metrics.prometheus
+    other: ""
+core.pipeline.classifier:
+    description: description for plugin core.pipeline.classifier
+    other: يوفر خدمة تصنيف التورنت
+core.pipeline.classifier.concurrency:
+    description: description for config core.pipeline.classifier.concurrency
+    other: العدد الأقصى للتصنيفات للتشغيل بالتوازي
+core.pipeline.classifier.delete_xxx:
+    description: description for config core.pipeline.classifier.delete_xxx
+    other: علامة منطقية تشير إلى أن محتوى XXX يجب حذفه بواسطة المصنف
+core.pipeline.classifier.extensions:
+    description: description for config core.pipeline.classifier.extensions
+    other: خريطة لأنواع الملفات إلى امتدادات الملفات المرتبطة بها
+core.pipeline.classifier.flags:
+    description: description for config core.pipeline.classifier.flags
+    other: خريطة لمفاتيح العلامات إلى قيم العلامات لتكوين تدفقات عمل المصنف
+core.pipeline.classifier.keywords:
+    description: description for config core.pipeline.classifier.keywords
+    other: خريطة لأسماء الفئات إلى الكلمات المفتاحية المرتبطة بأنواع مختلفة من التورنت
+core.pipeline.classifier.workflow:
+    description: description for config core.pipeline.classifier.workflow
+    other: تدفق عمل المصنف الافتراضي
+core.pipeline.processor:
+    description: description for plugin core.pipeline.processor
+    other: يوفر خدمة المعالج التي تصنف وتفهرس التورنت
+core.queue:
+    description: description for plugin core.queue
+    other: يشغل عامل مهام الطابور
+core.torznab:
+    description: description for plugin core.torznab
+    other: يشغل خادم Torznab API في نقطة النهاية /torznab
+core.worker:
+    description: description for plugin core.worker
+    other: يدير العمال

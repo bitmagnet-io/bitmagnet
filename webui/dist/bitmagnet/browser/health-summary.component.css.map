@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/health/health-summary.component.scss"],
+  "sourcesContent": [".table-health {\n  width: 100%;\n  th,\n  td {\n    padding-right: 20px;\n  }\n  th {\n    text-align: left;\n  }\n  thead th {\n    padding-bottom: 10px;\n  }\n}\n"],
+  "mappings": ";AAAA,CAAA;AACE,SAAA;;AACA,CAFF,aAEE;AAAA,CAFF,aAEE;AAEE,iBAAA;;AAEF,CANF,aAME;AACE,cAAA;;AAEF,CATF,aASE,MAAA;AACE,kBAAA;;",
+  "names": []
+}

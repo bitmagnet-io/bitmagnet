@@ -6,7 +6,8 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/socket"
-	"github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
 	"go.uber.org/fx"
 )
 
@@ -18,11 +19,11 @@ type deps struct {
 var (
 	Ref = dht.Ref.MustSub("socket")
 
-	Plugin = builder.CreatePlugin(
+	Plugin = builder.NewPlugin(
 		Ref,
-		// builder.WithDefaultConfig[deps](server.NewDefaultConfig()),
-		builder.WithConfigParam[deps](Ref.MustSub("adapter"), socket.ParamAdapter),
-		builder.WithConfigParam[deps](Ref.MustSub("port"), socket.ParamPort),
+		builder.WithDescription[deps]("Runs a UDP socket for the DHT server"),
+		builder.WithConfig[deps](Ref.MustSub("adapter"), socket.ParamAdapter()),
+		builder.WithConfig[deps](Ref.MustSub("port"), socket.ParamPort),
 		builder.WithFxOption[deps](fx.Provide(
 			func(adapterName socket.AdapterName) (socket.Adapter, error) {
 				return socket.GetAdapter(adapterName)
@@ -38,11 +39,10 @@ var (
 				fx.As(new(socket.Runner)),
 			),
 		)),
-		builder.WithWorkerRegistryOption(func(deps deps) registry.Option {
-			return registry.WithWorker(
-				Ref.String(),
-				deps.Socket,
-			)
-		}),
+		builder.WithWorker(
+			func(deps deps) (runner.Provider, worker.Option) {
+				return deps.Socket, nil
+			},
+		),
 	)
 )

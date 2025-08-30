@@ -1,57 +1,10 @@
 type Query {
   version: String!
   config: ConfigQuery!
+  plugin: PluginQuery!
   worker: WorkerQuery!
   health: HealthQuery!
   queue: QueueQuery!
   torrent: TorrentQuery!
   torrentContent: TorrentContentQuery!
-}
-
-type TorrentQuery {
-  files(input: TorrentFilesQueryInput!): TorrentFilesQueryResult!
-  listSources: TorrentListSourcesResult!
-  suggestTags(input: SuggestTagsQueryInput): TorrentSuggestTagsResult!
-  metrics(input: TorrentMetricsQueryInput!): TorrentMetricsQueryResult!
-}
-
-input SuggestTagsQueryInput {
-  prefix: String
-  exclusions: [String!]
-}
-
-type TorrentSuggestTagsResult {
-  suggestions: [SuggestedTag!]!
-}
-
-type TorrentListSourcesResult {
-  sources: [TorrentSource!]!
-}
-
-type SuggestedTag {
-  name: String!
-  count: Int!
-}
-
-type TorrentContentQuery {
-  search(input: TorrentContentSearchQueryInput!): TorrentContentSearchResult!
-}
-
-enum HealthStatus {
-  unknown
-  inactive
-  up
-  down
-}
-
-type HealthCheck {
-  key: String!
-  status: HealthStatus!
-  timestamp: DateTime!
-  error: String
-}
-
-type HealthQuery {
-  status: HealthStatus!
-  checks: [HealthCheck!]!
 }

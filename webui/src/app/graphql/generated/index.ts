@@ -21,8 +21,46 @@ export type Scalars = {
   DateTime: { input: string; output: string; }
   Duration: { input: string; output: string; }
   Hash20: { input: string; output: string; }
+  JSON: { input: unknown; output: unknown; }
+  Ref: { input: string; output: string; }
   Void: { input: void; output: void; }
   Year: { input: number; output: number; }
+};
+
+export type ConfigMutation = {
+  __typename?: 'ConfigMutation';
+  delete: ConfigParam;
+  save: ConfigParam;
+};
+
+
+export type ConfigMutationDeleteArgs = {
+  ref: Scalars['Ref']['input'];
+};
+
+
+export type ConfigMutationSaveArgs = {
+  ref: Scalars['Ref']['input'];
+  value: Scalars['JSON']['input'];
+};
+
+export type ConfigParam = {
+  __typename?: 'ConfigParam';
+  default: Scalars['JSON']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  dynamic: Scalars['Boolean']['output'];
+  jsonSchema: JsonSchema;
+  pending: Scalars['Boolean']['output'];
+  plugin: Scalars['Ref']['output'];
+  ref: Scalars['Ref']['output'];
+  source: Scalars['String']['output'];
+  value: Scalars['JSON']['output'];
+};
+
+export type ConfigQuery = {
+  __typename?: 'ConfigQuery';
+  params: Array<ConfigParam>;
+  pending: Scalars['Boolean']['output'];
 };
 
 export type Content = {
@@ -145,7 +183,7 @@ export type HealthCheck = {
   error?: Maybe<Scalars['String']['output']>;
   key: Scalars['String']['output'];
   status: HealthStatus;
-  timestamp: Scalars['DateTime']['output'];
+  timestamp?: Maybe<Scalars['DateTime']['output']>;
 };
 
 export type HealthQuery = {
@@ -159,6 +197,33 @@ export type HealthStatus =
   | 'inactive'
   | 'unknown'
   | 'up';
+
+export type JsonSchema = {
+  __typename?: 'JSONSchema';
+  default?: Maybe<Scalars['JSON']['output']>;
+  enum?: Maybe<Array<Scalars['JSON']['output']>>;
+  exclusiveMaximum?: Maybe<Scalars['Float']['output']>;
+  exclusiveMinimum?: Maybe<Scalars['Float']['output']>;
+  items?: Maybe<JsonSchema>;
+  maxItems?: Maybe<Scalars['Int']['output']>;
+  maxLength?: Maybe<Scalars['Int']['output']>;
+  maximum?: Maybe<Scalars['Float']['output']>;
+  minItems?: Maybe<Scalars['Int']['output']>;
+  minLength?: Maybe<Scalars['Int']['output']>;
+  minimum?: Maybe<Scalars['Float']['output']>;
+  multipleOf?: Maybe<Scalars['Float']['output']>;
+  pattern?: Maybe<Scalars['String']['output']>;
+  required?: Maybe<Scalars['Boolean']['output']>;
+  type: JsonSchemaType;
+  uniqueItems?: Maybe<Scalars['Boolean']['output']>;
+};
+
+export type JsonSchemaType =
+  | 'array'
+  | 'boolean'
+  | 'integer'
+  | 'number'
+  | 'string';
 
 export type Language =
   | 'af'
@@ -256,14 +321,31 @@ export type MetricsBucketDuration =
 
 export type Mutation = {
   __typename?: 'Mutation';
+  config: ConfigMutation;
   queue: QueueMutation;
   torrent: TorrentMutation;
   worker: WorkerMutation;
 };
 
+export type PluginInfo = {
+  __typename?: 'PluginInfo';
+  dependsOn: Array<Scalars['Ref']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  enabled: Scalars['Boolean']['output'];
+  ref: Scalars['Ref']['output'];
+  requiredBy: Array<Scalars['Ref']['output']>;
+};
+
+export type PluginQuery = {
+  __typename?: 'PluginQuery';
+  list: Array<PluginInfo>;
+};
+
 export type Query = {
   __typename?: 'Query';
+  config: ConfigQuery;
   health: HealthQuery;
+  plugin: PluginQuery;
   queue: QueueQuery;
   torrent: TorrentQuery;
   torrentContent: TorrentContentQuery;
@@ -849,10 +931,10 @@ export type VideoSourceFacetInput = {
 
 export type Worker = {
   __typename?: 'Worker';
-  dependsOn: Array<Scalars['String']['output']>;
+  dependsOn: Array<Scalars['Ref']['output']>;
   error?: Maybe<Scalars['String']['output']>;
-  key: Scalars['String']['output'];
-  requiredBy: Array<Scalars['String']['output']>;
+  ref: Scalars['Ref']['output'];
+  requiredBy: Array<Scalars['Ref']['output']>;
   state: WorkerState;
 };
 
@@ -870,17 +952,17 @@ export type WorkerMutation = {
 
 
 export type WorkerMutationRestartArgs = {
-  keys: Array<Scalars['String']['input']>;
+  refs: Array<Scalars['Ref']['input']>;
 };
 
 
 export type WorkerMutationShutdownArgs = {
-  keys: Array<Scalars['String']['input']>;
+  refs: Array<Scalars['Ref']['input']>;
 };
 
 
 export type WorkerMutationStartArgs = {
-  keys: Array<Scalars['String']['input']>;
+  refs: Array<Scalars['Ref']['input']>;
 };
 
 export type WorkerQuery = {
@@ -895,7 +977,15 @@ export type WorkerState =
   | 'shutdown'
   | 'startup';
 
+export type ConfigParamFragment = { __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null } };
+
 export type ContentFragment = { __typename?: 'Content', type: ContentType, source: string, id: string, title: string, releaseDate?: string | null, releaseYear?: number | null, overview?: string | null, runtime?: number | null, voteAverage?: number | null, voteCount?: number | null, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string }, originalLanguage?: { __typename?: 'LanguageInfo', id: string, name: string } | null, attributes: Array<{ __typename?: 'ContentAttribute', source: string, key: string, value: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, collections: Array<{ __typename?: 'ContentCollection', type: string, source: string, id: string, name: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, externalLinks: Array<{ __typename?: 'ExternalLink', url: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }> };
+
+export type JsonSchemaTopLevelFragment = { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null };
+
+export type JsonSchemaFragment = { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null };
+
+export type PluginInfoFragment = { __typename?: 'PluginInfo', ref: string, description?: string | null, enabled: boolean, dependsOn: Array<string>, requiredBy: Array<string> };
 
 export type QueueJobFragment = { __typename?: 'QueueJob', id: string, queue: string, status: QueueJobStatus, payload: string, priority: number, retries: number, maxRetries: number, runAfter: string, ranAt?: string | null, error?: string | null, createdAt: string };
 
@@ -911,7 +1001,22 @@ export type TorrentFileFragment = { __typename?: 'TorrentFile', infoHash: string
 
 export type TorrentFilesQueryResultFragment = { __typename?: 'TorrentFilesQueryResult', totalCount: number, hasNextPage?: boolean | null, items: Array<{ __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string }> };
 
-export type WorkerFragment = { __typename?: 'Worker', key: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> };
+export type WorkerFragment = { __typename?: 'Worker', ref: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> };
+
+export type ConfigDeleteMutationVariables = Exact<{
+  ref: Scalars['Ref']['input'];
+}>;
+
+
+export type ConfigDeleteMutation = { __typename?: 'Mutation', config: { __typename?: 'ConfigMutation', delete: { __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null } } } };
+
+export type ConfigSaveMutationVariables = Exact<{
+  ref: Scalars['Ref']['input'];
+  value: Scalars['JSON']['input'];
+}>;
+
+
+export type ConfigSaveMutation = { __typename?: 'Mutation', config: { __typename?: 'ConfigMutation', save: { __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null } } } };
 
 export type QueueEnqueueReprocessTorrentsBatchMutationVariables = Exact<{
   input: QueueEnqueueReprocessTorrentsBatchInput;
@@ -966,30 +1071,40 @@ export type TorrentSetTagsMutationVariables = Exact<{
 export type TorrentSetTagsMutation = { __typename?: 'Mutation', torrent: { __typename?: 'TorrentMutation', setTags?: void | null } };
 
 export type WorkersRestartMutationVariables = Exact<{
-  keys: Array<Scalars['String']['input']> | Scalars['String']['input'];
+  refs: Array<Scalars['Ref']['input']> | Scalars['Ref']['input'];
 }>;
 
 
-export type WorkersRestartMutation = { __typename?: 'Mutation', worker: { __typename?: 'WorkerMutation', restart: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', key: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
+export type WorkersRestartMutation = { __typename?: 'Mutation', worker: { __typename?: 'WorkerMutation', restart: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', ref: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
 
 export type WorkersShutdownMutationVariables = Exact<{
-  keys: Array<Scalars['String']['input']> | Scalars['String']['input'];
+  refs: Array<Scalars['Ref']['input']> | Scalars['Ref']['input'];
 }>;
 
 
-export type WorkersShutdownMutation = { __typename?: 'Mutation', worker: { __typename?: 'WorkerMutation', shutdown: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', key: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
+export type WorkersShutdownMutation = { __typename?: 'Mutation', worker: { __typename?: 'WorkerMutation', shutdown: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', ref: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
 
 export type WorkersStartMutationVariables = Exact<{
-  keys: Array<Scalars['String']['input']> | Scalars['String']['input'];
+  refs: Array<Scalars['Ref']['input']> | Scalars['Ref']['input'];
 }>;
 
 
-export type WorkersStartMutation = { __typename?: 'Mutation', worker: { __typename?: 'WorkerMutation', start: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', key: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
+export type WorkersStartMutation = { __typename?: 'Mutation', worker: { __typename?: 'WorkerMutation', start: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', ref: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
+
+export type ConfigParamsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ConfigParamsQuery = { __typename?: 'Query', config: { __typename?: 'ConfigQuery', pending: boolean, params: Array<{ __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null } }> } };
 
 export type HealthCheckQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type HealthCheckQuery = { __typename?: 'Query', health: { __typename?: 'HealthQuery', status: HealthStatus, checks: Array<{ __typename?: 'HealthCheck', key: string, status: HealthStatus, timestamp: string, error?: string | null }> } };
+export type HealthCheckQuery = { __typename?: 'Query', health: { __typename?: 'HealthQuery', status: HealthStatus, checks: Array<{ __typename?: 'HealthCheck', key: string, status: HealthStatus, timestamp?: string | null, error?: string | null }> } };
+
+export type PluginListQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type PluginListQuery = { __typename?: 'Query', plugin: { __typename?: 'PluginQuery', list: Array<{ __typename?: 'PluginInfo', ref: string, description?: string | null, enabled: boolean, dependsOn: Array<string>, requiredBy: Array<string> }> } };
 
 export type QueueJobsQueryVariables = Exact<{
   input: QueueJobsQueryInput;
@@ -1041,8 +1156,59 @@ export type VersionQuery = { __typename?: 'Query', version: string };
 export type WorkersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type WorkersQuery = { __typename?: 'Query', worker: { __typename?: 'WorkerQuery', listAll: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', key: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
+export type WorkersQuery = { __typename?: 'Query', worker: { __typename?: 'WorkerQuery', listAll: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', ref: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
 
+export const JsonSchemaTopLevelFragmentDoc = gql`
+    fragment JSONSchemaTopLevel on JSONSchema {
+  type
+  default
+  enum
+  pattern
+  required
+  multipleOf
+  maximum
+  exclusiveMaximum
+  minimum
+  exclusiveMinimum
+  maxLength
+  minLength
+  maxItems
+  minItems
+  uniqueItems
+}
+    `;
+export const JsonSchemaFragmentDoc = gql`
+    fragment JSONSchema on JSONSchema {
+  ...JSONSchemaTopLevel
+  items {
+    ...JSONSchemaTopLevel
+  }
+}
+    ${JsonSchemaTopLevelFragmentDoc}`;
+export const ConfigParamFragmentDoc = gql`
+    fragment ConfigParam on ConfigParam {
+  ref
+  plugin
+  description
+  value
+  source
+  default
+  dynamic
+  pending
+  jsonSchema {
+    ...JSONSchema
+  }
+}
+    ${JsonSchemaFragmentDoc}`;
+export const PluginInfoFragmentDoc = gql`
+    fragment PluginInfo on PluginInfo {
+  ref
+  description
+  enabled
+  dependsOn
+  requiredBy
+}
+    `;
 export const QueueJobFragmentDoc = gql`
     fragment QueueJob on QueueJob {
   id
@@ -1279,13 +1445,53 @@ export const TorrentFilesQueryResultFragmentDoc = gql`
     ${TorrentFileFragmentDoc}`;
 export const WorkerFragmentDoc = gql`
     fragment Worker on Worker {
-  key
+  ref
   state
   error
   requiredBy
   dependsOn
 }
     `;
+export const ConfigDeleteDocument = gql`
+    mutation ConfigDelete($ref: Ref!) {
+  config {
+    delete(ref: $ref) {
+      ...ConfigParam
+    }
+  }
+}
+    ${ConfigParamFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class ConfigDeleteGQL extends Apollo.Mutation<ConfigDeleteMutation, ConfigDeleteMutationVariables> {
+    override document = ConfigDeleteDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const ConfigSaveDocument = gql`
+    mutation ConfigSave($ref: Ref!, $value: JSON!) {
+  config {
+    save(ref: $ref, value: $value) {
+      ...ConfigParam
+    }
+  }
+}
+    ${ConfigParamFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class ConfigSaveGQL extends Apollo.Mutation<ConfigSaveMutation, ConfigSaveMutationVariables> {
+    override document = ConfigSaveDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const QueueEnqueueReprocessTorrentsBatchDocument = gql`
     mutation QueueEnqueueReprocessTorrentsBatch($input: QueueEnqueueReprocessTorrentsBatchInput!) {
   queue {
@@ -1413,9 +1619,9 @@ export const TorrentSetTagsDocument = gql`
     }
   }
 export const WorkersRestartDocument = gql`
-    mutation WorkersRestart($keys: [String!]!) {
+    mutation WorkersRestart($refs: [Ref!]!) {
   worker {
-    restart(keys: $keys) {
+    restart(refs: $refs) {
       workers {
         ...Worker
       }
@@ -1435,9 +1641,9 @@ export const WorkersRestartDocument = gql`
     }
   }
 export const WorkersShutdownDocument = gql`
-    mutation WorkersShutdown($keys: [String!]!) {
+    mutation WorkersShutdown($refs: [Ref!]!) {
   worker {
-    shutdown(keys: $keys) {
+    shutdown(refs: $refs) {
       workers {
         ...Worker
       }
@@ -1457,9 +1663,9 @@ export const WorkersShutdownDocument = gql`
     }
   }
 export const WorkersStartDocument = gql`
-    mutation WorkersStart($keys: [String!]!) {
+    mutation WorkersStart($refs: [Ref!]!) {
   worker {
-    start(keys: $keys) {
+    start(refs: $refs) {
       workers {
         ...Worker
       }
@@ -1473,6 +1679,27 @@ export const WorkersStartDocument = gql`
   })
   export class WorkersStartGQL extends Apollo.Mutation<WorkersStartMutation, WorkersStartMutationVariables> {
     override document = WorkersStartDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const ConfigParamsDocument = gql`
+    query ConfigParams {
+  config {
+    pending
+    params {
+      ...ConfigParam
+    }
+  }
+}
+    ${ConfigParamFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class ConfigParamsGQL extends Apollo.Query<ConfigParamsQuery, ConfigParamsQueryVariables> {
+    override document = ConfigParamsDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
@@ -1497,6 +1724,26 @@ export const HealthCheckDocument = gql`
   })
   export class HealthCheckGQL extends Apollo.Query<HealthCheckQuery, HealthCheckQueryVariables> {
     override document = HealthCheckDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const PluginListDocument = gql`
+    query PluginList {
+  plugin {
+    list {
+      ...PluginInfo
+    }
+  }
+}
+    ${PluginInfoFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class PluginListGQL extends Apollo.Query<PluginListQuery, PluginListQueryVariables> {
+    override document = PluginListDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

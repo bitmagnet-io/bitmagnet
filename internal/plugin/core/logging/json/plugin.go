@@ -3,6 +3,7 @@ package json
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/env"
 	"github.com/bitmagnet-io/bitmagnet/internal/logging/encoder"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/logging"
 	"go.uber.org/fx"
@@ -18,8 +19,10 @@ type deps struct {
 var (
 	Ref = logging.Ref.MustSub("json")
 
-	Plugin = builder.CreatePlugin(
+	Plugin = builder.NewPlugin(
 		Ref,
+		builder.WithDescription[deps]("Outputs logs in JSON format"),
+		builder.WithActivation[deps](plugin.ActivationDisabled),
 		builder.WithDependencies[deps](logging.Ref),
 		builder.WithZapCore(func(deps deps) zapcore.Core {
 			return zapcore.NewCore(

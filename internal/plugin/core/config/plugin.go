@@ -4,12 +4,12 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/config"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/lookup"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/manager"
-	"github.com/bitmagnet-io/bitmagnet/internal/config/registry"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
 	"github.com/bitmagnet-io/bitmagnet/internal/fs"
+	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/validation"
 	"github.com/spf13/afero"
 	"go.uber.org/fx"
 )
@@ -19,14 +19,13 @@ type deps struct {
 }
 
 var (
-	Ref = core.Ref.MustSub("config")
+	Ref           = core.Ref.MustSub("config")
+	RefActivation = Ref.MustSub("plugin_activation")
 
-	Plugin = builder.CreatePlugin(
+	Plugin = builder.NewPlugin(
 		Ref,
-		builder.WithEnabledByDefault[deps](),
-		builder.WithDependencies[deps](
-			validation.Ref,
-		),
+		builder.WithDescription[deps]("Provides configuration functionality"),
+		builder.WithActivation[deps](plugin.ActivationAlways),
 		builder.WithFxOption[deps](
 			fx.Provide(
 				lookup.NewFromEnv,
@@ -39,14 +38,17 @@ var (
 				fx.Private,
 			),
 			fx.Provide(
-				fx.Annotate(
-					registry.New,
-					fx.ParamTags(`group:"config_registry_options"`),
-				),
-				func(resolver resolver.Resolver) (resolver.Resolved, error) {
-					return resolver.Resolve()
-				},
 				manager.New,
+			),
+			fx.Supply(
+				fx.Annotate(
+					&i18n.Message{
+						ID:          RefActivation.String(),
+						Description: "description for plugin activation param",
+						Other:       "Activation",
+					},
+					fx.ResultTags(`group:"i18n_messages"`),
+				),
 			),
 		),
 		// builder.WithCliCommand[deps](

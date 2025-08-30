@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/health/health-card.component.scss"],
+  "sourcesContent": [".dashboard-card-health {\n  position: absolute;\n  top: 15px;\n  left: 15px;\n  right: 15px;\n  bottom: 15px;\n  h3 {\n    margin-top: 0;\n    mat-icon {\n      position: relative;\n      top: 3px;\n      margin-left: 4px;\n      margin-right: 6px;\n    }\n  }\n  mat-card mat-card-header {\n    margin-bottom: 16px;\n  }\n}\n"],
+  "mappings": ";AAAA,CAAA;AACE,YAAA;AACA,OAAA;AACA,QAAA;AACA,SAAA;AACA,UAAA;;AACA,CANF,sBAME;AACE,cAAA;;AACA,CARJ,sBAQI,GAAA;AACE,YAAA;AACA,OAAA;AACA,eAAA;AACA,gBAAA;;AAGJ,CAfF,sBAeE,SAAA;AACE,iBAAA;;",
+  "names": []
+}

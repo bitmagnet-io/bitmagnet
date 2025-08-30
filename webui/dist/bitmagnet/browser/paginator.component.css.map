@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/paginator/paginator.component.scss"],
+  "sourcesContent": [".paginator {\n  > * {\n    display: inline-block;\n    vertical-align: middle;\n  }\n  p {\n    margin: 0 20px;\n  }\n  .field-items-per-page {\n    width: 140px;\n  }\n}\n"],
+  "mappings": ";AACE,CAAA,UAAA,EAAA;AACE,WAAA;AACA,kBAAA;;AAEF,CAJA,UAIA;AACE,UAAA,EAAA;;AAEF,CAPA,UAOA,CAAA;AACE,SAAA;;",
+  "names": []
+}

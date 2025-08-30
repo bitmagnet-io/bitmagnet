@@ -1,8 +1,8 @@
 #import "../fragments/Worker"
 
-mutation WorkersStart($keys: [String!]!) {
+mutation WorkersStart($refs: [Ref!]!) {
   worker {
-    start(keys: $keys) {
+    start(refs: $refs) {
       workers {
         ...Worker
       }

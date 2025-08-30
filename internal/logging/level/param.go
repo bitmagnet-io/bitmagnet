@@ -5,8 +5,9 @@ import (
 )
 
 var Param = param.MustNew(
-	param.WithDynamic(
-		param.WithEnumValues(LevelValues()...),
-		param.WithDefault(LevelInfo),
+	param.Dynamic(
+		param.Description[Level]("The logging level"),
+		param.EnumValues(LevelValues()...),
+		param.Default(LevelInfo),
 	),
 )

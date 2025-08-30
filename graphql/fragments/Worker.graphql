@@ -1,5 +1,5 @@
 fragment Worker on Worker {
-  key
+  ref
   state
   error
   requiredBy

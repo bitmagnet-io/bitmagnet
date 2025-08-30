@@ -3,6 +3,7 @@ package cache
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/cache"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/config"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database/gorm"
@@ -15,21 +16,22 @@ import (
 type deps struct {
 	fx.In
 	TTL     *atomic.Value[cache.TTL]
-	MaxKeys *atomic.Value[cache.MaxKeys]
+	MaxKeys *atomic.Value[cache.MaxItems]
 	Logger  *zap.Logger
 }
 
 var (
 	Ref = gorm.Ref.MustSub("cache")
 
-	Plugin = builder.CreatePlugin(
+	Plugin = builder.NewPlugin(
 		Ref,
-		builder.WithEnabledByDefault[deps](),
+		builder.WithDescription[deps]("Provides Postgres query result caching"),
+		builder.WithActivation[deps](plugin.ActivationEnabled),
 		builder.WithDependencies[deps](
 			config.Ref,
 		),
-		builder.WithConfigParam[deps](Ref.MustSub("ttl"), cache.ParamTTL),
-		builder.WithConfigParam[deps](Ref.MustSub("max_keys"), cache.ParamMaxKeys),
+		builder.WithConfig[deps](Ref.MustSub("ttl"), cache.ParamTTL),
+		builder.WithConfig[deps](Ref.MustSub("max_items"), cache.ParamMaxItems),
 		builder.WithFxOption[deps](fx.Provide(cache.New)),
 		builder.WithGormPlugin(
 			func(deps deps) libgorm.Plugin {

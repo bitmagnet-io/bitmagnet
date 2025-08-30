@@ -5,5 +5,6 @@ import "github.com/bitmagnet-io/bitmagnet/internal/config/param"
 type LocalAddress string
 
 var ParamLocalAddress = param.MustNew(
-	param.WithDefault(LocalAddress(":3333")),
+	param.Description[LocalAddress]("Local address on which to listen"),
+	param.Default(LocalAddress(":3333")),
 )

@@ -2,6 +2,7 @@ package torznab
 
 import (
 	internalsearch "github.com/bitmagnet-io/bitmagnet/internal/database/search"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/config"
@@ -22,9 +23,10 @@ type deps struct {
 var (
 	Ref = core.Ref.MustSub("torznab")
 
-	Plugin = builder.CreatePlugin(
+	Plugin = builder.NewPlugin(
 		Ref,
-		builder.WithEnabledByDefault[deps](),
+		builder.WithDescription[deps]("Runs the Torznab API server on the /torznab endpoint"),
+		builder.WithActivation[deps](plugin.ActivationEnabled),
 		builder.WithDependencies[deps](
 			config.Ref,
 			search.Ref,
@@ -39,6 +41,7 @@ var (
 		),
 		builder.WithGinOption(
 			Ref,
+			0,
 			func(deps deps) gin.OptionFunc {
 				return httpserver.Option(torznab.Config{}, deps.Client)
 			},

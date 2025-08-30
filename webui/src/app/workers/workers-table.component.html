@@ -14,13 +14,13 @@
       </tr>
       </thead>
       <tbody>
-        @for (worker of workers.result.workers; track worker.key) {
+        @for (worker of workers.result.workers; track worker.ref) {
           <tr>
             <td class="td-icon">
               <mat-icon>{{ worker.icon }}</mat-icon>
             </td>
             <th scope="row">
-              {{ t("workers.names." + worker.key) }}
+              {{ t("workers.names." + worker.ref) }}
             </th>
             <td>
               {{
@@ -34,8 +34,8 @@
                 @if (worker.state === "running") {
                   <button
                     mat-icon-button
-                    (click)="confirm('shutdown', worker.key)"
-                    [disabled]="worker.key == 'http_server' || worker.requiredBy.includes('http_server')"
+                    (click)="confirm('shutdown', worker.ref)"
+                    [disabled]="worker.ref == 'http_server' || worker.requiredBy.includes('http_server')"
                     [matTooltip]="t('workers.actions.shutdown')"
                   >
                     <mat-icon>stop</mat-icon>
@@ -43,7 +43,7 @@
                 } @else {
                   <button
                     mat-icon-button
-                    (click)="confirm('start', worker.key)"
+                    (click)="confirm('start', worker.ref)"
                     [disabled]="worker.state != 'idle'"
                     [matTooltip]="t('workers.actions.start')"
                   >
@@ -54,7 +54,7 @@
               <td>
                   <button
                     mat-icon-button
-                    (click)="confirm('restart', worker.key)"
+                    (click)="confirm('restart', worker.ref)"
                     [disabled]="worker.state != 'running'"
                     [matTooltip]="t('workers.actions.restart')"
                   >

@@ -1,0 +1,18 @@
+enum HealthStatus {
+  unknown
+  inactive
+  up
+  down
+}
+
+type HealthCheck {
+  key: String!
+  status: HealthStatus!
+  timestamp: DateTime
+  error: String
+}
+
+type HealthQuery {
+  status: HealthStatus!
+  checks: [HealthCheck!]!
+}

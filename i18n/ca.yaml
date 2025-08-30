@@ -1,0 +1,186 @@
+core.config:
+    description: description for plugin core.config
+    other: Proporciona funcionalitat de configuració
+core.config.plugin_enabled:
+    description: description for plugin enabled param
+    other: ""
+core.database.gorm.cache:
+    description: description for plugin core.database.gorm.cache
+    other: Proporciona caché de resultats de consultes de Postgres
+core.database.gorm.cache.max_items:
+    description: description for config core.database.gorm.cache.max_items
+    other: Nombre màxim d'elements per emmagatzemar a la memòria cau
+core.database.gorm.cache.ttl:
+    description: description for config core.database.gorm.cache.ttl
+    other: TTL per a la memòria cau
+core.database.info_hash_blocker:
+    description: description for plugin core.database.info_hash_blocker
+    other: Manté un filtre bloom estable de hashs d'informació que han estat eliminats i bloquejats, evitant que siguin rastrejats de nou
+core.database.migrator:
+    description: description for plugin core.database.migrator
+    other: ""
+core.database.persister:
+    description: description for plugin core.database.persister
+    other: ""
+core.database.persister.max_size:
+    description: description for config core.database.persister.max_size
+    other: Mida màxima de la memòria intermèdia
+core.database.persister.max_wait:
+    description: description for config core.database.persister.max_wait
+    other: Temps màxim per emmagatzemar elements a la memòria intermèdia abans de buidar
+core.database.postgres:
+    description: description for plugin core.database.postgres
+    other: Inicia i gestiona la connexió a la base de dades Postgres
+core.database.postgres.database:
+    description: description for config core.database.postgres.database
+    other: Nom de la base de dades Postgres
+core.database.postgres.dsn:
+    description: description for config core.database.postgres.dsn
+    other: Nom de font de dades Postgres (si s'especifica, s'ignoren totes les altres opcions per a aquest complement)
+core.database.postgres.host:
+    description: description for config core.database.postgres.host
+    other: Host Postgres
+core.database.postgres.password:
+    description: description for config core.database.postgres.password
+    other: Contrasenya Postgres
+core.database.postgres.port:
+    description: description for config core.database.postgres.port
+    other: Número de port Postgres
+core.database.postgres.user:
+    description: description for config core.database.postgres.user
+    other: Nom d'usuari Postgres
+core.database.search:
+    description: description for plugin core.database.search
+    other: Proporciona funcionalitat de cerca mitjançant la base de dades Postgres
+core.dht.crawler:
+    description: description for plugin core.dht.crawler
+    other: Rastreja la DHT per torrents
+core.dht.crawler.autostart:
+    description: description for config core.dht.crawler.autostart
+    other: Iniciar el treballador automàticament
+core.dht.crawler.bootstrap_nodes:
+    description: description for config core.dht.crawler.bootstrap_nodes
+    other: Una llista d'adreces de nodes per arrencar el rastrejador DHT
+core.dht.crawler.rescrape_threshold:
+    description: description for config core.dht.crawler.rescrape_threshold
+    other: L'interval mínim abans de tornar a consultar els números de sembradoras i sanguijuelas des del DHT
+core.dht.crawler.reseed_bootstrap_nodes_interval:
+    description: description for config core.dht.crawler.reseed_bootstrap_nodes_interval
+    other: Interval entre re-sembres dels nodes d'arrencada
+core.dht.crawler.save_files_threshold:
+    description: description for config core.dht.crawler.save_files_threshold
+    other: El límit màxim per al nombre d'arxius desats pel rastrejador DHT amb cada torrent
+core.dht.crawler.save_pieces:
+    description: description for config core.dht.crawler.save_pieces
+    other: Desar peces de torrent amb cada torrent (utilitza molt espai de disc)
+core.dht.server:
+    description: description for plugin core.dht.server
+    other: Executa un node servidor DHT
+core.dht.server.query_timeout:
+    description: description for config core.dht.server.query_timeout
+    other: Temps d'espera de consulta
+core.dht.socket:
+    description: description for plugin core.dht.socket
+    other: Executa un socket UDP per al servidor DHT
+core.dht.socket.adapter:
+    description: description for config core.dht.socket.adapter
+    other: Nom de l'adaptador de socket
+core.dht.socket.port:
+    description: description for config core.dht.socket.port
+    other: Número de port del socket
+core.health:
+    description: description for plugin core.health
+    other: Proporciona funcionalitat de verificació de salut
+core.http_server:
+    description: description for plugin core.http_server
+    other: Executa el servidor HTTP
+core.http_server.cors:
+    description: description for plugin core.http_server.cors
+    other: Proporciona middleware CORS per al servidor HTTP
+core.http_server.cors.allowed_origins:
+    description: description for config core.http_server.cors.allowed_origins
+    other: Orígens permesos CORS
+core.http_server.docs:
+    description: description for plugin core.http_server.docs
+    other: Executa una instància del lloc web de documentació a l'endpoint /docs
+core.http_server.graphql:
+    description: description for plugin core.http_server.graphql
+    other: Executa el servidor de l'API GraphQL
+core.http_server.local_address:
+    description: description for config core.http_server.local_address
+    other: Adreça local on escoltar
+core.http_server.logging:
+    description: description for plugin core.http_server.logging
+    other: Proporciona registre per al servidor HTTP
+core.http_server.recovery:
+    description: description for plugin core.http_server.recovery
+    other: Permet al servidor HTTP recuperar-se dels pànics
+core.http_server.webui:
+    description: description for plugin core.http_server.webui
+    other: Executa la interfície d'usuari web a l'endpoint /webui
+core.i18n:
+    description: description for plugin core.i18n
+    other: Proporciona traduccions per als serveis de backend
+core.importer:
+    description: description for plugin core.importer
+    other: Executa una facilitat d'importació a l'endpoint /import
+core.logging:
+    description: description for plugin core.logging
+    other: Proporciona serveis de registre
+core.logging.console:
+    description: description for plugin core.logging.console
+    other: Mostra registres amb format de consola
+core.logging.level:
+    description: description for config core.logging.level
+    other: El nivell de registre
+core.meta_info:
+    description: description for plugin core.meta_info
+    other: Proporciona serveis per descarregar meta informació de torrents dels peers
+core.meta_info.dial_timeout:
+    description: description for config core.meta_info.dial_timeout
+    other: Temps d'espera de marcatge
+core.meta_info.max_concurrency:
+    description: description for config core.meta_info.max_concurrency
+    other: Concurrència màxima de sol·licituds
+core.meta_info.request_timeout:
+    description: description for config core.meta_info.request_timeout
+    other: Temps d'espera de sol·licitud
+core.metrics:
+    description: description for plugin core.metrics
+    other: Proporciona mètriques
+core.metrics.prometheus:
+    description: description for plugin core.metrics.prometheus
+    other: ""
+core.pipeline.classifier:
+    description: description for plugin core.pipeline.classifier
+    other: Proporciona el servei classificador de torrents
+core.pipeline.classifier.concurrency:
+    description: description for config core.pipeline.classifier.concurrency
+    other: Nombre màxim de classificacions per executar en paral·lel
+core.pipeline.classifier.delete_xxx:
+    description: description for config core.pipeline.classifier.delete_xxx
+    other: Una bandera booleana que indica que el contingut XXX ha de ser eliminat pel classificador
+core.pipeline.classifier.extensions:
+    description: description for config core.pipeline.classifier.extensions
+    other: Un mapa de tipus d'arxiu a extensions d'arxiu associades amb ells
+core.pipeline.classifier.flags:
+    description: description for config core.pipeline.classifier.flags
+    other: Un mapa de claus de bandera a valors de bandera per configurar fluxos de treball del classificador
+core.pipeline.classifier.keywords:
+    description: description for config core.pipeline.classifier.keywords
+    other: Un mapa de noms de categoria a paraules clau associades amb diferents tipus de torrents
+core.pipeline.classifier.workflow:
+    description: description for config core.pipeline.classifier.workflow
+    other: El flux de treball del classificador per defecte
+core.pipeline.processor:
+    description: description for plugin core.pipeline.processor
+    other: Proporciona el servei processador que classifica i indexa torrents
+core.queue:
+    description: description for plugin core.queue
+    other: Executa el treballador de treballs de cua
+core.torznab:
+    description: description for plugin core.torznab
+    other: Executa el servidor de l'API Torznab a l'endpoint /torznab
+core.worker:
+    description: description for plugin core.worker
+    other: Gestiona treballadors

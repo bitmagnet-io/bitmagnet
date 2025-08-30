@@ -21,8 +21,26 @@ func yamlDecoder[T any](node yaml.Node) (T, error) {
 	return v, err
 }
 
-func yamlEncoderSlice[T any](elementEncoder func(T) (yaml.Node, error)) func([]T) (yaml.Node, error) {
-	return func(slice []T) (yaml.Node, error) {
+func yamlEncoderStringifier[T any](stringify func(T) string) func(v T) (yaml.Node, error) {
+	return func(v T) (yaml.Node, error) {
+		return yamlEncoder(stringify(v))
+	}
+}
+
+func yamlDecoderParser[T any](parse func(string) (T, error)) func(yaml.Node) (T, error) {
+	return func(node yaml.Node) (T, error) {
+		str, err := yamlDecoder[string](node)
+		if err != nil {
+			var zero T
+			return zero, err
+		}
+
+		return parse(str)
+	}
+}
+
+func yamlEncoderSlice[E any, T ~[]E](elementEncoder func(E) (yaml.Node, error)) func(T) (yaml.Node, error) {
+	return func(slice T) (yaml.Node, error) {
 		node := yaml.Node{
 			Kind: yaml.SequenceNode,
 		}
@@ -37,12 +55,12 @@ func yamlEncoderSlice[T any](elementEncoder func(T) (yaml.Node, error)) func([]T
 	}
 }
 
-func yamlDecoderSlice[T any](elementDecoder func(yaml.Node) (T, error)) func(yaml.Node) ([]T, error) {
-	return func(node yaml.Node) ([]T, error) {
+func yamlDecoderSlice[E any, T ~[]E](elementDecoder func(yaml.Node) (E, error)) func(yaml.Node) (T, error) {
+	return func(node yaml.Node) (T, error) {
 		if node.Kind != yaml.SequenceNode {
 			return nil, fmt.Errorf("expected sequence node, got %v", node.Kind)
 		}
-		var result []T
+		var result T
 		for _, item := range node.Content {
 			decodedItem, err := elementDecoder(*item)
 			if err != nil {

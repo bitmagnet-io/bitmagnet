@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
 	"go.uber.org/fx"
@@ -14,8 +15,10 @@ type deps struct {
 var (
 	Ref = core.Ref.MustSub("metrics")
 
-	Plugin = builder.CreatePlugin(
+	Plugin = builder.NewPlugin(
 		Ref,
+		builder.WithDescription[deps]("Provides metrics"),
+		builder.WithActivation[deps](plugin.ActivationAlways),
 		builder.WithFxOption[deps](
 			fx.Provide(
 				fx.Annotate(

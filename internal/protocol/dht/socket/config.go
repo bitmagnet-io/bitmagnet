@@ -5,22 +5,25 @@ import (
 )
 
 type (
-	Port        int
+	Port        uint16
 	AdapterName string
 )
 
 var (
 	ParamPort = param.MustNew(
-		param.WithDefault(Port(3334)),
-		param.WithMin(Port(0)),
-		param.WithMax(Port(65535)),
-	)
-
-	ParamAdapter = param.MustNew(
-		param.WithDefault(AdapterName("net")),
-		param.WithEnumValues(AdapterNames()...),
+		param.Description[Port]("Socket port number"),
+		param.PortNumber[Port](),
+		param.Default(Port(3334)),
 	)
 )
+
+func ParamAdapter() param.Param[AdapterName] {
+	return param.MustNew(
+		param.Description[AdapterName]("Socket adapter name"),
+		param.Default(AdapterName("net")),
+		param.EnumValues(AdapterNames()...),
+	)
+}
 
 // type Config struct {
 // 	Adapter   string

@@ -1,6 +1,8 @@
-scalar Hash20
 scalar Date
 scalar DateTime
 scalar Duration
+scalar Hash20
+scalar JSON
+scalar Ref
 scalar Void
 scalar Year

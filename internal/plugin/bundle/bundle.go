@@ -1,10 +1,7 @@
 package bundle
 
 import (
-	"cmp"
 	"fmt"
-	"maps"
-	"slices"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
@@ -17,7 +14,7 @@ type Bundle interface {
 
 type bundle struct {
 	ref     ref.Ref
-	plugins map[string]plugin.Plugin
+	plugins ref.Map[plugin.Plugin]
 }
 
 func (b *bundle) Ref() ref.Ref {
@@ -25,12 +22,7 @@ func (b *bundle) Ref() ref.Ref {
 }
 
 func (b *bundle) Plugins() []plugin.Plugin {
-	plugins := slices.Collect(maps.Values(b.plugins))
-	slices.SortFunc(plugins, func(a, b plugin.Plugin) int {
-		return cmp.Compare(a.Ref().String(), b.Ref().String())
-	})
-
-	return plugins
+	return b.plugins.Values()
 }
 
 var _ Bundle = (*bundle)(nil)
@@ -55,7 +47,7 @@ func New(
 		return nil, fmt.Errorf("%w: %w: %s", Err, ErrInvalidRef, bundleRef)
 	}
 
-	pluginsMap := make(map[string]plugin.Plugin)
+	pluginsMap := ref.NewMap[plugin.Plugin]()
 
 	var err error
 
@@ -67,11 +59,11 @@ func New(
 			break
 		}
 
-		if _, ok := pluginsMap[pluginRef.String()]; ok {
+		if pluginsMap.Has(pluginRef) {
 			err = fmt.Errorf("%w: %s", ErrAlreadyRegistered, pluginRef)
 		}
 
-		pluginsMap[pluginRef.String()] = plugin
+		pluginsMap.Set(pluginRef, plugin)
 	}
 
 	if err != nil {

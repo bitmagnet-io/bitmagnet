@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"net/http"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/http_server"
 	"github.com/bitmagnet-io/bitmagnet/internal/webui"
@@ -22,9 +23,10 @@ type FS fs.FS
 var (
 	Ref = http_server.Ref.MustSub("webui")
 
-	Plugin = builder.CreatePlugin(
+	Plugin = builder.NewPlugin(
 		Ref,
-		builder.WithEnabledByDefault[deps](),
+		builder.WithDescription[deps]("Runs the web user interface at the /webui endpoint"),
+		builder.WithActivation[deps](plugin.ActivationEnabled),
 		builder.WithFxOption[deps](
 			fx.Provide(
 				func() (FS, error) {
@@ -34,6 +36,7 @@ var (
 		),
 		builder.WithGinOption(
 			Ref,
+			0,
 			func(deps deps) gin.OptionFunc {
 				return func(e *gin.Engine) {
 					e.StaticFS("/webui", wrappedFs{http.FS(deps.FS)})

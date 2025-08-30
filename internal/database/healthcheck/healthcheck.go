@@ -32,5 +32,6 @@ func New(name string, p database.Provider) health.CheckerOption {
 
 				return nil
 			},
-		})
+		},
+	)
 }

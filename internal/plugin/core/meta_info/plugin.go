@@ -3,6 +3,7 @@ package meta_info
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/config"
@@ -20,15 +21,17 @@ type deps struct {
 var (
 	Ref = core.Ref.MustSub("meta_info")
 
-	Plugin = builder.CreatePlugin(
+	Plugin = builder.NewPlugin(
 		Ref,
+		builder.WithDescription[deps]("Provides services for downloading torrent meta info from peers"),
+		builder.WithActivation[deps](plugin.ActivationAlways),
 		builder.WithDependencies[deps](
 			config.Ref,
 			plugin_metrics.Ref,
 		),
-		builder.WithConfigParam[deps](Ref.MustSub("max_concurrency"), metainforequester.ParamMaxConcurrency),
-		builder.WithConfigParam[deps](Ref.MustSub("dial_timeout"), metainforequester.ParamDialTimeout),
-		builder.WithConfigParam[deps](Ref.MustSub("request_timeout"), metainforequester.ParamRequestTimeout),
+		builder.WithConfig[deps](Ref.MustSub("max_concurrency"), metainforequester.ParamMaxConcurrency),
+		builder.WithConfig[deps](Ref.MustSub("dial_timeout"), metainforequester.ParamDialTimeout),
+		builder.WithConfig[deps](Ref.MustSub("request_timeout"), metainforequester.ParamRequestTimeout),
 		builder.WithFxOption[deps](
 			fx.Provide(
 				func(

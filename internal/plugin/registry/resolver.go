@@ -8,6 +8,7 @@ import (
 	"maps"
 	"slices"
 
+	config_resolver "github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
@@ -19,7 +20,7 @@ import (
 
 type resolver struct {
 	*Builder
-	defaultPlugins  bool
+	config_resolver.Resolved
 	enabledPlugins  []ref.Ref
 	disabledPlugins []ref.Ref
 }
@@ -36,25 +37,42 @@ func (r *resolver) resolve() (*Registry, error) {
 		return cmp.Compare(a.String(), b.String())
 	})
 
-	enabledPlugins := slice.Map(resolvedNames, func(name ref.Ref) plugin.Plugin {
-		return r.plugins[name.String()]
-	})
+	requiredBy := make(map[string][]ref.Ref)
 
-	pluginInfos := PluginInfos(slice.Map(r.AllRefs(), func(ref ref.Ref) PluginInfo {
+	pluginInfos := plugin.PluginInfos(slice.Map(r.AllRefs(), func(ref ref.Ref) plugin.PluginInfo {
 		_, enabled := resolvedNamesMap[ref.String()]
 
-		return PluginInfo{
+		dependsOn := r.DependenciesOf(ref)
+
+		for _, dep := range dependsOn {
+			requiredBy[dep.String()] = append(requiredBy[dep.String()], ref)
+		}
+
+		return plugin.PluginInfo{
 			Ref:       ref,
 			Enabled:   enabled,
-			DependsOn: r.DependenciesOf(ref),
+			DependsOn: dependsOn,
 		}
 	}))
 
+	for i := range pluginInfos {
+		pluginInfos[i].RequiredBy = requiredBy[pluginInfos[i].Ref.String()]
+	}
+
 	return &Registry{
 		pluginInfos: pluginInfos,
+		config:      r.Resolved,
+		commands: slice.FlatMap(pluginInfos, func(info plugin.PluginInfo) []plugin.Command {
+			if !info.Enabled {
+				return nil
+			}
+
+			return r.plugins.Get(info.Ref).Commands()
+		}),
 		fxOption: fx.Options(
-			fx.Options(slice.Map(enabledPlugins, func(plugin plugin.Plugin) fx.Option {
-				return plugin.FXOption()
+			fx.Supply(r.Resolved),
+			fx.Options(slice.Map(resolvedNames, func(ref ref.Ref) fx.Option {
+				return r.plugins.Get(ref).FXOption()
 			})...),
 			fx.WithLogger(func(log *zap.Logger) fxevent.Logger {
 				l := &fxevent.ZapLogger{Logger: log.Named("fx")}
@@ -66,16 +84,13 @@ func (r *resolver) resolve() (*Registry, error) {
 				pluginInfos,
 			),
 		),
-		commands: slice.FlatMap(enabledPlugins, func(plugin plugin.Plugin) []plugin.Command {
-			return plugin.Commands()
-		}),
 	}, nil
 }
 
 func (r *resolver) resolveNames() (map[string]ref.Ref, error) {
-	for _, name := range r.disabledPlugins {
-		if _, ok := r.plugins[name.String()]; !ok {
-			return nil, fmt.Errorf("%w: %s", ErrUnknownPlugin, name.String())
+	for _, ref := range r.disabledPlugins {
+		if !r.plugins.Has(ref) {
+			return nil, fmt.Errorf("%w: %s", ErrUnknownPlugin, ref)
 		}
 	}
 
@@ -84,35 +99,49 @@ func (r *resolver) resolveNames() (map[string]ref.Ref, error) {
 
 	resultMap := make(map[string]ref.Ref)
 
-	var addPlugin func(name ref.Ref) error
-	addPlugin = func(name ref.Ref) error {
-		if _, ok := r.plugins[name.String()]; !ok {
-			return fmt.Errorf("%w: %s", ErrUnknownPlugin, name)
+	var addPlugin func(ref.Ref) error
+	addPlugin = func(ref ref.Ref) error {
+		if !r.plugins.Has(ref) {
+			return fmt.Errorf("%w: %s", ErrUnknownPlugin, ref)
 		}
 
-		if _, ok := disabledNamesMap[name.String()]; ok {
-			return fmt.Errorf("%w: %s", ErrDisabled, name)
+		if _, ok := disabledNamesMap[ref.String()]; ok {
+			return fmt.Errorf("%w: %s", ErrDisabled, ref)
 		}
 
-		if _, ok := resultMap[name.String()]; ok {
+		if _, ok := resultMap[ref.String()]; ok {
 			return nil
 		}
 
-		for _, dep := range r.DependenciesOf(name) {
+		for _, dep := range r.DependenciesOf(ref) {
 			if err := addPlugin(dep); err != nil {
-				return fmt.Errorf("%w: %s: %w", ErrDependency, name, err)
+				return fmt.Errorf("%w: %s: %w", ErrDependency, ref, err)
 			}
 		}
 
-		resultMap[name.String()] = name
+		resultMap[ref.String()] = ref
 
 		return nil
 	}
 
-	if r.defaultPlugins {
-		for _, plugin := range r.plugins {
-			if plugin.EnabledByDefault() {
-				_ = addPlugin(plugin.Ref())
+	for _, pl := range r.plugins.Values() {
+		enabled := false
+
+		if activationRef, ok := pl.ActivationRef().Value(); !ok {
+			enabled = true
+		} else {
+			if activationParam, ok := r.Param(activationRef); ok {
+				if activation, ok := activationParam.Value().(plugin.Activation); ok {
+					if activation == plugin.ActivationEnabled {
+						enabled = true
+					}
+				}
+			}
+		}
+
+		if enabled {
+			if err := addPlugin(pl.Ref()); err != nil {
+				return nil, err
 			}
 		}
 	}

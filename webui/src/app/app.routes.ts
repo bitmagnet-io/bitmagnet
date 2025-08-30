@@ -42,6 +42,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: "config",
+        loadComponent: () =>
+          import("./dashboard/config/dashboard-config.component").then(
+            (c) => c.DashboardConfigComponent,
+          ),
+      },
+      {
         path: "workers",
         loadComponent: () =>
           import("./dashboard/workers/dashboard-workers.component").then(

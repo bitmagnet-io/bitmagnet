@@ -8,18 +8,25 @@ import (
 
 type (
 	MaxSize int
-	MaxWait time.Duration
+	MaxWait int64
 )
 
 var (
 	ParamMaxSize = param.MustNew(
-		param.WithDefault(MaxSize(1000)),
-		param.WithGreaterThan(MaxSize(0)),
+		param.Dynamic(
+			param.Description[MaxSize]("Maximum buffer size"),
+			param.Int[MaxSize](),
+			param.Default(MaxSize(1000)),
+			param.GreaterThan(MaxSize(0)),
+		),
 	)
 
 	ParamMaxWait = param.MustNew(
-		param.WithDefault(MaxWait(time.Second*10)),
-		param.WithGreaterThan(MaxWait(0)),
+		param.Dynamic(
+			param.Description[MaxWait]("Maximum time to buffer items before flushing"),
+			param.Duration[MaxWait](true),
+			param.Default(MaxWait(time.Second*10)),
+		),
 	)
 )
 

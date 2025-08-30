@@ -14,7 +14,7 @@ redirect_from:
 
 **bitmagnet** can integrate with the [Grafana stack](https://grafana.com/) and [Prometheus](https://prometheus.io/) for monitoring and building observability dashboards for the DHT crawler and other components. See the "Optional observability services" section of the [example docker compose configuration](https://github.com/bitmagnet-io/bitmagnet/blob/main/docker-compose.yml) and [example Grafana / Prometheus configuration files and a provisioned Grafana dashboard](https://github.com/bitmagnet-io/bitmagnet/tree/main/observability).
 
-![Grafana dashboard](/assets/images/grafana-1.png)
+![Grafana dashboard]({{ site.baseurl }}/assets/images/grafana-1.png)
 
 The example integration includes:
 

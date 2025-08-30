@@ -12,8 +12,9 @@ type (
 
 var (
 	ParamQueryTimeout = param.MustNew(
-		param.WithDefault(QueryTimeout(time.Second*10)),
-		param.WithGreaterThan(QueryTimeout(0)),
+		param.Description[QueryTimeout]("Query timeout"),
+		param.Duration[QueryTimeout](true),
+		param.Default(QueryTimeout(time.Second*10)),
 	)
 )
 

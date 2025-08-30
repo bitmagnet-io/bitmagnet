@@ -3,6 +3,7 @@ package param_test
 import (
 	"testing"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/param"
 	"github.com/bitmagnet-io/bitmagnet/internal/logging/level"
 	"github.com/stretchr/testify/assert"
@@ -14,8 +15,8 @@ func TestLogLevel(t *testing.T) {
 	t.Parallel()
 
 	p, err := param.New(
-		param.WithEnumValues(level.LevelValues()...),
-		param.WithDefault(level.LevelInfo),
+		param.EnumValues(level.LevelValues()...),
+		param.Default(level.LevelInfo),
 	)
 
 	require.NoError(t, err)
@@ -50,8 +51,9 @@ func TestUint32(t *testing.T) {
 	t.Parallel()
 
 	p, err := param.New(
-		param.WithEnumValues(uint32(1), uint32(2), uint32(3)),
-		param.WithDefault(uint32(2)),
+		param.Int[uint32](),
+		param.EnumValues(uint32(1), uint32(2), uint32(3)),
+		param.Default(uint32(2)),
 	)
 
 	require.NoError(t, err)
@@ -73,20 +75,33 @@ func TestUint32(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, uint32(2), decoded)
 
+	decodedAny, err := p.DecodeYAMLAnyAny(2)
+	require.NoError(t, err)
+	assert.Equal(t, uint32(2), decodedAny)
+
 	require.NoError(t, p.Validate(uint32(2)))
 	require.ErrorIs(t, p.Validate(uint32(4)), param.ErrInvalid)
+
+	assert.Equal(t, json_schema.JSONSchema{
+		Type: json_schema.TypeInteger,
+		Enum: []json_schema.JSONValue{
+			{Value: 1},
+			{Value: 2},
+			{Value: 3},
+		},
+	}, p.JSONSchema())
 }
 
 func TestStringSlice(t *testing.T) {
 	t.Parallel()
 
 	p, err := param.New(
-		param.WithSlice(
-			param.WithStringLiteral[string](),
-			param.MaxLength[any, any, string](6),
+		param.Slice[string, []string](
+			param.StringLiteral[string](),
+			param.MaxLength[string](6),
 		),
-		param.MinLength[any, string, []string](2),
-		param.WithNewDefault(func() []string { return []string{"default1", "default2"} }),
+		param.MinItems[string, []string](2),
+		param.NewDefault(func() []string { return []string{"default1", "default2"} }),
 	)
 
 	require.NoError(t, err)
@@ -119,8 +134,8 @@ func TestStruct(t *testing.T) {
 	}
 
 	p, err := param.New(
-		param.WithMapstructure[TestStruct](),
-		param.WithNewDefault(func() TestStruct {
+		param.Mapstructure[TestStruct](),
+		param.NewDefault(func() TestStruct {
 			return TestStruct{
 				CamelCase: "test",
 				Bar:       2,

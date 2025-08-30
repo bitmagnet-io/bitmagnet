@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/dashboard/dashboard.component.scss"],
+  "sourcesContent": ["mat-drawer nav {\n  padding-top: 12px;\n  --mat-text-button-icon-spacing: 14px;\n  ul {\n    list-style-type: none;\n    padding-left: 0;\n    a {\n      width: 100%;\n      font-size: var(--mat-expansion-container-text-size);\n      justify-content: flex-start;\n      padding-left: 20px;\n    }\n    li {\n      margin-bottom: 6px;\n    }\n  }\n}\n\nmat-drawer-content {\n  .button-container-toggle-drawer {\n    position: absolute;\n    left: 20px;\n    top: 28px;\n    z-index: 100;\n  }\n}\n\n.drawer {\n  width: 220px;\n}\n"],
+  "mappings": ";AAAA,WAAA;AACE,eAAA;AACA,kCAAA;;AACA,WAAA,IAAA;AACE,mBAAA;AACA,gBAAA;;AACA,WAAA,IAAA,GAAA;AACE,SAAA;AACA,aAAA,IAAA;AACA,mBAAA;AACA,gBAAA;;AAEF,WAAA,IAAA,GAAA;AACE,iBAAA;;AAMJ,mBAAA,CAAA;AACE,YAAA;AACA,QAAA;AACA,OAAA;AACA,WAAA;;AAIJ,CAAA;AACE,SAAA;;",
+  "names": []
+}

@@ -30,6 +30,8 @@ const config: CodegenConfig = {
           DateTime: "string",
           Duration: "string",
           Hash20: "string",
+          JSON: "unknown",
+          Ref: "string",
           Void: "void",
           Year: "number",
         },

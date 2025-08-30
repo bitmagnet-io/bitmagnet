@@ -4,10 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"maps"
-	"slices"
 	"sync"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
@@ -15,14 +14,14 @@ import (
 )
 
 type Registry struct {
-	workers map[string]*worker.Worker
+	workers ref.Map[*worker.Worker]
 	logger  *zap.Logger
 }
 
 func NewRegistry(logger *zap.Logger, options ...Option) (*Registry, error) {
 	r := &Registry{
+		workers: ref.NewMap[*worker.Worker](),
 		logger:  logger,
-		workers: make(map[string]*worker.Worker),
 	}
 
 	for _, option := range options {
@@ -35,11 +34,11 @@ func NewRegistry(logger *zap.Logger, options ...Option) (*Registry, error) {
 func (r *Registry) validate() error {
 	var errs []error
 
-	for key := range r.workers {
-		for dep := range r.dependenciesForward(key) {
-			if dep == key {
-				errs = append(errs, fmt.Errorf("%w: %s", ErrCircularDependency, key))
-			} else if _, ok := r.workers[dep]; !ok {
+	for _, ref := range r.workers.Refs() {
+		for _, dep := range r.dependenciesForward(ref).Refs() {
+			if dep.Equals(ref) {
+				errs = append(errs, fmt.Errorf("%w: %s", ErrCircularDependency, ref))
+			} else if !r.workers.Has(dep) {
 				errs = append(errs, fmt.Errorf("%w: %s", ErrUnknownWorker, dep))
 			}
 		}
@@ -62,28 +61,26 @@ func (r *Registry) Runner() runner.Runner {
 	}
 }
 
-func (r *Registry) Workers() []string {
-	workers := slices.Collect(maps.Keys(r.workers))
-	slices.Sort(workers)
-
-	return workers
+func (r *Registry) Workers() []ref.Ref {
+	return r.workers.Refs()
 }
 
-func (r *Registry) WorkersState() map[string]WorkerState {
-	result := make(map[string]WorkerState, len(r.workers))
-	for k, v := range r.workers {
-		result[k] = WorkerState{
-			StateInfo:  v.State(),
-			DependsOn:  r.dependenciesForward(k),
-			RequiredBy: r.dependenciesBackward(k),
-			Autostart:  r.workers[k].Autostart(),
-		}
+func (r *Registry) WorkersState() ref.Map[WorkerState] {
+	result := ref.NewMap[WorkerState]()
+
+	for _, wrk := range r.workers.Values() {
+		result.Set(wrk.Ref(), WorkerState{
+			StateInfo:  wrk.State(),
+			DependsOn:  r.dependenciesForward(wrk.Ref()),
+			RequiredBy: r.dependenciesBackward(wrk.Ref()),
+			Autostart:  wrk.Autostart(),
+		})
 	}
 
 	return result
 }
 
-func (r *Registry) Start(ctx context.Context, workers ...string) error {
+func (r *Registry) Start(ctx context.Context, workers ...ref.Ref) error {
 	workerMap, err := r.workerMap(true, workers...)
 	if err != nil {
 		return fmt.Errorf("%w: %w", Err, err)
@@ -94,44 +91,44 @@ func (r *Registry) Start(ctx context.Context, workers ...string) error {
 		partialSuccess bool
 	)
 
-	workersDone := make(map[string]chan struct{}, len(workerMap))
-	for key := range workerMap {
-		workersDone[key] = make(chan struct{})
+	workersDone := ref.NewMap[chan struct{}]()
+	for _, ref := range workerMap.Refs() {
+		workersDone.Set(ref, make(chan struct{}))
 	}
 
-	workerErrs := make(map[string]error)
+	workerErrs := ref.NewMap[error]()
 
-	workerDone := func(key string, err error) {
+	workerDone := func(ref ref.Ref, err error) {
 		mtx.Lock()
 		defer mtx.Unlock()
 
 		if err != nil {
-			workerErrs[key] = fmt.Errorf("%s: %w", key, err)
+			workerErrs.Set(ref, fmt.Errorf("%s: %w", ref, err))
 		} else {
 			partialSuccess = true
 		}
 
-		close(workersDone[key])
+		close(workersDone.Get(ref))
 	}
 
-	waitForWorker := func(key string) error {
-		ch := workersDone[key]
+	waitForWorker := func(ref ref.Ref) error {
+		ch := workersDone.Get(ref)
 		select {
 		case <-ch:
 			mtx.RLock()
 			defer mtx.RUnlock()
 
-			return workerErrs[key]
+			return workerErrs.Get(ref)
 		case <-ctx.Done():
 			return ctx.Err()
 		}
 	}
 
-	for key, wrk := range workerMap {
-		go func(key string) {
+	for _, wrk := range workerMap.Values() {
+		go func(wrk *worker.Worker) {
 			var err error
 			defer func() {
-				workerDone(key, err)
+				workerDone(wrk.Ref(), err)
 			}()
 
 			for _, dep := range wrk.Dependencies() {
@@ -143,7 +140,7 @@ func (r *Registry) Start(ctx context.Context, workers ...string) error {
 			}
 
 			_, err = wrk.Start(ctx)
-		}(key)
+		}(wrk)
 	}
 
 	err = errors.Join(slice.Map(workers, waitForWorker)...)
@@ -160,43 +157,43 @@ func (r *Registry) Start(ctx context.Context, workers ...string) error {
 }
 
 func (r *Registry) Autostart(ctx context.Context) error {
-	return r.Start(ctx, slice.Filter(r.Workers(), func(key string) bool {
-		return r.workers[key].Autostart()
+	return r.Start(ctx, slice.Filter(r.workers.Refs(), func(ref ref.Ref) bool {
+		return r.workers.Get(ref).Autostart()
 	})...)
 }
 
-func (r *Registry) workerMap(forward bool, workers ...string) (map[string]*worker.Worker, error) {
-	result := make(map[string]*worker.Worker, len(workers))
+func (r *Registry) workerMap(forward bool, workers ...ref.Ref) (ref.Map[*worker.Worker], error) {
+	result := ref.NewMap[*worker.Worker]()
 
-	for _, key := range workers {
-		wrk, ok := r.workers[key]
+	for _, wRef := range workers {
+		wrk, ok := r.workers.GetOK(wRef)
 		if !ok {
-			return nil, fmt.Errorf("%w: %s", ErrUnknownWorker, key)
+			return result, fmt.Errorf("%w: %s", ErrUnknownWorker, wRef)
 		}
 
-		result[key] = wrk
+		result.Set(wRef, wrk)
 
-		var deps map[string]struct{}
+		deps := ref.NewSet()
 		if forward {
-			deps = r.dependenciesForward(key)
+			deps = r.dependenciesForward(wRef)
 		} else {
-			deps = r.dependenciesBackward(key)
+			deps = r.dependenciesBackward(wRef)
 		}
 
-		for depKey := range deps {
-			dep, ok := r.workers[depKey]
+		for _, ref := range deps.Refs() {
+			dep, ok := r.workers.GetOK(ref)
 			if !ok {
-				return nil, fmt.Errorf("%w: %s", ErrUnknownWorker, depKey)
+				return result, fmt.Errorf("%w: %s", ErrUnknownWorker, ref)
 			}
 
-			result[depKey] = dep
+			result.Set(ref, dep)
 		}
 	}
 
 	return result, nil
 }
 
-func (r *Registry) Shutdown(ctx context.Context, workers ...string) error {
+func (r *Registry) Shutdown(ctx context.Context, workers ...ref.Ref) error {
 	workerMap, err := r.workerMap(false, workers...)
 	if err != nil {
 		return fmt.Errorf("%w: %w", Err, err)
@@ -207,47 +204,47 @@ func (r *Registry) Shutdown(ctx context.Context, workers ...string) error {
 		partialSuccess bool
 	)
 
-	workersDone := make(map[string]chan struct{}, len(workerMap))
-	for key := range workerMap {
-		workersDone[key] = make(chan struct{})
+	workersDone := ref.NewMap[chan struct{}]()
+	for _, ref := range workerMap.Refs() {
+		workersDone.Set(ref, make(chan struct{}))
 	}
 
-	workerErrs := make(map[string]error)
+	workerErrs := ref.NewMap[error]()
 
-	workerDone := func(key string, err error) {
+	workerDone := func(ref ref.Ref, err error) {
 		mtx.Lock()
 		defer mtx.Unlock()
 
 		if err != nil {
-			workerErrs[key] = fmt.Errorf("%s: %w", key, err)
+			workerErrs.Set(ref, fmt.Errorf("%s: %w", ref, err))
 		} else {
 			partialSuccess = true
 		}
 
-		close(workersDone[key])
+		close(workersDone.Get(ref))
 	}
 
-	waitForWorker := func(key string) error {
-		ch := workersDone[key]
+	waitForWorker := func(ref ref.Ref) error {
+		ch := workersDone.Get(ref)
 		select {
 		case <-ch:
 			mtx.RLock()
 			defer mtx.RUnlock()
 
-			return workerErrs[key]
+			return workerErrs.Get(ref)
 		case <-ctx.Done():
 			return ctx.Err()
 		}
 	}
 
-	for key, wrk := range workerMap {
-		go func(key string) {
+	for _, wrk := range workerMap.Values() {
+		go func(wrk *worker.Worker) {
 			var errs []error
 			defer func() {
-				workerDone(key, errors.Join(errs...))
+				workerDone(wrk.Ref(), errors.Join(errs...))
 			}()
 
-			for dep := range r.dependenciesBackward(key) {
+			for _, dep := range r.dependenciesBackward(wrk.Ref()).Refs() {
 				err = waitForWorker(dep)
 				if err != nil {
 					errs = append(errs, fmt.Errorf("%w: %w", ErrDependency, err))
@@ -258,7 +255,7 @@ func (r *Registry) Shutdown(ctx context.Context, workers ...string) error {
 			if err != nil {
 				errs = append(errs, err)
 			}
-		}(key)
+		}(wrk)
 	}
 
 	err = errors.Join(slice.Map(workers, waitForWorker)...)
@@ -278,16 +275,16 @@ func (r *Registry) ShutdownAll(ctx context.Context) error {
 	return r.Shutdown(ctx, r.Workers()...)
 }
 
-func (r *Registry) Restart(ctx context.Context, workers ...string) error {
+func (r *Registry) Restart(ctx context.Context, workers ...ref.Ref) error {
 	workerMap, err := r.workerMap(false, workers...)
 	if err != nil {
 		return fmt.Errorf("%w: %w", Err, err)
 	}
 
-	allWorkers := slices.Collect(maps.Keys(workerMap))
+	refs := workerMap.Refs()
 
-	shutdownErr := r.Shutdown(ctx, allWorkers...)
-	startErr := r.Start(ctx, allWorkers...)
+	shutdownErr := r.Shutdown(ctx, refs...)
+	startErr := r.Start(ctx, refs...)
 
 	err = errors.Join(shutdownErr, startErr)
 	if err != nil {
@@ -298,26 +295,26 @@ func (r *Registry) Restart(ctx context.Context, workers ...string) error {
 }
 
 func (r *Registry) RestartAll(ctx context.Context) error {
-	var workersToRestart []string
+	var workersToRestart []ref.Ref
 
-	for key, wrk := range r.workers {
+	for _, wrk := range r.workers.Values() {
 		if wrk.State().State != worker.StateIdle {
-			workersToRestart = append(workersToRestart, key)
+			workersToRestart = append(workersToRestart, wrk.Ref())
 		}
 	}
 
 	return r.Restart(ctx, workersToRestart...)
 }
 
-func (r *Registry) dependenciesForward(key string) worker.DependencyMap {
-	result := make(worker.DependencyMap)
+func (r *Registry) dependenciesForward(rf ref.Ref) ref.Set {
+	result := ref.NewSet()
 
-	wrk, ok := r.workers[key]
+	wrk, ok := r.workers.GetOK(rf)
 	if ok {
 		for _, dep := range wrk.Dependencies() {
-			result[dep] = struct{}{}
-			for childDep := range r.dependenciesForward(dep) {
-				result[childDep] = struct{}{}
+			result.Set(dep, struct{}{})
+			for _, childDep := range r.dependenciesForward(dep).Refs() {
+				result.Set(childDep, struct{}{})
 			}
 		}
 	}
@@ -325,14 +322,14 @@ func (r *Registry) dependenciesForward(key string) worker.DependencyMap {
 	return result
 }
 
-func (r *Registry) dependenciesBackward(key string) worker.DependencyMap {
-	result := make(worker.DependencyMap)
+func (r *Registry) dependenciesBackward(rf ref.Ref) ref.Set {
+	result := ref.NewSet()
 
-	for otherKey, wrk := range r.workers {
-		if wrk.DependsOn(key) {
-			result[otherKey] = struct{}{}
-			for childDep := range r.dependenciesBackward(otherKey) {
-				result[childDep] = struct{}{}
+	for _, wrk := range r.workers.Values() {
+		if wrk.DependsOn(rf) {
+			result.Set(wrk.Ref(), struct{}{})
+			for _, childDep := range r.dependenciesBackward(wrk.Ref()).Refs() {
+				result.Set(childDep, struct{}{})
 			}
 		}
 	}

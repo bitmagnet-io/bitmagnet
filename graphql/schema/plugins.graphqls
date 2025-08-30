@@ -1,0 +1,11 @@
+type PluginQuery {
+  list: [PluginInfo!]!
+}
+
+type PluginInfo {
+  ref: Ref!
+  description: String
+  enabled: Boolean!
+  dependsOn: [Ref!]!
+  requiredBy: [Ref!]!
+}

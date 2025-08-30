@@ -12,33 +12,41 @@ import (
 type (
 	DSN      string
 	Host     string
-	Port     int
+	Port     uint16
 	User     string
 	Password string
 	Database string
 )
 
 var (
-	ParamDSN = param.MustNew[DSN]()
+	ParamDSN = param.MustNew(
+		param.Description[DSN]("Postgres Data Source Name (if specified, all other options for this plugin are ignored)"),
+	)
 
 	ParamHost = param.MustNew(
-		param.WithDefault(Host("localhost")),
+		param.Description[Host]("Postgres host"),
+		param.Default(Host("localhost")),
 	)
 
 	ParamPort = param.MustNew(
-		param.WithDefault(Port(5432)),
+		param.Description[Port]("Postgres port number"),
+		param.PortNumber[Port](),
+		param.Default[Port](5432),
 	)
 
 	ParamUser = param.MustNew(
-		param.WithDefault(User("postgres")),
+		param.Description[User]("Postgres username"),
+		param.Default(User("postgres")),
 	)
 
 	ParamPassword = param.MustNew(
-		param.WithDefault(Password("postgres")),
+		param.Description[Password]("Postgres password"),
+		param.Default(Password("postgres")),
 	)
 
 	ParamDatabase = param.MustNew(
-		param.WithDefault(Database("bitmagnet")),
+		param.Description[Database]("Postgres database name"),
+		param.Default(Database("bitmagnet")),
 	)
 )
 

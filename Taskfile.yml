@@ -105,6 +105,12 @@ tasks:
       - bundle install
       - bundle exec jekyll build
 
+  build-docsite-embed:
+    dir: ./bitmagnet.io
+    cmds:
+      - bundle install
+      - bundle exec jekyll build --baseurl /docs
+
   install-webui:
     dir: ./webui
     cmds:

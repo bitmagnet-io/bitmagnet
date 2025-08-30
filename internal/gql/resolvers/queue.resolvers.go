@@ -10,8 +10,8 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
-	"github.com/bitmagnet-io/bitmagnet/internal/indexer"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/manager"
 )
 
@@ -37,7 +37,7 @@ func (r *queueQueryResolver) Jobs(ctx context.Context, obj *gqlmodel.QueueQuery,
 // ClassifierRematch is the resolver for the classifierRematch field.
 func (r *queueEnqueueReprocessTorrentsBatchInputResolver) ClassifierRematch(ctx context.Context, obj *manager.EnqueueReprocessTorrentsBatchRequest, data *bool) error {
 	if data != nil && *data {
-		obj.ClassifyMode = indexer.ClassifyModeRematch
+		obj.ClassifyMode = processor.ClassifyModeRematch
 	}
 
 	return nil

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/charting/chart.component.scss"],
+  "sourcesContent": [".icon-toggle-legend {\n  cursor: pointer;\n  position: relative;\n  top: 4px;\n  margin-right: 8px;\n  opacity: 0.6;\n  &.icon-toggle-legend-active {\n    opacity: 1;\n  }\n}\n\n.app-chart {\n  position: relative;\n}\n\n.app-chart-small {\n  position: relative;\n  width: calc(40vw + 100px);\n}\n"],
+  "mappings": ";AAAA,CAAA;AACE,UAAA;AACA,YAAA;AACA,OAAA;AACA,gBAAA;AACA,WAAA;;AACA,CANF,kBAME,CAAA;AACE,WAAA;;AAIJ,CAAA;AACE,YAAA;;AAGF,CAAA;AACE,YAAA;AACA,SAAA,KAAA,KAAA,EAAA;;",
+  "names": []
+}

@@ -1,73 +1,88 @@
 package gqlmodel
 
 import (
+	"context"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/manager"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
+	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 )
 
 type ConfigQuery struct {
+	I18n    *i18n.Bundle
 	Manager *manager.Manager
 }
 
-func (q ConfigQuery) Params() []gen.ConfigParam {
-	return slice.Map(q.Manager.Params(), transformConfigParam)
+func (q ConfigQuery) Params(ctx context.Context) []gen.ConfigParam {
+	localizer := newLocalizerFromContext(ctx, q.I18n)
+
+	return slice.Map(q.Manager.Params(), func(param *resolver.Param) gen.ConfigParam {
+		return transformConfigParam(param, localizer)
+	})
 }
 
 func (q ConfigQuery) Pending() bool {
 	return q.Manager.HasPending()
 }
 
-func transformConfigParam(param *resolver.Param) gen.ConfigParam {
-	var doc *string
-	if strDoc := param.Doc(); strDoc != "" {
-		doc = &strDoc
+func transformConfigParam(param *resolver.Param, localizer *i18n.Localizer) gen.ConfigParam {
+	var description *string
+	if localized, _ := localizer.LocalizeMessage(&i18n.Message{
+		ID: param.Ref.String(),
+	}); localized != "" {
+		description = &localized
+	} else {
+		if strDesc := param.Description(); strDesc != "" {
+			description = &strDesc
+		}
 	}
+
+	defaultValue, err := param.EncodeYAMLAnyAny(param.NewDefaultAny())
+	if err != nil {
+		panic(err)
+	}
+
 	return gen.ConfigParam{
-		Ref:     param.Ref.String(),
-		Doc:     doc,
-		Value:   param.ValueString(),
-		Source:  param.Source(),
-		Default: param.Last().ValueString(),
-		Dynamic: param.IsDynamic(),
-		Pending: param.IsPending(),
+		Ref:         param.Ref,
+		Plugin:      param.Plugin,
+		Description: description,
+		// Doc:        doc,
+		Value:      json_schema.JSONValue{Value: param.ValueYAMLAny()},
+		Source:     param.Source(),
+		Default:    json_schema.JSONValue{Value: defaultValue},
+		Dynamic:    param.IsDynamic(),
+		Pending:    param.IsPending(),
+		JSONSchema: param.JSONSchema(),
 	}
 }
 
 type ConfigMutation struct {
+	I18n    *i18n.Bundle
 	Manager *manager.Manager
 }
 
-func (m ConfigMutation) Save(key string, value string) (*gen.ConfigParam, error) {
-	ref, err := ref.Parse(key)
+func (m ConfigMutation) Save(ctx context.Context, ref ref.Ref, value json_schema.JSONValue) (*gen.ConfigParam, error) {
+	param, err := m.Manager.Save(ref, value.Value)
 	if err != nil {
 		return nil, err
 	}
 
-	param, err := m.Manager.Save(ref, value)
-	if err != nil {
-		return nil, err
-	}
-
-	result := transformConfigParam(param)
+	result := transformConfigParam(param, newLocalizerFromContext(ctx, m.I18n))
 
 	return &result, nil
 }
 
-func (m ConfigMutation) Delete(key string) (*gen.ConfigParam, error) {
-	ref, err := ref.Parse(key)
-	if err != nil {
-		return nil, err
-	}
-
+func (m ConfigMutation) Delete(ctx context.Context, ref ref.Ref) (*gen.ConfigParam, error) {
 	param, err := m.Manager.Delete(ref)
 	if err != nil {
 		return nil, err
 	}
 
-	result := transformConfigParam(param)
+	result := transformConfigParam(param, newLocalizerFromContext(ctx, m.I18n))
 
 	return &result, nil
 }

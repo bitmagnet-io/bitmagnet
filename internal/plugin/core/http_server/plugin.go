@@ -1,15 +1,16 @@
 package http_server
 
 import (
-	"sort"
+	"slices"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/env"
 	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/internal/httpserver/circuitbreaker"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/config"
-	"github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
@@ -24,13 +25,32 @@ type deps struct {
 var (
 	Ref = core.Ref.MustSub("http_server")
 
-	Plugin = builder.CreatePlugin(
+	Plugin = builder.NewPlugin(
 		Ref,
-		builder.WithEnabledByDefault[deps](),
+		builder.WithDescription[deps]("Runs the HTTP server"),
+		builder.WithActivation[deps](plugin.ActivationEnabled),
 		builder.WithDependencies[deps](
 			config.Ref,
 		),
-		builder.WithConfigParam[deps](Ref.MustSub("local_address"), httpserver.ParamLocalAddress),
+		builder.WithConfig[deps](Ref.MustSub("local_address"), httpserver.ParamLocalAddress),
+		builder.WithGinOption(
+			Ref.MustSub("recovery"),
+			httpserver.PhasePre,
+			func(deps) gin.OptionFunc {
+				return func(engine *gin.Engine) {
+					engine.Use(gin.Recovery())
+				}
+			},
+		),
+		builder.WithGinOption(
+			Ref.MustSub("context"),
+			httpserver.PhasePre,
+			func(deps) gin.OptionFunc {
+				return func(e *gin.Engine) {
+					e.Use(httpserver.GinContextToContextMiddleware())
+				}
+			},
+		),
 		builder.WithFxOption[deps](
 			fx.Provide(
 				circuitbreaker.New,
@@ -58,13 +78,12 @@ var (
 				},
 			),
 		),
-		builder.WithWorkerRegistryOption(func(deps deps) registry.Option {
-			return registry.WithWorker(
-				Ref.String(),
-				httpserver.New(deps.Handler, deps.LocalAddress),
-				worker.WithAutostart(),
-			)
-		}),
+		builder.WithWorker(
+			func(deps deps) (runner.Provider, worker.Option) {
+				return httpserver.New(deps.Handler, deps.LocalAddress),
+					worker.WithAutostart(true)
+			},
+		),
 	)
 )
 
@@ -102,8 +121,8 @@ func resolveOptions(options []httpserver.Option) (gin.OptionFunc, error) {
 	// 	}
 	// }
 
-	sort.Slice(options, func(i, j int) bool {
-		return options[i].Key() < options[j].Key()
+	slices.SortFunc(options, func(a, b httpserver.Option) int {
+		return a.Compare(b)
 	})
 
 	return func(engine *gin.Engine) {

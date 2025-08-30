@@ -3,15 +3,17 @@ package queue
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/queuemetrics"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database/postgres"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/logging"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/pipeline/persister"
+	"github.com/bitmagnet-io/bitmagnet/internal/queue"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/handler"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/manager"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/server"
-	"github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -19,6 +21,7 @@ import (
 
 type deps struct {
 	fx.In
+	Autostart   queue.Autostart
 	DaoProvider database.DaoTransactionProvider
 	Logger      *zap.Logger
 	Handlers    []handler.Handler `group:"queue_handlers"`
@@ -27,9 +30,11 @@ type deps struct {
 var (
 	Ref = core.Ref.MustSub("queue")
 
-	Plugin = builder.CreatePlugin(
+	Plugin = builder.NewPlugin(
 		Ref,
-		builder.WithEnabledByDefault[deps](),
+		builder.WithDescription[deps]("Runs queued background jobs"),
+		builder.WithActivation[deps](plugin.ActivationAlways),
+		builder.WithConfig[deps](Ref.MustSub("autostart"), queue.ParamAutostart),
 		builder.WithDependencies[deps](
 			logging.Ref,
 			persister.Ref,
@@ -41,20 +46,19 @@ var (
 				queuemetrics.New,
 			),
 		),
-		builder.WithWorkerRegistryOption(
-			func(deps deps) registry.Option {
-				return registry.WithWorker(
-					Ref.String(),
-					server.New(
+		builder.WithWorker(
+			func(deps deps) (runner.Provider, worker.Option) {
+				return server.New(
 						deps.DaoProvider,
 						deps.Logger.Named(Ref.String()),
 						deps.Handlers...,
 					),
-					worker.WithDependencies(
-						persister.Ref.String(),
-					),
-					worker.WithAutostart(),
-				)
+					worker.Options(
+						worker.WithDependencies(
+							persister.Ref,
+						),
+						worker.WithAutostart(bool(deps.Autostart)),
+					)
 			},
 		),
 		// builder.WithPrometheusCollector(

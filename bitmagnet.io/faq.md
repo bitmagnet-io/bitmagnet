@@ -39,7 +39,7 @@ If everything is working, **bitmagnet** should begin showing torrents in the web
 
 **bitmagnet** now shows its health status in the main toolbar: It will show a tick for health, a cross for unhealthy or sometimes 3 dots for pending. Click on it to open the health dialog and check that all workers are running and healthy.
 
-![WebUI health check screenshot](/assets/images/webui-health-check.png)
+![WebUI health check screenshot]({{ site.baseurl }}/assets/images/webui-health-check.png)
 
 The most common issues are networking, firewall or a VPN misconfigurations preventing **bitmagnet** from connecting to the DHT. Additionally, the TMDB API is blocked in certain countries; if you are in an affected country you may need to either disable the TMDB integration with the `tmdb.enabled` configuration key, or use a VPN. Configuring a personal TMDB API key (or disabling TMDB) will make the queue run a **lot** faster.
 

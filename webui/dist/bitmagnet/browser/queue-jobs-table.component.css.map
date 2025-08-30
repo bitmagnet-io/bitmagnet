@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/dashboard/queue/queue-jobs-table.component.scss"],
+  "sourcesContent": [".item-detail {\n  > :first-child {\n    padding-top: 20px;\n  }\n  > :last-child {\n    margin-bottom: 20px;\n  }\n}\n\ntr:not(.expanded-detail-row) td {\n  cursor: pointer;\n}\n\ntr.expanded-detail-row {\n  height: 0;\n  h5 {\n    margin: 0;\n    padding-top: 8px;\n  }\n  p {\n    margin: 0;\n    padding-top: 8px;\n    padding-bottom: 4px;\n  }\n  span.copy {\n    cursor: crosshair;\n    text-decoration: underline;\n    text-decoration-style: dotted;\n  }\n}\n\npre {\n  opacity: 0;\n  max-height: 200px;\n  max-width: 100px;\n  overflow: scroll;\n  background: rgba(#777, 0.2);\n  padding: 10px;\n}\n\n.expanded-detail-row.expanded {\n  pre {\n    opacity: 1;\n    max-width: 1200px;\n  }\n}\n"],
+  "mappings": ";AACE,CAAA,YAAA,EAAA;AACE,eAAA;;AAEF,CAHA,YAGA,EAAA;AACE,iBAAA;;AAIJ,EAAA,KAAA,CAAA,qBAAA;AACE,UAAA;;AAGF,EAAA,CAJA;AAKE,UAAA;;AACA,EAAA,CANF,oBAME;AACE,UAAA;AACA,eAAA;;AAEF,EAAA,CAVF,oBAUE;AACE,UAAA;AACA,eAAA;AACA,kBAAA;;AAEF,EAAA,CAfF,oBAeE,IAAA,CAAA;AACE,UAAA;AACA,mBAAA;AACA,yBAAA;;AAIJ;AACE,WAAA;AACA,cAAA;AACA,aAAA;AACA,YAAA;AACA,cAAA,KAAA,GAAA,EAAA,GAAA,EAAA,GAAA,EAAA;AACA,WAAA;;AAIA,CAhCF,mBAgCE,CAAA,SAAA;AACE,WAAA;AACA,aAAA;;",
+  "names": []
+}

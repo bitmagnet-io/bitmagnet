@@ -51,6 +51,10 @@ func (v *Value[T]) Set(value T) {
 }
 
 func (v *Value[T]) SetAny(value any) error {
+	if atomicValue, ok := value.(*Value[T]); ok {
+		value = atomicValue.Get()
+	}
+
 	if typedValue, ok := value.(T); ok {
 		v.Set(typedValue)
 		return nil

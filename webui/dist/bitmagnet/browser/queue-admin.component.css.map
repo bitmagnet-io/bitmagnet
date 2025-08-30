@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/dashboard/queue/queue-admin.component.scss"],
+  "sourcesContent": ["ul {\n  list-style-type: none;\n  padding-left: 0;\n  li {\n    margin-bottom: 6px;\n  }\n}\n"],
+  "mappings": ";AAAA;AACE,mBAAA;AACA,gBAAA;;AACA,GAAA;AACE,iBAAA;;",
+  "names": []
+}

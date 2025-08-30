@@ -11,6 +11,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/env"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/http_server"
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
 )
@@ -28,8 +29,8 @@ type WorkerMutation struct {
 	Registry *registry.Registry
 }
 
-func (m *WorkerMutation) Start(_ context.Context, keys []string) (gen.WorkerListAllQueryResult, error) {
-	err := m.Registry.Start(m.Context, keys...)
+func (m *WorkerMutation) Start(_ context.Context, refs []ref.Ref) (gen.WorkerListAllQueryResult, error) {
+	err := m.Registry.Start(m.Context, refs...)
 	if err != nil {
 		return gen.WorkerListAllQueryResult{}, err
 	}
@@ -37,8 +38,10 @@ func (m *WorkerMutation) Start(_ context.Context, keys []string) (gen.WorkerList
 	return workersListAll(m.Registry)
 }
 
-func (m *WorkerMutation) Shutdown(ctx context.Context, keys []string) (gen.WorkerListAllQueryResult, error) {
-	if slices.Contains(keys, http_server.Ref.String()) {
+func (m *WorkerMutation) Shutdown(ctx context.Context, refs []ref.Ref) (gen.WorkerListAllQueryResult, error) {
+	if slice.Some(refs, func(ref ref.Ref) bool {
+		return ref.String() == http_server.Ref.String()
+	}) {
 		return gen.WorkerListAllQueryResult{}, fmt.Errorf(
 			`"%s" worker cannot be shutdown via the API`,
 			http_server.Ref.String(),
@@ -46,25 +49,21 @@ func (m *WorkerMutation) Shutdown(ctx context.Context, keys []string) (gen.Worke
 	}
 
 	state := m.Registry.WorkersState()
-	dependentKeys := slice.Filter(keys, func(key string) bool {
-		if info, ok := state[key]; ok {
-			if _, ok := info.RequiredBy[http_server.Ref.String()]; ok {
-				return true
-			}
-		}
-
-		return false
+	dependentKeys := slice.Filter(refs, func(ref ref.Ref) bool {
+		return state.Get(ref).RequiredBy.Has(http_server.Ref)
 	})
 
 	if len(dependentKeys) > 0 {
 		return gen.WorkerListAllQueryResult{}, fmt.Errorf(
 			`cannot shutdown workers because they are required by the "%s" worker: "%s"`,
 			http_server.Ref.String(),
-			strings.Join(keys, `", "`),
+			strings.Join(slice.Map(refs, func(ref ref.Ref) string {
+				return ref.String()
+			}), `", "`),
 		)
 	}
 
-	err := m.Registry.Shutdown(ctx, keys...)
+	err := m.Registry.Shutdown(ctx, refs...)
 	if err != nil {
 		return gen.WorkerListAllQueryResult{}, err
 	}
@@ -72,10 +71,10 @@ func (m *WorkerMutation) Shutdown(ctx context.Context, keys []string) (gen.Worke
 	return workersListAll(m.Registry)
 }
 
-func (m *WorkerMutation) Restart(_ context.Context, keys []string) (gen.WorkerListAllQueryResult, error) {
+func (m *WorkerMutation) Restart(_ context.Context, refs []ref.Ref) (gen.WorkerListAllQueryResult, error) {
 	// Must be done in a goroutine to prevent deadlock:
 	go func() {
-		_ = m.Registry.Restart(m.Context, keys...)
+		_ = m.Registry.Restart(m.Context, refs...)
 	}()
 
 	// Hopefully give workers time to enter shutdown state:
@@ -86,25 +85,26 @@ func (m *WorkerMutation) Restart(_ context.Context, keys []string) (gen.WorkerLi
 
 func workersListAll(registry *registry.Registry) (gen.WorkerListAllQueryResult, error) {
 	stateMap := registry.WorkersState()
-	workers := make([]gen.Worker, 0, len(stateMap))
+	workers := make([]gen.Worker, 0, stateMap.Len())
 
-	for key, state := range stateMap {
+	for _, state := range stateMap.Values() {
 		var err *string
 		if state.Err != nil {
-			*err = state.Err.Error()
+			strErr := state.Err.Error()
+			err = &strErr
 		}
 
 		workers = append(workers, gen.Worker{
-			Key:        key,
+			Ref:        state.Ref,
 			State:      state.State,
 			Error:      err,
-			RequiredBy: state.RequiredBy.Slice(),
-			DependsOn:  state.DependsOn.Slice(),
+			RequiredBy: state.RequiredBy.Refs(),
+			DependsOn:  state.DependsOn.Refs(),
 		})
 	}
 
 	slices.SortFunc(workers, func(a, b gen.Worker) int {
-		return cmp.Compare(a.Key, b.Key)
+		return cmp.Compare(a.Ref.String(), b.Ref.String())
 	})
 
 	return gen.WorkerListAllQueryResult{

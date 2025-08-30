@@ -8,21 +8,25 @@ import (
 	"strings"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
+	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 	"gopkg.in/yaml.v3"
 )
 
 type Untyped interface {
-	Doc() string
+	Description() string
 	ValidateAny(any) error
 	ParseAny(string) (any, error)
 	StringifyAny(any) (string, error)
 	EncodeYAMLAny(any) (yaml.Node, error)
+	EncodeYAMLAnyAny(any) (any, error)
 	DecodeYAMLAny(yaml.Node) (any, error)
+	DecodeYAMLAnyAny(any) (any, error)
 	NewDefaultAny() any
 	ReflectType() reflect.Type
 	DynamicType() (reflect.Type, bool)
 	IsDynamic() bool
+	JSONSchema() json_schema.JSONSchema
 }
 
 type Param[T any] interface {
@@ -39,35 +43,58 @@ type Param[T any] interface {
 }
 
 type param[T any] struct {
-	doc         string
-	newDefault  func() T
-	yamlEncoder func(T) (yaml.Node, error)
-	yamlDecoder func(yaml.Node) (T, error)
-	validators  Validators[T]
-	comparator  func(T, T) bool
-	stringifier func(T) string
-	parser      func(string) (T, error)
-	enumValues  []T
-	dynamicType reflect.Type
+	description        string
+	nested             bool
+	newDefault         func() T
+	hasExplicitDefault bool
+	yamlEncoder        func(T) (yaml.Node, error)
+	yamlDecoder        func(yaml.Node) (T, error)
+	validators         Validators[T]
+	comparator         func(T, T) bool
+	stringifier        func(T) string
+	parser             func(string) (T, error)
+	enumValues         []T
+	dynamicType        reflect.Type
+	jsonSchema         json_schema.JSONSchema
 }
 
 func New[T any](opts ...Option[T]) (Param[T], error) {
-	v := param[T]{
+	p := param[T]{
 		newDefault:  newDefaultZero[T],
 		yamlEncoder: yamlEncoder[T],
 		yamlDecoder: yamlDecoder[T],
 		stringifier: stringifierSimple[T],
 		comparator:  comparatorReflect[T],
+		jsonSchema:  json_schema.MustNew(json_schema.TypeString),
 	}
+
 	for _, opt := range opts {
-		opt(&v)
+		if err := opt(&p); err != nil {
+			return p, err
+		}
 	}
 
-	if v.parser == nil {
-		v.parser = parserYAML(v.yamlDecoder)
+	if !p.nested && p.description == "" {
+		return p, errors.New("missing description")
 	}
 
-	return v, nil
+	if p.parser == nil {
+		p.parser = parserYAML(p.yamlDecoder)
+	}
+
+	if p.hasExplicitDefault && p.jsonSchema.Default == nil {
+		jsonDefault, err := p.EncodeYAMLAnyAny(p.NewDefault())
+		if err != nil {
+			return p, err
+		}
+
+		err = JSONSchemaOption[T](json_schema.Default(json_schema.JSONValue{Value: jsonDefault}))(&p)
+		if err != nil {
+			return p, err
+		}
+	}
+
+	return p, nil
 }
 
 func MustNew[T any](opts ...Option[T]) Param[T] {
@@ -79,143 +106,129 @@ func MustNew[T any](opts ...Option[T]) Param[T] {
 	return value
 }
 
-func (v param[T]) Equals(a, b T) bool {
-	if v.comparator == nil {
+func (p param[T]) Equals(a, b T) bool {
+	if p.comparator == nil {
 		return false
 	}
 
-	return v.comparator(a, b)
+	return p.comparator(a, b)
 }
 
-func (v param[T]) Stringify(val T) string {
-	return v.stringifier(val)
+func (p param[T]) Stringify(val T) string {
+	return p.stringifier(val)
 }
 
-func (v param[T]) StringifyAny(val any) (string, error) {
+func (p param[T]) StringifyAny(val any) (string, error) {
 	typed, ok := val.(T)
 	if !ok {
 		return "", errors.New("invalid type")
 	}
 
-	return v.Stringify(typed), nil
+	return p.Stringify(typed), nil
 }
 
-func (v param[T]) Parse(s string) (T, error) {
-	return v.parser(s)
+func (p param[T]) Parse(s string) (T, error) {
+	return p.parser(s)
 }
 
-func (v param[T]) ParseAny(s string) (any, error) {
-	return v.Parse(s)
+func (p param[T]) ParseAny(s string) (any, error) {
+	return p.Parse(s)
 }
 
-func (v param[T]) Validators() Validators[T] {
-	return v.validators
+func (p param[T]) Validators() Validators[T] {
+	return p.validators
 }
 
-func (v param[T]) Validate(val T) error {
-	return v.validators.Validate(val)
+func (p param[T]) Validate(val T) error {
+	return p.validators.Validate(val)
 }
 
-func (v param[T]) ValidateAny(val any) error {
+func (p param[T]) ValidateAny(val any) error {
 	typed, ok := val.(T)
 	if !ok {
 		return fmt.Errorf("failed to cast %T to %T", val, typed)
 	}
 
-	return v.Validate(typed)
+	return p.Validate(typed)
 }
 
-func (v param[T]) EncodeYAML(val T) (yaml.Node, error) {
-	return v.yamlEncoder(val)
+func (p param[T]) EncodeYAML(val T) (yaml.Node, error) {
+	return p.yamlEncoder(val)
 }
 
-func (v param[T]) EncodeYAMLAny(val any) (yaml.Node, error) {
+func (p param[T]) EncodeYAMLAny(val any) (yaml.Node, error) {
 	typed, ok := val.(T)
 	if !ok {
 		return yaml.Node{}, fmt.Errorf("failed to cast %T to %T", val, typed)
 	}
 
-	return v.EncodeYAML(typed)
+	return p.EncodeYAML(typed)
 }
 
-func (v param[T]) DecodeYAML(node yaml.Node) (T, error) {
-	return v.yamlDecoder(node)
+func (p param[T]) EncodeYAMLAnyAny(val any) (any, error) {
+	node, err := p.EncodeYAMLAny(val)
+	if err != nil {
+		return nil, err
+	}
+
+	var decoded any
+	err = node.Decode(&decoded)
+	if err != nil {
+		return nil, err
+	}
+
+	return decoded, nil
 }
 
-func (v param[T]) DecodeYAMLAny(node yaml.Node) (any, error) {
-	return v.DecodeYAML(node)
+func (p param[T]) DecodeYAML(node yaml.Node) (T, error) {
+	return p.yamlDecoder(node)
 }
 
-func (v param[T]) ReflectType() reflect.Type {
+func (p param[T]) DecodeYAMLAny(node yaml.Node) (any, error) {
+	return p.DecodeYAML(node)
+}
+
+func (p param[T]) DecodeYAMLAnyAny(value any) (any, error) {
+	var node yaml.Node
+	err := node.Encode(value)
+	if err != nil {
+		return nil, err
+	}
+
+	return p.DecodeYAMLAny(node)
+}
+
+func (p param[T]) ReflectType() reflect.Type {
 	var t T
 	return reflect.TypeOf(t)
 }
 
-func (v param[T]) DynamicType() (reflect.Type, bool) {
-	return v.dynamicType, v.dynamicType != nil
+func (p param[T]) DynamicType() (reflect.Type, bool) {
+	return p.dynamicType, p.dynamicType != nil
 }
 
-func (v param[T]) IsDynamic() bool {
-	return v.dynamicType != nil
+func (p param[T]) IsDynamic() bool {
+	return p.dynamicType != nil
 }
 
-func (v param[T]) EnumValues() []T {
-	return v.enumValues
+func (p param[T]) EnumValues() []T {
+	return p.enumValues
 }
 
-func comparatorReflect[T any](a, b T) bool {
-	return reflect.ValueOf(a).Equal(reflect.ValueOf(b))
+func (p param[T]) JSONSchema() json_schema.JSONSchema {
+	return p.jsonSchema
 }
 
-func stringifierSimple[T any](val T) string {
-	return fmt.Sprintf("%v", val)
+func (p param[T]) Description() string {
+	return p.description
 }
 
-func WithStringifier[T any](stringifier func(T) string) Option[T] {
-	return func(v *param[T]) error {
-		v.stringifier = stringifier
-		return nil
-	}
+func (p param[T]) NewDefault() T {
+	return p.newDefault()
 }
 
-func WithParser[T any](parser func(string) (T, error)) Option[T] {
-	return func(v *param[T]) error {
-		v.parser = parser
-		return nil
-	}
-}
-
-func WithEnumValues[T comparable](enumValues ...T) Option[T] {
-	return func(v *param[T]) error {
-		v.enumValues = enumValues
-		return Validate(validatorOneOf[T]{
-			comparator:  v.comparator,
-			stringifier: v.stringifier,
-			enumValues:  v.enumValues,
-		})(v)
-	}
-}
-
-func (v param[T]) Doc() string {
-	return v.doc
-}
-
-// func (p param) ValidateDoc() string {
-// 	return p.validateDoc
-// }
-
-// type typedParam[T any] struct {
-// 	Value[T]
-// 	param
-// 	newDefault func() T
-// }
-
-func (v param[T]) NewDefault() T {
-	return v.newDefault()
-}
-
-func (v param[T]) NewDefaultAny() any {
-	return v.NewDefault()
+func (p param[T]) NewDefaultAny() any {
+	return p.NewDefault()
 }
 
 func newDefaultZero[T any]() T {
@@ -233,13 +246,13 @@ func parserYAML[T any](elementParser func(yaml.Node) (T, error)) func(string) (T
 	}
 }
 
-func parserSlice[T any](elementParser func(string) (T, error)) func(string) ([]T, error) {
-	return func(s string) ([]T, error) {
+func parserSlice[E any, T ~[]E](elementParser func(string) (E, error)) func(string) (T, error) {
+	return func(s string) (T, error) {
 		parts, err := csv.NewReader(strings.NewReader(s)).Read()
 		if err != nil {
 			return nil, err
 		}
-		var result []T
+		var result T
 		for _, item := range parts {
 			parsed, err := elementParser(item)
 			if err != nil {
@@ -262,8 +275,8 @@ func parserDynamic[T any](elementParser func(string) (T, error)) func(string) (*
 	}
 }
 
-func stringifierSlice[T any](elementStringifier func(T) string) func([]T) string {
-	return func(sl []T) string {
+func stringifierSlice[E any, T ~[]E](elementStringifier func(E) string) func(T) string {
+	return func(sl T) string {
 		var b strings.Builder
 		csv.NewWriter(&b).Write(slice.Map(sl, elementStringifier))
 		return b.String()
@@ -274,138 +287,4 @@ func stringifierDynamic[T any](elementStringifier func(T) string) func(*atomic.V
 	return func(value *atomic.Value[T]) string {
 		return elementStringifier(value.Get())
 	}
-}
-
-// func validatorSlice[T any](elementValidator Validator[T]) Validator[[]T] {
-// 	return validatorFunc[[]T](func(val []T) bool {
-// 		for _, item := range val {
-// 			if !elementValidator.Evaluate(item) {
-// 				return false
-// 			}
-// 		}
-// 		return true
-// 	})
-// }
-
-type validatorSlice[T any] struct {
-	elementValidator Validator[T]
-}
-
-func (v validatorSlice[T]) Doc() string {
-	return "each element " + v.elementValidator.Doc()
-}
-
-func (v validatorSlice[T]) Evaluate(val []T) bool {
-	return !slice.Some(val, func(item T) bool {
-		return !v.elementValidator.Evaluate(item)
-	})
-}
-
-type validatorDynamic[T any] struct {
-	elementValidator Validator[T]
-}
-
-func (v validatorDynamic[T]) Doc() string {
-	return "each element " + v.elementValidator.Doc()
-}
-
-func (v validatorDynamic[T]) Evaluate(val *atomic.Value[T]) bool {
-	return v.elementValidator.Evaluate(val.Get())
-}
-
-func WithNewDefault[T any](newDefault func() T) Option[T] {
-	return func(v *param[T]) error {
-		v.newDefault = newDefault
-
-		return nil
-	}
-}
-
-func WithDefault[T comparable](defaultValue T) Option[T] {
-	return WithNewDefault(func() T {
-		return defaultValue
-	})
-}
-
-type validatorRequired[T comparable] struct{}
-
-func (v validatorRequired[T]) Doc() string {
-	return "required"
-}
-
-func (v validatorRequired[T]) Evaluate(val T) bool {
-	var zero T
-	return val != zero
-}
-
-func WithRequired[T comparable]() Option[T] {
-	return Validate(validatorRequired[T]{})
-}
-
-type number interface {
-	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~float32 | ~float64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64
-}
-
-type validatorGreaterThan[T number] struct {
-	value T
-}
-
-func (v validatorGreaterThan[T]) Doc() string {
-	return fmt.Sprintf("must be greater than %v", v.value)
-}
-
-func (v validatorGreaterThan[T]) Evaluate(val T) bool {
-	return val > v.value
-}
-
-func WithGreaterThan[T number](min T) Option[T] {
-	return Validate(validatorGreaterThan[T]{value: min})
-}
-
-type validatorLessThan[T number] struct {
-	value T
-}
-
-func (v validatorLessThan[T]) Doc() string {
-	return fmt.Sprintf("must be less than %v", v.value)
-}
-
-func (v validatorLessThan[T]) Evaluate(val T) bool {
-	return val < v.value
-}
-
-func WithLessThan[T number](max T) Option[T] {
-	return Validate(validatorLessThan[T]{value: max})
-}
-
-type validatorMin[T number] struct {
-	value T
-}
-
-func (v validatorMin[T]) Doc() string {
-	return fmt.Sprintf("must be at least %v", v.value)
-}
-
-func (v validatorMin[T]) Evaluate(val T) bool {
-	return val >= v.value
-}
-
-func WithMin[T number](min T) Option[T] {
-	return Validate(validatorMin[T]{value: min})
-}
-
-type validatorMax[T number] struct {
-	value T
-}
-
-func (v validatorMax[T]) Doc() string {
-	return fmt.Sprintf("must be at most %v", v.value)
-}
-
-func (v validatorMax[T]) Evaluate(val T) bool {
-	return val <= v.value
-}
-
-func WithMax[T number](max T) Option[T] {
-	return Validate(validatorMax[T]{value: max})
 }

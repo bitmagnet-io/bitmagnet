@@ -2,6 +2,7 @@ package worker
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
@@ -18,9 +19,10 @@ type deps struct {
 var (
 	Ref = core.Ref.MustSub("worker")
 
-	Plugin = builder.CreatePlugin(
+	Plugin = builder.NewPlugin(
 		Ref,
-		builder.WithEnabledByDefault[deps](),
+		builder.WithDescription[deps]("Manages workers"),
+		builder.WithActivation[deps](plugin.ActivationAlways),
 		builder.WithFxOption[deps](
 			fx.Provide(
 				fx.Annotate(
@@ -29,7 +31,7 @@ var (
 						logger *zap.Logger,
 					) (*registry.Registry, error) {
 						return registry.NewRegistry(
-							logger.Named(Ref.String()),
+							logger,
 							options...,
 						)
 					},
