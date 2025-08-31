@@ -37,6 +37,13 @@ func (r *mutationResolver) Config(ctx context.Context) (gqlmodel.ConfigMutation,
 	}, nil
 }
 
+// Auth is the resolver for the auth field.
+func (r *mutationResolver) Auth(ctx context.Context) (gqlmodel.AuthMutation, error) {
+	return gqlmodel.AuthMutation{
+		AuthService: r.AuthService,
+	}, nil
+}
+
 // Mutation returns gql.MutationResolver implementation.
 func (r *Resolver) Mutation() gql.MutationResolver { return &mutationResolver{r} }
 

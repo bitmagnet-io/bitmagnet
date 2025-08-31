@@ -429,6 +429,15 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		}),
 		createdAtReadOnly,
 	)
+	users := g.GenerateModel(
+		"users",
+		gen.FieldGORMTag("id", func(tag field.GormTag) field.GormTag {
+			tag.Set("<-", "false")
+			return tag
+		}),
+		gen.FieldJSONTag("password", "-"),
+		createdAtReadOnly,
+	)
 
 	g.ApplyBasic(
 		torrentSources,
@@ -446,6 +455,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		contentAttributes,
 		keyValues,
 		queueJobs,
+		users,
 	)
 
 	return g

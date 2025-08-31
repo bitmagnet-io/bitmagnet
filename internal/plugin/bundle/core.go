@@ -1,7 +1,9 @@
 package bundle
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/auth"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/config"
 	database_gorm_cache "github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database/gorm/cache"
 	database_info_hash_blocker "github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database/info_hash_blocker"
@@ -37,8 +39,8 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/worker"
 )
 
-var Core = MustNew(
-	core.Ref,
+var corePlugins = []plugin.Plugin{
+	auth.Plugin,
 	config.Plugin,
 	database_gorm_cache.Plugin,
 	database_info_hash_blocker.Plugin,
@@ -73,4 +75,8 @@ var Core = MustNew(
 	tmdb_compat.Plugin,
 	torznab.Plugin,
 	worker.Plugin,
-)
+}
+
+func Core() (Bundle, error) {
+	return New(core.Ref, corePlugins...)
+}

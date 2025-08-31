@@ -32,6 +32,7 @@ var (
 	TorrentSource            *torrentSource
 	TorrentTag               *torrentTag
 	TorrentsTorrentSource    *torrentsTorrentSource
+	User                     *user
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
@@ -51,6 +52,7 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	TorrentSource = &Q.TorrentSource
 	TorrentTag = &Q.TorrentTag
 	TorrentsTorrentSource = &Q.TorrentsTorrentSource
+	User = &Q.User
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
@@ -71,6 +73,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		TorrentSource:            newTorrentSource(db, opts...),
 		TorrentTag:               newTorrentTag(db, opts...),
 		TorrentsTorrentSource:    newTorrentsTorrentSource(db, opts...),
+		User:                     newUser(db, opts...),
 	}
 }
 
@@ -92,6 +95,7 @@ type Query struct {
 	TorrentSource            torrentSource
 	TorrentTag               torrentTag
 	TorrentsTorrentSource    torrentsTorrentSource
+	User                     user
 }
 
 func (q *Query) Available() bool { return q.db != nil }
@@ -114,6 +118,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		TorrentSource:            q.TorrentSource.clone(db),
 		TorrentTag:               q.TorrentTag.clone(db),
 		TorrentsTorrentSource:    q.TorrentsTorrentSource.clone(db),
+		User:                     q.User.clone(db),
 	}
 }
 
@@ -143,6 +148,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		TorrentSource:            q.TorrentSource.replaceDB(db),
 		TorrentTag:               q.TorrentTag.replaceDB(db),
 		TorrentsTorrentSource:    q.TorrentsTorrentSource.replaceDB(db),
+		User:                     q.User.replaceDB(db),
 	}
 }
 
@@ -162,6 +168,7 @@ type queryCtx struct {
 	TorrentSource            ITorrentSourceDo
 	TorrentTag               ITorrentTagDo
 	TorrentsTorrentSource    ITorrentsTorrentSourceDo
+	User                     IUserDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
@@ -181,6 +188,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		TorrentSource:            q.TorrentSource.WithContext(ctx),
 		TorrentTag:               q.TorrentTag.WithContext(ctx),
 		TorrentsTorrentSource:    q.TorrentsTorrentSource.WithContext(ctx),
+		User:                     q.User.WithContext(ctx),
 	}
 }
 

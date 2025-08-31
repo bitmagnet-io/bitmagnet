@@ -18,6 +18,39 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
 )
 
+type AuthLoginResult interface {
+	IsAuthLoginResult()
+}
+
+type AuthRegisterResult interface {
+	IsAuthRegisterResult()
+}
+
+type AuthLoginFailure struct {
+	Error AuthLoginErrorType `json:"error"`
+}
+
+func (AuthLoginFailure) IsAuthLoginResult() {}
+
+type AuthLoginSuccess struct {
+	Token string     `json:"token"`
+	User  model.User `json:"user"`
+}
+
+func (AuthLoginSuccess) IsAuthLoginResult() {}
+
+type AuthRegisterFailure struct {
+	Error AuthRegisterErrorType `json:"error"`
+}
+
+func (AuthRegisterFailure) IsAuthRegisterResult() {}
+
+type AuthRegisterSuccess struct {
+	User model.User `json:"user"`
+}
+
+func (AuthRegisterSuccess) IsAuthRegisterResult() {}
+
 type ConfigParam struct {
 	Ref         ref.Ref                `json:"ref"`
 	Plugin      ref.Ref                `json:"plugin"`
@@ -289,6 +322,84 @@ type Worker struct {
 
 type WorkerListAllQueryResult struct {
 	Workers []Worker `json:"workers"`
+}
+
+type AuthLoginErrorType string
+
+const (
+	AuthLoginErrorTypeInvalidCredentials AuthLoginErrorType = "invalid_credentials"
+)
+
+var AllAuthLoginErrorType = []AuthLoginErrorType{
+	AuthLoginErrorTypeInvalidCredentials,
+}
+
+func (e AuthLoginErrorType) IsValid() bool {
+	switch e {
+	case AuthLoginErrorTypeInvalidCredentials:
+		return true
+	}
+	return false
+}
+
+func (e AuthLoginErrorType) String() string {
+	return string(e)
+}
+
+func (e *AuthLoginErrorType) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = AuthLoginErrorType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid AuthLoginErrorType", str)
+	}
+	return nil
+}
+
+func (e AuthLoginErrorType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type AuthRegisterErrorType string
+
+const (
+	AuthRegisterErrorTypeUserAlreadyExists AuthRegisterErrorType = "user_already_exists"
+)
+
+var AllAuthRegisterErrorType = []AuthRegisterErrorType{
+	AuthRegisterErrorTypeUserAlreadyExists,
+}
+
+func (e AuthRegisterErrorType) IsValid() bool {
+	switch e {
+	case AuthRegisterErrorTypeUserAlreadyExists:
+		return true
+	}
+	return false
+}
+
+func (e AuthRegisterErrorType) String() string {
+	return string(e)
+}
+
+func (e *AuthRegisterErrorType) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = AuthRegisterErrorType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid AuthRegisterErrorType", str)
+	}
+	return nil
+}
+
+func (e AuthRegisterErrorType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type HealthStatus string

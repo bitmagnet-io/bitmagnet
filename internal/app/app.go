@@ -21,9 +21,14 @@ type App struct {
 }
 
 func New(bundles ...bundle.Bundle) (*App, error) {
+	coreBundle, err := bundle.Core()
+	if err != nil {
+		return nil, err
+	}
+
 	registry, err := registry.New(
 		append(
-			[]bundle.Bundle{bundle.Core},
+			[]bundle.Bundle{coreBundle},
 			bundles...,
 		)...,
 	)
