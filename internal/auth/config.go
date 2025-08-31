@@ -22,20 +22,3 @@ var (
 		param.Default(JWTDuration(time.Hour*24)),
 	)
 )
-
-// type Config struct {
-// 	JWTSecret     string        `mapstructure:"jwt_secret"`
-// 	TokenDuration time.Duration `mapstructure:"token_duration"`
-// }
-
-// func NewDefaultConfig() Config {
-// 	return Config{
-// 		JWTSecret:     "change-me-in-production",
-// 		TokenDuration: 24 * time.Hour,
-// 	}
-// }
-
-// var ParamConfig = param.MustNew(
-// 	param.Description[Config]("Authentication configuration"),
-// 	param.Default(NewDefaultConfig()),
-// )
