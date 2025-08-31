@@ -2800,6 +2800,7 @@ type AuthRegisterFailure {
 
 enum AuthRegisterErrorType {
   user_already_exists
+  password_policy_violation
 }
 
 union AuthRegisterResult = AuthRegisterSuccess | AuthRegisterFailure

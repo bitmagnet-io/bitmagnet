@@ -366,16 +366,18 @@ func (e AuthLoginErrorType) MarshalGQL(w io.Writer) {
 type AuthRegisterErrorType string
 
 const (
-	AuthRegisterErrorTypeUserAlreadyExists AuthRegisterErrorType = "user_already_exists"
+	AuthRegisterErrorTypeUserAlreadyExists       AuthRegisterErrorType = "user_already_exists"
+	AuthRegisterErrorTypePasswordPolicyViolation AuthRegisterErrorType = "password_policy_violation"
 )
 
 var AllAuthRegisterErrorType = []AuthRegisterErrorType{
 	AuthRegisterErrorTypeUserAlreadyExists,
+	AuthRegisterErrorTypePasswordPolicyViolation,
 }
 
 func (e AuthRegisterErrorType) IsValid() bool {
 	switch e {
-	case AuthRegisterErrorTypeUserAlreadyExists:
+	case AuthRegisterErrorTypeUserAlreadyExists, AuthRegisterErrorTypePasswordPolicyViolation:
 		return true
 	}
 	return false

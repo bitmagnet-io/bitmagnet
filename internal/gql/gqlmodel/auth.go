@@ -20,6 +20,11 @@ func (m *AuthMutation) Register(ctx context.Context, username, password string) 
 				Error: gen.AuthRegisterErrorTypeUserAlreadyExists,
 			}, nil
 		}
+		if errors.Is(err, auth.ErrPasswordPolicy) {
+			return gen.AuthRegisterFailure{
+				Error: gen.AuthRegisterErrorTypePasswordPolicyViolation,
+			}, nil
+		}
 
 		return nil, err
 	}

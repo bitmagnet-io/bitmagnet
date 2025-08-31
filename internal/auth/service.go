@@ -23,6 +23,7 @@ var (
 	ErrIncorrectPassword  = errors.New("password is incorrect")
 	ErrGenerateToken      = errors.New("generate token failed")
 	ErrGetUser            = errors.New("get user failed")
+	ErrPasswordPolicy     = errors.New("password policy validation failed")
 )
 
 type AuthService interface {
@@ -40,12 +41,18 @@ type LoginSuccess struct {
 type authService struct {
 	JWTService
 	database.DaoProvider
+	PasswordPolicyService
 }
 
-func NewAuthService(daoProvider database.DaoProvider, jwtService JWTService) AuthService {
+func NewAuthService(
+	daoProvider database.DaoProvider,
+	jwtService JWTService,
+	passwordPolicyService PasswordPolicyService,
+) AuthService {
 	return &authService{
-		DaoProvider: daoProvider,
-		JWTService:  jwtService,
+		DaoProvider:           daoProvider,
+		JWTService:            jwtService,
+		PasswordPolicyService: passwordPolicyService,
 	}
 }
 
@@ -53,6 +60,11 @@ func (a *authService) Register(ctx context.Context, username, password string) (
 	dao, err := a.DaoProvider.Dao()
 	if err != nil {
 		return model.User{}, fmt.Errorf("%w: %w: %w", Err, ErrRegister, err)
+	}
+
+	// Validate password policy
+	if err := a.PasswordPolicyService.ValidatePassword(password); err != nil {
+		return model.User{}, fmt.Errorf("%w: %w: %w", Err, ErrRegister, fmt.Errorf("%w: %w", ErrPasswordPolicy, err))
 	}
 
 	// Check if user already exists
