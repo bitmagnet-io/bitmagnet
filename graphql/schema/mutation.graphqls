@@ -3,4 +3,5 @@ type Mutation {
   queue: QueueMutation!
   worker: WorkerMutation!
   config: ConfigMutation!
+  auth: AuthMutation!
 }

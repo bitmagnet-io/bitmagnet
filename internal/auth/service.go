@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/database"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -24,11 +25,14 @@ var (
 	ErrGenerateToken      = errors.New("generate token failed")
 	ErrGetUser            = errors.New("get user failed")
 	ErrPasswordPolicy     = errors.New("password policy validation failed")
+	ErrUpdatePassword     = errors.New("update password failed")
+	ErrTransaction        = errors.New("database transaction failed")
 )
 
 type AuthService interface {
 	Register(ctx context.Context, username, password string) (model.User, error)
 	Login(ctx context.Context, username, password string) (LoginSuccess, error)
+	UpdatePassword(ctx context.Context, userID int32, currentPassword, newPassword string) error
 	GetUserByID(ctx context.Context, id int32) (model.User, error)
 	GetUserByUsername(ctx context.Context, username string) (model.User, error)
 }
@@ -39,61 +43,62 @@ type LoginSuccess struct {
 }
 
 type authService struct {
+	database.DaoTransactionProvider
 	JWTService
-	database.DaoProvider
 	PasswordPolicyService
 }
 
 func NewAuthService(
-	daoProvider database.DaoProvider,
+	daoProvider database.DaoTransactionProvider,
 	jwtService JWTService,
 	passwordPolicyService PasswordPolicyService,
 ) AuthService {
 	return &authService{
-		DaoProvider:           daoProvider,
-		JWTService:            jwtService,
-		PasswordPolicyService: passwordPolicyService,
+		DaoTransactionProvider: daoProvider,
+		JWTService:             jwtService,
+		PasswordPolicyService:  passwordPolicyService,
 	}
 }
 
 func (a *authService) Register(ctx context.Context, username, password string) (model.User, error) {
-	dao, err := a.DaoProvider.Dao()
-	if err != nil {
-		return model.User{}, fmt.Errorf("%w: %w: %w", Err, ErrRegister, err)
-	}
-
 	// Validate password policy
 	if err := a.PasswordPolicyService.ValidatePassword(password); err != nil {
 		return model.User{}, fmt.Errorf("%w: %w: %w", Err, ErrRegister, fmt.Errorf("%w: %w", ErrPasswordPolicy, err))
 	}
 
-	// Check if user already exists
-	existing, err := dao.WithContext(ctx).User.Where(dao.User.Username.Eq(username)).Count()
-	if err != nil {
-		return model.User{}, fmt.Errorf("%w: %w: %w", Err, ErrRegister, err)
-	}
-
-	if existing > 0 {
-		return model.User{}, fmt.Errorf("%w: %w: %w", Err, ErrRegister, ErrUserAlreadyExists)
-	}
-
-	// Hash password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return model.User{}, fmt.Errorf("%w: %w: %w", Err, ErrRegister, err)
-	}
-
 	// Create user
 	user := &model.User{
 		Username:  username,
-		Password:  model.NewNullString(string(hashedPassword)),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
 
-	err = dao.WithContext(ctx).User.Create(user)
-	if err != nil {
+	// Hash password
+	if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost); err != nil {
 		return model.User{}, fmt.Errorf("%w: %w: %w", Err, ErrRegister, err)
+	} else {
+		user.Password = model.NewNullString(string(hashedPassword))
+	}
+
+	var errUser error
+
+	errTx := a.DaoTransaction(func(tx *dao.Query) error {
+		// Check if user already exists
+		if existing, err := tx.WithContext(ctx).User.Where(dao.User.Username.Eq(username)).Count(); err != nil {
+			return err
+		} else if existing > 0 {
+			errUser = ErrUserAlreadyExists
+
+			return nil
+		}
+
+		return tx.WithContext(ctx).User.Create(user)
+	})
+
+	if errTx != nil {
+		return model.User{}, fmt.Errorf("%w: %w: %w: %w", Err, ErrRegister, ErrTransaction, errTx)
+	} else if errUser != nil {
+		return model.User{}, fmt.Errorf("%w: %w: %w", Err, ErrRegister, errUser)
 	}
 
 	// Clear password from response
@@ -103,7 +108,7 @@ func (a *authService) Register(ctx context.Context, username, password string) (
 }
 
 func (a *authService) Login(ctx context.Context, username, password string) (LoginSuccess, error) {
-	dao, err := a.DaoProvider.Dao()
+	dao, err := a.Dao()
 	if err != nil {
 		return LoginSuccess{}, fmt.Errorf("%w: %w: %w", Err, ErrLogin, err)
 	}
@@ -143,8 +148,67 @@ func (a *authService) Login(ctx context.Context, username, password string) (Log
 	}, nil
 }
 
+func (a *authService) UpdatePassword(ctx context.Context, userID int32, currentPassword, newPassword string) error {
+	// Validate new password policy
+	if err := a.PasswordPolicyService.ValidatePassword(newPassword); err != nil {
+		return fmt.Errorf("%w: %w: %w", Err, ErrUpdatePassword, fmt.Errorf("%w: %w", ErrPasswordPolicy, err))
+	}
+
+	// Hash new password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("%w: %w: %w", Err, ErrUpdatePassword, err)
+	}
+
+	var errUser error
+
+	errTx := a.DaoTransaction(func(tx *dao.Query) error {
+		// Get the user
+		user, err := tx.WithContext(ctx).User.Where(dao.User.ID.Eq(userID)).First()
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				errUser = ErrUserNotFound
+
+				return nil
+			}
+
+			return err
+		}
+
+		// Check if user has a password
+		if user.Password.Valid {
+			// Verify current password
+			err = bcrypt.CompareHashAndPassword([]byte(user.Password.String), []byte(currentPassword))
+			if err != nil {
+				errUser = fmt.Errorf("%w: %w", ErrIncorrectPassword, err)
+
+				return nil
+			}
+		} else if currentPassword != "" {
+			errUser = ErrIncorrectPassword
+
+			return nil
+		}
+
+		// Update password
+		_, err = tx.WithContext(ctx).User.Where(dao.User.ID.Eq(userID)).UpdateSimple(
+			dao.User.Password.Value(model.NewNullString(string(hashedPassword))),
+		)
+
+		return err
+	})
+
+	if errTx != nil {
+		return fmt.Errorf("%w: %w: %w: %w", Err, ErrUpdatePassword, ErrTransaction, errTx)
+	} else if errUser != nil {
+		return fmt.Errorf("%w: %w: %w", Err, ErrUpdatePassword, errUser)
+	}
+
+	return nil
+}
+
 func (a *authService) GetUserByID(ctx context.Context, id int32) (model.User, error) {
-	dao, err := a.DaoProvider.Dao()
+	dao, err := a.Dao()
 	if err != nil {
 		return model.User{}, fmt.Errorf("%w: %w: %w", Err, ErrGetUser, err)
 	}
@@ -165,7 +229,7 @@ func (a *authService) GetUserByID(ctx context.Context, id int32) (model.User, er
 }
 
 func (a *authService) GetUserByUsername(ctx context.Context, username string) (model.User, error) {
-	dao, err := a.DaoProvider.Dao()
+	dao, err := a.Dao()
 	if err != nil {
 		return model.User{}, fmt.Errorf("%w: %w: %w", Err, ErrGetUser, err)
 	}
