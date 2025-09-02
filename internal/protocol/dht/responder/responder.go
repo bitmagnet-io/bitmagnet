@@ -49,6 +49,7 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 		err = ErrMissingArguments
 		return
 	}
+	unmappedFromAddr := msg.From.Addr().Unmap()
 
 	ret.ID = r.nodeID
 
@@ -59,7 +60,7 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 			err = ErrMissingArguments
 			return
 		}
-		wantsV4, wantsV6 := r.wants(args, msg.From)
+		wantsV4, wantsV6 := r.wants(args, unmappedFromAddr)
 		if wantsV4 {
 			ret.Nodes = nodeInfosFromNodes(r.kTable.GetClosestNodes(args.Target)...)
 		}
@@ -71,12 +72,12 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 			err = ErrMissingArguments
 			return
 		}
-		wantsV4, wantsV6 := r.wants(args, msg.From)
+		wantsV4, wantsV6 := r.wants(args, unmappedFromAddr)
 
 		// Query v4 table if needed (for v4 nodes or values from a v4 request)
-		if wantsV4 || msg.From.Addr().Is4() {
+		if wantsV4 || unmappedFromAddr.Is4() {
 			result := r.kTable.GetHashOrClosestNodes(args.InfoHash)
-			if msg.From.Addr().Is4() && result.Found {
+			if unmappedFromAddr.Is4() && result.Found {
 				ret.Values = peersToNodeAddrs(result.Hash.Peers())
 			}
 			if wantsV4 {
@@ -85,9 +86,9 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 		}
 
 		// Query v6 table if needed (for v6 nodes or values from a v6 request)
-		if wantsV6 || msg.From.Addr().Is6() {
+		if wantsV6 || unmappedFromAddr.Is6() {
 			result := r.kTable6.GetHashOrClosestNodes(args.InfoHash)
-			if msg.From.Addr().Is6() && result.Found {
+			if unmappedFromAddr.Is6() && result.Found {
 				ret.Values = peersToNodeAddrs(result.Hash.Peers())
 			}
 			if wantsV6 {
@@ -95,7 +96,7 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 			}
 		}
 
-		token := r.announceToken(args.InfoHash, args.ID, msg.From.Addr())
+		token := r.announceToken(args.InfoHash, args.ID, unmappedFromAddr)
 		ret.Token = &token
 	case dht.QAnnouncePeer:
 		if args.InfoHash == [20]byte{} {
@@ -103,16 +104,16 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 			return
 		}
 
-		if args.Token != r.announceToken(args.InfoHash, args.ID, msg.From.Addr()) {
+		if args.Token != r.announceToken(args.InfoHash, args.ID, unmappedFromAddr) {
 			err = ErrInvalidToken
 			return
 		}
 
-		r.tableForAddr(msg.From.Addr()).BatchCommand(ktable.PutHash{ID: args.InfoHash, Peers: []ktable.HashPeer{{
-			Addr: netip.AddrPortFrom(msg.From.Addr(), msg.AnnouncePort()),
+		r.tableForAddr(unmappedFromAddr).BatchCommand(ktable.PutHash{ID: args.InfoHash, Peers: []ktable.HashPeer{{
+			Addr: netip.AddrPortFrom(unmappedFromAddr, msg.AnnouncePort()),
 		}}})
 	case dht.QSampleInfohashes:
-		result := r.tableForAddr(msg.From.Addr()).SampleHashesAndNodes()
+		result := r.tableForAddr(unmappedFromAddr).SampleHashesAndNodes()
 		samples := make(dht.CompactInfohashes, 0, len(result.Hashes))
 
 		for _, h := range result.Hashes {
@@ -120,9 +121,9 @@ func (r responder) Respond(_ context.Context, msg dht.RecvMsg) (ret dht.Return, 
 		}
 
 		ret.Samples = &samples
-		if msg.From.Addr().Is4() {
+		if unmappedFromAddr.Is4() {
 			ret.Nodes = nodeInfosFromNodes(result.Nodes...)
-		} else if msg.From.Addr().Is6() {
+		} else if unmappedFromAddr.Is6() {
 			ret.Nodes6 = nodeInfosFromNodes(result.Nodes...)
 		}
 		numInt64 := int64(result.TotalHashes)
@@ -143,7 +144,7 @@ func (r responder) tableForAddr(addr netip.Addr) ktable.Table {
 	return r.kTable
 }
 
-func (r responder) wants(args *dht.MsgArgs, from netip.AddrPort) (v4, v6 bool) {
+func (r responder) wants(args *dht.MsgArgs, from netip.Addr) (v4, v6 bool) {
 	if len(args.Want) > 0 {
 		for _, w := range args.Want {
 			switch w {
@@ -154,8 +155,8 @@ func (r responder) wants(args *dht.MsgArgs, from netip.AddrPort) (v4, v6 bool) {
 			}
 		}
 	}
-	v4 = v4 || from.Addr().Is4()
-	v6 = v6 || from.Addr().Is6()
+	v4 = v4 || from.Is4()
+	v6 = v6 || from.Is6()
 
 	return
 }
