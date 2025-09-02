@@ -83,16 +83,15 @@ type GetHashOrClosestNodes struct {
 }
 
 func (c GetHashOrClosestNodes) execReturn(t *table) GetHashOrClosestNodesResult {
+	closestNodes := t.nodes.getClosest(c.ID)
 	h, ok := t.hashes.get(c.ID)
 	if ok {
 		return GetHashOrClosestNodesResult{
-			Hash:  h,
-			Found: true,
+			Hash:         h,
+			ClosestNodes: closestNodes,
+			Found:        true,
 		}
 	}
-
-	closestNodes := t.nodes.getClosest(c.ID)
-
 	return GetHashOrClosestNodesResult{
 		ClosestNodes: closestNodes,
 	}

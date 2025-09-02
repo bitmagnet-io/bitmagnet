@@ -15,7 +15,7 @@ import (
 
 type Params struct {
 	fx.In
-	KTable          ktable.Table
+	KTableFactory   func() ktable.Table
 	DiscoveredNodes concurrency.BatchingChannel[ktable.Node] `name:"dht_discovered_nodes"`
 	Logger          *zap.SugaredLogger
 }
@@ -35,10 +35,16 @@ const (
 )
 
 func New(p Params) Result {
+	v4table := p.KTableFactory()
+	v6table := p.KTableFactory()
+	if v4table.Origin() != v6table.Origin() {
+		panic("v4 and v6 tables have different origins")
+	}
 	collector := newPrometheusCollector(responderLimiter{
 		responder: responder{
-			nodeID:                   p.KTable.Origin(),
-			kTable:                   p.KTable,
+			nodeID:                   v4table.Origin(),
+			kTable:                   v4table,
+			kTable6:                  v6table,
 			tokenSecret:              protocol.RandomNodeID().Bytes(),
 			sampleInfoHashesInterval: 10,
 		},

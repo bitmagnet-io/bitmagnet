@@ -21,6 +21,7 @@ func New() fx.Option {
 			},
 			client.New,
 			ktable.New,
+			ktable.NewFactory,
 			responder.New,
 			server.New,
 		),

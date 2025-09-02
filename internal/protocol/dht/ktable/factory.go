@@ -124,3 +124,9 @@ func patchPrometheusCollector[
 
 	return collector
 }
+
+func NewFactory(p Params) func() Table {
+	return func() Table {
+		return New(p).Table
+	}
+}
