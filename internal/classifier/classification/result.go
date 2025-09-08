@@ -2,10 +2,22 @@ package classification
 
 import "github.com/bitmagnet-io/bitmagnet/internal/model"
 
+type TagAction struct {
+	Add    map[string]struct{}
+	Delete map[string]struct{}
+}
+
+func NewTagAction() *TagAction {
+	return &TagAction{
+		Add:    make(map[string]struct{}),
+		Delete: make(map[string]struct{}),
+	}
+}
+
 type Result struct {
 	ContentAttributes
 	Content *model.Content
-	Tags    map[string]struct{}
+	Tags    *TagAction
 }
 
 func (r *Result) ApplyHint(h model.TorrentHint) {

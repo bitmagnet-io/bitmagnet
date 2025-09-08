@@ -92,6 +92,7 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 	tcs := make([]model.TorrentContent, 0, len(searchResult.Torrents))
 
 	tagsToAdd := make(map[protocol.ID]map[string]struct{})
+	tagsToDelete := make(map[protocol.ID]map[string]struct{})
 
 	failedHashes := make([]protocol.ID, 0, len(searchResult.MissingInfoHashes))
 	failedHashes = append(failedHashes, searchResult.MissingInfoHashes...)
@@ -149,8 +150,14 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 
 				tcs = append(tcs, torrentContent)
 
-				if len(cl.Tags) > 0 {
-					tagsToAdd[torrent.InfoHash] = cl.Tags
+				if cl.Tags != nil {
+					if len(cl.Tags.Add) > 0 {
+						tagsToAdd[torrent.InfoHash] = cl.Tags.Add
+					}
+
+					if len(cl.Tags.Delete) > 0 {
+						tagsToDelete[torrent.InfoHash] = cl.Tags.Delete
+					}
 				}
 			}
 		}(torrent)
@@ -189,6 +196,7 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		deleteIDs:        idsToDelete,
 		deleteInfoHashes: infoHashesToDelete,
 		addTags:          tagsToAdd,
+		deleteTags:       tagsToDelete,
 	})
 }
 

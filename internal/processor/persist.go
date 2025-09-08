@@ -16,13 +16,15 @@ type persistPayload struct {
 	deleteIDs        []string
 	deleteInfoHashes []protocol.ID
 	addTags          map[protocol.ID]map[string]struct{}
+	deleteTags       map[protocol.ID]map[string]struct{}
 }
 
 func (c processor) persist(ctx context.Context, payload persistPayload) error {
 	contentsMap := make(map[model.ContentRef]struct{}, len(payload.torrentContents))
 	contentsPtr := make([]*model.Content, 0, len(payload.torrentContents))
 	torrentContentsPtr := make([]*model.TorrentContent, 0, len(payload.torrentContents))
-	torrentTagsPtr := make([]*model.TorrentTag, 0, len(payload.addTags))
+	torrentTagsAddPtr := make([]*model.TorrentTag, 0, len(payload.addTags))
+	torrentTagsDelPtr := make([]*model.TorrentTag, 0, len(payload.deleteTags))
 
 	for _, tc := range payload.torrentContents {
 		tcCopy := tc
@@ -43,7 +45,16 @@ func (c processor) persist(ctx context.Context, payload persistPayload) error {
 
 	for infoHash, tags := range payload.addTags {
 		for tag := range tags {
-			torrentTagsPtr = append(torrentTagsPtr, &model.TorrentTag{
+			torrentTagsAddPtr = append(torrentTagsAddPtr, &model.TorrentTag{
+				InfoHash: infoHash,
+				Name:     tag,
+			})
+		}
+	}
+
+	for infoHash, tags := range payload.deleteTags {
+		for tag := range tags {
+			torrentTagsDelPtr = append(torrentTagsDelPtr, &model.TorrentTag{
 				InfoHash: infoHash,
 				Name:     tag,
 			})
@@ -84,12 +95,22 @@ func (c processor) persist(ctx context.Context, payload persistPayload) error {
 			}
 		}
 
-		if len(torrentTagsPtr) > 0 {
+		if len(torrentTagsDelPtr) > 0 {
+			if _, deleteErr := tx.TorrentTag.WithContext(ctx).Clauses(
+				clause.OnConflict{
+					DoNothing: true,
+				},
+			).Delete(torrentTagsDelPtr...); deleteErr != nil {
+				return deleteErr
+			}
+		}
+
+		if len(torrentTagsAddPtr) > 0 {
 			if createErr := tx.TorrentTag.WithContext(ctx).Clauses(
 				clause.OnConflict{
 					DoNothing: true,
 				},
-			).CreateInBatches(torrentTagsPtr, 100); createErr != nil {
+			).CreateInBatches(torrentTagsAddPtr, 100); createErr != nil {
 				return createErr
 			}
 		}
