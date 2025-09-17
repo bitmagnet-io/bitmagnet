@@ -1,4 +1,7 @@
 type TorrentQuery {
+  searchTorrentContent(
+    input: TorrentContentSearchQueryInput!
+  ): TorrentContentSearchResult!
   files(input: TorrentFilesQueryInput!): TorrentFilesQueryResult!
   listSources: TorrentListSourcesResult!
   suggestTags(input: SuggestTagsQueryInput): TorrentSuggestTagsResult!
@@ -25,6 +28,7 @@ type SuggestedTag {
 
 type TorrentMutation {
   delete(infoHashes: [Hash20!]!): Void
+    @auth(object: "torrent", action: "delete")
   putTags(infoHashes: [Hash20!]!, tagNames: [String!]!): Void
   setTags(infoHashes: [Hash20!]!, tagNames: [String!]!): Void
   deleteTags(infoHashes: [Hash20!], tagNames: [String!]): Void

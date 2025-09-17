@@ -1,3 +1,4 @@
+# todo: Consolidate with PaginationInput
 input TorrentFilesQueryInput {
   limit: Int
   page: Int

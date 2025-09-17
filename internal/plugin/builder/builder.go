@@ -3,11 +3,13 @@ package builder
 import (
 	"errors"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/auth/rbac"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/param"
 	config_registry "github.com/bitmagnet-io/bitmagnet/internal/config/registry"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
 	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
+	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/handler"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
@@ -15,7 +17,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
 	"github.com/gin-gonic/gin"
-	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
 	"go.uber.org/zap/zapcore"
@@ -23,25 +24,21 @@ import (
 )
 
 type builder[Deps any] struct {
-	ref          ref.Ref
-	description  string
-	activation   plugin.Activation
-	dependencies []ref.Ref
-	params       []config_registry.Param
-	fxOptions    []fx.Option
-	commands     []plugin.Command
+	ref           ref.Ref
+	activation    plugin.Activation
+	dependencies  []ref.Ref
+	params        []config_registry.Param
+	i18nProviders []i18n.Provider
+	errors        ref.Map[error]
+	fxOptions     []fx.Option
+	commands      []plugin.Command
 }
-
-// var paramEnabled = param.MustNew(
-// 	param.Description[bool]("Enabled"),
-// 	param.Bool[bool](),
-// 	param.Default(plugin.EnabledByDefault()),
-// )
 
 func NewPlugin[Deps any](rf ref.Ref, options ...Option[Deps]) plugin.Plugin {
 	b := &builder[Deps]{
 		ref:        rf,
 		activation: plugin.ActivationAuto,
+		errors:     ref.NewMap[error](),
 	}
 
 	for _, option := range options {
@@ -74,6 +71,8 @@ func NewPlugin[Deps any](rf ref.Ref, options ...Option[Deps]) plugin.Plugin {
 		activationRef,
 		b.dependencies,
 		params,
+		b.errors,
+		i18n.Providers(b.i18nProviders...),
 		b.commands,
 		fx.Options(b.fxOptions...),
 	)
@@ -91,19 +90,10 @@ func options[Deps any](options ...Option[Deps]) Option[Deps] {
 
 func WithDescription[Deps any](description string) Option[Deps] {
 	return func(b *builder[Deps]) {
-		b.description = description
-
-		WithFxOption[Deps](
-			fx.Supply(
-				fx.Annotate(
-					&i18n.Message{
-						ID:          b.ref.String(),
-						Description: "description for plugin " + b.ref.String(),
-						Other:       description,
-					},
-					fx.ResultTags(`group:"i18n_messages"`),
-				),
-			),
+		WithI18nMessage[Deps](
+			b.ref,
+			"description for plugin "+b.ref.String(),
+			i18n.WithOther(description),
 		)(b)
 	}
 }
@@ -130,16 +120,6 @@ func WithConfig[Deps any, T any](ref ref.Ref, param param.Param[T]) Option[Deps]
 			})
 		},
 		WithFxOption[Deps](
-			fx.Supply(
-				fx.Annotate(
-					&i18n.Message{
-						ID:          ref.String(),
-						Description: "description for config " + ref.String(),
-						Other:       param.Description(),
-					},
-					fx.ResultTags(`group:"i18n_messages"`),
-				),
-			),
 			fx.Provide(
 				func(allResolved resolver.Resolved) (T, error) {
 					var (
@@ -163,6 +143,24 @@ func WithConfig[Deps any, T any](ref ref.Ref, param param.Param[T]) Option[Deps]
 			),
 		),
 	)
+}
+
+func WithI18nMessage[Deps any](ref ref.Ref, description string, options ...i18n.MessageOption) Option[Deps] {
+	return WithI18nProvider[Deps](i18n.NewProvider(
+		i18n.NewMessage(ref.String(), description, options...),
+	))
+}
+
+func WithI18nProvider[Deps any](provider i18n.Provider) Option[Deps] {
+	return func(builder *builder[Deps]) {
+		builder.i18nProviders = append(builder.i18nProviders, provider)
+	}
+}
+
+func WithError[Deps any](ref ref.Ref, err error) Option[Deps] {
+	return func(builder *builder[Deps]) {
+		builder.errors.Set(ref, err)
+	}
 }
 
 func WithFxOption[Deps any](options ...fx.Option) Option[Deps] {
@@ -256,4 +254,38 @@ func WithCliCommand[Deps any](
 	return func(b *builder[Deps]) {
 		b.commands = append(b.commands, commands...)
 	}
+}
+
+func WithAuthObjectActions[Deps any](
+	provider func(Deps) []rbac.ObjectAction,
+) Option[Deps] {
+	return WithFxOption[Deps](
+		fx.Provide(
+			fx.Annotate(
+				func(deps Deps) rbac.ObjectActionProvider {
+					return func() []rbac.ObjectAction {
+						return provider(deps)
+					}
+				},
+				fx.ResultTags(`group:"auth_object_actions"`),
+			),
+		),
+	)
+}
+
+func WithPermissionProvider[Deps any](
+	provider func(Deps) []rbac.Permission,
+) Option[Deps] {
+	return WithFxOption[Deps](
+		fx.Provide(
+			fx.Annotate(
+				func(deps Deps) rbac.PermissionProvider {
+					return func() []rbac.Permission {
+						return provider(deps)
+					}
+				},
+				fx.ResultTags(`group:"auth_permissions"`),
+			),
+		),
+	)
 }

@@ -1,0 +1,9 @@
+#import "../fragments/Role"
+
+mutation PutRole($role: String!, $objectActions: [AuthObjectActionInput!]!) {
+  auth {
+    putRole(role: $role, objectActions: $objectActions) {
+      ...Role
+    }
+  }
+}

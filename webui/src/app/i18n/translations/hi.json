@@ -26,7 +26,7 @@
       "xxx": "XXX"
     }
   },
-  "dashboard": {
+  "admin": {
     "event": {
       "created": "बनाया गया",
       "failed": "असफल",
@@ -229,7 +229,6 @@
   },
   "routes": {
     "admin": "प्रशासक",
-    "dashboard": "डैशबोर्ड",
     "home": "होम",
     "jobs": "नौकरियां",
     "queues": "कतारें",

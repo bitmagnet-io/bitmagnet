@@ -5,6 +5,7 @@
 package model
 
 import (
+	"database/sql"
 	"time"
 )
 
@@ -12,12 +13,19 @@ const TableNameUser = "users"
 
 // User mapped from table <users>
 type User struct {
-	ID          int32      `gorm:"column:id;primaryKey;autoIncrement:true;<-:false" json:"id"`
-	Username    string     `gorm:"column:username;not null" json:"username"`
-	Password    NullString `gorm:"column:password" json:"-"`
-	LastLoginAt time.Time  `gorm:"column:last_login_at" json:"lastLoginAt"`
-	CreatedAt   time.Time  `gorm:"column:created_at;not null;<-:create" json:"createdAt"`
-	UpdatedAt   time.Time  `gorm:"column:updated_at;not null" json:"updatedAt"`
+	ID              int              `gorm:"column:id;primaryKey;autoIncrement:true;<-:false" json:"id"`
+	Username        string           `gorm:"column:username;not null" json:"username"`
+	Email           NullString       `gorm:"column:email" json:"email"`
+	EmailVerified   bool             `gorm:"column:email_verified;not null" json:"emailVerified"`
+	EmailVerifyCode NullString       `gorm:"column:email_verify_code" json:"emailVerifyCode"`
+	Password        []byte           `gorm:"column:password" json:"-"`
+	RoleName        string           `gorm:"column:role_name;not null" json:"roleName"`
+	Enabled         bool             `gorm:"column:enabled;not null" json:"enabled"`
+	LastLoginAt     sql.NullTime     `gorm:"column:last_login_at" json:"lastLoginAt"`
+	CreatedAt       time.Time        `gorm:"column:created_at;not null;<-:create" json:"createdAt"`
+	UpdatedAt       time.Time        `gorm:"column:updated_at;not null" json:"updatedAt"`
+	Role            Role             `gorm:"foreignKey:Name;references:RoleName" json:"role"`
+	Permissions     []RolePermission `gorm:"foreignKey:RoleName;references:RoleName" json:"permissions"`
 }
 
 // TableName User's table name

@@ -2,9 +2,14 @@ package graphql
 
 import (
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/bitmagnet-io/bitmagnet/internal/auth/rbac"
+	"github.com/bitmagnet-io/bitmagnet/internal/error_registry"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
+	"github.com/bitmagnet-io/bitmagnet/internal/gql/auth"
+	"github.com/bitmagnet-io/bitmagnet/internal/gql/directive"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/resolvers"
+	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database/postgres"
@@ -17,12 +22,16 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/queue"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/worker"
 	"github.com/gin-gonic/gin"
+	"github.com/vektah/gqlparser/v2/ast"
 	"go.uber.org/fx"
 )
 
 type deps struct {
 	fx.In
-	Schema graphql.ExecutableSchema
+	Schema         graphql.ExecutableSchema
+	AuthDirectives directive.AuthDirectives
+	ErrorRegistry  error_registry.Registry
+	I18n           *i18n.Bundle
 }
 
 var (
@@ -46,19 +55,39 @@ var (
 			fx.Provide(
 				func(
 					resolverRoot resolvers.Resolver,
+					enforcer rbac.Enforcer,
 				) graphql.ExecutableSchema {
 					return gql.NewExecutableSchema(gql.Config{
 						Resolvers: &resolverRoot,
+						Directives: gql.DirectiveRoot{
+							Auth: auth.NewDirective(enforcer),
+						},
 					})
 				},
+				func(schema graphql.ExecutableSchema) *ast.Schema {
+					return schema.Schema()
+				},
+				directive.ExtractSchemaDirectives,
+				directive.ExtractAuthDirectives,
 			),
+		),
+		builder.WithAuthObjectActions(
+			func(deps deps) []rbac.ObjectAction {
+				return auth.AuthObjectActions(deps.AuthDirectives)
+			},
+		),
+		builder.WithPermissionProvider(
+			func(deps) []rbac.Permission {
+				return auth.Permissions()
+			},
 		),
 		builder.WithGinOption(
 			Ref,
 			0,
 			func(deps deps) gin.OptionFunc {
-				return httpserver.New(deps.Schema)
+				return httpserver.New(deps.Schema, deps.ErrorRegistry, deps.I18n)
 			},
 		),
+		builder.WithError[deps](Ref.MustSub("unauthorized"), auth.ErrUnauthorized),
 	)
 )

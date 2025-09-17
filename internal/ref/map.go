@@ -4,15 +4,17 @@ import (
 	"cmp"
 	"maps"
 	"slices"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 )
 
 type Map[T any] struct {
-	m map[string]entry[T]
+	m map[string]Entry[T]
 }
 
 func NewMap[T any]() Map[T] {
 	return Map[T]{
-		m: make(map[string]entry[T]),
+		m: make(map[string]Entry[T]),
 	}
 }
 
@@ -22,15 +24,15 @@ func NewSet() Set {
 	return NewMap[struct{}]()
 }
 
-type entry[T any] struct {
+type Entry[T any] struct {
 	Ref
-	value T
+	Value T
 }
 
 func (m Map[T]) Set(ref Ref, value T) {
-	m.m[ref.String()] = entry[T]{
+	m.m[ref.String()] = Entry[T]{
 		Ref:   ref,
-		value: value,
+		Value: value,
 	}
 }
 
@@ -51,7 +53,19 @@ func (m Map[T]) Get(ref Ref) T {
 func (m Map[T]) GetOK(ref Ref) (T, bool) {
 	e, ok := m.m[ref.String()]
 
-	return e.value, ok
+	return e.Value, ok
+}
+
+func (m Map[T]) Entry(ref Ref) Entry[T] {
+	e, _ := m.EntryOK(ref)
+
+	return e
+}
+
+func (m Map[T]) EntryOK(ref Ref) (Entry[T], bool) {
+	e, ok := m.m[ref.String()]
+
+	return e, ok
 }
 
 func (m Map[T]) Has(ref Ref) bool {
@@ -78,17 +92,23 @@ func (m Map[T]) Values() []T {
 	values := make([]T, 0, len(m.m))
 
 	for _, ref := range m.Refs() {
-		values = append(values, m.m[ref.String()].value)
+		values = append(values, m.m[ref.String()].Value)
 	}
 
 	return values
+}
+
+func (m Map[T]) Entries() []Entry[T] {
+	return slice.Map(m.Refs(), func(ref Ref) Entry[T] {
+		return m.m[ref.String()]
+	})
 }
 
 func (m Map[T]) StringMap() map[string]T {
 	strMap := make(map[string]T, len(m.m))
 
 	for key, entry := range m.m {
-		strMap[key] = entry.value
+		strMap[key] = entry.Value
 	}
 
 	return strMap

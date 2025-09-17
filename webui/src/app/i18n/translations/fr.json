@@ -26,7 +26,7 @@
       "xxx": "XXX"
     }
   },
-  "dashboard": {
+  "admin": {
     "event": {
       "created": "Créé",
       "failed": "Échoué",
@@ -229,7 +229,6 @@
   },
   "routes": {
     "admin": "Admin",
-    "dashboard": "Tableau de bord",
     "home": "Accueil",
     "jobs": "Tâches",
     "queues": "Files d'attente",

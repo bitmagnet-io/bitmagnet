@@ -144,7 +144,7 @@ export class TorrentsSearchDatasource
         variables,
         fetchPolicy: "no-cache",
       })
-      .pipe(map((r) => r.data.torrentContent.search))
+      .pipe(map((r) => r.data.torrent.searchTorrentContent))
       .pipe(
         catchError((err: Error) => {
           this.errorsService.addError(

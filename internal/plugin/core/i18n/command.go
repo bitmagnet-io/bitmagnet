@@ -24,7 +24,7 @@ type i18nCommand struct {
 
 type i18nCommandDeps struct {
 	fx.In
-	Messages []*i18n.Message `group:"i18n_messages"`
+	Provider i18n.Provider
 }
 
 func (c *i18nCommand) Name() string {
@@ -40,6 +40,7 @@ func (c *i18nCommand) Subcommands() []cmd.Command {
 	}
 }
 
+// todo: Should be a dev command
 type extractCommand struct {
 	cmd.Cmd
 	cmd.App[i18nCommandDeps]
@@ -48,7 +49,7 @@ type extractCommand struct {
 func (cmd *extractCommand) Run(env env.Env) error {
 	return cmd.NewRunner(func(deps i18nCommandDeps) runner.Runner {
 		return runner.SimpleRunner(func(context.Context) error {
-			return i18n.Write(deps.Messages)
+			return i18n.Write(deps.Provider())
 		})
 	})(env)
 }

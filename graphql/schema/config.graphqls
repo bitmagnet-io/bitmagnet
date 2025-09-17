@@ -1,5 +1,5 @@
 type ConfigQuery {
-  params: [ConfigParam!]!
+  params: [ConfigParam!]! @auth(object: "config", action: "read")
   pending: Boolean!
 }
 

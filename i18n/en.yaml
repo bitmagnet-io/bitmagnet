@@ -1,53 +1,131 @@
+core.auth:
+    description: description for plugin core.auth
+    other: Provides user authentication and authorization services
+core.auth.jwt.duration:
+    description: 'description for config: core.auth.jwt.duration'
+    other: JWT validity duration
+core.auth.jwt.secret:
+    description: 'description for config: core.auth.jwt.secret'
+    other: JWT secret (if empty, a random string will be generated at runtime)
+core.auth.password_policy.max_length:
+    description: 'description for config: core.auth.password_policy.max_length'
+    other: Maximum password length
+core.auth.password_policy.min_digit:
+    description: 'description for config: core.auth.password_policy.min_digit'
+    other: Minimum number of digits required
+core.auth.password_policy.min_length:
+    description: 'description for config: core.auth.password_policy.min_length'
+    other: Minimum password length
+core.auth.password_policy.min_lower:
+    description: 'description for config: core.auth.password_policy.min_lower'
+    other: Minimum number of lowercase letters required
+core.auth.password_policy.min_special:
+    description: 'description for config: core.auth.password_policy.min_special'
+    other: Minimum number of special characters required
+core.auth.password_policy.min_upper:
+    description: 'description for config: core.auth.password_policy.min_upper'
+    other: Minimum number of uppercase letters required
+core.auth.password_policy.special_chars:
+    description: 'description for config: core.auth.password_policy.special_chars'
+    other: Special characters allowed in passwords
+core.auth.rbac.anonymous_access:
+    description: 'description for config: core.auth.rbac.anonymous_access'
+    other: Allow anonymous access to the application
+core.auth.rbac.cache_ttl:
+    description: 'description for config: core.auth.rbac.cache_ttl'
+    other: Permissions cache TTL
+core.auth.user.account_disabled:
+    description: 'message for error: core.auth.user.account_disabled'
+    other: account is disabled
+core.auth.user.credentials_invalid:
+    description: 'message for error: core.auth.user.credentials_invalid'
+    other: invalid username or password
+core.auth.user.email_invalid:
+    description: 'message for error: core.auth.user.email_invalid'
+    other: invalid email
+core.auth.user.email_missing:
+    description: 'message for error: core.auth.user.email_missing'
+    other: email is required
+core.auth.user.email_required:
+    description: 'description for config: core.auth.user.email_required'
+    other: Require users to have an email address
+core.auth.user.email_verification:
+    description: 'description for config: core.auth.user.email_verification'
+    other: Enable email address verification
+core.auth.user.invitation_claimed:
+    description: 'message for error: core.auth.user.invitation_claimed'
+    other: invitation already claimed
+core.auth.user.invitation_code_missing:
+    description: 'message for error: core.auth.user.invitation_code_missing'
+    other: invitation code is required
+core.auth.user.invitation_expired:
+    description: 'message for error: core.auth.user.invitation_expired'
+    other: invitation expired
+core.auth.user.invitation_not_found:
+    description: 'message for error: core.auth.user.invitation_not_found'
+    other: invitation not found
+core.auth.user.invitation_required:
+    description: 'description for config: core.auth.user.invitation_required'
+    other: Require invitation for registration
+core.auth.user.password_policy_violation:
+    description: 'message for error: core.auth.user.password_policy_violation'
+    other: password validation failed
+core.auth.user.user_already_exists:
+    description: 'message for error: core.auth.user.user_already_exists'
+    other: user already exists
 core.config:
     description: description for plugin core.config
     other: Provides configuration functionality
-core.config.plugin_enabled:
-    description: description for plugin enabled param
-    other: Enabled
+core.config.plugin_activation:
+    description: description for plugin activation param
+    other: Activation
 core.database.gorm.cache:
     description: description for plugin core.database.gorm.cache
     other: Provides Postgres query result caching
+core.database.gorm.cache.activation:
+    description: 'description for config: core.database.gorm.cache.activation'
+    other: Activation
 core.database.gorm.cache.max_items:
-    description: description for config core.database.gorm.cache.max_items
+    description: 'description for config: core.database.gorm.cache.max_items'
     other: Maximum number of items to cache
 core.database.gorm.cache.ttl:
-    description: description for config core.database.gorm.cache.ttl
+    description: 'description for config: core.database.gorm.cache.ttl'
     other: TTL for the cache
 core.database.info_hash_blocker:
     description: description for plugin core.database.info_hash_blocker
     other: Maintains a stable bloom filter of info hashes that have been deleted and blocked, preventing them from being crawled again
 core.database.migrator:
     description: description for plugin core.database.migrator
-    other: Runs databbase migrations on startup
+    other: Runs database migrations on startup
 core.database.persister:
     description: description for plugin core.database.persister
     other: Runs the worker for persisting database entities
 core.database.persister.max_size:
-    description: description for config core.database.persister.max_size
+    description: 'description for config: core.database.persister.max_size'
     other: Maximum buffer size
 core.database.persister.max_wait:
-    description: description for config core.database.persister.max_wait
+    description: 'description for config: core.database.persister.max_wait'
     other: Maximum time to buffer items before flushing
 core.database.postgres:
     description: description for plugin core.database.postgres
     other: Initiates and manages the Postgres database connection
 core.database.postgres.database:
-    description: description for config core.database.postgres.database
+    description: 'description for config: core.database.postgres.database'
     other: Postgres database name
 core.database.postgres.dsn:
-    description: description for config core.database.postgres.dsn
+    description: 'description for config: core.database.postgres.dsn'
     other: Postgres Data Source Name (if specified, all other options for this plugin are ignored)
 core.database.postgres.host:
-    description: description for config core.database.postgres.host
+    description: 'description for config: core.database.postgres.host'
     other: Postgres host
 core.database.postgres.password:
-    description: description for config core.database.postgres.password
+    description: 'description for config: core.database.postgres.password'
     other: Postgres password
 core.database.postgres.port:
-    description: description for config core.database.postgres.port
+    description: 'description for config: core.database.postgres.port'
     other: Postgres port number
 core.database.postgres.user:
-    description: description for config core.database.postgres.user
+    description: 'description for config: core.database.postgres.user'
     other: Postgres username
 core.database.search:
     description: description for plugin core.database.search
@@ -55,38 +133,47 @@ core.database.search:
 core.dht.crawler:
     description: description for plugin core.dht.crawler
     other: Crawls the DHT for torrents
+core.dht.crawler.activation:
+    description: 'description for config: core.dht.crawler.activation'
+    other: Activation
 core.dht.crawler.autostart:
-    description: description for config core.dht.crawler.autostart
-    other: Start the worker automatically
+    description: 'description for config: core.dht.crawler.autostart'
+    other: Start the DHT crawler automatically
 core.dht.crawler.bootstrap_nodes:
-    description: description for config core.dht.crawler.bootstrap_nodes
+    description: 'description for config: core.dht.crawler.bootstrap_nodes'
     other: A list of node addresses for bootstrapping the DHT crawler
 core.dht.crawler.rescrape_threshold:
-    description: description for config core.dht.crawler.rescrape_threshold
+    description: 'description for config: core.dht.crawler.rescrape_threshold'
     other: The minimum interval before re-querying seeder and leecher numbers from the DHT
 core.dht.crawler.reseed_bootstrap_nodes_interval:
-    description: description for config core.dht.crawler.reseed_bootstrap_nodes_interval
+    description: 'description for config: core.dht.crawler.reseed_bootstrap_nodes_interval'
     other: Interval between reseeding of the bootstrap nodes
 core.dht.crawler.save_files_threshold:
-    description: description for config core.dht.crawler.save_files_threshold
+    description: 'description for config: core.dht.crawler.save_files_threshold'
     other: The maximum limit for the number of files saved by the DHT crawler with each torrent
 core.dht.crawler.save_pieces:
-    description: description for config core.dht.crawler.save_pieces
+    description: 'description for config: core.dht.crawler.save_pieces'
     other: Save torrent pieces with each torrent (uses a lot of disk space)
 core.dht.server:
     description: description for plugin core.dht.server
     other: Runs a DHT server node
+core.dht.server.activation:
+    description: 'description for config: core.dht.server.activation'
+    other: Activation
 core.dht.server.query_timeout:
-    description: description for config core.dht.server.query_timeout
+    description: 'description for config: core.dht.server.query_timeout'
     other: Query timeout
 core.dht.socket:
     description: description for plugin core.dht.socket
     other: Runs a UDP socket for the DHT server
+core.dht.socket.activation:
+    description: 'description for config: core.dht.socket.activation'
+    other: Activation
 core.dht.socket.adapter:
-    description: description for config core.dht.socket.adapter
+    description: 'description for config: core.dht.socket.adapter'
     other: Socket adapter name
 core.dht.socket.port:
-    description: description for config core.dht.socket.port
+    description: 'description for config: core.dht.socket.port'
     other: Socket port number
 core.health:
     description: description for plugin core.health
@@ -94,56 +181,107 @@ core.health:
 core.http_server:
     description: description for plugin core.http_server
     other: Runs the HTTP server
+core.http_server.activation:
+    description: 'description for config: core.http_server.activation'
+    other: Activation
 core.http_server.cors:
     description: description for plugin core.http_server.cors
     other: Provides CORS middleware for the HTTP server
 core.http_server.cors.allowed_origins:
-    description: description for config core.http_server.cors.allowed_origins
+    description: 'description for config: core.http_server.cors.allowed_origins'
     other: CORS allowed origins
 core.http_server.docs:
     description: description for plugin core.http_server.docs
     other: Runs an instance of the documentation website at the /docs endpoint
+core.http_server.docs.activation:
+    description: 'description for config: core.http_server.docs.activation'
+    other: Activation
 core.http_server.graphql:
     description: description for plugin core.http_server.graphql
     other: Runs the GraphQL API server
+core.http_server.graphql.activation:
+    description: 'description for config: core.http_server.graphql.activation'
+    other: Activation
+core.http_server.graphql.unauthorized:
+    description: 'message for error: core.http_server.graphql.unauthorized'
+    other: unauthorized
 core.http_server.local_address:
-    description: description for config core.http_server.local_address
+    description: 'description for config: core.http_server.local_address'
     other: Local address on which to listen
 core.http_server.logging:
     description: description for plugin core.http_server.logging
     other: Provides logging for the HTTP server
-core.http_server.recovery:
-    description: description for plugin core.http_server.recovery
-    other: Allows the HTTP server to recover from panics
 core.http_server.webui:
     description: description for plugin core.http_server.webui
-    other: runs the web user interface at the /webui endpoint
+    other: Runs the web user interface at the /webui endpoint
+core.http_server.webui.activation:
+    description: 'description for config: core.http_server.webui.activation'
+    other: Activation
 core.i18n:
     description: description for plugin core.i18n
     other: Provides translations for backend services
 core.importer:
     description: description for plugin core.importer
     other: Runs an import facility at the /import endpoint
+core.importer.activation:
+    description: 'description for config: core.importer.activation'
+    other: Activation
 core.logging:
     description: description for plugin core.logging
     other: Provides logging services
 core.logging.console:
     description: description for plugin core.logging.console
     other: Outputs logs with console formatting
+core.logging.console.activation:
+    description: 'description for config: core.logging.console.activation'
+    other: Activation
+core.logging.file_rotator:
+    description: description for plugin core.logging.file_rotator
+    other: Outputs JSON logs to rotated log files
+core.logging.file_rotator.activation:
+    description: 'description for config: core.logging.file_rotator.activation'
+    other: Activation
+core.logging.file_rotator.base_name:
+    description: 'description for config: core.logging.file_rotator.base_name'
+    other: Base name for log files
+core.logging.file_rotator.buffer_size:
+    description: 'description for config: core.logging.file_rotator.buffer_size'
+    other: Maximum number of logs to keep in memory before writing
+core.logging.file_rotator.level:
+    description: 'description for config: core.logging.file_rotator.level'
+    other: The logging level
+core.logging.file_rotator.max_age:
+    description: 'description for config: core.logging.file_rotator.max_age'
+    other: Maximum age of log files to retain
+core.logging.file_rotator.max_backups:
+    description: 'description for config: core.logging.file_rotator.max_backups'
+    other: Maximum number of log files to retain before deleting
+core.logging.file_rotator.max_size:
+    description: 'description for config: core.logging.file_rotator.max_size'
+    other: Maximum size of a log file before writing to a new file
+core.logging.file_rotator.sub_path:
+    description: 'description for config: core.logging.file_rotator.sub_path'
+    other: Subpath within the data folder to write log files
+core.logging.json:
+    description: description for plugin core.logging.json
+    other: Outputs logs in JSON format
+core.logging.json.activation:
+    description: 'description for config: core.logging.json.activation'
+    other: Activation
 core.logging.level:
-    description: description for config core.logging.level
+    description: 'description for config: core.logging.level'
     other: The logging level
 core.meta_info:
     description: description for plugin core.meta_info
     other: Provides services for downloading torrent meta info from peers
 core.meta_info.dial_timeout:
-    description: description for config core.meta_info.dial_timeout
+    description: 'description for config: core.meta_info.dial_timeout'
     other: Dial timeout
 core.meta_info.max_concurrency:
-    description: description for config core.meta_info.max_concurrency
+    description: 'description for config: core.meta_info.max_concurrency'
     other: Maximum request concurrency
 core.meta_info.request_timeout:
-    description: description for config core.meta_info.request_timeout
+    description: 'description for config: core.meta_info.request_timeout'
     other: Request timeout
 core.metrics:
     description: description for plugin core.metrics
@@ -151,36 +289,48 @@ core.metrics:
 core.metrics.prometheus:
     description: description for plugin core.metrics.prometheus
     other: Provides a Prometheus metrics endpoint at /metrics
+core.metrics.prometheus.activation:
+    description: 'description for config: core.metrics.prometheus.activation'
+    other: Activation
+core.pipeline.batcher:
+    description: description for plugin core.pipeline.batcher
+    other: Provides a queue worker for batch torrent processing jobs
 core.pipeline.classifier:
     description: description for plugin core.pipeline.classifier
     other: Provides the torrent classifier service
 core.pipeline.classifier.concurrency:
-    description: description for config core.pipeline.classifier.concurrency
+    description: 'description for config: core.pipeline.classifier.concurrency'
     other: Maximum number of classifications to run in parallel
 core.pipeline.classifier.delete_xxx:
-    description: description for config core.pipeline.classifier.delete_xxx
+    description: 'description for config: core.pipeline.classifier.delete_xxx'
     other: A boolean flag indicating that XXX content should be deleted by the classifier
 core.pipeline.classifier.extensions:
-    description: description for config core.pipeline.classifier.extensions
+    description: 'description for config: core.pipeline.classifier.extensions'
     other: A map of file types to file extensions associated with them
 core.pipeline.classifier.flags:
-    description: description for config core.pipeline.classifier.flags
+    description: 'description for config: core.pipeline.classifier.flags'
     other: A map of flag keys to flag values for configuring classifier workflows
 core.pipeline.classifier.keywords:
-    description: description for config core.pipeline.classifier.keywords
+    description: 'description for config: core.pipeline.classifier.keywords'
     other: A map of category names to keywords associated with different types of torrents
 core.pipeline.classifier.workflow:
-    description: description for config core.pipeline.classifier.workflow
+    description: 'description for config: core.pipeline.classifier.workflow'
     other: The default classifier workflow
 core.pipeline.processor:
     description: description for plugin core.pipeline.processor
     other: Provides the processor service that classifies and indexes torrents
 core.queue:
     description: description for plugin core.queue
-    other: Runs the queue job worker
+    other: Runs queued background jobs
+core.queue.autostart:
+    description: 'description for config: core.queue.autostart'
+    other: Start the queue worker automatically
 core.torznab:
     description: description for plugin core.torznab
     other: Runs the Torznab API server on the /torznab endpoint
+core.torznab.activation:
+    description: 'description for config: core.torznab.activation'
+    other: Activation
 core.worker:
     description: description for plugin core.worker
     other: Manages workers

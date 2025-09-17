@@ -195,3 +195,9 @@ models:
   Ref:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/ref.Ref
+  RegisterInput:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/auth/user.RegisterRequest
+  PasswordEntropyResult:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/auth/user.PasswordEntropyResult

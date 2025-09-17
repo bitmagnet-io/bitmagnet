@@ -26,11 +26,14 @@ import { MatTabsModule } from "@angular/material/tabs";
 import { RouterModule } from "@angular/router";
 import { TranslocoModule } from "@jsverse/transloco";
 import { GraphQLModule } from "./graphql/graphql.module";
+import { DocumentTitleComponent } from "./layout/document-title.component";
 
 @NgModule({
+  imports: [DocumentTitleComponent],
   exports: [
     ClipboardModule,
     CommonModule,
+    DocumentTitleComponent,
     GraphQLModule,
     MatAutocompleteModule,
     MatButtonModule,

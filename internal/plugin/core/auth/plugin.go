@@ -1,86 +1,131 @@
 package auth
 
 import (
-	"crypto/rand"
-	"encoding/hex"
-
-	"github.com/bitmagnet-io/bitmagnet/internal/auth"
+	"github.com/bitmagnet-io/bitmagnet/internal/auth/http_auth"
+	"github.com/bitmagnet-io/bitmagnet/internal/auth/jwt"
+	"github.com/bitmagnet-io/bitmagnet/internal/auth/rbac"
+	"github.com/bitmagnet-io/bitmagnet/internal/auth/user"
+	"github.com/bitmagnet-io/bitmagnet/internal/database"
+	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database/migrator"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database/postgres"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
+	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
 type deps struct {
 	fx.In
-	Logger                *zap.Logger
-	JWTSecret             auth.JWTSecret
-	JWTDuration           auth.JWTDuration
-	PasswordPolicyConfig  auth.PasswordPolicyConfig
-	AuthService           auth.AuthService
-	JWTService            auth.JWTService
-	PasswordPolicyService auth.PasswordPolicyService
+	HTTPMiddleware http_auth.Middleware
+	UserService    user.Service
+	Logger         *zap.Logger
 }
 
+type service rbac.Service
+
 var (
-	Ref = core.Ref.MustSub("auth")
+	Ref               = core.Ref.MustSub("auth")
+	RefJWT            = Ref.MustSub("jwt")
+	RefPasswordPolicy = Ref.MustSub("password_policy")
+	RefRBAC           = Ref.MustSub("rbac")
+	RefUser           = Ref.MustSub("user")
 
 	Plugin = builder.NewPlugin(
 		Ref,
-		builder.WithDescription[deps]("Provides user authentication services"),
+		builder.WithDescription[deps]("Provides user authentication and authorization services"),
 		builder.WithActivation[deps](plugin.ActivationAlways),
-		builder.WithConfig[deps](Ref.MustSub("jwt_secret"), auth.ParamJWTSecret),
-		builder.WithConfig[deps](Ref.MustSub("jwt_duration"), auth.ParamJWTDuration),
-		builder.WithConfig[deps](Ref.MustSub("password_min_length"), auth.ParamPasswordMinLength),
-		builder.WithConfig[deps](Ref.MustSub("password_max_length"), auth.ParamPasswordMaxLength),
-		builder.WithConfig[deps](Ref.MustSub("password_min_upper"), auth.ParamPasswordMinUpper),
-		builder.WithConfig[deps](Ref.MustSub("password_min_lower"), auth.ParamPasswordMinLower),
-		builder.WithConfig[deps](Ref.MustSub("password_min_digit"), auth.ParamPasswordMinDigit),
-		builder.WithConfig[deps](Ref.MustSub("password_min_special"), auth.ParamPasswordMinSpecial),
-		builder.WithConfig[deps](Ref.MustSub("password_special_chars"), auth.ParamPasswordSpecialChars),
+		builder.WithConfig[deps](Ref.MustSub("jwt_secret"), jwt.ParamSecret),
+		builder.WithConfig[deps](Ref.MustSub("jwt_duration"), jwt.ParamDuration),
+		builder.WithConfig[deps](Ref.MustSub("anonymous_access"), rbac.ParamAnonymousAccess),
+		builder.WithConfig[deps](Ref.MustSub("rbac_cache_ttl"), rbac.ParamCacheTTL),
+		builder.WithConfig[deps](Ref.MustSub("invitation_required"), user.ParamInvitationRequired),
+		builder.WithConfig[deps](Ref.MustSub("email_required"), user.ParamEmailRequired),
+		builder.WithConfig[deps](Ref.MustSub("email_verification"), user.ParamEmailVerification),
+		builder.WithConfig[deps](Ref.MustSub("password_min_entropy"), user.ParamPasswordMinEntropy),
+		builder.WithConfig[deps](Ref.MustSub("password_hashing_cost"), user.ParamPasswordHashingCost),
+		builder.WithConfig[deps](Ref.MustSub("login_requests_per_minute"), user.ParamLoginRequestsPerMinute),
+		builder.WithConfig[deps](Ref.MustSub("login_request_burst"), user.ParamLoginRequestBurst),
+		builder.WithError[deps](RefUser.MustSub("user_already_exists"), user.ErrAlreadyExists),
+		builder.WithError[deps](RefUser.MustSub("password_insufficient_entropy"), user.ErrPasswordInsufficientEntropy),
+		builder.WithError[deps](RefUser.MustSub("username_invalid"), user.ErrUsernameInvalid),
+		builder.WithError[deps](RefUser.MustSub("email_invalid"), user.ErrEmailInvalid),
+		builder.WithError[deps](RefUser.MustSub("email_missing"), user.ErrEmailMissing),
+		builder.WithError[deps](RefUser.MustSub("invitation_code_missing"), user.ErrInvitationCodeMissing),
+		builder.WithError[deps](RefUser.MustSub("invitation_not_found"), user.ErrInvitationNotFound),
+		builder.WithError[deps](RefUser.MustSub("invitation_expired"), user.ErrInvitationExpired),
+		builder.WithError[deps](RefUser.MustSub("invitation_claimed"), user.ErrInvitationClaimed),
+		builder.WithError[deps](RefUser.MustSub("credentials_invalid"), user.ErrCredentialsInvalid),
+		builder.WithError[deps](RefUser.MustSub("account_disabled"), user.ErrDisabled),
 		builder.WithFxOption[deps](
-			fx.Decorate(
-				func(secret auth.JWTSecret) auth.JWTSecret {
-					if secret == "" {
-						secret = auth.JWTSecret(generateRandomString(32))
-					}
-
-					return secret
-				},
-			),
 			fx.Provide(
+				user.NewService,
+				jwt.NewService,
+				http_auth.NewMiddleware,
+				fx.Annotate(
+					func(providers []rbac.ObjectActionProvider) rbac.ObjectActionProvider {
+						return rbac.ObjectActionProviders(providers...)
+					},
+					fx.ParamTags(`group:"auth_object_actions"`),
+				),
+				fx.Annotate(
+					func() rbac.PermissionProvider {
+						return rbac.CorePermissions
+					},
+					fx.ResultTags(`group:"auth_permissions"`),
+				),
+				fx.Annotate(
+					func(providers []rbac.PermissionProvider) rbac.PermissionProvider {
+						return rbac.PermissionProviders(providers...)
+					},
+					fx.ParamTags(`group:"auth_permissions"`),
+				),
 				func(
-					minLength auth.PasswordMinLength,
-					maxLength auth.PasswordMaxLength,
-					minUpper auth.PasswordMinUpper,
-					minLower auth.PasswordMinLower,
-					minDigit auth.PasswordMinDigit,
-					minSpecial auth.PasswordMinSpecial,
-					specialChars auth.PasswordSpecialChars,
-				) auth.PasswordPolicyConfig {
-					return auth.PasswordPolicyConfig{
-						MinLength:    minLength,
-						MaxLength:    maxLength,
-						MinUpper:     minUpper,
-						MinLower:     minLower,
-						MinDigit:     minDigit,
-						MinSpecial:   minSpecial,
-						SpecialChars: specialChars,
-					}
+					dao database.DaoTransactionProvider,
+					objectActions rbac.ObjectActionProvider,
+					permissions rbac.PermissionProvider,
+					ttl rbac.CacheTTL,
+				) service {
+					return rbac.NewService(
+						rbac.NewRepository(dao),
+						objectActions,
+						permissions,
+						ttl,
+					)
 				},
-				auth.NewPasswordPolicyService,
-				auth.NewAuthService,
-				auth.NewJWTService,
-				auth.NewAuthMiddleware,
+				fx.Annotate(
+					rbac.NewServiceLazy,
+					fx.As(new(rbac.Enforcer)),
+					fx.As(new(rbac.Repository)),
+					fx.As(new(rbac.Service)),
+					fx.As(new(rbac.ServiceLazy)),
+				),
 			),
+			fx.Invoke(func(service service, lazy rbac.ServiceLazy) error {
+				return lazy.SetService(service)
+			}),
+		),
+		builder.WithGinOption(Ref, httpserver.PhasePre, func(deps deps) gin.OptionFunc {
+			return func(e *gin.Engine) {
+				e.Use(deps.HTTPMiddleware.AttachAuth())
+			}
+		}),
+		// todo: Move to plugin
+		builder.WithWorker(
+			func(deps deps) (runner.Provider, worker.Option) {
+				return &initialInvitationWorker{
+						userService: deps.UserService,
+						logger:      deps.Logger,
+					}, worker.Options(
+						worker.WithDependencies(migrator.Ref, postgres.Ref),
+						worker.ShortLived(),
+						worker.WithAutostart(true),
+					)
+			},
 		),
 	)
 )
-
-func generateRandomString(length int) string {
-	bytes := make([]byte, length)
-	_, _ = rand.Read(bytes)
-
-	return hex.EncodeToString(bytes)
-}

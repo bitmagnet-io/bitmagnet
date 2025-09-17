@@ -2,6 +2,7 @@ package cors
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
@@ -42,11 +43,25 @@ var (
 				return func(engine *gin.Engine) {
 					engine.Use(gincors.New(cors.Options{
 						AllowedOrigins: deps.AllowedOrigins,
-						Debug:          true,
+						AllowedHeaders: []string{
+							"Accept",
+							"Accept-Language",
+							"Authorization",
+							"Content-Type",
+						},
+						AllowedMethods: []string{
+							http.MethodGet,
+							http.MethodPost,
+							http.MethodOptions,
+						},
+						Debug: true,
 						// we don't need every request logged so apply sampling
-						Logger: corsLogger{deps.Logger.WithOptions(zap.WrapCore(func(core zapcore.Core) zapcore.Core {
-							return zapcore.NewSamplerWithOptions(core, time.Hour, 10, 0)
-						})).Named(Ref.String())},
+						Logger: corsLogger{
+							deps.Logger.WithOptions(
+								zap.WrapCore(func(core zapcore.Core) zapcore.Core {
+									return zapcore.NewSamplerWithOptions(core, time.Hour, 10, 0)
+								}),
+							).Named(Ref.String())},
 					}))
 				}
 			}),

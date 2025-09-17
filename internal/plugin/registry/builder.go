@@ -10,6 +10,8 @@ import (
 	config_registry "github.com/bitmagnet-io/bitmagnet/internal/config/registry"
 	config_resolver "github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
 	"github.com/bitmagnet-io/bitmagnet/internal/env"
+	"github.com/bitmagnet-io/bitmagnet/internal/error_registry"
+	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/bundle"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
@@ -81,8 +83,10 @@ func (b *Builder) Resolve(env env.Env, options ...Option) (*Registry, error) {
 	}
 
 	resolver := &resolver{
-		Builder:  b,
-		Resolved: *config,
+		Builder:       b,
+		config:        *config,
+		errorRegistry: b.resolveErrors(),
+		i18nProvider:  b.resolveI18n(),
 	}
 
 	for _, option := range options {
@@ -101,7 +105,7 @@ func (b *Builder) resolveConfig(env env.Env) (*config_resolver.Resolved, error) 
 	allRefs := b.AllRefs()
 
 	configParams := slice.FlatMap(allRefs, func(ref ref.Ref) []config_registry.Param {
-		return b.plugins.Get(ref).Params()
+		return b.plugins.Get(ref).ConfigParams()
 	})
 
 	configResolver := config_resolver.New(configLookup, configParams...)
@@ -110,4 +114,38 @@ func (b *Builder) resolveConfig(env env.Env) (*config_resolver.Resolved, error) 
 		return nil, fmt.Errorf("%w: %w", Err, err)
 	}
 	return &resolvedConfig, nil
+}
+
+func (b *Builder) resolveErrors() error_registry.Registry {
+	return error_registry.New(slice.Map(b.plugins.Values(), func(plugin plugin.Plugin) error_registry.Option {
+		return error_registry.WithEntries(plugin.Errors())
+	})...)
+}
+
+func (b *Builder) resolveI18n() i18n.Provider {
+	return i18n.Providers(
+		i18n.NewProvider(
+			slice.FlatMap(b.plugins.Values(), func(plugin plugin.Plugin) []*i18n.Message {
+				messages := plugin.I18nMessages()
+
+				messages = append(messages, slice.Map(plugin.Errors().Entries(), func(entry ref.Entry[error]) *i18n.Message {
+					return i18n.NewMessage(
+						entry.Ref.String(),
+						fmt.Sprintf("message for error: %s", entry.Ref),
+						i18n.WithOther(entry.Value.Error()),
+					)
+				})...)
+
+				messages = append(messages, slice.Map(plugin.ConfigParams(), func(param config_registry.Param) *i18n.Message {
+					return i18n.NewMessage(
+						param.Ref.String(),
+						fmt.Sprintf("description for config: %s", param.Ref),
+						i18n.WithOther(param.Description()),
+					)
+				})...)
+
+				return messages
+			})...,
+		),
+	)
 }

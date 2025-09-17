@@ -1,7 +1,8 @@
 package resolvers
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/auth"
+	"github.com/bitmagnet-io/bitmagnet/internal/auth/rbac"
+	"github.com/bitmagnet-io/bitmagnet/internal/auth/user"
 	config_manager "github.com/bitmagnet-io/bitmagnet/internal/config/manager"
 	"github.com/bitmagnet-io/bitmagnet/internal/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
@@ -38,5 +39,6 @@ type Resolver struct {
 	ConfigManager        *config_manager.Manager
 	Plugins              plugin.PluginInfos
 	I18n                 *i18n.Bundle
-	AuthService          auth.AuthService
+	User                 user.Service
+	RBAC                 rbac.Service
 }

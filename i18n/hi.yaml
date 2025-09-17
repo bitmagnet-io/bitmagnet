@@ -1,17 +1,95 @@
+core.auth:
+    description: description for plugin core.auth
+    other: ""
+core.auth.jwt.duration:
+    description: 'description for config: core.auth.jwt.duration'
+    other: ""
+core.auth.jwt.secret:
+    description: 'description for config: core.auth.jwt.secret'
+    other: ""
+core.auth.password_policy.max_length:
+    description: 'description for config: core.auth.password_policy.max_length'
+    other: ""
+core.auth.password_policy.min_digit:
+    description: 'description for config: core.auth.password_policy.min_digit'
+    other: ""
+core.auth.password_policy.min_length:
+    description: 'description for config: core.auth.password_policy.min_length'
+    other: ""
+core.auth.password_policy.min_lower:
+    description: 'description for config: core.auth.password_policy.min_lower'
+    other: ""
+core.auth.password_policy.min_special:
+    description: 'description for config: core.auth.password_policy.min_special'
+    other: ""
+core.auth.password_policy.min_upper:
+    description: 'description for config: core.auth.password_policy.min_upper'
+    other: ""
+core.auth.password_policy.special_chars:
+    description: 'description for config: core.auth.password_policy.special_chars'
+    other: ""
+core.auth.rbac.anonymous_access:
+    description: 'description for config: core.auth.rbac.anonymous_access'
+    other: ""
+core.auth.rbac.cache_ttl:
+    description: 'description for config: core.auth.rbac.cache_ttl'
+    other: ""
+core.auth.user.account_disabled:
+    description: 'message for error: core.auth.user.account_disabled'
+    other: ""
+core.auth.user.credentials_invalid:
+    description: 'message for error: core.auth.user.credentials_invalid'
+    other: ""
+core.auth.user.email_invalid:
+    description: 'message for error: core.auth.user.email_invalid'
+    other: ""
+core.auth.user.email_missing:
+    description: 'message for error: core.auth.user.email_missing'
+    other: ""
+core.auth.user.email_required:
+    description: 'description for config: core.auth.user.email_required'
+    other: ""
+core.auth.user.email_verification:
+    description: 'description for config: core.auth.user.email_verification'
+    other: ""
+core.auth.user.invitation_claimed:
+    description: 'message for error: core.auth.user.invitation_claimed'
+    other: ""
+core.auth.user.invitation_code_missing:
+    description: 'message for error: core.auth.user.invitation_code_missing'
+    other: ""
+core.auth.user.invitation_expired:
+    description: 'message for error: core.auth.user.invitation_expired'
+    other: ""
+core.auth.user.invitation_not_found:
+    description: 'message for error: core.auth.user.invitation_not_found'
+    other: ""
+core.auth.user.invitation_required:
+    description: 'description for config: core.auth.user.invitation_required'
+    other: ""
+core.auth.user.password_policy_violation:
+    description: 'message for error: core.auth.user.password_policy_violation'
+    other: ""
+core.auth.user.user_already_exists:
+    description: 'message for error: core.auth.user.user_already_exists'
+    other: ""
 core.config:
     description: description for plugin core.config
     other: कॉन्फ़िगरेशन कार्यक्षमता प्रदान करता है
-core.config.plugin_enabled:
-    description: description for plugin enabled param
+core.config.plugin_activation:
+    description: description for plugin activation param
     other: ""
 core.database.gorm.cache:
     description: description for plugin core.database.gorm.cache
     other: Postgres क्वेरी परिणाम कैशिंग प्रदान करता है
+core.database.gorm.cache.activation:
+    description: 'description for config: core.database.gorm.cache.activation'
+    other: ""
 core.database.gorm.cache.max_items:
-    description: description for config core.database.gorm.cache.max_items
+    description: 'description for config: core.database.gorm.cache.max_items'
     other: कैश करने के लिए अधिकतम आइटम
 core.database.gorm.cache.ttl:
-    description: description for config core.database.gorm.cache.ttl
+    description: 'description for config: core.database.gorm.cache.ttl'
     other: कैश के लिए TTL
 core.database.info_hash_blocker:
     description: description for plugin core.database.info_hash_blocker
@@ -23,31 +101,31 @@ core.database.persister:
     description: description for plugin core.database.persister
     other: ""
 core.database.persister.max_size:
-    description: description for config core.database.persister.max_size
+    description: 'description for config: core.database.persister.max_size'
     other: अधिकतम बफर आकार
 core.database.persister.max_wait:
-    description: description for config core.database.persister.max_wait
+    description: 'description for config: core.database.persister.max_wait'
     other: फ्लश से पहले आइटम को बफर करने का अधिकतम समय
 core.database.postgres:
     description: description for plugin core.database.postgres
     other: Postgres डेटाबेस कनेक्शन आरंभ करता है और प्रबंधित करता है
 core.database.postgres.database:
-    description: description for config core.database.postgres.database
+    description: 'description for config: core.database.postgres.database'
     other: Postgres डेटाबेस नाम
 core.database.postgres.dsn:
-    description: description for config core.database.postgres.dsn
+    description: 'description for config: core.database.postgres.dsn'
     other: Postgres डेटा स्रोत नाम (यदि निर्दिष्ट है, तो इस प्लगइन के लिए अन्य सभी विकल्प नजरअंदाज कर दिए जाते हैं)
 core.database.postgres.host:
-    description: description for config core.database.postgres.host
+    description: 'description for config: core.database.postgres.host'
     other: Postgres होस्ट
 core.database.postgres.password:
-    description: description for config core.database.postgres.password
+    description: 'description for config: core.database.postgres.password'
     other: Postgres पासवर्ड
 core.database.postgres.port:
-    description: description for config core.database.postgres.port
+    description: 'description for config: core.database.postgres.port'
     other: Postgres पोर्ट नंबर
 core.database.postgres.user:
-    description: description for config core.database.postgres.user
+    description: 'description for config: core.database.postgres.user'
     other: Postgres उपयोगकर्ता नाम
 core.database.search:
     description: description for plugin core.database.search
@@ -55,38 +133,47 @@ core.database.search:
 core.dht.crawler:
     description: description for plugin core.dht.crawler
     other: टॉरेंट के लिए DHT को क्रॉल करता है
+core.dht.crawler.activation:
+    description: 'description for config: core.dht.crawler.activation'
+    other: ""
 core.dht.crawler.autostart:
-    description: description for config core.dht.crawler.autostart
+    description: 'description for config: core.dht.crawler.autostart'
     other: वर्कर को स्वचालित रूप से प्रारंभ करें
 core.dht.crawler.bootstrap_nodes:
-    description: description for config core.dht.crawler.bootstrap_nodes
+    description: 'description for config: core.dht.crawler.bootstrap_nodes'
     other: DHT क्रॉलर को बूटस्ट्रैप करने के लिए नोड पतों की सूची
 core.dht.crawler.rescrape_threshold:
-    description: description for config core.dht.crawler.rescrape_threshold
+    description: 'description for config: core.dht.crawler.rescrape_threshold'
     other: DHT से सीडर और लीचर संख्याओं को फिर से क्वेरी करने से पहले न्यूनतम अंतराल
 core.dht.crawler.reseed_bootstrap_nodes_interval:
-    description: description for config core.dht.crawler.reseed_bootstrap_nodes_interval
+    description: 'description for config: core.dht.crawler.reseed_bootstrap_nodes_interval'
     other: बूटस्ट्रैप नोड्स के रीसीडिंग के बीच अंतराल
 core.dht.crawler.save_files_threshold:
-    description: description for config core.dht.crawler.save_files_threshold
+    description: 'description for config: core.dht.crawler.save_files_threshold'
     other: प्रत्येक टॉरेंट के साथ DHT क्रॉलर द्वारा सहेजी गई फाइलों की संख्या की अधिकतम सीमा
 core.dht.crawler.save_pieces:
-    description: description for config core.dht.crawler.save_pieces
+    description: 'description for config: core.dht.crawler.save_pieces'
     other: प्रत्येक टॉरेंट के साथ टॉरेंट पीस सहेजें (बहुत अधिक डिस्क स्थान का उपयोग करता है)
 core.dht.server:
     description: description for plugin core.dht.server
     other: DHT सर्वर नोड चलाता है
+core.dht.server.activation:
+    description: 'description for config: core.dht.server.activation'
+    other: ""
 core.dht.server.query_timeout:
-    description: description for config core.dht.server.query_timeout
+    description: 'description for config: core.dht.server.query_timeout'
     other: क्वेरी टाइमआउट
 core.dht.socket:
     description: description for plugin core.dht.socket
     other: DHT सर्वर के लिए UDP सॉकेट चलाता है
+core.dht.socket.activation:
+    description: 'description for config: core.dht.socket.activation'
+    other: ""
 core.dht.socket.adapter:
-    description: description for config core.dht.socket.adapter
+    description: 'description for config: core.dht.socket.adapter'
     other: सॉकेट एडेप्टर नाम
 core.dht.socket.port:
-    description: description for config core.dht.socket.port
+    description: 'description for config: core.dht.socket.port'
     other: सॉकेट पोर्ट नंबर
 core.health:
     description: description for plugin core.health
@@ -94,56 +181,107 @@ core.health:
 core.http_server:
     description: description for plugin core.http_server
     other: HTTP सर्वर चलाता है
+core.http_server.activation:
+    description: 'description for config: core.http_server.activation'
+    other: ""
 core.http_server.cors:
     description: description for plugin core.http_server.cors
     other: HTTP सर्वर के लिए CORS मिडलवेयर प्रदान करता है
 core.http_server.cors.allowed_origins:
-    description: description for config core.http_server.cors.allowed_origins
+    description: 'description for config: core.http_server.cors.allowed_origins'
     other: CORS अनुमतित मूल
 core.http_server.docs:
     description: description for plugin core.http_server.docs
     other: /docs एंडपॉइंट पर दस्तावेज़ीकरण वेबसाइट का एक इंस्टेंस चलाता है
+core.http_server.docs.activation:
+    description: 'description for config: core.http_server.docs.activation'
+    other: ""
 core.http_server.graphql:
     description: description for plugin core.http_server.graphql
     other: GraphQL API सर्वर चलाता है
+core.http_server.graphql.activation:
+    description: 'description for config: core.http_server.graphql.activation'
+    other: ""
+core.http_server.graphql.unauthorized:
+    description: 'message for error: core.http_server.graphql.unauthorized'
+    other: ""
 core.http_server.local_address:
-    description: description for config core.http_server.local_address
+    description: 'description for config: core.http_server.local_address'
     other: सुनने के लिए स्थानीय पता
 core.http_server.logging:
     description: description for plugin core.http_server.logging
     other: HTTP सर्वर के लिए लॉगिंग प्रदान करता है
-core.http_server.recovery:
-    description: description for plugin core.http_server.recovery
-    other: HTTP सर्वर को पैनिक से रिकवर करने की अनुमति देता है
 core.http_server.webui:
     description: description for plugin core.http_server.webui
     other: /webui एंडपॉइंट पर वेब यूजर इंटरफेस चलाता है
+core.http_server.webui.activation:
+    description: 'description for config: core.http_server.webui.activation'
+    other: ""
 core.i18n:
     description: description for plugin core.i18n
     other: बैकएंड सेवाओं के लिए अनुवाद प्रदान करता है
 core.importer:
     description: description for plugin core.importer
     other: /import एंडपॉइंट पर एक आयात सुविधा चलाता है
+core.importer.activation:
+    description: 'description for config: core.importer.activation'
+    other: ""
 core.logging:
     description: description for plugin core.logging
     other: लॉगिंग सेवाएं प्रदान करता है
 core.logging.console:
     description: description for plugin core.logging.console
     other: कंसोल फॉर्मेटिंग के साथ लॉग आउटपुट करता है
+core.logging.console.activation:
+    description: 'description for config: core.logging.console.activation'
+    other: ""
+core.logging.file_rotator:
+    description: description for plugin core.logging.file_rotator
+    other: ""
+core.logging.file_rotator.activation:
+    description: 'description for config: core.logging.file_rotator.activation'
+    other: ""
+core.logging.file_rotator.base_name:
+    description: 'description for config: core.logging.file_rotator.base_name'
+    other: ""
+core.logging.file_rotator.buffer_size:
+    description: 'description for config: core.logging.file_rotator.buffer_size'
+    other: ""
+core.logging.file_rotator.level:
+    description: 'description for config: core.logging.file_rotator.level'
+    other: ""
+core.logging.file_rotator.max_age:
+    description: 'description for config: core.logging.file_rotator.max_age'
+    other: ""
+core.logging.file_rotator.max_backups:
+    description: 'description for config: core.logging.file_rotator.max_backups'
+    other: ""
+core.logging.file_rotator.max_size:
+    description: 'description for config: core.logging.file_rotator.max_size'
+    other: ""
+core.logging.file_rotator.sub_path:
+    description: 'description for config: core.logging.file_rotator.sub_path'
+    other: ""
+core.logging.json:
+    description: description for plugin core.logging.json
+    other: ""
+core.logging.json.activation:
+    description: 'description for config: core.logging.json.activation'
+    other: ""
 core.logging.level:
-    description: description for config core.logging.level
+    description: 'description for config: core.logging.level'
     other: लॉगिंग स्तर
 core.meta_info:
     description: description for plugin core.meta_info
     other: पीयर से टॉरेंट मेटा जानकारी डाउनलोड करने के लिए सेवाएं प्रदान करता है
 core.meta_info.dial_timeout:
-    description: description for config core.meta_info.dial_timeout
+    description: 'description for config: core.meta_info.dial_timeout'
     other: डायल टाइमआउट
 core.meta_info.max_concurrency:
-    description: description for config core.meta_info.max_concurrency
+    description: 'description for config: core.meta_info.max_concurrency'
     other: अधिकतम अनुरोध समानांतरता
 core.meta_info.request_timeout:
-    description: description for config core.meta_info.request_timeout
+    description: 'description for config: core.meta_info.request_timeout'
     other: अनुरोध टाइमआउट
 core.metrics:
     description: description for plugin core.metrics
@@ -151,26 +289,32 @@ core.metrics:
 core.metrics.prometheus:
     description: description for plugin core.metrics.prometheus
     other: ""
+core.metrics.prometheus.activation:
+    description: 'description for config: core.metrics.prometheus.activation'
+    other: ""
+core.pipeline.batcher:
+    description: description for plugin core.pipeline.batcher
+    other: ""
 core.pipeline.classifier:
     description: description for plugin core.pipeline.classifier
     other: टॉरेंट क्लासिफायर सेवा प्रदान करता है
 core.pipeline.classifier.concurrency:
-    description: description for config core.pipeline.classifier.concurrency
+    description: 'description for config: core.pipeline.classifier.concurrency'
     other: समानांतर में चलाने के लिए अधिकतम वर्गीकरण
 core.pipeline.classifier.delete_xxx:
-    description: description for config core.pipeline.classifier.delete_xxx
+    description: 'description for config: core.pipeline.classifier.delete_xxx'
     other: एक बूलियन फ़्लैग जो इंगित करता है कि XXX सामग्री को वर्गीकारक द्वारा हटाया जाना चाहिए
 core.pipeline.classifier.extensions:
-    description: description for config core.pipeline.classifier.extensions
+    description: 'description for config: core.pipeline.classifier.extensions'
     other: फाइल प्रकारों से उनके साथ जुड़े फाइल एक्सटेंशन का मैप
 core.pipeline.classifier.flags:
-    description: description for config core.pipeline.classifier.flags
+    description: 'description for config: core.pipeline.classifier.flags'
     other: वर्गीकारक वर्कफ़्लो को कॉन्फ़िगर करने के लिए फ़्लैग कीज़ से फ़्लैग वैल्यूज़ का मैप
 core.pipeline.classifier.keywords:
-    description: description for config core.pipeline.classifier.keywords
+    description: 'description for config: core.pipeline.classifier.keywords'
     other: श्रेणी नामों से विभिन्न प्रकार के टॉरेंट से जुड़े कीवर्ड का मैप
 core.pipeline.classifier.workflow:
-    description: description for config core.pipeline.classifier.workflow
+    description: 'description for config: core.pipeline.classifier.workflow'
     other: डिफ़ॉल्ट वर्गीकारक वर्कफ़्लो
 core.pipeline.processor:
     description: description for plugin core.pipeline.processor
@@ -178,9 +322,15 @@ core.pipeline.processor:
 core.queue:
     description: description for plugin core.queue
     other: क्यू जॉब वर्कर चलाता है
+core.queue.autostart:
+    description: 'description for config: core.queue.autostart'
+    other: ""
 core.torznab:
     description: description for plugin core.torznab
     other: /torznab एंडपॉइंट पर Torznab API सर्वर चलाता है
+core.torznab.activation:
+    description: 'description for config: core.torznab.activation'
+    other: ""
 core.worker:
     description: description for plugin core.worker
     other: वर्कर का प्रबंधन करता है

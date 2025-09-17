@@ -1,14 +1,16 @@
 package ref
 
 import (
+	"cmp"
 	"fmt"
 	"io"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 )
 
-var mtx sync.Mutex
+var mtx sync.RWMutex
 
 type Ref struct {
 	name      string
@@ -66,6 +68,7 @@ func Parse(name string) (Ref, error) {
 		if err != nil {
 			return Ref{}, err
 		}
+
 		result = nextResult
 	}
 
@@ -94,6 +97,7 @@ func (r Ref) sub(name string) (Ref, error) {
 	if !r.IsRoot() {
 		str += "."
 	}
+
 	str += name
 
 	sub := Ref{
@@ -118,10 +122,20 @@ func (r Ref) MustSub(name string) Ref {
 	return sub
 }
 
-func (r Ref) GetSub(name string) (Ref, bool) {
-	sub, ok := r.subs[name]
+func (r Ref) Subs() []Ref {
+	mtx.RLock()
+	defer mtx.RUnlock()
 
-	return sub, ok
+	subs := make([]Ref, 0, len(r.subs))
+	for _, sub := range r.subs {
+		subs = append(subs, sub)
+	}
+
+	slices.SortFunc(subs, func(a, b Ref) int {
+		return cmp.Compare(a.name, b.name)
+	})
+
+	return subs
 }
 
 func (r Ref) Name() string {
@@ -135,6 +149,14 @@ func (r Ref) Path() []string {
 	}
 
 	return result
+}
+
+func (r Ref) Root() Ref {
+	for current := &r; ; current = current.parent {
+		if current.IsRoot() {
+			return *current
+		}
+	}
 }
 
 func (r Ref) IsRoot() bool {
@@ -168,6 +190,7 @@ func (r *Ref) UnmarshalText(text []byte) error {
 	if err != nil {
 		return err
 	}
+
 	*r = ref
 
 	return nil

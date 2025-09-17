@@ -1,0 +1,12 @@
+#import "./Permission"
+#import "./User"
+
+fragment Self on Self {
+  user {
+    ...User
+  }
+  roles
+  permissions {
+    ...Permission
+  }
+}

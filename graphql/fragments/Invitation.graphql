@@ -1,0 +1,15 @@
+#import "./User"
+
+fragment Invitation on Invitation {
+  code
+  role
+  email
+  createdBy {
+    ...User
+  }
+  claimedBy {
+    ...User
+  }
+  expiresAt
+  createdAt
+}

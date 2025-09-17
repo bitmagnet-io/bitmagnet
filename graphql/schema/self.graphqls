@@ -1,0 +1,38 @@
+type SelfQuery {
+  identity: Self!
+  passwordEntropy(password: String!): PasswordEntropyResult!
+}
+
+type SelfMutation {
+  register(input: RegisterInput!): RegisterResult!
+  login(username: String!, password: String!): LoginResult!
+}
+
+input RegisterInput {
+  invitationCode: String
+  username: String!
+  password: String!
+  email: String
+}
+
+type Self {
+  user: User
+  roles: [String!]!
+  permissions: [Permission!]!
+}
+
+type RegisterResult {
+  user: User!
+}
+
+type LoginResult {
+  token: String!
+  user: User!
+  permissions: [Permission!]!
+}
+
+type PasswordEntropyResult {
+  entropy: Float!
+  minEntropy: Float!
+  valid: Boolean!
+}

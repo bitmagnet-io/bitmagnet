@@ -1,17 +1,95 @@
+core.auth:
+    description: description for plugin core.auth
+    other: ""
+core.auth.jwt.duration:
+    description: 'description for config: core.auth.jwt.duration'
+    other: ""
+core.auth.jwt.secret:
+    description: 'description for config: core.auth.jwt.secret'
+    other: ""
+core.auth.password_policy.max_length:
+    description: 'description for config: core.auth.password_policy.max_length'
+    other: ""
+core.auth.password_policy.min_digit:
+    description: 'description for config: core.auth.password_policy.min_digit'
+    other: ""
+core.auth.password_policy.min_length:
+    description: 'description for config: core.auth.password_policy.min_length'
+    other: ""
+core.auth.password_policy.min_lower:
+    description: 'description for config: core.auth.password_policy.min_lower'
+    other: ""
+core.auth.password_policy.min_special:
+    description: 'description for config: core.auth.password_policy.min_special'
+    other: ""
+core.auth.password_policy.min_upper:
+    description: 'description for config: core.auth.password_policy.min_upper'
+    other: ""
+core.auth.password_policy.special_chars:
+    description: 'description for config: core.auth.password_policy.special_chars'
+    other: ""
+core.auth.rbac.anonymous_access:
+    description: 'description for config: core.auth.rbac.anonymous_access'
+    other: ""
+core.auth.rbac.cache_ttl:
+    description: 'description for config: core.auth.rbac.cache_ttl'
+    other: ""
+core.auth.user.account_disabled:
+    description: 'message for error: core.auth.user.account_disabled'
+    other: ""
+core.auth.user.credentials_invalid:
+    description: 'message for error: core.auth.user.credentials_invalid'
+    other: ""
+core.auth.user.email_invalid:
+    description: 'message for error: core.auth.user.email_invalid'
+    other: ""
+core.auth.user.email_missing:
+    description: 'message for error: core.auth.user.email_missing'
+    other: ""
+core.auth.user.email_required:
+    description: 'description for config: core.auth.user.email_required'
+    other: ""
+core.auth.user.email_verification:
+    description: 'description for config: core.auth.user.email_verification'
+    other: ""
+core.auth.user.invitation_claimed:
+    description: 'message for error: core.auth.user.invitation_claimed'
+    other: ""
+core.auth.user.invitation_code_missing:
+    description: 'message for error: core.auth.user.invitation_code_missing'
+    other: ""
+core.auth.user.invitation_expired:
+    description: 'message for error: core.auth.user.invitation_expired'
+    other: ""
+core.auth.user.invitation_not_found:
+    description: 'message for error: core.auth.user.invitation_not_found'
+    other: ""
+core.auth.user.invitation_required:
+    description: 'description for config: core.auth.user.invitation_required'
+    other: ""
+core.auth.user.password_policy_violation:
+    description: 'message for error: core.auth.user.password_policy_violation'
+    other: ""
+core.auth.user.user_already_exists:
+    description: 'message for error: core.auth.user.user_already_exists'
+    other: ""
 core.config:
     description: description for plugin core.config
     other: 設定機能を提供します
-core.config.plugin_enabled:
-    description: description for plugin enabled param
+core.config.plugin_activation:
+    description: description for plugin activation param
     other: ""
 core.database.gorm.cache:
     description: description for plugin core.database.gorm.cache
     other: Postgresクエリ結果のキャッシュを提供します
+core.database.gorm.cache.activation:
+    description: 'description for config: core.database.gorm.cache.activation'
+    other: ""
 core.database.gorm.cache.max_items:
-    description: description for config core.database.gorm.cache.max_items
+    description: 'description for config: core.database.gorm.cache.max_items'
     other: キャッシュする項目の最大数
 core.database.gorm.cache.ttl:
-    description: description for config core.database.gorm.cache.ttl
+    description: 'description for config: core.database.gorm.cache.ttl'
     other: キャッシュのTTL
 core.database.info_hash_blocker:
     description: description for plugin core.database.info_hash_blocker
@@ -23,31 +101,31 @@ core.database.persister:
     description: description for plugin core.database.persister
     other: ""
 core.database.persister.max_size:
-    description: description for config core.database.persister.max_size
+    description: 'description for config: core.database.persister.max_size'
     other: 最大バッファサイズ
 core.database.persister.max_wait:
-    description: description for config core.database.persister.max_wait
+    description: 'description for config: core.database.persister.max_wait'
     other: フラッシュ前にアイテムをバッファリングする最大時間
 core.database.postgres:
     description: description for plugin core.database.postgres
     other: Postgresデータベース接続を開始および管理します
 core.database.postgres.database:
-    description: description for config core.database.postgres.database
+    description: 'description for config: core.database.postgres.database'
     other: Postgresデータベース名
 core.database.postgres.dsn:
-    description: description for config core.database.postgres.dsn
+    description: 'description for config: core.database.postgres.dsn'
     other: Postgresデータソース名（指定された場合、このプラグインの他のすべてのオプションは無視されます）
 core.database.postgres.host:
-    description: description for config core.database.postgres.host
+    description: 'description for config: core.database.postgres.host'
     other: Postgresホスト
 core.database.postgres.password:
-    description: description for config core.database.postgres.password
+    description: 'description for config: core.database.postgres.password'
     other: Postgresパスワード
 core.database.postgres.port:
-    description: description for config core.database.postgres.port
+    description: 'description for config: core.database.postgres.port'
     other: Postgresポート番号
 core.database.postgres.user:
-    description: description for config core.database.postgres.user
+    description: 'description for config: core.database.postgres.user'
     other: Postgresユーザー名
 core.database.search:
     description: description for plugin core.database.search
@@ -55,38 +133,47 @@ core.database.search:
 core.dht.crawler:
     description: description for plugin core.dht.crawler
     other: トレントのためにDHTをクロールします
+core.dht.crawler.activation:
+    description: 'description for config: core.dht.crawler.activation'
+    other: ""
 core.dht.crawler.autostart:
-    description: description for config core.dht.crawler.autostart
+    description: 'description for config: core.dht.crawler.autostart'
     other: ワーカーを自動的に開始
 core.dht.crawler.bootstrap_nodes:
-    description: description for config core.dht.crawler.bootstrap_nodes
+    description: 'description for config: core.dht.crawler.bootstrap_nodes'
     other: DHTクローラーをブートストラップするためのノードアドレスのリスト
 core.dht.crawler.rescrape_threshold:
-    description: description for config core.dht.crawler.rescrape_threshold
+    description: 'description for config: core.dht.crawler.rescrape_threshold'
     other: DHTからシーダーとリーチャーの数を再問い合わせするまでの最小間隔
 core.dht.crawler.reseed_bootstrap_nodes_interval:
-    description: description for config core.dht.crawler.reseed_bootstrap_nodes_interval
+    description: 'description for config: core.dht.crawler.reseed_bootstrap_nodes_interval'
     other: ブートストラップノードの再シードの間隔
 core.dht.crawler.save_files_threshold:
-    description: description for config core.dht.crawler.save_files_threshold
+    description: 'description for config: core.dht.crawler.save_files_threshold'
     other: 各トレントでDHTクローラーが保存するファイル数の上限
 core.dht.crawler.save_pieces:
-    description: description for config core.dht.crawler.save_pieces
+    description: 'description for config: core.dht.crawler.save_pieces'
     other: 各トレントでトレントピースを保存（大量のディスク容量を使用）
 core.dht.server:
     description: description for plugin core.dht.server
     other: DHTサーバーノードを実行します
+core.dht.server.activation:
+    description: 'description for config: core.dht.server.activation'
+    other: ""
 core.dht.server.query_timeout:
-    description: description for config core.dht.server.query_timeout
+    description: 'description for config: core.dht.server.query_timeout'
     other: クエリタイムアウト
 core.dht.socket:
     description: description for plugin core.dht.socket
     other: DHTサーバー用のUDPソケットを実行します
+core.dht.socket.activation:
+    description: 'description for config: core.dht.socket.activation'
+    other: ""
 core.dht.socket.adapter:
-    description: description for config core.dht.socket.adapter
+    description: 'description for config: core.dht.socket.adapter'
     other: ソケットアダプター名
 core.dht.socket.port:
-    description: description for config core.dht.socket.port
+    description: 'description for config: core.dht.socket.port'
     other: ソケットポート番号
 core.health:
     description: description for plugin core.health
@@ -94,56 +181,107 @@ core.health:
 core.http_server:
     description: description for plugin core.http_server
     other: HTTPサーバーを実行します
+core.http_server.activation:
+    description: 'description for config: core.http_server.activation'
+    other: ""
 core.http_server.cors:
     description: description for plugin core.http_server.cors
     other: HTTPサーバー用のCORSミドルウェアを提供します
 core.http_server.cors.allowed_origins:
-    description: description for config core.http_server.cors.allowed_origins
+    description: 'description for config: core.http_server.cors.allowed_origins'
     other: CORS許可オリジン
 core.http_server.docs:
     description: description for plugin core.http_server.docs
     other: /docsエンドポイントでドキュメントウェブサイトのインスタンスを実行します
+core.http_server.docs.activation:
+    description: 'description for config: core.http_server.docs.activation'
+    other: ""
 core.http_server.graphql:
     description: description for plugin core.http_server.graphql
     other: GraphQL APIサーバーを実行します
+core.http_server.graphql.activation:
+    description: 'description for config: core.http_server.graphql.activation'
+    other: ""
+core.http_server.graphql.unauthorized:
+    description: 'message for error: core.http_server.graphql.unauthorized'
+    other: ""
 core.http_server.local_address:
-    description: description for config core.http_server.local_address
+    description: 'description for config: core.http_server.local_address'
     other: リッスンするローカルアドレス
 core.http_server.logging:
     description: description for plugin core.http_server.logging
     other: HTTPサーバーのログ記録を提供します
-core.http_server.recovery:
-    description: description for plugin core.http_server.recovery
-    other: HTTPサーバーがパニックから回復することを可能にします
 core.http_server.webui:
     description: description for plugin core.http_server.webui
     other: /webuiエンドポイントでウェブユーザーインターフェースを実行します
+core.http_server.webui.activation:
+    description: 'description for config: core.http_server.webui.activation'
+    other: ""
 core.i18n:
     description: description for plugin core.i18n
     other: バックエンドサービスの翻訳を提供します
 core.importer:
     description: description for plugin core.importer
     other: /importエンドポイントでインポート機能を実行します
+core.importer.activation:
+    description: 'description for config: core.importer.activation'
+    other: ""
 core.logging:
     description: description for plugin core.logging
     other: ログ記録サービスを提供します
 core.logging.console:
     description: description for plugin core.logging.console
     other: コンソール形式でログを出力します
+core.logging.console.activation:
+    description: 'description for config: core.logging.console.activation'
+    other: ""
+core.logging.file_rotator:
+    description: description for plugin core.logging.file_rotator
+    other: ""
+core.logging.file_rotator.activation:
+    description: 'description for config: core.logging.file_rotator.activation'
+    other: ""
+core.logging.file_rotator.base_name:
+    description: 'description for config: core.logging.file_rotator.base_name'
+    other: ""
+core.logging.file_rotator.buffer_size:
+    description: 'description for config: core.logging.file_rotator.buffer_size'
+    other: ""
+core.logging.file_rotator.level:
+    description: 'description for config: core.logging.file_rotator.level'
+    other: ""
+core.logging.file_rotator.max_age:
+    description: 'description for config: core.logging.file_rotator.max_age'
+    other: ""
+core.logging.file_rotator.max_backups:
+    description: 'description for config: core.logging.file_rotator.max_backups'
+    other: ""
+core.logging.file_rotator.max_size:
+    description: 'description for config: core.logging.file_rotator.max_size'
+    other: ""
+core.logging.file_rotator.sub_path:
+    description: 'description for config: core.logging.file_rotator.sub_path'
+    other: ""
+core.logging.json:
+    description: description for plugin core.logging.json
+    other: ""
+core.logging.json.activation:
+    description: 'description for config: core.logging.json.activation'
+    other: ""
 core.logging.level:
-    description: description for config core.logging.level
+    description: 'description for config: core.logging.level'
     other: ログレベル
 core.meta_info:
     description: description for plugin core.meta_info
     other: ピアからトレントメタ情報をダウンロードするサービスを提供します
 core.meta_info.dial_timeout:
-    description: description for config core.meta_info.dial_timeout
+    description: 'description for config: core.meta_info.dial_timeout'
     other: ダイヤルタイムアウト
 core.meta_info.max_concurrency:
-    description: description for config core.meta_info.max_concurrency
+    description: 'description for config: core.meta_info.max_concurrency'
     other: 最大リクエスト同時実行数
 core.meta_info.request_timeout:
-    description: description for config core.meta_info.request_timeout
+    description: 'description for config: core.meta_info.request_timeout'
     other: リクエストタイムアウト
 core.metrics:
     description: description for plugin core.metrics
@@ -151,26 +289,32 @@ core.metrics:
 core.metrics.prometheus:
     description: description for plugin core.metrics.prometheus
     other: ""
+core.metrics.prometheus.activation:
+    description: 'description for config: core.metrics.prometheus.activation'
+    other: ""
+core.pipeline.batcher:
+    description: description for plugin core.pipeline.batcher
+    other: ""
 core.pipeline.classifier:
     description: description for plugin core.pipeline.classifier
     other: トレント分類サービスを提供します
 core.pipeline.classifier.concurrency:
-    description: description for config core.pipeline.classifier.concurrency
+    description: 'description for config: core.pipeline.classifier.concurrency'
     other: 並列実行する分類の最大数
 core.pipeline.classifier.delete_xxx:
-    description: description for config core.pipeline.classifier.delete_xxx
+    description: 'description for config: core.pipeline.classifier.delete_xxx'
     other: XXXコンテンツを分類器によって削除するかを示すブール値フラグ
 core.pipeline.classifier.extensions:
-    description: description for config core.pipeline.classifier.extensions
+    description: 'description for config: core.pipeline.classifier.extensions'
     other: ファイルタイプからそれに関連するファイル拡張子へのマップ
 core.pipeline.classifier.flags:
-    description: description for config core.pipeline.classifier.flags
+    description: 'description for config: core.pipeline.classifier.flags'
     other: 分類器ワークフローを設定するためのフラグキーからフラグ値へのマップ
 core.pipeline.classifier.keywords:
-    description: description for config core.pipeline.classifier.keywords
+    description: 'description for config: core.pipeline.classifier.keywords'
     other: カテゴリ名から異なるタイプのトレントに関連するキーワードへのマップ
 core.pipeline.classifier.workflow:
-    description: description for config core.pipeline.classifier.workflow
+    description: 'description for config: core.pipeline.classifier.workflow'
     other: デフォルトの分類器ワークフロー
 core.pipeline.processor:
     description: description for plugin core.pipeline.processor
@@ -178,9 +322,15 @@ core.pipeline.processor:
 core.queue:
     description: description for plugin core.queue
     other: キュージョブワーカーを実行します
+core.queue.autostart:
+    description: 'description for config: core.queue.autostart'
+    other: ""
 core.torznab:
     description: description for plugin core.torznab
     other: /torznabエンドポイントでTorznab APIサーバーを実行します
+core.torznab.activation:
+    description: 'description for config: core.torznab.activation'
+    other: ""
 core.worker:
     description: description for plugin core.worker
     other: ワーカーを管理します

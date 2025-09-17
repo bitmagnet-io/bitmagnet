@@ -1,21 +1,99 @@
+core.auth:
+    description: description for plugin core.auth
+    other: ""
+core.auth.jwt.duration:
+    description: 'description for config: core.auth.jwt.duration'
+    other: ""
+core.auth.jwt.secret:
+    description: 'description for config: core.auth.jwt.secret'
+    other: ""
+core.auth.password_policy.max_length:
+    description: 'description for config: core.auth.password_policy.max_length'
+    other: ""
+core.auth.password_policy.min_digit:
+    description: 'description for config: core.auth.password_policy.min_digit'
+    other: ""
+core.auth.password_policy.min_length:
+    description: 'description for config: core.auth.password_policy.min_length'
+    other: ""
+core.auth.password_policy.min_lower:
+    description: 'description for config: core.auth.password_policy.min_lower'
+    other: ""
+core.auth.password_policy.min_special:
+    description: 'description for config: core.auth.password_policy.min_special'
+    other: ""
+core.auth.password_policy.min_upper:
+    description: 'description for config: core.auth.password_policy.min_upper'
+    other: ""
+core.auth.password_policy.special_chars:
+    description: 'description for config: core.auth.password_policy.special_chars'
+    other: ""
+core.auth.rbac.anonymous_access:
+    description: 'description for config: core.auth.rbac.anonymous_access'
+    other: ""
+core.auth.rbac.cache_ttl:
+    description: 'description for config: core.auth.rbac.cache_ttl'
+    other: ""
+core.auth.user.account_disabled:
+    description: 'message for error: core.auth.user.account_disabled'
+    other: ""
+core.auth.user.credentials_invalid:
+    description: 'message for error: core.auth.user.credentials_invalid'
+    other: ""
+core.auth.user.email_invalid:
+    description: 'message for error: core.auth.user.email_invalid'
+    other: ""
+core.auth.user.email_missing:
+    description: 'message for error: core.auth.user.email_missing'
+    other: ""
+core.auth.user.email_required:
+    description: 'description for config: core.auth.user.email_required'
+    other: ""
+core.auth.user.email_verification:
+    description: 'description for config: core.auth.user.email_verification'
+    other: ""
+core.auth.user.invitation_claimed:
+    description: 'message for error: core.auth.user.invitation_claimed'
+    other: ""
+core.auth.user.invitation_code_missing:
+    description: 'message for error: core.auth.user.invitation_code_missing'
+    other: ""
+core.auth.user.invitation_expired:
+    description: 'message for error: core.auth.user.invitation_expired'
+    other: ""
+core.auth.user.invitation_not_found:
+    description: 'message for error: core.auth.user.invitation_not_found'
+    other: ""
+core.auth.user.invitation_required:
+    description: 'description for config: core.auth.user.invitation_required'
+    other: ""
+core.auth.user.password_policy_violation:
+    description: 'message for error: core.auth.user.password_policy_violation'
+    other: ""
+core.auth.user.user_already_exists:
+    description: 'message for error: core.auth.user.user_already_exists'
+    other: ""
 core.config:
     description: description for plugin core.config
-    other: Stellt Konfigurationsfunktionalität bereit
-core.config.plugin_enabled:
-    description: description for plugin enabled param
+    other: ""
+core.config.plugin_activation:
+    description: description for plugin activation param
     other: ""
 core.database.gorm.cache:
     description: description for plugin core.database.gorm.cache
-    other: Stellt Postgres-Abfrageergebnis-Caching bereit
+    other: ""
+core.database.gorm.cache.activation:
+    description: 'description for config: core.database.gorm.cache.activation'
+    other: ""
 core.database.gorm.cache.max_items:
-    description: description for config core.database.gorm.cache.max_items
+    description: 'description for config: core.database.gorm.cache.max_items'
     other: Maximale Anzahl von zu cachenden Elementen
 core.database.gorm.cache.ttl:
-    description: description for config core.database.gorm.cache.ttl
+    description: 'description for config: core.database.gorm.cache.ttl'
     other: TTL für den Cache
 core.database.info_hash_blocker:
     description: description for plugin core.database.info_hash_blocker
-    other: Verwaltet einen stabilen Bloom-Filter von Info-Hashes, die gelöscht und blockiert wurden, um zu verhindern, dass sie erneut gecrawlt werden
+    other: ""
 core.database.migrator:
     description: description for plugin core.database.migrator
     other: ""
@@ -23,164 +101,236 @@ core.database.persister:
     description: description for plugin core.database.persister
     other: ""
 core.database.persister.max_size:
-    description: description for config core.database.persister.max_size
+    description: 'description for config: core.database.persister.max_size'
     other: Maximale Puffergröße
 core.database.persister.max_wait:
-    description: description for config core.database.persister.max_wait
+    description: 'description for config: core.database.persister.max_wait'
     other: Maximale Zeit zum Puffern von Elementen vor dem Leeren
 core.database.postgres:
     description: description for plugin core.database.postgres
-    other: Initiiert und verwaltet die Postgres-Datenbankverbindung
+    other: ""
 core.database.postgres.database:
-    description: description for config core.database.postgres.database
+    description: 'description for config: core.database.postgres.database'
     other: Postgres-Datenbankname
 core.database.postgres.dsn:
-    description: description for config core.database.postgres.dsn
+    description: 'description for config: core.database.postgres.dsn'
     other: Postgres-Datenquellenname (falls angegeben, werden alle anderen Optionen für dieses Plugin ignoriert)
 core.database.postgres.host:
-    description: description for config core.database.postgres.host
+    description: 'description for config: core.database.postgres.host'
     other: Postgres-Host
 core.database.postgres.password:
-    description: description for config core.database.postgres.password
+    description: 'description for config: core.database.postgres.password'
     other: Postgres-Passwort
 core.database.postgres.port:
-    description: description for config core.database.postgres.port
+    description: 'description for config: core.database.postgres.port'
     other: Postgres-Portnummer
 core.database.postgres.user:
-    description: description for config core.database.postgres.user
+    description: 'description for config: core.database.postgres.user'
     other: Postgres-Benutzername
 core.database.search:
     description: description for plugin core.database.search
-    other: Stellt Suchfunktionalität über die Postgres-Datenbank bereit
+    other: ""
 core.dht.crawler:
     description: description for plugin core.dht.crawler
-    other: Crawlt das DHT nach Torrents
+    other: ""
+core.dht.crawler.activation:
+    description: 'description for config: core.dht.crawler.activation'
+    other: ""
 core.dht.crawler.autostart:
-    description: description for config core.dht.crawler.autostart
-    other: Worker automatisch starten
+    description: 'description for config: core.dht.crawler.autostart'
+    other: ""
 core.dht.crawler.bootstrap_nodes:
-    description: description for config core.dht.crawler.bootstrap_nodes
-    other: Eine Liste von Knoten-Adressen zum Bootstrapping des DHT-Crawlers
+    description: 'description for config: core.dht.crawler.bootstrap_nodes'
+    other: ""
 core.dht.crawler.rescrape_threshold:
-    description: description for config core.dht.crawler.rescrape_threshold
-    other: Das minimale Intervall vor erneutem Abfragen der Seeder- und Leecher-Zahlen vom DHT
+    description: 'description for config: core.dht.crawler.rescrape_threshold'
+    other: ""
 core.dht.crawler.reseed_bootstrap_nodes_interval:
-    description: description for config core.dht.crawler.reseed_bootstrap_nodes_interval
-    other: Intervall zwischen Neuseeding der Bootstrap-Knoten
+    description: 'description for config: core.dht.crawler.reseed_bootstrap_nodes_interval'
+    other: ""
 core.dht.crawler.save_files_threshold:
-    description: description for config core.dht.crawler.save_files_threshold
-    other: Das maximale Limit für die Anzahl der vom DHT-Crawler mit jedem Torrent gespeicherten Dateien
+    description: 'description for config: core.dht.crawler.save_files_threshold'
+    other: ""
 core.dht.crawler.save_pieces:
-    description: description for config core.dht.crawler.save_pieces
-    other: Torrent-Teile mit jedem Torrent speichern (verbraucht viel Speicherplatz)
+    description: 'description for config: core.dht.crawler.save_pieces'
+    other: ""
 core.dht.server:
     description: description for plugin core.dht.server
-    other: Betreibt einen DHT-Server-Knoten
+    other: ""
+core.dht.server.activation:
+    description: 'description for config: core.dht.server.activation'
+    other: ""
 core.dht.server.query_timeout:
-    description: description for config core.dht.server.query_timeout
-    other: Abfrage-Timeout
+    description: 'description for config: core.dht.server.query_timeout'
+    other: ""
 core.dht.socket:
     description: description for plugin core.dht.socket
-    other: Betreibt einen UDP-Socket für den DHT-Server
+    other: ""
+core.dht.socket.activation:
+    description: 'description for config: core.dht.socket.activation'
+    other: ""
 core.dht.socket.adapter:
-    description: description for config core.dht.socket.adapter
-    other: Socket-Adapter-Name
+    description: 'description for config: core.dht.socket.adapter'
+    other: ""
 core.dht.socket.port:
-    description: description for config core.dht.socket.port
-    other: Socket-Portnummer
+    description: 'description for config: core.dht.socket.port'
+    other: ""
 core.health:
     description: description for plugin core.health
-    other: Stellt Gesundheitsprüfungsfunktionalität bereit
+    other: ""
 core.http_server:
     description: description for plugin core.http_server
-    other: Betreibt den HTTP-Server
+    other: ""
+core.http_server.activation:
+    description: 'description for config: core.http_server.activation'
+    other: ""
 core.http_server.cors:
     description: description for plugin core.http_server.cors
-    other: Stellt CORS-Middleware für den HTTP-Server bereit
+    other: ""
 core.http_server.cors.allowed_origins:
-    description: description for config core.http_server.cors.allowed_origins
+    description: 'description for config: core.http_server.cors.allowed_origins'
     other: CORS erlaubte Herkunft
 core.http_server.docs:
     description: description for plugin core.http_server.docs
-    other: Betreibt eine Instanz der Dokumentationswebsite am /docs-Endpunkt
+    other: ""
+core.http_server.docs.activation:
+    description: 'description for config: core.http_server.docs.activation'
+    other: ""
 core.http_server.graphql:
     description: description for plugin core.http_server.graphql
-    other: Betreibt den GraphQL-API-Server
+    other: ""
+core.http_server.graphql.activation:
+    description: 'description for config: core.http_server.graphql.activation'
+    other: ""
+core.http_server.graphql.unauthorized:
+    description: 'message for error: core.http_server.graphql.unauthorized'
+    other: ""
 core.http_server.local_address:
-    description: description for config core.http_server.local_address
+    description: 'description for config: core.http_server.local_address'
     other: Lokale Adresse zum Lauschen
 core.http_server.logging:
     description: description for plugin core.http_server.logging
-    other: Stellt Protokollierung für den HTTP-Server bereit
-core.http_server.recovery:
-    description: description for plugin core.http_server.recovery
-    other: Ermöglicht es dem HTTP-Server, sich von Panics zu erholen
+    other: ""
 core.http_server.webui:
     description: description for plugin core.http_server.webui
-    other: Betreibt die Web-Benutzeroberfläche am /webui-Endpunkt
+    other: ""
+core.http_server.webui.activation:
+    description: 'description for config: core.http_server.webui.activation'
+    other: ""
 core.i18n:
     description: description for plugin core.i18n
-    other: Stellt Übersetzungen für Backend-Services bereit
+    other: ""
 core.importer:
     description: description for plugin core.importer
-    other: Betreibt eine Importfunktion am /import-Endpunkt
+    other: ""
+core.importer.activation:
+    description: 'description for config: core.importer.activation'
+    other: ""
 core.logging:
     description: description for plugin core.logging
-    other: Stellt Protokollierungsdienste bereit
+    other: ""
 core.logging.console:
     description: description for plugin core.logging.console
-    other: Gibt Protokolle mit Konsolenformatierung aus
+    other: ""
+core.logging.console.activation:
+    description: 'description for config: core.logging.console.activation'
+    other: ""
+core.logging.file_rotator:
+    description: description for plugin core.logging.file_rotator
+    other: ""
+core.logging.file_rotator.activation:
+    description: 'description for config: core.logging.file_rotator.activation'
+    other: ""
+core.logging.file_rotator.base_name:
+    description: 'description for config: core.logging.file_rotator.base_name'
+    other: ""
+core.logging.file_rotator.buffer_size:
+    description: 'description for config: core.logging.file_rotator.buffer_size'
+    other: ""
+core.logging.file_rotator.level:
+    description: 'description for config: core.logging.file_rotator.level'
+    other: ""
+core.logging.file_rotator.max_age:
+    description: 'description for config: core.logging.file_rotator.max_age'
+    other: ""
+core.logging.file_rotator.max_backups:
+    description: 'description for config: core.logging.file_rotator.max_backups'
+    other: ""
+core.logging.file_rotator.max_size:
+    description: 'description for config: core.logging.file_rotator.max_size'
+    other: ""
+core.logging.file_rotator.sub_path:
+    description: 'description for config: core.logging.file_rotator.sub_path'
+    other: ""
+core.logging.json:
+    description: description for plugin core.logging.json
+    other: ""
+core.logging.json.activation:
+    description: 'description for config: core.logging.json.activation'
+    other: ""
 core.logging.level:
-    description: description for config core.logging.level
+    description: 'description for config: core.logging.level'
     other: Das Protokollierungslevel
 core.meta_info:
     description: description for plugin core.meta_info
-    other: Stellt Services zum Herunterladen von Torrent-Metainformationen von Peers bereit
+    other: ""
 core.meta_info.dial_timeout:
-    description: description for config core.meta_info.dial_timeout
+    description: 'description for config: core.meta_info.dial_timeout'
     other: Wähl-Timeout
 core.meta_info.max_concurrency:
-    description: description for config core.meta_info.max_concurrency
+    description: 'description for config: core.meta_info.max_concurrency'
     other: Maximale Anfrage-Nebenläufigkeit
 core.meta_info.request_timeout:
-    description: description for config core.meta_info.request_timeout
+    description: 'description for config: core.meta_info.request_timeout'
     other: Anfrage-Timeout
 core.metrics:
     description: description for plugin core.metrics
-    other: Stellt Metriken bereit
+    other: ""
 core.metrics.prometheus:
     description: description for plugin core.metrics.prometheus
     other: ""
+core.metrics.prometheus.activation:
+    description: 'description for config: core.metrics.prometheus.activation'
+    other: ""
+core.pipeline.batcher:
+    description: description for plugin core.pipeline.batcher
+    other: ""
 core.pipeline.classifier:
     description: description for plugin core.pipeline.classifier
-    other: Stellt den Torrent-Klassifizierungsservice bereit
+    other: ""
 core.pipeline.classifier.concurrency:
-    description: description for config core.pipeline.classifier.concurrency
+    description: 'description for config: core.pipeline.classifier.concurrency'
     other: Maximale Anzahl parallel laufender Klassifizierungen
 core.pipeline.classifier.delete_xxx:
-    description: description for config core.pipeline.classifier.delete_xxx
+    description: 'description for config: core.pipeline.classifier.delete_xxx'
     other: Ein boolesches Flag, das anzeigt, dass XXX-Inhalte vom Klassifizierer gelöscht werden sollen
 core.pipeline.classifier.extensions:
-    description: description for config core.pipeline.classifier.extensions
+    description: 'description for config: core.pipeline.classifier.extensions'
     other: Eine Zuordnung von Dateitypen zu ihnen zugeordneten Dateierweiterungen
 core.pipeline.classifier.flags:
-    description: description for config core.pipeline.classifier.flags
+    description: 'description for config: core.pipeline.classifier.flags'
     other: Eine Zuordnung von Flag-Schlüsseln zu Flag-Werten zur Konfiguration von Klassifizierer-Workflows
 core.pipeline.classifier.keywords:
-    description: description for config core.pipeline.classifier.keywords
+    description: 'description for config: core.pipeline.classifier.keywords'
     other: Eine Zuordnung von Kategorienamen zu Schlüsselwörtern verschiedener Torrent-Typen
 core.pipeline.classifier.workflow:
-    description: description for config core.pipeline.classifier.workflow
+    description: 'description for config: core.pipeline.classifier.workflow'
     other: Der Standard-Klassifizierer-Workflow
 core.pipeline.processor:
     description: description for plugin core.pipeline.processor
-    other: Stellt den Prozessor-Service bereit, der Torrents klassifiziert und indiziert
+    other: ""
 core.queue:
     description: description for plugin core.queue
-    other: Betreibt den Warteschlangen-Job-Worker
+    other: ""
+core.queue.autostart:
+    description: 'description for config: core.queue.autostart'
+    other: ""
 core.torznab:
     description: description for plugin core.torznab
-    other: Betreibt den Torznab-API-Server am /torznab-Endpunkt
+    other: ""
+core.torznab.activation:
+    description: 'description for config: core.torznab.activation'
+    other: ""
 core.worker:
     description: description for plugin core.worker
-    other: Verwaltet Worker
+    other: ""

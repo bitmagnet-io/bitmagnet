@@ -48,10 +48,10 @@ export class ConfigService {
         plugins: result.plugins,
       });
     });
-    this.query();
+    this.watchQuery();
   }
 
-  private query() {
+  private watchQuery() {
     this.apollo
       .watchQuery<
         generated.ConfigParamsQuery,

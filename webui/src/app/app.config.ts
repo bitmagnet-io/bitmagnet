@@ -19,6 +19,7 @@ import { InMemoryCache } from "@apollo/client/core";
 import { graphqlEndpoint } from "../environments/environment";
 import { TranslocoImportLoader } from "./i18n/transloco.loader";
 import { routes } from "./app.routes";
+import { AuthTokenService } from "./auth/auth-token.service";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -30,12 +31,20 @@ export const appConfig: ApplicationConfig = {
     provideApollo(() => {
       const httpLink = inject(HttpLink);
       const transloco = inject(TranslocoService);
+      const tokenService = inject(AuthTokenService);
 
       const contextLink = setContext((_, { headers }) => {
+        const token = tokenService.getToken();
+
         return {
           headers: {
             ...headers,
             "Accept-Language": transloco.getActiveLang(),
+            ...(token
+              ? {
+                  Authorization: "Bearer " + token,
+                }
+              : {}),
           },
         };
       });

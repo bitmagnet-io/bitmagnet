@@ -1,0 +1,46 @@
+type User {
+  id: Int!
+  username: String!
+  role: String!
+  email: String
+  lastLoginAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Role {
+  name: String!
+  core: Boolean!
+  permissions: [Permission!]!
+}
+
+enum AuthSubjectType {
+  role
+}
+
+type AuthSubject {
+  type: AuthSubjectType!
+  name: String!
+}
+
+type AuthObjectAction {
+  namespace: String!
+  object: String!
+  action: String!
+}
+
+type Permission {
+  subject: AuthSubject!
+  objectAction: AuthObjectAction!
+  core: Boolean!
+}
+
+type Invitation {
+  code: String!
+  role: String!
+  email: String
+  createdBy: User
+  claimedBy: User
+  expiresAt: DateTime
+  createdAt: DateTime!
+}

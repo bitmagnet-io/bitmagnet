@@ -1,0 +1,9 @@
+#import "../fragments/AuthObjectAction"
+
+query AuthObjectActions {
+  auth {
+    listObjectActions {
+      ...AuthObjectAction
+    }
+  }
+}

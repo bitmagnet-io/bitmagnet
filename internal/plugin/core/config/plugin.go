@@ -40,16 +40,11 @@ var (
 			fx.Provide(
 				manager.New,
 			),
-			fx.Supply(
-				fx.Annotate(
-					&i18n.Message{
-						ID:          RefActivation.String(),
-						Description: "description for plugin activation param",
-						Other:       "Activation",
-					},
-					fx.ResultTags(`group:"i18n_messages"`),
-				),
-			),
+		),
+		builder.WithI18nMessage[deps](
+			RefActivation,
+			"description for plugin activation param",
+			i18n.WithOther("Activation"),
 		),
 		// builder.WithCliCommand[deps](
 		// 	NewConfigCommand(),

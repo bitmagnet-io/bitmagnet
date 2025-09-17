@@ -23,8 +23,8 @@ export class PluginsService {
 
   private query() {
     this.apollo
-      .query<generated.PluginListQuery, generated.PluginListQueryVariables>({
-        query: generated.PluginListDocument,
+      .query<generated.PluginsQuery, generated.PluginsQueryVariables>({
+        query: generated.PluginsDocument,
         fetchPolicy: "no-cache",
       })
       .pipe(

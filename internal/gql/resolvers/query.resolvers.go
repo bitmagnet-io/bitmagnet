@@ -21,6 +21,22 @@ func (r *queryResolver) Version(ctx context.Context) (string, error) {
 	return version.GitTag, nil
 }
 
+// Self is the resolver for the self field.
+func (r *queryResolver) Self(ctx context.Context) (gqlmodel.SelfQuery, error) {
+	return gqlmodel.SelfQuery{
+		RBAC: r.RBAC,
+		User: r.User,
+	}, nil
+}
+
+// Auth is the resolver for the auth field.
+func (r *queryResolver) Auth(ctx context.Context) (gqlmodel.AuthQuery, error) {
+	return gqlmodel.AuthQuery{
+		RBAC: r.RBAC,
+		User: r.User,
+	}, nil
+}
+
 // Config is the resolver for the config field.
 func (r *queryResolver) Config(ctx context.Context) (gqlmodel.ConfigQuery, error) {
 	return gqlmodel.ConfigQuery{
@@ -111,13 +127,6 @@ func (r *queryResolver) Torrent(ctx context.Context) (gqlmodel.TorrentQuery, err
 		Dao:                  dao,
 		Search:               r.Search,
 		TorrentMetricsClient: r.TorrentMetricsClient,
-	}, nil
-}
-
-// TorrentContent is the resolver for the torrentContent field.
-func (r *queryResolver) TorrentContent(ctx context.Context) (gqlmodel.TorrentContentQuery, error) {
-	return gqlmodel.TorrentContentQuery{
-		TorrentContentSearch: r.Search,
 	}, nil
 }
 

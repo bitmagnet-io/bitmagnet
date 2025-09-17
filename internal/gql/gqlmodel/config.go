@@ -7,6 +7,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/config/manager"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
+	"github.com/bitmagnet-io/bitmagnet/internal/gql/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
@@ -18,7 +19,7 @@ type ConfigQuery struct {
 }
 
 func (q ConfigQuery) Params(ctx context.Context) []gen.ConfigParam {
-	localizer := newLocalizerFromContext(ctx, q.I18n)
+	localizer := httpserver.NewLocalizerFromContext(ctx, q.I18n)
 
 	return slice.Map(q.Manager.Params(), func(param *resolver.Param) gen.ConfigParam {
 		return transformConfigParam(param, localizer)
@@ -71,7 +72,7 @@ func (m ConfigMutation) Save(ctx context.Context, ref ref.Ref, value json_schema
 		return nil, err
 	}
 
-	result := transformConfigParam(param, newLocalizerFromContext(ctx, m.I18n))
+	result := transformConfigParam(param, httpserver.NewLocalizerFromContext(ctx, m.I18n))
 
 	return &result, nil
 }
@@ -82,7 +83,7 @@ func (m ConfigMutation) Delete(ctx context.Context, ref ref.Ref) (*gen.ConfigPar
 		return nil, err
 	}
 
-	result := transformConfigParam(param, newLocalizerFromContext(ctx, m.I18n))
+	result := transformConfigParam(param, httpserver.NewLocalizerFromContext(ctx, m.I18n))
 
 	return &result, nil
 }

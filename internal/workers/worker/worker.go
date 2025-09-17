@@ -128,8 +128,9 @@ func (w *Worker) Start(ctx context.Context) (runner.Shutdowner, error) {
 		}
 
 		shutdown, err := w.runner.Runner()(runCtx, func(err error) {
-			isShutdownRequested := errors.Is(err, runner.ErrShutdownRequested)
-			isEndedWithError := err != nil && !isShutdownRequested
+			isEndedWithError := err != nil &&
+				!errors.Is(err, runner.ErrCompleted) &&
+				!errors.Is(err, runner.ErrShutdownRequested)
 
 			if isEndedWithError {
 				w.logger.Error("ended with error", zap.Error(err))

@@ -1,4 +1,57 @@
-import { Routes } from "@angular/router";
+import {
+  Router,
+  Routes,
+  CanActivateFn,
+  RouterStateSnapshot,
+} from "@angular/router";
+import { AuthService, ObjectAction } from "./auth/auth.service";
+import { inject } from "@angular/core";
+import { map } from "rxjs";
+
+const navigateToLogin = (router: Router, state: RouterStateSnapshot) => {
+  router.navigate(["/login"], {
+    queryParams: { returnUrl: state.url },
+  });
+};
+
+const authGuard = (...objectActions: ObjectAction[]): CanActivateFn => {
+  return ({}, state) => {
+    const authService = inject(AuthService);
+    const router = inject(Router);
+    return authService.enforce(...objectActions).pipe(
+      map((allowed) => {
+        if (allowed) {
+          return true;
+        }
+
+        navigateToLogin(router, state);
+
+        return false;
+      }),
+    );
+  };
+};
+
+const requireUserGuard =
+  (
+    require: boolean,
+    onFailed: (router: Router, state: RouterStateSnapshot) => void,
+  ): CanActivateFn =>
+  ({}, state) => {
+    const authService = inject(AuthService);
+    const router = inject(Router);
+    return authService.self$.pipe(
+      map(({ user }) => {
+        if (require !== !user) {
+          return true;
+        }
+
+        onFailed(router, state);
+
+        return false;
+      }),
+    );
+  };
 
 export const routes: Routes = [
   {
@@ -8,6 +61,12 @@ export const routes: Routes = [
   },
   {
     path: "torrents",
+    canActivate: Array<CanActivateFn>(
+      authGuard({
+        object: "torrent",
+        action: "query",
+      }),
+    ),
     loadComponent: () =>
       import("./torrents/torrents.component").then((c) => c.TorrentsComponent),
     children: [
@@ -28,31 +87,72 @@ export const routes: Routes = [
     ],
   },
   {
-    path: "dashboard",
+    path: "login",
+    canActivate: [
+      requireUserGuard(false, (router) => router.navigate(["/account"])),
+    ],
     loadComponent: () =>
-      import("./dashboard/dashboard.component").then(
-        (c) => c.DashboardComponent,
-      ),
+      import("./auth/login.component").then((c) => c.LoginComponent),
+  },
+  {
+    path: "register",
+    canActivate: [
+      requireUserGuard(false, (router) => router.navigate(["/account"])),
+    ],
+    loadComponent: () =>
+      import("./auth/register.component").then((c) => c.RegisterComponent),
+  },
+  {
+    path: "account",
+    canActivate: [requireUserGuard(true, navigateToLogin)],
+    loadComponent: () =>
+      import("./account/account.component").then((c) => c.AccountComponent),
     children: [
       {
         path: "",
         loadComponent: () =>
-          import("./dashboard/dashboard-home.component").then(
-            (c) => c.DashboardHomeComponent,
+          import("./account/account-home.component").then(
+            (c) => c.AccountHomeComponent,
+          ),
+      },
+    ],
+  },
+  {
+    path: "admin",
+    loadComponent: () =>
+      import("./admin/admin.component").then((c) => c.AdminComponent),
+    children: [
+      {
+        path: "",
+        loadComponent: () =>
+          import("./admin/admin-home.component").then(
+            (c) => c.AdminHomeComponent,
           ),
       },
       {
         path: "config",
+        canActivate: Array<CanActivateFn>(
+          authGuard({
+            object: "config",
+            action: "query",
+          }),
+        ),
         loadComponent: () =>
-          import("./dashboard/config/dashboard-config.component").then(
-            (c) => c.DashboardConfigComponent,
+          import("./admin/config/config-admin.component").then(
+            (c) => c.AdminConfigComponent,
           ),
       },
       {
         path: "workers",
+        canActivate: Array<CanActivateFn>(
+          authGuard({
+            object: "worker",
+            action: "query",
+          }),
+        ),
         loadComponent: () =>
-          import("./dashboard/workers/dashboard-workers.component").then(
-            (c) => c.DashboardWorkersComponent,
+          import("./admin/workers/admin-workers.component").then(
+            (c) => c.AdminWorkersComponent,
           ),
       },
       {
@@ -62,30 +162,36 @@ export const routes: Routes = [
       },
       {
         path: "queues",
+        canActivate: Array<CanActivateFn>(
+          authGuard({
+            object: "queue",
+            action: "query",
+          }),
+        ),
         loadComponent: () =>
-          import("./dashboard/queue/queue-dashboard.component").then(
-            (c) => c.QueueDashboardComponent,
+          import("./admin/queue/queue-admin.component").then(
+            (c) => c.QueueAdminComponent,
           ),
         children: [
           {
             path: "visualize",
             loadComponent: () =>
-              import("./dashboard/queue/queue-visualize.component").then(
+              import("./admin/queue/queue-visualize.component").then(
                 (c) => c.QueueVisualizeComponent,
               ),
           },
           {
             path: "jobs",
             loadComponent: () =>
-              import("./dashboard/queue/queue-jobs.component").then(
+              import("./admin/queue/queue-jobs.component").then(
                 (c) => c.QueueJobsComponent,
               ),
           },
           {
             path: "admin",
             loadComponent: () =>
-              import("./dashboard/queue/queue-admin.component").then(
-                (c) => c.QueueAdminComponent,
+              import("./admin/queue/queue-manager.component").then(
+                (c) => c.QueueManageComponent,
               ),
           },
         ],
@@ -93,8 +199,29 @@ export const routes: Routes = [
       {
         path: "torrents",
         loadComponent: () =>
-          import("./dashboard/torrents/torrents-dashboard.component").then(
-            (c) => c.TorrentsDashboardComponent,
+          import("./admin/torrents/torrents-admin.component").then(
+            (c) => c.TorrentsAdminComponent,
+          ),
+      },
+      {
+        path: "users",
+        loadComponent: () =>
+          import("./admin/users/users-admin.component").then(
+            (c) => c.UsersAdminComponent,
+          ),
+      },
+      {
+        path: "roles",
+        loadComponent: () =>
+          import("./admin/roles/roles-admin.component").then(
+            (c) => c.RolesAdminComponent,
+          ),
+      },
+      {
+        path: "invitations",
+        loadComponent: () =>
+          import("./admin/invitations/invitations-admin.component").then(
+            (c) => c.InvitationsAdminComponent,
           ),
       },
     ],

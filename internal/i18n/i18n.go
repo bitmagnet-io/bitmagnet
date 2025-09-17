@@ -6,9 +6,10 @@ import (
 )
 
 type (
-	Bundle    = i18n.Bundle
-	Localizer = i18n.Localizer
-	Message   = i18n.Message
+	Bundle        = i18n.Bundle
+	Localizer     = i18n.Localizer
+	Message       = i18n.Message
+	MessageOption func(*Message)
 )
 
 var (

@@ -23,7 +23,7 @@
       "xxx": "XXX"
     }
   },
-  "dashboard": {
+  "admin": {
     "interval": {
       "all": "Tot",
       "days": "Dies",
@@ -209,7 +209,6 @@
   },
   "routes": {
     "admin": "Administració",
-    "dashboard": "Tauler de control",
     "home": "Inici",
     "jobs": "Tasques",
     "queues": "Cues",

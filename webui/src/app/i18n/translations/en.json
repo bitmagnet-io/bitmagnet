@@ -1,4 +1,27 @@
 {
+  "account":{
+  },
+  "auth": {
+    "login": "Login",
+    "logout":"Logout",
+    "register": "Register",
+    "username":"Username",
+    "password":"Password",
+    "confirm_password":"Confirm password",
+    "password_has_insufficient_entropy": "Password has insufficient entropy",
+    "passwords_do_not_match":"Passwords do not match",
+    "login_failed": "Login failed",
+    "register_failed": "Register failed",
+    "invitation_code": "Invitation code",
+    "role":"Role",
+    "last_login_at":"Last login at",
+    "created_by": "Created by",
+    "claimed_by": "Claimed by",
+    "unclaimed": "Unclaimed",
+    "expires_at": "Expires at",
+    "new_invitation": "New invitation",
+    "expiry":"Expiry"
+  },
   "content_types": {
     "plural": {
       "all": "All",
@@ -26,7 +49,7 @@
       "xxx": "XXX"
     }
   },
-  "dashboard": {
+  "admin": {
     "event": {
       "created": "Created",
       "failed": "Failed",
@@ -60,7 +83,6 @@
     },
     "queues": {
       "created": "Created",
-      "created_at": "Created at",
       "enqueue_jobs": "Enqueue jobs",
       "enqueue_torrent_processing_batch": "Enqueue Torrent Processing Batch",
       "failed": "Failed",
@@ -113,7 +135,16 @@
     "none": "None",
     "page_not_found": "Page not found",
     "refresh": "Refresh",
-    "status": "Status"
+    "save": "Save",
+    "status": "Status",
+    "email": "Email",
+      "created_at": "Created at",
+      "system": "System",
+      "actions":"Actions",
+      "code": "Code",
+    "delete": "Delete",
+    "never": "Never",
+    "copy_to_clipboard": "Copy to clipboard"
   },
   "health": {
     "bitmagnet_is_status": "bitmagnet is {{status}}",
@@ -223,19 +254,21 @@
   "routes": {
     "admin": "Admin",
     "config": "Config",
-    "dashboard": "Dashboard",
+    "account":"Account",
     "home": "Home",
+    "invitations": "Invitations",
     "jobs": "Jobs",
     "queues": "Queues",
+    "roles": "Roles",
     "torrents": "Torrents",
     "visualize": "Visualize",
-    "workers": "Workers"
+    "workers": "Workers",
+    "users": "Users"
   },
   "torrents": {
     "classification": "Classification",
     "clear_search": "Clear Search",
     "copy": "Copy",
-    "copy_to_clipboard": "Copy to clipboard",
     "delete": "Delete",
     "delete_action_cannot_be_undone": "This action cannot be undone",
     "delete_are_you_sure": "Are you sure you want to delete this torrent?",

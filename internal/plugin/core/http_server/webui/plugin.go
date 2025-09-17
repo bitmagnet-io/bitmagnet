@@ -5,6 +5,8 @@ import (
 	"io/fs"
 	"net/http"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
+	"github.com/bitmagnet-io/bitmagnet/internal/auth/rbac"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/http_server"
@@ -15,7 +17,8 @@ import (
 
 type deps struct {
 	fx.In
-	FS FS
+	FS              FS
+	AnonymousAccess *atomic.Value[rbac.AnonymousAccess]
 }
 
 type FS fs.FS
@@ -44,6 +47,37 @@ var (
 						c.Redirect(301, "/webui")
 					})
 				}
+			},
+		),
+		builder.WithAuthObjectActions(
+			func(deps) []rbac.ObjectAction {
+				return []rbac.ObjectAction{
+					authObjectActionPageView,
+				}
+			},
+		),
+		builder.WithPermissionProvider(
+			func(deps deps) []rbac.Permission {
+				permissions := []rbac.Permission{
+					rbac.NewPermission(
+						rbac.SubjectRole{
+							Role: rbac.RoleUser,
+						},
+						authObjectActionPageView,
+					),
+				}
+
+				if deps.AnonymousAccess.Get() {
+					permissions = append(permissions,
+						rbac.NewPermission(
+							rbac.SubjectRole{
+								Role: rbac.RoleAnon,
+							},
+							authObjectActionPageView,
+						))
+				}
+
+				return permissions
 			},
 		),
 	)

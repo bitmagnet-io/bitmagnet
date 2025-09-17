@@ -1,0 +1,9 @@
+#import "../fragments/Invitation"
+
+mutation Invite($input: InviteInput!) {
+  auth {
+    invite(input: $input) {
+      ...Invitation
+    }
+  }
+}

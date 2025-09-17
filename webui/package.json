@@ -45,6 +45,7 @@
     "filesize": "^10.1.6",
     "graphql": "^16.10.0",
     "ng2-charts": "^6.0.1",
+    "picomatch": "^4.0.3",
     "rxjs": "~7.8.1",
     "tslib": "^2.6.3",
     "zone.js": "~0.14.10"
@@ -63,6 +64,7 @@
     "@graphql-codegen/typescript-operations": "^4.3.0",
     "@jsverse/transloco-keys-manager": "^5.1.0",
     "@types/jasmine": "~5.1.4",
+    "@types/picomatch": "^4.0.2",
     "@typescript-eslint/eslint-plugin": "^8.8.1",
     "@typescript-eslint/parser": "^8.8.1",
     "eslint-config-prettier": "^9.1.0",

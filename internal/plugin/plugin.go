@@ -2,14 +2,23 @@ package plugin
 
 import (
 	config_registry "github.com/bitmagnet-io/bitmagnet/internal/config/registry"
+	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/app"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/cmd"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"go.uber.org/fx"
 )
 
-type ParamProvider interface {
-	Params() []config_registry.Param
+type ConfigProvider interface {
+	ConfigParams() []config_registry.Param
+}
+
+type ErrorProvider interface {
+	Errors() ref.Map[error]
+}
+
+type I18nProvider interface {
+	I18nMessages() []*i18n.Message
 }
 
 type Command func(app.Builder) cmd.Command
@@ -26,7 +35,9 @@ type Plugin interface {
 	Ref() ref.Ref
 	ActivationRef() ref.Nullable
 	Dependencies() []ref.Ref
-	ParamProvider
+	ConfigProvider
+	ErrorProvider
+	I18nProvider
 	CommandProvider
 	FXOptionProvider
 }
@@ -36,6 +47,8 @@ func NewPlugin(
 	activation ref.Nullable,
 	dependencies []ref.Ref,
 	configParams []config_registry.Param,
+	errors ref.Map[error],
+	i18nProvider i18n.Provider,
 	cliCommands []Command,
 	fxOption fx.Option,
 ) Plugin {
@@ -43,7 +56,9 @@ func NewPlugin(
 		ref:          ref,
 		activation:   activation,
 		dependencies: dependencies,
-		params:       configParams,
+		configParams: configParams,
+		errors:       errors,
+		i18nProvider: i18nProvider,
 		cliCcommands: cliCommands,
 		fxOption:     fxOption,
 	}
@@ -53,7 +68,9 @@ type plugin struct {
 	ref          ref.Ref
 	activation   ref.Nullable
 	dependencies []ref.Ref
-	params       []config_registry.Param
+	configParams []config_registry.Param
+	errors       ref.Map[error]
+	i18nProvider i18n.Provider
 	cliCcommands []Command
 	fxOption     fx.Option
 }
@@ -70,8 +87,16 @@ func (p *plugin) Dependencies() []ref.Ref {
 	return p.dependencies
 }
 
-func (p *plugin) Params() []config_registry.Param {
-	return p.params
+func (p *plugin) ConfigParams() []config_registry.Param {
+	return p.configParams
+}
+
+func (p *plugin) Errors() ref.Map[error] {
+	return p.errors
+}
+
+func (p *plugin) I18nMessages() []*i18n.Message {
+	return p.i18nProvider()
 }
 
 func (p *plugin) FXOption() fx.Option {

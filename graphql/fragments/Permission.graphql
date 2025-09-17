@@ -1,0 +1,14 @@
+#import "./ObjectAction"
+
+fragment Permission on Permission {
+  subject {
+    type
+    name
+  }
+  objectAction {
+    namespace
+    object
+    action
+  }
+  core
+}

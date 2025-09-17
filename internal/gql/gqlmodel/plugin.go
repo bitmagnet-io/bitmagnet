@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
+	"github.com/bitmagnet-io/bitmagnet/internal/gql/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
@@ -15,7 +16,7 @@ type PluginQuery struct {
 }
 
 func (q PluginQuery) List(ctx context.Context) []gen.PluginInfo {
-	localizer := newLocalizerFromContext(ctx, q.I18n)
+	localizer := httpserver.NewLocalizerFromContext(ctx, q.I18n)
 
 	return slice.Map(q.Infos, func(info plugin.PluginInfo) gen.PluginInfo {
 		return transformPluginInfo(info, localizer)

@@ -1,0 +1,5 @@
+fragment AuthObjectAction on AuthObjectAction {
+  namespace
+  object
+  action
+}

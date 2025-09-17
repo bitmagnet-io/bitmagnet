@@ -1,0 +1,9 @@
+#import "../fragments/Role"
+
+query Roles {
+  auth {
+    listRoles {
+      ...Role
+    }
+  }
+}

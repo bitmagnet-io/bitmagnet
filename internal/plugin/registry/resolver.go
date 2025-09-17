@@ -9,6 +9,8 @@ import (
 	"slices"
 
 	config_resolver "github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
+	"github.com/bitmagnet-io/bitmagnet/internal/error_registry"
+	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
@@ -20,7 +22,9 @@ import (
 
 type resolver struct {
 	*Builder
-	config_resolver.Resolved
+	config          config_resolver.Resolved
+	i18nProvider    i18n.Provider
+	errorRegistry   error_registry.Registry
 	enabledPlugins  []ref.Ref
 	disabledPlugins []ref.Ref
 }
@@ -61,7 +65,7 @@ func (r *resolver) resolve() (*Registry, error) {
 
 	return &Registry{
 		pluginInfos: pluginInfos,
-		config:      r.Resolved,
+		config:      r.config,
 		commands: slice.FlatMap(pluginInfos, func(info plugin.PluginInfo) []plugin.Command {
 			if !info.Enabled {
 				return nil
@@ -70,7 +74,11 @@ func (r *resolver) resolve() (*Registry, error) {
 			return r.plugins.Get(info.Ref).Commands()
 		}),
 		fxOption: fx.Options(
-			fx.Supply(r.Resolved),
+			fx.Supply(
+				r.config,
+				r.i18nProvider,
+				r.errorRegistry,
+			),
 			fx.Options(slice.Map(resolvedNames, func(ref ref.Ref) fx.Option {
 				return r.plugins.Get(ref).FXOption()
 			})...),
@@ -130,7 +138,7 @@ func (r *resolver) resolveNames() (map[string]ref.Ref, error) {
 		if activationRef, ok := pl.ActivationRef().Value(); !ok {
 			enabled = true
 		} else {
-			if activationParam, ok := r.Param(activationRef); ok {
+			if activationParam, ok := r.config.Param(activationRef); ok {
 				if activation, ok := activationParam.Value().(plugin.Activation); ok {
 					if activation == plugin.ActivationEnabled {
 						enabled = true

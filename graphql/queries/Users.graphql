@@ -1,0 +1,12 @@
+#import "../fragments/User"
+
+query Users($input: ListUsersInput!) {
+  auth {
+    listUsers(input: $input) {
+      users {
+        ...User
+      }
+      totalCount
+    }
+  }
+}

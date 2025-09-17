@@ -26,7 +26,7 @@
       "xxx": "XXX"
     }
   },
-  "dashboard": {
+  "admin": {
     "event": {
       "created": "Gemaakt",
       "failed": "Mislukt",
@@ -229,7 +229,6 @@
   },
   "routes": {
     "admin": "Beheerder",
-    "dashboard": "Dashboard",
     "home": "Home",
     "jobs": "Taken",
     "queues": "Wachtrijen",

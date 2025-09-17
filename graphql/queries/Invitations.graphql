@@ -1,0 +1,12 @@
+#import "../fragments/Invitation"
+
+query Invitations($input: ListInvitationsInput) {
+  auth {
+    listInvitations(input: $input) {
+      invitations {
+        ...Invitation
+      }
+      totalCount
+    }
+  }
+}

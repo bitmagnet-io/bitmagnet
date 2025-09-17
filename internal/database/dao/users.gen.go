@@ -27,12 +27,33 @@ func newUser(db *gorm.DB, opts ...gen.DOOption) user {
 
 	tableName := _user.userDo.TableName()
 	_user.ALL = field.NewAsterisk(tableName)
-	_user.ID = field.NewInt32(tableName, "id")
+	_user.ID = field.NewInt(tableName, "id")
 	_user.Username = field.NewString(tableName, "username")
-	_user.Password = field.NewField(tableName, "password")
-	_user.LastLoginAt = field.NewTime(tableName, "last_login_at")
+	_user.Email = field.NewField(tableName, "email")
+	_user.EmailVerified = field.NewBool(tableName, "email_verified")
+	_user.EmailVerifyCode = field.NewField(tableName, "email_verify_code")
+	_user.Password = field.NewBytes(tableName, "password")
+	_user.RoleName = field.NewString(tableName, "role_name")
+	_user.Enabled = field.NewBool(tableName, "enabled")
+	_user.LastLoginAt = field.NewField(tableName, "last_login_at")
 	_user.CreatedAt = field.NewTime(tableName, "created_at")
 	_user.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_user.Role = userBelongsToRole{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Role", "model.Role"),
+		Permissions: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("Role.Permissions", "model.RolePermission"),
+		},
+	}
+
+	_user.Permissions = userHasManyPermissions{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Permissions", "model.RolePermission"),
+	}
 
 	_user.fillFieldMap()
 
@@ -42,13 +63,21 @@ func newUser(db *gorm.DB, opts ...gen.DOOption) user {
 type user struct {
 	userDo
 
-	ALL         field.Asterisk
-	ID          field.Int32
-	Username    field.String
-	Password    field.Field
-	LastLoginAt field.Time
-	CreatedAt   field.Time
-	UpdatedAt   field.Time
+	ALL             field.Asterisk
+	ID              field.Int
+	Username        field.String
+	Email           field.Field
+	EmailVerified   field.Bool
+	EmailVerifyCode field.Field
+	Password        field.Bytes
+	RoleName        field.String
+	Enabled         field.Bool
+	LastLoginAt     field.Field
+	CreatedAt       field.Time
+	UpdatedAt       field.Time
+	Role            userBelongsToRole
+
+	Permissions userHasManyPermissions
 
 	fieldMap map[string]field.Expr
 }
@@ -65,10 +94,15 @@ func (u user) As(alias string) *user {
 
 func (u *user) updateTableName(table string) *user {
 	u.ALL = field.NewAsterisk(table)
-	u.ID = field.NewInt32(table, "id")
+	u.ID = field.NewInt(table, "id")
 	u.Username = field.NewString(table, "username")
-	u.Password = field.NewField(table, "password")
-	u.LastLoginAt = field.NewTime(table, "last_login_at")
+	u.Email = field.NewField(table, "email")
+	u.EmailVerified = field.NewBool(table, "email_verified")
+	u.EmailVerifyCode = field.NewField(table, "email_verify_code")
+	u.Password = field.NewBytes(table, "password")
+	u.RoleName = field.NewString(table, "role_name")
+	u.Enabled = field.NewBool(table, "enabled")
+	u.LastLoginAt = field.NewField(table, "last_login_at")
 	u.CreatedAt = field.NewTime(table, "created_at")
 	u.UpdatedAt = field.NewTime(table, "updated_at")
 
@@ -87,13 +121,19 @@ func (u *user) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (u *user) fillFieldMap() {
-	u.fieldMap = make(map[string]field.Expr, 6)
+	u.fieldMap = make(map[string]field.Expr, 13)
 	u.fieldMap["id"] = u.ID
 	u.fieldMap["username"] = u.Username
+	u.fieldMap["email"] = u.Email
+	u.fieldMap["email_verified"] = u.EmailVerified
+	u.fieldMap["email_verify_code"] = u.EmailVerifyCode
 	u.fieldMap["password"] = u.Password
+	u.fieldMap["role_name"] = u.RoleName
+	u.fieldMap["enabled"] = u.Enabled
 	u.fieldMap["last_login_at"] = u.LastLoginAt
 	u.fieldMap["created_at"] = u.CreatedAt
 	u.fieldMap["updated_at"] = u.UpdatedAt
+
 }
 
 func (u user) clone(db *gorm.DB) user {
@@ -104,6 +144,152 @@ func (u user) clone(db *gorm.DB) user {
 func (u user) replaceDB(db *gorm.DB) user {
 	u.userDo.ReplaceDB(db)
 	return u
+}
+
+type userBelongsToRole struct {
+	db *gorm.DB
+
+	field.RelationField
+
+	Permissions struct {
+		field.RelationField
+	}
+}
+
+func (a userBelongsToRole) Where(conds ...field.Expr) *userBelongsToRole {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userBelongsToRole) WithContext(ctx context.Context) *userBelongsToRole {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userBelongsToRole) Session(session *gorm.Session) *userBelongsToRole {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userBelongsToRole) Model(m *model.User) *userBelongsToRoleTx {
+	return &userBelongsToRoleTx{a.db.Model(m).Association(a.Name())}
+}
+
+type userBelongsToRoleTx struct{ tx *gorm.Association }
+
+func (a userBelongsToRoleTx) Find() (result *model.Role, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userBelongsToRoleTx) Append(values ...*model.Role) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userBelongsToRoleTx) Replace(values ...*model.Role) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userBelongsToRoleTx) Delete(values ...*model.Role) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userBelongsToRoleTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userBelongsToRoleTx) Count() int64 {
+	return a.tx.Count()
+}
+
+type userHasManyPermissions struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a userHasManyPermissions) Where(conds ...field.Expr) *userHasManyPermissions {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userHasManyPermissions) WithContext(ctx context.Context) *userHasManyPermissions {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userHasManyPermissions) Session(session *gorm.Session) *userHasManyPermissions {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userHasManyPermissions) Model(m *model.User) *userHasManyPermissionsTx {
+	return &userHasManyPermissionsTx{a.db.Model(m).Association(a.Name())}
+}
+
+type userHasManyPermissionsTx struct{ tx *gorm.Association }
+
+func (a userHasManyPermissionsTx) Find() (result []*model.RolePermission, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userHasManyPermissionsTx) Append(values ...*model.RolePermission) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userHasManyPermissionsTx) Replace(values ...*model.RolePermission) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userHasManyPermissionsTx) Delete(values ...*model.RolePermission) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userHasManyPermissionsTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userHasManyPermissionsTx) Count() int64 {
+	return a.tx.Count()
 }
 
 type userDo struct{ gen.DO }

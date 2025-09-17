@@ -9,8 +9,11 @@ import { initializeIcons } from "./app.icons";
   selector: "app-root",
   standalone: true,
   imports: [RouterOutlet, LayoutComponent],
-  templateUrl: "./app.component.html",
-  styleUrl: "./app.component.scss",
+  template: `
+    <app-layout>
+      <router-outlet />
+    </app-layout>
+  `,
 })
 export class AppComponent {
   title = "bitmagnet";

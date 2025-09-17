@@ -1,10 +1,11 @@
 type Query {
-  version: String!
-  config: ConfigQuery!
-  plugin: PluginQuery!
-  worker: WorkerQuery!
-  health: HealthQuery!
-  queue: QueueQuery!
-  torrent: TorrentQuery!
-  torrentContent: TorrentContentQuery!
+  version: String! @auth(object: "version", action: "query")
+  self: SelfQuery! @auth(object: "self", action: "query")
+  auth: AuthQuery! @auth(object: "auth", action: "query")
+  config: ConfigQuery! @auth(object: "config", action: "query")
+  plugin: PluginQuery! @auth(object: "plugin", action: "query")
+  worker: WorkerQuery! @auth(object: "worker", action: "query")
+  health: HealthQuery! @auth(object: "health", action: "query")
+  queue: QueueQuery! @auth(object: "queue", action: "query")
+  torrent: TorrentQuery! @auth(object: "torrent", action: "query")
 }

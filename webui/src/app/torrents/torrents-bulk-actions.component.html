@@ -25,7 +25,7 @@
             <button
               mat-stroked-button
               [disabled]="!selectedItems.length"
-              [matTooltip]="t('torrents.copy_to_clipboard')"
+              [matTooltip]="t('general.copy_to_clipboard')"
               [cdkCopyToClipboard]="getSelectedMagnetLinks()"
             >
               <mat-icon svgIcon="magnet" />{{ t("torrents.magnet_links") }}
@@ -33,7 +33,7 @@
             <button
               mat-stroked-button
               [disabled]="!selectedItems.length"
-              [matTooltip]="t('torrents.copy_to_clipboard')"
+              [matTooltip]="t('general.copy_to_clipboard')"
               [cdkCopyToClipboard]="getSelectedInfoHashesLines()"
             >
               <mat-icon>tag</mat-icon>{{ t("torrents.info_hashes") }}

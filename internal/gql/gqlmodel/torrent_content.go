@@ -13,10 +13,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
-type TorrentContentQuery struct {
-	TorrentContentSearch search.TorrentContentSearch
-}
-
 type TorrentContent struct {
 	ID              string
 	InfoHash        protocol.ID
@@ -126,7 +122,7 @@ type TorrentContentSearchResult struct {
 	Aggregations         gen.TorrentContentAggregations
 }
 
-func (t TorrentContentQuery) Search(
+func (t TorrentQuery) SearchTorrentContent(
 	ctx context.Context,
 	input TorrentContentSearchQueryInput,
 ) (TorrentContentSearchResult, error) {
@@ -169,7 +165,7 @@ func (t TorrentContentQuery) Search(
 
 	options = append(options, search.TorrentContentFullOrderBy(fullOrderBy).Option())
 
-	result, resultErr := t.TorrentContentSearch.TorrentContent(ctx, options...)
+	result, resultErr := t.Search.TorrentContent(ctx, options...)
 	if resultErr != nil {
 		return TorrentContentSearchResult{}, resultErr
 	}

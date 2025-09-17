@@ -26,7 +26,7 @@
       "xxx": "色情"
     }
   },
-  "dashboard": {
+  "admin": {
     "event": {
       "created": "已创建",
       "failed": "失败",
@@ -229,7 +229,6 @@
   },
   "routes": {
     "admin": "管理员",
-    "dashboard": "仪表盘",
     "home": "首页",
     "jobs": "任务",
     "queues": "队列",

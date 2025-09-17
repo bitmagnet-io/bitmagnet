@@ -18,38 +18,11 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
 )
 
-type AuthLoginResult interface {
-	IsAuthLoginResult()
+type AuthObjectActionInput struct {
+	Namespace string `json:"namespace"`
+	Object    string `json:"object"`
+	Action    string `json:"action"`
 }
-
-type AuthRegisterResult interface {
-	IsAuthRegisterResult()
-}
-
-type AuthLoginFailure struct {
-	Error AuthLoginErrorType `json:"error"`
-}
-
-func (AuthLoginFailure) IsAuthLoginResult() {}
-
-type AuthLoginSuccess struct {
-	Token string     `json:"token"`
-	User  model.User `json:"user"`
-}
-
-func (AuthLoginSuccess) IsAuthLoginResult() {}
-
-type AuthRegisterFailure struct {
-	Error AuthRegisterErrorType `json:"error"`
-}
-
-func (AuthRegisterFailure) IsAuthRegisterResult() {}
-
-type AuthRegisterSuccess struct {
-	User model.User `json:"user"`
-}
-
-func (AuthRegisterSuccess) IsAuthRegisterResult() {}
 
 type ConfigParam struct {
 	Ref         ref.Ref                `json:"ref"`
@@ -100,6 +73,12 @@ type HealthQuery struct {
 	Checks []HealthCheck `json:"checks"`
 }
 
+type InviteInput struct {
+	Email      graphql.Omittable[*string]        `json:"email,omitempty"`
+	Role       graphql.Omittable[*string]        `json:"role,omitempty"`
+	Expiration graphql.Omittable[*time.Duration] `json:"expiration,omitempty"`
+}
+
 type LanguageAgg struct {
 	Value      model.Language `json:"value"`
 	Label      string         `json:"label"`
@@ -112,7 +91,22 @@ type LanguageFacetInput struct {
 	Filter    graphql.Omittable[[]model.Language] `json:"filter,omitempty"`
 }
 
+type ListInvitationsInput struct {
+	Pagination graphql.Omittable[*PaginationInput] `json:"pagination,omitempty"`
+}
+
+type ListUsersInput struct {
+	Pagination   graphql.Omittable[*PaginationInput] `json:"pagination,omitempty"`
+	UsernameLike graphql.Omittable[*string]          `json:"usernameLike,omitempty"`
+}
+
 type Mutation struct {
+}
+
+type PaginationInput struct {
+	Limit  graphql.Omittable[*int] `json:"limit,omitempty"`
+	Page   graphql.Omittable[*int] `json:"page,omitempty"`
+	Offset graphql.Omittable[*int] `json:"offset,omitempty"`
 }
 
 type PluginInfo struct {
@@ -324,83 +318,42 @@ type WorkerListAllQueryResult struct {
 	Workers []Worker `json:"workers"`
 }
 
-type AuthLoginErrorType string
+type AuthSubjectType string
 
 const (
-	AuthLoginErrorTypeInvalidCredentials AuthLoginErrorType = "invalid_credentials"
+	AuthSubjectTypeRole AuthSubjectType = "role"
 )
 
-var AllAuthLoginErrorType = []AuthLoginErrorType{
-	AuthLoginErrorTypeInvalidCredentials,
+var AllAuthSubjectType = []AuthSubjectType{
+	AuthSubjectTypeRole,
 }
 
-func (e AuthLoginErrorType) IsValid() bool {
+func (e AuthSubjectType) IsValid() bool {
 	switch e {
-	case AuthLoginErrorTypeInvalidCredentials:
+	case AuthSubjectTypeRole:
 		return true
 	}
 	return false
 }
 
-func (e AuthLoginErrorType) String() string {
+func (e AuthSubjectType) String() string {
 	return string(e)
 }
 
-func (e *AuthLoginErrorType) UnmarshalGQL(v any) error {
+func (e *AuthSubjectType) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
 	}
 
-	*e = AuthLoginErrorType(str)
+	*e = AuthSubjectType(str)
 	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid AuthLoginErrorType", str)
+		return fmt.Errorf("%s is not a valid AuthSubjectType", str)
 	}
 	return nil
 }
 
-func (e AuthLoginErrorType) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
-type AuthRegisterErrorType string
-
-const (
-	AuthRegisterErrorTypeUserAlreadyExists       AuthRegisterErrorType = "user_already_exists"
-	AuthRegisterErrorTypePasswordPolicyViolation AuthRegisterErrorType = "password_policy_violation"
-)
-
-var AllAuthRegisterErrorType = []AuthRegisterErrorType{
-	AuthRegisterErrorTypeUserAlreadyExists,
-	AuthRegisterErrorTypePasswordPolicyViolation,
-}
-
-func (e AuthRegisterErrorType) IsValid() bool {
-	switch e {
-	case AuthRegisterErrorTypeUserAlreadyExists, AuthRegisterErrorTypePasswordPolicyViolation:
-		return true
-	}
-	return false
-}
-
-func (e AuthRegisterErrorType) String() string {
-	return string(e)
-}
-
-func (e *AuthRegisterErrorType) UnmarshalGQL(v any) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = AuthRegisterErrorType(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid AuthRegisterErrorType", str)
-	}
-	return nil
-}
-
-func (e AuthRegisterErrorType) MarshalGQL(w io.Writer) {
+func (e AuthSubjectType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

@@ -6,6 +6,9 @@ filename: "{{.InterfaceName}}.go"
 resolve-type-alias: false
 issue-845-fix: true
 packages:
+  github.com/bitmagnet-io/bitmagnet/internal/auth/rbac:
+    interfaces:
+      Repository:
   github.com/bitmagnet-io/bitmagnet/internal/classifier:
     interfaces:
       LocalSearch:
