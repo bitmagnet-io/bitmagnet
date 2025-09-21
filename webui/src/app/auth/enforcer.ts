@@ -7,9 +7,15 @@ export type ObjectAction = {
   action: string;
 };
 
-export type Enforcer = (objAct: ObjectAction) => generated.Permission | null;
+export type Permission = {
+  objectAction: generated.AuthObjectAction;
+  core?: boolean;
+  subject?: generated.AuthSubject;
+};
 
-export const newEnforcer = (permissions: generated.Permission[]): Enforcer => {
+export type Enforcer = (objAct: ObjectAction) => Permission | null;
+
+export const newEnforcer = (permissions: Permission[]): Enforcer => {
   const matchers = permissions
     .sort((a, b) => {
       if (a.core === b.core) {

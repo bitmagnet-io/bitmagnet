@@ -16,7 +16,6 @@ import (
 type Enforcer interface {
 	Enforce(ctx context.Context, subject Subject, objectAction ObjectAction) (bool, error)
 	EnforceAny(ctx context.Context, subjects []Subject, objectAction ObjectAction) (bool, error)
-	// EnforceAll(ctx context.Context, subjects []Subject, objectAction ObjectAction) (bool, error)
 }
 
 type Service interface {
@@ -71,7 +70,7 @@ func (s *service) Enforce(ctx context.Context, subject Subject, objectAction Obj
 		return false, err
 	}
 
-	return casbin.Enforce(subjectString(subject), objectAction.Object, objectAction.Action)
+	return casbin.Enforce(subjectString(subject), objectString(objectAction), objectAction.Action)
 }
 
 func (s *service) EnforceAny(ctx context.Context, subjects []Subject, objectAction ObjectAction) (bool, error) {
@@ -93,27 +92,17 @@ func (s *service) EnforceAny(ctx context.Context, subjects []Subject, objectActi
 	return slices.Contains(result, true), err
 }
 
-// func (s *service) EnforceAll(ctx context.Context, subjects []Subject, objectAction ObjectAction) (bool, error) {
-// 	select {
-// 	case <-ctx.Done():
-// 		return false, ctx.Err()
-// 	case s.sem <- struct{}{}:
-// 	}
-
-// 	defer func() { <-s.sem }()
-
-// 	casbin, err := s.acquireCasbin(ctx)
-// 	if err != nil {
-// 		return false, err
-// 	}
-
-// 	result, err := casbin.BatchEnforce(batchRequests(subjects, objectAction))
-
-// 	return len(result) > 0 && !slices.Contains(result, false), err
-// }
-
 func (s *service) GetAllRoles(ctx context.Context) ([]RoleInfo, error) {
 	return s.getRoles(ctx, nil)
+}
+
+func (s *service) GetRole(ctx context.Context, role Role) (RoleInfo, error) {
+	roles, err := s.getRoles(ctx, []Role{role})
+	if err != nil {
+		return RoleInfo{}, err
+	}
+
+	return roles[0], nil
 }
 
 func (s *service) GetRoles(ctx context.Context, roles []Role) ([]RoleInfo, error) {

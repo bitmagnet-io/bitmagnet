@@ -29,6 +29,7 @@ func newAPIKey(db *gorm.DB, opts ...gen.DOOption) aPIKey {
 	_aPIKey.ALL = field.NewAsterisk(tableName)
 	_aPIKey.ID = field.NewInt(tableName, "id")
 	_aPIKey.UserID = field.NewInt(tableName, "user_id")
+	_aPIKey.Name = field.NewString(tableName, "name")
 	_aPIKey.Hash = field.NewBytes(tableName, "hash")
 	_aPIKey.ExpiresAt = field.NewField(tableName, "expires_at")
 	_aPIKey.CreatedAt = field.NewTime(tableName, "created_at")
@@ -73,6 +74,7 @@ type aPIKey struct {
 	ALL       field.Asterisk
 	ID        field.Int
 	UserID    field.Int
+	Name      field.String
 	Hash      field.Bytes
 	ExpiresAt field.Field
 	CreatedAt field.Time
@@ -97,6 +99,7 @@ func (a *aPIKey) updateTableName(table string) *aPIKey {
 	a.ALL = field.NewAsterisk(table)
 	a.ID = field.NewInt(table, "id")
 	a.UserID = field.NewInt(table, "user_id")
+	a.Name = field.NewString(table, "name")
 	a.Hash = field.NewBytes(table, "hash")
 	a.ExpiresAt = field.NewField(table, "expires_at")
 	a.CreatedAt = field.NewTime(table, "created_at")
@@ -116,9 +119,10 @@ func (a *aPIKey) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (a *aPIKey) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 7)
+	a.fieldMap = make(map[string]field.Expr, 8)
 	a.fieldMap["id"] = a.ID
 	a.fieldMap["user_id"] = a.UserID
+	a.fieldMap["name"] = a.Name
 	a.fieldMap["hash"] = a.Hash
 	a.fieldMap["expires_at"] = a.ExpiresAt
 	a.fieldMap["created_at"] = a.CreatedAt

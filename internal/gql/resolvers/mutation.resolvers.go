@@ -48,8 +48,9 @@ func (r *mutationResolver) Auth(ctx context.Context) (gqlmodel.AuthMutation, err
 // Self is the resolver for the self field.
 func (r *mutationResolver) Self(ctx context.Context) (gqlmodel.SelfMutation, error) {
 	return gqlmodel.SelfMutation{
-		User: r.User,
-		RBAC: r.RBAC,
+		User:   r.User,
+		RBAC:   r.RBAC,
+		APIKey: r.APIKey,
 	}, nil
 }
 

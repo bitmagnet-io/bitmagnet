@@ -2,15 +2,10 @@ package api_key
 
 import (
 	"context"
-	"crypto/rand"
-	"database/sql"
 	"fmt"
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/auth/rbac"
-	"github.com/bitmagnet-io/bitmagnet/internal/model"
-	"github.com/bitmagnet-io/bitmagnet/internal/slice"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type CreateRequest struct {
@@ -21,71 +16,32 @@ type CreateRequest struct {
 }
 
 type CreateResult struct {
-	APIKeyID  int
+	ID        int
 	APIKey    string
+	Name      string
 	ExpiresAt time.Time
 }
 
-func (s *service) Create(ctx context.Context, req CreateRequest) (CreateResult, error) {
-	secret := newSecret()
+func (s service) Create(ctx context.Context, req CreateRequest) (CreateResult, error) {
+	secret := NewSecret()
 
-	record := model.APIKey{
-		UserID: req.UserID,
-		Hash:   secret.hash,
-		Permissions: slice.Map(req.Permissions, func(perm rbac.ObjectAction) model.APIKeyPermission {
-			return model.APIKeyPermission{
-				Namespace: perm.Namespace,
-				Object:    perm.Object,
-				Action:    perm.Action,
-			}
-		}),
-	}
-
+	var expiresAt time.Time
 	if req.Expiry > 0 {
-		record.ExpiresAt = sql.NullTime{Time: time.Now().Add(req.Expiry), Valid: true}
+		expiresAt = time.Now().Add(req.Expiry)
 	}
 
-	dao, err := s.dao.Dao()
+	apiKeyID, err := s.repository.Create(ctx, req.UserID, req.Name, secret.Hash, req.Permissions, expiresAt)
 	if err != nil {
 		return CreateResult{}, fmt.Errorf("%w: %w: %w", Err, ErrCreate, err)
 	}
 
-	err = dao.APIKey.WithContext(ctx).Create(&record)
-	if err != nil {
-		return CreateResult{}, fmt.Errorf("%w: %w: %w", Err, ErrCreate, err)
-	}
-
-	result := CreateResult{
-		APIKeyID: record.ID,
-		APIKey: keyData{
-			id:     record.ID,
-			secret: secret.secret,
-		}.encode(),
-	}
-
-	if record.ExpiresAt.Valid {
-		result.ExpiresAt = record.ExpiresAt.Time
-	}
-
-	return result, nil
-}
-
-type secret struct {
-	secret []byte
-	hash   []byte
-}
-
-func newSecret() secret {
-	bytes := make([]byte, secretLength)
-	_, _ = rand.Read(bytes)
-
-	hash, _ := bcrypt.GenerateFromPassword(
-		bytes,
-		bcrypt.DefaultCost,
-	)
-
-	return secret{
-		secret: bytes,
-		hash:   hash,
-	}
+	return CreateResult{
+		ID: apiKeyID,
+		APIKey: KeyData{
+			ID:     apiKeyID,
+			Secret: secret.Secret,
+		}.Encode(),
+		Name:      req.Name,
+		ExpiresAt: expiresAt,
+	}, nil
 }

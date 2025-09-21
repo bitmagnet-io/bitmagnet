@@ -7,25 +7,13 @@ import (
 type SubjectType string
 
 const (
-	SubjectTypeUser SubjectType = "user"
-	SubjectTypeRole SubjectType = "role"
+	SubjectTypeRole       SubjectType = "role"
+	SubjectTypePermission SubjectType = "permission"
 )
 
 type Subject interface {
 	SubjectType() SubjectType
 	SubjectName() string
-}
-
-type SubjectUser struct {
-	ID int32
-}
-
-func (SubjectUser) SubjectType() SubjectType {
-	return SubjectTypeUser
-}
-
-func (s SubjectUser) SubjectName() string {
-	return fmt.Sprintf("%d", s.ID)
 }
 
 type SubjectRole struct {
@@ -38,4 +26,16 @@ func (SubjectRole) SubjectType() SubjectType {
 
 func (s SubjectRole) SubjectName() string {
 	return string(s.Role)
+}
+
+type SubjectPermission struct {
+	ObjectAction ObjectAction
+}
+
+func (SubjectPermission) SubjectType() SubjectType {
+	return SubjectTypePermission
+}
+
+func (s SubjectPermission) SubjectName() string {
+	return fmt.Sprintf("%s::%s::%s", s.ObjectAction.Namespace, s.ObjectAction.Object, s.ObjectAction.Action)
 }

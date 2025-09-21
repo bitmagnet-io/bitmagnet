@@ -7,6 +7,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+var ErrTokenInvalidClaims = jwt.ErrTokenInvalidClaims
+
 type Claims struct {
 	UserID   int    `json:"user_id"`
 	Username string `json:"username"`
@@ -14,11 +16,12 @@ type Claims struct {
 }
 
 type Service interface {
-	GenerateToken(userID int, username string) (string, error)
-	ValidateToken(tokenString string) (*Claims, error)
+	Generate(userID int, username string) (string, error)
+	Parse(token string) (*Claims, error)
 }
 
 type service struct {
+	parser        *jwt.Parser
 	secretKey     []byte
 	tokenDuration time.Duration
 }
@@ -29,12 +32,13 @@ func NewService(secretKey Secret, duration Duration) Service {
 	}
 
 	return &service{
+		parser:        jwt.NewParser(),
 		secretKey:     []byte(secretKey),
 		tokenDuration: time.Duration(duration),
 	}
 }
 
-func (j *service) GenerateToken(userID int, username string) (string, error) {
+func (j *service) Generate(userID int, username string) (string, error) {
 	claims := &Claims{
 		UserID:   userID,
 		Username: username,
@@ -51,8 +55,8 @@ func (j *service) GenerateToken(userID int, username string) (string, error) {
 	return token.SignedString(j.secretKey)
 }
 
-func (j *service) ValidateToken(tokenString string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+func (j *service) Parse(token string) (*Claims, error) {
+	parsed, err := jwt.ParseWithClaims(token, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return j.secretKey, nil
 	})
 
@@ -60,7 +64,7 @@ func (j *service) ValidateToken(tokenString string) (*Claims, error) {
 		return nil, err
 	}
 
-	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
+	if claims, ok := parsed.Claims.(*Claims); ok && parsed.Valid {
 		return claims, nil
 	}
 

@@ -1,0 +1,10 @@
+mutation CreateAPIKey($input: CreateAPIKeyInput!) {
+  self {
+    createAPIKey(input: $input) {
+      id
+      apiKey
+      name
+      expiresAt
+    }
+  }
+}

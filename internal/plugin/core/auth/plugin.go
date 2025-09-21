@@ -1,7 +1,9 @@
 package auth
 
 import (
+	"github.com/bitmagnet-io/bitmagnet/internal/auth/api_key"
 	"github.com/bitmagnet-io/bitmagnet/internal/auth/http_auth"
+	"github.com/bitmagnet-io/bitmagnet/internal/auth/identity"
 	"github.com/bitmagnet-io/bitmagnet/internal/auth/jwt"
 	"github.com/bitmagnet-io/bitmagnet/internal/auth/rbac"
 	"github.com/bitmagnet-io/bitmagnet/internal/auth/user"
@@ -65,6 +67,9 @@ var (
 			fx.Provide(
 				user.NewService,
 				jwt.NewService,
+				api_key.NewRepository,
+				api_key.NewService,
+				identity.NewAuthenticator,
 				http_auth.NewMiddleware,
 				fx.Annotate(
 					func(providers []rbac.ObjectActionProvider) rbac.ObjectActionProvider {
@@ -76,6 +81,10 @@ var (
 					func() rbac.PermissionProvider {
 						return rbac.CorePermissions
 					},
+					fx.ResultTags(`group:"auth_permissions"`),
+				),
+				fx.Annotate(
+					rbac.VerbatimPermissions,
 					fx.ResultTags(`group:"auth_permissions"`),
 				),
 				fx.Annotate(

@@ -1,14 +1,31 @@
-import { Component, inject, Input, OnInit } from "@angular/core";
+import {
+  Component,
+  ComponentRef,
+  ViewContainerRef,
+  ViewChild,
+  inject,
+  Input,
+  OnInit,
+  Output,
+  EventEmitter,
+} from "@angular/core";
 import { AppModule } from "../../app.module";
 import * as generated from "../../graphql/generated";
 import { Enforcer, newEnforcer, ObjectAction } from "../../auth/enforcer";
 import { RolesService } from "../../auth/roles.service";
 import { map, Observable, take } from "rxjs";
 import { MatCheckboxChange } from "@angular/material/checkbox";
+import {
+  ChangeEvent,
+  Changes,
+  Permission,
+  PermissionsEditComponent,
+} from "../../auth/permissions-edit.component";
+import { objectActionKey } from "../../auth/util";
 
 type ObjectActionPermission = ObjectAction & {
   key: string;
-  permission: generated.Permission | { subject: false; core: false };
+  permission: Permission | { subject: false; core: false };
 };
 
 @Component({
@@ -17,19 +34,10 @@ type ObjectActionPermission = ObjectAction & {
     <ng-container *transloco="let t">
       <mat-card>
         <mat-card-content>
-          <ul>
-            @for (objAct of objectActions$ | async; track objAct) {
-              <li>
-                <mat-checkbox
-                  [checked]="objAct.permission.subject"
-                  (change)="onChecked($event, objAct)"
-                  [disabled]="objAct.permission.core"
-                >
-                  {{ objAct.key }}
-                </mat-checkbox>
-              </li>
-            }
-          </ul>
+          <app-permissions-edit
+            [permissions]="(permissions$ | async) ?? []"
+            (change)="this.changes = $event"
+          />
         </mat-card-content>
         <mat-card-actions>
           <button mat-stroked-button [disabled]="!hasChanges" (click)="save()">
@@ -40,82 +48,63 @@ type ObjectActionPermission = ObjectAction & {
       </mat-card>
     </ng-container>
   `,
-  styles: [
-    `
-      ul {
-        list-style-type: none;
-        padding-bottom: 20px;
-      }
-    `,
-  ],
   standalone: true,
-  imports: [AppModule],
+  imports: [AppModule, PermissionsEditComponent],
 })
 export class RoleEditComponent implements OnInit {
   private rolesService = inject(RolesService);
-  private changes: Record<string, ObjectAction & { checked: boolean }> = {};
 
-  objectActions$: Observable<ObjectActionPermission[]>;
+  permissions$: Observable<Permission[]>;
 
   @Input() role: generated.Role;
+  @Output() updated = new EventEmitter<void>();
 
   enforcer: Enforcer;
 
+  changes?: ChangeEvent;
+
   ngOnInit(): void {
     this.enforcer = newEnforcer(this.role.permissions);
-    this.objectActions$ = this.rolesService.objectActions$.pipe(
+    this.permissions$ = this.rolesService.objectActions$.pipe(
       map((objActs) =>
-        objActs.map((objAct) => ({
-          key: `${objAct.namespace}::${objAct.object}::${objAct.action}`,
-          ...objAct,
-          permission: this.enforcer(objAct) || {
-            subject: false,
-            core: false,
-          },
-        })),
+        objActs.map((objectAction) => {
+          const enf = this.enforcer(objectAction);
+
+          return {
+            key: objectActionKey(objectAction),
+            objectAction,
+            active: !!enf,
+            core: enf?.core ?? false,
+          };
+        }),
       ),
     );
   }
 
-  onChecked(event: MatCheckboxChange, perm: ObjectActionPermission) {
-    if (event.checked) {
-      if (perm.permission.subject) {
-        delete this.changes[perm.key];
-      } else {
-        this.changes[perm.key] = { ...perm, checked: true };
-      }
-    } else {
-      if (perm.permission.subject) {
-        this.changes[perm.key] = { ...perm, checked: false };
-      } else {
-        delete this.changes[perm.key];
-      }
-    }
-  }
-
   get hasChanges(): boolean {
-    return Object.keys(this.changes).length > 0;
+    return Object.keys(this.changes?.changes ?? {}).length > 0;
   }
 
   save() {
+    const changes = this.changes;
+    if (!changes) {
+      return;
+    }
+
     this.rolesService
       .putRole({
         role: this.role.name,
-        objectActions: Object.values(this.changes).flatMap((change) =>
-          change.checked
-            ? [
-                {
-                  namespace: change.namespace as string,
-                  object: change.object,
-                  action: change.action,
-                },
-              ]
+        objectActions: changes.permissions.flatMap((permission) =>
+          permission.active && !permission.core
+            ? [permission.objectAction]
             : [],
         ),
       })
       .pipe(
         take(1),
-        map(() => void 0),
+        map(() => {
+          this.updated.emit();
+        }),
       )
       .subscribe();
   }

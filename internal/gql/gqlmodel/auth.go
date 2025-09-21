@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/auth/identity"
 	"github.com/bitmagnet-io/bitmagnet/internal/auth/rbac"
 	"github.com/bitmagnet-io/bitmagnet/internal/auth/user"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/auth"
@@ -117,12 +118,6 @@ type Permission struct {
 	Subject      AuthSubject
 	ObjectAction AuthObjectAction
 	Core         bool
-}
-
-type Self struct {
-	User        *User
-	Roles       []string
-	Permissions []Permission
 }
 
 func (q *AuthQuery) ListUsers(ctx context.Context, input gen.ListUsersInput) (ListUsersResult, error) {
@@ -299,21 +294,27 @@ func transformInvitation(inv model.Invitation) Invitation {
 }
 
 func (m *AuthMutation) Invite(ctx context.Context, input gen.InviteInput) (Invitation, error) {
-	usr, ok := auth.UserFromContext(ctx)
-	if !ok {
+	var self identity.Self
+
+	identity, ok := auth.IdentityFromContext(ctx)
+	if ok {
+		self = identity.Self()
+	}
+
+	if !ok || self.User == nil {
 		return Invitation{}, errors.New("no user found in context")
 	}
 
 	req := user.InviteRequest{
-		CreatedBy: usr.ID,
+		CreatedBy: self.User.ID,
 	}
 
 	if email, ok := input.Email.ValueOK(); ok {
 		req.Email = *email
 	}
 
-	if expiration, ok := input.Expiration.ValueOK(); ok {
-		req.Expiration = *expiration
+	if expiry, ok := input.Expiry.ValueOK(); ok {
+		req.Expiry = *expiry
 	}
 
 	inv, err := m.User.Invite(ctx, req)

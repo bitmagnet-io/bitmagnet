@@ -11,7 +11,6 @@ import {
 } from "rxjs";
 import { DataSource } from "@angular/cdk/collections";
 import { CollectionViewer } from "@angular/cdk/collections";
-import { PageEvent } from "@angular/material/paginator";
 
 const defaultLimit = 10;
 

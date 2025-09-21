@@ -2,7 +2,7 @@ import { Component, inject } from "@angular/core";
 import { AppModule } from "../../app.module";
 import { InvitationsTableComponent } from "./invitations-table.component";
 import { MatDialog } from "@angular/material/dialog";
-import { InvitationsAddComponent } from "./invitations-add-dialog.component";
+import { InvitationAddComponent } from "./invitation-add-dialog.component";
 import { BehaviorSubject } from "rxjs";
 
 @Component({
@@ -49,7 +49,7 @@ export class InvitationsAdminComponent {
   update$ = this.update.asObservable();
 
   newInvitation() {
-    const ref = this.dialog.open(InvitationsAddComponent);
+    const ref = this.dialog.open(InvitationAddComponent);
     ref.afterClosed().subscribe(() => this.update.next(void 0));
   }
 }

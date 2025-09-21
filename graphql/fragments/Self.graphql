@@ -1,12 +1,14 @@
-#import "./Permission"
-#import "./User"
+#import "./APIKey"
+#import "./AuthObjectAction"
 
 fragment Self on Self {
   user {
     ...User
   }
-  roles
+  apiKey {
+    ...APIKey
+  }
   permissions {
-    ...Permission
+    ...AuthObjectAction
   }
 }

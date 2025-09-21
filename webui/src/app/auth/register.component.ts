@@ -3,15 +3,7 @@ import { AppModule } from "../app.module";
 import { FormControl, FormGroupDirective, NgForm } from "@angular/forms";
 import { AuthService } from "./auth.service";
 import { Router } from "@angular/router";
-import {
-  EMPTY,
-  map,
-  switchMap,
-  take,
-  Observable,
-  debounce,
-  debounceTime,
-} from "rxjs";
+import { EMPTY, map, switchMap, take, Observable, debounceTime } from "rxjs";
 import { ErrorsService } from "../errors/errors.service";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { TranslocoService } from "@jsverse/transloco";

@@ -115,6 +115,13 @@ export const routes: Routes = [
             (c) => c.AccountHomeComponent,
           ),
       },
+      {
+        path: "api-keys",
+        loadComponent: () =>
+          import("./account/api-keys-panel.component").then(
+            (c) => c.APIKeysPanelComponent,
+          ),
+      },
     ],
   },
   {

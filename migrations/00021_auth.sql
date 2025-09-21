@@ -56,17 +56,10 @@ create table api_keys
 (
   id serial not null primary key,
   user_id integer references users(id) on delete cascade,
+  name text not null,
   hash bytea not null,
   expires_at timestamp with time zone,
   created_at timestamp with time zone not null
-);
-
-create table api_key_permissions
-(
-  api_key_id integer not null references api_keys(id) on delete cascade,
-  namespace text not null,
-  object text not null,
-  action text not null,
 );
 
 create table api_key_permissions

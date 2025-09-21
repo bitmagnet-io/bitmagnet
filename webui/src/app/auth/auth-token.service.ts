@@ -3,7 +3,7 @@ import { BrowserStorageService } from "../browser-storage/browser-storage.servic
 import { BehaviorSubject, distinctUntilChanged, Observable } from "rxjs";
 
 const localStorageKey = "bitmagnet-jwt";
-const pollInterval = 5000;
+const pollInterval = 10000;
 
 @Injectable({ providedIn: "root" })
 export class AuthTokenService {

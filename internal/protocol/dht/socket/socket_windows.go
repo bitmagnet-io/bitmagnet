@@ -43,11 +43,6 @@ func (s *socketWindows) Runner() runner.Runner {
 			return runner.NopShutdowner, fmt.Errorf("%w: %w: %w", Err, runner.ErrAlreadyRunning)
 		}
 
-		// sAddr, err := addrPortToSockaddr(s.localAddr)
-		// if err != nil {
-		// 	return runner2.NopShutdowner, fmt.Errorf("%w: %w: %w", Err, ErrOpenFailed, err)
-		// }
-
 		fd, err := windows.Socket(windows.AF_INET, windows.SOCK_DGRAM, windows.IPPROTO_UDP)
 		if err != nil {
 			return runner.NopShutdowner,

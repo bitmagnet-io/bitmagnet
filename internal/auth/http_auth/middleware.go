@@ -3,85 +3,39 @@ package http_auth
 import (
 	"strings"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/auth/api_key"
-	"github.com/bitmagnet-io/bitmagnet/internal/auth/jwt"
-	"github.com/bitmagnet-io/bitmagnet/internal/auth/user"
-	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/auth/identity"
 	"github.com/gin-gonic/gin"
 )
 
 const (
 	AuthorizationHeader = "Authorization"
 	BearerPrefix        = "Bearer "
-	UserContextKey      = "user"
+	IdentityKey         = "identity"
 )
 
 type Middleware interface {
-	// RequireAuth() gin.HandlerFunc
 	AttachAuth() gin.HandlerFunc
 }
 
 type authMiddleware struct {
-	jwtService    jwt.Service
-	apiKeyService api_key.Service
-	userService   user.Service
+	authenticator identity.Authenticator
 }
 
-func NewMiddleware(jwtService jwt.Service, userService user.Service) Middleware {
+func NewMiddleware(authenticator identity.Authenticator) Middleware {
 	return &authMiddleware{
-		jwtService:  jwtService,
-		userService: userService,
+		authenticator: authenticator,
 	}
 }
 
-// func (a *authMiddleware) RequireAuth() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		token := extractToken(c)
-// 		if token == "" {
-// 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization token required"})
-// 			c.Abort()
-// 			return
-// 		}
-
-// 		claims, err := a.jwtService.ValidateToken(token)
-// 		if err != nil {
-// 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
-// 			c.Abort()
-// 			return
-// 		}
-
-// 		user, err := a.userService.Get(c, claims.UserID)
-// 		if err != nil {
-// 			c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
-// 			c.Abort()
-// 			return
-// 		}
-
-// 		c.Set(UserContextKey, user)
-// 		c.Next()
-// 	}
-// }
-
 func (a *authMiddleware) AttachAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := extractToken(c)
-		if token == "" {
-			c.Next()
-			return
+		identity, matched, err := a.authenticator.Authenticate(c, extractToken(c))
+
+		if err == nil && matched {
+			c.Set(IdentityKey, identity)
 		}
 
-		claims, err := a.jwtService.ValidateToken(token)
-		if err == nil {
-			user, err := a.userService.Get(c, claims.UserID)
-			if err != nil {
-				c.Next()
-				return
-			}
-
-			c.Set(UserContextKey, user)
-			c.Next()
-			return
-		}
+		c.Next()
 	}
 }
 
@@ -98,17 +52,17 @@ func extractToken(c *gin.Context) string {
 	return strings.TrimPrefix(authHeader, BearerPrefix)
 }
 
-// GetCurrentUser retrieves the current authenticated user from the Gin context
-func GetCurrentUser(c *gin.Context) (model.User, bool) {
-	user, exists := c.Get(UserContextKey)
+// GetIdentity retrieves the current authenticated identity from the Gin context
+func GetIdentity(c *gin.Context) (identity.Identity, bool) {
+	raw, exists := c.Get(IdentityKey)
 	if !exists {
-		return model.User{}, false
+		return nil, false
 	}
 
-	authUser, ok := user.(model.User)
+	identity, ok := raw.(identity.Identity)
 	if !ok {
-		return model.User{}, false
+		return nil, false
 	}
 
-	return authUser, true
+	return identity, true
 }

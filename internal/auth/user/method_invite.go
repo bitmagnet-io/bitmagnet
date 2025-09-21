@@ -11,10 +11,10 @@ import (
 )
 
 type InviteRequest struct {
-	Email      string
-	Role       string
-	CreatedBy  int
-	Expiration time.Duration
+	Email     string
+	Role      string
+	CreatedBy int
+	Expiry    time.Duration
 }
 
 func (s *service) Invite(ctx context.Context, request InviteRequest) (model.Invitation, error) {
@@ -34,9 +34,9 @@ func (s *service) Invite(ctx context.Context, request InviteRequest) (model.Invi
 		invitation.CreatedBy = model.NewNullInt(request.CreatedBy)
 	}
 
-	if request.Expiration > 0 {
+	if request.Expiry > 0 {
 		invitation.ExpiresAt = sql.NullTime{
-			Time:  time.Now().Add(request.Expiration),
+			Time:  time.Now().Add(request.Expiry),
 			Valid: true,
 		}
 	}

@@ -15,6 +15,7 @@ const TableNameAPIKey = "api_keys"
 type APIKey struct {
 	ID          int                `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
 	UserID      int                `gorm:"column:user_id" json:"userId"`
+	Name        string             `gorm:"column:name;not null;<-:create" json:"name"`
 	Hash        []byte             `gorm:"column:hash;not null" json:"-"`
 	ExpiresAt   sql.NullTime       `gorm:"column:expires_at" json:"expiresAt"`
 	CreatedAt   time.Time          `gorm:"column:created_at;not null;<-:create" json:"createdAt"`

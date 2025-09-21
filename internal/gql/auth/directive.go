@@ -6,14 +6,12 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/bitmagnet-io/bitmagnet/internal/auth/rbac"
-	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 )
 
 var ErrUnauthorized = errors.New("unauthorized")
 
 type unauthorizedError struct {
-	subjects []rbac.Subject
-	objAct   rbac.ObjectAction
+	objAct rbac.ObjectAction
 }
 
 func (unauthorizedError) Error() string {
@@ -29,12 +27,6 @@ func (e unauthorizedError) GraphQLExtensions() map[string]any {
 		"namespace": Namespace,
 		"object":    e.objAct.Object,
 		"action":    e.objAct.Action,
-		"subjects": slice.Map(e.subjects, func(subj rbac.Subject) map[string]string {
-			return map[string]string{
-				"type": string(subj.SubjectType()),
-				"name": subj.SubjectName(),
-			}
-		}),
 	}
 }
 
@@ -56,49 +48,30 @@ func NewDirective(enforcer rbac.Enforcer) Directive {
 		object string,
 		action string,
 	) (res any, err error) {
-		subjects := subjectsFromContext(ctx)
+		allow := false
 
-		objAct := rbac.NewObjectAction(Namespace, object, action)
+		objAct := rbac.ObjectAction{
+			Namespace: Namespace,
+			Object:    object,
+			Action:    action,
+		}
 
-		allow, err := enforcer.EnforceAny(
-			ctx,
-			subjects,
-			objAct,
-		)
-		if err != nil {
-			return nil, err
+		identity, ok := IdentityFromContext(ctx)
+		if ok {
+			var err error
+
+			allow, err = identity.Enforce(ctx, objAct)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		if !allow {
 			return nil, unauthorizedError{
-				subjects: subjects,
-				objAct:   objAct,
+				objAct: objAct,
 			}
-			// return nil, &gqlerror.Error{
-			// 	Message: "Unauthorized",
-			// 	Extensions: map[string]any{
-			// 		"code":      "UNAUTHORIZED",
-			// 		"namespace": Namespace,
-			// 		"object":    object,
-			// 		"action":    action,
-			// 		"subjects": slice.Map(subjects, func(subj rbac.Subject) map[string]string {
-			// 			return map[string]string{
-			// 				"type": string(subj.SubjectType()),
-			// 				"name": subj.SubjectName(),
-			// 			}
-			// 		}),
-			// 	},
-			// }
 		}
 
 		return next(ctx)
 	}
-}
-
-func subjectsFromContext(ctx context.Context) []rbac.Subject {
-	_, roles := UserRolesFromContext(ctx)
-
-	return slice.Map(roles, func(role rbac.Role) rbac.Subject {
-		return rbac.SubjectRole{Role: role}
-	})
 }

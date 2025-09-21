@@ -1,11 +1,14 @@
 type SelfQuery {
   identity: Self!
   passwordEntropy(password: String!): PasswordEntropyResult!
+  apiKeys: [APIKey!]!
 }
 
 type SelfMutation {
   register(input: RegisterInput!): RegisterResult!
   login(username: String!, password: String!): LoginResult!
+  createAPIKey(input: CreateAPIKeyInput!): CreateAPIKeyResult!
+  deleteAPIKey(id: Int!): Void
 }
 
 input RegisterInput {
@@ -15,10 +18,23 @@ input RegisterInput {
   email: String
 }
 
+input CreateAPIKeyInput {
+  name: String!
+  permissions: [AuthObjectActionInput!]!
+  expiry: Duration
+}
+
+type CreateAPIKeyResult {
+  id: Int!
+  apiKey: String!
+  name: String!
+  expiresAt: DateTime
+}
+
 type Self {
   user: User
-  roles: [String!]!
-  permissions: [Permission!]!
+  apiKey: APIKey
+  permissions: [AuthObjectAction!]!
 }
 
 type RegisterResult {

@@ -3,7 +3,7 @@ import { HealthModule } from "../health/health.module";
 import { AppModule } from "../app.module";
 import { DocumentTitleComponent } from "../layout/document-title.component";
 import { BreakpointsService } from "../layout/breakpoints.service";
-import { filter, map } from "rxjs";
+import { map } from "rxjs";
 import { AuthService } from "../auth/auth.service";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 

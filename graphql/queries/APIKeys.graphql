@@ -1,0 +1,9 @@
+#import "../fragments/APIKey"
+
+query APIKeys {
+  self {
+    apiKeys {
+      ...APIKey
+    }
+  }
+}

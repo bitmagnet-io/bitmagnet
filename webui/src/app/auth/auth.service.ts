@@ -16,6 +16,7 @@ import {
 import { AuthTokenService } from "./auth-token.service";
 import { newEnforcer, ObjectAction as _objectAction } from "./enforcer";
 import { ApolloError } from "@apollo/client/errors";
+import { getErrorAt } from "@jsonforms/core";
 
 const pollInterval = 10000;
 
@@ -36,14 +37,18 @@ export class AuthService {
     fetchPolicy: "no-cache",
     pollInterval,
   });
-  private selfSubject = new BehaviorSubject<generated.Self | null>(null);
+  private selfSubject = new BehaviorSubject<generated.SelfFragment | null>(
+    null,
+  );
   private loginErrorSubject = new BehaviorSubject<string | null>(null);
   private registerErrorSubject = new BehaviorSubject<string | null>(null);
 
   self$ = this.selfSubject.asObservable().pipe(filter((self) => !!self));
 
   enforcer$ = this.self$.pipe(
-    map(({ permissions }) => newEnforcer(permissions)),
+    map(({ permissions }) =>
+      newEnforcer(permissions.map((objectAction) => ({ objectAction }))),
+    ),
   );
 
   loginError$ = this.loginErrorSubject
@@ -62,6 +67,20 @@ export class AuthService {
         map((result) => {
           this.selfSubject.next(result.data.self.identity);
           return result;
+        }),
+        // todo: Handle this better
+        catchError((err) => {
+          if (
+            err instanceof ApolloError &&
+            err.graphQLErrors.some(
+              (gErr) =>
+                gErr.extensions?.["code"] ===
+                "core.http_server.graphql.unauthorized",
+            )
+          ) {
+            this.tokenService.clearToken();
+          }
+          throw err;
         }),
         retry({
           delay: 5000,
@@ -87,8 +106,7 @@ export class AuthService {
           this.tokenService.setToken(login.token);
           this.selfSubject.next({
             user: login.user,
-            roles: [login.user.role],
-            permissions: login.permissions,
+            permissions: login.permissions.map((p) => p.objectAction),
           });
 
           return login;
@@ -134,7 +152,7 @@ export class AuthService {
     this.registerErrorSubject.next(null);
   }
 
-  public logout(): Observable<generated.Self> {
+  public logout(): Observable<generated.SelfFragment> {
     this.tokenService.clearToken();
     return from(this.watchQuery.refetch()).pipe(
       take(1),
@@ -153,7 +171,7 @@ export class AuthService {
   }
 
   public hasRole(role: string): Observable<boolean> {
-    return this.self$.pipe(map((self) => self.roles.includes(role)));
+    return this.self$.pipe(map((self) => self.user?.role === role));
   }
 
   public passwordEntropy(

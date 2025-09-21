@@ -14,6 +14,7 @@ import (
 
 type Repository interface {
 	GetAllRoles(ctx context.Context) ([]RoleInfo, error)
+	GetRole(ctx context.Context, roles Role) (RoleInfo, error)
 	GetRoles(ctx context.Context, roles []Role) ([]RoleInfo, error)
 	GetPermissions(ctx context.Context) ([]Permission, error)
 	PutRole(ctx context.Context, role Role, objectActions []ObjectAction) (RoleInfo, error)
@@ -44,6 +45,23 @@ func (r *repository) GetAllRoles(ctx context.Context) ([]RoleInfo, error) {
 	}
 
 	return slice.Map(dbRoles, roleInfoFromModel), nil
+}
+
+func (r *repository) GetRole(ctx context.Context, role Role) (RoleInfo, error) {
+	dao, err := r.dao.Dao()
+	if err != nil {
+		return RoleInfo{}, err
+	}
+
+	dbRole, err := dao.WithContext(ctx).Role.
+		Preload(dao.Role.Permissions).
+		Where(dao.Role.Name.Eq(string(role))).
+		First()
+	if err != nil {
+		return RoleInfo{}, err
+	}
+
+	return roleInfoFromModel(dbRole), nil
 }
 
 func (r *repository) GetRoles(ctx context.Context, roles []Role) ([]RoleInfo, error) {

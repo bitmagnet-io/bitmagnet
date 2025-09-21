@@ -68,6 +68,15 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	APIKey struct {
+		CreatedAt func(childComplexity int) int
+		ExpiresAt func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Name      func(childComplexity int) int
+		User      func(childComplexity int) int
+		UserID    func(childComplexity int) int
+	}
+
 	AuthMutation struct {
 		DeleteInvitation func(childComplexity int, code string) int
 		DeleteRole       func(childComplexity int, role string) int
@@ -165,6 +174,13 @@ type ComplexityRoot struct {
 		IsEstimate func(childComplexity int) int
 		Label      func(childComplexity int) int
 		Value      func(childComplexity int) int
+	}
+
+	CreateAPIKeyResult struct {
+		APIKey    func(childComplexity int) int
+		ExpiresAt func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Name      func(childComplexity int) int
 	}
 
 	Episodes struct {
@@ -387,17 +403,20 @@ type ComplexityRoot struct {
 	}
 
 	Self struct {
+		APIKey      func(childComplexity int) int
 		Permissions func(childComplexity int) int
-		Roles       func(childComplexity int) int
 		User        func(childComplexity int) int
 	}
 
 	SelfMutation struct {
-		Login    func(childComplexity int, username string, password string) int
-		Register func(childComplexity int, input user.RegisterRequest) int
+		CreateAPIKey func(childComplexity int, input gen.CreateAPIKeyInput) int
+		DeleteAPIKey func(childComplexity int, id int) int
+		Login        func(childComplexity int, username string, password string) int
+		Register     func(childComplexity int, input user.RegisterRequest) int
 	}
 
 	SelfQuery struct {
+		APIKeys         func(childComplexity int) int
 		Identity        func(childComplexity int) int
 		PasswordEntropy func(childComplexity int, password string) int
 	}
@@ -669,6 +688,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "APIKey.createdAt":
+		if e.complexity.APIKey.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.APIKey.CreatedAt(childComplexity), true
+
+	case "APIKey.expiresAt":
+		if e.complexity.APIKey.ExpiresAt == nil {
+			break
+		}
+
+		return e.complexity.APIKey.ExpiresAt(childComplexity), true
+
+	case "APIKey.id":
+		if e.complexity.APIKey.ID == nil {
+			break
+		}
+
+		return e.complexity.APIKey.ID(childComplexity), true
+
+	case "APIKey.name":
+		if e.complexity.APIKey.Name == nil {
+			break
+		}
+
+		return e.complexity.APIKey.Name(childComplexity), true
+
+	case "APIKey.user":
+		if e.complexity.APIKey.User == nil {
+			break
+		}
+
+		return e.complexity.APIKey.User(childComplexity), true
+
+	case "APIKey.userId":
+		if e.complexity.APIKey.UserID == nil {
+			break
+		}
+
+		return e.complexity.APIKey.UserID(childComplexity), true
 
 	case "AuthMutation.deleteInvitation":
 		if e.complexity.AuthMutation.DeleteInvitation == nil {
@@ -1186,6 +1247,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ContentTypeAgg.Value(childComplexity), true
+
+	case "CreateAPIKeyResult.apiKey":
+		if e.complexity.CreateAPIKeyResult.APIKey == nil {
+			break
+		}
+
+		return e.complexity.CreateAPIKeyResult.APIKey(childComplexity), true
+
+	case "CreateAPIKeyResult.expiresAt":
+		if e.complexity.CreateAPIKeyResult.ExpiresAt == nil {
+			break
+		}
+
+		return e.complexity.CreateAPIKeyResult.ExpiresAt(childComplexity), true
+
+	case "CreateAPIKeyResult.id":
+		if e.complexity.CreateAPIKeyResult.ID == nil {
+			break
+		}
+
+		return e.complexity.CreateAPIKeyResult.ID(childComplexity), true
+
+	case "CreateAPIKeyResult.name":
+		if e.complexity.CreateAPIKeyResult.Name == nil {
+			break
+		}
+
+		return e.complexity.CreateAPIKeyResult.Name(childComplexity), true
 
 	case "Episodes.label":
 		if e.complexity.Episodes.Label == nil {
@@ -2068,6 +2157,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Season.Season(childComplexity), true
 
+	case "Self.apiKey":
+		if e.complexity.Self.APIKey == nil {
+			break
+		}
+
+		return e.complexity.Self.APIKey(childComplexity), true
+
 	case "Self.permissions":
 		if e.complexity.Self.Permissions == nil {
 			break
@@ -2075,19 +2171,36 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Self.Permissions(childComplexity), true
 
-	case "Self.roles":
-		if e.complexity.Self.Roles == nil {
-			break
-		}
-
-		return e.complexity.Self.Roles(childComplexity), true
-
 	case "Self.user":
 		if e.complexity.Self.User == nil {
 			break
 		}
 
 		return e.complexity.Self.User(childComplexity), true
+
+	case "SelfMutation.createAPIKey":
+		if e.complexity.SelfMutation.CreateAPIKey == nil {
+			break
+		}
+
+		args, err := ec.field_SelfMutation_createAPIKey_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.SelfMutation.CreateAPIKey(childComplexity, args["input"].(gen.CreateAPIKeyInput)), true
+
+	case "SelfMutation.deleteAPIKey":
+		if e.complexity.SelfMutation.DeleteAPIKey == nil {
+			break
+		}
+
+		args, err := ec.field_SelfMutation_deleteAPIKey_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.SelfMutation.DeleteAPIKey(childComplexity, args["id"].(int)), true
 
 	case "SelfMutation.login":
 		if e.complexity.SelfMutation.Login == nil {
@@ -2112,6 +2225,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SelfMutation.Register(childComplexity, args["input"].(user.RegisterRequest)), true
+
+	case "SelfQuery.apiKeys":
+		if e.complexity.SelfQuery.APIKeys == nil {
+			break
+		}
+
+		return e.complexity.SelfQuery.APIKeys(childComplexity), true
 
 	case "SelfQuery.identity":
 		if e.complexity.SelfQuery.Identity == nil {
@@ -3091,6 +3211,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputAuthObjectActionInput,
 		ec.unmarshalInputContentTypeFacetInput,
+		ec.unmarshalInputCreateAPIKeyInput,
 		ec.unmarshalInputGenreFacetInput,
 		ec.unmarshalInputInviteInput,
 		ec.unmarshalInputLanguageFacetInput,
@@ -3236,7 +3357,7 @@ input AuthObjectActionInput {
 input InviteInput {
   email: String
   role: String
-  expiration: Duration
+  expiry: Duration
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/auth_query.graphqls", Input: `type AuthQuery {
@@ -3279,6 +3400,15 @@ type Role {
   name: String!
   core: Boolean!
   permissions: [Permission!]!
+}
+
+type APIKey {
+  id: Int!
+  name: String!
+  userId: Int!
+  user: User!
+  expiresAt: DateTime
+  createdAt: DateTime!
 }
 
 enum AuthSubjectType {
@@ -3901,11 +4031,14 @@ scalar Year
 	{Name: "../../graphql/schema/self.graphqls", Input: `type SelfQuery {
   identity: Self!
   passwordEntropy(password: String!): PasswordEntropyResult!
+  apiKeys: [APIKey!]!
 }
 
 type SelfMutation {
   register(input: RegisterInput!): RegisterResult!
   login(username: String!, password: String!): LoginResult!
+  createAPIKey(input: CreateAPIKeyInput!): CreateAPIKeyResult!
+  deleteAPIKey(id: Int!): Void
 }
 
 input RegisterInput {
@@ -3915,10 +4048,23 @@ input RegisterInput {
   email: String
 }
 
+input CreateAPIKeyInput {
+  name: String!
+  permissions: [AuthObjectActionInput!]!
+  expiry: Duration
+}
+
+type CreateAPIKeyResult {
+  id: Int!
+  apiKey: String!
+  name: String!
+  expiresAt: DateTime
+}
+
 type Self {
   user: User
-  roles: [String!]!
-  permissions: [Permission!]!
+  apiKey: APIKey
+  permissions: [AuthObjectAction!]!
 }
 
 type RegisterResult {
@@ -4794,6 +4940,62 @@ func (ec *executionContext) field_QueueQuery_metrics_argsInput(
 	return zeroVal, nil
 }
 
+func (ec *executionContext) field_SelfMutation_createAPIKey_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_SelfMutation_createAPIKey_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_SelfMutation_createAPIKey_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (gen.CreateAPIKeyInput, error) {
+	if _, ok := rawArgs["input"]; !ok {
+		var zeroVal gen.CreateAPIKeyInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNCreateAPIKeyInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐCreateAPIKeyInput(ctx, tmp)
+	}
+
+	var zeroVal gen.CreateAPIKeyInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_SelfMutation_deleteAPIKey_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_SelfMutation_deleteAPIKey_argsID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_SelfMutation_deleteAPIKey_argsID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (int, error) {
+	if _, ok := rawArgs["id"]; !ok {
+		var zeroVal int
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNInt2int(ctx, tmp)
+	}
+
+	var zeroVal int
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field_SelfMutation_login_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -5425,6 +5627,283 @@ func (ec *executionContext) field___Type_fields_argsIncludeDeprecated(
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _APIKey_id(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.APIKey) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_APIKey_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_APIKey_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "APIKey",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _APIKey_name(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.APIKey) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_APIKey_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_APIKey_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "APIKey",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _APIKey_userId(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.APIKey) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_APIKey_userId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_APIKey_userId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "APIKey",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _APIKey_user(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.APIKey) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_APIKey_user(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.User, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(gqlmodel.User)
+	fc.Result = res
+	return ec.marshalNUser2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_APIKey_user(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "APIKey",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "username":
+				return ec.fieldContext_User_username(ctx, field)
+			case "role":
+				return ec.fieldContext_User_role(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "lastLoginAt":
+				return ec.fieldContext_User_lastLoginAt(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_User_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_User_updatedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _APIKey_expiresAt(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.APIKey) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_APIKey_expiresAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ExpiresAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalODateTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_APIKey_expiresAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "APIKey",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type DateTime does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _APIKey_createdAt(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.APIKey) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_APIKey_createdAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNDateTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_APIKey_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "APIKey",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type DateTime does not have child fields")
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _AuthMutation_setUserRole(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.AuthMutation) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_AuthMutation_setUserRole(ctx, field)
@@ -8676,6 +9155,179 @@ func (ec *executionContext) fieldContext_ContentTypeAgg_isEstimate(_ context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _CreateAPIKeyResult_id(ctx context.Context, field graphql.CollectedField, obj *gen.CreateAPIKeyResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateAPIKeyResult_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CreateAPIKeyResult_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreateAPIKeyResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CreateAPIKeyResult_apiKey(ctx context.Context, field graphql.CollectedField, obj *gen.CreateAPIKeyResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateAPIKeyResult_apiKey(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.APIKey, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CreateAPIKeyResult_apiKey(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreateAPIKeyResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CreateAPIKeyResult_name(ctx context.Context, field graphql.CollectedField, obj *gen.CreateAPIKeyResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateAPIKeyResult_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CreateAPIKeyResult_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreateAPIKeyResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CreateAPIKeyResult_expiresAt(ctx context.Context, field graphql.CollectedField, obj *gen.CreateAPIKeyResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateAPIKeyResult_expiresAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ExpiresAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalODateTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CreateAPIKeyResult_expiresAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreateAPIKeyResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type DateTime does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Episodes_label(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Episodes) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Episodes_label(ctx, field)
 	if err != nil {
@@ -11548,6 +12200,10 @@ func (ec *executionContext) fieldContext_Mutation_self(_ context.Context, field 
 				return ec.fieldContext_SelfMutation_register(ctx, field)
 			case "login":
 				return ec.fieldContext_SelfMutation_login(ctx, field)
+			case "createAPIKey":
+				return ec.fieldContext_SelfMutation_createAPIKey(ctx, field)
+			case "deleteAPIKey":
+				return ec.fieldContext_SelfMutation_deleteAPIKey(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type SelfMutation", field.Name)
 		},
@@ -12257,6 +12913,8 @@ func (ec *executionContext) fieldContext_Query_self(_ context.Context, field gra
 				return ec.fieldContext_SelfQuery_identity(ctx, field)
 			case "passwordEntropy":
 				return ec.fieldContext_SelfQuery_passwordEntropy(ctx, field)
+			case "apiKeys":
+				return ec.fieldContext_SelfQuery_apiKeys(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type SelfQuery", field.Name)
 		},
@@ -15077,8 +15735,8 @@ func (ec *executionContext) fieldContext_Self_user(_ context.Context, field grap
 	return fc, nil
 }
 
-func (ec *executionContext) _Self_roles(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Self) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Self_roles(ctx, field)
+func (ec *executionContext) _Self_apiKey(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Self) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Self_apiKey(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -15091,31 +15749,42 @@ func (ec *executionContext) _Self_roles(ctx context.Context, field graphql.Colle
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Roles, nil
+		return obj.APIKey, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.([]string)
+	res := resTmp.(*gqlmodel.APIKey)
 	fc.Result = res
-	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
+	return ec.marshalOAPIKey2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐAPIKey(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Self_roles(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Self_apiKey(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Self",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_APIKey_id(ctx, field)
+			case "name":
+				return ec.fieldContext_APIKey_name(ctx, field)
+			case "userId":
+				return ec.fieldContext_APIKey_userId(ctx, field)
+			case "user":
+				return ec.fieldContext_APIKey_user(ctx, field)
+			case "expiresAt":
+				return ec.fieldContext_APIKey_expiresAt(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_APIKey_createdAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type APIKey", field.Name)
 		},
 	}
 	return fc, nil
@@ -15147,9 +15816,9 @@ func (ec *executionContext) _Self_permissions(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]gqlmodel.Permission)
+	res := resTmp.([]gqlmodel.AuthObjectAction)
 	fc.Result = res
-	return ec.marshalNPermission2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐPermissionᚄ(ctx, field.Selections, res)
+	return ec.marshalNAuthObjectAction2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋauthᚋrbacᚐObjectActionᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Self_permissions(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -15160,14 +15829,14 @@ func (ec *executionContext) fieldContext_Self_permissions(_ context.Context, fie
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "subject":
-				return ec.fieldContext_Permission_subject(ctx, field)
-			case "objectAction":
-				return ec.fieldContext_Permission_objectAction(ctx, field)
-			case "core":
-				return ec.fieldContext_Permission_core(ctx, field)
+			case "namespace":
+				return ec.fieldContext_AuthObjectAction_namespace(ctx, field)
+			case "object":
+				return ec.fieldContext_AuthObjectAction_object(ctx, field)
+			case "action":
+				return ec.fieldContext_AuthObjectAction_action(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Permission", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type AuthObjectAction", field.Name)
 		},
 	}
 	return fc, nil
@@ -15295,6 +15964,123 @@ func (ec *executionContext) fieldContext_SelfMutation_login(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _SelfMutation_createAPIKey(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.SelfMutation) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SelfMutation_createAPIKey(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreateAPIKey(ctx, fc.Args["input"].(gen.CreateAPIKeyInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(gen.CreateAPIKeyResult)
+	fc.Result = res
+	return ec.marshalNCreateAPIKeyResult2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐCreateAPIKeyResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SelfMutation_createAPIKey(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SelfMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_CreateAPIKeyResult_id(ctx, field)
+			case "apiKey":
+				return ec.fieldContext_CreateAPIKeyResult_apiKey(ctx, field)
+			case "name":
+				return ec.fieldContext_CreateAPIKeyResult_name(ctx, field)
+			case "expiresAt":
+				return ec.fieldContext_CreateAPIKeyResult_expiresAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CreateAPIKeyResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_SelfMutation_createAPIKey_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SelfMutation_deleteAPIKey(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.SelfMutation) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SelfMutation_deleteAPIKey(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DeleteAPIKey(ctx, fc.Args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOVoid2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SelfMutation_deleteAPIKey(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SelfMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Void does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_SelfMutation_deleteAPIKey_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _SelfQuery_identity(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.SelfQuery) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_SelfQuery_identity(ctx, field)
 	if err != nil {
@@ -15336,8 +16122,8 @@ func (ec *executionContext) fieldContext_SelfQuery_identity(_ context.Context, f
 			switch field.Name {
 			case "user":
 				return ec.fieldContext_Self_user(ctx, field)
-			case "roles":
-				return ec.fieldContext_Self_roles(ctx, field)
+			case "apiKey":
+				return ec.fieldContext_Self_apiKey(ctx, field)
 			case "permissions":
 				return ec.fieldContext_Self_permissions(ctx, field)
 			}
@@ -15406,6 +16192,64 @@ func (ec *executionContext) fieldContext_SelfQuery_passwordEntropy(ctx context.C
 	if fc.Args, err = ec.field_SelfQuery_passwordEntropy_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SelfQuery_apiKeys(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.SelfQuery) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SelfQuery_apiKeys(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.APIKeys(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]gqlmodel.APIKey)
+	fc.Result = res
+	return ec.marshalNAPIKey2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐAPIKeyᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SelfQuery_apiKeys(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SelfQuery",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_APIKey_id(ctx, field)
+			case "name":
+				return ec.fieldContext_APIKey_name(ctx, field)
+			case "userId":
+				return ec.fieldContext_APIKey_userId(ctx, field)
+			case "user":
+				return ec.fieldContext_APIKey_user(ctx, field)
+			case "expiresAt":
+				return ec.fieldContext_APIKey_expiresAt(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_APIKey_createdAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type APIKey", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -23420,6 +24264,47 @@ func (ec *executionContext) unmarshalInputContentTypeFacetInput(ctx context.Cont
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCreateAPIKeyInput(ctx context.Context, obj any) (gen.CreateAPIKeyInput, error) {
+	var it gen.CreateAPIKeyInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "permissions", "expiry"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "permissions":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("permissions"))
+			data, err := ec.unmarshalNAuthObjectActionInput2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐAuthObjectActionInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Permissions = data
+		case "expiry":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("expiry"))
+			data, err := ec.unmarshalODuration2ᚖtimeᚐDuration(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Expiry = graphql.OmittableOf(data)
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputGenreFacetInput(ctx context.Context, obj any) (gen.GenreFacetInput, error) {
 	var it gen.GenreFacetInput
 	asMap := map[string]any{}
@@ -23468,7 +24353,7 @@ func (ec *executionContext) unmarshalInputInviteInput(ctx context.Context, obj a
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"email", "role", "expiration"}
+	fieldsInOrder := [...]string{"email", "role", "expiry"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -23489,13 +24374,13 @@ func (ec *executionContext) unmarshalInputInviteInput(ctx context.Context, obj a
 				return it, err
 			}
 			it.Role = graphql.OmittableOf(data)
-		case "expiration":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("expiration"))
+		case "expiry":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("expiry"))
 			data, err := ec.unmarshalODuration2ᚖtimeᚐDuration(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Expiration = graphql.OmittableOf(data)
+			it.Expiry = graphql.OmittableOf(data)
 		}
 	}
 
@@ -24773,6 +25658,67 @@ func (ec *executionContext) unmarshalInputVideoSourceFacetInput(ctx context.Cont
 
 // region    **************************** object.gotpl ****************************
 
+var aPIKeyImplementors = []string{"APIKey"}
+
+func (ec *executionContext) _APIKey(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.APIKey) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, aPIKeyImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("APIKey")
+		case "id":
+			out.Values[i] = ec._APIKey_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._APIKey_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "userId":
+			out.Values[i] = ec._APIKey_userId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "user":
+			out.Values[i] = ec._APIKey_user(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "expiresAt":
+			out.Values[i] = ec._APIKey_expiresAt(ctx, field, obj)
+		case "createdAt":
+			out.Values[i] = ec._APIKey_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var authMutationImplementors = []string{"AuthMutation"}
 
 func (ec *executionContext) _AuthMutation(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.AuthMutation) graphql.Marshaler {
@@ -25843,6 +26789,57 @@ func (ec *executionContext) _ContentTypeAgg(ctx context.Context, sel ast.Selecti
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var createAPIKeyResultImplementors = []string{"CreateAPIKeyResult"}
+
+func (ec *executionContext) _CreateAPIKeyResult(ctx context.Context, sel ast.SelectionSet, obj *gen.CreateAPIKeyResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, createAPIKeyResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CreateAPIKeyResult")
+		case "id":
+			out.Values[i] = ec._CreateAPIKeyResult_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "apiKey":
+			out.Values[i] = ec._CreateAPIKeyResult_apiKey(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._CreateAPIKeyResult_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "expiresAt":
+			out.Values[i] = ec._CreateAPIKeyResult_expiresAt(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -27858,11 +28855,8 @@ func (ec *executionContext) _Self(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = graphql.MarshalString("Self")
 		case "user":
 			out.Values[i] = ec._Self_user(ctx, field, obj)
-		case "roles":
-			out.Values[i] = ec._Self_roles(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
+		case "apiKey":
+			out.Values[i] = ec._Self_apiKey(ctx, field, obj)
 		case "permissions":
 			out.Values[i] = ec._Self_permissions(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -27974,6 +28968,75 @@ func (ec *executionContext) _SelfMutation(ctx context.Context, sel ast.Selection
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "createAPIKey":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SelfMutation_createAPIKey(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "deleteAPIKey":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SelfMutation_deleteAPIKey(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -28049,6 +29112,42 @@ func (ec *executionContext) _SelfQuery(ctx context.Context, sel ast.SelectionSet
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "apiKeys":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._SelfQuery_apiKeys(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -30213,11 +31312,59 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) marshalNAPIKey2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐAPIKey(ctx context.Context, sel ast.SelectionSet, v gqlmodel.APIKey) graphql.Marshaler {
+	return ec._APIKey(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAPIKey2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐAPIKeyᚄ(ctx context.Context, sel ast.SelectionSet, v []gqlmodel.APIKey) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNAPIKey2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐAPIKey(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) marshalNAuthMutation2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐAuthMutation(ctx context.Context, sel ast.SelectionSet, v gqlmodel.AuthMutation) graphql.Marshaler {
 	return ec._AuthMutation(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNAuthObjectAction2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋauthᚋrbacᚐObjectAction(ctx context.Context, sel ast.SelectionSet, v gqlmodel.AuthObjectAction) graphql.Marshaler {
+func (ec *executionContext) marshalNAuthObjectAction2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋauthᚋrbacᚐObjectAction(ctx context.Context, sel ast.SelectionSet, v rbac.ObjectAction) graphql.Marshaler {
 	return ec._AuthObjectAction(ctx, sel, &v)
 }
 
@@ -30500,6 +31647,15 @@ func (ec *executionContext) marshalNContentType2githubᚗcomᚋbitmagnetᚑioᚋ
 
 func (ec *executionContext) marshalNContentTypeAgg2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐContentTypeAgg(ctx context.Context, sel ast.SelectionSet, v gen.ContentTypeAgg) graphql.Marshaler {
 	return ec._ContentTypeAgg(ctx, sel, &v)
+}
+
+func (ec *executionContext) unmarshalNCreateAPIKeyInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐCreateAPIKeyInput(ctx context.Context, v any) (gen.CreateAPIKeyInput, error) {
+	res, err := ec.unmarshalInputCreateAPIKeyInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNCreateAPIKeyResult2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐCreateAPIKeyResult(ctx context.Context, sel ast.SelectionSet, v gen.CreateAPIKeyResult) graphql.Marshaler {
+	return ec._CreateAPIKeyResult(ctx, sel, &v)
 }
 
 func (ec *executionContext) unmarshalNDateTime2timeᚐTime(ctx context.Context, v any) (time.Time, error) {
@@ -32173,6 +33329,13 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalOAPIKey2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐAPIKey(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.APIKey) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._APIKey(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v any) (bool, error) {

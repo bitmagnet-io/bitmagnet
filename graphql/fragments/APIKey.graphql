@@ -1,0 +1,7 @@
+fragment APIKey on APIKey {
+  id
+  userId
+  name
+  expiresAt
+  createdAt
+}

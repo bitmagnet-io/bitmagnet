@@ -69,64 +69,6 @@ func (_c *Repository_DeleteRole_Call) RunAndReturn(run func(context.Context, rba
 	return _c
 }
 
-// DeleteRolePermissions provides a mock function with given fields: ctx, role, objectActions
-func (_m *Repository) DeleteRolePermissions(ctx context.Context, role rbac.Role, objectActions []rbac.ObjectAction) (rbac.RoleInfo, error) {
-	ret := _m.Called(ctx, role, objectActions)
-
-	if len(ret) == 0 {
-		panic("no return value specified for DeleteRolePermissions")
-	}
-
-	var r0 rbac.RoleInfo
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, rbac.Role, []rbac.ObjectAction) (rbac.RoleInfo, error)); ok {
-		return rf(ctx, role, objectActions)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, rbac.Role, []rbac.ObjectAction) rbac.RoleInfo); ok {
-		r0 = rf(ctx, role, objectActions)
-	} else {
-		r0 = ret.Get(0).(rbac.RoleInfo)
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, rbac.Role, []rbac.ObjectAction) error); ok {
-		r1 = rf(ctx, role, objectActions)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Repository_DeleteRolePermissions_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteRolePermissions'
-type Repository_DeleteRolePermissions_Call struct {
-	*mock.Call
-}
-
-// DeleteRolePermissions is a helper method to define mock.On call
-//   - ctx context.Context
-//   - role rbac.Role
-//   - objectActions []rbac.ObjectAction
-func (_e *Repository_Expecter) DeleteRolePermissions(ctx interface{}, role interface{}, objectActions interface{}) *Repository_DeleteRolePermissions_Call {
-	return &Repository_DeleteRolePermissions_Call{Call: _e.mock.On("DeleteRolePermissions", ctx, role, objectActions)}
-}
-
-func (_c *Repository_DeleteRolePermissions_Call) Run(run func(ctx context.Context, role rbac.Role, objectActions []rbac.ObjectAction)) *Repository_DeleteRolePermissions_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(rbac.Role), args[2].([]rbac.ObjectAction))
-	})
-	return _c
-}
-
-func (_c *Repository_DeleteRolePermissions_Call) Return(_a0 rbac.RoleInfo, _a1 error) *Repository_DeleteRolePermissions_Call {
-	_c.Call.Return(_a0, _a1)
-	return _c
-}
-
-func (_c *Repository_DeleteRolePermissions_Call) RunAndReturn(run func(context.Context, rbac.Role, []rbac.ObjectAction) (rbac.RoleInfo, error)) *Repository_DeleteRolePermissions_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // GetAllRoles provides a mock function with given fields: ctx
 func (_m *Repository) GetAllRoles(ctx context.Context) ([]rbac.RoleInfo, error) {
 	ret := _m.Called(ctx)
@@ -243,6 +185,63 @@ func (_c *Repository_GetPermissions_Call) RunAndReturn(run func(context.Context)
 	return _c
 }
 
+// GetRole provides a mock function with given fields: ctx, roles
+func (_m *Repository) GetRole(ctx context.Context, roles rbac.Role) (rbac.RoleInfo, error) {
+	ret := _m.Called(ctx, roles)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetRole")
+	}
+
+	var r0 rbac.RoleInfo
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, rbac.Role) (rbac.RoleInfo, error)); ok {
+		return rf(ctx, roles)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, rbac.Role) rbac.RoleInfo); ok {
+		r0 = rf(ctx, roles)
+	} else {
+		r0 = ret.Get(0).(rbac.RoleInfo)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, rbac.Role) error); ok {
+		r1 = rf(ctx, roles)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Repository_GetRole_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetRole'
+type Repository_GetRole_Call struct {
+	*mock.Call
+}
+
+// GetRole is a helper method to define mock.On call
+//   - ctx context.Context
+//   - roles rbac.Role
+func (_e *Repository_Expecter) GetRole(ctx interface{}, roles interface{}) *Repository_GetRole_Call {
+	return &Repository_GetRole_Call{Call: _e.mock.On("GetRole", ctx, roles)}
+}
+
+func (_c *Repository_GetRole_Call) Run(run func(ctx context.Context, roles rbac.Role)) *Repository_GetRole_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(rbac.Role))
+	})
+	return _c
+}
+
+func (_c *Repository_GetRole_Call) Return(_a0 rbac.RoleInfo, _a1 error) *Repository_GetRole_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Repository_GetRole_Call) RunAndReturn(run func(context.Context, rbac.Role) (rbac.RoleInfo, error)) *Repository_GetRole_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetRoles provides a mock function with given fields: ctx, roles
 func (_m *Repository) GetRoles(ctx context.Context, roles []rbac.Role) ([]rbac.RoleInfo, error) {
 	ret := _m.Called(ctx, roles)
@@ -302,69 +301,12 @@ func (_c *Repository_GetRoles_Call) RunAndReturn(run func(context.Context, []rba
 	return _c
 }
 
-// PersistRole provides a mock function with given fields: ctx, role
-func (_m *Repository) PersistRole(ctx context.Context, role rbac.Role) (rbac.RoleInfo, error) {
-	ret := _m.Called(ctx, role)
-
-	if len(ret) == 0 {
-		panic("no return value specified for PersistRole")
-	}
-
-	var r0 rbac.RoleInfo
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, rbac.Role) (rbac.RoleInfo, error)); ok {
-		return rf(ctx, role)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, rbac.Role) rbac.RoleInfo); ok {
-		r0 = rf(ctx, role)
-	} else {
-		r0 = ret.Get(0).(rbac.RoleInfo)
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, rbac.Role) error); ok {
-		r1 = rf(ctx, role)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Repository_PersistRole_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PersistRole'
-type Repository_PersistRole_Call struct {
-	*mock.Call
-}
-
-// PersistRole is a helper method to define mock.On call
-//   - ctx context.Context
-//   - role rbac.Role
-func (_e *Repository_Expecter) PersistRole(ctx interface{}, role interface{}) *Repository_PersistRole_Call {
-	return &Repository_PersistRole_Call{Call: _e.mock.On("PersistRole", ctx, role)}
-}
-
-func (_c *Repository_PersistRole_Call) Run(run func(ctx context.Context, role rbac.Role)) *Repository_PersistRole_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(rbac.Role))
-	})
-	return _c
-}
-
-func (_c *Repository_PersistRole_Call) Return(_a0 rbac.RoleInfo, _a1 error) *Repository_PersistRole_Call {
-	_c.Call.Return(_a0, _a1)
-	return _c
-}
-
-func (_c *Repository_PersistRole_Call) RunAndReturn(run func(context.Context, rbac.Role) (rbac.RoleInfo, error)) *Repository_PersistRole_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// PersistRolePermissions provides a mock function with given fields: ctx, role, objectActions
-func (_m *Repository) PersistRolePermissions(ctx context.Context, role rbac.Role, objectActions []rbac.ObjectAction) (rbac.RoleInfo, error) {
+// PutRole provides a mock function with given fields: ctx, role, objectActions
+func (_m *Repository) PutRole(ctx context.Context, role rbac.Role, objectActions []rbac.ObjectAction) (rbac.RoleInfo, error) {
 	ret := _m.Called(ctx, role, objectActions)
 
 	if len(ret) == 0 {
-		panic("no return value specified for PersistRolePermissions")
+		panic("no return value specified for PutRole")
 	}
 
 	var r0 rbac.RoleInfo
@@ -387,32 +329,32 @@ func (_m *Repository) PersistRolePermissions(ctx context.Context, role rbac.Role
 	return r0, r1
 }
 
-// Repository_PersistRolePermissions_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PersistRolePermissions'
-type Repository_PersistRolePermissions_Call struct {
+// Repository_PutRole_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PutRole'
+type Repository_PutRole_Call struct {
 	*mock.Call
 }
 
-// PersistRolePermissions is a helper method to define mock.On call
+// PutRole is a helper method to define mock.On call
 //   - ctx context.Context
 //   - role rbac.Role
 //   - objectActions []rbac.ObjectAction
-func (_e *Repository_Expecter) PersistRolePermissions(ctx interface{}, role interface{}, objectActions interface{}) *Repository_PersistRolePermissions_Call {
-	return &Repository_PersistRolePermissions_Call{Call: _e.mock.On("PersistRolePermissions", ctx, role, objectActions)}
+func (_e *Repository_Expecter) PutRole(ctx interface{}, role interface{}, objectActions interface{}) *Repository_PutRole_Call {
+	return &Repository_PutRole_Call{Call: _e.mock.On("PutRole", ctx, role, objectActions)}
 }
 
-func (_c *Repository_PersistRolePermissions_Call) Run(run func(ctx context.Context, role rbac.Role, objectActions []rbac.ObjectAction)) *Repository_PersistRolePermissions_Call {
+func (_c *Repository_PutRole_Call) Run(run func(ctx context.Context, role rbac.Role, objectActions []rbac.ObjectAction)) *Repository_PutRole_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(rbac.Role), args[2].([]rbac.ObjectAction))
 	})
 	return _c
 }
 
-func (_c *Repository_PersistRolePermissions_Call) Return(_a0 rbac.RoleInfo, _a1 error) *Repository_PersistRolePermissions_Call {
+func (_c *Repository_PutRole_Call) Return(_a0 rbac.RoleInfo, _a1 error) *Repository_PutRole_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *Repository_PersistRolePermissions_Call) RunAndReturn(run func(context.Context, rbac.Role, []rbac.ObjectAction) (rbac.RoleInfo, error)) *Repository_PersistRolePermissions_Call {
+func (_c *Repository_PutRole_Call) RunAndReturn(run func(context.Context, rbac.Role, []rbac.ObjectAction) (rbac.RoleInfo, error)) *Repository_PutRole_Call {
 	_c.Call.Return(run)
 	return _c
 }

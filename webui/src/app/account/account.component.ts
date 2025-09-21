@@ -34,6 +34,17 @@ import { map } from "rxjs";
               >
             </li>
             <li>
+              <a
+                mat-button
+                routerLink="/account/api-keys"
+                routerLinkActive
+                [routerLinkActiveOptions]="{ exact: true }"
+                #linkAPIKeys="routerLinkActive"
+                [class]="linkAPIKeys.isActive ? 'active' : ''"
+                ><mat-icon>key</mat-icon>{{ t("routes.api_keys") }}</a
+              >
+            </li>
+            <li>
               <a mat-button (click)="logout()"
                 ><mat-icon>logout</mat-icon>{{ t("auth.logout") }}</a
               >

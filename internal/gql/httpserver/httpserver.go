@@ -12,6 +12,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/bitmagnet-io/bitmagnet/internal/error_registry"
+	"github.com/bitmagnet-io/bitmagnet/internal/gql/httpserver/batch"
 	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
 	"github.com/gin-gonic/gin"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -48,18 +49,12 @@ func newServer(
 	srv.AddTransport(transport.Websocket{
 		KeepAlivePingInterval: 10 * time.Second,
 	})
-	srv.AddTransport(transport.Options{})
-	srv.AddTransport(transport.GET{})
-	srv.AddTransport(transport.POST{})
-	srv.AddTransport(transport.MultipartForm{})
-
+	srv.AddTransport(batch.Transport{})
 	srv.SetQueryCache(lru.New[*ast.QueryDocument](1000))
-
 	srv.Use(extension.Introspection{})
 	srv.Use(extension.AutomaticPersistedQuery{
 		Cache: lru.New[string](100),
 	})
-
 	srv.SetErrorPresenter(newErrorPresenter(errorRegistry, i18nBundle))
 
 	return srv

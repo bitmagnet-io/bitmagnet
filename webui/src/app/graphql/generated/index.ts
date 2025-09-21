@@ -27,6 +27,16 @@ export type Scalars = {
   Year: { input: number; output: number; }
 };
 
+export type ApiKey = {
+  __typename?: 'APIKey';
+  createdAt: Scalars['DateTime']['output'];
+  expiresAt?: Maybe<Scalars['DateTime']['output']>;
+  id: Scalars['Int']['output'];
+  name: Scalars['String']['output'];
+  user: User;
+  userId: Scalars['Int']['output'];
+};
+
 export type AuthMutation = {
   __typename?: 'AuthMutation';
   deleteInvitation?: Maybe<Scalars['Void']['output']>;
@@ -221,6 +231,20 @@ export type ContentTypeFacetInput = {
   filter?: InputMaybe<Array<InputMaybe<ContentType>>>;
 };
 
+export type CreateApiKeyInput = {
+  expiry?: InputMaybe<Scalars['Duration']['input']>;
+  name: Scalars['String']['input'];
+  permissions: Array<AuthObjectActionInput>;
+};
+
+export type CreateApiKeyResult = {
+  __typename?: 'CreateAPIKeyResult';
+  apiKey: Scalars['String']['output'];
+  expiresAt?: Maybe<Scalars['DateTime']['output']>;
+  id: Scalars['Int']['output'];
+  name: Scalars['String']['output'];
+};
+
 export type Episodes = {
   __typename?: 'Episodes';
   label: Scalars['String']['output'];
@@ -300,7 +324,7 @@ export type Invitation = {
 
 export type InviteInput = {
   email?: InputMaybe<Scalars['String']['input']>;
-  expiration?: InputMaybe<Scalars['Duration']['input']>;
+  expiry?: InputMaybe<Scalars['Duration']['input']>;
   role?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -708,15 +732,27 @@ export type Season = {
 
 export type Self = {
   __typename?: 'Self';
-  permissions: Array<Permission>;
-  roles: Array<Scalars['String']['output']>;
+  apiKey?: Maybe<ApiKey>;
+  permissions: Array<AuthObjectAction>;
   user?: Maybe<User>;
 };
 
 export type SelfMutation = {
   __typename?: 'SelfMutation';
+  createAPIKey: CreateApiKeyResult;
+  deleteAPIKey?: Maybe<Scalars['Void']['output']>;
   login: LoginResult;
   register: RegisterResult;
+};
+
+
+export type SelfMutationCreateApiKeyArgs = {
+  input: CreateApiKeyInput;
+};
+
+
+export type SelfMutationDeleteApiKeyArgs = {
+  id: Scalars['Int']['input'];
 };
 
 
@@ -732,6 +768,7 @@ export type SelfMutationRegisterArgs = {
 
 export type SelfQuery = {
   __typename?: 'SelfQuery';
+  apiKeys: Array<ApiKey>;
   identity: Self;
   passwordEntropy: PasswordEntropyResult;
 };
@@ -1195,6 +1232,8 @@ export type WorkerState =
   | 'shutdown'
   | 'startup';
 
+export type ApiKeyFragment = { __typename?: 'APIKey', id: number, userId: number, name: string, expiresAt?: string | null, createdAt: string };
+
 export type AuthObjectActionFragment = { __typename?: 'AuthObjectAction', namespace: string, object: string, action: string };
 
 export type ConfigParamFragment = { __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null } };
@@ -1219,7 +1258,7 @@ export type QueueJobsQueryResultFragment = { __typename?: 'QueueJobsQueryResult'
 
 export type RoleFragment = { __typename?: 'Role', name: string, core: boolean, permissions: Array<{ __typename?: 'Permission', core: boolean, subject: { __typename?: 'AuthSubject', type: AuthSubjectType, name: string }, objectAction: { __typename?: 'AuthObjectAction', namespace: string, object: string, action: string } }> };
 
-export type SelfFragment = { __typename?: 'Self', roles: Array<string>, user?: { __typename?: 'User', id: number, username: string, role: string, lastLoginAt?: string | null, createdAt: string, updatedAt: string } | null, permissions: Array<{ __typename?: 'Permission', core: boolean, subject: { __typename?: 'AuthSubject', type: AuthSubjectType, name: string }, objectAction: { __typename?: 'AuthObjectAction', namespace: string, object: string, action: string } }> };
+export type SelfFragment = { __typename?: 'Self', user?: { __typename?: 'User', id: number, username: string, role: string, lastLoginAt?: string | null, createdAt: string, updatedAt: string } | null, apiKey?: { __typename?: 'APIKey', id: number, userId: number, name: string, expiresAt?: string | null, createdAt: string } | null, permissions: Array<{ __typename?: 'AuthObjectAction', namespace: string, object: string, action: string }> };
 
 export type TorrentFragment = { __typename?: 'Torrent', infoHash: string, name: string, size: number, filesStatus: FilesStatus, filesCount?: number | null, hasFilesInfo: boolean, singleFile?: boolean | null, fileType?: FileType | null, seeders?: number | null, leechers?: number | null, tagNames: Array<string>, magnetUri: string, createdAt: string, updatedAt: string, sources: Array<{ __typename?: 'TorrentSourceInfo', key: string, name: string }> };
 
@@ -1249,6 +1288,13 @@ export type ConfigSaveMutationVariables = Exact<{
 
 
 export type ConfigSaveMutation = { __typename?: 'Mutation', config: { __typename?: 'ConfigMutation', save: { __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null } } } };
+
+export type CreateApiKeyMutationVariables = Exact<{
+  input: CreateApiKeyInput;
+}>;
+
+
+export type CreateApiKeyMutation = { __typename?: 'Mutation', self: { __typename?: 'SelfMutation', createAPIKey: { __typename?: 'CreateAPIKeyResult', id: number, apiKey: string, name: string, expiresAt?: string | null } } };
 
 export type InvitationDeleteMutationVariables = Exact<{
   code: Scalars['String']['input'];
@@ -1360,6 +1406,11 @@ export type WorkersStartMutationVariables = Exact<{
 
 export type WorkersStartMutation = { __typename?: 'Mutation', worker: { __typename?: 'WorkerMutation', start: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', ref: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
 
+export type ApiKeysQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ApiKeysQuery = { __typename?: 'Query', self: { __typename?: 'SelfQuery', apiKeys: Array<{ __typename?: 'APIKey', id: number, userId: number, name: string, expiresAt?: string | null, createdAt: string }> } };
+
 export type AuthObjectActionsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -1378,7 +1429,7 @@ export type HealthCheckQuery = { __typename?: 'Query', health: { __typename?: 'H
 export type IdentityQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type IdentityQuery = { __typename?: 'Query', self: { __typename?: 'SelfQuery', identity: { __typename?: 'Self', roles: Array<string>, user?: { __typename?: 'User', id: number, username: string, role: string, lastLoginAt?: string | null, createdAt: string, updatedAt: string } | null, permissions: Array<{ __typename?: 'Permission', core: boolean, subject: { __typename?: 'AuthSubject', type: AuthSubjectType, name: string }, objectAction: { __typename?: 'AuthObjectAction', namespace: string, object: string, action: string } }> } } };
+export type IdentityQuery = { __typename?: 'Query', self: { __typename?: 'SelfQuery', identity: { __typename?: 'Self', user?: { __typename?: 'User', id: number, username: string, role: string, lastLoginAt?: string | null, createdAt: string, updatedAt: string } | null, apiKey?: { __typename?: 'APIKey', id: number, userId: number, name: string, expiresAt?: string | null, createdAt: string } | null, permissions: Array<{ __typename?: 'AuthObjectAction', namespace: string, object: string, action: string }> } } };
 
 export type InvitationsQueryVariables = Exact<{
   input?: InputMaybe<ListInvitationsInput>;
@@ -1463,13 +1514,6 @@ export type WorkersQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type WorkersQuery = { __typename?: 'Query', worker: { __typename?: 'WorkerQuery', listAll: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', ref: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
 
-export const AuthObjectActionFragmentDoc = gql`
-    fragment AuthObjectAction on AuthObjectAction {
-  namespace
-  object
-  action
-}
-    `;
 export const JsonSchemaTopLevelFragmentDoc = gql`
     fragment JSONSchemaTopLevel on JSONSchema {
   type
@@ -1589,6 +1633,13 @@ export const QueueJobsQueryResultFragmentDoc = gql`
   }
 }
     ${QueueJobFragmentDoc}`;
+export const AuthObjectActionFragmentDoc = gql`
+    fragment AuthObjectAction on AuthObjectAction {
+  namespace
+  object
+  action
+}
+    `;
 export const PermissionFragmentDoc = gql`
     fragment Permission on Permission {
   subject {
@@ -1596,13 +1647,11 @@ export const PermissionFragmentDoc = gql`
     name
   }
   objectAction {
-    namespace
-    object
-    action
+    ...AuthObjectAction
   }
   core
 }
-    `;
+    ${AuthObjectActionFragmentDoc}`;
 export const RoleFragmentDoc = gql`
     fragment Role on Role {
   name
@@ -1612,18 +1661,30 @@ export const RoleFragmentDoc = gql`
   }
 }
     ${PermissionFragmentDoc}`;
+export const ApiKeyFragmentDoc = gql`
+    fragment APIKey on APIKey {
+  id
+  userId
+  name
+  expiresAt
+  createdAt
+}
+    `;
 export const SelfFragmentDoc = gql`
     fragment Self on Self {
   user {
     ...User
   }
-  roles
+  apiKey {
+    ...APIKey
+  }
   permissions {
-    ...Permission
+    ...AuthObjectAction
   }
 }
     ${UserFragmentDoc}
-${PermissionFragmentDoc}`;
+${ApiKeyFragmentDoc}
+${AuthObjectActionFragmentDoc}`;
 export const TorrentFragmentDoc = gql`
     fragment Torrent on Torrent {
   infoHash
@@ -1866,6 +1927,29 @@ export const ConfigSaveDocument = gql`
   })
   export class ConfigSaveGQL extends Apollo.Mutation<ConfigSaveMutation, ConfigSaveMutationVariables> {
     override document = ConfigSaveDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const CreateApiKeyDocument = gql`
+    mutation CreateAPIKey($input: CreateAPIKeyInput!) {
+  self {
+    createAPIKey(input: $input) {
+      id
+      apiKey
+      name
+      expiresAt
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class CreateApiKeyGQL extends Apollo.Mutation<CreateApiKeyMutation, CreateApiKeyMutationVariables> {
+    override document = CreateApiKeyDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
@@ -2165,6 +2249,26 @@ export const WorkersStartDocument = gql`
   })
   export class WorkersStartGQL extends Apollo.Mutation<WorkersStartMutation, WorkersStartMutationVariables> {
     override document = WorkersStartDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const ApiKeysDocument = gql`
+    query APIKeys {
+  self {
+    apiKeys {
+      ...APIKey
+    }
+  }
+}
+    ${ApiKeyFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class ApiKeysGQL extends Apollo.Query<ApiKeysQuery, ApiKeysQueryVariables> {
+    override document = ApiKeysDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

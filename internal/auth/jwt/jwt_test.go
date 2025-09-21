@@ -16,12 +16,12 @@ func TestJWTService_GenerateAndValidateToken(t *testing.T) {
 	username := "testuser"
 
 	// Generate token
-	token, err := jwtService.GenerateToken(userID, username)
+	token, err := jwtService.Generate(userID, username)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 
 	// Validate token
-	claims, err := jwtService.ValidateToken(token)
+	claims, err := jwtService.Parse(token)
 	require.NoError(t, err)
 	require.NotNil(t, claims)
 
@@ -35,11 +35,11 @@ func TestJWTService_InvalidToken(t *testing.T) {
 	jwtService := jwt.NewService("test-secret-key", jwt.Duration(time.Minute))
 
 	// Test with invalid token
-	_, err := jwtService.ValidateToken("invalid-token")
+	_, err := jwtService.Parse("invalid-token")
 	assert.Error(t, err)
 
 	// Test with empty token
-	_, err = jwtService.ValidateToken("")
+	_, err = jwtService.Parse("")
 	assert.Error(t, err)
 }
 
@@ -51,10 +51,10 @@ func TestJWTService_TokenWithDifferentSecret(t *testing.T) {
 	username := "testuser"
 
 	// Generate token with first service
-	token, err := jwtService1.GenerateToken(userID, username)
+	token, err := jwtService1.Generate(userID, username)
 	require.NoError(t, err)
 
 	// Try to validate with second service (different secret)
-	_, err = jwtService2.ValidateToken(token)
+	_, err = jwtService2.Parse(token)
 	assert.Error(t, err)
 }

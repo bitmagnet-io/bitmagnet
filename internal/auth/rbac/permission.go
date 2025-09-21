@@ -43,7 +43,20 @@ func CorePermissions() []Permission {
 				Object:    "**",
 				Action:    "**",
 			},
+			core: true,
 		},
+	}
+}
+
+func VerbatimPermissions(provider ObjectActionProvider) PermissionProvider {
+	return func() []Permission {
+		return slice.Map(provider(), func(objectAction ObjectAction) Permission {
+			return permission{
+				Subject:      SubjectPermission{ObjectAction: objectAction},
+				objectAction: objectAction,
+				core:         true,
+			}
+		})
 	}
 }
 

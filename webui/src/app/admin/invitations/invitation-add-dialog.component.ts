@@ -7,7 +7,6 @@ import { Apollo } from "apollo-angular";
 import { ErrorsService } from "../../errors/errors.service";
 import * as generated from "../../graphql/generated";
 import { catchError, EMPTY, take } from "rxjs";
-import { HealthWidgetComponent } from "../../health/health-widget.component";
 
 @Component({
   template: `
@@ -65,11 +64,11 @@ import { HealthWidgetComponent } from "../../health/health-widget.component";
   standalone: true,
   imports: [AppModule],
 })
-export class InvitationsAddComponent {
+export class InvitationAddComponent {
   private apollo = inject(Apollo);
   private roles = inject(RolesService);
   private errors = inject(ErrorsService);
-  private dialogRef = inject(MatDialogRef<InvitationsAddComponent>);
+  private dialogRef = inject(MatDialogRef<InvitationAddComponent>);
 
   roles$ = this.roles.listRoles();
 
@@ -87,7 +86,7 @@ export class InvitationsAddComponent {
         variables: {
           input: {
             role: this.roleCtrl.value,
-            expiration: this.expiryCtrl.value,
+            expiry: this.expiryCtrl.value,
           },
         },
       })

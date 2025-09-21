@@ -24,8 +24,9 @@ func (r *queryResolver) Version(ctx context.Context) (string, error) {
 // Self is the resolver for the self field.
 func (r *queryResolver) Self(ctx context.Context) (gqlmodel.SelfQuery, error) {
 	return gqlmodel.SelfQuery{
-		RBAC: r.RBAC,
-		User: r.User,
+		RBAC:   r.RBAC,
+		User:   r.User,
+		APIKey: r.APIKey,
 	}, nil
 }
 

@@ -54,7 +54,7 @@ func (s *service) Login(ctx context.Context, username, password string) (LoginRe
 		return LoginResult{}, fmt.Errorf("%w: %w: %w", Err, ErrLogin, ErrDisabled)
 	}
 
-	token, err := s.jwtService.GenerateToken(user.ID, user.Username)
+	token, err := s.jwtService.Generate(user.ID, user.Username)
 	if err != nil {
 		return LoginResult{}, fmt.Errorf("%w: %w: %w: %w", Err, ErrLogin, ErrGenerateToken, err)
 	}

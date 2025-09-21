@@ -1,4 +1,4 @@
-#import "./ObjectAction"
+#import "./AuthObjectAction"
 
 fragment Permission on Permission {
   subject {
@@ -6,9 +6,7 @@ fragment Permission on Permission {
     name
   }
   objectAction {
-    namespace
-    object
-    action
+    ...AuthObjectAction
   }
   core
 }

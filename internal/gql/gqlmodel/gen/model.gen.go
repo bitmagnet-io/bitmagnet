@@ -48,6 +48,19 @@ type ContentTypeFacetInput struct {
 	Filter    graphql.Omittable[[]*model.ContentType] `json:"filter,omitempty"`
 }
 
+type CreateAPIKeyInput struct {
+	Name        string                            `json:"name"`
+	Permissions []AuthObjectActionInput           `json:"permissions"`
+	Expiry      graphql.Omittable[*time.Duration] `json:"expiry,omitempty"`
+}
+
+type CreateAPIKeyResult struct {
+	ID        int        `json:"id"`
+	APIKey    string     `json:"apiKey"`
+	Name      string     `json:"name"`
+	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
+}
+
 type GenreAgg struct {
 	Value      string `json:"value"`
 	Label      string `json:"label"`
@@ -74,9 +87,9 @@ type HealthQuery struct {
 }
 
 type InviteInput struct {
-	Email      graphql.Omittable[*string]        `json:"email,omitempty"`
-	Role       graphql.Omittable[*string]        `json:"role,omitempty"`
-	Expiration graphql.Omittable[*time.Duration] `json:"expiration,omitempty"`
+	Email  graphql.Omittable[*string]        `json:"email,omitempty"`
+	Role   graphql.Omittable[*string]        `json:"role,omitempty"`
+	Expiry graphql.Omittable[*time.Duration] `json:"expiry,omitempty"`
 }
 
 type LanguageAgg struct {

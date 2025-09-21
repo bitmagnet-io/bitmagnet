@@ -5,9 +5,7 @@ import * as generated from "../../graphql/generated";
 import { TimeAgoPipe } from "../../pipes/time-ago.pipe";
 import { Apollo } from "apollo-angular";
 import { Observable } from "rxjs";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { PaginatorComponent } from "../../paginator/paginator.component";
-import { PageEvent } from "@angular/material/paginator";
 
 @Component({
   selector: "app-invitations-table",

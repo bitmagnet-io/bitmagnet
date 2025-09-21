@@ -17,5 +17,5 @@ input AuthObjectActionInput {
 input InviteInput {
   email: String
   role: String
-  expiration: Duration
+  expiry: Duration
 }

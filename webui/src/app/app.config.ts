@@ -7,6 +7,7 @@ import { provideRouter, withComponentInputBinding } from "@angular/router";
 
 import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
 import {
+  HttpHeaders,
   provideHttpClient,
   withInterceptorsFromDi,
 } from "@angular/common/http";
@@ -14,8 +15,8 @@ import { setContext } from "@apollo/client/link/context";
 import { provideTransloco, TranslocoService } from "@jsverse/transloco";
 import { provideCharts, withDefaultRegisterables } from "ng2-charts";
 import { provideApollo } from "apollo-angular";
-import { HttpLink } from "apollo-angular/http";
-import { InMemoryCache } from "@apollo/client/core";
+import { HttpBatchLink } from "apollo-angular/http";
+import { ApolloLink, InMemoryCache } from "@apollo/client/core";
 import { graphqlEndpoint } from "../environments/environment";
 import { TranslocoImportLoader } from "./i18n/transloco.loader";
 import { routes } from "./app.routes";
@@ -27,30 +28,38 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withComponentInputBinding()),
     provideAnimationsAsync("animations"),
     provideHttpClient(withInterceptorsFromDi()),
-    provideHttpClient(),
+    HttpBatchLink,
     provideApollo(() => {
-      const httpLink = inject(HttpLink);
+      const httpLink = inject(HttpBatchLink);
       const transloco = inject(TranslocoService);
       const tokenService = inject(AuthTokenService);
 
-      const contextLink = setContext((_, { headers }) => {
+      const middleware = new ApolloLink((operation, forward) => {
+        let headers = new HttpHeaders().set(
+          "Accept-Language",
+          transloco.getActiveLang(),
+        );
+
         const token = tokenService.getToken();
 
-        return {
-          headers: {
-            ...headers,
-            "Accept-Language": transloco.getActiveLang(),
-            ...(token
-              ? {
-                  Authorization: "Bearer " + token,
-                }
-              : {}),
-          },
-        };
+        if (token) {
+          headers = headers.set("Authorization", "Bearer " + token);
+        }
+
+        operation.setContext({
+          headers,
+        });
+        return forward(operation);
       });
 
       return {
-        link: contextLink.concat(httpLink.create({ uri: graphqlEndpoint })),
+        link: middleware.concat(
+          httpLink.create({
+            uri: graphqlEndpoint,
+            batchMax: 10,
+            batchInterval: 50,
+          }),
+        ),
         cache: new InMemoryCache({
           typePolicies: {
             Query: {
