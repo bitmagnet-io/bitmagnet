@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
 import { MatCheckboxChange } from "@angular/material/checkbox";
-import { AppModule } from "../app.module";
 import { BehaviorSubject } from "rxjs";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { AppModule } from "../app.module";
 import * as generated from "../graphql/generated";
 
 export type Permission = {

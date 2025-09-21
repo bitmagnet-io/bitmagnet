@@ -8,8 +8,8 @@ import { HealthModule } from "../health/health.module";
 import { HealthService } from "../health/health.service";
 import { ThemeEmitterComponent } from "../themes/theme-emitter.component";
 import { AppModule } from "../app.module";
-import { BreakpointsService } from "./breakpoints.service";
 import { AuthService } from "../auth/auth.service";
+import { BreakpointsService } from "./breakpoints.service";
 
 @Component({
   selector: "app-layout",

@@ -1,1 +1,1 @@
-export type Action = "start" | "shutdown"|"restart";
+export type Action = "start" | "shutdown" | "restart";

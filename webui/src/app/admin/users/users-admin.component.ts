@@ -1,6 +1,5 @@
-import { Component, inject } from "@angular/core";
+import { Component } from "@angular/core";
 import { AppModule } from "../../app.module";
-import { RolesService } from "../../auth/roles.service";
 import { UsersTableComponent } from "./users-table.component";
 
 @Component({

@@ -1,6 +1,5 @@
 import { inject, Injectable } from "@angular/core";
 import { Apollo } from "apollo-angular";
-import * as generated from "../graphql/generated";
 import {
   catchError,
   from,
@@ -13,10 +12,10 @@ import {
   EMPTY,
   distinctUntilChanged,
 } from "rxjs";
+import { ApolloError } from "@apollo/client/errors";
+import * as generated from "../graphql/generated";
 import { AuthTokenService } from "./auth-token.service";
 import { newEnforcer, ObjectAction as _objectAction } from "./enforcer";
-import { ApolloError } from "@apollo/client/errors";
-import { getErrorAt } from "@jsonforms/core";
 
 const pollInterval = 10000;
 

@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/layout/document-title.component.ts"],
-  "sourcesContent": ["import { Component, inject, Input, OnChanges, OnInit } from \"@angular/core\";\nimport { Title } from \"@angular/platform-browser\";\n\n@Component({\n  selector: \"app-document-title\",\n  standalone: true,\n  template: \"<ng-container></ng-container>\",\n})\nexport class DocumentTitleComponent implements OnInit, OnChanges {\n  private title = inject(Title);\n  @Input() parts: Array<string | null | undefined> = [];\n\n  ngOnInit() {\n    this.updateTitle();\n  }\n\n  ngOnChanges() {\n    this.updateTitle();\n  }\n\n  private updateTitle() {\n    this.title.setTitle(\n      [...this.parts.filter(Boolean), \"bitmagnet\"].join(\" - \"),\n    );\n  }\n}\n"],
-  "mappings": ";;;;;;;;;;;;;AAQM,IAAO,yBAAP,MAAO,wBAAsB;EALnC,cAAA;AAMU,SAAA,QAAQ,OAAO,KAAK;AACnB,SAAA,QAA0C,CAAA;;EAEnD,WAAQ;AACN,SAAK,YAAW;EAClB;EAEA,cAAW;AACT,SAAK,YAAW;EAClB;EAEQ,cAAW;AACjB,SAAK,MAAM,SACT,CAAC,GAAG,KAAK,MAAM,OAAO,OAAO,GAAG,WAAW,EAAE,KAAK,KAAK,CAAC;EAE5D;;;uCAhBW,yBAAsB;IAAA;EAAA;;yEAAtB,yBAAsB,WAAA,CAAA,CAAA,oBAAA,CAAA,GAAA,QAAA,EAAA,OAAA,QAAA,GAAA,YAAA,MAAA,UAAA,CAAA,gCAAA,6BAAA,GAAA,OAAA,GAAA,MAAA,GAAA,UAAA,SAAA,gCAAA,IAAA,KAAA;AAAA,UAAA,KAAA,GAAA;AAFtB,QAAA,6BAAA,CAAA;;;;;;6EAEA,wBAAsB,EAAA,WAAA,0BAAA,UAAA,8CAAA,YAAA,EAAA,CAAA;AAAA,GAAA;",
-  "names": []
-}

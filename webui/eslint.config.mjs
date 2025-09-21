@@ -1,6 +1,7 @@
 import { fixupConfigRules, fixupPluginRules } from "@eslint/compat";
 import typescriptEslintEslintPlugin from "@typescript-eslint/eslint-plugin";
 import _import from "eslint-plugin-import";
+import unusedImports from "eslint-plugin-unused-imports"
 import globals from "globals";
 import tsParser from "@typescript-eslint/parser";
 import path from "node:path";
@@ -22,6 +23,7 @@ export default [
       ".angular/**/*.*",
       "src/app/graphql/generated/**/*.*",
       "**/*.html",
+      "dist/**"
     ],
   },
   ...fixupConfigRules(
@@ -42,6 +44,7 @@ export default [
     plugins: {
       "@typescript-eslint": fixupPluginRules(typescriptEslintEslintPlugin),
       import: fixupPluginRules(_import),
+      "unused-imports": fixupPluginRules(unusedImports),
     },
 
     languageOptions: {
@@ -71,6 +74,16 @@ export default [
       "import/order": "error",
       "no-console": "error",
       "prettier/prettier": "warn",
+              "unused-imports/no-unused-imports": "error",
+        "unused-imports/no-unused-vars": [
+            "warn",
+            {
+                "vars": "all",
+                "varsIgnorePattern": "^_",
+                "args": "after-used",
+                "argsIgnorePattern": "^_",
+            },
+        ]
     },
   },
 ];

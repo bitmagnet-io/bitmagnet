@@ -1,4 +1,4 @@
-import {Component, inject} from "@angular/core";
+import { Component, inject } from "@angular/core";
 import { HealthService } from "./health.service";
 
 @Component({

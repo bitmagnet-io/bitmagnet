@@ -1,4 +1,4 @@
-import { Component, Injectable, Input, inject } from "@angular/core";
+import { Component, Injectable, inject } from "@angular/core";
 import {
   MatSnackBar,
   MatSnackBarRef,
@@ -70,6 +70,6 @@ export class ErrorComponent {
   error: string;
 
   constructor() {
-    this.error = inject(MAT_SNACK_BAR_DATA).error;
+    this.error = (inject(MAT_SNACK_BAR_DATA) as { error: string }).error;
   }
 }

@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/dashboard/queue/queue-enqueue-reprocess-torrents-batch-dialog.component.scss"],
-  "sourcesContent": ["mat-grid-tile mat-card {\n  width: 100%;\n  height: 100%;\n}\n\n.select-content-types {\n  margin-top: 10px;\n}\n"],
-  "mappings": ";AAAA,cAAA;AACE,SAAA;AACA,UAAA;;AAGF,CAAA;AACE,cAAA;;",
-  "names": []
-}

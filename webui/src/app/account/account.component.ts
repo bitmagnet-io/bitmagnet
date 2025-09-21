@@ -1,10 +1,10 @@
 import { Component, inject, OnInit } from "@angular/core";
-import { AppModule } from "../app.module";
-import { AuthService } from "../auth/auth.service";
-import { BreakpointsService } from "../layout/breakpoints.service";
 import { Router } from "@angular/router";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { map } from "rxjs";
+import { AppModule } from "../app.module";
+import { AuthService } from "../auth/auth.service";
+import { BreakpointsService } from "../layout/breakpoints.service";
 
 @Component({
   selector: "app-account",
@@ -126,7 +126,7 @@ export class AccountComponent implements OnInit {
   ngOnInit(): void {
     this.user$.subscribe((user) => {
       if (!user) {
-        this.router.navigate(["/"]);
+        void this.router.navigate(["/"]);
       }
     });
   }

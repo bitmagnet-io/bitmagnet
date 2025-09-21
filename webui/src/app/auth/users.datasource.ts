@@ -1,6 +1,5 @@
 import { inject } from "@angular/core";
 import { Apollo } from "apollo-angular";
-import * as generated from "../graphql/generated";
 import {
   BehaviorSubject,
   distinctUntilChanged,
@@ -11,6 +10,7 @@ import {
 } from "rxjs";
 import { DataSource } from "@angular/cdk/collections";
 import { CollectionViewer } from "@angular/cdk/collections";
+import * as generated from "../graphql/generated";
 
 const defaultLimit = 10;
 
@@ -51,8 +51,8 @@ export class UsersDatasource implements DataSource<generated.User> {
 
   constructor() {
     this.input$.subscribe((input) => {
-      this.query.setVariables({ input });
-      this.query.refetch();
+      void this.query.setVariables({ input });
+      void this.query.refetch();
     });
   }
 

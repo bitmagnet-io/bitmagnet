@@ -1,12 +1,12 @@
-import { Component, inject, OnInit } from "@angular/core";
-import { AppModule } from "../app.module";
+import { Component, inject } from "@angular/core";
 import { FormControl } from "@angular/forms";
-import { AuthService } from "./auth.service";
 import { ActivatedRoute, Router } from "@angular/router";
-import { EMPTY, from, filter, switchMap, map, take } from "rxjs";
-import { ErrorsService } from "../errors/errors.service";
+import { EMPTY, map, take } from "rxjs";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { TranslocoService } from "@jsverse/transloco";
+import { ErrorsService } from "../errors/errors.service";
+import { AppModule } from "../app.module";
+import { AuthService } from "./auth.service";
 
 @Component({
   selector: "app-login",
@@ -93,7 +93,7 @@ export class LoginComponent {
       .login(this.usernameCtrl.value!, this.passwordCtrl.value!)
       .pipe(
         map(() => {
-          this.router.navigate(
+          void this.router.navigate(
             [this.route.snapshot.queryParams["returnUrl"] || "/"],
             { replaceUrl: true },
           );

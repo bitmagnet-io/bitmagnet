@@ -7,17 +7,18 @@ import { MatDialogClose, MatDialogModule } from "@angular/material/dialog";
 import { MatButton, MatIconButton } from "@angular/material/button";
 import {
   MatCard,
-  MatCardContent, MatCardFooter,
+  MatCardContent,
+  MatCardFooter,
   MatCardHeader,
   MatCardTitle,
 } from "@angular/material/card";
 import { MatGridTile } from "@angular/material/grid-list";
 import { MatMenu, MatMenuItem } from "@angular/material/menu";
 import { GraphQLModule } from "../graphql/graphql.module";
-import {WorkersTableComponent} from "./workers-table.component";
-import {WorkersService} from "./workers.service";
-import {WorkersCardComponent} from "./workers-card.component";
-import {WorkersConfirmActionDialogComponent} from "./workers-confirm-action-dialog.component";
+import { WorkersTableComponent } from "./workers-table.component";
+import { WorkersService } from "./workers.service";
+import { WorkersCardComponent } from "./workers-card.component";
+import { WorkersConfirmActionDialogComponent } from "./workers-confirm-action-dialog.component";
 
 @NgModule({
   imports: [

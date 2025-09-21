@@ -1,10 +1,10 @@
 import { Component, inject, Input, OnInit } from "@angular/core";
+import { Apollo } from "apollo-angular";
+import { Observable } from "rxjs";
 import { InvitationsDatasource } from "../../auth/invitations.datasource";
 import { AppModule } from "../../app.module";
 import * as generated from "../../graphql/generated";
 import { TimeAgoPipe } from "../../pipes/time-ago.pipe";
-import { Apollo } from "apollo-angular";
-import { Observable } from "rxjs";
 import { PaginatorComponent } from "../../paginator/paginator.component";
 
 @Component({
@@ -147,8 +147,8 @@ export class InvitationsTableComponent implements OnInit {
     this.update.subscribe(() => this.dataSource.refresh());
   }
 
-  item(item: any): generated.Invitation {
-    return item;
+  item(item: unknown): generated.Invitation {
+    return item as generated.Invitation;
   }
 
   delete(code: string) {

@@ -1,8 +1,8 @@
-import {Component, inject, Input} from "@angular/core";
-import {WorkersService} from "./workers.service";
-import {MatDialog} from "@angular/material/dialog";
-import {Action} from "./types";
-import {WorkersConfirmActionDialogComponent} from "./workers-confirm-action-dialog.component";
+import { Component, inject, Input } from "@angular/core";
+import { MatDialog } from "@angular/material/dialog";
+import { WorkersService } from "./workers.service";
+import { Action } from "./types";
+import { WorkersConfirmActionDialogComponent } from "./workers-confirm-action-dialog.component";
 
 @Component({
   selector: "app-workers-table",
@@ -17,7 +17,7 @@ export class WorkersTableComponent {
   @Input() actions: boolean = false;
 
   confirm(action: Action, worker: string) {
-    const ref = this.dialog.open(WorkersConfirmActionDialogComponent)
+    const ref = this.dialog.open(WorkersConfirmActionDialogComponent);
     ref.componentInstance.action = action;
     ref.componentInstance.worker = worker;
   }

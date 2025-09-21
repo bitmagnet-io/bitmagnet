@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/torrents/torrents.component.ts", "src/app/torrents/torrents.component.html"],
-  "sourcesContent": ["import { Component } from \"@angular/core\";\nimport { RouterOutlet } from \"@angular/router\";\n\n@Component({\n  selector: \"app-torrents\",\n  standalone: true,\n  imports: [RouterOutlet],\n  templateUrl: \"./torrents.component.html\",\n  styleUrl: \"./torrents.component.scss\",\n})\nexport class TorrentsComponent {}\n", "<router-outlet #outlet />\n"],
-  "mappings": ";;;;;;;;;;;AAUM,IAAO,oBAAP,MAAO,mBAAiB;;;uCAAjB,oBAAiB;IAAA;EAAA;;yEAAjB,oBAAiB,WAAA,CAAA,CAAA,cAAA,CAAA,GAAA,YAAA,MAAA,UAAA,CAAA,6BAAA,GAAA,OAAA,GAAA,MAAA,GAAA,QAAA,CAAA,CAAA,UAAA,EAAA,CAAA,GAAA,UAAA,SAAA,2BAAA,IAAA,KAAA;AAAA,UAAA,KAAA,GAAA;ACV9B,QAAA,oBAAA,GAAA,iBAAA,MAAA,CAAA;;sBDMY,YAAY,EAAA,CAAA;EAAA;;;6EAIX,mBAAiB,EAAA,WAAA,qBAAA,UAAA,0CAAA,YAAA,GAAA,CAAA;AAAA,GAAA;",
-  "names": []
-}

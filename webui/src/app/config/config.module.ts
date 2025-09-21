@@ -1,6 +1,6 @@
 import { NgModule } from "@angular/core";
-import { ConfigService } from "./config.service";
 import { PluginsModule } from "../plugins/plugins.module";
+import { ConfigService } from "./config.service";
 
 @NgModule({
   imports: [PluginsModule],

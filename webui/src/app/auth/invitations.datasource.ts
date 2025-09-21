@@ -1,6 +1,5 @@
 import { inject } from "@angular/core";
 import { Apollo } from "apollo-angular";
-import * as generated from "../graphql/generated";
 import {
   BehaviorSubject,
   distinctUntilChanged,
@@ -11,6 +10,7 @@ import {
 } from "rxjs";
 import { DataSource } from "@angular/cdk/collections";
 import { CollectionViewer } from "@angular/cdk/collections";
+import * as generated from "../graphql/generated";
 
 const defaultLimit = 10;
 
@@ -53,8 +53,8 @@ export class InvitationsDatasource implements DataSource<generated.Invitation> {
 
   constructor() {
     this.input$.subscribe((input) => {
-      this.query.setVariables({ input });
-      this.query.refetch();
+      void this.query.setVariables({ input });
+      void this.query.refetch();
     });
   }
 
@@ -70,7 +70,7 @@ export class InvitationsDatasource implements DataSource<generated.Invitation> {
   }
 
   refresh() {
-    this.query.refetch();
+    void this.query.refetch();
   }
 
   get page(): number {

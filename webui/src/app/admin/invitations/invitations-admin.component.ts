@@ -1,9 +1,9 @@
 import { Component, inject } from "@angular/core";
+import { MatDialog } from "@angular/material/dialog";
+import { BehaviorSubject } from "rxjs";
 import { AppModule } from "../../app.module";
 import { InvitationsTableComponent } from "./invitations-table.component";
-import { MatDialog } from "@angular/material/dialog";
 import { InvitationAddComponent } from "./invitation-add-dialog.component";
-import { BehaviorSubject } from "rxjs";
 
 @Component({
   selector: "app-invitations-admin",

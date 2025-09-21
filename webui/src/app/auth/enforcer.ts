@@ -1,5 +1,5 @@
-import * as generated from "../graphql/generated";
 import picomatch from "picomatch";
+import * as generated from "../graphql/generated";
 
 export type ObjectAction = {
   namespace?: string;

@@ -14,12 +14,12 @@ import {
 } from "@angular/material/card";
 import { MatGridTile } from "@angular/material/grid-list";
 import { MatMenu, MatMenuItem } from "@angular/material/menu";
+import { MatDivider } from "@angular/material/divider";
 import { GraphQLModule } from "../graphql/graphql.module";
 import { HealthCardComponent } from "./health-card.component";
 import { HealthSummaryComponent } from "./health-summary.component";
 import { HealthWidgetComponent } from "./health-widget.component";
 import { HealthService } from "./health.service";
-import { MatDivider } from "@angular/material/divider";
 
 @NgModule({
   imports: [

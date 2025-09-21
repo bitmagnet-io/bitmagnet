@@ -1,11 +1,11 @@
 import { Component, inject } from "@angular/core";
-import { AppModule } from "../app.module";
 import { MatDialogRef } from "@angular/material/dialog";
 import { FormControl } from "@angular/forms";
 import { Apollo } from "apollo-angular";
+import { catchError, EMPTY, map, take } from "rxjs";
 import { ErrorsService } from "../errors/errors.service";
 import * as generated from "../graphql/generated";
-import { catchError, EMPTY, map, Observable, take } from "rxjs";
+import { AppModule } from "../app.module";
 import {
   ChangeEvent,
   PermissionsEditComponent,

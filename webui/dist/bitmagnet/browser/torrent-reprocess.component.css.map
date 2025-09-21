@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/torrents/torrent-reprocess.component.scss"],
-  "sourcesContent": [".mat-mdc-card {\n  margin-bottom: 10px;\n}\n\nmat-checkbox {\n  margin-right: 20px;\n}\n"],
-  "mappings": ";AAAA,CAAA;AACE,iBAAA;;AAGF;AACE,gBAAA;;",
-  "names": []
-}

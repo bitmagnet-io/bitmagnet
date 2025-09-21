@@ -1,6 +1,6 @@
 import { Injectable, inject } from "@angular/core";
-import { BrowserStorageService } from "../browser-storage/browser-storage.service";
 import { BehaviorSubject, distinctUntilChanged, Observable } from "rxjs";
+import { BrowserStorageService } from "../browser-storage/browser-storage.service";
 
 const localStorageKey = "bitmagnet-jwt";
 const pollInterval = 10000;

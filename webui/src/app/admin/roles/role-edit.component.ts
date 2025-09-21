@@ -1,32 +1,22 @@
 import {
   Component,
-  ComponentRef,
-  ViewContainerRef,
-  ViewChild,
   inject,
   Input,
   OnInit,
   Output,
   EventEmitter,
 } from "@angular/core";
+import { map, Observable, take } from "rxjs";
 import { AppModule } from "../../app.module";
 import * as generated from "../../graphql/generated";
-import { Enforcer, newEnforcer, ObjectAction } from "../../auth/enforcer";
+import { Enforcer, newEnforcer } from "../../auth/enforcer";
 import { RolesService } from "../../auth/roles.service";
-import { map, Observable, take } from "rxjs";
-import { MatCheckboxChange } from "@angular/material/checkbox";
 import {
   ChangeEvent,
-  Changes,
   Permission,
   PermissionsEditComponent,
 } from "../../auth/permissions-edit.component";
 import { objectActionKey } from "../../auth/util";
-
-type ObjectActionPermission = ObjectAction & {
-  key: string;
-  permission: Permission | { subject: false; core: false };
-};
 
 @Component({
   selector: "app-role-edit",

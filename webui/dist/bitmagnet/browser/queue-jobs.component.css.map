@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/dashboard/queue/queue-jobs.component.scss"],
-  "sourcesContent": [".drawer {\n  width: 220px;\n}\n\n//.button-toggle-drawer {\n//  position: absolute;\n//  left: 5px;\n//  top: 6px;\n//}\n\n.query-form {\n  padding-top: 20px;\n  padding-bottom: 10px;\n  position: relative;\n  clear: both;\n  display: flex;\n  flex-wrap: wrap;\n  .form-field-container {\n    display: inline-flex;\n    flex-direction: column;\n    position: relative;\n    margin-left: 20px;\n    padding-bottom: 20px;\n    button {\n      top: 8px;\n    }\n    &.form-field-container-order-by {\n      padding-right: 40px;\n      button {\n        position: absolute;\n        right: 0;\n      }\n    }\n    &.button-container-toggle-drawer {\n      margin-left: 5px;\n    }\n  }\n  .button-container-toggle-direction {\n    margin-left: 4px;\n  }\n}\n\napp-paginator {\n  float: right;\n  padding-top: 14px;\n  padding-bottom: 20px;\n}\n"],
-  "mappings": ";AAAA,CAAA;AACE,SAAA;;AASF,CAAA;AACE,eAAA;AACA,kBAAA;AACA,YAAA;AACA,SAAA;AACA,WAAA;AACA,aAAA;;AACA,CAPF,WAOE,CAAA;AACE,WAAA;AACA,kBAAA;AACA,YAAA;AACA,eAAA;AACA,kBAAA;;AACA,CAbJ,WAaI,CANF,qBAME;AACE,OAAA;;AAEF,CAhBJ,WAgBI,CATF,oBASE,CAAA;AACE,iBAAA;;AACA,CAlBN,WAkBM,CAXJ,oBAWI,CAFF,8BAEE;AACE,YAAA;AACA,SAAA;;AAGJ,CAvBJ,WAuBI,CAhBF,oBAgBE,CAAA;AACE,eAAA;;AAGJ,CA3BF,WA2BE,CAAA;AACE,eAAA;;AAIJ;AACE,SAAA;AACA,eAAA;AACA,kBAAA;;",
-  "names": []
-}

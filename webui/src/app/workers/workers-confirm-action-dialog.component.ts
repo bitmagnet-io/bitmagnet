@@ -1,6 +1,6 @@
 import { Component, inject, Input, OnInit } from "@angular/core";
-import { WorkersService } from "./workers.service";
 import { MatDialogRef } from "@angular/material/dialog";
+import { WorkersService } from "./workers.service";
 import { Action } from "./types";
 
 @Component({

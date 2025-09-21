@@ -1,8 +1,4 @@
 import { Component } from "@angular/core";
-import { UsersDatasource } from "../../auth/users.datasource";
-import { AppModule } from "../../app.module";
-import * as generated from "../../graphql/generated";
-import { TimeAgoPipe } from "../../pipes/time-ago.pipe";
 import { BehaviorSubject } from "rxjs";
 import {
   animate,
@@ -11,6 +7,10 @@ import {
   transition,
   trigger,
 } from "@angular/animations";
+import { UsersDatasource } from "../../auth/users.datasource";
+import { AppModule } from "../../app.module";
+import * as generated from "../../graphql/generated";
+import { TimeAgoPipe } from "../../pipes/time-ago.pipe";
 import { PaginatorComponent } from "../../paginator/paginator.component";
 
 @Component({
@@ -194,8 +194,8 @@ export class UsersTableComponent {
 
   expandedId = new BehaviorSubject<number | null>(null);
 
-  item(item: any): generated.User {
-    return item;
+  item(item: unknown): generated.User {
+    return item as generated.User;
   }
 
   toggleUser(id: number) {

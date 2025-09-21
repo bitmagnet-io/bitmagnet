@@ -1,11 +1,11 @@
 import { Component, inject } from "@angular/core";
+import { map } from "rxjs";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { HealthModule } from "../health/health.module";
 import { AppModule } from "../app.module";
 import { DocumentTitleComponent } from "../layout/document-title.component";
 import { BreakpointsService } from "../layout/breakpoints.service";
-import { map } from "rxjs";
 import { AuthService } from "../auth/auth.service";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
 @Component({
   selector: "app-account-home",

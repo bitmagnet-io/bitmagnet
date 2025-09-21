@@ -11,7 +11,6 @@ import {
   provideHttpClient,
   withInterceptorsFromDi,
 } from "@angular/common/http";
-import { setContext } from "@apollo/client/link/context";
 import { provideTransloco, TranslocoService } from "@jsverse/transloco";
 import { provideCharts, withDefaultRegisterables } from "ng2-charts";
 import { provideApollo } from "apollo-angular";

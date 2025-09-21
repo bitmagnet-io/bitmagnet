@@ -1,11 +1,11 @@
 import { Component, inject } from "@angular/core";
-import { AppModule } from "../app.module";
 import { MatDialog } from "@angular/material/dialog";
 import { Apollo } from "apollo-angular";
+import { map, Observable } from "rxjs";
+import { AppModule } from "../app.module";
 import * as generated from "../graphql/generated";
 import { TimeAgoPipe } from "../pipes/time-ago.pipe";
 import { APIKeyAddComponent } from "./api-key-add.component";
-import { map, Observable } from "rxjs";
 
 @Component({
   template: `

@@ -1,11 +1,11 @@
 import { Component, inject } from "@angular/core";
+import { MatDialog } from "@angular/material/dialog";
+import { Observable } from "rxjs";
 import { AppModule } from "../../app.module";
 import { RolesService } from "../../auth/roles.service";
-import { RoleEditComponent } from "./role-edit.component";
-import { MatDialog } from "@angular/material/dialog";
-import { RoleAddComponent } from "./role-add.component";
-import { Observable } from "rxjs";
 import * as generated from "../../graphql/generated";
+import { RoleEditComponent } from "./role-edit.component";
+import { RoleAddComponent } from "./role-add.component";
 
 @Component({
   selector: "app-roles-admin",

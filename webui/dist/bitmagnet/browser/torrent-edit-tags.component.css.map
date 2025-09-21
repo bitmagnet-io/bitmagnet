@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/torrents/torrent-edit-tags.component.scss"],
-  "sourcesContent": [".form-edit-tags {\n  ::ng-deep .mat-mdc-form-field-subscript-wrapper {\n    display: none;\n  }\n}\n"],
-  "mappings": ";AACE,CAAA,eAAA,UAAA,CAAA;AACE,WAAA;;",
-  "names": []
-}

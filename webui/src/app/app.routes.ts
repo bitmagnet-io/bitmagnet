@@ -4,12 +4,12 @@ import {
   CanActivateFn,
   RouterStateSnapshot,
 } from "@angular/router";
-import { AuthService, ObjectAction } from "./auth/auth.service";
 import { inject } from "@angular/core";
 import { map } from "rxjs";
+import { AuthService, ObjectAction } from "./auth/auth.service";
 
 const navigateToLogin = (router: Router, state: RouterStateSnapshot) => {
-  router.navigate(["/login"], {
+  void router.navigate(["/login"], {
     queryParams: { returnUrl: state.url },
   });
 };
@@ -89,7 +89,7 @@ export const routes: Routes = [
   {
     path: "login",
     canActivate: [
-      requireUserGuard(false, (router) => router.navigate(["/account"])),
+      requireUserGuard(false, (router) => void router.navigate(["/account"])),
     ],
     loadComponent: () =>
       import("./auth/login.component").then((c) => c.LoginComponent),
@@ -97,7 +97,7 @@ export const routes: Routes = [
   {
     path: "register",
     canActivate: [
-      requireUserGuard(false, (router) => router.navigate(["/account"])),
+      requireUserGuard(false, (router) => void router.navigate(["/account"])),
     ],
     loadComponent: () =>
       import("./auth/register.component").then((c) => c.RegisterComponent),

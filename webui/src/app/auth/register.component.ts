@@ -1,14 +1,14 @@
 import { Component, inject } from "@angular/core";
-import { AppModule } from "../app.module";
-import { FormControl, FormGroupDirective, NgForm } from "@angular/forms";
-import { AuthService } from "./auth.service";
+import { FormControl } from "@angular/forms";
 import { Router } from "@angular/router";
-import { EMPTY, map, switchMap, take, Observable, debounceTime } from "rxjs";
-import { ErrorsService } from "../errors/errors.service";
+import { switchMap, take, Observable, debounceTime } from "rxjs";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { TranslocoService } from "@jsverse/transloco";
 import { ErrorStateMatcher } from "@angular/material/core";
+import { ErrorsService } from "../errors/errors.service";
+import { AppModule } from "../app.module";
 import * as generated from "../graphql/generated";
+import { AuthService } from "./auth.service";
 
 @Component({
   selector: "app-register",
@@ -163,14 +163,10 @@ export class RegisterComponent {
         password: this.passwordCtrl.value!,
         email: this.emailCtrl.value,
       })
-      .pipe(
-        map(() => {
-          this.router.navigate(["/login"]);
-          return EMPTY;
-        }),
-        take(1),
-      )
-      .subscribe();
+      .pipe(take(1))
+      .subscribe(() => {
+        void this.router.navigate(["/login"]);
+      });
   }
 }
 
@@ -183,22 +179,16 @@ class PasswordEntropyMatcher implements ErrorStateMatcher {
     });
   }
 
-  isErrorState(
-    control: FormControl | null,
-    form: FormGroupDirective | NgForm | null,
-  ): boolean {
-    return control?.value && !(this.result?.valid ?? true);
+  isErrorState(control: FormControl | null): boolean {
+    return !!(control?.value && !(this.result?.valid ?? true));
   }
 }
 
 class ConfirmPasswordMatcher implements ErrorStateMatcher {
   constructor(private passwordControl: FormControl) {}
 
-  isErrorState(
-    control: FormControl | null,
-    form: FormGroupDirective | NgForm | null,
-  ): boolean {
-    return (
+  isErrorState(control: FormControl | null): boolean {
+    return !!(
       control?.value &&
       (control?.value || this.passwordControl.value) &&
       control?.value !== this.passwordControl.value

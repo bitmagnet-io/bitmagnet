@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/dashboard/config/dashboard-config.component.scss"],
-  "sourcesContent": [".grid-container {\n  margin: 20px;\n}\n\n.more-button {\n  position: absolute;\n  top: 5px;\n  right: 10px;\n}\n\napp-health-card {\n  width: 100%;\n  height: 100%;\n  mat-card {\n    height: 100%;\n  }\n}\n\nmat-grid-tile mat-card {\n  width: 100%;\n}\n\nmat-toolbar h2 mat-icon {\n  position: relative;\n  top: 3px;\n  margin-right: 14px;\n  margin-left: 32px;\n}\n"],
-  "mappings": ";AAAA,CAAA;AACE,UAAA;;AAGF,CAAA;AACE,YAAA;AACA,OAAA;AACA,SAAA;;AAGF;AACE,SAAA;AACA,UAAA;;AACA,gBAAA;AACE,UAAA;;AAIJ,cAAA;AACE,SAAA;;AAGF,YAAA,GAAA;AACE,YAAA;AACA,OAAA;AACA,gBAAA;AACA,eAAA;;",
-  "names": []
-}

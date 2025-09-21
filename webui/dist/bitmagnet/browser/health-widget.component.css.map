@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/health/health-widget.component.scss"],
-  "sourcesContent": ["mat-card-header {\n  margin-bottom: 16px;\n}\n\nmat-card + mat-card {\n  margin-top: 16px;\n}\n"],
-  "mappings": ";AAAA;AACE,iBAAA;;AAGF,SAAA,EAAA;AACE,cAAA;;",
-  "names": []
-}

@@ -1,11 +1,11 @@
 import { Component, inject } from "@angular/core";
-import { AppModule } from "../../app.module";
-import { DocumentTitleComponent } from "../../layout/document-title.component";
 import { JsonFormsAngularMaterialModule } from "@jsonforms/angular-material";
-import { ConfigFormComponent } from "./config-form.component";
 import { map } from "rxjs";
+import { DocumentTitleComponent } from "../../layout/document-title.component";
+import { AppModule } from "../../app.module";
 import { ConfigService } from "../../config/config.service";
 import { ConfigModule } from "../../config/config.module";
+import { ConfigFormComponent } from "./config-form.component";
 
 @Component({
   selector: "app-config-admin",

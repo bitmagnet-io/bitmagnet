@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/not-found/not-found.component.scss"],
-  "sourcesContent": [".card-not-found {\n  max-width: 960px;\n  margin: 20px auto;\n  h2 {\n    margin-top: 10px;\n  }\n}\n"],
-  "mappings": ";AAAA,CAAA;AACE,aAAA;AACA,UAAA,KAAA;;AACA,CAHF,eAGE;AACE,cAAA;;",
-  "names": []
-}

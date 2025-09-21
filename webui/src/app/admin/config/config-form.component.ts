@@ -1,12 +1,12 @@
 import { Component, Input, inject, OnInit, OnDestroy } from "@angular/core";
-import { AppModule } from "../../app.module";
 import {
   angularMaterialRenderers,
   JsonFormsAngularMaterialModule,
 } from "@jsonforms/angular-material";
 import { Subscription } from "rxjs";
-import { ConfigParam } from "../../graphql/generated";
 import { JsonSchema, UISchemaElement } from "@jsonforms/core";
+import { ConfigParam } from "../../graphql/generated";
+import { AppModule } from "../../app.module";
 import { ConfigService } from "../../config/config.service";
 import * as generated from "../../graphql/generated";
 
@@ -110,8 +110,8 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   jsonSchema: JsonSchema;
   uischema: UISchemaElement;
 
-  serverData: any;
-  data: any;
+  serverData: unknown;
+  data: unknown;
   changed: boolean;
   persisted: boolean;
   hasError: boolean = false;
@@ -149,7 +149,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  setData(value: any) {
+  setData(value: unknown) {
     this.data = value;
     this.changed = this.data !== this.param.value;
   }
@@ -167,7 +167,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     this.configService.delete(this.ref);
   }
 
-  setErrors(errors: any[]) {
+  setErrors(errors: unknown[]) {
     this.hasError = errors.length > 0;
   }
 
@@ -178,7 +178,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
       case "number":
       case "integer":
       case "boolean":
-        label = `${this.param.default}`;
+        label = `${this.param.default as string}`;
     }
 
     if (!label) {

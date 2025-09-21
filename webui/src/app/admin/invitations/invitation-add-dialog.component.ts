@@ -1,12 +1,12 @@
 import { Component, inject } from "@angular/core";
-import { AppModule } from "../../app.module";
 import { MatDialogRef } from "@angular/material/dialog";
-import { RolesService } from "../../auth/roles.service";
 import { FormControl } from "@angular/forms";
 import { Apollo } from "apollo-angular";
+import { catchError, EMPTY, take } from "rxjs";
+import { AppModule } from "../../app.module";
+import { RolesService } from "../../auth/roles.service";
 import { ErrorsService } from "../../errors/errors.service";
 import * as generated from "../../graphql/generated";
-import { catchError, EMPTY, take } from "rxjs";
 
 @Component({
   template: `

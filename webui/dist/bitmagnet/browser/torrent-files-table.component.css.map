@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/torrents/torrent-files-table.component.scss"],
-  "sourcesContent": ["span.filesize {\n  text-decoration: underline;\n  text-decoration-style: dotted;\n}\n"],
-  "mappings": ";AAAA,IAAA,CAAA;AACE,mBAAA;AACA,yBAAA;;",
-  "names": []
-}
