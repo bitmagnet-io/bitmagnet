@@ -2,6 +2,8 @@ package classifier
 
 import (
 	"errors"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
 )
 
 func conditions(defs ...conditionDefinition) feature {
@@ -15,22 +17,22 @@ type conditionCompiler interface {
 }
 
 type conditionDefinition interface {
-	HasJSONSchema
+	json_spec.HasJSONSchema
 	name() string
 	conditionCompiler
 }
 
-func (c compilerContext) compileCondition(ctx compilerContext) (condition, error) {
+func compileCondition(ctx compilerContext) (condition, error) {
 	//nolint:prealloc
 	var errs []error
 
-	for _, def := range c.conditions {
-		c, err := def.compileCondition(ctx.child(def.name(), ctx.source))
+	for _, def := range ctx.conditions {
+		c, err := def.compileCondition(ctx.child(def.name(), ctx.Source))
 		if err == nil {
 			return c, nil
 		}
 
-		if asFatalCompilerError(err) != nil {
+		if json_spec.AsFatalCompilerError(err) != nil {
 			return condition{}, err
 		}
 

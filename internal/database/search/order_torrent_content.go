@@ -2,20 +2,14 @@ package search
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
-	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 	"gorm.io/gorm/clause"
 )
 
-// TorrentContentOrderBy represents sort orders for torrent content search results
-// ENUM(relevance, published_at, updated_at, size, files_count, seeders, leechers, name, info_hash)
-type TorrentContentOrderBy string
-
-func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderByColumn {
-	desc := direction == OrderDirectionDescending
-
+func TorrentContentOrderByClauses(ob adapter.TorrentContentOrderBy, desc bool) []query.OrderByColumn {
 	switch ob {
-	case TorrentContentOrderByRelevance:
+	case adapter.TorrentContentOrderByRelevance:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
@@ -24,7 +18,7 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderB
 				Desc: desc,
 			},
 		}}
-	case TorrentContentOrderByPublishedAt:
+	case adapter.TorrentContentOrderByPublishedAt:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
@@ -42,7 +36,7 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderB
 				Desc: desc,
 			},
 		}}
-	case TorrentContentOrderByUpdatedAt:
+	case adapter.TorrentContentOrderByUpdatedAt:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
@@ -60,7 +54,7 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderB
 				Desc: desc,
 			},
 		}}
-	case TorrentContentOrderBySize:
+	case adapter.TorrentContentOrderBySize:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
@@ -78,7 +72,7 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderB
 				Desc: desc,
 			},
 		}}
-	case TorrentContentOrderByFilesCount:
+	case adapter.TorrentContentOrderByFilesCount:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
@@ -96,7 +90,7 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderB
 				Desc: desc,
 			},
 		}}
-	case TorrentContentOrderBySeeders:
+	case adapter.TorrentContentOrderBySeeders:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
@@ -114,7 +108,7 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderB
 				Desc: desc,
 			},
 		}}
-	case TorrentContentOrderByLeechers:
+	case adapter.TorrentContentOrderByLeechers:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
@@ -132,7 +126,7 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderB
 				Desc: desc,
 			},
 		}}
-	case TorrentContentOrderByName:
+	case adapter.TorrentContentOrderByName:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
@@ -143,7 +137,7 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderB
 			},
 			RequiredJoins: []string{model.TableNameTorrent},
 		}}
-	case TorrentContentOrderByInfoHash:
+	case adapter.TorrentContentOrderByInfoHash:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
@@ -156,21 +150,4 @@ func (ob TorrentContentOrderBy) Clauses(direction OrderDirection) []query.OrderB
 	default:
 		return []query.OrderByColumn{}
 	}
-}
-
-type TorrentContentFullOrderBy maps.InsertMap[TorrentContentOrderBy, OrderDirection]
-
-func (fob TorrentContentFullOrderBy) Clauses() []query.OrderByColumn {
-	im := maps.InsertMap[TorrentContentOrderBy, OrderDirection](fob)
-	clauses := make([]query.OrderByColumn, 0, im.Len())
-
-	for _, ob := range im.Entries() {
-		clauses = append(clauses, ob.Key.Clauses(ob.Value)...)
-	}
-
-	return clauses
-}
-
-func (fob TorrentContentFullOrderBy) Option() query.Option {
-	return query.OrderBy(fob.Clauses()...)
 }

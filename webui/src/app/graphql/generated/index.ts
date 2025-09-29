@@ -218,19 +218,6 @@ export type ContentType =
   | 'tv_show'
   | 'xxx';
 
-export type ContentTypeAgg = {
-  __typename?: 'ContentTypeAgg';
-  count: Scalars['Int']['output'];
-  isEstimate: Scalars['Boolean']['output'];
-  label: Scalars['String']['output'];
-  value?: Maybe<ContentType>;
-};
-
-export type ContentTypeFacetInput = {
-  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
-  filter?: InputMaybe<Array<InputMaybe<ContentType>>>;
-};
-
 export type CreateApiKeyInput = {
   expiry?: InputMaybe<Scalars['Duration']['input']>;
   name: Scalars['String']['input'];
@@ -257,9 +244,46 @@ export type ExternalLink = {
   url: Scalars['String']['output'];
 };
 
+export type FacetInput = {
+  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
+  filter?: InputMaybe<Array<Scalars['String']['input']>>;
+  key: FacetKey;
+  logic?: InputMaybe<FacetLogic>;
+};
+
+export type FacetKey =
+  | 'content_genre'
+  | 'content_type'
+  | 'file_type'
+  | 'language'
+  | 'release_year'
+  | 'tag'
+  | 'torrent_source'
+  | 'video_3d'
+  | 'video_codec'
+  | 'video_modifier'
+  | 'video_resolution'
+  | 'video_source';
+
 export type FacetLogic =
   | 'and'
   | 'or';
+
+export type FacetResult = {
+  __typename?: 'FacetResult';
+  items: Array<FacetResultItem>;
+  key: FacetKey;
+  label: Scalars['String']['output'];
+  logic: FacetLogic;
+};
+
+export type FacetResultItem = {
+  __typename?: 'FacetResultItem';
+  count: Scalars['Int']['output'];
+  isEstimate: Scalars['Boolean']['output'];
+  label: Scalars['String']['output'];
+  value: Scalars['String']['output'];
+};
 
 export type FileType =
   | 'archive'
@@ -276,20 +300,6 @@ export type FilesStatus =
   | 'no_info'
   | 'over_threshold'
   | 'single';
-
-export type GenreAgg = {
-  __typename?: 'GenreAgg';
-  count: Scalars['Int']['output'];
-  isEstimate: Scalars['Boolean']['output'];
-  label: Scalars['String']['output'];
-  value: Scalars['String']['output'];
-};
-
-export type GenreFacetInput = {
-  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
-  filter?: InputMaybe<Array<Scalars['String']['input']>>;
-  logic?: InputMaybe<FacetLogic>;
-};
 
 export type HealthCheck = {
   __typename?: 'HealthCheck';
@@ -343,8 +353,8 @@ export type JsonSchema = {
   minimum?: Maybe<Scalars['Float']['output']>;
   multipleOf?: Maybe<Scalars['Float']['output']>;
   pattern?: Maybe<Scalars['String']['output']>;
-  required?: Maybe<Scalars['Boolean']['output']>;
-  type: JsonSchemaType;
+  required?: Maybe<Scalars['JSON']['output']>;
+  type?: Maybe<JsonSchemaType>;
   uniqueItems?: Maybe<Scalars['Boolean']['output']>;
 };
 
@@ -419,19 +429,6 @@ export type Language =
   | 'zh'
   | 'zu';
 
-export type LanguageAgg = {
-  __typename?: 'LanguageAgg';
-  count: Scalars['Int']['output'];
-  isEstimate: Scalars['Boolean']['output'];
-  label: Scalars['String']['output'];
-  value: Language;
-};
-
-export type LanguageFacetInput = {
-  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
-  filter?: InputMaybe<Array<Language>>;
-};
-
 export type LanguageInfo = {
   __typename?: 'LanguageInfo';
   id: Scalars['String']['output'];
@@ -485,6 +482,11 @@ export type Mutation = {
   self: SelfMutation;
   torrent: TorrentMutation;
   worker: WorkerMutation;
+};
+
+export type OrderByInput = {
+  descending?: InputMaybe<Scalars['Boolean']['input']>;
+  key: Scalars['String']['input'];
 };
 
 export type PaginationInput = {
@@ -704,24 +706,33 @@ export type RegisterResult = {
   user: User;
 };
 
-export type ReleaseYearAgg = {
-  __typename?: 'ReleaseYearAgg';
-  count: Scalars['Int']['output'];
-  isEstimate: Scalars['Boolean']['output'];
-  label: Scalars['String']['output'];
-  value?: Maybe<Scalars['Year']['output']>;
-};
-
-export type ReleaseYearFacetInput = {
-  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
-  filter?: InputMaybe<Array<InputMaybe<Scalars['Year']['input']>>>;
-};
-
 export type Role = {
   __typename?: 'Role';
   core: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   permissions: Array<Permission>;
+};
+
+export type SearchInput = {
+  aggregationBudget?: InputMaybe<Scalars['Float']['input']>;
+  cached?: InputMaybe<Scalars['Boolean']['input']>;
+  criteria?: InputMaybe<Scalars['JSON']['input']>;
+  facets?: InputMaybe<Array<FacetInput>>;
+  /** hasNextPage if true, the search result will include the hasNextPage field, indicating if there are more results to fetch */
+  hasNextPage?: InputMaybe<Scalars['Boolean']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Array<OrderByInput>>;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  queryString?: InputMaybe<Scalars['String']['input']>;
+  totalCount?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+export type SearchResult = {
+  /** hasNextPage is true if there are more results to fetch */
+  hasNextPage?: Maybe<Scalars['Boolean']['output']>;
+  totalCount?: Maybe<Scalars['Int']['output']>;
+  totalCountIsEstimate: Scalars['Boolean']['output'];
 };
 
 export type Season = {
@@ -836,31 +847,6 @@ export type TorrentContent = {
   videoSource?: Maybe<VideoSource>;
 };
 
-export type TorrentContentAggregations = {
-  __typename?: 'TorrentContentAggregations';
-  contentType?: Maybe<Array<ContentTypeAgg>>;
-  genre?: Maybe<Array<GenreAgg>>;
-  language?: Maybe<Array<LanguageAgg>>;
-  releaseYear?: Maybe<Array<ReleaseYearAgg>>;
-  torrentFileType?: Maybe<Array<TorrentFileTypeAgg>>;
-  torrentSource?: Maybe<Array<TorrentSourceAgg>>;
-  torrentTag?: Maybe<Array<TorrentTagAgg>>;
-  videoResolution?: Maybe<Array<VideoResolutionAgg>>;
-  videoSource?: Maybe<Array<VideoSourceAgg>>;
-};
-
-export type TorrentContentFacetsInput = {
-  contentType?: InputMaybe<ContentTypeFacetInput>;
-  genre?: InputMaybe<GenreFacetInput>;
-  language?: InputMaybe<LanguageFacetInput>;
-  releaseYear?: InputMaybe<ReleaseYearFacetInput>;
-  torrentFileType?: InputMaybe<TorrentFileTypeFacetInput>;
-  torrentSource?: InputMaybe<TorrentSourceFacetInput>;
-  torrentTag?: InputMaybe<TorrentTagFacetInput>;
-  videoResolution?: InputMaybe<VideoResolutionFacetInput>;
-  videoSource?: InputMaybe<VideoSourceFacetInput>;
-};
-
 export type TorrentContentOrderByField =
   | 'files_count'
   | 'info_hash'
@@ -877,28 +863,13 @@ export type TorrentContentOrderByInput = {
   field: TorrentContentOrderByField;
 };
 
-export type TorrentContentSearchQueryInput = {
-  aggregationBudget?: InputMaybe<Scalars['Float']['input']>;
-  cached?: InputMaybe<Scalars['Boolean']['input']>;
-  facets?: InputMaybe<TorrentContentFacetsInput>;
-  /** hasNextPage if true, the search result will include the hasNextPage field, indicating if there are more results to fetch */
-  hasNextPage?: InputMaybe<Scalars['Boolean']['input']>;
-  infoHashes?: InputMaybe<Array<Scalars['Hash20']['input']>>;
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Array<TorrentContentOrderByInput>>;
-  page?: InputMaybe<Scalars['Int']['input']>;
-  queryString?: InputMaybe<Scalars['String']['input']>;
-  totalCount?: InputMaybe<Scalars['Boolean']['input']>;
-};
-
-export type TorrentContentSearchResult = {
+export type TorrentContentSearchResult = SearchResult & {
   __typename?: 'TorrentContentSearchResult';
-  aggregations: TorrentContentAggregations;
+  facets: Array<FacetResult>;
   /** hasNextPage is true if there are more results to fetch */
   hasNextPage?: Maybe<Scalars['Boolean']['output']>;
   items: Array<TorrentContent>;
-  totalCount: Scalars['Int']['output'];
+  totalCount?: Maybe<Scalars['Int']['output']>;
   totalCountIsEstimate: Scalars['Boolean']['output'];
 };
 
@@ -914,20 +885,6 @@ export type TorrentFile = {
   updatedAt: Scalars['DateTime']['output'];
 };
 
-export type TorrentFileTypeAgg = {
-  __typename?: 'TorrentFileTypeAgg';
-  count: Scalars['Int']['output'];
-  isEstimate: Scalars['Boolean']['output'];
-  label: Scalars['String']['output'];
-  value: FileType;
-};
-
-export type TorrentFileTypeFacetInput = {
-  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
-  filter?: InputMaybe<Array<FileType>>;
-  logic?: InputMaybe<FacetLogic>;
-};
-
 export type TorrentFilesOrderByField =
   | 'extension'
   | 'index'
@@ -939,22 +896,13 @@ export type TorrentFilesOrderByInput = {
   field: TorrentFilesOrderByField;
 };
 
-export type TorrentFilesQueryInput = {
-  cached?: InputMaybe<Scalars['Boolean']['input']>;
-  hasNextPage?: InputMaybe<Scalars['Boolean']['input']>;
-  infoHashes?: InputMaybe<Array<Scalars['Hash20']['input']>>;
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Array<TorrentFilesOrderByInput>>;
-  page?: InputMaybe<Scalars['Int']['input']>;
-  totalCount?: InputMaybe<Scalars['Boolean']['input']>;
-};
-
-export type TorrentFilesQueryResult = {
-  __typename?: 'TorrentFilesQueryResult';
+export type TorrentFilesSearchResult = SearchResult & {
+  __typename?: 'TorrentFilesSearchResult';
+  facets: Array<FacetResult>;
   hasNextPage?: Maybe<Scalars['Boolean']['output']>;
   items: Array<TorrentFile>;
-  totalCount: Scalars['Int']['output'];
+  totalCount?: Maybe<Scalars['Int']['output']>;
+  totalCountIsEstimate: Scalars['Boolean']['output'];
 };
 
 export type TorrentListSourcesResult = {
@@ -1021,16 +969,11 @@ export type TorrentMutationSetTagsArgs = {
 
 export type TorrentQuery = {
   __typename?: 'TorrentQuery';
-  files: TorrentFilesQueryResult;
   listSources: TorrentListSourcesResult;
   metrics: TorrentMetricsQueryResult;
   searchTorrentContent: TorrentContentSearchResult;
+  searchTorrentFiles: TorrentFilesSearchResult;
   suggestTags: TorrentSuggestTagsResult;
-};
-
-
-export type TorrentQueryFilesArgs = {
-  input: TorrentFilesQueryInput;
 };
 
 
@@ -1040,7 +983,12 @@ export type TorrentQueryMetricsArgs = {
 
 
 export type TorrentQuerySearchTorrentContentArgs = {
-  input: TorrentContentSearchQueryInput;
+  input: SearchInput;
+};
+
+
+export type TorrentQuerySearchTorrentFilesArgs = {
+  input: SearchInput;
 };
 
 
@@ -1062,20 +1010,6 @@ export type TorrentSource = {
   name: Scalars['String']['output'];
 };
 
-export type TorrentSourceAgg = {
-  __typename?: 'TorrentSourceAgg';
-  count: Scalars['Int']['output'];
-  isEstimate: Scalars['Boolean']['output'];
-  label: Scalars['String']['output'];
-  value: Scalars['String']['output'];
-};
-
-export type TorrentSourceFacetInput = {
-  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
-  filter?: InputMaybe<Array<Scalars['String']['input']>>;
-  logic?: InputMaybe<FacetLogic>;
-};
-
 export type TorrentSourceInfo = {
   __typename?: 'TorrentSourceInfo';
   importId?: Maybe<Scalars['String']['output']>;
@@ -1088,20 +1022,6 @@ export type TorrentSourceInfo = {
 export type TorrentSuggestTagsResult = {
   __typename?: 'TorrentSuggestTagsResult';
   suggestions: Array<SuggestedTag>;
-};
-
-export type TorrentTagAgg = {
-  __typename?: 'TorrentTagAgg';
-  count: Scalars['Int']['output'];
-  isEstimate: Scalars['Boolean']['output'];
-  label: Scalars['String']['output'];
-  value: Scalars['String']['output'];
-};
-
-export type TorrentTagFacetInput = {
-  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
-  filter?: InputMaybe<Array<Scalars['String']['input']>>;
-  logic?: InputMaybe<FacetLogic>;
 };
 
 export type User = {
@@ -1147,19 +1067,6 @@ export type VideoResolution =
   | 'V2160p'
   | 'V4320p';
 
-export type VideoResolutionAgg = {
-  __typename?: 'VideoResolutionAgg';
-  count: Scalars['Int']['output'];
-  isEstimate: Scalars['Boolean']['output'];
-  label: Scalars['String']['output'];
-  value?: Maybe<VideoResolution>;
-};
-
-export type VideoResolutionFacetInput = {
-  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
-  filter?: InputMaybe<Array<InputMaybe<VideoResolution>>>;
-};
-
 export type VideoSource =
   | 'BluRay'
   | 'CAM'
@@ -1170,19 +1077,6 @@ export type VideoSource =
   | 'WEBDL'
   | 'WEBRip'
   | 'WORKPRINT';
-
-export type VideoSourceAgg = {
-  __typename?: 'VideoSourceAgg';
-  count: Scalars['Int']['output'];
-  isEstimate: Scalars['Boolean']['output'];
-  label: Scalars['String']['output'];
-  value?: Maybe<VideoSource>;
-};
-
-export type VideoSourceFacetInput = {
-  aggregate?: InputMaybe<Scalars['Boolean']['input']>;
-  filter?: InputMaybe<Array<InputMaybe<VideoSource>>>;
-};
 
 export type Worker = {
   __typename?: 'Worker';
@@ -1236,15 +1130,19 @@ export type ApiKeyFragment = { __typename?: 'APIKey', id: number, userId: number
 
 export type AuthObjectActionFragment = { __typename?: 'AuthObjectAction', namespace: string, object: string, action: string };
 
-export type ConfigParamFragment = { __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null } };
+export type ConfigParamFragment = { __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null } };
 
 export type ContentFragment = { __typename?: 'Content', type: ContentType, source: string, id: string, title: string, releaseDate?: string | null, releaseYear?: number | null, overview?: string | null, runtime?: number | null, voteAverage?: number | null, voteCount?: number | null, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string }, originalLanguage?: { __typename?: 'LanguageInfo', id: string, name: string } | null, attributes: Array<{ __typename?: 'ContentAttribute', source: string, key: string, value: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, collections: Array<{ __typename?: 'ContentCollection', type: string, source: string, id: string, name: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, externalLinks: Array<{ __typename?: 'ExternalLink', url: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }> };
 
+export type FacetResultItemFragment = { __typename?: 'FacetResultItem', value: string, label: string, count: number, isEstimate: boolean };
+
+export type FacetResultFragment = { __typename?: 'FacetResult', key: FacetKey, label: string, logic: FacetLogic, items: Array<{ __typename?: 'FacetResultItem', value: string, label: string, count: number, isEstimate: boolean }> };
+
 export type InvitationFragment = { __typename?: 'Invitation', code: string, role: string, email?: string | null, expiresAt?: string | null, createdAt: string, createdBy?: { __typename?: 'User', id: number, username: string, role: string, lastLoginAt?: string | null, createdAt: string, updatedAt: string } | null, claimedBy?: { __typename?: 'User', id: number, username: string, role: string, lastLoginAt?: string | null, createdAt: string, updatedAt: string } | null };
 
-export type JsonSchemaTopLevelFragment = { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null };
+export type JsonSchemaTopLevelFragment = { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null };
 
-export type JsonSchemaFragment = { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null };
+export type JsonSchemaFragment = { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null };
 
 export type PasswordEntropyResultFragment = { __typename?: 'PasswordEntropyResult', entropy: number, minEntropy: number, valid: boolean };
 
@@ -1264,11 +1162,11 @@ export type TorrentFragment = { __typename?: 'Torrent', infoHash: string, name: 
 
 export type TorrentContentFragment = { __typename?: 'TorrentContent', id: string, infoHash: string, contentType?: ContentType | null, title: string, video3d?: Video3D | null, videoCodec?: VideoCodec | null, videoModifier?: VideoModifier | null, videoResolution?: VideoResolution | null, videoSource?: VideoSource | null, seeders?: number | null, leechers?: number | null, publishedAt: string, createdAt: string, updatedAt: string, torrent: { __typename?: 'Torrent', infoHash: string, name: string, size: number, filesStatus: FilesStatus, filesCount?: number | null, hasFilesInfo: boolean, singleFile?: boolean | null, fileType?: FileType | null, seeders?: number | null, leechers?: number | null, tagNames: Array<string>, magnetUri: string, createdAt: string, updatedAt: string, sources: Array<{ __typename?: 'TorrentSourceInfo', key: string, name: string }> }, content?: { __typename?: 'Content', type: ContentType, source: string, id: string, title: string, releaseDate?: string | null, releaseYear?: number | null, overview?: string | null, runtime?: number | null, voteAverage?: number | null, voteCount?: number | null, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string }, originalLanguage?: { __typename?: 'LanguageInfo', id: string, name: string } | null, attributes: Array<{ __typename?: 'ContentAttribute', source: string, key: string, value: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, collections: Array<{ __typename?: 'ContentCollection', type: string, source: string, id: string, name: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, externalLinks: Array<{ __typename?: 'ExternalLink', url: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }> } | null, languages?: Array<{ __typename?: 'LanguageInfo', id: string, name: string }> | null, episodes?: { __typename?: 'Episodes', label: string, seasons: Array<{ __typename?: 'Season', season: number, episodes?: Array<number> | null }> } | null };
 
-export type TorrentContentSearchResultFragment = { __typename?: 'TorrentContentSearchResult', totalCount: number, totalCountIsEstimate: boolean, hasNextPage?: boolean | null, items: Array<{ __typename?: 'TorrentContent', id: string, infoHash: string, contentType?: ContentType | null, title: string, video3d?: Video3D | null, videoCodec?: VideoCodec | null, videoModifier?: VideoModifier | null, videoResolution?: VideoResolution | null, videoSource?: VideoSource | null, seeders?: number | null, leechers?: number | null, publishedAt: string, createdAt: string, updatedAt: string, torrent: { __typename?: 'Torrent', infoHash: string, name: string, size: number, filesStatus: FilesStatus, filesCount?: number | null, hasFilesInfo: boolean, singleFile?: boolean | null, fileType?: FileType | null, seeders?: number | null, leechers?: number | null, tagNames: Array<string>, magnetUri: string, createdAt: string, updatedAt: string, sources: Array<{ __typename?: 'TorrentSourceInfo', key: string, name: string }> }, content?: { __typename?: 'Content', type: ContentType, source: string, id: string, title: string, releaseDate?: string | null, releaseYear?: number | null, overview?: string | null, runtime?: number | null, voteAverage?: number | null, voteCount?: number | null, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string }, originalLanguage?: { __typename?: 'LanguageInfo', id: string, name: string } | null, attributes: Array<{ __typename?: 'ContentAttribute', source: string, key: string, value: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, collections: Array<{ __typename?: 'ContentCollection', type: string, source: string, id: string, name: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, externalLinks: Array<{ __typename?: 'ExternalLink', url: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }> } | null, languages?: Array<{ __typename?: 'LanguageInfo', id: string, name: string }> | null, episodes?: { __typename?: 'Episodes', label: string, seasons: Array<{ __typename?: 'Season', season: number, episodes?: Array<number> | null }> } | null }>, aggregations: { __typename?: 'TorrentContentAggregations', contentType?: Array<{ __typename?: 'ContentTypeAgg', value?: ContentType | null, label: string, count: number, isEstimate: boolean }> | null, torrentSource?: Array<{ __typename?: 'TorrentSourceAgg', value: string, label: string, count: number, isEstimate: boolean }> | null, torrentTag?: Array<{ __typename?: 'TorrentTagAgg', value: string, label: string, count: number, isEstimate: boolean }> | null, torrentFileType?: Array<{ __typename?: 'TorrentFileTypeAgg', value: FileType, label: string, count: number, isEstimate: boolean }> | null, language?: Array<{ __typename?: 'LanguageAgg', value: Language, label: string, count: number, isEstimate: boolean }> | null, genre?: Array<{ __typename?: 'GenreAgg', value: string, label: string, count: number, isEstimate: boolean }> | null, releaseYear?: Array<{ __typename?: 'ReleaseYearAgg', value?: number | null, label: string, count: number, isEstimate: boolean }> | null, videoResolution?: Array<{ __typename?: 'VideoResolutionAgg', value?: VideoResolution | null, label: string, count: number, isEstimate: boolean }> | null, videoSource?: Array<{ __typename?: 'VideoSourceAgg', value?: VideoSource | null, label: string, count: number, isEstimate: boolean }> | null } };
+export type TorrentContentSearchResultFragment = { __typename?: 'TorrentContentSearchResult', totalCount?: number | null, totalCountIsEstimate: boolean, hasNextPage?: boolean | null, items: Array<{ __typename?: 'TorrentContent', id: string, infoHash: string, contentType?: ContentType | null, title: string, video3d?: Video3D | null, videoCodec?: VideoCodec | null, videoModifier?: VideoModifier | null, videoResolution?: VideoResolution | null, videoSource?: VideoSource | null, seeders?: number | null, leechers?: number | null, publishedAt: string, createdAt: string, updatedAt: string, torrent: { __typename?: 'Torrent', infoHash: string, name: string, size: number, filesStatus: FilesStatus, filesCount?: number | null, hasFilesInfo: boolean, singleFile?: boolean | null, fileType?: FileType | null, seeders?: number | null, leechers?: number | null, tagNames: Array<string>, magnetUri: string, createdAt: string, updatedAt: string, sources: Array<{ __typename?: 'TorrentSourceInfo', key: string, name: string }> }, content?: { __typename?: 'Content', type: ContentType, source: string, id: string, title: string, releaseDate?: string | null, releaseYear?: number | null, overview?: string | null, runtime?: number | null, voteAverage?: number | null, voteCount?: number | null, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string }, originalLanguage?: { __typename?: 'LanguageInfo', id: string, name: string } | null, attributes: Array<{ __typename?: 'ContentAttribute', source: string, key: string, value: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, collections: Array<{ __typename?: 'ContentCollection', type: string, source: string, id: string, name: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, externalLinks: Array<{ __typename?: 'ExternalLink', url: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }> } | null, languages?: Array<{ __typename?: 'LanguageInfo', id: string, name: string }> | null, episodes?: { __typename?: 'Episodes', label: string, seasons: Array<{ __typename?: 'Season', season: number, episodes?: Array<number> | null }> } | null }>, facets: Array<{ __typename?: 'FacetResult', key: FacetKey, label: string, logic: FacetLogic, items: Array<{ __typename?: 'FacetResultItem', value: string, label: string, count: number, isEstimate: boolean }> }> };
 
 export type TorrentFileFragment = { __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string };
 
-export type TorrentFilesQueryResultFragment = { __typename?: 'TorrentFilesQueryResult', totalCount: number, hasNextPage?: boolean | null, items: Array<{ __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string }> };
+export type TorrentFilesSearchResultFragment = { __typename?: 'TorrentFilesSearchResult', totalCount?: number | null, hasNextPage?: boolean | null, items: Array<{ __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string }> };
 
 export type UserFragment = { __typename?: 'User', id: number, username: string, role: string, lastLoginAt?: string | null, createdAt: string, updatedAt: string };
 
@@ -1279,7 +1177,7 @@ export type ConfigDeleteMutationVariables = Exact<{
 }>;
 
 
-export type ConfigDeleteMutation = { __typename?: 'Mutation', config: { __typename?: 'ConfigMutation', delete: { __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null } } } };
+export type ConfigDeleteMutation = { __typename?: 'Mutation', config: { __typename?: 'ConfigMutation', delete: { __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null } } } };
 
 export type ConfigSaveMutationVariables = Exact<{
   ref: Scalars['Ref']['input'];
@@ -1287,7 +1185,7 @@ export type ConfigSaveMutationVariables = Exact<{
 }>;
 
 
-export type ConfigSaveMutation = { __typename?: 'Mutation', config: { __typename?: 'ConfigMutation', save: { __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null } } } };
+export type ConfigSaveMutation = { __typename?: 'Mutation', config: { __typename?: 'ConfigMutation', save: { __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null } } } };
 
 export type CreateApiKeyMutationVariables = Exact<{
   input: CreateApiKeyInput;
@@ -1419,7 +1317,7 @@ export type AuthObjectActionsQuery = { __typename?: 'Query', auth: { __typename?
 export type ConfigParamsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ConfigParamsQuery = { __typename?: 'Query', config: { __typename?: 'ConfigQuery', pending: boolean, params: Array<{ __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type: JsonSchemaType, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: boolean | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null } }> } };
+export type ConfigParamsQuery = { __typename?: 'Query', config: { __typename?: 'ConfigQuery', pending: boolean, params: Array<{ __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null } }> } };
 
 export type HealthCheckQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1470,18 +1368,18 @@ export type RolesQueryVariables = Exact<{ [key: string]: never; }>;
 export type RolesQuery = { __typename?: 'Query', auth: { __typename?: 'AuthQuery', listRoles: Array<{ __typename?: 'Role', name: string, core: boolean, permissions: Array<{ __typename?: 'Permission', core: boolean, subject: { __typename?: 'AuthSubject', type: AuthSubjectType, name: string }, objectAction: { __typename?: 'AuthObjectAction', namespace: string, object: string, action: string } }> }> } };
 
 export type TorrentContentSearchQueryVariables = Exact<{
-  input: TorrentContentSearchQueryInput;
+  input: SearchInput;
 }>;
 
 
-export type TorrentContentSearchQuery = { __typename?: 'Query', torrent: { __typename?: 'TorrentQuery', searchTorrentContent: { __typename?: 'TorrentContentSearchResult', totalCount: number, totalCountIsEstimate: boolean, hasNextPage?: boolean | null, items: Array<{ __typename?: 'TorrentContent', id: string, infoHash: string, contentType?: ContentType | null, title: string, video3d?: Video3D | null, videoCodec?: VideoCodec | null, videoModifier?: VideoModifier | null, videoResolution?: VideoResolution | null, videoSource?: VideoSource | null, seeders?: number | null, leechers?: number | null, publishedAt: string, createdAt: string, updatedAt: string, torrent: { __typename?: 'Torrent', infoHash: string, name: string, size: number, filesStatus: FilesStatus, filesCount?: number | null, hasFilesInfo: boolean, singleFile?: boolean | null, fileType?: FileType | null, seeders?: number | null, leechers?: number | null, tagNames: Array<string>, magnetUri: string, createdAt: string, updatedAt: string, sources: Array<{ __typename?: 'TorrentSourceInfo', key: string, name: string }> }, content?: { __typename?: 'Content', type: ContentType, source: string, id: string, title: string, releaseDate?: string | null, releaseYear?: number | null, overview?: string | null, runtime?: number | null, voteAverage?: number | null, voteCount?: number | null, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string }, originalLanguage?: { __typename?: 'LanguageInfo', id: string, name: string } | null, attributes: Array<{ __typename?: 'ContentAttribute', source: string, key: string, value: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, collections: Array<{ __typename?: 'ContentCollection', type: string, source: string, id: string, name: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, externalLinks: Array<{ __typename?: 'ExternalLink', url: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }> } | null, languages?: Array<{ __typename?: 'LanguageInfo', id: string, name: string }> | null, episodes?: { __typename?: 'Episodes', label: string, seasons: Array<{ __typename?: 'Season', season: number, episodes?: Array<number> | null }> } | null }>, aggregations: { __typename?: 'TorrentContentAggregations', contentType?: Array<{ __typename?: 'ContentTypeAgg', value?: ContentType | null, label: string, count: number, isEstimate: boolean }> | null, torrentSource?: Array<{ __typename?: 'TorrentSourceAgg', value: string, label: string, count: number, isEstimate: boolean }> | null, torrentTag?: Array<{ __typename?: 'TorrentTagAgg', value: string, label: string, count: number, isEstimate: boolean }> | null, torrentFileType?: Array<{ __typename?: 'TorrentFileTypeAgg', value: FileType, label: string, count: number, isEstimate: boolean }> | null, language?: Array<{ __typename?: 'LanguageAgg', value: Language, label: string, count: number, isEstimate: boolean }> | null, genre?: Array<{ __typename?: 'GenreAgg', value: string, label: string, count: number, isEstimate: boolean }> | null, releaseYear?: Array<{ __typename?: 'ReleaseYearAgg', value?: number | null, label: string, count: number, isEstimate: boolean }> | null, videoResolution?: Array<{ __typename?: 'VideoResolutionAgg', value?: VideoResolution | null, label: string, count: number, isEstimate: boolean }> | null, videoSource?: Array<{ __typename?: 'VideoSourceAgg', value?: VideoSource | null, label: string, count: number, isEstimate: boolean }> | null } } } };
+export type TorrentContentSearchQuery = { __typename?: 'Query', torrent: { __typename?: 'TorrentQuery', searchTorrentContent: { __typename?: 'TorrentContentSearchResult', totalCount?: number | null, totalCountIsEstimate: boolean, hasNextPage?: boolean | null, items: Array<{ __typename?: 'TorrentContent', id: string, infoHash: string, contentType?: ContentType | null, title: string, video3d?: Video3D | null, videoCodec?: VideoCodec | null, videoModifier?: VideoModifier | null, videoResolution?: VideoResolution | null, videoSource?: VideoSource | null, seeders?: number | null, leechers?: number | null, publishedAt: string, createdAt: string, updatedAt: string, torrent: { __typename?: 'Torrent', infoHash: string, name: string, size: number, filesStatus: FilesStatus, filesCount?: number | null, hasFilesInfo: boolean, singleFile?: boolean | null, fileType?: FileType | null, seeders?: number | null, leechers?: number | null, tagNames: Array<string>, magnetUri: string, createdAt: string, updatedAt: string, sources: Array<{ __typename?: 'TorrentSourceInfo', key: string, name: string }> }, content?: { __typename?: 'Content', type: ContentType, source: string, id: string, title: string, releaseDate?: string | null, releaseYear?: number | null, overview?: string | null, runtime?: number | null, voteAverage?: number | null, voteCount?: number | null, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string }, originalLanguage?: { __typename?: 'LanguageInfo', id: string, name: string } | null, attributes: Array<{ __typename?: 'ContentAttribute', source: string, key: string, value: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, collections: Array<{ __typename?: 'ContentCollection', type: string, source: string, id: string, name: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, externalLinks: Array<{ __typename?: 'ExternalLink', url: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }> } | null, languages?: Array<{ __typename?: 'LanguageInfo', id: string, name: string }> | null, episodes?: { __typename?: 'Episodes', label: string, seasons: Array<{ __typename?: 'Season', season: number, episodes?: Array<number> | null }> } | null }>, facets: Array<{ __typename?: 'FacetResult', key: FacetKey, label: string, logic: FacetLogic, items: Array<{ __typename?: 'FacetResultItem', value: string, label: string, count: number, isEstimate: boolean }> }> } } };
 
-export type TorrentFilesQueryVariables = Exact<{
-  input: TorrentFilesQueryInput;
+export type TorrentFilesSearchQueryVariables = Exact<{
+  input: SearchInput;
 }>;
 
 
-export type TorrentFilesQuery = { __typename?: 'Query', torrent: { __typename?: 'TorrentQuery', files: { __typename?: 'TorrentFilesQueryResult', totalCount: number, hasNextPage?: boolean | null, items: Array<{ __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string }> } } };
+export type TorrentFilesSearchQuery = { __typename?: 'Query', torrent: { __typename?: 'TorrentQuery', searchTorrentFiles: { __typename?: 'TorrentFilesSearchResult', totalCount?: number | null, hasNextPage?: boolean | null, items: Array<{ __typename?: 'TorrentFile', infoHash: string, index: number, path: string, size: number, fileType?: FileType | null, createdAt: string, updatedAt: string }> } } };
 
 export type TorrentMetricsQueryVariables = Exact<{
   input: TorrentMetricsQueryInput;
@@ -1797,6 +1695,24 @@ export const TorrentContentFragmentDoc = gql`
 }
     ${TorrentFragmentDoc}
 ${ContentFragmentDoc}`;
+export const FacetResultItemFragmentDoc = gql`
+    fragment FacetResultItem on FacetResultItem {
+  value
+  label
+  count
+  isEstimate
+}
+    `;
+export const FacetResultFragmentDoc = gql`
+    fragment FacetResult on FacetResult {
+  key
+  label
+  logic
+  items {
+    ...FacetResultItem
+  }
+}
+    ${FacetResultItemFragmentDoc}`;
 export const TorrentContentSearchResultFragmentDoc = gql`
     fragment TorrentContentSearchResult on TorrentContentSearchResult {
   items {
@@ -1805,64 +1721,12 @@ export const TorrentContentSearchResultFragmentDoc = gql`
   totalCount
   totalCountIsEstimate
   hasNextPage
-  aggregations {
-    contentType {
-      value
-      label
-      count
-      isEstimate
-    }
-    torrentSource {
-      value
-      label
-      count
-      isEstimate
-    }
-    torrentTag {
-      value
-      label
-      count
-      isEstimate
-    }
-    torrentFileType {
-      value
-      label
-      count
-      isEstimate
-    }
-    language {
-      value
-      label
-      count
-      isEstimate
-    }
-    genre {
-      value
-      label
-      count
-      isEstimate
-    }
-    releaseYear {
-      value
-      label
-      count
-      isEstimate
-    }
-    videoResolution {
-      value
-      label
-      count
-      isEstimate
-    }
-    videoSource {
-      value
-      label
-      count
-      isEstimate
-    }
+  facets {
+    ...FacetResult
   }
 }
-    ${TorrentContentFragmentDoc}`;
+    ${TorrentContentFragmentDoc}
+${FacetResultFragmentDoc}`;
 export const TorrentFileFragmentDoc = gql`
     fragment TorrentFile on TorrentFile {
   infoHash
@@ -1874,8 +1738,8 @@ export const TorrentFileFragmentDoc = gql`
   updatedAt
 }
     `;
-export const TorrentFilesQueryResultFragmentDoc = gql`
-    fragment TorrentFilesQueryResult on TorrentFilesQueryResult {
+export const TorrentFilesSearchResultFragmentDoc = gql`
+    fragment TorrentFilesSearchResult on TorrentFilesSearchResult {
   items {
     ...TorrentFile
   }
@@ -2490,7 +2354,7 @@ export const RolesDocument = gql`
     }
   }
 export const TorrentContentSearchDocument = gql`
-    query TorrentContentSearch($input: TorrentContentSearchQueryInput!) {
+    query TorrentContentSearch($input: SearchInput!) {
   torrent {
     searchTorrentContent(input: $input) {
       ...TorrentContentSearchResult
@@ -2509,21 +2373,21 @@ export const TorrentContentSearchDocument = gql`
       super(apollo);
     }
   }
-export const TorrentFilesDocument = gql`
-    query TorrentFiles($input: TorrentFilesQueryInput!) {
+export const TorrentFilesSearchDocument = gql`
+    query TorrentFilesSearch($input: SearchInput!) {
   torrent {
-    files(input: $input) {
-      ...TorrentFilesQueryResult
+    searchTorrentFiles(input: $input) {
+      ...TorrentFilesSearchResult
     }
   }
 }
-    ${TorrentFilesQueryResultFragmentDoc}`;
+    ${TorrentFilesSearchResultFragmentDoc}`;
 
   @Injectable({
     providedIn: 'root'
   })
-  export class TorrentFilesGQL extends Apollo.Query<TorrentFilesQuery, TorrentFilesQueryVariables> {
-    override document = TorrentFilesDocument;
+  export class TorrentFilesSearchGQL extends Apollo.Query<TorrentFilesSearchQuery, TorrentFilesSearchQueryVariables> {
+    override document = TorrentFilesSearchDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

@@ -1,6 +1,6 @@
 #import "./TorrentFile"
 
-fragment TorrentFilesQueryResult on TorrentFilesQueryResult {
+fragment TorrentFilesSearchResult on TorrentFilesSearchResult {
   items {
     ...TorrentFile
   }

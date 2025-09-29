@@ -3,6 +3,8 @@ package classifier
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/parsers"
+	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
 )
 
 const parseVideoContentName = "parse_video_content"
@@ -13,14 +15,14 @@ func (parseVideoContentAction) name() string {
 	return parseVideoContentName
 }
 
-var parseVideoContentPayloadSpec = payloadLiteral[string]{
-	literal:     parseVideoContentName,
-	description: "Parse video-related attributes from the name of the current torrent",
+var parseVideoContentSpec = json_spec.Literal[string]{
+	Literal:     parseVideoContentName,
+	Description: "Parse video-related attributes from the name of the current torrent",
 }
 
-func (parseVideoContentAction) compileAction(ctx compilerContext) (action, error) {
-	if _, err := parseVideoContentPayloadSpec.Unmarshal(ctx); err != nil {
-		return action{}, ctx.error(err)
+func (parseVideoContentAction) compile(ctx compilerContext) (action, error) {
+	if _, err := parseVideoContentSpec.Parse(ctx.jsonSpec); err != nil {
+		return action{}, ctx.Error(err)
 	}
 
 	return action{
@@ -36,6 +38,6 @@ func (parseVideoContentAction) compileAction(ctx compilerContext) (action, error
 	}, nil
 }
 
-func (parseVideoContentAction) JSONSchema() JSONSchema {
-	return parseVideoContentPayloadSpec.JSONSchema()
+func (parseVideoContentAction) JSONSchema() json_schema.JSONSchema {
+	return parseVideoContentSpec.JSONSchema()
 }

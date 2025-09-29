@@ -1,6 +1,10 @@
 package classifier
 
-import "github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
+import (
+	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
+	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
+)
 
 type ifElseAction struct{}
 
@@ -10,61 +14,61 @@ func (ifElseAction) name() string {
 	return ifElseName
 }
 
-type ifElsePayload struct {
+type ifElse struct {
 	Condition  any
 	IfAction   any
 	ElseAction any
 }
 
-var ifElsePayloadSpec = payloadSingleKeyValue[ifElsePayload]{
-	key: ifElseName,
-	valueSpec: payloadMustSucceed[ifElsePayload]{payloadStruct[ifElsePayload]{
-		jsonSchema: map[string]any{
-			"type": "object",
-			"properties": map[string]any{
-				"condition": map[string]any{
-					"$ref": "#/definitions/condition",
-				},
-				"if_action": map[string]any{
-					"$ref": "#/definitions/action",
-				},
-				"else_action": map[string]any{
-					"$ref": "#/definitions/action",
-				},
-			},
-			"required":             []string{"condition"},
-			"additionalProperties": false,
-		},
+var ifElseSpec = json_spec.SingleKeyValue[ifElse]{
+	Key: ifElseName,
+	ValueSpec: json_spec.MustSucceed[ifElse]{Typed: json_spec.Struct[ifElse]{
+		Schema: json_schema.MustNew(
+			json_schema.Typed(json_schema.TypeObject),
+			json_schema.Properties(map[string]json_schema.JSONSchema{
+				"condition": json_schema.MustNew(
+					json_schema.RefDefinition("condition"),
+				),
+				"if_action": json_schema.MustNew(
+					json_schema.RefDefinition("action"),
+				),
+				"else_action": json_schema.MustNew(
+					json_schema.RefDefinition("action"),
+				),
+			}),
+			json_schema.Required(json_schema.RequiredFields{"condition"}),
+			json_schema.AdditionalPropertiesFalse(),
+		),
 	}},
-	description: "Execute an action based on a condition",
+	Description: "Execute an action based on a condition",
 }
 
-func (ifElseAction) compileAction(ctx compilerContext) (action, error) {
-	p, decodeErr := ifElsePayloadSpec.Unmarshal(ctx)
+func (ifElseAction) compile(ctx compilerContext) (action, error) {
+	p, decodeErr := ifElseSpec.Parse(ctx.jsonSpec)
 	if decodeErr != nil {
-		return action{}, ctx.error(decodeErr)
+		return action{}, ctx.Error(decodeErr)
 	}
 
-	cond, cErr := ctx.compileCondition(ctx.child("condition", p.Condition))
+	cond, cErr := compileCondition(ctx.child("condition", p.Condition))
 	if cErr != nil {
-		return action{}, ctx.error(cErr)
+		return action{}, ctx.Error(cErr)
 	}
 
 	var ifAction, elseAction action
 
 	if p.IfAction != nil {
-		pIfAction, ifErr := ctx.compileAction(ctx.child("if_action", p.IfAction))
+		pIfAction, ifErr := compileAction(ctx.child("if_action", p.IfAction))
 		if ifErr != nil {
-			return action{}, ctx.error(ifErr)
+			return action{}, ctx.Error(ifErr)
 		}
 
 		ifAction = pIfAction
 	}
 
 	if p.ElseAction != nil {
-		pElseAction, err := ctx.compileAction(ctx.child("else_action", p.ElseAction))
+		pElseAction, err := compileAction(ctx.child("else_action", p.ElseAction))
 		if err != nil {
-			return action{}, ctx.error(err)
+			return action{}, ctx.Error(err)
 		}
 
 		elseAction = pElseAction
@@ -88,6 +92,6 @@ func (ifElseAction) compileAction(ctx compilerContext) (action, error) {
 	}, nil
 }
 
-func (ifElseAction) JSONSchema() JSONSchema {
-	return ifElsePayloadSpec.JSONSchema()
+func (ifElseAction) JSONSchema() json_schema.JSONSchema {
+	return ifElseSpec.JSONSchema()
 }

@@ -131,12 +131,13 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
               controls.contentType !== "null" &&
               f.contentTypes.includes(controls.contentType)
             ),
-          aggregations: f
-            .extractAggregations(result.aggregations)
-            .map((agg) => ({
-              ...agg,
-              label: f.resolveLabel(agg, this.transloco),
-            })),
+          aggregations:
+            result.facets
+              .find((rf) => rf.key === f.key)
+              ?.items.map((agg) => ({
+                ...agg,
+                label: f.resolveLabel(agg, this.transloco),
+              })) ?? [],
         })),
       ),
     );
@@ -254,7 +255,7 @@ const controlsToParams = (ctrl: TorrentSearchControls): Params => {
     page,
     limit,
     content_type: ctrl.contentType,
-    order: orderBy?.field,
+    order: orderBy?.key,
     desc,
     ...(ctrl.selectedTorrent
       ? {
@@ -281,15 +282,15 @@ const orderByParam = (params: Params, hasQuery: boolean): OrderBySelection => {
   }
   const field = stringParam(params, "order");
   for (const opt of orderByOptions) {
-    if (opt.field === field) {
+    if (opt.key === field) {
       return {
-        field,
+        key: opt.key,
         descending: desc ?? opt.descending,
       };
     }
   }
   return {
-    field: hasQuery ? "relevance" : "published_at",
+    key: hasQuery ? "relevance" : "published_at",
     descending: desc ?? true,
   };
 };

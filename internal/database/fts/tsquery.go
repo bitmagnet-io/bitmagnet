@@ -63,31 +63,31 @@ func (l *queryLexer) readQueryToken() (TokenValue, bool) {
 		start := l.Pos()
 
 		if l.ReadChar('(') {
-			return TokenValue{l.Pos(), 1, TokenOpenParens, "("}, true
+			return TokenValue{start, 1, TokenOpenParens, "("}, true
 		}
 
 		if l.ReadChar(')') {
-			return TokenValue{l.Pos(), 1, TokenCloseParens, ")"}, true
+			return TokenValue{start, 1, TokenCloseParens, ")"}, true
 		}
 
 		if l.ReadChar('&') {
-			return TokenValue{l.Pos(), 1, TokenOperator, string(OperatorAnd)}, true
+			return TokenValue{start, 1, TokenOperator, string(OperatorAnd)}, true
 		}
 
 		if l.ReadChar('|') {
-			return TokenValue{l.Pos(), 1, TokenOperator, string(OperatorOr)}, true
+			return TokenValue{start, 1, TokenOperator, string(OperatorOr)}, true
 		}
 
 		if l.ReadChar('.') {
-			return TokenValue{l.Pos(), 1, TokenOperator, string(OperatorFollowedBy)}, true
+			return TokenValue{start, 1, TokenOperator, string(OperatorFollowedBy)}, true
 		}
 
 		if l.ReadChar('!') {
-			return TokenValue{l.Pos(), 1, TokenNegation, "-"}, true
+			return TokenValue{start, 1, TokenNegation, "-"}, true
 		}
 
 		if l.ReadChar('*') {
-			return TokenValue{l.Pos(), 1, TokenWildcard, "*"}, true
+			return TokenValue{start, 1, TokenWildcard, "*"}, true
 		}
 
 		if quoted, _ := l.readQuotedString('"'); quoted != "" {

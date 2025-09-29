@@ -69,7 +69,7 @@ func MinLength[T ~string](min int) Option[T] {
 	return Options(
 		JSONSchemaOption[T](
 			json_schema.MinLength(min),
-			json_schema.Required(true),
+			json_schema.Required(json_schema.RequiredBool(true)),
 		),
 		Validate(minLengthValidator[T]{min: min}),
 	)
@@ -209,7 +209,9 @@ func (v validatorRequired[T]) Evaluate(val T) bool {
 
 func Required[T comparable]() Option[T] {
 	return Options(
-		JSONSchemaOption[T](json_schema.Required(true)),
+		JSONSchemaOption[T](
+			json_schema.Required(json_schema.RequiredBool(true)),
+		),
 		Validate(validatorRequired[T]{}),
 	)
 }

@@ -7,14 +7,13 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 	"gorm.io/gen/field"
 	"gorm.io/gorm/clause"
 )
 
-type TorrentsResult = query.GenericResult[model.Torrent]
-
 type TorrentSearch interface {
-	Torrents(ctx context.Context, options ...query.Option) (TorrentsResult, error)
+	Torrents(ctx context.Context, options ...query.Option) (adapter.TorrentsResult, error)
 	TorrentsWithMissingInfoHashes(
 		ctx context.Context,
 		infoHashes []protocol.ID,
@@ -27,7 +26,7 @@ type TorrentSearch interface {
 	) (TorrentSuggestTagsResult, error)
 }
 
-func (s search) Torrents(ctx context.Context, options ...query.Option) (TorrentsResult, error) {
+func (s search) Torrents(ctx context.Context, options ...query.Option) (adapter.TorrentsResult, error) {
 	return query.GenericQuery[model.Torrent](
 		ctx,
 		s.daoProvider,

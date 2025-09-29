@@ -7,6 +7,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 	"gorm.io/gen/field"
 )
 
@@ -28,7 +29,7 @@ func HydrateTorrentContentTorrent(options ...HydrateTorrentContentTorrentOption)
 		option(&config)
 	}
 
-	return query.HydrateHasOne[TorrentContentResultItem, model.Torrent, protocol.ID](
+	return query.HydrateHasOne[adapter.TorrentContentResultItem, model.Torrent, protocol.ID](
 		torrentContentTorrentHydrator{config},
 	)
 }
@@ -37,7 +38,7 @@ type torrentContentTorrentHydrator struct {
 	torrentContentTorrentHydratorConfig
 }
 
-func (torrentContentTorrentHydrator) RootToSubID(root TorrentContentResultItem) (protocol.ID, bool) {
+func (torrentContentTorrentHydrator) RootToSubID(root adapter.TorrentContentResultItem) (protocol.ID, bool) {
 	return root.InfoHash, true
 }
 
@@ -73,7 +74,7 @@ func (torrentContentTorrentHydrator) SubID(item model.Torrent) protocol.ID {
 	return item.InfoHash
 }
 
-func (torrentContentTorrentHydrator) Hydrate(root *TorrentContentResultItem, sub model.Torrent) {
+func (torrentContentTorrentHydrator) Hydrate(root *adapter.TorrentContentResultItem, sub model.Torrent) {
 	root.Torrent = sub
 }
 

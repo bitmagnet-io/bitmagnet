@@ -4,6 +4,8 @@ import (
 	"errors"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
+	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
 )
 
 const findMatchName = "find_match"
@@ -14,26 +16,28 @@ func (findMatchAction) name() string {
 	return findMatchName
 }
 
-var findMatchActionPayloadSpec = payloadSingleKeyValue[[]any]{
-	key: findMatchName,
-	valueSpec: payloadMustSucceed[[]any]{payloadList[any]{itemSpec: payloadGeneric[any]{
-		jsonSchema: map[string]any{
-			"$ref": "#/definitions/action_single",
+var findMatchSpec = json_spec.SingleKeyValue[[]any]{
+	Key: findMatchName,
+	ValueSpec: json_spec.MustSucceed[[]any]{json_spec.List[any]{
+		ItemSpec: json_spec.Generic[any]{
+			Schema: json_schema.MustNew(
+				json_schema.RefDefinition("action_single"),
+			),
 		},
-	}}},
-	description: "Iterate through a series of actions to find the first that does not return an unmatched error",
+	}},
+	Description: "Iterate through a series of actions to find the first that does not return an unmatched error",
 }
 
-func (findMatchAction) compileAction(ctx compilerContext) (action, error) {
-	payload, err := findMatchActionPayloadSpec.Unmarshal(ctx)
+func (findMatchAction) compile(ctx compilerContext) (action, error) {
+	payload, err := findMatchSpec.Parse(ctx.jsonSpec)
 	if err != nil {
-		return action{}, ctx.error(err)
+		return action{}, ctx.Error(err)
 	}
 
 	actions := make([]action, len(payload))
 
 	for i, actionPayload := range payload {
-		a, err := ctx.compileAction(ctx.child(numericPathPart(i), actionPayload))
+		a, err := compileAction(ctx.child(json_spec.NumericPathPart(i), actionPayload))
 		if err != nil {
 			return action{}, err
 		}
@@ -41,7 +45,7 @@ func (findMatchAction) compileAction(ctx compilerContext) (action, error) {
 		actions[i] = a
 	}
 
-	path := ctx.path
+	path := ctx.Path
 
 	return action{
 		func(ctx executionContext) (classification.Result, error) {
@@ -63,6 +67,6 @@ func (findMatchAction) compileAction(ctx compilerContext) (action, error) {
 	}, nil
 }
 
-func (findMatchAction) JSONSchema() JSONSchema {
-	return findMatchActionPayloadSpec.JSONSchema()
+func (findMatchAction) JSONSchema() json_schema.JSONSchema {
+	return findMatchSpec.JSONSchema()
 }

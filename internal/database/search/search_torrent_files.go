@@ -6,15 +6,14 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 )
 
-type TorrentFilesResult = query.GenericResult[model.TorrentFile]
-
 type TorrentFilesSearch interface {
-	TorrentFiles(ctx context.Context, options ...query.Option) (TorrentFilesResult, error)
+	TorrentFiles(ctx context.Context, options ...query.Option) (adapter.TorrentFilesResult, error)
 }
 
-func (s search) TorrentFiles(ctx context.Context, options ...query.Option) (TorrentFilesResult, error) {
+func (s search) TorrentFiles(ctx context.Context, options ...query.Option) (adapter.TorrentFilesResult, error) {
 	return query.GenericQuery[model.TorrentFile](
 		ctx,
 		s.daoProvider,

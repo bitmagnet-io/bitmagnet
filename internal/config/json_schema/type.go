@@ -13,6 +13,7 @@ const (
 	TypeInteger Type = "integer"
 	TypeBoolean Type = "boolean"
 	TypeArray   Type = "array"
+	TypeObject  Type = "object"
 )
 
 func (t Type) String() string {
@@ -21,7 +22,7 @@ func (t Type) String() string {
 
 func (t Type) Valid() error {
 	switch t {
-	case TypeString, TypeNumber, TypeInteger, TypeBoolean, TypeArray:
+	case TypeString, TypeNumber, TypeInteger, TypeBoolean, TypeArray, TypeObject:
 		return nil
 	default:
 		return fmt.Errorf("invalid Type value: %q", t)
@@ -33,6 +34,10 @@ func (t Type) IsNumeric() bool {
 }
 
 func (t Type) MarshalJSON() ([]byte, error) {
+	if err := t.Valid(); err != nil {
+		return nil, err
+	}
+
 	return json.Marshal(t.String())
 }
 

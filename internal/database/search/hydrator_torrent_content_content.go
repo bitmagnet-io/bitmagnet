@@ -5,17 +5,18 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 )
 
 func HydrateTorrentContentContent() query.Option {
-	return query.HydrateHasOne[TorrentContentResultItem, model.Content, model.ContentRef](
+	return query.HydrateHasOne[adapter.TorrentContentResultItem, model.Content, model.ContentRef](
 		torrentContentContentHydrator{},
 	)
 }
 
 type torrentContentContentHydrator struct{}
 
-func (torrentContentContentHydrator) RootToSubID(root TorrentContentResultItem) (model.ContentRef, bool) {
+func (torrentContentContentHydrator) RootToSubID(root adapter.TorrentContentResultItem) (model.ContentRef, bool) {
 	ref := root.ContentRef()
 	return ref.Val, ref.Valid
 }
@@ -47,7 +48,7 @@ func (torrentContentContentHydrator) SubID(item model.Content) model.ContentRef 
 	return item.Ref()
 }
 
-func (torrentContentContentHydrator) Hydrate(root *TorrentContentResultItem, sub model.Content) {
+func (torrentContentContentHydrator) Hydrate(root *adapter.TorrentContentResultItem, sub model.Content) {
 	root.Content = sub
 }
 

@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/adrg/xdg"
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
 	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
 	"gopkg.in/yaml.v3"
 )
@@ -75,7 +76,7 @@ func (y yamlSourceProvider) source() (Source, error) {
 
 	src := Source{}
 
-	decoder, decoderErr := newDecoder(&src)
+	decoder, decoderErr := json_spec.NewDecoder(json_spec.KeyMatcherSnake, &src)
 	if decoderErr != nil {
 		return Source{}, decoderErr
 	}

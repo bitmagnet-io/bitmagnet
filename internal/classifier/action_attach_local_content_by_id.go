@@ -2,6 +2,8 @@ package classifier
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
+	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
 
@@ -13,14 +15,14 @@ func (attachLocalContentByIDAction) name() string {
 	return attachLocalContentByIDName
 }
 
-var attachLocalContentByIDPayloadSpec = payloadLiteral[string]{
-	literal:     attachLocalContentByIDName,
-	description: "Use the torrent hint to attach locally stored content by ID",
+var attachLocalContentByIDSpec = json_spec.Literal[string]{
+	Literal:     attachLocalContentByIDName,
+	Description: "Use the torrent hint to attach locally stored content by ID",
 }
 
-func (attachLocalContentByIDAction) compileAction(ctx compilerContext) (action, error) {
-	if _, err := attachLocalContentByIDPayloadSpec.Unmarshal(ctx); err != nil {
-		return action{}, ctx.error(err)
+func (attachLocalContentByIDAction) compile(ctx compilerContext) (action, error) {
+	if _, err := attachLocalContentByIDSpec.Parse(ctx.jsonSpec); err != nil {
+		return action{}, ctx.Error(err)
 	}
 
 	return action{
@@ -43,6 +45,6 @@ func (attachLocalContentByIDAction) compileAction(ctx compilerContext) (action, 
 	}, nil
 }
 
-func (attachLocalContentByIDAction) JSONSchema() JSONSchema {
-	return attachLocalContentByIDPayloadSpec.JSONSchema()
+func (attachLocalContentByIDAction) JSONSchema() json_schema.JSONSchema {
+	return attachLocalContentByIDSpec.JSONSchema()
 }

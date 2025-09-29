@@ -5,22 +5,23 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xeipuuv/gojsonschema"
 )
 
-//go:embed json-schema.draft-07.json
-var metaSchemaJSON []byte
-
 func TestJSONSchema(t *testing.T) {
 	t.Parallel()
 
-	schemaJSON, err := DefaultJSONSchema().MarshalJSON()
+	defaultSchema := DefaultJSONSchema()
+
+	schemaBytes, err := json.MarshalIndent(defaultSchema, "", "  ")
 	require.NoError(t, err)
 
-	schemaLoader := gojsonschema.NewBytesLoader(schemaJSON)
-	metaSchemaLoader := gojsonschema.NewBytesLoader(metaSchemaJSON)
+	schemaLoader := gojsonschema.NewBytesLoader(schemaBytes)
+	metaSchemaLoader := gojsonschema.NewBytesLoader(json_spec.MetaSchema)
 
 	// validate the schema against the meta schema
 	metaResult, err := gojsonschema.Validate(metaSchemaLoader, schemaLoader)
@@ -38,4 +39,7 @@ func TestJSONSchema(t *testing.T) {
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 	require.NoError(t, err)
 	assert.True(t, result.Valid())
+
+	var unmarshaledSchema json_schema.JSONSchema
+	require.NoError(t, json.Unmarshal(schemaBytes, &unmarshaledSchema))
 }

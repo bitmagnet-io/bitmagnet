@@ -29,7 +29,7 @@ enum JSONSchemaType {
 }
 
 type JSONSchema {
-  type: JSONSchemaType!
+  type: JSONSchemaType
   default: JSON
   enum: [JSON!]
   pattern: String
@@ -43,6 +43,6 @@ type JSONSchema {
   minItems: Int
   maxItems: Int
   uniqueItems: Boolean
-  required: Boolean
+  required: JSON
   items: JSONSchema
 }

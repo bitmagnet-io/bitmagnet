@@ -23,6 +23,7 @@ type Untyped interface {
 	DecodeYAMLAny(yaml.Node) (any, error)
 	DecodeYAMLAnyAny(any) (any, error)
 	NewDefaultAny() any
+	HasExplicitDefault() bool
 	ReflectType() reflect.Type
 	DynamicType() (reflect.Type, bool)
 	IsDynamic() bool
@@ -44,7 +45,6 @@ type Param[T any] interface {
 
 type param[T any] struct {
 	description        string
-	nested             bool
 	newDefault         func() T
 	hasExplicitDefault bool
 	yamlEncoder        func(T) (yaml.Node, error)
@@ -65,7 +65,7 @@ func New[T any](opts ...Option[T]) (Param[T], error) {
 		yamlDecoder: yamlDecoder[T],
 		stringifier: stringifierSimple[T],
 		comparator:  comparatorReflect[T],
-		jsonSchema:  json_schema.MustNew(json_schema.TypeString),
+		jsonSchema:  json_schema.MustNew(json_schema.Typed(json_schema.TypeString)),
 	}
 
 	for _, opt := range opts {
@@ -74,21 +74,17 @@ func New[T any](opts ...Option[T]) (Param[T], error) {
 		}
 	}
 
-	if !p.nested && p.description == "" {
-		return p, errors.New("missing description")
-	}
-
 	if p.parser == nil {
 		p.parser = parserYAML(p.yamlDecoder)
 	}
 
 	if p.hasExplicitDefault && p.jsonSchema.Default == nil {
-		jsonDefault, err := p.EncodeYAMLAnyAny(p.NewDefault())
+		yamlDefault, err := p.EncodeYAMLAny(p.NewDefault())
 		if err != nil {
 			return p, err
 		}
 
-		err = JSONSchemaOption[T](json_schema.Default(json_schema.JSONValue{Value: jsonDefault}))(&p)
+		err = JSONSchemaOption[T](json_schema.Default(json_schema.JSONValue(yamlDefault)))(&p)
 		if err != nil {
 			return p, err
 		}
@@ -190,9 +186,14 @@ func (p param[T]) DecodeYAMLAny(node yaml.Node) (any, error) {
 
 func (p param[T]) DecodeYAMLAnyAny(value any) (any, error) {
 	var node yaml.Node
-	err := node.Encode(value)
-	if err != nil {
-		return nil, err
+
+	if valueNode, ok := value.(yaml.Node); ok {
+		node = valueNode
+	} else {
+		err := node.Encode(value)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return p.DecodeYAMLAny(node)
@@ -229,6 +230,10 @@ func (p param[T]) NewDefault() T {
 
 func (p param[T]) NewDefaultAny() any {
 	return p.NewDefault()
+}
+
+func (p param[T]) HasExplicitDefault() bool {
+	return p.hasExplicitDefault
 }
 
 func newDefaultZero[T any]() T {

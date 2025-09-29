@@ -1,5 +1,10 @@
 package classifier
 
+import (
+	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
+)
+
 const orName = "or"
 
 type orCondition struct{}
@@ -8,20 +13,20 @@ func (orCondition) name() string {
 	return orName
 }
 
-var orConditionSpec = payloadSingleKeyValue[[]any]{
-	key: orName,
-	valueSpec: payloadMustSucceed[[]any]{payloadList[any]{
-		itemSpec: payloadGeneric[any]{
-			jsonSchema: map[string]any{
-				"$ref": "#/definitions/condition",
-			},
+var orConditionSpec = json_spec.SingleKeyValue[[]any]{
+	Key: orName,
+	ValueSpec: json_spec.MustSucceed[[]any]{json_spec.List[any]{
+		ItemSpec: json_spec.Generic[any]{
+			Schema: json_schema.MustNew(
+				json_schema.RefDefinition("condition"),
+			),
 		},
-		description: "A condition that is satisfied if any of the conditions in a list are satisfied",
+		Description: "A condition that is satisfied if any of the conditions in a list are satisfied",
 	}},
 }
 
 func (orCondition) compileCondition(ctx compilerContext) (condition, error) {
-	rawConds, err := orConditionSpec.Unmarshal(ctx)
+	rawConds, err := orConditionSpec.Parse(ctx.jsonSpec)
 	if err != nil {
 		return condition{}, err
 	}
@@ -29,7 +34,7 @@ func (orCondition) compileCondition(ctx compilerContext) (condition, error) {
 	conds := make([]condition, len(rawConds))
 
 	for i, rawCond := range rawConds {
-		cond, err := ctx.compileCondition(ctx.child(numericPathPart(i), rawCond))
+		cond, err := compileCondition(ctx.child(json_spec.NumericPathPart(i), rawCond))
 		if err != nil {
 			return condition{}, err
 		}
@@ -49,6 +54,6 @@ func (orCondition) compileCondition(ctx compilerContext) (condition, error) {
 	}}, nil
 }
 
-func (orCondition) JSONSchema() JSONSchema {
+func (orCondition) JSONSchema() json_schema.JSONSchema {
 	return orConditionSpec.JSONSchema()
 }

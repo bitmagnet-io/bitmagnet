@@ -82,14 +82,15 @@ func TestUint32(t *testing.T) {
 	require.NoError(t, p.Validate(uint32(2)))
 	require.ErrorIs(t, p.Validate(uint32(4)), param.ErrInvalid)
 
-	assert.Equal(t, json_schema.JSONSchema{
-		Type: json_schema.TypeInteger,
-		Enum: []json_schema.JSONValue{
-			{Value: 1},
-			{Value: 2},
-			{Value: 3},
-		},
-	}, p.JSONSchema())
+	assert.Equal(t, json_schema.MustNew(
+		json_schema.Typed(json_schema.TypeInteger),
+		json_schema.Enum([]json_schema.JSONValue{
+			json_schema.MustNewValue(1),
+			json_schema.MustNewValue(2),
+			json_schema.MustNewValue(3),
+		}...),
+		json_schema.Default(json_schema.MustNewValue(2)),
+	), p.JSONSchema())
 }
 
 func TestStringSlice(t *testing.T) {

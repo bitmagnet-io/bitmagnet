@@ -4,6 +4,8 @@ import (
 	"strconv"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
+	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
 
@@ -15,14 +17,14 @@ func (attachTMDBContentByIDAction) name() string {
 	return attachTMDBContentByIDName
 }
 
-var attachTMDBContentByIDPayloadSpec = payloadLiteral[string]{
-	literal:     attachTMDBContentByIDName,
-	description: "Use the torrent hint to attach content from the TMDB API by ID",
+var attachTMDBContentByIDSpec = json_spec.Literal[string]{
+	Literal:     attachTMDBContentByIDName,
+	Description: "Use the torrent hint to attach content from the TMDB API by ID",
 }
 
-func (attachTMDBContentByIDAction) compileAction(ctx compilerContext) (action, error) {
-	if _, err := attachTMDBContentByIDPayloadSpec.Unmarshal(ctx); err != nil {
-		return action{}, ctx.error(err)
+func (attachTMDBContentByIDAction) compile(ctx compilerContext) (action, error) {
+	if _, err := attachTMDBContentByIDSpec.Parse(ctx.jsonSpec); err != nil {
+		return action{}, ctx.Error(err)
 	}
 
 	return action{
@@ -75,6 +77,6 @@ func (attachTMDBContentByIDAction) compileAction(ctx compilerContext) (action, e
 	}, nil
 }
 
-func (attachTMDBContentByIDAction) JSONSchema() JSONSchema {
-	return attachTMDBContentByIDPayloadSpec.JSONSchema()
+func (attachTMDBContentByIDAction) JSONSchema() json_schema.JSONSchema {
+	return attachTMDBContentByIDSpec.JSONSchema()
 }

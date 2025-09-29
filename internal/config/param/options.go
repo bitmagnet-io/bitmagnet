@@ -34,29 +34,9 @@ func StringLiteral[T ~string]() Option[T] {
 	)
 }
 
-func Slice[E any, T ~[]E](opts ...Option[E]) Option[T] {
-	return func(p *param[T]) error {
-		elem, err := New(append(opts, nested[E]())...)
-		if err != nil {
-			return err
-		}
-
-		return Options(
-			JSONSchemaTypeOptions[T](json_schema.TypeArray, json_schema.Items(elem.JSONSchema())),
-			Stringifier(stringifierSlice[E, T](elem.Stringify)),
-			Parser(parserSlice[E, T](elem.Parse)),
-			YAMLEncoder(yamlEncoderSlice[E, T](elem.EncodeYAML)),
-			YAMLDecoder(yamlDecoderSlice[E, T](elem.DecodeYAML)),
-			Validate(slice.Map(elem.Validators(), func(validator Validator[E]) Validator[T] {
-				return validatorSlice[E, T]{elementValidator: validator}
-			})...),
-		)(p)
-	}
-}
-
 func Dynamic[T any](opts ...Option[T]) Option[*atomic.Value[T]] {
 	return func(p *param[*atomic.Value[T]]) error {
-		elem, err := New(append(opts, nested[T]())...)
+		elem, err := New(opts...)
 		if err != nil {
 			return err
 		}
@@ -95,14 +75,6 @@ func Dynamic[T any](opts ...Option[T]) Option[*atomic.Value[T]] {
 	}
 }
 
-func nested[T any]() Option[T] {
-	return func(p *param[T]) error {
-		p.nested = true
-
-		return nil
-	}
-}
-
 func dynamicType[T any](reflectType reflect.Type) Option[*atomic.Value[T]] {
 	return func(p *param[*atomic.Value[T]]) error {
 		p.dynamicType = reflectType
@@ -132,6 +104,24 @@ func YAMLDecoder[T any](decoder func(yaml.Node) (T, error)) Option[T] {
 func Comparator[T any](compare func(T, T) bool) Option[T] {
 	return func(p *param[T]) error {
 		p.comparator = compare
+
+		return nil
+	}
+}
+
+func Name[T any](name string) Option[T] {
+	return func(p *param[T]) error {
+		p.name = name
+
+		return nil
+	}
+}
+
+func NameIfEmpty[T any](name string) Option[T] {
+	return func(p *param[T]) error {
+		if p.name == "" {
+			p.name = name
+		}
 
 		return nil
 	}
@@ -223,11 +213,11 @@ func JSONSchema[T any](schema json_schema.JSONSchema) Option[T] {
 
 func JSONSchemaTypeOptions[T any](schemaType json_schema.Type, options ...json_schema.Option) Option[T] {
 	return func(p *param[T]) error {
-		if schemaType != p.jsonSchema.Type && !p.jsonSchema.IsBasicString() {
+		if !p.jsonSchema.HasType(schemaType) && !p.jsonSchema.IsBasicString() {
 			return errors.New("cannot overwrite pre-existing schema")
 		}
 
-		p.jsonSchema.Type = schemaType
+		p.jsonSchema.Type = &schemaType
 
 		return JSONSchemaOption[T](options...)(p)
 	}
@@ -268,11 +258,11 @@ func EnumValues[T comparable](enumValues ...T) Option[T] {
 		jsonValues := make([]json_schema.JSONValue, 0, len(enumValues))
 
 		for _, val := range enumValues {
-			enc, err := p.EncodeYAMLAnyAny(val)
+			enc, err := p.EncodeYAMLAny(val)
 			if err != nil {
 				return err
 			}
-			jsonValues = append(jsonValues, json_schema.JSONValue{Value: enc})
+			jsonValues = append(jsonValues, json_schema.JSONValue(enc))
 		}
 
 		return Options(

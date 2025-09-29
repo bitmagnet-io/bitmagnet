@@ -167,13 +167,13 @@
           <mat-form-field subscriptSizing="dynamic">
             <mat-label>{{ t("torrents.order_by") }}</mat-label>
             <mat-select
-              [value]="controls.orderBy.field"
+              [value]="controls.orderBy.key"
               (valueChange)="controller.selectOrderBy($event)"
             >
-              @for (option of orderByOptions; track option.field) {
-                @if (option.field != "relevance" || queryString.value) {
-                  <mat-option [value]="option.field">
-                    {{ t("torrents.ordering." + option.field) }}
+              @for (option of orderByOptions; track option.key) {
+                @if (option.key != "relevance" || queryString.value) {
+                  <mat-option [value]="option.key">
+                    {{ t("torrents.ordering." + option.key) }}
                   </mat-option>
                 }
               }
@@ -222,7 +222,7 @@
         [page]="controls.page"
         [pageSize]="controls.limit"
         [pageLength]="dataSource.result.items.length"
-        [totalLength]="dataSource.result.totalCount"
+        [totalLength]="dataSource.result.totalCount ?? null"
         [totalIsEstimate]="dataSource.result.totalCountIsEstimate"
         [hasNextPage]="dataSource.result.hasNextPage"
       />

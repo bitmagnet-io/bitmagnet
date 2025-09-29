@@ -2,6 +2,8 @@ package classifier
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
+	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
 
@@ -13,18 +15,18 @@ func (setContentTypeAction) name() string {
 	return setContentTypeName
 }
 
-var setContentTypePayloadSpec = payloadSingleKeyValue[model.NullContentType]{
-	key: setContentTypeName,
-	valueSpec: payloadMustSucceed[model.NullContentType]{
-		payload: contentTypePayloadSpec,
+var setContentTypeSpec = json_spec.SingleKeyValue[model.NullContentType]{
+	Key: setContentTypeName,
+	ValueSpec: json_spec.MustSucceed[model.NullContentType]{
+		Typed: contentTypeSpec,
 	},
-	description: "Set the content type of the current torrent",
+	Description: "Set the content type of the current torrent",
 }
 
-func (setContentTypeAction) compileAction(ctx compilerContext) (action, error) {
-	contentType, err := setContentTypePayloadSpec.Unmarshal(ctx)
+func (setContentTypeAction) compile(ctx compilerContext) (action, error) {
+	contentType, err := setContentTypeSpec.Parse(ctx.jsonSpec)
 	if err != nil {
-		return action{}, ctx.error(err)
+		return action{}, ctx.Error(err)
 	}
 
 	return action{
@@ -36,6 +38,6 @@ func (setContentTypeAction) compileAction(ctx compilerContext) (action, error) {
 	}, nil
 }
 
-func (setContentTypeAction) JSONSchema() JSONSchema {
-	return setContentTypePayloadSpec.JSONSchema()
+func (setContentTypeAction) JSONSchema() json_schema.JSONSchema {
+	return setContentTypeSpec.JSONSchema()
 }

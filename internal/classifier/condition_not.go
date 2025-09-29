@@ -1,5 +1,10 @@
 package classifier
 
+import (
+	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
+)
+
 const notName = "not"
 
 type notCondition struct{}
@@ -8,25 +13,25 @@ func (notCondition) name() string {
 	return notName
 }
 
-var notConditionPayloadSpec = payloadSingleKeyValue[any]{
-	key: notName,
-	valueSpec: payloadMustSucceed[any]{payloadGeneric[any]{
-		jsonSchema: map[string]any{
-			"$ref": "#/definitions/condition",
-		},
+var notConditionSpec = json_spec.SingleKeyValue[any]{
+	Key: notName,
+	ValueSpec: json_spec.MustSucceed[any]{json_spec.Generic[any]{
+		Schema: json_schema.MustNew(
+			json_schema.RefDefinition("condition"),
+		),
 	}},
-	description: "A condition that negates the provided condition",
+	Description: "A condition that negates the provided condition",
 }
 
 func (notCondition) compileCondition(ctx compilerContext) (condition, error) {
-	p, decodeErr := notConditionPayloadSpec.Unmarshal(ctx)
+	p, decodeErr := notConditionSpec.Parse(ctx.jsonSpec)
 	if decodeErr != nil {
-		return condition{}, ctx.error(decodeErr)
+		return condition{}, ctx.Error(decodeErr)
 	}
 
-	cond, cErr := ctx.compileCondition(ctx.child("not", p))
+	cond, cErr := compileCondition(ctx.child("not", p))
 	if cErr != nil {
-		return condition{}, ctx.error(cErr)
+		return condition{}, ctx.Error(cErr)
 	}
 
 	return condition{
@@ -37,6 +42,6 @@ func (notCondition) compileCondition(ctx compilerContext) (condition, error) {
 	}, nil
 }
 
-func (notCondition) JSONSchema() JSONSchema {
-	return notConditionPayloadSpec.JSONSchema()
+func (notCondition) JSONSchema() json_schema.JSONSchema {
+	return notConditionSpec.JSONSchema()
 }

@@ -5,12 +5,13 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 	"gorm.io/gen"
 )
 
 func HydrateContentCollections() query.Option {
 	return query.HydrateHasMany[
-		ContentResultItem,
+		adapter.ContentResultItem,
 		model.ContentRef,
 		model.ContentCollectionContent,
 		model.ContentCollection,
@@ -21,7 +22,7 @@ func HydrateContentCollections() query.Option {
 
 type contentCollectionsHydrator struct{}
 
-func (contentCollectionsHydrator) RootID(root ContentResultItem) (model.ContentRef, bool) {
+func (contentCollectionsHydrator) RootID(root adapter.ContentResultItem) (model.ContentRef, bool) {
 	return model.ContentRef{
 		Type:   root.Type,
 		Source: root.Source,
@@ -80,6 +81,6 @@ func (contentCollectionsHydrator) JoinSubToRootIDAndSub(
 	}, j.Collection
 }
 
-func (contentCollectionsHydrator) Hydrate(root *ContentResultItem, subs []model.ContentCollection) {
+func (contentCollectionsHydrator) Hydrate(root *adapter.ContentResultItem, subs []model.ContentCollection) {
 	root.Collections = subs
 }

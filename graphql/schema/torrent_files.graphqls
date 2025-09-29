@@ -1,22 +1,12 @@
-# todo: Consolidate with PaginationInput
-input TorrentFilesQueryInput {
-  limit: Int
-  page: Int
-  offset: Int
-  totalCount: Boolean
-  hasNextPage: Boolean
-  infoHashes: [Hash20!]
-  orderBy: [TorrentFilesOrderByInput!]
-  cached: Boolean
-}
-
 input TorrentFilesOrderByInput {
   field: TorrentFilesOrderByField!
   descending: Boolean
 }
 
-type TorrentFilesQueryResult {
-  totalCount: Int!
+type TorrentFilesSearchResult implements SearchResult {
+  totalCount: Int
+  totalCountIsEstimate: Boolean!
   hasNextPage: Boolean
+  facets: [FacetResult!]!
   items: [TorrentFile!]!
 }

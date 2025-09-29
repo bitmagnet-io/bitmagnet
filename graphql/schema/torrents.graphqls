@@ -1,8 +1,6 @@
 type TorrentQuery {
-  searchTorrentContent(
-    input: TorrentContentSearchQueryInput!
-  ): TorrentContentSearchResult!
-  files(input: TorrentFilesQueryInput!): TorrentFilesQueryResult!
+  searchTorrentContent(input: SearchInput!): TorrentContentSearchResult!
+  searchTorrentFiles(input: SearchInput!): TorrentFilesSearchResult!
   listSources: TorrentListSourcesResult!
   suggestTags(input: SuggestTagsQueryInput): TorrentSuggestTagsResult!
   metrics(input: TorrentMetricsQueryInput!): TorrentMetricsQueryResult!

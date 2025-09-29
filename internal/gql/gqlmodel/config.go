@@ -42,7 +42,7 @@ func transformConfigParam(param *resolver.Param, localizer *i18n.Localizer) gen.
 		}
 	}
 
-	defaultValue, err := param.EncodeYAMLAnyAny(param.NewDefaultAny())
+	defaultValue, err := param.EncodeYAMLAny(param.NewDefaultAny())
 	if err != nil {
 		panic(err)
 	}
@@ -51,13 +51,12 @@ func transformConfigParam(param *resolver.Param, localizer *i18n.Localizer) gen.
 		Ref:         param.Ref,
 		Plugin:      param.Plugin,
 		Description: description,
-		// Doc:        doc,
-		Value:      json_schema.JSONValue{Value: param.ValueYAMLAny()},
-		Source:     param.Source(),
-		Default:    json_schema.JSONValue{Value: defaultValue},
-		Dynamic:    param.IsDynamic(),
-		Pending:    param.IsPending(),
-		JSONSchema: param.JSONSchema(),
+		Value:       json_schema.JSONValue(param.ValueYAML()),
+		Source:      param.Source(),
+		Default:     json_schema.JSONValue(defaultValue),
+		Dynamic:     param.IsDynamic(),
+		Pending:     param.IsPending(),
+		JSONSchema:  param.JSONSchema(),
 	}
 }
 

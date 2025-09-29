@@ -18,6 +18,14 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
 )
 
+type SearchResult interface {
+	IsSearchResult()
+	GetTotalCount() *int
+	GetTotalCountIsEstimate() bool
+	// hasNextPage is true if there are more results to fetch
+	GetHasNextPage() *bool
+}
+
 type AuthObjectActionInput struct {
 	Namespace string `json:"namespace"`
 	Object    string `json:"object"`
@@ -36,18 +44,6 @@ type ConfigParam struct {
 	JSONSchema  json_schema.JSONSchema `json:"jsonSchema"`
 }
 
-type ContentTypeAgg struct {
-	Value      *model.ContentType `json:"value,omitempty"`
-	Label      string             `json:"label"`
-	Count      int                `json:"count"`
-	IsEstimate bool               `json:"isEstimate"`
-}
-
-type ContentTypeFacetInput struct {
-	Aggregate graphql.Omittable[*bool]                `json:"aggregate,omitempty"`
-	Filter    graphql.Omittable[[]*model.ContentType] `json:"filter,omitempty"`
-}
-
 type CreateAPIKeyInput struct {
 	Name        string                            `json:"name"`
 	Permissions []AuthObjectActionInput           `json:"permissions"`
@@ -59,19 +55,6 @@ type CreateAPIKeyResult struct {
 	APIKey    string     `json:"apiKey"`
 	Name      string     `json:"name"`
 	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
-}
-
-type GenreAgg struct {
-	Value      string `json:"value"`
-	Label      string `json:"label"`
-	Count      int    `json:"count"`
-	IsEstimate bool   `json:"isEstimate"`
-}
-
-type GenreFacetInput struct {
-	Aggregate graphql.Omittable[*bool]             `json:"aggregate,omitempty"`
-	Logic     graphql.Omittable[*model.FacetLogic] `json:"logic,omitempty"`
-	Filter    graphql.Omittable[[]string]          `json:"filter,omitempty"`
 }
 
 type HealthCheck struct {
@@ -90,18 +73,6 @@ type InviteInput struct {
 	Email  graphql.Omittable[*string]        `json:"email,omitempty"`
 	Role   graphql.Omittable[*string]        `json:"role,omitempty"`
 	Expiry graphql.Omittable[*time.Duration] `json:"expiry,omitempty"`
-}
-
-type LanguageAgg struct {
-	Value      model.Language `json:"value"`
-	Label      string         `json:"label"`
-	Count      int            `json:"count"`
-	IsEstimate bool           `json:"isEstimate"`
-}
-
-type LanguageFacetInput struct {
-	Aggregate graphql.Omittable[*bool]            `json:"aggregate,omitempty"`
-	Filter    graphql.Omittable[[]model.Language] `json:"filter,omitempty"`
 }
 
 type ListInvitationsInput struct {
@@ -182,63 +153,14 @@ type QueueMetricsQueryResult struct {
 	Buckets []queuemetrics.Bucket `json:"buckets"`
 }
 
-type ReleaseYearAgg struct {
-	Value      *model.Year `json:"value,omitempty"`
-	Label      string      `json:"label"`
-	Count      int         `json:"count"`
-	IsEstimate bool        `json:"isEstimate"`
-}
-
-type ReleaseYearFacetInput struct {
-	Aggregate graphql.Omittable[*bool]         `json:"aggregate,omitempty"`
-	Filter    graphql.Omittable[[]*model.Year] `json:"filter,omitempty"`
-}
-
 type SuggestTagsQueryInput struct {
 	Prefix     graphql.Omittable[*string]  `json:"prefix,omitempty"`
 	Exclusions graphql.Omittable[[]string] `json:"exclusions,omitempty"`
 }
 
-type TorrentContentAggregations struct {
-	ContentType     []ContentTypeAgg     `json:"contentType,omitempty"`
-	TorrentSource   []TorrentSourceAgg   `json:"torrentSource,omitempty"`
-	TorrentTag      []TorrentTagAgg      `json:"torrentTag,omitempty"`
-	TorrentFileType []TorrentFileTypeAgg `json:"torrentFileType,omitempty"`
-	Language        []LanguageAgg        `json:"language,omitempty"`
-	Genre           []GenreAgg           `json:"genre,omitempty"`
-	ReleaseYear     []ReleaseYearAgg     `json:"releaseYear,omitempty"`
-	VideoResolution []VideoResolutionAgg `json:"videoResolution,omitempty"`
-	VideoSource     []VideoSourceAgg     `json:"videoSource,omitempty"`
-}
-
-type TorrentContentFacetsInput struct {
-	ContentType     graphql.Omittable[*ContentTypeFacetInput]     `json:"contentType,omitempty"`
-	TorrentSource   graphql.Omittable[*TorrentSourceFacetInput]   `json:"torrentSource,omitempty"`
-	TorrentTag      graphql.Omittable[*TorrentTagFacetInput]      `json:"torrentTag,omitempty"`
-	TorrentFileType graphql.Omittable[*TorrentFileTypeFacetInput] `json:"torrentFileType,omitempty"`
-	Language        graphql.Omittable[*LanguageFacetInput]        `json:"language,omitempty"`
-	Genre           graphql.Omittable[*GenreFacetInput]           `json:"genre,omitempty"`
-	ReleaseYear     graphql.Omittable[*ReleaseYearFacetInput]     `json:"releaseYear,omitempty"`
-	VideoResolution graphql.Omittable[*VideoResolutionFacetInput] `json:"videoResolution,omitempty"`
-	VideoSource     graphql.Omittable[*VideoSourceFacetInput]     `json:"videoSource,omitempty"`
-}
-
 type TorrentContentOrderByInput struct {
 	Field      TorrentContentOrderByField `json:"field"`
 	Descending graphql.Omittable[*bool]   `json:"descending,omitempty"`
-}
-
-type TorrentFileTypeAgg struct {
-	Value      model.FileType `json:"value"`
-	Label      string         `json:"label"`
-	Count      int            `json:"count"`
-	IsEstimate bool           `json:"isEstimate"`
-}
-
-type TorrentFileTypeFacetInput struct {
-	Aggregate graphql.Omittable[*bool]             `json:"aggregate,omitempty"`
-	Logic     graphql.Omittable[*model.FacetLogic] `json:"logic,omitempty"`
-	Filter    graphql.Omittable[[]model.FileType]  `json:"filter,omitempty"`
 }
 
 type TorrentFilesOrderByInput struct {
@@ -267,56 +189,6 @@ type TorrentReprocessInput struct {
 	ClassifierWorkflow  graphql.Omittable[*string] `json:"classifierWorkflow,omitempty"`
 	ApisDisabled        graphql.Omittable[*bool]   `json:"apisDisabled,omitempty"`
 	LocalSearchDisabled graphql.Omittable[*bool]   `json:"localSearchDisabled,omitempty"`
-}
-
-type TorrentSourceAgg struct {
-	Value      string `json:"value"`
-	Label      string `json:"label"`
-	Count      int    `json:"count"`
-	IsEstimate bool   `json:"isEstimate"`
-}
-
-type TorrentSourceFacetInput struct {
-	Aggregate graphql.Omittable[*bool]             `json:"aggregate,omitempty"`
-	Logic     graphql.Omittable[*model.FacetLogic] `json:"logic,omitempty"`
-	Filter    graphql.Omittable[[]string]          `json:"filter,omitempty"`
-}
-
-type TorrentTagAgg struct {
-	Value      string `json:"value"`
-	Label      string `json:"label"`
-	Count      int    `json:"count"`
-	IsEstimate bool   `json:"isEstimate"`
-}
-
-type TorrentTagFacetInput struct {
-	Aggregate graphql.Omittable[*bool]             `json:"aggregate,omitempty"`
-	Logic     graphql.Omittable[*model.FacetLogic] `json:"logic,omitempty"`
-	Filter    graphql.Omittable[[]string]          `json:"filter,omitempty"`
-}
-
-type VideoResolutionAgg struct {
-	Value      *model.VideoResolution `json:"value,omitempty"`
-	Label      string                 `json:"label"`
-	Count      int                    `json:"count"`
-	IsEstimate bool                   `json:"isEstimate"`
-}
-
-type VideoResolutionFacetInput struct {
-	Aggregate graphql.Omittable[*bool]                    `json:"aggregate,omitempty"`
-	Filter    graphql.Omittable[[]*model.VideoResolution] `json:"filter,omitempty"`
-}
-
-type VideoSourceAgg struct {
-	Value      *model.VideoSource `json:"value,omitempty"`
-	Label      string             `json:"label"`
-	Count      int                `json:"count"`
-	IsEstimate bool               `json:"isEstimate"`
-}
-
-type VideoSourceFacetInput struct {
-	Aggregate graphql.Omittable[*bool]                `json:"aggregate,omitempty"`
-	Filter    graphql.Omittable[[]*model.VideoSource] `json:"filter,omitempty"`
 }
 
 type Worker struct {

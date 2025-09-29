@@ -8,12 +8,12 @@ import (
 	"sync"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
-	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/search"
 )
 
 type FacetConfig interface {
-	Key() string
+	Key() search.Facet
 	Label() string
 	Logic() model.FacetLogic
 	Filter() FacetFilter
@@ -48,7 +48,7 @@ func (f FacetFilter) HasKey(key string) bool {
 }
 
 type facetConfig struct {
-	key                string
+	key                search.Facet
 	label              string
 	logic              model.FacetLogic
 	filter             FacetFilter
@@ -68,22 +68,6 @@ func NewFacetConfig(options ...FacetOption) FacetConfig {
 	return c
 }
 
-type AggregationItem struct {
-	Label      string
-	Count      uint
-	IsEstimate bool
-}
-
-type AggregationItems = map[string]AggregationItem
-
-type AggregationGroup struct {
-	Label string
-	Logic model.FacetLogic
-	Items AggregationItems
-}
-
-type Aggregations = maps.StringMap[AggregationGroup]
-
 type FacetContext interface {
 	DBContext
 	Context() context.Context
@@ -94,22 +78,6 @@ type facetContext struct {
 	OptionBuilder
 	ctx context.Context
 }
-
-// func (ctx facetContext) Query() *dao.Query {
-//	return ctx.optionBuilder.Query()
-//}
-//
-// func (ctx facetContext) Dao() (*dao.Query, error) {
-//	return ctx.optionBuilder.Dao()
-//}
-//
-// func (ctx facetContext) TableName() string {
-//	return ctx.optionBuilder.TableName()
-//}
-//
-// func (ctx facetContext) NewSubQuery(c context.Context) SubQuery {
-//	return ctx.optionBuilder.NewSubQuery(c)
-//}
 
 func (ctx facetContext) Context() context.Context {
 	return ctx.ctx
@@ -131,7 +99,7 @@ func (ctx facetContext) NewAggregationQuery(options ...Option) (SubQuery, error)
 	return sq, nil
 }
 
-func FacetHasKey(key string) FacetOption {
+func FacetHasKey(key search.Facet) FacetOption {
 	return func(a facetConfig) facetConfig {
 		a.key = key
 		return a
@@ -188,7 +156,7 @@ func FacetTriggersCte() FacetOption {
 	}
 }
 
-func (c facetConfig) Key() string {
+func (c facetConfig) Key() search.Facet {
 	return c.key
 }
 
@@ -236,14 +204,14 @@ func (b optionBuilder) createFacetsFilterCriteria() (c Criteria, err error) {
 }
 
 // when aggregating with or logic the current facet's filter should be ignored
-func withCurrentFacet(facetKey string) Option {
+func withCurrentFacet(facetKey search.Facet) Option {
 	return func(b OptionBuilder) (OptionBuilder, error) {
 		return b.withCurrentFacet(facetKey), nil
 	}
 }
 
-func (b optionBuilder) calculateAggregations(ctx context.Context) (Aggregations, error) {
-	aggregations := make(Aggregations, len(b.facets))
+func (b optionBuilder) calculateFacets(ctx context.Context) ([]search.FacetResult, error) {
+	aggregations := make([]search.FacetResult, 0, len(b.facets))
 	wgOuter := sync.WaitGroup{}
 	wgOuter.Add(len(b.facets))
 
@@ -257,11 +225,11 @@ func (b optionBuilder) calculateAggregations(ctx context.Context) (Aggregations,
 
 		errs = append(errs, err)
 	}
-	addAggregation := func(key string, aggregation AggregationGroup) {
+	addAggregation := func(aggregation search.FacetResult) {
 		mtx.Lock()
 		defer mtx.Unlock()
 
-		aggregations[key] = aggregation
+		aggregations = append(aggregations, aggregation)
 	}
 
 	for _, facet := range b.facets {
@@ -281,11 +249,11 @@ func (b optionBuilder) calculateAggregations(ctx context.Context) (Aggregations,
 				return
 			}
 			filter := facet.Filter()
-			items := make(AggregationItems, len(values))
-			addItem := func(key string, item AggregationItem) {
+			items := make([]search.FacetResultItem, 0, len(values))
+			addItem := func(item search.FacetResultItem) {
 				mtx.Lock()
 				defer mtx.Unlock()
-				items[key] = item
+				items = append(items, item)
 			}
 			wgInner := sync.WaitGroup{}
 			wgInner.Add(len(values))
@@ -323,7 +291,8 @@ func (b optionBuilder) calculateAggregations(ctx context.Context) (Aggregations,
 						return
 					}
 					if countResult.Count > 0 || countResult.BudgetExceeded || filter.HasKey(key) {
-						addItem(key, AggregationItem{
+						addItem(search.FacetResultItem{
+							Value:      key,
 							Label:      label,
 							Count:      uint(countResult.Count),
 							IsEstimate: countResult.BudgetExceeded,
@@ -332,7 +301,8 @@ func (b optionBuilder) calculateAggregations(ctx context.Context) (Aggregations,
 				}(key, label)
 			}
 			wgInner.Wait()
-			addAggregation(facet.Key(), AggregationGroup{
+			addAggregation(search.FacetResult{
+				Key:   facet.Key(),
 				Label: facet.Label(),
 				Logic: facet.Logic(),
 				Items: items,

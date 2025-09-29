@@ -8,6 +8,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 )
 
 type LocalSearch interface {
@@ -85,10 +86,10 @@ func (l localSearch) ContentBySearch(
 		return model.Content{}, searchErr
 	}
 
-	bestMatch, ok := levenshteinFindBestMatch[search.ContentResultItem](
+	bestMatch, ok := levenshteinFindBestMatch(
 		baseTitle,
 		result.Items,
-		func(item search.ContentResultItem) []string {
+		func(item adapter.ContentResultItem) []string {
 			candidates := []string{item.Title}
 			if item.OriginalTitle.Valid {
 				candidates = append(candidates, item.OriginalTitle.String)

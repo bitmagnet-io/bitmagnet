@@ -2,9 +2,13 @@ package json_schema
 
 import (
 	"errors"
+	"fmt"
+	"maps"
 	"regexp"
+	"slices"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/ecma262"
+	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 )
 
 // Option defines a functional option for configuring a Schema
@@ -24,6 +28,92 @@ func Options(options ...Option) Option {
 	}
 }
 
+func Metaschema(ms string) Option {
+	return func(s *JSONSchema) error {
+		if s.Schema != nil {
+			return errors.New("cannot overwrite existing $schema")
+		}
+
+		s.Schema = &ms
+
+		return nil
+	}
+}
+
+func MetaschemaDraft7() Option {
+	return Metaschema("http://json-schema.org/draft-07/schema#")
+}
+
+func ID(id string) Option {
+	return func(s *JSONSchema) error {
+		if s.ID != nil {
+			return errors.New("cannot overwrite existing $id")
+		}
+
+		s.ID = &id
+
+		return nil
+	}
+}
+
+func Typed(tp Type) Option {
+	return func(s *JSONSchema) error {
+		if s.Type != nil {
+			return errors.New("cannot overwrite existing type")
+		}
+
+		if s.Ref != nil {
+			return errors.New("cannot set both ref and type")
+		}
+
+		s.Type = &tp
+
+		return nil
+	}
+}
+
+func Ref(ref string) Option {
+	return func(s *JSONSchema) error {
+		if s.Ref != nil {
+			return errors.New("cannot overwrite existing ref")
+		}
+
+		if s.Type != nil {
+			return errors.New("cannot set both type and ref")
+		}
+
+		s.Ref = &ref
+
+		return nil
+	}
+}
+
+func RefDefinition(name string) Option {
+	return Ref("#/definitions/" + name)
+}
+
+func DescriptionIfNonEmpty(str string) Option {
+	return func(s *JSONSchema) error {
+		if str != "" {
+			return Description(str)(s)
+		}
+
+		return nil
+	}
+}
+
+func Description(str string) Option {
+	return func(s *JSONSchema) error {
+		if s.Description != nil {
+			return errors.New("cannot overwrite existing description")
+		}
+
+		s.Description = &str
+
+		return nil
+	}
+}
+
 // Default sets the default value for the schema
 func Default(value JSONValue) Option {
 	return func(s *JSONSchema) error {
@@ -32,6 +122,18 @@ func Default(value JSONValue) Option {
 		}
 
 		s.Default = &value
+		return nil
+	}
+}
+
+func Const(value JSONValue) Option {
+	return func(s *JSONSchema) error {
+		if s.Const != nil {
+			return errors.New("cannot overwrite existing const")
+		}
+
+		s.Const = &value
+
 		return nil
 	}
 }
@@ -59,7 +161,7 @@ func Pattern(re *regexp.Regexp) Option {
 			return errors.New("cannot overwrite existing pattern")
 		}
 
-		if s.Type != TypeString {
+		if !s.HasType(TypeString) {
 			return errors.New("pattern only appies to strings")
 		}
 
@@ -161,7 +263,7 @@ func MaxLength(value int) Option {
 			return errors.New("cannot overwrite existing maxLength")
 		}
 
-		if s.Type != TypeString {
+		if !s.HasType(TypeString) {
 			return errors.New("maxlength only applies to strings")
 		}
 
@@ -177,7 +279,7 @@ func MinLength(value int) Option {
 			return errors.New("cannot overwrite existing minLength")
 		}
 
-		if s.Type != TypeString {
+		if !s.HasType(TypeString) {
 			return errors.New("minlength only applies to strings")
 		}
 
@@ -193,7 +295,7 @@ func MinItems(value int) Option {
 			return errors.New("cannot overwrite existing minItems")
 		}
 
-		if s.Type != TypeArray {
+		if !s.HasType(TypeArray) {
 			return errors.New("minItems only applies to arrays")
 		}
 
@@ -209,7 +311,7 @@ func MaxItems(value int) Option {
 			return errors.New("cannot overwrite existing maxItems")
 		}
 
-		if s.Type != TypeArray {
+		if !s.HasType(TypeArray) {
 			return errors.New("maxItems only applies to arrays")
 		}
 
@@ -225,7 +327,7 @@ func UniqueItems(value bool) Option {
 			return errors.New("cannot overwrite existing uniqueItems")
 		}
 
-		if s.Type != TypeArray {
+		if !s.HasType(TypeArray) {
 			return errors.New("uniqueItems only applies to arrays")
 		}
 
@@ -235,7 +337,7 @@ func UniqueItems(value bool) Option {
 }
 
 // Required sets the required validation for the schema
-func Required(value bool) Option {
+func Required(value RequiredParam) Option {
 	return func(s *JSONSchema) error {
 		if s.Required != nil && value != *s.Required {
 			return errors.New("cannot overwrite existing required")
@@ -253,11 +355,87 @@ func Items(schema JSONSchema) Option {
 			return errors.New("cannot overwrite existing items")
 		}
 
-		if s.Type != TypeArray {
+		if !s.HasType(TypeArray) {
 			return errors.New("items only applies to arrays")
 		}
 
 		s.Items = &schema
 		return nil
 	}
+}
+
+func Properties(props map[string]JSONSchema) Option {
+	return func(s *JSONSchema) error {
+		if s.Properties != nil {
+			return errors.New("cannot overwrite existing properties")
+		}
+
+		if !s.HasType(TypeObject) {
+			return errors.New("properties only applies to objects")
+		}
+
+		s.Properties = props
+
+		return nil
+	}
+}
+
+func AdditionalProperties(value AdditionalPropertiesParam) Option {
+	return func(s *JSONSchema) error {
+		if !s.HasType(TypeObject) {
+			return errors.New("additionalProperties only applies to objects")
+		}
+
+		s.AdditionalProperties = &value
+
+		return nil
+	}
+}
+
+func AdditionalPropertiesType(schema JSONSchema) Option {
+	return AdditionalProperties(AdditionalPropertiesSchema(schema))
+}
+
+func AdditionalPropertiesTrue() Option {
+	b := AdditionalPropertiesBool(true)
+	return AdditionalProperties(&b)
+}
+
+func AdditionalPropertiesFalse() Option {
+	b := AdditionalPropertiesBool(false)
+	return AdditionalProperties(&b)
+}
+
+func OneOf(schemas ...JSONSchema) Option {
+	return func(s *JSONSchema) error {
+		if s.OneOf != nil {
+			return errors.New("cannot overwrite existing oneOf")
+		}
+
+		s.OneOf = schemas
+
+		return nil
+	}
+}
+
+func Definition(name string, schema JSONSchema) Option {
+	return func(s *JSONSchema) error {
+		if s.Definitions == nil {
+			s.Definitions = make(map[string]JSONSchema)
+		}
+
+		if _, ok := s.Definitions[name]; ok {
+			return fmt.Errorf("cannot overwrite existing definition: %s", name)
+		}
+
+		s.Definitions[name] = schema
+
+		return nil
+	}
+}
+
+func Definitions(defs map[string]JSONSchema) Option {
+	return Options(slice.Map(slices.Sorted(maps.Keys(defs)), func(k string) Option {
+		return Definition(k, defs[k])
+	})...)
 }

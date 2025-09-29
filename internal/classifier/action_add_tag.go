@@ -2,6 +2,8 @@ package classifier
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
+	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
 
@@ -13,13 +15,13 @@ func (addTagAction) name() string {
 	return addTagName
 }
 
-var tagPayloadSpec = payloadTransformer[string, string]{
-	spec: payloadGeneric[string]{
-		jsonSchema: JSONSchema{
-			"type": "string",
-		},
+var tagSpec = json_spec.Transformer[string, string]{
+	Typed: json_spec.Generic[string]{
+		Schema: json_schema.MustNew(
+			json_schema.Typed(json_schema.TypeString),
+		),
 	},
-	transform: func(str string, _ compilerContext) (string, error) {
+	Transform: func(str string, _ json_spec.ParseContext) (string, error) {
 		if err := model.ValidateTagName(str); err != nil {
 			return "", err
 		}
@@ -27,20 +29,20 @@ var tagPayloadSpec = payloadTransformer[string, string]{
 	},
 }
 
-var addTagPayloadSpec = payloadSingleKeyValue[[]string]{
-	key: addTagName,
-	valueSpec: payloadMustSucceed[[]string]{
-		payloadList[string]{
-			itemSpec: tagPayloadSpec,
+var addTagSpec = json_spec.SingleKeyValue[[]string]{
+	Key: addTagName,
+	ValueSpec: json_spec.MustSucceed[[]string]{
+		json_spec.List[string]{
+			ItemSpec: tagSpec,
 		},
 	},
-	description: "Add one or more tags to the current torrent",
+	Description: "Add one or more tags to the current torrent",
 }
 
-func (addTagAction) compileAction(ctx compilerContext) (action, error) {
-	tags, err := addTagPayloadSpec.Unmarshal(ctx)
+func (addTagAction) compile(ctx compilerContext) (action, error) {
+	tags, err := addTagSpec.Parse(ctx.jsonSpec)
 	if err != nil {
-		return action{}, ctx.error(err)
+		return action{}, ctx.Error(err)
 	}
 
 	return action{
@@ -57,6 +59,6 @@ func (addTagAction) compileAction(ctx compilerContext) (action, error) {
 	}, nil
 }
 
-func (addTagAction) JSONSchema() JSONSchema {
-	return addTagPayloadSpec.JSONSchema()
+func (addTagAction) JSONSchema() json_schema.JSONSchema {
+	return addTagSpec.JSONSchema()
 }

@@ -4,10 +4,12 @@ import (
 	"context"
 
 	q "github.com/bitmagnet-io/bitmagnet/internal/database/query"
+	query2 "github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 )
 
 type QueueJobsQueryInput struct {
@@ -72,15 +74,15 @@ func (qq QueueQuery) Jobs(
 
 	options = append(options, q.Where(criteria...))
 
-	fullOrderBy := maps.NewInsertMap[search.QueueJobsOrderBy, search.OrderDirection]()
+	fullOrderBy := maps.NewInsertMap[adapter.QueueJobsOrderBy, adapter.OrderDirection]()
 
 	for _, ob := range query.OrderBy {
-		direction := search.OrderDirectionAscending
+		direction := adapter.OrderDirectionAscending
 		if nilToZero(ob.Descending.Value()) {
-			direction = search.OrderDirectionDescending
+			direction = adapter.OrderDirectionDescending
 		}
 
-		field, err := search.ParseQueueJobsOrderBy(ob.Field.String())
+		field, err := adapter.ParseQueueJobsOrderBy(ob.Field.String())
 		if err != nil {
 			return QueueJobsQueryResult{}, err
 		}
@@ -88,54 +90,55 @@ func (qq QueueQuery) Jobs(
 		fullOrderBy.Set(field, direction)
 	}
 
-	options = append(options, search.QueueJobsFullOrderBy(fullOrderBy).Option())
+	options = append(options, query2.OrderBy(search.QueueJobsFullOrderByClauses(fullOrderBy)...))
 
 	return qq.doQueueJobsQuery(ctx, options...)
 }
 
 func (qq QueueQuery) doQueueJobsQuery(ctx context.Context, options ...q.Option) (QueueJobsQueryResult, error) {
-	result, resultErr := qq.QueueJobSearch.QueueJobs(ctx, options...)
-	if resultErr != nil {
-		return QueueJobsQueryResult{}, resultErr
-	}
+	return QueueJobsQueryResult{}, nil
+	// result, resultErr := qq.QueueJobSearch.QueueJobs(ctx, options...)
+	// if resultErr != nil {
+	// 	return QueueJobsQueryResult{}, resultErr
+	// }
 
-	return transformQueueJobsQueryResult(result)
+	// return transformQueueJobsQueryResult(result)
 }
 
-func transformQueueJobsQueryResult(result q.GenericResult[model.QueueJob]) (QueueJobsQueryResult, error) {
-	aggs, err := transformQueueJobsAggregations(result.Aggregations)
-	if err != nil {
-		return QueueJobsQueryResult{}, err
-	}
+// func transformQueueJobsQueryResult(result adapter.Result[model.QueueJob]) (QueueJobsQueryResult, error) {
+// 	aggs, err := transformQueueJobsAggregations(result.Aggregations)
+// 	if err != nil {
+// 		return QueueJobsQueryResult{}, err
+// 	}
 
-	return QueueJobsQueryResult{
-		TotalCount:   result.TotalCount,
-		HasNextPage:  result.HasNextPage,
-		Items:        result.Items,
-		Aggregations: aggs,
-	}, nil
-}
+// 	return QueueJobsQueryResult{
+// 		TotalCount:   result.TotalCount,
+// 		HasNextPage:  result.HasNextPage,
+// 		Items:        result.Items,
+// 		Aggregations: aggs,
+// 	}, nil
+// }
 
-func transformQueueJobsAggregations(aggs q.Aggregations) (gen.QueueJobsAggregations, error) {
-	a := gen.QueueJobsAggregations{}
+// func transformQueueJobsAggregations(aggs adapter.FacetResult) (gen.QueueJobsAggregations, error) {
+// 	a := gen.QueueJobsAggregations{}
 
-	if queue, ok := aggs[search.QueueJobQueueFacetKey]; ok {
-		agg, err := queueJobQueueAggs(queue.Items)
-		if err != nil {
-			return a, err
-		}
+// 	if queue, ok := aggs[search.QueueJobQueueFacetKey]; ok {
+// 		agg, err := queueJobQueueAggs(queue.Items)
+// 		if err != nil {
+// 			return a, err
+// 		}
 
-		a.Queue = agg
-	}
+// 		a.Queue = agg
+// 	}
 
-	if status, ok := aggs[search.QueueJobStatusFacetKey]; ok {
-		agg, err := queueJobStatusAggs(status.Items)
-		if err != nil {
-			return a, err
-		}
+// 	if status, ok := aggs[search.QueueJobStatusFacetKey]; ok {
+// 		agg, err := queueJobStatusAggs(status.Items)
+// 		if err != nil {
+// 			return a, err
+// 		}
 
-		a.Status = agg
-	}
+// 		a.Status = agg
+// 	}
 
-	return a, nil
-}
+// 	return a, nil
+// }

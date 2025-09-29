@@ -4,10 +4,9 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 	"gorm.io/gen/field"
 )
-
-const Video3DFacetKey = "video_3d"
 
 func video3dField(q *dao.Query) field.Field {
 	return q.TorrentContent.Video3D
@@ -17,7 +16,7 @@ func Video3DFacet(options ...query.FacetOption) query.Facet {
 	return video3dFacet{torrentContentAttributeFacet[model.Video3D]{
 		FacetConfig: query.NewFacetConfig(
 			append([]query.FacetOption{
-				query.FacetHasKey(Video3DFacetKey),
+				query.FacetHasKey(adapter.FacetVideo3D),
 				query.FacetHasLabel("Video 3D"),
 				query.FacetUsesOrLogic(),
 				query.FacetTriggersCte(),

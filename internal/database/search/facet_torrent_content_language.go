@@ -7,15 +7,14 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 )
-
-const LanguageFacetKey = "language"
 
 func TorrentContentLanguageFacet(options ...query.FacetOption) query.Facet {
 	return torrentContentLanguageFacet{
 		FacetConfig: query.NewFacetConfig(
 			append([]query.FacetOption{
-				query.FacetHasKey(LanguageFacetKey),
+				query.FacetHasKey(adapter.FacetLanguage),
 				query.FacetHasLabel("Language"),
 				query.FacetUsesLogic(model.FacetLogicOr),
 				query.FacetTriggersCte(),

@@ -223,7 +223,10 @@ func TestClassifier(t *testing.T) {
 				assert.Equal(t, tc.expectedErr, runErr)
 				t.Log(runErr)
 			} else {
-				assert.Equal(t, tc.expected, result)
+				expected := tc.expected
+				expected.Torrent = tc.torrent
+
+				assert.Equal(t, expected, result)
 			}
 		})
 	}

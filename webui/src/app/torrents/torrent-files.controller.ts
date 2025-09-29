@@ -6,8 +6,8 @@ export class TorrentFilesController {
   private controlsSubject: BehaviorSubject<TorrentFilesControls>;
   controls$: Observable<TorrentFilesControls>;
 
-  private variablesSubject: BehaviorSubject<generated.TorrentFilesQueryVariables>;
-  variables$: Observable<generated.TorrentFilesQueryVariables>;
+  private variablesSubject: BehaviorSubject<generated.TorrentFilesSearchQueryVariables>;
+  variables$: Observable<generated.TorrentFilesSearchQueryVariables>;
 
   constructor(infoHash: string) {
     const ctrl: TorrentFilesControls = {
@@ -53,12 +53,14 @@ export type TorrentFilesControls = {
 
 const controlsToQueryVariables = (
   ctrl: TorrentFilesControls,
-): generated.TorrentFilesQueryVariables => ({
+): generated.TorrentFilesSearchQueryVariables => ({
   input: {
-    infoHashes: [ctrl.infoHash],
     limit: ctrl.limit,
     page: ctrl.page,
     totalCount: true,
     hasNextPage: false,
+    criteria: {
+      infoHash: ctrl.infoHash,
+    },
   },
 });

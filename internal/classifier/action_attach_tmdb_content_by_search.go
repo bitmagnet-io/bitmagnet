@@ -2,6 +2,8 @@ package classifier
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
+	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
 
@@ -13,14 +15,14 @@ func (attachTmdbContentBySearchAction) name() string {
 	return attachTmdbContentBySearchName
 }
 
-var attachTmdbContentBySearchPayloadSpec = payloadLiteral[string]{
-	literal:     attachTmdbContentBySearchName,
-	description: "Attempt to attach content from the TMDB API with a search on the torrent name",
+var attachTmdbContentBySearchSpec = json_spec.Literal[string]{
+	Literal:     attachTmdbContentBySearchName,
+	Description: "Attempt to attach content from the TMDB API with a search on the torrent name",
 }
 
-func (attachTmdbContentBySearchAction) compileAction(ctx compilerContext) (action, error) {
-	if _, err := attachTmdbContentBySearchPayloadSpec.Unmarshal(ctx); err != nil {
-		return action{}, ctx.error(err)
+func (attachTmdbContentBySearchAction) compile(ctx compilerContext) (action, error) {
+	if _, err := attachTmdbContentBySearchSpec.Parse(ctx.jsonSpec); err != nil {
+		return action{}, ctx.Error(err)
 	}
 
 	return action{
@@ -53,6 +55,6 @@ func (attachTmdbContentBySearchAction) compileAction(ctx compilerContext) (actio
 	}, nil
 }
 
-func (attachTmdbContentBySearchAction) JSONSchema() JSONSchema {
-	return attachTmdbContentBySearchPayloadSpec.JSONSchema()
+func (attachTmdbContentBySearchAction) JSONSchema() json_schema.JSONSchema {
+	return attachTmdbContentBySearchSpec.JSONSchema()
 }

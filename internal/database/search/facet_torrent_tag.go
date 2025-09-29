@@ -3,15 +3,14 @@ package search
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 )
-
-const TorrentTagFacetKey = "torrent_tag"
 
 func TorrentTagsFacet(options ...query.FacetOption) query.Facet {
 	return torrentTagFacet{
 		FacetConfig: query.NewFacetConfig(
 			append([]query.FacetOption{
-				query.FacetHasKey(TorrentTagFacetKey),
+				query.FacetHasKey(adapter.FacetTag),
 				query.FacetHasLabel("Torrent Tag"),
 				query.FacetUsesAndLogic(),
 				query.FacetHasAggregationOption(query.RequireJoin(model.TableNameTorrentContent)),

@@ -3,6 +3,8 @@ package classifier
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/parsers"
+	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
 )
 
 const parseDateName = "parse_date"
@@ -13,14 +15,14 @@ func (parseDateAction) name() string {
 	return parseDateName
 }
 
-var parseDatePayloadSpec = payloadLiteral[string]{
-	literal:     parseDateName,
-	description: "Try to parse a date from the name of the current torrent",
+var parseDateSpec = json_spec.Literal[string]{
+	Literal:     parseDateName,
+	Description: "Try to parse a date from the name of the current torrent",
 }
 
-func (parseDateAction) compileAction(ctx compilerContext) (action, error) {
-	if _, err := parseDatePayloadSpec.Unmarshal(ctx); err != nil {
-		return action{}, ctx.error(err)
+func (parseDateAction) compile(ctx compilerContext) (action, error) {
+	if _, err := parseDateSpec.Parse(ctx.jsonSpec); err != nil {
+		return action{}, ctx.Error(err)
 	}
 
 	return action{
@@ -36,6 +38,6 @@ func (parseDateAction) compileAction(ctx compilerContext) (action, error) {
 	}, nil
 }
 
-func (parseDateAction) JSONSchema() JSONSchema {
-	return parseDatePayloadSpec.JSONSchema()
+func (parseDateAction) JSONSchema() json_schema.JSONSchema {
+	return parseDateSpec.JSONSchema()
 }

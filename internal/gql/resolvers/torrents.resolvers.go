@@ -8,7 +8,7 @@ import (
 	"context"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
+	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
@@ -16,6 +16,8 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/persister"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
+	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 )
 
 // Delete is the resolver for the delete field.
@@ -88,11 +90,38 @@ func (r *torrentMutationResolver) Reprocess(ctx context.Context, obj *gqlmodel.T
 	return nil, r.Indexer.NewJob(params).Run(ctx)
 }
 
+// SearchTorrentContent is the resolver for the searchTorrentContent field.
+func (r *torrentQueryResolver) SearchTorrentContent(ctx context.Context, obj *gqlmodel.TorrentQuery, input adapter.Params) (gqlmodel.BaseSearchResult[gqlmodel.TorrentContent], error) {
+	result, err := search.Adapter{
+		Search: obj.Search,
+	}.TorrentContent(ctx, input)
+
+	return gqlmodel.TorrentContentSearchResult(gqlmodel.TorrentContentSearchResult{
+		TotalCount:           result.TotalCount,
+		TotalCountIsEstimate: result.TotalCountIsEstimate,
+		HasNextPage:          result.HasNextPage,
+		Facets:               result.Facets,
+		Items: slice.Map(result.Items, func(item adapter.TorrentContentResultItem) gqlmodel.TorrentContent {
+			var content *model.Content
+			if item.Content.ID != "" {
+				content = &item.Content
+			}
+
+			return gqlmodel.TorrentContent{
+				TorrentContent: item.TorrentContent,
+				Content:        content,
+			}
+		}),
+	}), err
+}
+
 // Files is the resolver for the files field.
-func (r *torrentQueryResolver) Files(ctx context.Context, obj *gqlmodel.TorrentQuery, input gqlmodel.TorrentFilesQueryInput) (query.GenericResult[model.TorrentFile], error) {
-	return gqlmodel.TorrentQuery{
-		Search: r.Search,
-	}.Files(ctx, input)
+func (r *torrentQueryResolver) SearchTorrentFiles(ctx context.Context, obj *gqlmodel.TorrentQuery, input adapter.Params) (gqlmodel.BaseSearchResult[model.TorrentFile], error) {
+	result, err := search.Adapter{
+		Search: obj.Search,
+	}.TorrentFiles(ctx, input)
+
+	return gqlmodel.TorrentFilesSearchResult(result), err
 }
 
 // TorrentMutation returns gql.TorrentMutationResolver implementation.

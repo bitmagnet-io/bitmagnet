@@ -42,7 +42,7 @@ export class TorrentPermalinkComponent implements OnInit {
           query: generated.TorrentContentSearchDocument,
           variables: {
             input: {
-              infoHashes: [infoHash],
+              criteria: { infoHash },
             },
           },
           fetchPolicy: "no-cache",

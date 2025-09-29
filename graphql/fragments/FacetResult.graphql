@@ -1,0 +1,15 @@
+fragment FacetResultItem on FacetResultItem {
+  value
+  label
+  count
+  isEstimate
+}
+
+fragment FacetResult on FacetResult {
+  key
+  label
+  logic
+  items {
+    ...FacetResultItem
+  }
+}

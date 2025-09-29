@@ -4,16 +4,15 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 	"gorm.io/gen/field"
 )
-
-const VideoCodecFacetKey = "video_codec"
 
 func VideoCodecFacet(options ...query.FacetOption) query.Facet {
 	return videoCodecFacet{torrentContentAttributeFacet[model.VideoCodec]{
 		FacetConfig: query.NewFacetConfig(
 			append([]query.FacetOption{
-				query.FacetHasKey(VideoCodecFacetKey),
+				query.FacetHasKey(adapter.FacetVideoCodec),
 				query.FacetHasLabel("Video Codec"),
 				query.FacetUsesOrLogic(),
 				query.FacetTriggersCte(),

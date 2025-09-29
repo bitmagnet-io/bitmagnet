@@ -15,23 +15,13 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/fts"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/search"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 	"gorm.io/gen"
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
-
-type ResultItem struct {
-	QueryStringRank float64
-}
-
-type GenericResult[T interface{}] struct {
-	TotalCount           uint
-	TotalCountIsEstimate bool
-	HasNextPage          bool
-	Items                []T
-	Aggregations         Aggregations
-}
 
 type SubQueryFactory = func(context.Context, *dao.Query) SubQuery
 
@@ -42,10 +32,10 @@ func GenericQuery[T interface{}](
 	option Option,
 	tableName string,
 	factory SubQueryFactory,
-) (GenericResult[T], error) {
+) (adapter.Result[T], error) {
 	daoQ, err := daoP.Dao()
 	if err != nil {
-		return GenericResult[T]{}, err
+		return adapter.Result[T]{}, err
 	}
 
 	gq := genericQuery[T]{
@@ -79,10 +69,10 @@ func GenericQuery[T interface{}](
 	go func() {
 		defer wg.Done()
 
-		if aggs, aggErr := gq.builder.calculateAggregations(gq.ctx); aggErr != nil {
-			gq.addError(aggErr)
+		if facets, facetsErr := gq.builder.calculateFacets(gq.ctx); facetsErr != nil {
+			gq.addError(facetsErr)
 		} else {
-			gq.result.Aggregations = aggs
+			gq.result.Facets = facets
 		}
 	}()
 	wg.Wait()
@@ -97,7 +87,7 @@ type genericQuery[T interface{}] struct {
 	builder OptionBuilder
 	mtx     sync.Mutex
 	errs    []error
-	result  GenericResult[T]
+	result  adapter.Result[T]
 }
 
 func (gq *genericQuery[_]) newSubQuery(ctx context.Context, withOrder bool) (SubQuery, error) {
@@ -150,7 +140,7 @@ func (gq *genericQuery[_]) doCount() {
 		); countErr != nil {
 			gq.addError(countErr)
 		} else {
-			gq.result.TotalCount = uint(countResult.Count)
+			gq.result.TotalCount = model.NewNullUint(uint(countResult.Count))
 			gq.result.TotalCountIsEstimate = countResult.BudgetExceeded
 		}
 	}
@@ -270,8 +260,10 @@ func (gq *genericQuery[T]) doItems() {
 		}
 
 		if gq.builder.hasNextPage(len(finalItems)) {
-			gq.result.HasNextPage = true
+			gq.result.HasNextPage = model.NewNullBool(true)
 			finalItems = finalItems[:len(finalItems)-1]
+		} else if gq.builder.needsNextPage() {
+			gq.result.HasNextPage = model.NewNullBool(false)
 		}
 
 		if len(finalItems) > 0 {
@@ -392,7 +384,7 @@ type OptionBuilder interface {
 	applyPre(sq SubQuery, withOrderJoins bool) error
 	applyPost(*gorm.DB) error
 	createFacetsFilterCriteria() (Criteria, error)
-	calculateAggregations(context.Context) (Aggregations, error)
+	calculateFacets(context.Context) ([]adapter.FacetResult, error)
 	WithTotalCount(bool) OptionBuilder
 	WithHasNextPage(bool) OptionBuilder
 	WithAggregationBudget(float64) OptionBuilder
@@ -402,7 +394,7 @@ type OptionBuilder interface {
 	hasZeroLimit() bool
 	needsNextPage() bool
 	hasNextPage(nItems int) bool
-	withCurrentFacet(string) OptionBuilder
+	withCurrentFacet(search.Facet) OptionBuilder
 	shouldTryCteStrategy() bool
 	createContext(context.Context) context.Context
 }
@@ -421,7 +413,7 @@ type optionBuilder struct {
 	nextPage          bool
 	offset            uint
 	facets            []Facet
-	currentFacet      string
+	currentFacet      search.Facet
 	preloads          []field.RelationField
 	totalCount        bool
 	aggregationBudget float64
@@ -590,7 +582,7 @@ func (b optionBuilder) AggregationBudget() float64 {
 	return b.aggregationBudget
 }
 
-func (b optionBuilder) withCurrentFacet(facet string) OptionBuilder {
+func (b optionBuilder) withCurrentFacet(facet search.Facet) OptionBuilder {
 	b.currentFacet = facet
 	return b
 }
