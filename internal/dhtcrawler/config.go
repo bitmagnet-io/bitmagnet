@@ -37,10 +37,26 @@ func NewDefaultConfig() Config {
 
 // https://github.com/anacrolix/dht/blob/92b36a3fa7a37a15e08684337b47d8d0fb322ab6/dht.go#L106
 var defaultBootstrapNodes = []string{
-	"router.utorrent.com:6881",
-	"router.bittorrent.com:6881",
-	"dht.transmissionbt.com:6881",
-	"dht.aelitis.com:6881",     // Vuze
-	"router.silotis.us:6881",   // IPv6
-	"dht.libtorrent.org:25401", // @arvidn's
+    "dht.transmissionbt.com:6881"
+    "router.bittorrent.com:6881"
+    "router.utorrent.com:6881"
+    "dht.vuze.com:6881"
+    "router.bt.ouinet.work:6881"
+    "router.bittorrent.com:8991"
+    "router.bitcomet.com:688"
+    "dht.aelitis.com:6881"
+    "node1.hyperdht.org:49737"
+    "node2.hyperdht.org:49737"
+    "node3.hyperdht.org:49737"
+    "dht.anacrolix.link:42069"
+    "router.bittorrent.cloud:42069"
+    "router.silotis.us:6881"
+    "ntp.juliusbeckmann.de:6881"
+    "mgts.ivth.ru:57858"
+    "sorcerer.leentje.org:49786"
+    "libertalia.space:50005"
+    "milda.intelib.org:51413"
+    "routerx.bt.ouinet.work:5060"
+    "bootstrap.jami.net:4222"
+    "dht.libtorrent.org:25401"
 }
