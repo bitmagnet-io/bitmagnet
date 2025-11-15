@@ -2,6 +2,8 @@ package dhtcrawler
 
 import (
 	"context"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
@@ -163,25 +165,34 @@ func createTorrentModel(
 	var filesCount model.NullUint
 
 	filesStatus := model.FilesStatusSingle
-	if len(info.Files) > 0 {
-		filesStatus = model.FilesStatusMulti
-		filesCount = model.NewNullUint(uint(len(info.Files)))
-	}
-
 	files := make([]model.TorrentFile, 0, min(int(saveFilesThreshold), len(info.Files)))
 
-	for i, file := range info.Files {
-		if i >= int(saveFilesThreshold) {
-			filesStatus = model.FilesStatusOverThreshold
-			break
+	if len(info.Files) > 0 {
+		filesStatus = model.FilesStatusMulti
+		nonPaddingFiles := 0
+
+		for i, file := range info.Files {
+			if isPaddingFile(file) {
+				continue
+			}
+
+			if nonPaddingFiles >= int(saveFilesThreshold) {
+				filesStatus = model.FilesStatusOverThreshold
+			} else {
+				// Persist only the subset of files we keep locally;
+				// the DB entry count still reflects every non-padding file.
+				files = append(files, model.TorrentFile{
+					InfoHash: hash,
+					Index:    uint(i),
+					Path:     file.DisplayPath(&info),
+					Size:     uint(file.Length),
+				})
+			}
+
+			nonPaddingFiles++
 		}
 
-		files = append(files, model.TorrentFile{
-			InfoHash: hash,
-			Index:    uint(i),
-			Path:     file.DisplayPath(&info),
-			Size:     uint(file.Length),
-		})
+		filesCount = model.NewNullUint(uint(nonPaddingFiles))
 	}
 
 	var pieces model.TorrentPieces
@@ -209,6 +220,26 @@ func createTorrentModel(
 			},
 		},
 	}, nil
+}
+
+func isPaddingFile(file metainfo.FileInfo) bool {
+	if strings.Contains(file.Attr, "p") {
+		return true
+	}
+
+	pathSegments := file.BestPath()
+	for i := 0; i < len(pathSegments)-1; i++ {
+		if pathSegments[i] != ".pad" {
+			continue
+		}
+
+		if size, err := strconv.ParseInt(pathSegments[i+1], 10, 64); err == nil && size == file.Length {
+			// Recommended BEP47 path format: .pad/<length>.
+			return true
+		}
+	}
+
+	return false
 }
 
 const classifyBatchSize = 100
