@@ -228,6 +228,13 @@ func isPaddingFile(file metainfo.FileInfo) bool {
 	}
 
 	pathSegments := file.BestPath()
+	if len(pathSegments) > 0 {
+		lastSegment := pathSegments[len(pathSegments)-1]
+		if strings.HasPrefix(lastSegment, "_____padding_file_") {
+			return true
+		}
+	}
+
 	for i := 0; i < len(pathSegments)-1; i++ {
 		if pathSegments[i] != ".pad" {
 			continue
