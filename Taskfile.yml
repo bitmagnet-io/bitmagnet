@@ -52,8 +52,8 @@ tasks:
 
   lint:
     cmds:
-      # Removing golang-ci lint as the Nix package is currently broken
-      # - task lint-golangci
+      # golang-ci lint is from nix overlay
+      - task lint-golangci
       - task lint-webui
       - task lint-prettier
 
