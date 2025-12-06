@@ -26,7 +26,7 @@ func (s service) Auth(ctx context.Context, key string) (model.APIKey, error) {
 		return model.APIKey{}, fmt.Errorf("%w: %w: %w", Err, ErrAuth, err)
 	}
 
-	if apiKey.ExpiresAt.Valid && apiKey.ExpiresAt.Time.After(time.Now()) {
+	if apiKey.ExpiresAt.Valid && apiKey.ExpiresAt.Time.Before(time.Now()) {
 		return model.APIKey{}, fmt.Errorf("%w: %w: %w", Err, ErrAuth, ErrExpired)
 	}
 
