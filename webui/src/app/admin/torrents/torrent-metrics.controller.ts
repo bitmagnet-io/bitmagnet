@@ -36,7 +36,7 @@ export class TorrentMetricsController {
   public result$ = this.resultSubject.asObservable();
   private loadingSubject = new BehaviorSubject(false);
 
-  private refreshTimeout?: number;
+  private refreshTimeout?: ReturnType<typeof setTimeout>;
 
   constructor(
     private apollo: Apollo,
