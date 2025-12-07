@@ -42,6 +42,7 @@ var defaultFeatures = newFeatures(
 		unmatchedAction{},
 		parseDateAction{},
 		parseVideoContentAction{},
+		removeTagAction{},
 		runWorkflowAction{},
 		setContentTypeAction{},
 	),

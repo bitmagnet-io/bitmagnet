@@ -21,7 +21,7 @@ import (
 )
 
 type resolver struct {
-	*Builder
+	plugins         ref.Map[plugin.Plugin]
 	config          config_resolver.Resolved
 	i18nProvider    i18n.Provider
 	errorRegistry   error_registry.Registry
@@ -43,10 +43,10 @@ func (r *resolver) resolve() (*Registry, error) {
 
 	requiredBy := make(map[string][]ref.Ref)
 
-	pluginInfos := plugin.PluginInfos(slice.Map(r.AllRefs(), func(ref ref.Ref) plugin.PluginInfo {
+	pluginInfos := plugin.PluginInfos(slice.Map(r.plugins.Refs(), func(ref ref.Ref) plugin.PluginInfo {
 		_, enabled := resolvedNamesMap[ref.String()]
 
-		dependsOn := r.DependenciesOf(ref)
+		dependsOn := r.dependenciesOf(ref)
 
 		for _, dep := range dependsOn {
 			requiredBy[dep.String()] = append(requiredBy[dep.String()], ref)
@@ -95,6 +95,39 @@ func (r *resolver) resolve() (*Registry, error) {
 	}, nil
 }
 
+func (r *resolver) dependenciesOf(rf ref.Ref) []ref.Ref {
+	plugin, ok := r.plugins.GetOK(rf)
+	if !ok {
+		return nil
+	}
+
+	var result []ref.Ref
+
+	seen := make(map[string]struct{})
+
+	for _, dependency := range plugin.Dependencies() {
+		if _, ok := seen[dependency.String()]; !ok {
+			seen[dependency.String()] = struct{}{}
+
+			result = append(result, dependency)
+			for _, subDependency := range r.dependenciesOf(dependency) {
+				if _, ok = seen[subDependency.String()]; !ok {
+					seen[subDependency.String()] = struct{}{}
+
+					result = append(result, subDependency)
+				}
+			}
+		}
+		// todo: Detect circular
+	}
+
+	slices.SortFunc(result, func(a, b ref.Ref) int {
+		return cmp.Compare(a.String(), b.String())
+	})
+
+	return result
+}
+
 func (r *resolver) resolveNames() (map[string]ref.Ref, error) {
 	for _, ref := range r.disabledPlugins {
 		if !r.plugins.Has(ref) {
@@ -121,7 +154,7 @@ func (r *resolver) resolveNames() (map[string]ref.Ref, error) {
 			return nil
 		}
 
-		for _, dep := range r.DependenciesOf(ref) {
+		for _, dep := range r.dependenciesOf(ref) {
 			if err := addPlugin(dep); err != nil {
 				return fmt.Errorf("%w: %s: %w", ErrDependency, ref, err)
 			}

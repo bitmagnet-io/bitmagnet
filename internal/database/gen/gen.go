@@ -235,6 +235,15 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		readAndCreateField("key"),
 		createdAtReadOnly,
 	)
+	contentTags := g.GenerateModel(
+		"content_tags",
+		gen.FieldGenType("name", "String"),
+		gen.FieldGORMTag("name", func(tag field.GormTag) field.GormTag {
+			tag.Set("<-", "create")
+			return tag
+		}),
+		createdAtReadOnly,
+	)
 	content := g.GenerateModel(
 		"content",
 		gen.FieldRelate(
@@ -263,6 +272,18 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 			&field.RelateConfig{
 				GORMTag: field.GormTag{
 					"foreignKey": {"Source"},
+				},
+			},
+		),
+		gen.FieldRelate(
+			field.HasMany,
+			"Tags",
+			contentTags,
+			&field.RelateConfig{
+				RelateSlice: true,
+				GORMTag: field.GormTag{
+					"foreignKey": []string{"ContentType,ContentSource,ContentID"},
+					"references": []string{"Type,Source,ID"},
 				},
 			},
 		),
@@ -369,6 +390,11 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 				gen.FieldType("leechers", "NullUint"),
 				gen.FieldType("size", "uint"),
 				gen.FieldType("files_count", "NullUint"),
+				gen.FieldType("tags", "StringArray"),
+				gen.FieldGORMTag("tags", func(tag field.GormTag) field.GormTag {
+					tag.Set("type", "text[]")
+					return tag
+				}),
 			},
 			torrentContentBaseOptions...,
 		)...,
@@ -603,6 +629,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 		torrentContent,
 		torrentHints,
 		contentCollections,
+		contentTags,
 		content,
 		contentCollectionContent,
 		contentAttributes,

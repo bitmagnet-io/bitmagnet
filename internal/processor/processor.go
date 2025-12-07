@@ -4,14 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"maps"
-	"slices"
 	"sync"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/blocker"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
-	"github.com/bitmagnet-io/bitmagnet/internal/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
@@ -19,7 +16,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/persister"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue"
-	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"gorm.io/gen/field"
 )
@@ -28,9 +24,8 @@ type Processor interface {
 	NewJob(params MessageParams) runner.Runner
 }
 
-type indexer struct {
+type processor struct {
 	searchClient     search.Search
-	daoProvider      database.DaoTransactionProvider
 	blocker          blocker.Blocker
 	runner           classifier.Runner
 	queueJobProvider queue.JobProvider[MessageParams]
@@ -40,7 +35,7 @@ type indexer struct {
 
 const concurrency = 10
 
-func (c indexer) NewJob(params MessageParams) runner.Runner {
+func (p processor) NewJob(params MessageParams) runner.Runner {
 	return func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
 		shutdown := make(chan struct{})
 
@@ -57,7 +52,7 @@ func (c indexer) NewJob(params MessageParams) runner.Runner {
 			setupCancel()
 		}()
 
-		searchResult, err := c.getTorrentsToClassify(setupCtx, params)
+		searchResult, err := p.getTorrentsToClassify(setupCtx, params)
 
 		setupCancel()
 
@@ -77,7 +72,7 @@ func (c indexer) NewJob(params MessageParams) runner.Runner {
 		go func() {
 			defer cancel(runner.ErrCompleted)
 
-			err := c.handleTorrents(
+			err := p.handleTorrents(
 				ctx,
 				shutdown,
 				params.ClassifierParams,
@@ -110,11 +105,11 @@ func (c indexer) NewJob(params MessageParams) runner.Runner {
 	}
 }
 
-func (c indexer) getTorrentsToClassify(
+func (p processor) getTorrentsToClassify(
 	ctx context.Context,
 	params MessageParams,
 ) (search.TorrentsWithMissingInfoHashesResult, error) {
-	searchResult, searchErr := c.searchClient.TorrentsWithMissingInfoHashes(
+	searchResult, searchErr := p.searchClient.TorrentsWithMissingInfoHashes(
 		ctx,
 		params.InfoHashes,
 		query.Preload(func(q *dao.Query) []field.RelationField {
@@ -122,6 +117,7 @@ func (c indexer) getTorrentsToClassify(
 				q.Torrent.Files.RelationField,
 				q.Torrent.Hint.RelationField,
 				q.Torrent.Sources.RelationField,
+				q.Torrent.Tags.RelationField,
 			}
 		}),
 	)
@@ -129,7 +125,7 @@ func (c indexer) getTorrentsToClassify(
 		return searchResult, searchErr
 	}
 
-	tcResult, tcErr := c.searchClient.TorrentContent(
+	tcResult, tcErr := p.searchClient.TorrentContent(
 		ctx,
 		query.Where(search.TorrentContentInfoHashCriteria(params.InfoHashes...)),
 		search.HydrateTorrentContentContent(),
@@ -154,16 +150,14 @@ func (c indexer) getTorrentsToClassify(
 	return searchResult, nil
 }
 
-func (c indexer) handleTorrents(
+func (p processor) handleTorrents(
 	ctx context.Context,
 	shutdown <-chan struct{},
 	params ClassifierParams,
 	searchResult search.TorrentsWithMissingInfoHashesResult,
 ) error {
 	var (
-		mtx sync.Mutex
-		//idsToDelete        []string
-		//infoHashesToDelete []protocol.ID
+		mtx         sync.Mutex
 		interrupted bool
 		hasInputs   bool
 		errs        []error
@@ -176,6 +170,7 @@ func (c indexer) handleTorrents(
 
 		mtx.Lock()
 		defer mtx.Unlock()
+
 		errs = append(errs, err)
 	}
 
@@ -206,44 +201,15 @@ func (c indexer) handleTorrents(
 				<-sem
 			}()
 
-			result, err := c.handleTorrent(classifyCtx, params, torrent)
-
-			var inputs persister.Inputs
-
+			persisterInputs, err := p.handleTorrent(classifyCtx, params, torrent)
 			if err != nil {
-				if errors.Is(err, classification.ErrDeleteTorrent) {
-					inputs = append(inputs, persister.InputDeleteInfoHashes(torrent.InfoHash))
-				} else {
-					failedHashes = append(failedHashes, torrent.InfoHash)
-					addErr(err)
-				}
+				failedHashes = append(failedHashes, torrent.InfoHash)
 
-				// return
+				addErr(err)
 			}
 
-			for ref := range result.tcRefsToDelete {
-				inputs = append(inputs, persister.InputDeleteTorrentContent(ref))
-			}
-
-			inputs = append(inputs, persister.InputTorrentContents(result.torrentContent))
-
-			if len(result.tagsToAdd) > 0 {
-				inputs = append(
-					inputs,
-					persister.InputTorrentTags(slice.Map(
-						slices.Collect(maps.Keys(result.tagsToAdd)),
-						func(tag string) model.TorrentTag {
-							return model.TorrentTag{
-								InfoHash: torrent.InfoHash,
-								Name:     tag,
-							}
-						},
-					)...),
-				)
-			}
-
-			if len(inputs) > 0 {
-				err := c.persister.Add(ctx, inputs.Input())
+			if len(persisterInputs) > 0 {
+				err := p.persister.Add(ctx, persisterInputs.Input())
 				if err != nil {
 					addErr(err)
 				} else {
@@ -279,18 +245,20 @@ func (c indexer) handleTorrents(
 
 	if len(failedHashes) > 0 {
 		var inputs persister.Inputs
+
 		for _, infoHash := range failedHashes {
-			job, err := c.queueJobProvider(MessageParams{
+			job, err := p.queueJobProvider(MessageParams{
 				InfoHashes:       []protocol.ID{infoHash},
 				ClassifierParams: params,
 			})
 			if err != nil {
 				return fmt.Errorf("%w: %w", Err, err)
 			}
+
 			inputs = append(inputs, persister.InputQueueJobs(job))
 		}
 
-		err := c.persister.Add(ctx, inputs.Input())
+		err := p.persister.Add(ctx, inputs.Input())
 		if err != nil {
 			return fmt.Errorf("%w: %w", Err, err)
 		}
@@ -302,14 +270,14 @@ func (c indexer) handleTorrents(
 type handleTorrentResult struct {
 	torrentContent model.TorrentContent
 	tcRefsToDelete map[model.TorrentContentRef]struct{}
-	tagsToAdd      map[string]struct{}
+	tags           map[string]bool
 }
 
-func (c indexer) handleTorrent(
+func (p processor) handleTorrent(
 	ctx context.Context,
 	params ClassifierParams,
 	torrent model.Torrent,
-) (handleTorrentResult, error) {
+) (persister.Inputs, error) {
 	thisDeleteIDs := make(map[model.TorrentContentRef]struct{}, len(torrent.Contents))
 	foundMatch := false
 
@@ -331,22 +299,65 @@ func (c indexer) handleTorrent(
 
 	workflowName := params.ClassifierWorkflow
 	if workflowName == "" {
-		workflowName = c.defaultWorkflow
+		workflowName = p.defaultWorkflow
 	}
 
-	cl, classifyErr := c.runner.Run(ctx, workflowName, params.ClassifierFlags, torrent)
+	cl, err := p.runner.Run(ctx, workflowName, params.ClassifierFlags, torrent)
 
-	if classifyErr != nil {
-		return handleTorrentResult{}, classifyErr
+	if err != nil {
+		return errorToInputs(torrent.InfoHash, err)
 	}
 
 	torrentContent := cl.ToTorrentContent()
 
 	delete(thisDeleteIDs, torrentContent.Ref())
 
-	return handleTorrentResult{
+	return resultToInputs(handleTorrentResult{
 		torrentContent: torrentContent,
 		tcRefsToDelete: thisDeleteIDs,
-		tagsToAdd:      cl.Tags,
-	}, nil
+		tags:           cl.Tags,
+	}), nil
+}
+
+func errorToInputs(infoHash protocol.ID, err error) (persister.Inputs, error) {
+	if errors.Is(err, classification.ErrDeleteTorrent) {
+		return persister.Inputs{persister.InputDeleteInfoHashes(infoHash)}, nil
+	}
+
+	return nil, err
+}
+
+func resultToInputs(result handleTorrentResult) persister.Inputs {
+	var inputs persister.Inputs
+
+	for ref := range result.tcRefsToDelete {
+		inputs = append(inputs, persister.InputDeleteTorrentContent(ref))
+	}
+
+	inputs = append(inputs, persister.InputTorrentContent(result.torrentContent))
+
+	var tagsToAdd, tagsToRemove []string
+	for tagName, addRemove := range result.tags {
+		if addRemove {
+			tagsToAdd = append(tagsToAdd, tagName)
+		} else {
+			tagsToRemove = append(tagsToRemove, tagName)
+		}
+	}
+
+	if len(tagsToAdd) > 0 {
+		inputs = append(
+			inputs,
+			persister.InputTorrentTags(result.torrentContent.InfoHash, tagsToAdd...),
+		)
+	}
+
+	if len(tagsToRemove) > 0 {
+		inputs = append(
+			inputs,
+			persister.InputDeleteTorrentTags(result.torrentContent.InfoHash, tagsToRemove...),
+		)
+	}
+
+	return inputs
 }

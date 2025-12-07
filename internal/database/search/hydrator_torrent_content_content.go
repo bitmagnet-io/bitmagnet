@@ -9,7 +9,7 @@ import (
 )
 
 func HydrateTorrentContentContent() query.Option {
-	return query.HydrateHasOne[adapter.TorrentContentResultItem, model.Content, model.ContentRef](
+	return query.HydrateHasOne(
 		torrentContentContentHydrator{},
 	)
 }

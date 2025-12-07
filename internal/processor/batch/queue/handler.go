@@ -28,7 +28,7 @@ func New(
 				return runner.NopShutdowner, err
 			}
 
-			daoQ, err := daoProvider.Dao()
+			dao, err := daoProvider.Dao()
 			if err != nil {
 				return runner.NopShutdowner, err
 			}
@@ -49,7 +49,7 @@ func New(
 				}
 
 				scopes = append(scopes, func(tx gen.Dao) gen.Dao {
-					sq := daoQ.TorrentContent.Where(
+					sq := dao.TorrentContent.Where(
 						dao.TorrentContent.InfoHash.EqCol(dao.Torrent.InfoHash),
 					).Where(dao.TorrentContent.ContentType.In(contentTypes...))
 					if unknownContentType {
@@ -64,7 +64,7 @@ func New(
 				scopes = append(scopes, func(tx gen.Dao) gen.Dao {
 					return tx.Not(
 						gen.Exists(
-							daoQ.TorrentContent.Where(
+							dao.TorrentContent.Where(
 								dao.TorrentContent.InfoHash.EqCol(
 									dao.Torrent.InfoHash,
 								),
@@ -74,98 +74,126 @@ func New(
 				})
 			}
 
-			priority := 10
-			// prioritise jobs where API calls are disabled as they will run faster:
-			if msg.ApisDisabled() {
-				priority = 4
-			}
+			go func() {
+				err := handleJob(
+					ctx,
+					*msg,
+					dao,
+					scopes,
+					processJobProvider,
+					batchJobProvider,
+				)
 
-			maxInfoHash := msg.InfoHashGreaterThan
-			chunkSize := uint(0)
-			done := false
-
-			var queueJobs []*model.QueueJob
-
-			for {
-				torrents, findErr := daoQ.Torrent.WithContext(ctx).
-					Scopes(scopes...).
-					Where(
-						dao.Torrent.InfoHash.Gt(maxInfoHash),
-						dao.Torrent.UpdatedAt.Lt(msg.UpdatedBefore),
-					).
-					Select(dao.Torrent.InfoHash).
-					Order(dao.Torrent.InfoHash).
-					Limit(int(msg.BatchSize)).
-					Find()
-				if findErr != nil {
-					return runner.NopShutdowner, findErr
+				if err == nil {
+					err = runner.ErrCompleted
 				}
 
-				if len(torrents) == 0 {
-					done = true
-					break
-				}
-
-				var infoHashes []protocol.ID
-
-				for _, t := range torrents {
-					maxInfoHash = t.InfoHash
-					infoHashes = append(infoHashes, t.InfoHash)
-					chunkSize++
-				}
-
-				job, jobErr := processJobProvider(processor.MessageParams{
-					ClassifierParams: processor.ClassifierParams{
-						ClassifyMode:       msg.ClassifyMode,
-						ClassifierWorkflow: msg.ClassifierWorkflow,
-						ClassifierFlags:    msg.ClassifierFlags,
-					},
-					InfoHashes: infoHashes,
-				}, model.QueueJobPriority(priority))
-				if jobErr != nil {
-					return runner.NopShutdowner, jobErr
-				}
-
-				queueJobs = append(queueJobs, &job)
-
-				if len(torrents) < int(msg.BatchSize) {
-					done = true
-					break
-				}
-
-				if chunkSize >= msg.ChunkSize {
-					break
-				}
-			}
-
-			if !done {
-				job, jobErr := batchJobProvider(batch.MessageParams{
-					InfoHashGreaterThan: maxInfoHash,
-					UpdatedBefore:       msg.UpdatedBefore,
-					ClassifyMode:        msg.ClassifyMode,
-					ClassifierWorkflow:  msg.ClassifierWorkflow,
-					ClassifierFlags:     msg.ClassifierFlags,
-					ChunkSize:           msg.ChunkSize,
-					BatchSize:           msg.BatchSize,
-					ContentTypes:        msg.ContentTypes,
-					Orphans:             msg.Orphans,
-				})
-				if jobErr != nil {
-					return runner.NopShutdowner, jobErr
-				}
-
-				queueJobs = append(queueJobs, &job)
-			}
-
-			if len(queueJobs) > 0 {
-				if createErr := daoQ.QueueJob.
-					WithContext(ctx).
-					Create(queueJobs...); createErr != nil {
-					return runner.NopShutdowner, createErr
-				}
-			}
+				cancel(err)
+			}()
 
 			return runner.NopShutdowner, nil
 		}
 	}
+}
+
+func handleJob(
+	ctx context.Context,
+	msg batch.MessageParams,
+	dao *dao.Query,
+	scopes []func(gen.Dao) gen.Dao,
+	processJobProvider queue.JobProvider[processor.MessageParams],
+	batchJobProvider queue.JobProvider[batch.MessageParams],
+) error {
+	priority := 10
+	// prioritise jobs where API calls are disabled as they will run faster:
+	if msg.ApisDisabled() {
+		priority = 4
+	}
+
+	maxInfoHash := msg.InfoHashGreaterThan
+	chunkSize := uint(0)
+	done := false
+
+	var queueJobs []*model.QueueJob
+
+	for {
+		torrents, err := dao.Torrent.WithContext(ctx).
+			Scopes(scopes...).
+			Where(
+				dao.Torrent.InfoHash.Gt(maxInfoHash),
+				dao.Torrent.UpdatedAt.Lt(msg.UpdatedBefore),
+			).
+			Select(dao.Torrent.InfoHash).
+			Order(dao.Torrent.InfoHash).
+			Limit(int(msg.BatchSize)).
+			Find()
+		if err != nil {
+			return err
+		}
+
+		if len(torrents) == 0 {
+			done = true
+			break
+		}
+
+		var infoHashes []protocol.ID
+
+		for _, t := range torrents {
+			maxInfoHash = t.InfoHash
+			infoHashes = append(infoHashes, t.InfoHash)
+			chunkSize++
+		}
+
+		job, err := processJobProvider(processor.MessageParams{
+			ClassifierParams: processor.ClassifierParams{
+				ClassifyMode:       msg.ClassifyMode,
+				ClassifierWorkflow: msg.ClassifierWorkflow,
+				ClassifierFlags:    msg.ClassifierFlags,
+			},
+			InfoHashes: infoHashes,
+		}, model.QueueJobPriority(priority))
+		if err != nil {
+			return err
+		}
+
+		queueJobs = append(queueJobs, &job)
+
+		if len(torrents) < int(msg.BatchSize) {
+			done = true
+			break
+		}
+
+		if chunkSize >= msg.ChunkSize {
+			break
+		}
+	}
+
+	if !done {
+		job, err := batchJobProvider(batch.MessageParams{
+			InfoHashGreaterThan: maxInfoHash,
+			UpdatedBefore:       msg.UpdatedBefore,
+			ClassifyMode:        msg.ClassifyMode,
+			ClassifierWorkflow:  msg.ClassifierWorkflow,
+			ClassifierFlags:     msg.ClassifierFlags,
+			ChunkSize:           msg.ChunkSize,
+			BatchSize:           msg.BatchSize,
+			ContentTypes:        msg.ContentTypes,
+			Orphans:             msg.Orphans,
+		})
+		if err != nil {
+			return err
+		}
+
+		queueJobs = append(queueJobs, &job)
+	}
+
+	if len(queueJobs) > 0 {
+		if err := dao.QueueJob.
+			WithContext(ctx).
+			Create(queueJobs...); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

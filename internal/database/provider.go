@@ -203,7 +203,7 @@ outer:
 				break outer
 			}
 
-			logger.Warn("no ping response, waiting to try again...")
+			logger.Warn("ping failed, waiting to try again", zap.Error(err))
 		}
 
 		waitFor = time.Second

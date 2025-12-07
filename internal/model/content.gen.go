@@ -34,6 +34,7 @@ type Content struct {
 	Collections      []ContentCollection `gorm:"many2many:content_collections_content" json:"collections"`
 	Attributes       []ContentAttribute  `json:"attributes"`
 	MetadataSource   MetadataSource      `gorm:"foreignKey:Source" json:"metadata_source"`
+	Tags             []ContentTag        `gorm:"foreignKey:ContentType,ContentSource,ContentID;references:Type,Source,ID" json:"tags"`
 }
 
 // TableName Content's table name

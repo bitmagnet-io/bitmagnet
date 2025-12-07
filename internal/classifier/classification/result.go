@@ -1,12 +1,17 @@
 package classification
 
-import "github.com/bitmagnet-io/bitmagnet/internal/model"
+import (
+	"maps"
+	"slices"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/model"
+)
 
 type Result struct {
 	ContentAttributes
 	Torrent model.Torrent
 	Content *model.Content
-	Tags    map[string]struct{}
+	Tags    map[string]bool
 }
 
 func (r *Result) ApplyHint(h model.TorrentHint) {
@@ -31,6 +36,7 @@ func (r *Result) AttachContent(content *model.Content) {
 
 func (r *Result) ToTorrentContent() model.TorrentContent {
 	t := r.Torrent
+
 	var filesCount model.NullUint
 
 	if t.FilesCount.Valid {
@@ -55,6 +61,7 @@ func (r *Result) ToTorrentContent() model.TorrentContent {
 		FilesCount:      filesCount,
 		Seeders:         t.Seeders(),
 		Leechers:        t.Leechers(),
+		Tags:            r.torrentContentTags(),
 		PublishedAt:     t.PublishedAt(),
 	}
 
@@ -70,6 +77,33 @@ func (r *Result) ToTorrentContent() model.TorrentContent {
 	tc.UpdateTsv()
 
 	return tc
+}
+
+func (r *Result) torrentContentTags() []string {
+	tags := make(map[string]struct{})
+
+	for _, tag := range r.Torrent.Tags {
+		if addRemove, ok := r.Tags[tag.Name]; ok && !addRemove {
+			continue
+		}
+
+		tags[tag.Name] = struct{}{}
+	}
+
+	if r.Content != nil {
+		for _, tag := range r.Content.Tags {
+			// add/remove action only acts on torrents, not content
+			tags[tag.Name] = struct{}{}
+		}
+	}
+
+	for tagName, addRemove := range r.Tags {
+		if addRemove {
+			tags[tagName] = struct{}{}
+		}
+	}
+
+	return slices.Sorted(maps.Keys(tags))
 }
 
 type ContentAttributes struct {

@@ -91,6 +91,7 @@ func ContentDefaultPreload() query.Option {
 			query.Content.MetadataSource.RelationField,
 			query.Content.Attributes.RelationField,
 			query.Content.Attributes.MetadataSource.RelationField,
+			query.Content.Tags.RelationField,
 		}
 	})
 }

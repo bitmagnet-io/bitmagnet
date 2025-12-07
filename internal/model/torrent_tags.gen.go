@@ -17,7 +17,6 @@ type TorrentTag struct {
 	InfoHash  protocol.ID `gorm:"column:info_hash;primaryKey;<-:create" json:"infoHash"`
 	Name      string      `gorm:"column:name;primaryKey;<-:create" json:"name"`
 	CreatedAt time.Time   `gorm:"column:created_at;not null;<-:create" json:"createdAt"`
-	UpdatedAt time.Time   `gorm:"column:updated_at;not null" json:"updatedAt"`
 }
 
 // TableName TorrentTag's table name

@@ -4,6 +4,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/blocker"
 	internal_database "github.com/bitmagnet-io/bitmagnet/internal/database"
+	"github.com/bitmagnet-io/bitmagnet/internal/indexer"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/persister"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
@@ -47,6 +48,7 @@ var (
 			fx.Provide(
 				fx.Annotate(
 					func(
+						indexers []indexer.Indexer,
 						maxSize *atomic.Value[persister.MaxSize],
 						maxWait *atomic.Value[persister.MaxWait],
 						daoProvider internal_database.DaoTransactionProvider,
@@ -61,8 +63,10 @@ var (
 							blockerBlocker,
 							logger.Named(Ref.String()),
 							metrics.MustNewComponent(Ref),
+							indexers,
 						)
 					},
+					fx.ParamTags(`group:"indexers"`),
 					fx.As(new(persister.Adder)),
 					fx.As(new(persister.Persister)),
 				),

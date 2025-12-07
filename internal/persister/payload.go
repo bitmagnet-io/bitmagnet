@@ -8,6 +8,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 )
 
 type hashWithID struct {
@@ -26,8 +27,71 @@ type payload struct {
 	torrentContents        maps.InsertMap[model.TorrentContentRef, model.TorrentContent]
 	deleteTorrentContent   maps.InsertMap[model.TorrentContentRef, struct{}]
 	deleteInfoHashes       maps.InsertMap[protocol.ID, struct{}]
-	torrentTags            maps.InsertMap[hashWithID, model.TorrentTag]
+	torrentTags            maps.InsertMap[hashWithID, bool]
 	queueJobs              maps.InsertMap[string, model.QueueJob]
+}
+
+func (p payload) flatten() payload {
+	flattened := payload{
+		shouldFlush:            p.shouldFlush,
+		torrentSources:         p.torrentSources.Copy(),
+		torrentsTorrentSources: p.torrentsTorrentSources.Copy(),
+		torrentPieces:          p.torrentPieces.Copy(),
+		torrentFiles:           p.torrentFiles.Copy(),
+		content:                p.content.Copy(),
+		deleteTorrentContent:   p.deleteTorrentContent.Copy(),
+		torrentTags:            p.torrentTags.Copy(),
+		queueJobs:              p.queueJobs.Copy(),
+	}
+
+	flattened.torrents = maps.NewInsertMap(
+		slice.Map(
+			p.torrents.Entries(),
+			func(e maps.MapEntry[protocol.ID, model.Torrent]) maps.MapEntry[protocol.ID, model.Torrent] {
+				{
+					flattened.torrentFiles.SetEntries(
+						torrentFilesEntries(e.Value.Files...)...,
+					)
+
+					e.Value.Files = nil
+
+					flattened.torrentsTorrentSources.SetEntries(
+						torrentsTorrentSourcesEntries(e.Value.Sources...)...,
+					)
+
+					e.Value.Sources = nil
+
+					if !e.Value.Pieces.InfoHash.IsZero() {
+						flattened.torrentPieces.Set(e.Value.InfoHash, e.Value.Pieces)
+					}
+
+					e.Value.Pieces = model.TorrentPieces{}
+
+					return e
+				}
+			})...,
+	)
+
+	flattened.torrentContents = maps.NewInsertMap(
+		slice.Map(
+			p.torrentContents.Entries(),
+			func(
+				e maps.MapEntry[model.TorrentContentRef, model.TorrentContent],
+			) maps.MapEntry[model.TorrentContentRef, model.TorrentContent] {
+				e.Value.Torrent = model.Torrent{}
+
+				if contentRef := e.Value.ContentRef(); contentRef.Valid && contentRef.Val == e.Value.Content.Ref() {
+					flattened.content.Set(contentRef.Val, e.Value.Content)
+				}
+
+				e.Value.Content = model.Content{}
+
+				return e
+			},
+		)...,
+	)
+
+	return flattened
 }
 
 func (p *payload) requiredInfoHashes() map[protocol.ID]struct{} {
@@ -61,11 +125,10 @@ func newPayload(payloads ...Input) *payload {
 		torrents:               maps.NewInsertMap[protocol.ID, model.Torrent](),
 		content:                maps.NewInsertMap[model.ContentRef, model.Content](),
 		torrentContents:        maps.NewInsertMap[model.TorrentContentRef, model.TorrentContent](),
-		torrentTags:            maps.NewInsertMap[hashWithID, model.TorrentTag](),
+		torrentTags:            maps.NewInsertMap[hashWithID, bool](),
 		deleteTorrentContent:   maps.NewInsertMap[model.TorrentContentRef, struct{}](),
 		deleteInfoHashes:       maps.NewInsertMap[protocol.ID, struct{}](),
-		//addTags:                maps.NewInsertMap[protocol.ID, maps.InsertMap[string, struct{}]](),
-		queueJobs: maps.NewInsertMap[string, model.QueueJob](),
+		queueJobs:              maps.NewInsertMap[string, model.QueueJob](),
 	}
 
 	Inputs(payloads).Input()(payload)

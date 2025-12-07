@@ -40,7 +40,7 @@ func newPersistTorrentsWorker(
 
 				switch {
 				case err == nil:
-					inputs = append(inputs, persister.InputTorrentContents(classifyResult.ToTorrentContent()))
+					inputs = append(inputs, persister.InputTorrentContent(classifyResult.ToTorrentContent()))
 				case errors.Is(err, classification.ErrDeleteTorrent):
 					inputs = persister.Inputs{persister.InputDeleteInfoHashes(i.infoHash)}
 				default:

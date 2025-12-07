@@ -8,6 +8,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/blocker"
 	"github.com/bitmagnet-io/bitmagnet/internal/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
+	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
@@ -21,9 +22,9 @@ type flusher struct {
 }
 
 func (f *flusher) flush(ctx context.Context, payload *payload) (AllTablesStats, error) {
-	job := persistJob{
+	job := &persistJob{
 		flusher: f,
-		payload: *payload,
+		payload: payload.flatten(),
 		stats:   make(AllTablesStats),
 	}
 
@@ -38,10 +39,11 @@ func (f *flusher) flush(ctx context.Context, payload *payload) (AllTablesStats, 
 type persistJob struct {
 	*flusher
 	payload
-	stats AllTablesStats
+	startTime time.Time
+	stats     AllTablesStats
 }
 
-func (j persistJob) run(ctx context.Context) error {
+func (j *persistJob) run(ctx context.Context) error {
 	if j.len() == 0 {
 		return nil
 	}
@@ -61,381 +63,505 @@ func (j persistJob) run(ctx context.Context) error {
 	}
 
 	return j.daoProvider.DaoTransaction(func(tx *dao.Query) error {
-		startTime := time.Now()
+		j.startTime = time.Now()
 
-		var torrentSourceStats TableStats
-
-		if j.torrentSources.Len() > 0 {
-			torrentSourcesPtr := sliceToPointers(j.torrentSources.Values())
-
-			result := tx.TorrentSource.WithContext(ctx).Clauses(
-				clause.Returning{
-					Columns: []clause.Column{{Name: string(tx.TorrentSource.CreatedAt.ColumnName())}},
-				},
-				clause.OnConflict{
-					UpdateAll: true,
-				}).
-				UnderlyingDB().
-				CreateInBatches(torrentSourcesPtr, 100)
-			if result.Error != nil {
-				return result.Error
-			}
-
-			torrentSourceStats.Affected += int(result.RowsAffected)
-			for _, m := range torrentSourcesPtr {
-				if m.CreatedAt.Before(startTime) {
-					torrentSourceStats.Updated++
-				} else {
-					torrentSourceStats.Created++
-				}
-			}
+		if err := j.handleTorrentSources(ctx, tx); err != nil {
+			return err
 		}
 
-		var torrentStats TableStats
-
-		if j.torrents.Len() > 0 {
-			// todo: check for all scenerios!
-			torrentsPtr := sliceToPointers(j.torrents.Values())
-
-			result := tx.Torrent.WithContext(ctx).Clauses(
-				clause.Returning{
-					Columns: []clause.Column{{Name: string(tx.Torrent.CreatedAt.ColumnName())}},
-				},
-				clause.OnConflict{
-					Columns: []clause.Column{{Name: string(tx.Torrent.InfoHash.ColumnName())}},
-					DoUpdates: clause.AssignmentColumns([]string{
-						string(tx.Torrent.Name.ColumnName()),
-						string(tx.Torrent.FilesStatus.ColumnName()),
-						string(tx.Torrent.FilesCount.ColumnName()),
-						string(tx.Torrent.UpdatedAt.ColumnName()),
-					}),
-				}).
-				UnderlyingDB().
-				CreateInBatches(torrentsPtr, 100)
-
-			if result.Error != nil {
-				return result.Error
-			}
-
-			torrentStats.Affected += int(result.RowsAffected)
-
-			for _, m := range torrentsPtr {
-				if m.CreatedAt.Before(startTime) {
-					torrentStats.Updated++
-				} else {
-					torrentStats.Created++
-				}
-			}
+		if err := j.handleTorrents(ctx, tx); err != nil {
+			return err
 		}
 
-		missingInfoHashes, err := j.payload.missingInfoHashes(ctx, tx)
+		missingInfoHashes, err := j.missingInfoHashes(ctx, tx)
 		if err != nil {
 			return err
 		}
 
-		var torrentPiecesStats TableStats
-
-		if torrentPieces := slice.Filter(
-			j.torrentPieces.Values(),
-			func(m model.TorrentPieces) bool {
-				if _, ok := missingInfoHashes[m.InfoHash]; ok || j.payload.deleteInfoHashes.Has(m.InfoHash) {
-					torrentPiecesStats.Ignored++
-					return false
-				}
-
-				return true
-			},
-		); len(torrentPieces) > 0 {
-			torrentPiecesPtr := sliceToPointers(torrentPieces)
-
-			result := tx.TorrentPieces.WithContext(ctx).Clauses(
-				clause.Returning{
-					Columns: []clause.Column{{Name: string(tx.TorrentPieces.CreatedAt.ColumnName())}},
-				},
-				clause.OnConflict{
-					DoNothing: true,
-				}).
-				UnderlyingDB().
-				CreateInBatches(torrentPiecesPtr, 100)
-			if result.Error != nil {
-				return result.Error
-			}
-
-			torrentPiecesStats.Affected += int(result.RowsAffected)
-
-			for _, m := range torrentPiecesPtr {
-				if m.CreatedAt.Before(startTime) {
-					torrentPiecesStats.Ignored++
-				} else {
-					torrentPiecesStats.Created++
-				}
-			}
+		if err := j.handleTorrentPieces(ctx, tx, missingInfoHashes); err != nil {
+			return err
 		}
 
-		j.stats.Add(tx.TorrentPieces.TableName(), torrentPiecesStats)
-
-		var torrentsTorrentSourcesStats TableStats
-
-		if torrentsTorrentSources := slice.Filter(
-			j.torrentsTorrentSources.Values(),
-			func(m model.TorrentsTorrentSource) bool {
-				if _, ok := missingInfoHashes[m.InfoHash]; ok || j.payload.deleteInfoHashes.Has(m.InfoHash) {
-					torrentsTorrentSourcesStats.Ignored++
-					return false
-				}
-
-				return true
-			},
-		); len(torrentsTorrentSources) > 0 {
-			torrentsTorrentSourcesPtr := sliceToPointers(torrentsTorrentSources)
-
-			result := tx.TorrentsTorrentSource.WithContext(ctx).
-				Clauses(
-					clause.Returning{
-						Columns: []clause.Column{{Name: string(tx.TorrentsTorrentSource.CreatedAt.ColumnName())}},
-					},
-					clause.OnConflict{
-						Columns: []clause.Column{
-							{Name: string(tx.TorrentsTorrentSource.InfoHash.ColumnName())},
-							{Name: string(tx.TorrentsTorrentSource.Source.ColumnName())},
-						},
-						DoUpdates: clause.AssignmentColumns([]string{
-							string(tx.TorrentsTorrentSource.Seeders.ColumnName()),
-							string(tx.TorrentsTorrentSource.Leechers.ColumnName()),
-							string(tx.TorrentsTorrentSource.UpdatedAt.ColumnName()),
-						}),
-					},
-				).
-				UnderlyingDB().
-				CreateInBatches(torrentsTorrentSourcesPtr, 100)
-			if result.Error != nil {
-				return result.Error
-			}
-
-			torrentsTorrentSourcesStats.Affected += int(result.RowsAffected)
-
-			for _, t := range torrentsTorrentSourcesPtr {
-				if t.CreatedAt.Before(startTime) {
-					torrentsTorrentSourcesStats.Updated++
-				} else {
-					torrentsTorrentSourcesStats.Created++
-				}
-			}
+		if err := j.handleTorrentsTorrentSources(ctx, tx, missingInfoHashes); err != nil {
+			return err
 		}
 
-		j.stats.Add(tx.TorrentsTorrentSource.TableName(), torrentsTorrentSourcesStats)
-
-		var torrentFilesStats TableStats
-
-		if torrentFiles := slice.Filter(
-			j.torrentFiles.Values(),
-			func(m model.TorrentFile) bool {
-				if _, ok := missingInfoHashes[m.InfoHash]; ok || j.payload.deleteInfoHashes.Has(m.InfoHash) {
-					torrentFilesStats.Ignored++
-					return false
-				}
-
-				return true
-			},
-		); len(torrentFiles) > 0 {
-			torrentFilesPtr := sliceToPointers(torrentFiles)
-
-			result := tx.TorrentFile.WithContext(ctx).Clauses(
-				clause.Returning{
-					Columns: []clause.Column{{Name: string(tx.TorrentFile.CreatedAt.ColumnName())}},
-				},
-				clause.OnConflict{
-					UpdateAll: true,
-				}).
-				UnderlyingDB().
-				CreateInBatches(torrentFilesPtr, 100)
-			if result.Error != nil {
-				return result.Error
-			}
-
-			torrentFilesStats.Affected += int(result.RowsAffected)
-
-			for _, m := range torrentFilesPtr {
-				if m.CreatedAt.Before(startTime) {
-					torrentFilesStats.Updated++
-				} else {
-					torrentFilesStats.Created++
-				}
-			}
+		if err := j.handleTorrentFiles(ctx, tx, missingInfoHashes); err != nil {
+			return err
 		}
 
-		j.stats.Add(tx.TorrentFile.TableName(), torrentFilesStats)
-
-		var contentStats TableStats
-
-		if j.content.Len() > 0 {
-			contentPtr := sliceToPointers(j.content.Values())
-
-			result := tx.Content.WithContext(ctx).Clauses(
-				clause.Returning{
-					Columns: []clause.Column{{Name: string(tx.Content.CreatedAt.ColumnName())}},
-				},
-				clause.OnConflict{
-					UpdateAll: true,
-				}).
-				UnderlyingDB().
-				CreateInBatches(contentPtr, 100)
-			if result.Error != nil {
-				return result.Error
-			}
-
-			contentStats.Affected += int(result.RowsAffected)
-
-			for _, m := range contentPtr {
-				if m.CreatedAt.Before(startTime) {
-					contentStats.Updated++
-				} else {
-					contentStats.Created++
-				}
-			}
+		if err := j.handleContent(ctx, tx); err != nil {
+			return err
 		}
 
-		j.stats.Add(tx.Content.TableName(), contentStats)
-
-		var torrentContentStats TableStats
-
-		if j.deleteTorrentContent.Len() > 0 {
-			result, err := tx.TorrentContent.WithContext(ctx).Where(
-				tx.TorrentContent.ID.In(slice.Map(
-					j.deleteTorrentContent.Keys(),
-					func(ref model.TorrentContentRef) string {
-						return ref.InferID()
-					},
-				)...),
-			).Delete()
-			if err != nil {
-				return err
-			}
-
-			torrentContentStats.Affected += int(result.RowsAffected)
-			torrentContentStats.Deleted += int(result.RowsAffected)
+		if err := j.handleTorrentContent(ctx, tx, missingInfoHashes); err != nil {
+			return err
 		}
 
-		if torrentContents := slice.Filter(
-			j.torrentContents.Values(),
-			func(m model.TorrentContent) bool {
-				if _, ok := missingInfoHashes[m.InfoHash]; ok || j.payload.deleteInfoHashes.Has(m.InfoHash) {
-					torrentContentStats.Ignored++
-					return false
-				}
-
-				return true
-			},
-		); len(torrentContents) > 0 {
-			torrentContentsPtr := sliceToPointers(torrentContents)
-
-			result := tx.TorrentContent.WithContext(ctx).Clauses(
-				clause.Returning{
-					Columns: []clause.Column{{Name: string(tx.TorrentContent.CreatedAt.ColumnName())}},
-				},
-				clause.OnConflict{
-					UpdateAll: true,
-				},
-			).
-				UnderlyingDB().
-				CreateInBatches(torrentContentsPtr, 100)
-			if result.Error != nil {
-				return result.Error
-			}
-
-			torrentContentStats.Affected += int(result.RowsAffected)
-			for _, m := range torrentContentsPtr {
-				if m.CreatedAt.Before(startTime) {
-					torrentContentStats.Updated++
-				} else {
-					torrentContentStats.Created++
-				}
-			}
+		if err := j.handleTorrentTags(ctx, tx, missingInfoHashes); err != nil {
+			return err
 		}
 
-		j.stats.Add(tx.TorrentContent.TableName(), torrentContentStats)
-
-		var torrentTagsStats TableStats
-
-		if torrentTags := slice.Filter(
-			j.torrentTags.Values(),
-			func(m model.TorrentTag) bool {
-				if _, ok := missingInfoHashes[m.InfoHash]; ok || j.payload.deleteInfoHashes.Has(m.InfoHash) {
-					torrentTagsStats.Ignored++
-					return false
-				}
-
-				return true
-			},
-		); len(torrentTags) > 0 {
-			torrentTagsPtr := sliceToPointers(torrentTags)
-
-			result := tx.TorrentTag.WithContext(ctx).Clauses(
-				clause.Returning{
-					Columns: []clause.Column{{Name: string(tx.TorrentTag.CreatedAt.ColumnName())}},
-				},
-				clause.OnConflict{
-					DoNothing: true,
-				},
-			).
-				UnderlyingDB().
-				CreateInBatches(torrentTagsPtr, 100)
-			if result.Error != nil {
-				return result.Error
-			}
-
-			torrentTagsStats.Affected += int(result.RowsAffected)
-
-			for _, m := range torrentTagsPtr {
-				if m.CreatedAt.Before(startTime) {
-					torrentTagsStats.Updated++
-				} else {
-					torrentTagsStats.Created++
-				}
-			}
+		if err := j.handleDeleteInfoHashes(ctx, tx); err != nil {
+			return err
 		}
 
-		j.stats.Add(tx.TorrentTag.TableName(), torrentTagsStats)
-
-		if j.deleteInfoHashes.Len() > 0 {
-			valuers := slice.Map(j.deleteInfoHashes.Keys(), func(infoHash protocol.ID) driver.Valuer {
-				return infoHash
-			})
-
-			result, err := tx.Torrent.WithContext(ctx).Where(
-				tx.Torrent.InfoHash.In(valuers...),
-			).Delete()
-			if err != nil {
-				return err
-			}
-
-			torrentStats.Affected += int(result.RowsAffected)
-			torrentStats.Deleted += int(result.RowsAffected)
-		}
-
-		j.stats.Add(tx.Torrent.TableName(), torrentStats)
-
-		var queueJobStats TableStats
-
-		if j.queueJobs.Len() > 0 {
-			result := tx.QueueJob.WithContext(ctx).Clauses(
-				clause.OnConflict{
-					DoNothing: true,
-				},
-			).UnderlyingDB().
-				CreateInBatches(slice.Map(j.queueJobs.Values(), func(j model.QueueJob) *model.QueueJob {
-					return &j
-				}), 100)
-			if result.Error != nil {
-				return result.Error
-			}
-
-			queueJobStats.Affected += int(result.RowsAffected)
-			queueJobStats.Created += int(result.RowsAffected)
+		if err := j.handleQueueJobs(ctx, tx); err != nil {
+			return err
 		}
 
 		return nil
 	})
+}
+
+func (j *persistJob) handleTorrentSources(ctx context.Context, tx *dao.Query) error {
+	if j.torrentSources.Len() == 0 {
+		return nil
+	}
+
+	var stats TableStats
+
+	torrentSourcesPtr := sliceToPointers(j.torrentSources.Values())
+
+	result := tx.TorrentSource.WithContext(ctx).Clauses(
+		clause.Returning{
+			Columns: []clause.Column{{Name: string(tx.TorrentSource.CreatedAt.ColumnName())}},
+		},
+		clause.OnConflict{
+			UpdateAll: true,
+		}).
+		UnderlyingDB().
+		CreateInBatches(torrentSourcesPtr, 100)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	stats.Affected += int(result.RowsAffected)
+	for _, m := range torrentSourcesPtr {
+		if m.CreatedAt.Before(j.startTime) {
+			stats.Updated++
+		} else {
+			stats.Created++
+		}
+	}
+
+	j.stats.Add(tx.TorrentSource.TableName(), stats)
+
+	return nil
+}
+
+func (j *persistJob) handleTorrents(ctx context.Context, tx *dao.Query) error {
+	if j.torrents.Len() == 0 {
+		return nil
+	}
+
+	var stats TableStats
+
+	// todo: check for all scenerios!
+	torrentsPtr := sliceToPointers(j.torrents.Values())
+
+	result := tx.Torrent.WithContext(ctx).Clauses(
+		clause.Returning{
+			Columns: []clause.Column{{Name: string(tx.Torrent.CreatedAt.ColumnName())}},
+		},
+		clause.OnConflict{
+			Columns: []clause.Column{{Name: string(tx.Torrent.InfoHash.ColumnName())}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				string(tx.Torrent.Name.ColumnName()),
+				string(tx.Torrent.FilesStatus.ColumnName()),
+				string(tx.Torrent.FilesCount.ColumnName()),
+				string(tx.Torrent.UpdatedAt.ColumnName()),
+			}),
+		}).
+		UnderlyingDB().
+		CreateInBatches(torrentsPtr, 100)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	stats.Affected += int(result.RowsAffected)
+
+	for _, m := range torrentsPtr {
+		if m.CreatedAt.Before(j.startTime) {
+			stats.Updated++
+		} else {
+			stats.Created++
+		}
+	}
+
+	j.stats.Add(tx.Torrent.TableName(), stats)
+
+	return nil
+}
+
+func (j *persistJob) handleTorrentPieces(ctx context.Context, tx *dao.Query, missingInfoHashes map[protocol.ID]struct{}) error {
+	var stats TableStats
+
+	if torrentPieces := slice.Filter(
+		j.torrentPieces.Values(),
+		func(m model.TorrentPieces) bool {
+			if _, ok := missingInfoHashes[m.InfoHash]; ok || j.payload.deleteInfoHashes.Has(m.InfoHash) {
+				stats.Ignored++
+				return false
+			}
+
+			return true
+		},
+	); len(torrentPieces) > 0 {
+		torrentPiecesPtr := sliceToPointers(torrentPieces)
+
+		result := tx.TorrentPieces.WithContext(ctx).Clauses(
+			clause.Returning{
+				Columns: []clause.Column{{Name: string(tx.TorrentPieces.CreatedAt.ColumnName())}},
+			},
+			clause.OnConflict{
+				DoNothing: true,
+			}).
+			UnderlyingDB().
+			CreateInBatches(torrentPiecesPtr, 100)
+		if result.Error != nil {
+			return result.Error
+		}
+
+		stats.Affected += int(result.RowsAffected)
+
+		for _, m := range torrentPiecesPtr {
+			if m.CreatedAt.Before(j.startTime) {
+				stats.Ignored++
+			} else {
+				stats.Created++
+			}
+		}
+	}
+
+	j.stats.Add(tx.TorrentPieces.TableName(), stats)
+
+	return nil
+}
+
+func (j *persistJob) handleTorrentsTorrentSources(ctx context.Context, tx *dao.Query, missingInfoHashes map[protocol.ID]struct{}) error {
+	var stats TableStats
+
+	if torrentsTorrentSources := slice.Filter(
+		j.torrentsTorrentSources.Values(),
+		func(m model.TorrentsTorrentSource) bool {
+			if _, ok := missingInfoHashes[m.InfoHash]; ok || j.payload.deleteInfoHashes.Has(m.InfoHash) {
+				stats.Ignored++
+				return false
+			}
+
+			return true
+		},
+	); len(torrentsTorrentSources) > 0 {
+		torrentsTorrentSourcesPtr := sliceToPointers(torrentsTorrentSources)
+
+		result := tx.TorrentsTorrentSource.WithContext(ctx).
+			Clauses(
+				clause.Returning{
+					Columns: []clause.Column{{Name: string(tx.TorrentsTorrentSource.CreatedAt.ColumnName())}},
+				},
+				clause.OnConflict{
+					Columns: []clause.Column{
+						{Name: string(tx.TorrentsTorrentSource.InfoHash.ColumnName())},
+						{Name: string(tx.TorrentsTorrentSource.Source.ColumnName())},
+					},
+					DoUpdates: clause.AssignmentColumns([]string{
+						string(tx.TorrentsTorrentSource.Seeders.ColumnName()),
+						string(tx.TorrentsTorrentSource.Leechers.ColumnName()),
+						string(tx.TorrentsTorrentSource.UpdatedAt.ColumnName()),
+					}),
+				},
+			).
+			UnderlyingDB().
+			CreateInBatches(torrentsTorrentSourcesPtr, 100)
+		if result.Error != nil {
+			return result.Error
+		}
+
+		stats.Affected += int(result.RowsAffected)
+
+		for _, t := range torrentsTorrentSourcesPtr {
+			if t.CreatedAt.Before(j.startTime) {
+				stats.Updated++
+			} else {
+				stats.Created++
+			}
+		}
+	}
+
+	j.stats.Add(tx.TorrentsTorrentSource.TableName(), stats)
+
+	return nil
+}
+
+func (j *persistJob) handleTorrentFiles(ctx context.Context, tx *dao.Query, missingInfoHashes map[protocol.ID]struct{}) error {
+	var stats TableStats
+
+	if torrentFiles := slice.Filter(
+		j.torrentFiles.Values(),
+		func(m model.TorrentFile) bool {
+			if _, ok := missingInfoHashes[m.InfoHash]; ok || j.payload.deleteInfoHashes.Has(m.InfoHash) {
+				stats.Ignored++
+				return false
+			}
+
+			return true
+		},
+	); len(torrentFiles) > 0 {
+		torrentFilesPtr := sliceToPointers(torrentFiles)
+
+		result := tx.TorrentFile.WithContext(ctx).Clauses(
+			clause.Returning{
+				Columns: []clause.Column{{Name: string(tx.TorrentFile.CreatedAt.ColumnName())}},
+			},
+			clause.OnConflict{
+				UpdateAll: true,
+			}).
+			UnderlyingDB().
+			CreateInBatches(torrentFilesPtr, 100)
+		if result.Error != nil {
+			return result.Error
+		}
+
+		stats.Affected += int(result.RowsAffected)
+
+		for _, m := range torrentFilesPtr {
+			if m.CreatedAt.Before(j.startTime) {
+				stats.Updated++
+			} else {
+				stats.Created++
+			}
+		}
+	}
+
+	j.stats.Add(tx.TorrentFile.TableName(), stats)
+
+	return nil
+}
+
+func (j *persistJob) handleContent(ctx context.Context, tx *dao.Query) error {
+	if j.content.Len() == 0 {
+		return nil
+	}
+
+	var stats TableStats
+
+	contentPtr := sliceToPointers(j.content.Values())
+
+	result := tx.Content.WithContext(ctx).Clauses(
+		clause.Returning{
+			Columns: []clause.Column{{Name: string(tx.Content.CreatedAt.ColumnName())}},
+		},
+		clause.OnConflict{
+			UpdateAll: true,
+		}).
+		UnderlyingDB().
+		CreateInBatches(contentPtr, 100)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	stats.Affected += int(result.RowsAffected)
+
+	for _, m := range contentPtr {
+		if m.CreatedAt.Before(j.startTime) {
+			stats.Updated++
+		} else {
+			stats.Created++
+		}
+	}
+
+	j.stats.Add(tx.Content.TableName(), stats)
+
+	return nil
+}
+
+func (j *persistJob) handleTorrentContent(ctx context.Context, tx *dao.Query, missingInfoHashes map[protocol.ID]struct{}) error {
+	var stats TableStats
+
+	if j.deleteTorrentContent.Len() > 0 {
+		result, err := tx.TorrentContent.WithContext(ctx).Where(
+			tx.TorrentContent.ID.In(slice.Map(
+				j.deleteTorrentContent.Keys(),
+				func(ref model.TorrentContentRef) string {
+					return ref.InferID()
+				},
+			)...),
+		).Delete()
+		if err != nil {
+			return err
+		}
+
+		stats.Affected += int(result.RowsAffected)
+		stats.Deleted += int(result.RowsAffected)
+	}
+
+	if torrentContents := slice.Filter(
+		j.torrentContents.Values(),
+		func(m model.TorrentContent) bool {
+			if _, ok := missingInfoHashes[m.InfoHash]; ok || j.payload.deleteInfoHashes.Has(m.InfoHash) {
+				stats.Ignored++
+				return false
+			}
+
+			return true
+		},
+	); len(torrentContents) > 0 {
+		torrentContentsPtr := sliceToPointers(torrentContents)
+
+		result := tx.TorrentContent.WithContext(ctx).Clauses(
+			clause.Returning{
+				Columns: []clause.Column{{Name: string(tx.TorrentContent.CreatedAt.ColumnName())}},
+			},
+			clause.OnConflict{
+				UpdateAll: true,
+			},
+		).
+			UnderlyingDB().
+			CreateInBatches(torrentContentsPtr, 100)
+		if result.Error != nil {
+			return result.Error
+		}
+
+		stats.Affected += int(result.RowsAffected)
+		for _, m := range torrentContentsPtr {
+			if m.CreatedAt.Before(j.startTime) {
+				stats.Updated++
+			} else {
+				stats.Created++
+			}
+		}
+	}
+
+	j.stats.Add(tx.TorrentContent.TableName(), stats)
+
+	return nil
+}
+
+func (j *persistJob) handleTorrentTags(ctx context.Context, tx *dao.Query, missingInfoHashes map[protocol.ID]struct{}) error {
+	var (
+		stats       TableStats
+		torrentTags []*model.TorrentTag
+	)
+
+	torrentTagsToDelete := maps.NewInsertMap[hashWithID, struct{}]()
+
+	for _, entry := range j.payload.torrentTags.Entries() {
+		if _, ok := missingInfoHashes[entry.Key.hash]; ok {
+			if entry.Value {
+				stats.Ignored++
+			}
+
+			continue
+		}
+
+		if entry.Value {
+			torrentTags = append(torrentTags, &model.TorrentTag{
+				InfoHash: entry.Key.hash,
+				Name:     entry.Key.id,
+			})
+		} else {
+			torrentTagsToDelete.SetKey(entry.Key)
+		}
+	}
+
+	if len(torrentTags) > 0 {
+		result := tx.TorrentTag.WithContext(ctx).Clauses(
+			clause.Returning{
+				Columns: []clause.Column{{Name: string(tx.TorrentTag.CreatedAt.ColumnName())}},
+			},
+			clause.OnConflict{
+				DoNothing: true,
+			},
+		).
+			UnderlyingDB().
+			CreateInBatches(torrentTags, 100)
+		if result.Error != nil {
+			return result.Error
+		}
+
+		stats.Affected += int(result.RowsAffected)
+
+		for _, m := range torrentTags {
+			if m.CreatedAt.Before(j.startTime) {
+				stats.Updated++
+			} else {
+				stats.Created++
+			}
+		}
+	}
+
+	// todo: Batch delete?
+	for _, key := range torrentTagsToDelete.Keys() {
+		result, err := tx.TorrentTag.WithContext(ctx).Where(
+			tx.TorrentTag.InfoHash.Eq(key.hash),
+			tx.TorrentTag.Name.Eq(key.id),
+		).Delete()
+
+		if err != nil {
+			return err
+		}
+
+		stats.Deleted += int(result.RowsAffected)
+	}
+
+	j.stats.Add(tx.TorrentTag.TableName(), stats)
+
+	return nil
+}
+
+func (j *persistJob) handleDeleteInfoHashes(ctx context.Context, tx *dao.Query) error {
+	if j.deleteInfoHashes.Len() == 0 {
+		return nil
+	}
+
+	var stats TableStats
+
+	valuers := slice.Map(j.deleteInfoHashes.Keys(), func(infoHash protocol.ID) driver.Valuer {
+		return infoHash
+	})
+
+	result, err := tx.Torrent.WithContext(ctx).Where(
+		tx.Torrent.InfoHash.In(valuers...),
+	).Delete()
+	if err != nil {
+		return err
+	}
+
+	stats.Affected += int(result.RowsAffected)
+	stats.Deleted += int(result.RowsAffected)
+
+	j.stats.Add(tx.Torrent.TableName(), stats)
+
+	return nil
+}
+
+func (j *persistJob) handleQueueJobs(ctx context.Context, tx *dao.Query) error {
+	if j.queueJobs.Len() == 0 {
+		return nil
+	}
+
+	var stats TableStats
+
+	result := tx.QueueJob.WithContext(ctx).Clauses(
+		clause.OnConflict{
+			DoNothing: true,
+		},
+	).UnderlyingDB().
+		CreateInBatches(slice.Map(j.queueJobs.Values(), func(j model.QueueJob) *model.QueueJob {
+			return &j
+		}), 100)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	stats.Affected += int(result.RowsAffected)
+	stats.Created += int(result.RowsAffected)
+
+	j.stats.Add(tx.QueueJob.TableName(), stats)
+
+	return nil
 }
 
 func sliceToPointers[T any](sl []T) []*T {

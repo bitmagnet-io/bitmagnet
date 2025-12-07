@@ -73,6 +73,7 @@ func (w *worker[T]) Add(ctx context.Context, items ...T) error {
 	case <-shutdown:
 		return fmt.Errorf("%w: %w", Err, runner.ErrShutdownRequested)
 	case ch <- items:
+		// todo: Fix send on closed channel - fixed?
 		return nil
 	}
 }
@@ -150,7 +151,8 @@ func (w *worker[T]) Runner() runner.Runner {
 
 		return func(shutdownCtx context.Context) error {
 			w.mtx.Lock()
-			defer w.mtx.Unlock()
+
+			var err error
 
 			close(shutdown)
 
@@ -159,7 +161,7 @@ func (w *worker[T]) Runner() runner.Runner {
 			} else {
 				select {
 				case <-shutdownCtx.Done():
-					return fmt.Errorf("%w: %w: %w", Err, ErrShutdown, shutdownCtx.Err())
+					err = fmt.Errorf("%w: %w: %w", Err, ErrShutdown, shutdownCtx.Err())
 				case <-ctx.Done():
 				}
 			}
@@ -167,9 +169,11 @@ func (w *worker[T]) Runner() runner.Runner {
 			w.ch = nil
 			w.shutdown = nil
 
+			w.mtx.Unlock()
+
 			close(ch)
 
-			return nil
+			return err
 		}, nil
 	}
 }

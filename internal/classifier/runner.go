@@ -44,6 +44,7 @@ func (r runner) Run(ctx context.Context, workflow Workflow, flags Flags, t model
 
 	cl := classification.Result{
 		Torrent: t,
+		Tags:    make(map[string]bool),
 	}
 	if !t.Hint.IsNil() {
 		cl.ApplyHint(t.Hint)

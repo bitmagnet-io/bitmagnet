@@ -66,7 +66,7 @@ type ConfigMutation struct {
 }
 
 func (m ConfigMutation) Save(ctx context.Context, ref ref.Ref, value json_schema.JSONValue) (*gen.ConfigParam, error) {
-	param, err := m.Manager.Save(ref, value.Value)
+	param, err := m.Manager.Save(ref, value)
 	if err != nil {
 		return nil, err
 	}

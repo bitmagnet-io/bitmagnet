@@ -1,10 +1,8 @@
 package registry
 
 import (
-	"cmp"
 	"errors"
 	"fmt"
-	"slices"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/config/lookup"
 	config_registry "github.com/bitmagnet-io/bitmagnet/internal/config/registry"
@@ -19,74 +17,56 @@ import (
 )
 
 type Builder struct {
-	plugins ref.Map[plugin.Plugin]
+	bundles ref.Map[bundle.Bundle]
 }
 
 func New(bundles ...bundle.Bundle) (*Builder, error) {
 	builder := &Builder{
-		plugins: ref.NewMap[plugin.Plugin](),
+		bundles: ref.NewMap[bundle.Bundle](),
 	}
 
 	for _, bundle := range bundles {
-		for _, plugin := range bundle.Plugins() {
-			if builder.plugins.Has(plugin.Ref()) {
-				return nil, errors.New("plugin already registered")
-			}
-			builder.plugins.Set(plugin.Ref(), plugin)
+		if builder.bundles.Has(bundle.Ref()) {
+			return nil, errors.New("plugin already registered")
 		}
+		builder.bundles.Set(bundle.Ref(), bundle)
 	}
 
 	return builder, nil
 }
 
-func (b *Builder) AllRefs() []ref.Ref {
-	return b.plugins.Refs()
+func (r *Builder) AllRefs() []ref.Ref {
+	return r.bundles.Refs()
 }
 
-func (b *Builder) DependenciesOf(rf ref.Ref) []ref.Ref {
-	plugin, ok := b.plugins.GetOK(rf)
-	if !ok {
-		return nil
-	}
+func (r *Builder) Resolve(env env.Env, options ...Option) (*Registry, error) {
+	plugins := ref.NewMap[plugin.Plugin]()
 
-	var result []ref.Ref
-
-	seen := make(map[string]struct{})
-
-	for _, dependency := range plugin.Dependencies() {
-		if _, ok := seen[dependency.String()]; !ok {
-			seen[dependency.String()] = struct{}{}
-
-			result = append(result, dependency)
-			for _, subDependency := range b.DependenciesOf(dependency) {
-				if _, ok = seen[subDependency.String()]; !ok {
-					seen[subDependency.String()] = struct{}{}
-
-					result = append(result, subDependency)
-				}
-			}
+	for _, bundle := range r.bundles.Values() {
+		bundlePlugins, err := bundle.LoadPlugins(env)
+		if err != nil {
+			return nil, err
 		}
-		// todo: Detect circular
+
+		for _, p := range bundlePlugins {
+			if plugins.Has(p.Ref()) {
+				return nil, fmt.Errorf("plugin already registered: %s", p.Ref())
+			}
+
+			plugins.Set(p.Ref(), p)
+		}
 	}
 
-	slices.SortFunc(result, func(a, b ref.Ref) int {
-		return cmp.Compare(a.String(), b.String())
-	})
-
-	return result
-}
-
-func (b *Builder) Resolve(env env.Env, options ...Option) (*Registry, error) {
-	config, err := b.resolveConfig(env)
+	config, err := resolveConfig(env, plugins)
 	if err != nil {
 		return nil, err
 	}
 
 	resolver := &resolver{
-		Builder:       b,
+		plugins:       plugins,
 		config:        *config,
-		errorRegistry: b.resolveErrors(),
-		i18nProvider:  b.resolveI18n(),
+		errorRegistry: resolveErrors(plugins),
+		i18nProvider:  resolveI18n(plugins),
 	}
 
 	for _, option := range options {
@@ -96,16 +76,14 @@ func (b *Builder) Resolve(env env.Env, options ...Option) (*Registry, error) {
 	return resolver.resolve()
 }
 
-func (b *Builder) resolveConfig(env env.Env) (*config_resolver.Resolved, error) {
+func resolveConfig(env env.Env, plugins ref.Map[plugin.Plugin]) (*config_resolver.Resolved, error) {
 	configLookup, err := lookup.NewFromEnv(env)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", Err, err)
 	}
 
-	allRefs := b.AllRefs()
-
-	configParams := slice.FlatMap(allRefs, func(ref ref.Ref) []config_registry.Param {
-		return b.plugins.Get(ref).ConfigParams()
+	configParams := slice.FlatMap(plugins.Refs(), func(ref ref.Ref) []config_registry.Param {
+		return plugins.Get(ref).ConfigParams()
 	})
 
 	configResolver := config_resolver.New(configLookup, configParams...)
@@ -116,16 +94,16 @@ func (b *Builder) resolveConfig(env env.Env) (*config_resolver.Resolved, error) 
 	return &resolvedConfig, nil
 }
 
-func (b *Builder) resolveErrors() error_registry.Registry {
-	return error_registry.New(slice.Map(b.plugins.Values(), func(plugin plugin.Plugin) error_registry.Option {
+func resolveErrors(plugins ref.Map[plugin.Plugin]) error_registry.Registry {
+	return error_registry.New(slice.Map(plugins.Values(), func(plugin plugin.Plugin) error_registry.Option {
 		return error_registry.WithEntries(plugin.Errors())
 	})...)
 }
 
-func (b *Builder) resolveI18n() i18n.Provider {
+func resolveI18n(plugins ref.Map[plugin.Plugin]) i18n.Provider {
 	return i18n.Providers(
 		i18n.NewProvider(
-			slice.FlatMap(b.plugins.Values(), func(plugin plugin.Plugin) []*i18n.Message {
+			slice.FlatMap(plugins.Values(), func(plugin plugin.Plugin) []*i18n.Message {
 				messages := plugin.I18nMessages()
 
 				messages = append(messages, slice.Map(plugin.Errors().Entries(), func(entry ref.Entry[error]) *i18n.Message {

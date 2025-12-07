@@ -187,7 +187,9 @@ func (p param[T]) DecodeYAMLAny(node yaml.Node) (any, error) {
 func (p param[T]) DecodeYAMLAnyAny(value any) (any, error) {
 	var node yaml.Node
 
-	if valueNode, ok := value.(yaml.Node); ok {
+	if jsonSchemaValue, ok := value.(json_schema.JSONValue); ok {
+		node = yaml.Node(jsonSchemaValue)
+	} else if valueNode, ok := value.(yaml.Node); ok {
 		node = valueNode
 	} else {
 		err := node.Encode(value)

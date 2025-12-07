@@ -7,7 +7,7 @@ import (
 )
 
 type Adder interface {
-	Add(ctx context.Context, payload Input) error
+	Add(context.Context, Input) error
 }
 
 type Persister interface {

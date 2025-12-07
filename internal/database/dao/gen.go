@@ -23,6 +23,7 @@ var (
 	ContentAttribute         *contentAttribute
 	ContentCollection        *contentCollection
 	ContentCollectionContent *contentCollectionContent
+	ContentTag               *contentTag
 	Invitation               *invitation
 	KeyValue                 *keyValue
 	MetadataSource           *metadataSource
@@ -48,6 +49,7 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	ContentAttribute = &Q.ContentAttribute
 	ContentCollection = &Q.ContentCollection
 	ContentCollectionContent = &Q.ContentCollectionContent
+	ContentTag = &Q.ContentTag
 	Invitation = &Q.Invitation
 	KeyValue = &Q.KeyValue
 	MetadataSource = &Q.MetadataSource
@@ -74,6 +76,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		ContentAttribute:         newContentAttribute(db, opts...),
 		ContentCollection:        newContentCollection(db, opts...),
 		ContentCollectionContent: newContentCollectionContent(db, opts...),
+		ContentTag:               newContentTag(db, opts...),
 		Invitation:               newInvitation(db, opts...),
 		KeyValue:                 newKeyValue(db, opts...),
 		MetadataSource:           newMetadataSource(db, opts...),
@@ -101,6 +104,7 @@ type Query struct {
 	ContentAttribute         contentAttribute
 	ContentCollection        contentCollection
 	ContentCollectionContent contentCollectionContent
+	ContentTag               contentTag
 	Invitation               invitation
 	KeyValue                 keyValue
 	MetadataSource           metadataSource
@@ -129,6 +133,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		ContentAttribute:         q.ContentAttribute.clone(db),
 		ContentCollection:        q.ContentCollection.clone(db),
 		ContentCollectionContent: q.ContentCollectionContent.clone(db),
+		ContentTag:               q.ContentTag.clone(db),
 		Invitation:               q.Invitation.clone(db),
 		KeyValue:                 q.KeyValue.clone(db),
 		MetadataSource:           q.MetadataSource.clone(db),
@@ -164,6 +169,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		ContentAttribute:         q.ContentAttribute.replaceDB(db),
 		ContentCollection:        q.ContentCollection.replaceDB(db),
 		ContentCollectionContent: q.ContentCollectionContent.replaceDB(db),
+		ContentTag:               q.ContentTag.replaceDB(db),
 		Invitation:               q.Invitation.replaceDB(db),
 		KeyValue:                 q.KeyValue.replaceDB(db),
 		MetadataSource:           q.MetadataSource.replaceDB(db),
@@ -189,6 +195,7 @@ type queryCtx struct {
 	ContentAttribute         IContentAttributeDo
 	ContentCollection        IContentCollectionDo
 	ContentCollectionContent IContentCollectionContentDo
+	ContentTag               IContentTagDo
 	Invitation               IInvitationDo
 	KeyValue                 IKeyValueDo
 	MetadataSource           IMetadataSourceDo
@@ -214,6 +221,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		ContentAttribute:         q.ContentAttribute.WithContext(ctx),
 		ContentCollection:        q.ContentCollection.WithContext(ctx),
 		ContentCollectionContent: q.ContentCollectionContent.WithContext(ctx),
+		ContentTag:               q.ContentTag.WithContext(ctx),
 		Invitation:               q.Invitation.WithContext(ctx),
 		KeyValue:                 q.KeyValue.WithContext(ctx),
 		MetadataSource:           q.MetadataSource.WithContext(ctx),
