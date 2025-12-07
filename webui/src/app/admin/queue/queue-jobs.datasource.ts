@@ -80,7 +80,7 @@ export class QueueJobsDatasource implements DataSource<generated.QueueJob> {
         variables,
         fetchPolicy: "no-cache",
       })
-      .pipe(map((r) => r.data.queue.jobs))
+      .pipe(map((r) => r.data!.queue.jobs))
       .pipe(
         catchError((err: Error) => {
           this.errorsService.addError(

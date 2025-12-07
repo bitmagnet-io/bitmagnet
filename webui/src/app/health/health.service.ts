@@ -2,6 +2,7 @@ import { inject } from "@angular/core";
 import { Apollo } from "apollo-angular";
 import { BehaviorSubject, map } from "rxjs";
 import * as generated from "../graphql/generated";
+import { filterComplete } from "../graphql/util/filter-complete";
 
 export type HealthStatus =
   | generated.HealthStatus
@@ -63,9 +64,11 @@ export class HealthService {
       >({
         query: generated.HealthCheckDocument,
         fetchPolicy: "no-cache",
+        returnPartialData: false,
         pollInterval,
       })
       .valueChanges.pipe(
+        filterComplete(),
         map(
           (r): Result => ({
             status:

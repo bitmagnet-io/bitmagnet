@@ -88,7 +88,7 @@ export class APIKeysPanelComponent {
         query: generated.ApiKeysDocument,
         fetchPolicy: "no-cache",
       })
-      .pipe(map((result) => result.data.self.apiKeys));
+      .pipe(map((result) => result.data!.self.apiKeys));
   }
 
   newAPIKey() {

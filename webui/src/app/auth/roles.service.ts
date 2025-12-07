@@ -15,7 +15,7 @@ export class RolesService {
       query: generated.AuthObjectActionsDocument,
       fetchPolicy: "no-cache",
     })
-    .pipe(map((result) => result.data.auth.listObjectActions));
+    .pipe(map((result) => result.data!.auth.listObjectActions));
 
   listRoles(): Observable<generated.Role[]> {
     return this.apollo
@@ -23,7 +23,7 @@ export class RolesService {
         query: generated.RolesDocument,
         fetchPolicy: "no-cache",
       })
-      .pipe(map((result) => result.data.auth.listRoles));
+      .pipe(map((result) => result.data!.auth.listRoles));
   }
 
   putRole(

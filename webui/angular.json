@@ -30,7 +30,39 @@
               }
             ],
             "styles": ["src/styles.scss"],
-            "scripts": []
+            "scripts": [],
+            "allowedCommonJsDependencies": [
+              "ajv-formats",
+              "ajv",
+              "dayjs",
+              "dayjs/plugin/customParseFormat",
+              "hammerjs",
+              "lodash/cloneDeep",
+              "lodash/endsWith",
+              "lodash/filter",
+              "lodash/find",
+              "lodash/fp/set",
+              "lodash/fp/unset",
+              "lodash/get",
+              "lodash/has",
+              "lodash/includes",
+              "lodash/isArray",
+              "lodash/isEmpty",
+              "lodash/isEqual",
+              "lodash/isFunction",
+              "lodash/isUndefined",
+              "lodash/keys",
+              "lodash/last",
+              "lodash/maxBy",
+              "lodash/merge",
+              "lodash/range",
+              "lodash/reduce",
+              "lodash/remove",
+              "lodash/some",
+              "lodash/startCase",
+              "lodash/toPairs",
+              "picomatch"
+            ]
           },
           "configurations": {
             "embedded": {

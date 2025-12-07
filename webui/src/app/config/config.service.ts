@@ -4,6 +4,7 @@ import { BehaviorSubject, combineLatest, map } from "rxjs";
 import { ConfigParam } from "../graphql/generated";
 import * as generated from "../graphql/generated";
 import { PluginsInfo, PluginsService } from "../plugins/plugins.service";
+import { filterComplete } from "../graphql/util/filter-complete";
 
 const pollInterval = 10000;
 
@@ -61,7 +62,8 @@ export class ConfigService {
         fetchPolicy: "no-cache",
         pollInterval,
       })
-      .valueChanges.subscribe((result) => {
+      .valueChanges.pipe(filterComplete())
+      .subscribe((result) => {
         this.configParamsSubject.next({
           pending: result.data.config.pending,
           params: result.data.config.params.reduce(

@@ -12,10 +12,11 @@ import {
   EMPTY,
   distinctUntilChanged,
 } from "rxjs";
-import { ApolloError } from "@apollo/client/errors";
+import { CombinedGraphQLErrors } from "@apollo/client/errors";
 import * as generated from "../graphql/generated";
 import { AuthTokenService } from "./auth-token.service";
 import { newEnforcer, ObjectAction as _objectAction } from "./enforcer";
+import { filterComplete } from "../graphql/util/filter-complete";
 
 const pollInterval = 10000;
 
@@ -63,6 +64,7 @@ export class AuthService {
   constructor() {
     this.watchQuery.valueChanges
       .pipe(
+        filterComplete(),
         map((result) => {
           this.selfSubject.next(result.data.self.identity);
           return result;
@@ -70,8 +72,8 @@ export class AuthService {
         // todo: Handle this better
         catchError((err) => {
           if (
-            err instanceof ApolloError &&
-            err.graphQLErrors.some(
+            CombinedGraphQLErrors.is(err) &&
+            err.errors.some(
               (gErr) =>
                 gErr.extensions?.["code"] ===
                 "core.http_server.graphql.unauthorized",
@@ -111,7 +113,7 @@ export class AuthService {
           return login;
         }),
         catchError((error) => {
-          if (error instanceof ApolloError) {
+          if (CombinedGraphQLErrors.is(error)) {
             this.loginErrorSubject.next(error.message);
           }
           return EMPTY;
@@ -134,7 +136,7 @@ export class AuthService {
           return result.data!.self.register;
         }),
         catchError((error) => {
-          if (error instanceof ApolloError) {
+          if (CombinedGraphQLErrors.is(error)) {
             this.registerErrorSubject.next(error.message);
           }
           return EMPTY;
@@ -156,7 +158,7 @@ export class AuthService {
     return from(this.watchQuery.refetch()).pipe(
       take(1),
       map((result) => {
-        const self = result.data.self.identity;
+        const self = result.data!.self.identity;
         this.selfSubject.next(self);
         return self;
       }),
@@ -187,6 +189,6 @@ export class AuthService {
         },
         fetchPolicy: "no-cache",
       })
-      .pipe(map((result) => result.data.self.passwordEntropy));
+      .pipe(map((result) => result.data!.self.passwordEntropy));
   }
 }

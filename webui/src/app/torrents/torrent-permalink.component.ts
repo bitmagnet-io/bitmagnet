@@ -48,7 +48,7 @@ export class TorrentPermalinkComponent implements OnInit {
           fetchPolicy: "no-cache",
         })
         .subscribe((result) => {
-          const items = result.data.torrent.searchTorrentContent.items;
+          const items = result.data!.torrent.searchTorrentContent.items;
           if (items.length === 0) {
             return this.notFound();
           }

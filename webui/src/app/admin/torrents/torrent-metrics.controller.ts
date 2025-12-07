@@ -182,7 +182,7 @@ export class TorrentMetricsController {
         map((r) => {
           if (r) {
             this.loadingSubject.next(false);
-            this.rawResultSubject.next(r.data);
+            this.rawResultSubject.next(r.data!);
           }
         }),
       )

@@ -11,6 +11,7 @@ import {
 import { DataSource } from "@angular/cdk/collections";
 import { CollectionViewer } from "@angular/cdk/collections";
 import * as generated from "../graphql/generated";
+import { filterComplete } from "../graphql/util/filter-complete";
 
 const defaultLimit = 10;
 
@@ -46,6 +47,7 @@ export class InvitationsDatasource implements DataSource<generated.Invitation> {
     retry({
       delay: 5000,
     }),
+    filterComplete(),
     map((result) => result.data.auth.listInvitations),
   );
 

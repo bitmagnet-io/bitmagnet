@@ -30,7 +30,7 @@ export class PluginsService {
       .pipe(
         map(
           (r): PluginsInfo =>
-            r.data.plugin.list.reduce(
+            r.data!.plugin.list.reduce(
               (acc, next) => ({
                 ...acc,
                 [next.ref]: next,

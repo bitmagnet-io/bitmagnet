@@ -3,6 +3,7 @@ import { Apollo } from "apollo-angular";
 import { BehaviorSubject, map } from "rxjs";
 import * as generated from "../graphql/generated";
 import { WorkerState } from "../graphql/generated";
+import { filterComplete } from "../graphql/util/filter-complete";
 
 const workerStateIcons: Record<WorkerState, string> = {
   error: "error",
@@ -54,16 +55,15 @@ export class WorkersService {
         pollInterval,
       })
       .valueChanges.pipe(
-        map(
-          (r): Result => ({
-            workers: r.data.worker.listAll.workers.map((w) => ({
-              ...w,
-              icon: workerStateIcons[w.state],
-            })),
-            workerError: r.data.worker.listAll.workers.some((w) => w.error),
-            error: null,
-          }),
-        ),
+        filterComplete(),
+        map((r) => ({
+          workers: r.data.worker.listAll.workers.map((w) => ({
+            ...w,
+            icon: workerStateIcons[w.state],
+          })),
+          workerError: r.data.worker.listAll.workers.some((w) => w.error),
+          error: null,
+        })),
       )
       .subscribe({
         next: (result) => {
