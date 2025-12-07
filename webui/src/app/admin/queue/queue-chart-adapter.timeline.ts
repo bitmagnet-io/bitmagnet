@@ -207,11 +207,11 @@ export class QueueChartAdapterTimeline implements ChartAdapter<Result, "line"> {
     );
   }
 
-  private formatDuration(d: number | string): string {
+  private formatDuration(d: number | string | null): string {
     if (typeof d === "string") {
       d = parseInt(d);
     }
-    if (d === 0) {
+    if (d === 0 || d === null) {
       return "0";
     }
     let seconds = d;

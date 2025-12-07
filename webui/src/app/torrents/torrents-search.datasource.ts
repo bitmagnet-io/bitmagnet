@@ -24,9 +24,7 @@ type BudgetedCount = {
   isEstimate: boolean;
 };
 
-export class TorrentsSearchDatasource
-  implements DataSource<generated.TorrentContent>
-{
+export class TorrentsSearchDatasource implements DataSource<generated.TorrentContent> {
   private input: generated.SearchInput;
 
   private currentRequest = new BehaviorSubject(0);
@@ -151,7 +149,7 @@ export class TorrentsSearchDatasource
         variables,
         fetchPolicy: "no-cache",
       })
-      .pipe(map((r) => r.data.torrent.searchTorrentContent))
+      .pipe(map((r) => r.data!.torrent.searchTorrentContent))
       .pipe(
         catchError((err: Error) => {
           this.errorsService.addError(

@@ -484,11 +484,6 @@ export type Mutation = {
   worker: WorkerMutation;
 };
 
-export type OrderByInput = {
-  descending?: InputMaybe<Scalars['Boolean']['input']>;
-  key: Scalars['String']['input'];
-};
-
 export type PaginationInput = {
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
@@ -722,7 +717,7 @@ export type SearchInput = {
   hasNextPage?: InputMaybe<Scalars['Boolean']['input']>;
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Array<OrderByInput>>;
+  orderBy?: InputMaybe<Array<TorrentContentOrderByInput>>;
   page?: InputMaybe<Scalars['Int']['input']>;
   queryString?: InputMaybe<Scalars['String']['input']>;
   totalCount?: InputMaybe<Scalars['Boolean']['input']>;

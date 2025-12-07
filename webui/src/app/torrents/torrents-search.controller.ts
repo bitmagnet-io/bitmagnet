@@ -63,7 +63,13 @@ const controlsToQueryVariables = (
     page: ctrl.page,
     totalCount: true,
     hasNextPage: true,
-    orderBy: [ctrl.orderBy],
+    orderBy: [
+      {
+        // todo: check field vs key
+        field: ctrl.orderBy.key,
+        descending: ctrl.orderBy.descending,
+      },
+    ],
     facets: [
       {
         key: "content_type",
