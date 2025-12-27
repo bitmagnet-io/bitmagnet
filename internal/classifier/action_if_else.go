@@ -72,13 +72,21 @@ func (ifElseAction) compileAction(ctx compilerContext) (action, error) {
 
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
-			if result, err := cond.check(ctx); err != nil {
+			ctx.logger.Info()
+			logger:=ctx.logger
+			ctx.logger=logger.Named("if_else.condition")
+			result, err := cond.check(ctx)
+			ctx.logger=logger
+			if err != nil {
+				ctx.logger.Info("error evaluating condition")
 				return classification.Result{}, err
 			} else if result {
+				ctx.logger.Named("if_else.if_action").Info()
 				if ifAction.run != nil {
 					return ifAction.run(ctx)
 				}
 			} else {
+				ctx.logger.Named("if_else.else_action").Info()
 				if elseAction.run != nil {
 					return elseAction.run(ctx)
 				}

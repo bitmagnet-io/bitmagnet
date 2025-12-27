@@ -1,5 +1,7 @@
 package classifier
 
+import "fmt"
+
 const orName = "or"
 
 type orCondition struct{}
@@ -38,8 +40,13 @@ func (orCondition) compileCondition(ctx compilerContext) (condition, error) {
 	}
 
 	return condition{func(ctx executionContext) (bool, error) {
-		for _, c := range conds {
-			if result, err := c.check(ctx); err != nil {
+		ctx.logger.Info()
+		for i, c := range conds {
+			logger := ctx.logger
+			ctx.logger = logger.Named(fmt.Sprintf("or.[%d]", i))
+			result, err := c.check(ctx)
+			ctx.logger = logger
+			if err != nil {
 				return false, err
 			} else if result {
 				return true, nil

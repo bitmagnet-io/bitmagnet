@@ -7,6 +7,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 type Params struct {
@@ -15,6 +16,7 @@ type Params struct {
 	TmdbConfig tmdb.Config
 	Search     lazy.Lazy[search.Search]
 	TmdbClient lazy.Lazy[tmdb.Client]
+	Logger     *zap.SugaredLogger
 }
 
 type Result struct {
@@ -36,6 +38,12 @@ func New(params Params) Result {
 			return nil, err
 		}
 
+		logger := zap.NewNop().Sugar();
+		verbose := params.Config.Verbose
+		if verbose == true {
+			logger = params.Logger
+		}
+
 		return compiler{
 			options: []compilerOption{
 				compilerFeatures(defaultFeatures),
@@ -47,6 +55,8 @@ func New(params Params) Result {
 					semaphore: make(chan struct{}, 1),
 				},
 				tmdbClient: tmdbClient,
+				_logger:    logger,
+				logger:     logger,
 			},
 		}, nil
 	})

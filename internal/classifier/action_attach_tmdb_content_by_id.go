@@ -31,6 +31,7 @@ func (attachTMDBContentByIDAction) compileAction(ctx compilerContext) (action, e
 			var ref model.ContentRef
 			maybeRef := ctx.torrent.Hint.ContentRef()
 			if !maybeRef.Valid {
+				ctx.logger.Info("hint missing or invalid")
 				return cl, classification.ErrUnmatched
 			}
 			ref = maybeRef.Val
@@ -42,12 +43,14 @@ func (attachTMDBContentByIDAction) compileAction(ctx compilerContext) (action, e
 			case model.SourceTmdb:
 				id, err := strconv.Atoi(ref.ID)
 				if err != nil {
+					ctx.logger.Info("invalid tmdb id")
 					return cl, classification.ErrUnmatched
 				}
 				tmdbID = int64(id)
 			default:
 				id, err := ctx.tmdbGetTMDBIDByExternalID(ref)
 				if err != nil {
+					ctx.logger.Info("failed to get tmdb id by external id")
 					return cl, err
 				}
 				tmdbID = id
@@ -57,16 +60,29 @@ func (attachTMDBContentByIDAction) compileAction(ctx compilerContext) (action, e
 			case model.ContentTypeMovie, model.ContentTypeXxx:
 				c, err := ctx.tmdbGetMovieByTMDBID(tmdbID)
 				if err != nil {
+					ctx.logger.Infow("movie not found", "id", tmdbID)
 					return cl, err
 				}
+				ctx.logger.Infow(
+					"movie",
+					"id", tmdbID,
+					"title", c.Title,
+					"year", c.ReleaseYear.String())
 				content = &c
 			case model.ContentTypeTvShow:
 				c, err := ctx.tmdbGetTVShowByTMDBID(tmdbID)
 				if err != nil {
+					ctx.logger.Infow("tv show not found", "id", tmdbID)
 					return cl, err
 				}
+				ctx.logger.Infow(
+					"tv show",
+					"id", tmdbID,
+					"title", c.Title,
+					"year", c.ReleaseYear.String())
 				content = &c
 			default:
+				ctx.logger.Info("invalid content type")
 				return cl, classification.ErrUnmatched
 			}
 			cl.AttachContent(content)

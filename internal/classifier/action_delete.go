@@ -24,6 +24,7 @@ func (deleteAction) compileAction(ctx compilerContext) (action, error) {
 
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
+			ctx.logger.Info()
 			return ctx.result, classification.RuntimeError{
 				Cause: classification.ErrDeleteTorrent,
 				Path:  path,

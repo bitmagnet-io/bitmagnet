@@ -45,6 +45,7 @@ func (findMatchAction) compileAction(ctx compilerContext) (action, error) {
 
 	return action{
 		func(ctx executionContext) (classification.Result, error) {
+			ctx.logger.Info()
 			for _, action := range actions {
 				result, err := action.run(ctx)
 				if err != nil {

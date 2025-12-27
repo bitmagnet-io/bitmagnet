@@ -45,6 +45,7 @@ func (addTagAction) compileAction(ctx compilerContext) (action, error) {
 
 	return action{
 		func(ctx executionContext) (classification.Result, error) {
+			ctx.logger.Info(tags)
 			cl := ctx.result
 			if cl.Tags == nil {
 				cl.Tags = make(map[string]struct{})

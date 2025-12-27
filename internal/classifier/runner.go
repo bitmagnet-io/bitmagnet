@@ -73,5 +73,20 @@ func (r runner) Run(ctx context.Context, workflow string, flags Flags, t model.T
 		result:       cl,
 	}
 
-	return w.run(exCtx)
+	logger:=exCtx._logger.Named("runner")
+	logger.Infow(
+		"start",
+		"workflow", workflow,
+		"hash",t.InfoHash,
+		"name",t.Name,
+		"files",t.Files,
+		"createdAt",t.CreatedAt,
+		"updatedAt",t.UpdatedAt,
+		"hint",r.CleanObj(t.Hint))
+
+	result,error:=w.run(exCtx)
+
+	logger.Infow("done", "workflow", workflow, "result", r.CleanObj(result))
+
+	return result,error
 }

@@ -7,6 +7,7 @@ type Config struct {
 	Flags       map[string]any
 	DeleteXxx   bool
 	Concurrency int
+	Verbose     bool
 }
 
 func NewDefaultConfig() Config {

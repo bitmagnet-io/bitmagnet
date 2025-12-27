@@ -26,6 +26,7 @@ func (attachLocalContentBySearchAction) compileAction(ctx compilerContext) (acti
 		run: func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result
 			if !cl.ContentType.Valid || !cl.BaseTitle.Valid {
+				ctx.logger.Info("invalid content type or base title")
 				return cl, classification.ErrUnmatched
 			}
 			content, err := ctx.search.ContentBySearch(
@@ -35,8 +36,21 @@ func (attachLocalContentBySearchAction) compileAction(ctx compilerContext) (acti
 				cl.Date.Year,
 			)
 			if err != nil {
+				ctx.logger.Infow(
+					"local search failed",
+					"type",cl.ContentType.ContentType.String(),
+					"base_title",cl.BaseTitle.String,
+					"date",cl.Date.IsoDateString())
 				return cl, err
 			}
+			ctx.logger.Infow(
+				"local search succeeded",
+				"base_title",cl.BaseTitle.String,
+				"date",cl.Date.IsoDateString(),
+				"id",content.ID,
+				"type",content.Type.String(),
+				"title",content.Title,
+				"year",content.ReleaseYear.String())
 			cl.AttachContent(&content)
 			return cl, nil
 		},

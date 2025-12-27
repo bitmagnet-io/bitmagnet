@@ -27,10 +27,12 @@ func (parseDateAction) compileAction(ctx compilerContext) (action, error) {
 		run: func(ctx executionContext) (classification.Result, error) {
 			parsed := parsers.ParseDate(ctx.torrent.Name)
 			if parsed.IsNil() {
+				ctx.logger.Info(nil)
 				return ctx.result, classification.ErrUnmatched
 			}
 			cl := ctx.result
 			cl.Date = parsed
+			ctx.logger.Info(parsed.IsoDateString())
 			return cl, nil
 		},
 	}, nil
