@@ -18,7 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - This CHANGELOG file (#?).
 - A devcontainer configuration for local development, tested in VSCode and GoLand (#?).
 - Implemented a plugin system, and port all core components to plugins (#?).
-- Implemented Torznab profiles to allow for multiple Torznab configurations (#409).
+- Allow plugins to be implemented in WebAssembly and run via wazero (#?).
+- An auth component with users, API keys, RBAC (#?).
 - Catalan i18n (#404).
 - A XXX category for Torznab queries (#432).
 - Linked to Proxmox community script on external resources page (#430).
