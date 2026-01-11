@@ -46,9 +46,5 @@ var (
 			"description for plugin activation param",
 			i18n.WithOther("Activation"),
 		),
-		// builder.WithCliCommand[deps](
-		// 	NewConfigCommand(),
-		// ),
-		// builder.WithFxOption[config, deps](configfx.New()),
 	)
 )
