@@ -3,7 +3,7 @@ package i18n
 import (
 	"embed"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/fs"
+	"github.com/bitmagnet-io/bitmagnet/pkg/fs"
 	"github.com/spf13/afero"
 )
 

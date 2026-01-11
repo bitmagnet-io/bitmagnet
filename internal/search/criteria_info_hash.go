@@ -1,6 +1,7 @@
 package search
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
@@ -11,6 +12,12 @@ import (
 const nameInfoHash = "infoHash"
 
 type CriteriaInfoHash []protocol.ID
+
+func (c CriteriaInfoHash) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string][]protocol.ID{
+		nameInfoHash: c,
+	})
+}
 
 func (CriteriaInfoHash) criteria() {}
 

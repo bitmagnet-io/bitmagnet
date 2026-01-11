@@ -193,3 +193,10 @@ enum WorkerState {
   shutdown
   error
 }
+
+enum SearchResultType {
+  torrent
+  torrent_content
+  torrent_file
+  content
+}

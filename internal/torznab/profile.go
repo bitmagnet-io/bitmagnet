@@ -5,9 +5,11 @@ import "strings"
 type Profile struct {
 	ID                      string `validate:"required"`
 	Title                   string
+	Index                   string
 	DisableOrderByRelevance bool
 	DefaultLimit            uint
 	MaxLimit                uint
+	TotalCount              bool
 	Tags                    []string
 }
 

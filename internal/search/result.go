@@ -2,18 +2,6 @@ package search
 
 import "github.com/bitmagnet-io/bitmagnet/internal/model"
 
-/*
-ENUM(
-
-		torrent,
-	  torrent_content,
-	  torrent_file,
-	  content,
-
-)
-*/
-type ResultType string
-
 type Result[T any] struct {
 	TotalCount           model.NullUint
 	TotalCountIsEstimate bool

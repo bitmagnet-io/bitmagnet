@@ -1,0 +1,10 @@
+type IndexQuery {
+  default: Ref!
+  infos: [SearchIndexInfo!]!
+}
+
+type SearchIndexInfo {
+  ref: Ref!
+  name: String!
+  resultTypes: [SearchResultType!]!
+}

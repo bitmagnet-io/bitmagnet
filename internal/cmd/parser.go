@@ -95,5 +95,5 @@ func parseKey(prefix, arg string) (string, bool) {
 		return "", false
 	}
 
-	return match[1], true
+	return match[0], true
 }

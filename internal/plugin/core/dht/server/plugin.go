@@ -4,7 +4,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/dht"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/dht/socket"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/client"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
@@ -26,7 +25,7 @@ var (
 	Plugin = builder.NewPlugin(
 		Ref,
 		builder.WithDescription[deps]("Runs a DHT server node"),
-		builder.WithDependencies[deps](socket.Ref),
+		builder.WithDependencies[deps](dht.Ref),
 		builder.WithConfig[deps](Ref.MustSub("query_timeout"), server.ParamQueryTimeout),
 		builder.WithFxOption[deps](fx.Provide(
 			fx.Annotate(
@@ -49,7 +48,7 @@ var (
 		)),
 		builder.WithWorker(
 			func(deps deps) (runner.Provider, worker.Option) {
-				return deps.Server, worker.WithDependencies(socket.Ref)
+				return deps.Server, worker.WithDependencies(dht.Ref)
 			},
 		),
 	)

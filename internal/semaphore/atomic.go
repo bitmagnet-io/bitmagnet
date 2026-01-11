@@ -7,7 +7,7 @@ import (
 
 type Semaphore = semaphore.Semaphore
 
-func NewAtomic(size *atomic.Value[int]) (semaphore.Semaphore, func() int) {
+func NewAtomic(size atomic.Reader[int]) (semaphore.Semaphore, func() int) {
 	currentSize := size.Get()
 
 	sem := semaphore.New(currentSize)

@@ -2,14 +2,14 @@ package torznab
 
 import (
 	internalsearch "github.com/bitmagnet-io/bitmagnet/internal/database/search"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/config"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database/search"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/search"
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab/adapter"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab/httpserver"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 )
@@ -21,7 +21,7 @@ type deps struct {
 }
 
 var (
-	Ref = core.Ref.MustSub("torznab")
+	Ref = ref.Root.MustSub("torznab")
 
 	Plugin = builder.NewPlugin(
 		Ref,

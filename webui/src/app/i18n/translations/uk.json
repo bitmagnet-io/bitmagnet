@@ -1,30 +1,9 @@
 {
-  "content_types": {
-    "plural": {
-      "all": "Усі",
-      "audiobook": "Аудіокниги",
-      "comic": "Комікси",
-      "ebook": "Електронні книги",
-      "game": "Ігри",
-      "movie": "Фільми",
-      "music": "Музика",
-      "null": "Невідомо",
-      "software": "Програми",
-      "tv_show": "Телешоу",
-      "xxx": "Порно"
-    },
-    "singular": {
-      "audiobook": "Аудіокнига",
-      "comic": "Комікс",
-      "ebook": "Електронна книга",
-      "game": "Гра",
-      "movie": "Фільм",
-      "music": "Музика",
-      "null": "Невідомо",
-      "software": "Програма",
-      "tv_show": "Телешоу",
-      "xxx": "Порно"
-    }
+  "account": {
+    "account": "__missing__",
+    "api_key_created": "__missing__",
+    "api_key_take_note": "__missing__",
+    "new_api_key": "__missing__"
   },
   "admin": {
     "event": {
@@ -84,6 +63,55 @@
       "total_counts_by_status": "Загальна кількість за статусами"
     }
   },
+  "auth": {
+    "claimed_by": "__missing__",
+    "confirm_password": "__missing__",
+    "created_by": "__missing__",
+    "expires_at": "__missing__",
+    "expiry": "__missing__",
+    "invitation_code": "__missing__",
+    "last_login_at": "__missing__",
+    "login": "__missing__",
+    "login_failed": "__missing__",
+    "logout": "__missing__",
+    "new_invitation": "__missing__",
+    "new_role": "__missing__",
+    "password": "__missing__",
+    "password_has_insufficient_entropy": "__missing__",
+    "passwords_do_not_match": "__missing__",
+    "register": "__missing__",
+    "register_failed": "__missing__",
+    "role": "__missing__",
+    "unclaimed": "__missing__",
+    "username": "__missing__"
+  },
+  "content_types": {
+    "plural": {
+      "all": "Усі",
+      "audiobook": "Аудіокниги",
+      "comic": "Комікси",
+      "ebook": "Електронні книги",
+      "game": "Ігри",
+      "movie": "Фільми",
+      "music": "Музика",
+      "null": "Невідомо",
+      "software": "Програми",
+      "tv_show": "Телешоу",
+      "xxx": "Порно"
+    },
+    "singular": {
+      "audiobook": "Аудіокнига",
+      "comic": "Комікс",
+      "ebook": "Електронна книга",
+      "game": "Гра",
+      "movie": "Фільм",
+      "music": "Музика",
+      "null": "Невідомо",
+      "software": "Програма",
+      "tv_show": "Телешоу",
+      "xxx": "Порно"
+    }
+  },
   "facets": {
     "content_type": "Тип контенту",
     "file_type": "Тип файлу",
@@ -108,13 +136,26 @@
     "video": "Відео"
   },
   "general": {
+    "actions": "__missing__",
     "all": "Усі",
+    "cancel": "__missing__",
+    "code": "__missing__",
+    "confirm": "__missing__",
+    "copy_to_clipboard": "__missing__",
+    "created_at": "__missing__",
+    "delete": "__missing__",
     "dismiss": "Закрити",
+    "email": "__missing__",
     "error": "Помилка",
+    "index": "__missing__",
+    "name": "__missing__",
+    "never": "__missing__",
     "none": "Немає",
     "page_not_found": "Сторінка не знайдена",
     "refresh": "Оновити",
-    "status": "Статус"
+    "save": "__missing__",
+    "status": "Статус",
+    "system": "__missing__"
   },
   "health": {
     "bitmagnet_is_status": "bitmagnet {{status}}",
@@ -228,12 +269,19 @@
     "x_to_y_of_z": "{{x}} до {{y}} з {{z}}"
   },
   "routes": {
+    "account": "__missing__",
     "admin": "Адміністратор",
+    "api_keys": "__missing__",
+    "config": "__missing__",
     "home": "Головна",
+    "invitations": "__missing__",
     "jobs": "Завдання",
     "queues": "Черги",
+    "roles": "__missing__",
     "torrents": "Торренти",
-    "visualize": "Візуалізувати"
+    "users": "__missing__",
+    "visualize": "Візуалізувати",
+    "workers": "__missing__"
   },
   "torrents": {
     "classification": "Класифікація",
@@ -312,5 +360,24 @@
   "version": {
     "bitmagnet_version": "Версія bitmagnet {{version}}",
     "unknown": "невідомо"
+  },
+  "workers": {
+    "actions": {
+      "restart": "__missing__",
+      "shutdown": "__missing__",
+      "start": "__missing__"
+    },
+    "states": {
+      "error": "__missing__",
+      "idle": "__missing__",
+      "running": "__missing__",
+      "shutdown": "__missing__",
+      "startup": "__missing__"
+    },
+    "warnings": {
+      "depends_on": "__missing__",
+      "required_by": "__missing__"
+    },
+    "worker": "__missing__"
   }
 }

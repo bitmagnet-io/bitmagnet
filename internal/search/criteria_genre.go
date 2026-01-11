@@ -1,6 +1,8 @@
 package search
 
 import (
+	"encoding/json"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
 	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
 )
@@ -9,17 +11,19 @@ const nameGenre = "genre"
 
 type CriteriaGenre []string
 
+func (c CriteriaGenre) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string][]string{
+		nameGenre: c,
+	})
+}
+
 func (CriteriaGenre) criteria() {}
 
 var criteriaSpecGenre = json_spec.SingleKeyValue[[]string]{
 	Key: nameGenre,
 	ValueSpec: json_spec.MustSucceed[[]string]{
 		Typed: json_spec.List[string]{
-			ItemSpec: json_spec.Generic[string]{
-				Schema: json_schema.MustNew(
-					json_schema.Typed(json_schema.TypeString),
-				),
-			},
+			ItemSpec: stringSpec,
 		},
 	},
 }

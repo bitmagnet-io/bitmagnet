@@ -8,7 +8,6 @@ import (
 	"context"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
-	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
@@ -92,9 +91,7 @@ func (r *torrentMutationResolver) Reprocess(ctx context.Context, obj *gqlmodel.T
 
 // SearchTorrentContent is the resolver for the searchTorrentContent field.
 func (r *torrentQueryResolver) SearchTorrentContent(ctx context.Context, obj *gqlmodel.TorrentQuery, input adapter.Params) (gqlmodel.BaseSearchResult[gqlmodel.TorrentContent], error) {
-	result, err := search.Adapter{
-		Search: obj.Search,
-	}.TorrentContent(ctx, input)
+	result, err := r.Search.TorrentContent(ctx, input)
 
 	return gqlmodel.TorrentContentSearchResult(gqlmodel.TorrentContentSearchResult{
 		TotalCount:           result.TotalCount,
@@ -117,9 +114,7 @@ func (r *torrentQueryResolver) SearchTorrentContent(ctx context.Context, obj *gq
 
 // Files is the resolver for the files field.
 func (r *torrentQueryResolver) SearchTorrentFiles(ctx context.Context, obj *gqlmodel.TorrentQuery, input adapter.Params) (gqlmodel.BaseSearchResult[model.TorrentFile], error) {
-	result, err := search.Adapter{
-		Search: obj.Search,
-	}.TorrentFiles(ctx, input)
+	result, err := r.Search.TorrentFiles(ctx, input)
 
 	return gqlmodel.TorrentFilesSearchResult(result), err
 }

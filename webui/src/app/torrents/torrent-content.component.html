@@ -11,7 +11,8 @@
   @if (heading) {
     <h2>
       <a
-        [routerLink]="'permalink/' + torrentContent.infoHash"
+        [routerLink]="['permalink', torrentContent.infoHash]"
+        [queryParams]="index ? { index: index } : null"
         [matTooltip]="t('torrents.permalink')"
         >{{ torrentContent.torrent.name }}</a
       >
@@ -151,7 +152,10 @@
           @if (torrentContent.torrent.filesStatus === "no_info") {
             <p>{{ t("torrents.files_no_info") }}</p>
           }
-          <app-torrent-files-table [torrent]="torrentContent.torrent" />
+          <app-torrent-files-table
+            [torrent]="torrentContent.torrent"
+            [index]="index"
+          />
         </mat-card>
       </ng-template>
     </mat-tab>

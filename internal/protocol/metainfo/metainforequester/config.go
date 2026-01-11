@@ -33,7 +33,7 @@ var (
 		param.Dynamic(
 			param.Description[MaxConcurrency]("Maximum request concurrency"),
 			param.Int[MaxConcurrency](),
-			param.Default(MaxConcurrency(1000)),
+			param.Default(MaxConcurrency(100)),
 			param.GreaterThan(MaxConcurrency(0)),
 		),
 	)

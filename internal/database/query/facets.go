@@ -14,7 +14,6 @@ import (
 
 type FacetConfig interface {
 	Key() search.Facet
-	Label() string
 	Logic() model.FacetLogic
 	Filter() FacetFilter
 	IsAggregated() bool
@@ -303,7 +302,6 @@ func (b optionBuilder) calculateFacets(ctx context.Context) ([]search.FacetResul
 			wgInner.Wait()
 			addAggregation(search.FacetResult{
 				Key:   facet.Key(),
-				Label: facet.Label(),
 				Logic: facet.Logic(),
 				Items: items,
 			})

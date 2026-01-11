@@ -6,6 +6,7 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
 	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
+	"gopkg.in/yaml.v3"
 )
 
 type Criteria interface {
@@ -38,11 +39,21 @@ var criteriaDefinitions = []criteriaDefinition{
 	definitionOr{},
 	definitionNot{},
 	definitionContentType{},
+	definitionContentRef{},
 	definitionGenre{},
 	definitionInfoHash{},
 	definitionLanguage{},
 	definitionQueryString{},
 	definitionTag{},
+}
+
+func ParseCriteria(value []byte) (Criteria, error) {
+	var node yaml.Node
+	if err := yaml.Unmarshal(value, &node); err != nil {
+		return nil, err
+	}
+
+	return CompileCriteria(json_schema.JSONValue(node))
 }
 
 func CompileCriteria(value json_schema.JSONValue) (Criteria, error) {
@@ -87,7 +98,7 @@ func compileCriteriaCtx(ctx compilerContext) ([]Criteria, error) {
 	if s, ok := ctx.Source.([]any); ok {
 		rawCriteria = s
 		isArray = true
-	} else {
+	} else if ctx.Source != nil {
 		rawCriteria = []any{ctx.Source}
 	}
 
@@ -134,4 +145,10 @@ var criteriaSpec = json_spec.MustSucceed[[]any]{
 			),
 		},
 	},
+}
+
+var stringSpec = json_spec.Generic[string]{
+	Schema: json_schema.MustNew(
+		json_schema.Typed(json_schema.TypeString),
+	),
 }

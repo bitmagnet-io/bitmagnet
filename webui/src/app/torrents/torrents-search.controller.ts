@@ -37,6 +37,7 @@ const compareTorrentSelection = (
 };
 
 export type TorrentSearchControls = {
+  index?: string;
   limit: number;
   page: number;
   queryString?: string;
@@ -58,6 +59,7 @@ const controlsToQueryVariables = (
   ctrl: TorrentSearchControls,
 ): generated.TorrentContentSearchQueryVariables => ({
   input: {
+    index: ctrl.index,
     queryString: ctrl.queryString,
     limit: ctrl.limit,
     page: ctrl.page,
@@ -147,6 +149,13 @@ export class TorrentsSearchController {
   selection$: Observable<TorrentSelection | undefined>;
 
   constructor(initialControls: TorrentSearchControls) {
+    // initialControls = {
+    //   ...initialControls,
+    //   index:
+    //     (initialControls.index ??
+    //       this.browserStorage.get(browserStorageIndexKey)) ||
+    //     undefined,
+    // };
     this.controlsSubject = new BehaviorSubject(initialControls);
     this.controls$ = this.controlsSubject.asObservable();
     this.paramsSubject = new BehaviorSubject(
@@ -176,12 +185,23 @@ export class TorrentsSearchController {
     });
   }
 
+  get controls(): TorrentSearchControls {
+    return this.controlsSubject.getValue();
+  }
+
   update(fn: (c: TorrentSearchControls) => TorrentSearchControls) {
     const ctrl = this.controlsSubject.getValue();
     const next = fn(ctrl);
     if (JSON.stringify(ctrl) !== JSON.stringify(next)) {
       this.controlsSubject.next(next);
     }
+  }
+
+  selectIndex(index?: string) {
+    this.update((ctrl) => ({
+      ...ctrl,
+      index,
+    }));
   }
 
   selectTorrent(infoHash: string, tab?: TorrentTabSelection | null) {
@@ -342,6 +362,8 @@ export class TorrentsSearchController {
     }));
   }
 }
+
+// todo: Get labels from backend
 
 export type FacetDefinition<T, _allowNull extends boolean = boolean> = {
   key: string;

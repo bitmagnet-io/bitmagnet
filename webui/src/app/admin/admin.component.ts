@@ -50,7 +50,7 @@ import { AppModule } from "../app.module";
                   ><mat-icon svgIcon="queue" />{{ t("routes.queues") }}</a
                 >
               </li>
-              <li>
+              <!-- <li>
                 <a
                   mat-button
                   routerLink="torrents"
@@ -59,7 +59,7 @@ import { AppModule } from "../app.module";
                   [class]="linkTorrents.isActive ? 'active' : ''"
                   ><mat-icon svgIcon="magnet" />{{ t("routes.torrents") }}</a
                 >
-              </li>
+              </li> -->
               <li>
                 <a
                   mat-button

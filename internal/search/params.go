@@ -2,9 +2,12 @@ package search
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 )
 
 type Params struct {
+	Index             ref.Nullable
+	AcceptLanguage    []string
 	QueryString       model.NullString
 	Limit             model.NullUint
 	Page              model.NullUint

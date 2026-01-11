@@ -3,8 +3,9 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"io"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/env"
+	"github.com/bitmagnet-io/bitmagnet/pkg/env"
 )
 
 type Factory[C Command] func() C
@@ -40,6 +41,7 @@ type Command interface {
 	Setup(env.Env) error
 	Subcommands() []Command
 	Run(env.Env) error
+	Help(wr io.Writer) error
 	Teardown(env.Env) error
 	OnError(env.Env, error) (int, error)
 }
@@ -57,21 +59,31 @@ func (*Cmd) Subcommands() []Command {
 }
 
 func (c *Cmd) Run(env env.Env) error {
-	return c.printUsage(env)
+	return c.Help(env)
+}
+
+func (c *Cmd) Help(wr io.Writer) error {
+	if c.instance == nil {
+		return ErrUninitialized
+	}
+	return c.instance.printHelp(wr)
 }
 
 func (*Cmd) Teardown(env.Env) error {
 	return nil
 }
 
-func (*Cmd) OnError(env env.Env, err error) (int, error) {
-	fmt.Fprintln(env.Stderr(), err)
-	switch {
-	case errors.Is(err, ErrInvalidArgs):
-		return 2, err
-	default:
-		return 1, err
+func (c *Cmd) OnError(env env.Env, err error) (int, error) {
+	exitCode := 1
+	if errors.Is(err, ErrInvalidArgs) {
+		exitCode = 2
+		if c.instance != nil {
+			c.instance.printHelp(env)
+			env.Write([]byte("\n"))
+		}
 	}
+	fmt.Fprintln(env.Stderr(), err)
+	return exitCode, err
 }
 
 var _ Command = (*Cmd)(nil)

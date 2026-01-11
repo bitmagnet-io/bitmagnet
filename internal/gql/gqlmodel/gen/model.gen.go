@@ -15,6 +15,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
+	"github.com/bitmagnet-io/bitmagnet/internal/search/adapter/multi"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
 )
 
@@ -67,6 +68,11 @@ type HealthCheck struct {
 type HealthQuery struct {
 	Status HealthStatus  `json:"status"`
 	Checks []HealthCheck `json:"checks"`
+}
+
+type IndexQuery struct {
+	Default ref.Ref           `json:"default"`
+	Infos   []multi.IndexInfo `json:"infos"`
 }
 
 type InviteInput struct {
@@ -193,6 +199,7 @@ type TorrentReprocessInput struct {
 
 type Worker struct {
 	Ref        ref.Ref      `json:"ref"`
+	Label      string       `json:"label"`
 	State      worker.State `json:"state"`
 	Error      *string      `json:"error,omitempty"`
 	RequiredBy []ref.Ref    `json:"requiredBy"`

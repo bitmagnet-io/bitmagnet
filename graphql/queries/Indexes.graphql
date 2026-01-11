@@ -1,0 +1,10 @@
+#import "../fragments/SearchIndexInfo.graphql"
+
+query Indexes {
+  index {
+    default
+    infos {
+      ...SearchIndexInfo
+    }
+  }
+}

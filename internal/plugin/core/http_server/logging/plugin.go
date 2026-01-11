@@ -4,10 +4,10 @@ import (
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/httpserver/ginzap"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/http_server"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/logging"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 	"go.uber.org/zap"

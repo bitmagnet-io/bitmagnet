@@ -6,6 +6,7 @@ import (
 )
 
 type Adapter struct {
+	adapter.Base
 	Search Search
 }
 

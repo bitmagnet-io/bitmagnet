@@ -1,30 +1,9 @@
 {
-  "content_types": {
-    "plural": {
-      "all": "Все",
-      "audiobook": "Аудиокниги",
-      "comic": "Комиксы",
-      "ebook": "Электронные книги",
-      "game": "Игры",
-      "movie": "Фильмы",
-      "music": "Музыка",
-      "null": "Неизвестно",
-      "software": "Программы",
-      "tv_show": "Телепередачи",
-      "xxx": "Порно"
-    },
-    "singular": {
-      "audiobook": "Аудиокнига",
-      "comic": "Комикс",
-      "ebook": "Электронная книга",
-      "game": "Игра",
-      "movie": "Фильм",
-      "music": "Музыка",
-      "null": "Неизвестно",
-      "software": "Программа",
-      "tv_show": "Телепередача",
-      "xxx": "Порно"
-    }
+  "account": {
+    "account": "__missing__",
+    "api_key_created": "__missing__",
+    "api_key_take_note": "__missing__",
+    "new_api_key": "__missing__"
   },
   "admin": {
     "event": {
@@ -84,6 +63,55 @@
       "total_counts_by_status": "Общее количество по статусам"
     }
   },
+  "auth": {
+    "claimed_by": "__missing__",
+    "confirm_password": "__missing__",
+    "created_by": "__missing__",
+    "expires_at": "__missing__",
+    "expiry": "__missing__",
+    "invitation_code": "__missing__",
+    "last_login_at": "__missing__",
+    "login": "__missing__",
+    "login_failed": "__missing__",
+    "logout": "__missing__",
+    "new_invitation": "__missing__",
+    "new_role": "__missing__",
+    "password": "__missing__",
+    "password_has_insufficient_entropy": "__missing__",
+    "passwords_do_not_match": "__missing__",
+    "register": "__missing__",
+    "register_failed": "__missing__",
+    "role": "__missing__",
+    "unclaimed": "__missing__",
+    "username": "__missing__"
+  },
+  "content_types": {
+    "plural": {
+      "all": "Все",
+      "audiobook": "Аудиокниги",
+      "comic": "Комиксы",
+      "ebook": "Электронные книги",
+      "game": "Игры",
+      "movie": "Фильмы",
+      "music": "Музыка",
+      "null": "Неизвестно",
+      "software": "Программы",
+      "tv_show": "Телепередачи",
+      "xxx": "Порно"
+    },
+    "singular": {
+      "audiobook": "Аудиокнига",
+      "comic": "Комикс",
+      "ebook": "Электронная книга",
+      "game": "Игра",
+      "movie": "Фильм",
+      "music": "Музыка",
+      "null": "Неизвестно",
+      "software": "Программа",
+      "tv_show": "Телепередача",
+      "xxx": "Порно"
+    }
+  },
   "facets": {
     "content_type": "Тип контента",
     "file_type": "Тип файла",
@@ -108,13 +136,26 @@
     "video": "Видео"
   },
   "general": {
+    "actions": "__missing__",
     "all": "Все",
+    "cancel": "__missing__",
+    "code": "__missing__",
+    "confirm": "__missing__",
+    "copy_to_clipboard": "__missing__",
+    "created_at": "__missing__",
+    "delete": "__missing__",
     "dismiss": "Закрыть",
+    "email": "__missing__",
     "error": "Ошибка",
+    "index": "__missing__",
+    "name": "__missing__",
+    "never": "__missing__",
     "none": "Нет",
     "page_not_found": "Страница не найдена",
     "refresh": "Обновить",
-    "status": "Статус"
+    "save": "__missing__",
+    "status": "Статус",
+    "system": "__missing__"
   },
   "health": {
     "bitmagnet_is_status": "bitmagnet {{status}}",
@@ -228,12 +269,19 @@
     "x_to_y_of_z": "{{x}} до {{y}} из {{z}}"
   },
   "routes": {
+    "account": "__missing__",
     "admin": "Администратор",
+    "api_keys": "__missing__",
+    "config": "__missing__",
     "home": "Главная",
+    "invitations": "__missing__",
     "jobs": "Задания",
     "queues": "Очереди",
+    "roles": "__missing__",
     "torrents": "Торренты",
-    "visualize": "Визуализация"
+    "users": "__missing__",
+    "visualize": "Визуализация",
+    "workers": "__missing__"
   },
   "torrents": {
     "classification": "Классификация",
@@ -312,5 +360,24 @@
   "version": {
     "bitmagnet_version": "Версия bitmagnet {{version}}",
     "unknown": "неизвестно"
+  },
+  "workers": {
+    "actions": {
+      "restart": "__missing__",
+      "shutdown": "__missing__",
+      "start": "__missing__"
+    },
+    "states": {
+      "error": "__missing__",
+      "idle": "__missing__",
+      "running": "__missing__",
+      "shutdown": "__missing__",
+      "startup": "__missing__"
+    },
+    "warnings": {
+      "depends_on": "__missing__",
+      "required_by": "__missing__"
+    },
+    "worker": "__missing__"
   }
 }

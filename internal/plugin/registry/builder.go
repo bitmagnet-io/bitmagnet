@@ -1,48 +1,33 @@
 package registry
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/config/lookup"
 	config_registry "github.com/bitmagnet-io/bitmagnet/internal/config/registry"
 	config_resolver "github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
-	"github.com/bitmagnet-io/bitmagnet/internal/env"
 	"github.com/bitmagnet-io/bitmagnet/internal/error_registry"
 	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/bundle"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
+	"github.com/bitmagnet-io/bitmagnet/pkg/env"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 )
 
 type Builder struct {
-	bundles ref.Map[bundle.Bundle]
+	bundles []plugin.Provider
 }
 
-func New(bundles ...bundle.Bundle) (*Builder, error) {
-	builder := &Builder{
-		bundles: ref.NewMap[bundle.Bundle](),
+func New(bundles ...plugin.Provider) *Builder {
+	return &Builder{
+		bundles: bundles,
 	}
-
-	for _, bundle := range bundles {
-		if builder.bundles.Has(bundle.Ref()) {
-			return nil, errors.New("plugin already registered")
-		}
-		builder.bundles.Set(bundle.Ref(), bundle)
-	}
-
-	return builder, nil
-}
-
-func (r *Builder) AllRefs() []ref.Ref {
-	return r.bundles.Refs()
 }
 
 func (r *Builder) Resolve(env env.Env, options ...Option) (*Registry, error) {
 	plugins := ref.NewMap[plugin.Plugin]()
 
-	for _, bundle := range r.bundles.Values() {
+	for _, bundle := range r.bundles {
 		bundlePlugins, err := bundle.LoadPlugins(env)
 		if err != nil {
 			return nil, err

@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"fmt"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/fs"
+	"github.com/bitmagnet-io/bitmagnet/pkg/fs"
 )
 
 type fileRotatorFile struct {

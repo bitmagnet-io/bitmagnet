@@ -23,7 +23,9 @@ var (
 
 	// Execution errors:
 
-	ErrExecution = errors.New("execution failed")
+	ErrExecution     = errors.New("execution failed")
+	ErrHelp          = errors.New("help failed")
+	ErrUninitialized = errors.New("command uninitialized")
 
 	ErrSetup    = errors.New("setup")
 	ErrTeardown = errors.New("teardown")

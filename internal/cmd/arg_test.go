@@ -4,17 +4,17 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/env"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
+	"github.com/bitmagnet-io/bitmagnet/pkg/env"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 type testCommand struct {
-	Cmd             `cmd:"name=testing"`
-	EnabledPlugins  CSV[ref.Ref]
-	DisabledPlugins CSVStringSlice
-	sub             *string
+	Cmd     `cmd:"name=testing"`
+	Refs    CSV[ref.Ref] `cmd:"doc=List of refs,example='foo.bar,baz.bat'"`
+	Strings CSVStringSlice
+	sub     *string
 }
 
 func (c *testCommand) Run(env.Env) error {
@@ -55,7 +55,7 @@ func TestArg(t *testing.T) {
 	env := env.New(
 		env.WithContext(t.Context()),
 		env.WithArgs(
-			"--enabled-plugins=foo.bar,baz.bat",
+			"--refs=foo.bar,baz.bat",
 			"sub",
 			"--test-arg=sub",
 		),
@@ -71,14 +71,50 @@ func TestArg(t *testing.T) {
 			ref.MustParse("foo.bar"),
 			ref.MustParse("baz.bat"),
 		},
-		cmd.EnabledPlugins,
+		cmd.Refs,
 	)
 
 	assert.Equal(t, "sub", str)
+}
 
-	var buff bytes.Buffer
+func TestHelp(t *testing.T) {
+	t.Parallel()
 
-	inst.printUsage(&buff)
+	str := ""
 
-	println(buff.String())
+	sub := &str
+
+	cmd := &testCommand{
+		sub: sub,
+	}
+	spec, err := introspect(cmd)
+	require.NoError(t, err)
+
+	stdout := &bytes.Buffer{}
+
+	env := env.New(
+		env.WithContext(t.Context()),
+		env.WithArgs("--help"),
+		env.WithStdout(stdout),
+	)
+
+	inst := spec.newInstance(cmd, env.Args())
+	err = inst.run(env)
+	require.NoError(t, err)
+
+	assert.Equal(t, `Usage:
+
+testing --refs=foo.bar,baz.bat --strings=STRINGS <command> [<args>]
+
+Parameters:
+
+  --refs=foo.bar,baz.bat
+                         List of refs
+  --strings=STRINGS
+  --help, -h             Show help for this command and exit
+
+Commands:
+
+  sub
+`, stdout.String())
 }

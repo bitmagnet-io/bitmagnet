@@ -2,9 +2,9 @@ package metrics
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"go.uber.org/fx"
 )
 
@@ -13,7 +13,7 @@ type deps struct {
 }
 
 var (
-	Ref = core.Ref.MustSub("metrics")
+	Ref = ref.Root.MustSub("metrics")
 
 	Plugin = builder.NewPlugin(
 		Ref,

@@ -1,30 +1,9 @@
 {
-  "content_types": {
-    "plural": {
-      "all": "Tümü",
-      "audiobook": "Sesli Kitaplar",
-      "comic": "Çizgi Romanlar",
-      "ebook": "E-Kitaplar",
-      "game": "Oyunlar",
-      "movie": "Filmler",
-      "music": "Müzik",
-      "null": "Bilinmiyor",
-      "software": "Yazılım",
-      "tv_show": "TV Programları",
-      "xxx": "XXX"
-    },
-    "singular": {
-      "audiobook": "Sesli Kitap",
-      "comic": "Çizgi Roman",
-      "ebook": "E-Kitap",
-      "game": "Oyun",
-      "movie": "Film",
-      "music": "Müzik",
-      "null": "Bilinmiyor",
-      "software": "Yazılım",
-      "tv_show": "TV Programı",
-      "xxx": "XXX"
-    }
+  "account": {
+    "account": "__missing__",
+    "api_key_created": "__missing__",
+    "api_key_take_note": "__missing__",
+    "new_api_key": "__missing__"
   },
   "admin": {
     "event": {
@@ -84,6 +63,55 @@
       "total_counts_by_status": "Duruma Göre Toplam Sayılar"
     }
   },
+  "auth": {
+    "claimed_by": "__missing__",
+    "confirm_password": "__missing__",
+    "created_by": "__missing__",
+    "expires_at": "__missing__",
+    "expiry": "__missing__",
+    "invitation_code": "__missing__",
+    "last_login_at": "__missing__",
+    "login": "__missing__",
+    "login_failed": "__missing__",
+    "logout": "__missing__",
+    "new_invitation": "__missing__",
+    "new_role": "__missing__",
+    "password": "__missing__",
+    "password_has_insufficient_entropy": "__missing__",
+    "passwords_do_not_match": "__missing__",
+    "register": "__missing__",
+    "register_failed": "__missing__",
+    "role": "__missing__",
+    "unclaimed": "__missing__",
+    "username": "__missing__"
+  },
+  "content_types": {
+    "plural": {
+      "all": "Tümü",
+      "audiobook": "Sesli Kitaplar",
+      "comic": "Çizgi Romanlar",
+      "ebook": "E-Kitaplar",
+      "game": "Oyunlar",
+      "movie": "Filmler",
+      "music": "Müzik",
+      "null": "Bilinmiyor",
+      "software": "Yazılım",
+      "tv_show": "TV Programları",
+      "xxx": "XXX"
+    },
+    "singular": {
+      "audiobook": "Sesli Kitap",
+      "comic": "Çizgi Roman",
+      "ebook": "E-Kitap",
+      "game": "Oyun",
+      "movie": "Film",
+      "music": "Müzik",
+      "null": "Bilinmiyor",
+      "software": "Yazılım",
+      "tv_show": "TV Programı",
+      "xxx": "XXX"
+    }
+  },
   "facets": {
     "content_type": "İçerik Türü",
     "file_type": "Dosya Türü",
@@ -108,13 +136,26 @@
     "video": "Video"
   },
   "general": {
+    "actions": "__missing__",
     "all": "Tümü",
+    "cancel": "__missing__",
+    "code": "__missing__",
+    "confirm": "__missing__",
+    "copy_to_clipboard": "__missing__",
+    "created_at": "__missing__",
+    "delete": "__missing__",
     "dismiss": "Kapat",
+    "email": "__missing__",
     "error": "Hata",
+    "index": "__missing__",
+    "name": "__missing__",
+    "never": "__missing__",
     "none": "Hiçbiri",
     "page_not_found": "Sayfa Bulunamadı",
     "refresh": "Yenile",
-    "status": "Durum"
+    "save": "__missing__",
+    "status": "Durum",
+    "system": "__missing__"
   },
   "health": {
     "bitmagnet_is_status": "bitmagnet durumu {{status}}",
@@ -228,12 +269,19 @@
     "x_to_y_of_z": "{{x}} ile {{y}} arası, toplam {{z}}"
   },
   "routes": {
+    "account": "__missing__",
     "admin": "Yönetici",
+    "api_keys": "__missing__",
+    "config": "__missing__",
     "home": "Ana Sayfa",
+    "invitations": "__missing__",
     "jobs": "Görevler",
     "queues": "Kuyruklar",
+    "roles": "__missing__",
     "torrents": "Torrentler",
-    "visualize": "Görselleştir"
+    "users": "__missing__",
+    "visualize": "Görselleştir",
+    "workers": "__missing__"
   },
   "torrents": {
     "classification": "Sınıflandırma",
@@ -312,5 +360,24 @@
   "version": {
     "bitmagnet_version": "bitmagnet versiyonu {{version}}",
     "unknown": "bilinmiyor"
+  },
+  "workers": {
+    "actions": {
+      "restart": "__missing__",
+      "shutdown": "__missing__",
+      "start": "__missing__"
+    },
+    "states": {
+      "error": "__missing__",
+      "idle": "__missing__",
+      "running": "__missing__",
+      "shutdown": "__missing__",
+      "startup": "__missing__"
+    },
+    "warnings": {
+      "depends_on": "__missing__",
+      "required_by": "__missing__"
+    },
+    "worker": "__missing__"
   }
 }

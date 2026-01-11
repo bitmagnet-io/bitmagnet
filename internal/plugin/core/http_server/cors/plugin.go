@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/config"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/http_server"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/logging"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/cors"
 	gincors "github.com/rs/cors/wrapper/gin"

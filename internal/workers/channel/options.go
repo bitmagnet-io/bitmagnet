@@ -13,7 +13,7 @@ func WithSize[T any](size int) Option[T] {
 	return WithAtomicSize[T](atomic.NewValue(size))
 }
 
-func WithAtomicSize[T any](size *atomic.Value[int]) Option[T] {
+func WithAtomicSize[T any](size atomic.Reader[int]) Option[T] {
 	return func(wrk *worker[T]) {
 		wrk.size = size
 	}

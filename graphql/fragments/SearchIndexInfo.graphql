@@ -1,0 +1,5 @@
+fragment SearchIndexInfo on SearchIndexInfo {
+  ref
+  name
+  resultTypes
+}

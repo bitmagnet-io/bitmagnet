@@ -13,21 +13,6 @@ import (
 	"golang.org/x/time/rate"
 )
 
-// type Params struct {
-// 	fx.In
-// 	Config Config
-// 	Logger *zap.Logger
-// }
-
-// type Result struct {
-// 	fx.Out
-// 	Requester           Requester
-// 	RequestDuration     prometheus.Collector `group:"prometheus_collectors"`
-// 	RequestSuccessTotal prometheus.Collector `group:"prometheus_collectors"`
-// 	RequestErrorTotal   prometheus.Collector `group:"prometheus_collectors"`
-// 	RequestConcurrency  prometheus.Collector `group:"prometheus_collectors"`
-// }
-
 func New(
 	maxConcurrency *atomic.Value[MaxConcurrency],
 	dialTimeout *atomic.Value[DialTimeout],
@@ -35,11 +20,7 @@ func New(
 	metrics *metrics.Component,
 	logger *zap.Logger,
 ) Requester {
-	mappedConcurrency, _ := atomic.Map(maxConcurrency, func(value MaxConcurrency) int {
-		return int(value)
-	})
-
-	sem, _ := semaphore.NewAtomic(mappedConcurrency)
+	sem, _ := semaphore.NewAtomic(atomic.MapIntish[MaxConcurrency, int](maxConcurrency))
 
 	return &requestLimiter{
 		requester: &requesterSemaphore{
@@ -62,9 +43,4 @@ func New(
 		},
 		limiter: concurrency.NewKeyedLimiter(rate.Every(time.Second/2), 4, 10_000, time.Minute),
 	}
-	// 	RequestDuration:     collector.requestDuration,
-	// 	RequestSuccessTotal: collector.requestSuccessTotal,
-	// 	RequestErrorTotal:   collector.requestErrorTotal,
-	// 	RequestConcurrency:  collector.requestConcurrency,
-	// }
 }

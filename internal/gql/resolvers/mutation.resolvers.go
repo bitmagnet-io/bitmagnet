@@ -24,6 +24,7 @@ func (r *mutationResolver) Queue(ctx context.Context) (gqlmodel.QueueMutation, e
 // Worker is the resolver for the worker field.
 func (r *mutationResolver) Worker(ctx context.Context) (gqlmodel.WorkerMutation, error) {
 	return gqlmodel.WorkerMutation{
+		I18n:     r.I18n,
 		Context:  r.Context,
 		Registry: r.Workers,
 	}, nil

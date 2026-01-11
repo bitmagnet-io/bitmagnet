@@ -2,6 +2,7 @@ package builder
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/auth/rbac"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/param"
@@ -10,12 +11,12 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
 	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/handler"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	workers_registry "github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
@@ -80,7 +81,7 @@ func NewPlugin[Deps any](rf ref.Ref, options ...Option[Deps]) plugin.Plugin {
 
 type Option[Deps any] func(*builder[Deps])
 
-func options[Deps any](options ...Option[Deps]) Option[Deps] {
+func WithOptions[Deps any](options ...Option[Deps]) Option[Deps] {
 	return func(b *builder[Deps]) {
 		for _, option := range options {
 			option(b)
@@ -92,7 +93,7 @@ func WithDescription[Deps any](description string) Option[Deps] {
 	return func(b *builder[Deps]) {
 		WithI18nMessage[Deps](
 			b.ref,
-			"description for plugin "+b.ref.String(),
+			"description for plugin: "+b.ref.String(),
 			i18n.WithOther(description),
 		)(b)
 	}
@@ -110,13 +111,13 @@ func WithActivation[Deps any](activation plugin.Activation) Option[Deps] {
 	}
 }
 
-func WithConfig[Deps any, T any](ref ref.Ref, param param.Param[T]) Option[Deps] {
-	return options(
+func WithConfig[Deps any, T any](ref ref.Ref, p param.Param[T]) Option[Deps] {
+	return WithOptions(
 		func(b *builder[Deps]) {
 			b.params = append(b.params, config_registry.Param{
 				Ref:     ref,
 				Plugin:  b.ref,
-				Untyped: param,
+				Untyped: p,
 			})
 		},
 		WithFxOption[Deps](
@@ -135,7 +136,7 @@ func WithConfig[Deps any, T any](ref ref.Ref, param param.Param[T]) Option[Deps]
 
 					value, ok = resolved.Value().(T)
 					if !ok {
-						return value, errors.New("cast failed")
+						return value, fmt.Errorf("failed to cast from %T to %T", resolved.Value(), value)
 					}
 
 					return value, nil

@@ -1,6 +1,8 @@
 package search
 
 import (
+	"encoding/json"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
 	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
 )
@@ -8,6 +10,12 @@ import (
 const nameAnd = "and"
 
 type And []Criteria
+
+func (c And) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string][]Criteria{
+		nameAnd: c,
+	})
+}
 
 func (And) criteria() {}
 

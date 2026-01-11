@@ -1,14 +1,11 @@
 {
-  "terminal.integrated.profiles.linux": {
-    "nix-shell": {
-      "path": "bash",
-      "args": ["-c", "nix develop --command zsh"]
-    }
-  },
   "editor.formatOnSave": true,
   "go.lintTool": "golangci-lint-v2",
   "go.formatTool": "default",
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "protoc": {
+    "options": ["--proto_path=proto/"]
+  }
 }

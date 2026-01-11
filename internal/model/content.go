@@ -5,9 +5,9 @@ import (
 )
 
 type ContentRef struct {
-	Type   ContentType
-	Source string
-	ID     string
+	Type   ContentType `json:"type"`
+	Source string      `json:"source"`
+	ID     string      `json:"id"`
 }
 
 func (c Content) Ref() ContentRef {

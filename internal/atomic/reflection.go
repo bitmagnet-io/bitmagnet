@@ -18,6 +18,10 @@ func ReflectType(tp reflect.Type) (Reflected, bool) {
 }
 
 func ReflectValue(reflectValue reflect.Value) (Reflected, bool) {
+	if !reflectValue.IsValid() || reflectValue.IsZero() {
+		return Reflected{}, false
+	}
+
 	tp := reflectValue.Type()
 
 	if tp.Kind() != reflect.Ptr {

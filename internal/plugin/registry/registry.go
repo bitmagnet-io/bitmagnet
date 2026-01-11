@@ -3,8 +3,8 @@ package registry
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/cmd"
 	config_resolver "github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"go.uber.org/fx"
 )
 

@@ -203,13 +203,13 @@ export const routes: Routes = [
           },
         ],
       },
-      {
-        path: "torrents",
-        loadComponent: () =>
-          import("./admin/torrents/torrents-admin.component").then(
-            (c) => c.TorrentsAdminComponent,
-          ),
-      },
+      // {
+      //   path: "torrents",
+      //   loadComponent: () =>
+      //     import("./admin/torrents/torrents-admin.component").then(
+      //       (c) => c.TorrentsAdminComponent,
+      //     ),
+      // },
       {
         path: "users",
         loadComponent: () =>

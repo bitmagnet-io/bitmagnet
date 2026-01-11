@@ -9,13 +9,13 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/auth/user"
 	"github.com/bitmagnet-io/bitmagnet/internal/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database/migrator"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database/postgres"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/postgres"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/postgres/migrator"
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -31,7 +31,7 @@ type deps struct {
 type service rbac.Service
 
 var (
-	Ref               = core.Ref.MustSub("auth")
+	Ref               = ref.Root.MustSub("auth")
 	RefJWT            = Ref.MustSub("jwt")
 	RefPasswordPolicy = Ref.MustSub("password_policy")
 	RefRBAC           = Ref.MustSub("rbac")

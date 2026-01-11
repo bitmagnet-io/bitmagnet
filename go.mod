@@ -9,10 +9,10 @@ require (
 	github.com/adrg/xdg v0.5.3
 	github.com/agnivade/levenshtein v1.2.1
 	github.com/anacrolix/dht/v2 v2.22.0
-	github.com/anacrolix/missinggo/v2 v2.8.0
 	github.com/anacrolix/torrent v1.58.0
 	github.com/bits-and-blooms/bloom/v3 v3.7.0
 	github.com/casbin/casbin/v2 v2.121.0
+	github.com/dave/jennifer v1.7.1
 	github.com/facette/natsort v0.0.0-20181210072756-2cd4dd1e2dcb
 	github.com/fatih/color v1.18.0
 	github.com/frankban/quicktest v1.14.6
@@ -29,18 +29,21 @@ require (
 	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/joho/godotenv v1.5.1
+	github.com/jolestar/go-commons-pool/v2 v2.1.2
 	github.com/marusama/semaphore/v2 v2.5.0
 	github.com/mgdigital/gorm-cache/v2 v2.0.0-20230912113927-f2a8dd92a386
 	github.com/mozillazg/go-unidecode v0.2.0
 	github.com/nicksnyder/go-i18n/v2 v2.6.0
 	github.com/onsi/ginkgo/v2 v2.23.4
 	github.com/onsi/gomega v1.37.0
+	github.com/planetscale/vtprotobuf v0.4.0
 	github.com/pressly/goose/v3 v3.24.1
 	github.com/prometheus/client_golang v1.20.5
 	github.com/rs/cors v1.11.1
 	github.com/rs/cors/wrapper/gin v0.0.0-20240830163046-1084d89a1692
 	github.com/spf13/afero v1.14.0
 	github.com/stretchr/testify v1.10.0
+	github.com/tetratelabs/wazero v1.9.0
 	github.com/tylertreat/BoomFilters v0.0.0-20210315201527-1a82519a3e43
 	github.com/vektah/gqlparser/v2 v2.5.22
 	github.com/vektra/mockery/v2 v2.52.1
@@ -54,6 +57,7 @@ require (
 	golang.org/x/text v0.28.0
 	golang.org/x/time v0.12.0
 	golang.org/x/tools/gopls v0.20.0
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.5.1
 	google.golang.org/protobuf v1.36.6
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.5.7
@@ -80,6 +84,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0 // indirect
 	github.com/anacrolix/generics v0.0.3-0.20240902042256-7fb2702ef0ca // indirect
 	github.com/anacrolix/missinggo v1.3.0 // indirect
+	github.com/anacrolix/missinggo/v2 v2.8.0 // indirect
 	github.com/anacrolix/multiless v0.4.0 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect

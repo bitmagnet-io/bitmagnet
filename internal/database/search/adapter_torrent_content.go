@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
+	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 )
@@ -76,6 +77,25 @@ func transformTorrentContentCriteria(criteria adapter.Criteria) (query.Criteria,
 		return query.Not(conds...), nil
 	case adapter.CriteriaContentType:
 		return TorrentContentTypeCriteria(c...), nil
+	case adapter.CriteriaContentRef:
+		return query.Or(
+			slice.Map(c, func(ref model.ContentRef) query.Criteria {
+				// todo: Clean this up
+				if ref.Source == "tmdb" {
+					return ContentCanonicalIdentifierCriteria(model.ContentRef{
+						Type:   ref.Type,
+						Source: ref.Source,
+						ID:     ref.ID,
+					})
+				}
+
+				return ContentIdentifierCriteria(model.ContentRef{
+					Type:   ref.Type,
+					Source: ref.Source,
+					ID:     ref.ID,
+				})
+			})...,
+		), nil
 	case adapter.CriteriaInfoHash:
 		return TorrentContentInfoHashCriteria(c...), nil
 	case adapter.CriteriaGenre:

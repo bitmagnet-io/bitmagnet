@@ -2,11 +2,11 @@ package worker
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/workershealthcheck"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -17,7 +17,7 @@ type deps struct {
 }
 
 var (
-	Ref = core.Ref.MustSub("worker")
+	Ref = ref.Root.MustSub("worker")
 
 	Plugin = builder.NewPlugin(
 		Ref,

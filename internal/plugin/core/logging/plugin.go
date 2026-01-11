@@ -3,10 +3,10 @@ package logging
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/logging/level"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/config"
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -17,7 +17,7 @@ type deps struct {
 }
 
 var (
-	Ref = core.Ref.MustSub("logging")
+	Ref = ref.Root.MustSub("logging")
 
 	Plugin = builder.NewPlugin(
 		Ref,
@@ -57,18 +57,6 @@ var (
 					return zap.New(core, opts...)
 				},
 			),
-			// fx.Invoke(func(
-			// 	logger *zap.Logger,
-			// 	availablePlugins plugin.Available,
-			// 	enabledPlugins plugin.Enabled,
-			// ) {
-			// 	logger = logger.Named("plugins")
-			// 	logger.Info(
-			// 		"started",
-			// 		zap.Strings("enabled", ref.Refs(enabledPlugins).Strings()),
-			// 		zap.Strings("available", ref.Refs(availablePlugins).Strings()),
-			// 	)
-			// }),
 		),
 	)
 )

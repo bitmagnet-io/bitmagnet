@@ -1,13 +1,13 @@
 package file_rotator
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/fs"
 	"github.com/bitmagnet-io/bitmagnet/internal/logging/file_rotator"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/logging"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
+	"github.com/bitmagnet-io/bitmagnet/pkg/fs"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"go.uber.org/fx"
 )
 

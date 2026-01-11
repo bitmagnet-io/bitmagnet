@@ -140,9 +140,13 @@ func (p param[T]) Validate(val T) error {
 }
 
 func (p param[T]) ValidateAny(val any) error {
+	if len(p.validators) == 0 {
+		return nil
+	}
+
 	typed, ok := val.(T)
 	if !ok {
-		return fmt.Errorf("failed to cast %T to %T", val, typed)
+		return fmt.Errorf("validation failed to cast %T to %T", val, typed)
 	}
 
 	return p.Validate(typed)
@@ -154,7 +158,7 @@ func (p param[T]) EncodeYAML(val T) (yaml.Node, error) {
 
 func (p param[T]) EncodeYAMLAny(val any) (yaml.Node, error) {
 	typed, ok := val.(T)
-	if !ok {
+	if !ok && val != nil {
 		return yaml.Node{}, fmt.Errorf("failed to cast %T to %T", val, typed)
 	}
 

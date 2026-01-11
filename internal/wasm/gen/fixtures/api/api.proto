@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "github.com/bitmagnet-io/bitmagnet/internal/wasm/gen/fixtures/api;api";
+
+import "imported/imported.proto";
+
+// go:plugin type=plugin version=1
+service Service {
+  rpc Call(imported.Request) returns (Response);
+}
+
+message Response {
+  imported.Response response = 1;
+}

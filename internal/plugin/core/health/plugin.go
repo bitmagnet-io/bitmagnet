@@ -2,12 +2,12 @@ package health
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/version"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 )
@@ -18,7 +18,7 @@ type deps struct {
 }
 
 var (
-	Ref = core.Ref.MustSub("health")
+	Ref = ref.Root.MustSub("health")
 
 	Plugin = builder.NewPlugin(
 		Ref,

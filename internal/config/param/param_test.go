@@ -37,9 +37,9 @@ func TestLogLevel(t *testing.T) {
 	_, err = p.Parse("invalid_level")
 	require.Error(t, err)
 
-	// decoded, err := param.DecodeYAML(encoded)
-	// require.NoError(t, err)
-	// assert.Equal(t, level.LevelInfo, decoded)
+	decoded, err := p.DecodeYAML(node)
+	require.NoError(t, err)
+	assert.Equal(t, level.LevelInfo, decoded)
 
 	require.NoError(t, p.Validate(level.LevelInfo))
 	require.ErrorIs(t, p.Validate("invalid_level"), param.ErrInvalid)
@@ -161,4 +161,25 @@ func TestStruct(t *testing.T) {
 		CamelCase: "foo",
 		Bar:       6,
 	}, decoded)
+}
+
+func TestBoolAlias(t *testing.T) {
+	type BoolAlias bool
+
+	p, err := param.New(
+		param.Bool[BoolAlias](),
+		param.Default[BoolAlias](true),
+	)
+
+	require.NoError(t, err)
+
+	assert.Equal(t, BoolAlias(true), p.NewDefault())
+
+	yamlBytes := []byte(`false`)
+	var yamlNode yaml.Node
+	require.NoError(t, yaml.Unmarshal(yamlBytes, &yamlNode))
+
+	decoded, err := p.DecodeYAML(yamlNode)
+	require.NoError(t, err)
+	assert.Equal(t, BoolAlias(false), decoded)
 }

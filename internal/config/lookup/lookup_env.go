@@ -3,7 +3,7 @@ package lookup
 import (
 	"strings"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/env"
+	"github.com/bitmagnet-io/bitmagnet/pkg/env"
 )
 
 func LookupEnv(source string, varsLookup env.VarsLookup) Lookup {

@@ -34,4 +34,5 @@ var Enums = []enum{
 	newEnum("TorrentFilesOrderByField", search.TorrentFilesOrderByNames()),
 	newEnum("QueueJobsOrderByField", search.QueueJobsOrderByNames()),
 	newEnum("WorkerState", worker.StateNames()),
+	newEnum("SearchResultType", search.ResultTypeNames()),
 }

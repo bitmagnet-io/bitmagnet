@@ -99,15 +99,7 @@ func yamlDecoderMapstructure[T any]() func(node yaml.Node) (T, error) {
 			return value, err
 		}
 
-		decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-			Result: &value,
-			MatchName: func(mapKey, fieldName string) bool {
-				return mapKey == strcase.ToSnake(fieldName)
-			},
-			WeaklyTypedInput: true,
-			Squash:           true,
-			ErrorUnused:      true,
-		})
+		decoder, err := newDecoder(&value)
 
 		if err != nil {
 			return value, fmt.Errorf("failed to create decoder for type %T: %w", value, err)
@@ -119,4 +111,16 @@ func yamlDecoderMapstructure[T any]() func(node yaml.Node) (T, error) {
 
 		return value, nil
 	}
+}
+
+func newDecoder(result any) (*mapstructure.Decoder, error) {
+	return mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		Result: result,
+		MatchName: func(mapKey, fieldName string) bool {
+			return mapKey == strcase.ToSnake(fieldName)
+		},
+		WeaklyTypedInput: true,
+		Squash:           true,
+		ErrorUnused:      true,
+	})
 }

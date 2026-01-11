@@ -16,10 +16,13 @@ import { provideCharts, withDefaultRegisterables } from "ng2-charts";
 import { provideApollo } from "apollo-angular";
 import { HttpBatchLink } from "apollo-angular/http";
 import { ApolloLink, InMemoryCache } from "@apollo/client/core";
+import { map } from "rxjs";
 import { graphqlEndpoint } from "../environments/environment";
 import { TranslocoImportLoader } from "./i18n/transloco.loader";
 import { routes } from "./app.routes";
 import { AuthTokenService } from "./auth/auth-token.service";
+
+class UnauthorizedError extends Error {}
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -48,7 +51,21 @@ export const appConfig: ApplicationConfig = {
         operation.setContext({
           headers,
         });
-        return forward(operation);
+        return forward(operation).pipe(
+          map((result) => {
+            // todo: clean this up!
+            if (
+              result.errors?.some(
+                (e) =>
+                  e.extensions?.["code"] === "http_server.graphql.unauthorized",
+              )
+            ) {
+              tokenService.clearToken();
+              throw new UnauthorizedError("Unauthorized");
+            }
+            return result;
+          }),
+        );
       });
 
       return {

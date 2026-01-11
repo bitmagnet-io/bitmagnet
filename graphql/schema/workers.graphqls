@@ -1,5 +1,6 @@
 type Worker {
   ref: Ref!
+  label: String!
   state: WorkerState!
   error: String
   requiredBy: [Ref!]!

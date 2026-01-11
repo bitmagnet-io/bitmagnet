@@ -1,6 +1,0 @@
-postgres:
-  password: postgres
-torznab:
-  profiles:
-    - id: custom
-      max_limit: 1000

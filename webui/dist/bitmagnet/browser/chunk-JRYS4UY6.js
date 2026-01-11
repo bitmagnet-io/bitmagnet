@@ -1,0 +1,1 @@
+import{k as n}from"./chunk-HDBYBKZW.js";import{b as o}from"./chunk-7N2MO3ZR.js";import{Bb as i,ma as e}from"./chunk-S5QMNBLK.js";var l=(()=>{class t{constructor(){this.transloco=e(o)}transform(r){return n(r,this.transloco.getActiveLang())}static{this.\u0275fac=function(s){return new(s||t)}}static{this.\u0275pipe=i({name:"timeAgo",type:t,pure:!1})}}return t})();export{l as a};

@@ -49,20 +49,7 @@ func (r Resolver) resolve(param registry.Param) (*Param, error) {
 	lookupChain := lookup.Chain()
 
 	for i := len(lookupChain) - 1; i >= 0; i-- {
-		item := lookupChain[i]
-		rawValue := item.Value()
-
-		var (
-			value any
-			err   error
-		)
-
-		switch v := rawValue.(type) {
-		case string:
-			value, err = param.ParseAny(v)
-		case yaml.Node:
-			value, err = param.DecodeYAMLAny(v)
-		}
+		value, err := resolveValue(param, lookupChain[i])
 
 		if err == nil {
 			err = param.ValidateAny(value)
@@ -78,10 +65,36 @@ func (r Resolver) resolve(param registry.Param) (*Param, error) {
 		}
 
 		prev := res.chain
-		res = newParam(param, item.Key(), value, prev)
+		res = newParam(param, lookupChain[i].Key(), value, prev)
 	}
 
 	return res, nil
+}
+
+func resolveValue(param registry.Param, item lookup.Result) (any, error) {
+	rawValue := item.Value()
+
+	rt := param.ReflectType()
+	if rt != nil {
+		rv := reflect.New(rt).Elem()
+		rvv := reflect.ValueOf(rawValue)
+		if rvv.Type().AssignableTo(rv.Type()) {
+			rv.Set(rvv)
+			return rv.Interface(), nil
+		} else if rvv.Type().ConvertibleTo(rv.Type()) {
+			rv.Set(rvv.Convert(rv.Type()))
+			return rv.Interface(), nil
+		}
+	}
+
+	switch v := rawValue.(type) {
+	case string:
+		return param.ParseAny(v)
+	case yaml.Node:
+		return param.DecodeYAMLAny(v)
+	default:
+		return v, nil
+	}
 }
 
 func newParam(param registry.Param, lookupKey string, value any, prev *chain) *Param {

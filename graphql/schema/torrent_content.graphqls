@@ -1,4 +1,5 @@
 input SearchInput {
+  index: Ref
   queryString: String
   limit: Int
   page: Int
@@ -10,7 +11,7 @@ input SearchInput {
   hasNextPage: Boolean
   facets: [FacetInput!]
   # facets: TorrentContentFacetsInput
-  orderBy: [OrderByInput!]
+  orderBy: [TorrentContentOrderByInput!]
   cached: Boolean
   aggregationBudget: Float
   criteria: JSON

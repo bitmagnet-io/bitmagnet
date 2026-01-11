@@ -6,8 +6,8 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/internal/config"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
-	"github.com/bitmagnet-io/bitmagnet/internal/fs"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
+	"github.com/bitmagnet-io/bitmagnet/pkg/fs"
 	"gopkg.in/yaml.v3"
 )
 

@@ -45,7 +45,7 @@ func NewWorker[T any](fn Func[T], options ...Option[T]) Worker[T] {
 
 type worker[T any] struct {
 	mtx           sync.RWMutex
-	size          *atomic.Value[int]
+	size          atomic.Reader[int]
 	fn            Func[T]
 	ch            chan []T
 	shutdown      chan struct{}

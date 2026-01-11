@@ -57,6 +57,7 @@ func (r *queryResolver) Plugin(ctx context.Context) (gqlmodel.PluginQuery, error
 // Worker is the resolver for the worker field.
 func (r *queryResolver) Worker(ctx context.Context) (gqlmodel.WorkerQuery, error) {
 	return gqlmodel.WorkerQuery{
+		I18n:     r.I18n,
 		Registry: r.Workers,
 	}, nil
 }
@@ -119,15 +120,17 @@ func (r *queryResolver) Queue(ctx context.Context) (gqlmodel.QueueQuery, error) 
 
 // Torrent is the resolver for the torrent field.
 func (r *queryResolver) Torrent(ctx context.Context) (gqlmodel.TorrentQuery, error) {
-	dao, err := r.DaoProvider.Dao()
-	if err != nil {
-		return gqlmodel.TorrentQuery{}, err
-	}
-
 	return gqlmodel.TorrentQuery{
-		Dao:                  dao,
-		Search:               r.Search,
+		DaoProvider:          r.DaoProvider,
 		TorrentMetricsClient: r.TorrentMetricsClient,
+	}, nil
+}
+
+// Index is the resolver for the index field.
+func (r *queryResolver) Index(ctx context.Context) (gen.IndexQuery, error) {
+	return gen.IndexQuery{
+		Default: r.Search.DefaultIndex(),
+		Infos:   r.Search.Indexes(),
 	}, nil
 }
 

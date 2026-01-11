@@ -5,11 +5,11 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/config/lookup"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/manager"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
-	"github.com/bitmagnet-io/bitmagnet/internal/fs"
 	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
+	"github.com/bitmagnet-io/bitmagnet/pkg/fs"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"github.com/spf13/afero"
 	"go.uber.org/fx"
 )
@@ -19,7 +19,7 @@ type deps struct {
 }
 
 var (
-	Ref           = core.Ref.MustSub("config")
+	Ref           = ref.Root.MustSub("config")
 	RefActivation = Ref.MustSub("plugin_activation")
 
 	Plugin = builder.NewPlugin(

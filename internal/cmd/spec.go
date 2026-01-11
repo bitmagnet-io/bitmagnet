@@ -1,14 +1,14 @@
 package cmd
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 )
 
 type Spec struct {
-	Name      string
+	name      string
+	doc       string
 	cmd       []int
 	params    map[string]Param
 	paramKeys []string
@@ -20,20 +20,19 @@ func (s Spec) Params() []Param {
 	})
 }
 
-func (s Spec) param(key string) (Param, error) {
+func (s Spec) param(key string) (Param, bool) {
 	param, ok := s.params[key]
-	if !ok {
-		return param, fmt.Errorf("%w: %s", ErrUnknownParam, key)
-	}
 
-	return param, nil
+	return param, ok
 }
 
 func (s Spec) newInstance(cmd Command, args []string) *instance {
 	reflectValue := reflect.ValueOf(cmd).Elem()
 	reflectValues := make(map[string]reflect.Value)
 	for name, param := range s.params {
-		reflectValues[name] = reflectValue.FieldByIndex(param.index)
+		if param.index != nil {
+			reflectValues[name] = reflectValue.FieldByIndex(param.index)
+		}
 	}
 
 	return &instance{
@@ -67,15 +66,14 @@ func (p paramType) isMultiple() bool {
 }
 
 type Param struct {
-	Name        string
-	Abbr        string
-	Placeholder string
-	Type        paramType
-	Required    bool
-	Multiple    bool
-	// CSV         bool
+	Name     string
+	Abbr     string
+	Example  string
+	Default  string
+	Doc      string
+	Type     paramType
+	Required bool
+	Multiple bool
 
 	index []int
-	// validate    string
-	// trailer   bool
 }

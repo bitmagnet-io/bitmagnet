@@ -1,30 +1,9 @@
 {
-  "content_types": {
-    "plural": {
-      "all": "全部",
-      "audiobook": "有声书",
-      "comic": "漫画",
-      "ebook": "电子书",
-      "game": "游戏",
-      "movie": "电影",
-      "music": "音乐",
-      "null": "未知",
-      "software": "软件",
-      "tv_show": "电视节目",
-      "xxx": "色情"
-    },
-    "singular": {
-      "audiobook": "有声书",
-      "comic": "漫画",
-      "ebook": "电子书",
-      "game": "游戏",
-      "movie": "电影",
-      "music": "音乐",
-      "null": "未知",
-      "software": "软件",
-      "tv_show": "电视节目",
-      "xxx": "色情"
-    }
+  "account": {
+    "account": "__missing__",
+    "api_key_created": "__missing__",
+    "api_key_take_note": "__missing__",
+    "new_api_key": "__missing__"
   },
   "admin": {
     "event": {
@@ -84,6 +63,55 @@
       "total_counts_by_status": "按状态统计总数"
     }
   },
+  "auth": {
+    "claimed_by": "__missing__",
+    "confirm_password": "__missing__",
+    "created_by": "__missing__",
+    "expires_at": "__missing__",
+    "expiry": "__missing__",
+    "invitation_code": "__missing__",
+    "last_login_at": "__missing__",
+    "login": "__missing__",
+    "login_failed": "__missing__",
+    "logout": "__missing__",
+    "new_invitation": "__missing__",
+    "new_role": "__missing__",
+    "password": "__missing__",
+    "password_has_insufficient_entropy": "__missing__",
+    "passwords_do_not_match": "__missing__",
+    "register": "__missing__",
+    "register_failed": "__missing__",
+    "role": "__missing__",
+    "unclaimed": "__missing__",
+    "username": "__missing__"
+  },
+  "content_types": {
+    "plural": {
+      "all": "全部",
+      "audiobook": "有声书",
+      "comic": "漫画",
+      "ebook": "电子书",
+      "game": "游戏",
+      "movie": "电影",
+      "music": "音乐",
+      "null": "未知",
+      "software": "软件",
+      "tv_show": "电视节目",
+      "xxx": "色情"
+    },
+    "singular": {
+      "audiobook": "有声书",
+      "comic": "漫画",
+      "ebook": "电子书",
+      "game": "游戏",
+      "movie": "电影",
+      "music": "音乐",
+      "null": "未知",
+      "software": "软件",
+      "tv_show": "电视节目",
+      "xxx": "色情"
+    }
+  },
   "facets": {
     "content_type": "内容类型",
     "file_type": "文件类型",
@@ -108,13 +136,26 @@
     "video": "视频"
   },
   "general": {
+    "actions": "__missing__",
     "all": "全部",
+    "cancel": "__missing__",
+    "code": "__missing__",
+    "confirm": "__missing__",
+    "copy_to_clipboard": "__missing__",
+    "created_at": "__missing__",
+    "delete": "__missing__",
     "dismiss": "忽略",
+    "email": "__missing__",
     "error": "错误",
+    "index": "__missing__",
+    "name": "__missing__",
+    "never": "__missing__",
     "none": "无",
     "page_not_found": "页面未找到",
     "refresh": "刷新",
-    "status": "状态"
+    "save": "__missing__",
+    "status": "状态",
+    "system": "__missing__"
   },
   "health": {
     "bitmagnet_is_status": "bitmagnet是{{status}}",
@@ -228,12 +269,19 @@
     "x_to_y_of_z": "{{x}}到{{y}}，共{{z}}"
   },
   "routes": {
+    "account": "__missing__",
     "admin": "管理员",
+    "api_keys": "__missing__",
+    "config": "__missing__",
     "home": "首页",
+    "invitations": "__missing__",
     "jobs": "任务",
     "queues": "队列",
+    "roles": "__missing__",
     "torrents": "种子",
-    "visualize": "可视化"
+    "users": "__missing__",
+    "visualize": "可视化",
+    "workers": "__missing__"
   },
   "torrents": {
     "classification": "分类",
@@ -312,5 +360,24 @@
   "version": {
     "bitmagnet_version": "bitmagnet版本{{version}}",
     "unknown": "未知"
+  },
+  "workers": {
+    "actions": {
+      "restart": "__missing__",
+      "shutdown": "__missing__",
+      "start": "__missing__"
+    },
+    "states": {
+      "error": "__missing__",
+      "idle": "__missing__",
+      "running": "__missing__",
+      "shutdown": "__missing__",
+      "startup": "__missing__"
+    },
+    "warnings": {
+      "depends_on": "__missing__",
+      "required_by": "__missing__"
+    },
+    "worker": "__missing__"
   }
 }

@@ -51,21 +51,32 @@ func introspect(cmd Command) (Spec, error) {
 		}
 	}
 
+	if _, ok := spec.params[helpParam]; !ok {
+		spec.params[helpParam] = Param{
+			Name:     helpParam,
+			Abbr:     "h",
+			Doc:      "Show help for this command and exit",
+			Type:     paramTypeBool,
+			Required: false,
+		}
+		spec.paramKeys = append(spec.paramKeys, helpParam)
+	}
+
 	if spec.cmd == nil {
 		return spec, fmt.Errorf("%w: %w", ErrCompilation, ErrCmdNotEmbedded)
 	}
 
 	if namer, ok := cmd.(interface{ Name() string }); ok {
-		spec.Name = namer.Name()
-	} else {
+		spec.name = namer.Name()
+	} else if spec.name == "" {
 		name := strcase.ToKebab(t.Name())
 		name = strings.TrimSuffix(name, "-cmd")
 		name = strings.TrimSuffix(name, "-command")
-		spec.Name = name
+		spec.name = name
 	}
 
-	if !regexParamKey.MatchString(spec.Name) {
-		return spec, fmt.Errorf("%w: %w: %s", ErrCompilation, ErrInvalidName, spec.Name)
+	if !regexParamKey.MatchString(spec.name) {
+		return spec, fmt.Errorf("%w: %w: %s", ErrCompilation, ErrInvalidName, spec.name)
 	}
 
 	return spec, nil
@@ -82,7 +93,9 @@ func applyCmd(t reflect.StructField) func(*Spec) error {
 		for k, v := range kvs {
 			switch k {
 			case "name":
-				s.Name = v
+				s.name = v
+			case "doc":
+				s.doc = v
 			default:
 				return fmt.Errorf("%w: %s", ErrUnknownCmdTag, k)
 			}
@@ -120,11 +133,11 @@ func extractParam(t reflect.StructField) (*Param, error) {
 	}
 
 	param := Param{
-		index:       t.Index,
-		Name:        strcase.ToKebab(t.Name),
-		Placeholder: strcase.ToScreamingSnake(t.Name),
-		Type:        paramType,
-		Multiple:    paramType.isMultiple(),
+		index:    t.Index,
+		Name:     strcase.ToKebab(t.Name),
+		Example:  strcase.ToScreamingSnake(t.Name),
+		Type:     paramType,
+		Multiple: paramType.isMultiple(),
 	}
 
 	tagValues := tagKeyValues(tag)
@@ -141,12 +154,16 @@ func extractParam(t reflect.StructField) (*Param, error) {
 				return nil, fmt.Errorf("%w: %s: %s", ErrInvalidAbbr, t.Name, v)
 			}
 			param.Abbr = v
-		case "placeholder":
-			param.Placeholder = v
+		case "example":
+			param.Example = v
 		case "required":
 			param.Required = true
-		// case "csv":
-		// 	param.CSV = true
+			// case "csv":
+			// 	param.CSV = true
+		case "doc":
+			param.Doc = v
+		case "default":
+			param.Default = v
 		default:
 			return nil, fmt.Errorf("%w: %s: %s", ErrUnknownParamTag, t.Name, k)
 		}
@@ -177,14 +194,39 @@ func tagKeyValues(tag string) map[string]string {
 	if tag == "" {
 		return nil
 	}
-	parts := strings.Split(tag, ",")
-	kvs := make(map[string]string, len(parts))
+
+	kvs := make(map[string]string)
+	var parts []string
+	var current strings.Builder
+	var inQuotes bool
+
+	// Split by commas, respecting single quotes
+	for _, ch := range tag {
+		if ch == '\'' {
+			inQuotes = !inQuotes
+			current.WriteRune(ch)
+		} else if ch == ',' && !inQuotes {
+			parts = append(parts, current.String())
+			current.Reset()
+		} else {
+			current.WriteRune(ch)
+		}
+	}
+	if current.Len() > 0 {
+		parts = append(parts, current.String())
+	}
+
+	// Parse key=value pairs
 	for _, part := range parts {
 		split := strings.SplitN(part, "=", 2)
-		key := split[0]
+		key := strings.TrimSpace(split[0])
 		var value string
 		if len(split) > 1 {
-			value = split[1]
+			value = strings.TrimSpace(split[1])
+			// Remove surrounding single quotes if present
+			if len(value) >= 2 && value[0] == '\'' && value[len(value)-1] == '\'' {
+				value = value[1 : len(value)-1]
+			}
 		}
 		kvs[key] = value
 	}

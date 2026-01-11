@@ -24,6 +24,25 @@ ENUM(
 */
 type Facet string
 
+var facetLabels = map[Facet]string{
+	"release_year":     "Release Year",
+	"content_genre":    "Content Genre",
+	"language":         "Language",
+	"content_type":     "Content Type",
+	"video_3d":         "Video 3D",
+	"video_codec":      "Video Codec",
+	"video_modifier":   "Video Modifier",
+	"video_resolution": "Video Resolution",
+	"video_source":     "Video Source",
+	"file_type":        "File Type",
+	"torrent_source":   "Torrent Source",
+	"tag":              "Tag",
+}
+
+func (f Facet) Label() string {
+	return facetLabels[f]
+}
+
 type FacetResultItem struct {
 	Value      string
 	Label      string
@@ -33,7 +52,6 @@ type FacetResultItem struct {
 
 type FacetResult struct {
 	Key   Facet
-	Label string
 	Logic model.FacetLogic
 	Items []FacetResultItem
 }

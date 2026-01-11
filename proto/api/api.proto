@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "github.com/bitmagnet-io/bitmagnet/proto/api;api";
+
+import "common/http/http.proto";
+import "common/model/model.proto";
+import "common/search/search.proto";
+
+// go:plugin type=plugin version=1
+service Indexer {
+  rpc Index(IndexPayload) returns(Empty);
+}
+
+message IndexPayload {
+  repeated model.Content content = 1;
+  repeated model.TorrentContent torrentContent = 2;
+  repeated string deleteTorrentContent = 3;
+  repeated string deleteInfoHashes = 4;
+}
+
+// go:plugin type=plugin version=1
+service HTTPHandler {
+  rpc Config(Empty) returns (HTTPHandlerConfig);
+  rpc HandleRequest(http.Request) returns (http.Response);
+}
+
+message HTTPHandlerConfig {
+  string pattern = 1;
+}
+
+message Empty {
+  string empty = 1;
+}
+
+// go:plugin type=plugin version=1
+service SearchAdapter {
+  rpc SearchTorrentContent(search.Params) returns (search.TorrentContentResult);
+  rpc SearchTorrentFiles(search.Params) returns (search.TorrentFilesResult);
+}

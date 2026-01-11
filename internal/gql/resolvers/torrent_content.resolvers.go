@@ -9,8 +9,33 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
+	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
+	"github.com/bitmagnet-io/bitmagnet/internal/gql/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/internal/search"
+	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 )
+
+// Label is the resolver for the label field.
+func (r *facetResultResolver) Label(ctx context.Context, obj *search.FacetResult) (string, error) {
+	return r.FacetLocalizer.Label(obj.Key, httpserver.AcceptLanguageFromContext(ctx)), nil
+}
+
+// OrderBy is the resolver for the orderBy field.
+func (r *searchInputResolver) OrderBy(ctx context.Context, obj *search.Params, data []gen.TorrentContentOrderByInput) error {
+	// obj.OrderBy = make([]search.OrderByParam, len(data))
+	obj.OrderBy = slice.Map(data, func(item gen.TorrentContentOrderByInput) search.OrderByParam {
+		desc := false
+		if v, ok := item.Descending.ValueOK(); ok {
+			desc = *v
+		}
+		return search.OrderByParam{
+			Key:        string(item.Field),
+			Descending: desc,
+		}
+	})
+
+	return nil
+}
 
 // Criteria is the resolver for the criteria field.
 func (r *searchInputResolver) Criteria(ctx context.Context, obj *search.Params, data *json_schema.JSONValue) error {
@@ -26,7 +51,11 @@ func (r *searchInputResolver) Criteria(ctx context.Context, obj *search.Params, 
 	return nil
 }
 
+// FacetResult returns gql.FacetResultResolver implementation.
+func (r *Resolver) FacetResult() gql.FacetResultResolver { return &facetResultResolver{r} }
+
 // SearchInput returns gql.SearchInputResolver implementation.
 func (r *Resolver) SearchInput() gql.SearchInputResolver { return &searchInputResolver{r} }
 
+type facetResultResolver struct{ *Resolver }
 type searchInputResolver struct{ *Resolver }

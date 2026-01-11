@@ -3,7 +3,7 @@ package gqlmodel
 import (
 	"context"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
+	"github.com/bitmagnet-io/bitmagnet/internal/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics"
@@ -11,8 +11,7 @@ import (
 )
 
 type TorrentQuery struct {
-	Dao                  *dao.Query
-	Search               search.Search
+	DaoProvider          database.DaoProvider
 	TorrentMetricsClient torrentmetrics.Client
 }
 
@@ -32,11 +31,16 @@ func (t TorrentQuery) SuggestTags(
 		}
 	}
 
-	return t.Search.TorrentSuggestTags(ctx, suggestTagsQuery)
+	return search.New(t.DaoProvider).TorrentSuggestTags(ctx, suggestTagsQuery)
 }
 
 func (t TorrentQuery) ListSources(ctx context.Context) (gen.TorrentListSourcesResult, error) {
-	result, err := t.Dao.TorrentSource.WithContext(ctx).Order(t.Dao.TorrentSource.Key.Asc()).Find()
+	dao, err := t.DaoProvider.Dao()
+	if err != nil {
+		return gen.TorrentListSourcesResult{}, err
+	}
+
+	result, err := dao.TorrentSource.WithContext(ctx).Order(dao.TorrentSource.Key.Asc()).Find()
 	if err != nil {
 		return gen.TorrentListSourcesResult{}, err
 	}

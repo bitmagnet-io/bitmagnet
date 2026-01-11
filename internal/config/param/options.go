@@ -109,24 +109,6 @@ func Comparator[T any](compare func(T, T) bool) Option[T] {
 	}
 }
 
-func Name[T any](name string) Option[T] {
-	return func(p *param[T]) error {
-		p.name = name
-
-		return nil
-	}
-}
-
-func NameIfEmpty[T any](name string) Option[T] {
-	return func(p *param[T]) error {
-		if p.name == "" {
-			p.name = name
-		}
-
-		return nil
-	}
-}
-
 func Description[T any](doc string) Option[T] {
 	return func(p *param[T]) error {
 		p.description = doc
@@ -251,7 +233,7 @@ func Parser[T any](parser func(string) (T, error)) Option[T] {
 	}
 }
 
-func EnumValues[T comparable](enumValues ...T) Option[T] {
+func EnumValues[T any](enumValues ...T) Option[T] {
 	return func(p *param[T]) error {
 		p.enumValues = enumValues
 
@@ -285,7 +267,7 @@ func NewDefault[T any](newDefault func() T) Option[T] {
 	}
 }
 
-func Default[T comparable](defaultValue T) Option[T] {
+func Default[T any](defaultValue T) Option[T] {
 	return NewDefault(func() T {
 		return defaultValue
 	})

@@ -1,15 +1,15 @@
 package dev
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 )
 
 type deps struct{}
 
 var (
-	Ref = core.Ref.MustSub("dev")
+	Ref = ref.Root.MustSub("dev")
 
 	Plugin = builder.NewPlugin(
 		Ref,

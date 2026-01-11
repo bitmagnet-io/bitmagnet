@@ -1,336 +1,369 @@
-core.auth:
-    description: description for plugin core.auth
-    other: ""
-core.auth.jwt.duration:
-    description: 'description for config: core.auth.jwt.duration'
-    other: ""
-core.auth.jwt.secret:
-    description: 'description for config: core.auth.jwt.secret'
-    other: ""
-core.auth.password_policy.max_length:
-    description: 'description for config: core.auth.password_policy.max_length'
-    other: ""
-core.auth.password_policy.min_digit:
-    description: 'description for config: core.auth.password_policy.min_digit'
-    other: ""
-core.auth.password_policy.min_length:
-    description: 'description for config: core.auth.password_policy.min_length'
-    other: ""
-core.auth.password_policy.min_lower:
-    description: 'description for config: core.auth.password_policy.min_lower'
-    other: ""
-core.auth.password_policy.min_special:
-    description: 'description for config: core.auth.password_policy.min_special'
-    other: ""
-core.auth.password_policy.min_upper:
-    description: 'description for config: core.auth.password_policy.min_upper'
-    other: ""
-core.auth.password_policy.special_chars:
-    description: 'description for config: core.auth.password_policy.special_chars'
-    other: ""
-core.auth.rbac.anonymous_access:
-    description: 'description for config: core.auth.rbac.anonymous_access'
-    other: ""
-core.auth.rbac.cache_ttl:
-    description: 'description for config: core.auth.rbac.cache_ttl'
-    other: ""
-core.auth.user.account_disabled:
-    description: 'message for error: core.auth.user.account_disabled'
-    other: ""
-core.auth.user.credentials_invalid:
-    description: 'message for error: core.auth.user.credentials_invalid'
-    other: ""
-core.auth.user.email_invalid:
-    description: 'message for error: core.auth.user.email_invalid'
-    other: ""
-core.auth.user.email_missing:
-    description: 'message for error: core.auth.user.email_missing'
-    other: ""
-core.auth.user.email_required:
-    description: 'description for config: core.auth.user.email_required'
-    other: ""
-core.auth.user.email_verification:
-    description: 'description for config: core.auth.user.email_verification'
-    other: ""
-core.auth.user.invitation_claimed:
-    description: 'message for error: core.auth.user.invitation_claimed'
-    other: ""
-core.auth.user.invitation_code_missing:
-    description: 'message for error: core.auth.user.invitation_code_missing'
-    other: ""
-core.auth.user.invitation_expired:
-    description: 'message for error: core.auth.user.invitation_expired'
-    other: ""
-core.auth.user.invitation_not_found:
-    description: 'message for error: core.auth.user.invitation_not_found'
-    other: ""
-core.auth.user.invitation_required:
-    description: 'description for config: core.auth.user.invitation_required'
-    other: ""
-core.auth.user.password_policy_violation:
-    description: 'message for error: core.auth.user.password_policy_violation'
-    other: ""
-core.auth.user.user_already_exists:
-    description: 'message for error: core.auth.user.user_already_exists'
-    other: ""
-core.config:
-    description: description for plugin core.config
-    other: 提供配置功能
-core.config.plugin_activation:
-    description: description for plugin activation param
-    other: ""
-core.database.gorm.cache:
-    description: description for plugin core.database.gorm.cache
-    other: 提供Postgres查询结果缓存
-core.database.gorm.cache.activation:
-    description: 'description for config: core.database.gorm.cache.activation'
-    other: ""
-core.database.gorm.cache.max_items:
-    description: 'description for config: core.database.gorm.cache.max_items'
-    other: 要缓存的最大项目数
-core.database.gorm.cache.ttl:
-    description: 'description for config: core.database.gorm.cache.ttl'
-    other: 缓存的TTL
-core.database.info_hash_blocker:
-    description: description for plugin core.database.info_hash_blocker
-    other: 维护已删除和阻止的信息哈希的稳定布隆过滤器，防止它们被再次爬取
-core.database.migrator:
-    description: description for plugin core.database.migrator
-    other: ""
-core.database.persister:
-    description: description for plugin core.database.persister
-    other: ""
-core.database.persister.max_size:
-    description: 'description for config: core.database.persister.max_size'
-    other: 最大缓冲区大小
-core.database.persister.max_wait:
-    description: 'description for config: core.database.persister.max_wait'
-    other: 刷新前缓冲项目的最大时间
-core.database.postgres:
-    description: description for plugin core.database.postgres
-    other: 启动并管理Postgres数据库连接
-core.database.postgres.database:
-    description: 'description for config: core.database.postgres.database'
-    other: Postgres数据库名称
-core.database.postgres.dsn:
-    description: 'description for config: core.database.postgres.dsn'
-    other: Postgres数据源名称（如果指定，此插件的所有其他选项将被忽略）
-core.database.postgres.host:
-    description: 'description for config: core.database.postgres.host'
-    other: Postgres主机
-core.database.postgres.password:
-    description: 'description for config: core.database.postgres.password'
-    other: Postgres密码
-core.database.postgres.port:
-    description: 'description for config: core.database.postgres.port'
-    other: Postgres端口号
-core.database.postgres.user:
-    description: 'description for config: core.database.postgres.user'
-    other: Postgres用户名
-core.database.search:
-    description: description for plugin core.database.search
-    other: 通过Postgres数据库提供搜索功能
-core.dht.crawler:
-    description: description for plugin core.dht.crawler
-    other: 爬取DHT以获取种子
-core.dht.crawler.activation:
-    description: 'description for config: core.dht.crawler.activation'
-    other: ""
-core.dht.crawler.autostart:
-    description: 'description for config: core.dht.crawler.autostart'
-    other: 自动启动工作器
-core.dht.crawler.bootstrap_nodes:
-    description: 'description for config: core.dht.crawler.bootstrap_nodes'
-    other: 用于引导DHT爬虫的节点地址列表
-core.dht.crawler.rescrape_threshold:
-    description: 'description for config: core.dht.crawler.rescrape_threshold'
-    other: 从DHT重新查询播种者和下载者数量之前的最小间隔
-core.dht.crawler.reseed_bootstrap_nodes_interval:
-    description: 'description for config: core.dht.crawler.reseed_bootstrap_nodes_interval'
-    other: 引导节点重新播种的间隔
-core.dht.crawler.save_files_threshold:
-    description: 'description for config: core.dht.crawler.save_files_threshold'
-    other: DHT爬虫与每个种子一起保存的文件数量上限
-core.dht.crawler.save_pieces:
-    description: 'description for config: core.dht.crawler.save_pieces'
-    other: 与每个种子一起保存种子片段（使用大量磁盘空间）
-core.dht.server:
-    description: description for plugin core.dht.server
-    other: 运行DHT服务器节点
-core.dht.server.activation:
-    description: 'description for config: core.dht.server.activation'
-    other: ""
-core.dht.server.query_timeout:
-    description: 'description for config: core.dht.server.query_timeout'
-    other: 查询超时
-core.dht.socket:
-    description: description for plugin core.dht.socket
-    other: 为DHT服务器运行UDP套接字
-core.dht.socket.activation:
-    description: 'description for config: core.dht.socket.activation'
-    other: ""
-core.dht.socket.adapter:
-    description: 'description for config: core.dht.socket.adapter'
-    other: 套接字适配器名称
-core.dht.socket.port:
-    description: 'description for config: core.dht.socket.port'
-    other: 套接字端口号
-core.health:
-    description: description for plugin core.health
-    other: 提供健康检查功能
-core.http_server:
-    description: description for plugin core.http_server
-    other: 运行HTTP服务器
-core.http_server.activation:
-    description: 'description for config: core.http_server.activation'
-    other: ""
-core.http_server.cors:
-    description: description for plugin core.http_server.cors
-    other: 为HTTP服务器提供CORS中间件
-core.http_server.cors.allowed_origins:
-    description: 'description for config: core.http_server.cors.allowed_origins'
-    other: CORS允许的来源
-core.http_server.docs:
-    description: description for plugin core.http_server.docs
-    other: 在/docs端点运行文档网站实例
-core.http_server.docs.activation:
-    description: 'description for config: core.http_server.docs.activation'
-    other: ""
-core.http_server.graphql:
-    description: description for plugin core.http_server.graphql
-    other: 运行GraphQL API服务器
-core.http_server.graphql.activation:
-    description: 'description for config: core.http_server.graphql.activation'
-    other: ""
-core.http_server.graphql.unauthorized:
-    description: 'message for error: core.http_server.graphql.unauthorized'
-    other: ""
-core.http_server.local_address:
-    description: 'description for config: core.http_server.local_address'
-    other: 监听的本地地址
-core.http_server.logging:
-    description: description for plugin core.http_server.logging
-    other: 为HTTP服务器提供日志记录
-core.http_server.webui:
-    description: description for plugin core.http_server.webui
-    other: 在/webui端点运行Web用户界面
-core.http_server.webui.activation:
-    description: 'description for config: core.http_server.webui.activation'
-    other: ""
-core.i18n:
-    description: description for plugin core.i18n
-    other: 为后端服务提供翻译
-core.importer:
-    description: description for plugin core.importer
-    other: 在/import端点运行导入功能
-core.importer.activation:
-    description: 'description for config: core.importer.activation'
-    other: ""
-core.logging:
-    description: description for plugin core.logging
-    other: 提供日志记录服务
-core.logging.console:
-    description: description for plugin core.logging.console
-    other: 输出控制台格式的日志
-core.logging.console.activation:
-    description: 'description for config: core.logging.console.activation'
-    other: ""
-core.logging.file_rotator:
-    description: description for plugin core.logging.file_rotator
-    other: ""
-core.logging.file_rotator.activation:
-    description: 'description for config: core.logging.file_rotator.activation'
-    other: ""
-core.logging.file_rotator.base_name:
-    description: 'description for config: core.logging.file_rotator.base_name'
-    other: ""
-core.logging.file_rotator.buffer_size:
-    description: 'description for config: core.logging.file_rotator.buffer_size'
-    other: ""
-core.logging.file_rotator.level:
-    description: 'description for config: core.logging.file_rotator.level'
-    other: ""
-core.logging.file_rotator.max_age:
-    description: 'description for config: core.logging.file_rotator.max_age'
-    other: ""
-core.logging.file_rotator.max_backups:
-    description: 'description for config: core.logging.file_rotator.max_backups'
-    other: ""
-core.logging.file_rotator.max_size:
-    description: 'description for config: core.logging.file_rotator.max_size'
-    other: ""
-core.logging.file_rotator.sub_path:
-    description: 'description for config: core.logging.file_rotator.sub_path'
-    other: ""
-core.logging.json:
-    description: description for plugin core.logging.json
-    other: ""
-core.logging.json.activation:
-    description: 'description for config: core.logging.json.activation'
-    other: ""
-core.logging.level:
-    description: 'description for config: core.logging.level'
-    other: 日志级别
-core.meta_info:
-    description: description for plugin core.meta_info
-    other: 提供从对等方下载种子元信息的服务
-core.meta_info.dial_timeout:
-    description: 'description for config: core.meta_info.dial_timeout'
-    other: 拨号超时
-core.meta_info.max_concurrency:
-    description: 'description for config: core.meta_info.max_concurrency'
-    other: 最大请求并发数
-core.meta_info.request_timeout:
-    description: 'description for config: core.meta_info.request_timeout'
-    other: 请求超时
-core.metrics:
-    description: description for plugin core.metrics
-    other: 提供指标
-core.metrics.prometheus:
-    description: description for plugin core.metrics.prometheus
-    other: ""
-core.metrics.prometheus.activation:
-    description: 'description for config: core.metrics.prometheus.activation'
-    other: ""
-core.pipeline.batcher:
-    description: description for plugin core.pipeline.batcher
-    other: ""
-core.pipeline.classifier:
-    description: description for plugin core.pipeline.classifier
-    other: 提供种子分类器服务
-core.pipeline.classifier.concurrency:
-    description: 'description for config: core.pipeline.classifier.concurrency'
-    other: 并行运行的最大分类数
-core.pipeline.classifier.delete_xxx:
-    description: 'description for config: core.pipeline.classifier.delete_xxx'
-    other: 指示分类器应删除XXX内容的布尔标志
-core.pipeline.classifier.extensions:
-    description: 'description for config: core.pipeline.classifier.extensions'
-    other: 文件类型到与其关联的文件扩展名的映射
-core.pipeline.classifier.flags:
-    description: 'description for config: core.pipeline.classifier.flags'
-    other: 用于配置分类器工作流的标志键到标志值的映射
-core.pipeline.classifier.keywords:
-    description: 'description for config: core.pipeline.classifier.keywords'
-    other: 类别名称到与不同类型种子相关联的关键词的映射
-core.pipeline.classifier.workflow:
-    description: 'description for config: core.pipeline.classifier.workflow'
-    other: 默认分类器工作流
-core.pipeline.processor:
-    description: description for plugin core.pipeline.processor
-    other: 提供对种子进行分类和索引的处理器服务
-core.queue:
-    description: description for plugin core.queue
-    other: 运行队列作业工作器
-core.queue.autostart:
-    description: 'description for config: core.queue.autostart'
-    other: ""
-core.torznab:
-    description: description for plugin core.torznab
-    other: 在/torznab端点运行Torznab API服务器
-core.torznab.activation:
-    description: 'description for config: core.torznab.activation'
-    other: ""
-core.worker:
-    description: description for plugin core.worker
-    other: 管理工作器
+auth:
+  description: description for plugin auth
+  other: ""
+auth.anonymous_access:
+  description: "description for config: auth.anonymous_access"
+  other: ""
+auth.email_required:
+  description: "description for config: auth.email_required"
+  other: ""
+auth.email_verification:
+  description: "description for config: auth.email_verification"
+  other: ""
+auth.invitation_required:
+  description: "description for config: auth.invitation_required"
+  other: ""
+auth.jwt_duration:
+  description: "description for config: auth.jwt_duration"
+  other: ""
+auth.jwt_secret:
+  description: "description for config: auth.jwt_secret"
+  other: ""
+auth.login_request_burst:
+  description: "description for config: auth.login_request_burst"
+  other: ""
+auth.login_requests_per_minute:
+  description: "description for config: auth.login_requests_per_minute"
+  other: ""
+auth.password_hashing_cost:
+  description: "description for config: auth.password_hashing_cost"
+  other: ""
+auth.password_min_entropy:
+  description: "description for config: auth.password_min_entropy"
+  other: ""
+auth.rbac_cache_ttl:
+  description: "description for config: auth.rbac_cache_ttl"
+  other: ""
+auth.user.account_disabled:
+  description: "message for error: auth.user.account_disabled"
+  other: ""
+auth.user.credentials_invalid:
+  description: "message for error: auth.user.credentials_invalid"
+  other: ""
+auth.user.email_invalid:
+  description: "message for error: auth.user.email_invalid"
+  other: ""
+auth.user.email_missing:
+  description: "message for error: auth.user.email_missing"
+  other: ""
+auth.user.invitation_claimed:
+  description: "message for error: auth.user.invitation_claimed"
+  other: ""
+auth.user.invitation_code_missing:
+  description: "message for error: auth.user.invitation_code_missing"
+  other: ""
+auth.user.invitation_expired:
+  description: "message for error: auth.user.invitation_expired"
+  other: ""
+auth.user.invitation_not_found:
+  description: "message for error: auth.user.invitation_not_found"
+  other: ""
+auth.user.password_insufficient_entropy:
+  description: "message for error: auth.user.password_insufficient_entropy"
+  other: ""
+auth.user.user_already_exists:
+  description: "message for error: auth.user.user_already_exists"
+  other: ""
+auth.user.username_invalid:
+  description: "message for error: auth.user.username_invalid"
+  other: ""
+config:
+  description: description for plugin config
+  other: 提供配置功能
+config.plugin_activation:
+  description: description for plugin activation param
+  other: ""
+database.gorm.cache:
+  description: description for plugin database.gorm.cache
+  other: 提供Postgres查询结果缓存
+database.gorm.cache.activation:
+  description: "description for config: database.gorm.cache.activation"
+  other: ""
+database.gorm.cache.max_items:
+  description: "description for config: database.gorm.cache.max_items"
+  other: 要缓存的最大项目数
+database.gorm.cache.ttl:
+  description: "description for config: database.gorm.cache.ttl"
+  other: 缓存的TTL
+database.info_hash_blocker:
+  description: description for plugin database.info_hash_blocker
+  other: 维护已删除和阻止的信息哈希的稳定布隆过滤器，防止它们被再次爬取
+database.migrator:
+  description: description for plugin database.migrator
+  other: ""
+database.persister:
+  description: description for plugin database.persister
+  other: ""
+database.persister.max_size:
+  description: "description for config: database.persister.max_size"
+  other: 最大缓冲区大小
+database.persister.max_wait:
+  description: "description for config: database.persister.max_wait"
+  other: 刷新前缓冲项目的最大时间
+database.postgres:
+  description: description for plugin database.postgres
+  other: 启动并管理Postgres数据库连接
+database.postgres.database:
+  description: "description for config: database.postgres.database"
+  other: Postgres数据库名称
+database.postgres.dsn:
+  description: "description for config: database.postgres.dsn"
+  other: Postgres数据源名称（如果指定，此插件的所有其他选项将被忽略）
+database.postgres.host:
+  description: "description for config: database.postgres.host"
+  other: Postgres主机
+database.postgres.password:
+  description: "description for config: database.postgres.password"
+  other: Postgres密码
+database.postgres.port:
+  description: "description for config: database.postgres.port"
+  other: Postgres端口号
+database.postgres.user:
+  description: "description for config: database.postgres.user"
+  other: Postgres用户名
+dht.crawler:
+  description: description for plugin dht.crawler
+  other: 爬取DHT以获取种子
+dht.crawler.activation:
+  description: "description for config: dht.crawler.activation"
+  other: ""
+dht.crawler.autostart:
+  description: "description for config: dht.crawler.autostart"
+  other: 自动启动工作器
+dht.crawler.bootstrap_nodes:
+  description: "description for config: dht.crawler.bootstrap_nodes"
+  other: 用于引导DHT爬虫的节点地址列表
+dht.crawler.rescrape_threshold:
+  description: "description for config: dht.crawler.rescrape_threshold"
+  other: 从DHT重新查询播种者和下载者数量之前的最小间隔
+dht.crawler.reseed_bootstrap_nodes_interval:
+  description: "description for config: dht.crawler.reseed_bootstrap_nodes_interval"
+  other: 引导节点重新播种的间隔
+dht.crawler.save_files_threshold:
+  description: "description for config: dht.crawler.save_files_threshold"
+  other: DHT爬虫与每个种子一起保存的文件数量上限
+dht.crawler.save_pieces:
+  description: "description for config: dht.crawler.save_pieces"
+  other: 与每个种子一起保存种子片段（使用大量磁盘空间）
+dht.server:
+  description: description for plugin dht.server
+  other: 运行DHT服务器节点
+dht.server.activation:
+  description: "description for config: dht.server.activation"
+  other: ""
+dht.server.query_timeout:
+  description: "description for config: dht.server.query_timeout"
+  other: 查询超时
+dht.socket:
+  description: description for plugin dht.socket
+  other: 为DHT服务器运行UDP套接字
+dht.socket.activation:
+  description: "description for config: dht.socket.activation"
+  other: ""
+dht.socket.adapter:
+  description: "description for config: dht.socket.adapter"
+  other: 套接字适配器名称
+dht.socket.port:
+  description: "description for config: dht.socket.port"
+  other: 套接字端口号
+health:
+  description: description for plugin health
+  other: 提供健康检查功能
+http_server:
+  description: description for plugin http_server
+  other: 运行HTTP服务器
+http_server.activation:
+  description: "description for config: http_server.activation"
+  other: ""
+http_server.cors:
+  description: description for plugin http_server.cors
+  other: 为HTTP服务器提供CORS中间件
+http_server.cors.allowed_origins:
+  description: "description for config: http_server.cors.allowed_origins"
+  other: CORS允许的来源
+http_server.docs:
+  description: description for plugin http_server.docs
+  other: 在/docs端点运行文档网站实例
+http_server.docs.activation:
+  description: "description for config: http_server.docs.activation"
+  other: ""
+http_server.graphql:
+  description: description for plugin http_server.graphql
+  other: 运行GraphQL API服务器
+http_server.graphql.activation:
+  description: "description for config: http_server.graphql.activation"
+  other: ""
+http_server.graphql.unauthorized:
+  description: "message for error: http_server.graphql.unauthorized"
+  other: ""
+http_server.local_address:
+  description: "description for config: http_server.local_address"
+  other: 监听的本地地址
+http_server.logging:
+  description: description for plugin http_server.logging
+  other: 为HTTP服务器提供日志记录
+http_server.webui:
+  description: description for plugin http_server.webui
+  other: 在/webui端点运行Web用户界面
+http_server.webui.activation:
+  description: "description for config: http_server.webui.activation"
+  other: ""
+i18n:
+  description: description for plugin i18n
+  other: 为后端服务提供翻译
+importer:
+  description: description for plugin importer
+  other: 在/import端点运行导入功能
+importer.activation:
+  description: "description for config: importer.activation"
+  other: ""
+logging:
+  description: description for plugin logging
+  other: 提供日志记录服务
+logging.console:
+  description: description for plugin logging.console
+  other: 输出控制台格式的日志
+logging.console.activation:
+  description: "description for config: logging.console.activation"
+  other: ""
+logging.file_rotator:
+  description: description for plugin logging.file_rotator
+  other: ""
+logging.file_rotator.activation:
+  description: "description for config: logging.file_rotator.activation"
+  other: ""
+logging.file_rotator.base_name:
+  description: "description for config: logging.file_rotator.base_name"
+  other: ""
+logging.file_rotator.buffer_size:
+  description: "description for config: logging.file_rotator.buffer_size"
+  other: ""
+logging.file_rotator.level:
+  description: "description for config: logging.file_rotator.level"
+  other: ""
+logging.file_rotator.max_age:
+  description: "description for config: logging.file_rotator.max_age"
+  other: ""
+logging.file_rotator.max_backups:
+  description: "description for config: logging.file_rotator.max_backups"
+  other: ""
+logging.file_rotator.max_size:
+  description: "description for config: logging.file_rotator.max_size"
+  other: ""
+logging.file_rotator.sub_path:
+  description: "description for config: logging.file_rotator.sub_path"
+  other: ""
+logging.json:
+  description: description for plugin logging.json
+  other: ""
+logging.json.activation:
+  description: "description for config: logging.json.activation"
+  other: ""
+logging.level:
+  description: "description for config: logging.level"
+  other: 日志级别
+meta_info:
+  description: description for plugin meta_info
+  other: 提供从对等方下载种子元信息的服务
+meta_info.dial_timeout:
+  description: "description for config: meta_info.dial_timeout"
+  other: 拨号超时
+meta_info.max_concurrency:
+  description: "description for config: meta_info.max_concurrency"
+  other: 最大请求并发数
+meta_info.request_timeout:
+  description: "description for config: meta_info.request_timeout"
+  other: 请求超时
+metrics:
+  description: description for plugin metrics
+  other: 提供指标
+metrics.prometheus:
+  description: description for plugin metrics.prometheus
+  other: ""
+metrics.prometheus.activation:
+  description: "description for config: metrics.prometheus.activation"
+  other: ""
+pipeline.batcher:
+  description: description for plugin pipeline.batcher
+  other: ""
+pipeline.classifier:
+  description: description for plugin pipeline.classifier
+  other: 提供种子分类器服务
+pipeline.classifier.concurrency:
+  description: "description for config: pipeline.classifier.concurrency"
+  other: 并行运行的最大分类数
+pipeline.classifier.delete_xxx:
+  description: "description for config: pipeline.classifier.delete_xxx"
+  other: 指示分类器应删除XXX内容的布尔标志
+pipeline.classifier.extensions:
+  description: "description for config: pipeline.classifier.extensions"
+  other: 文件类型到与其关联的文件扩展名的映射
+pipeline.classifier.flags:
+  description: "description for config: pipeline.classifier.flags"
+  other: 用于配置分类器工作流的标志键到标志值的映射
+pipeline.classifier.keywords:
+  description: "description for config: pipeline.classifier.keywords"
+  other: 类别名称到与不同类型种子相关联的关键词的映射
+pipeline.classifier.workflow:
+  description: "description for config: pipeline.classifier.workflow"
+  other: 默认分类器工作流
+pipeline.processor:
+  description: description for plugin pipeline.processor
+  other: 提供对种子进行分类和索引的处理器服务
+queue:
+  description: description for plugin queue
+  other: 运行队列作业工作器
+queue.autostart:
+  description: "description for config: queue.autostart"
+  other: ""
+search:
+  description: description for plugin search
+  other: ""
+search.facet.content_genre:
+  description: "label for search facet: content_genre"
+  other: ""
+search.facet.content_type:
+  description: "label for search facet: content_type"
+  other: ""
+search.facet.file_type:
+  description: "label for search facet: file_type"
+  other: ""
+search.facet.language:
+  description: "label for search facet: language"
+  other: ""
+search.facet.release_year:
+  description: "label for search facet: release_year"
+  other: ""
+search.facet.tag:
+  description: "label for search facet: tag"
+  other: ""
+search.facet.torrent_source:
+  description: "label for search facet: torrent_source"
+  other: ""
+search.facet.video_3d:
+  description: "label for search facet: video_3d"
+  other: ""
+search.facet.video_codec:
+  description: "label for search facet: video_codec"
+  other: ""
+search.facet.video_modifier:
+  description: "label for search facet: video_modifier"
+  other: ""
+search.facet.video_resolution:
+  description: "label for search facet: video_resolution"
+  other: ""
+search.facet.video_source:
+  description: "label for search facet: video_source"
+  other: ""
+tmdb.activation:
+  description: "description for config: tmdb.activation"
+  other: ""
+torznab:
+  description: description for plugin torznab
+  other: 在/torznab端点运行Torznab API服务器
+torznab.activation:
+  description: "description for config: torznab.activation"
+  other: ""
+worker:
+  description: description for plugin worker
+  other: 管理工作器

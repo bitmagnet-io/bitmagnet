@@ -1,6 +1,8 @@
 package search
 
 import (
+	"encoding/json"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
 	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
@@ -9,6 +11,12 @@ import (
 const nameLangauge = "language"
 
 type CriteriaLanguage []model.Language
+
+func (c CriteriaLanguage) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string][]model.Language{
+		nameLangauge: c,
+	})
+}
 
 func (CriteriaLanguage) criteria() {}
 

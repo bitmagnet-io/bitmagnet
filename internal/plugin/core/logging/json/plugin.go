@@ -1,11 +1,11 @@
 package json
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/env"
 	"github.com/bitmagnet-io/bitmagnet/internal/logging/encoder"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/logging"
+	"github.com/bitmagnet-io/bitmagnet/pkg/env"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"go.uber.org/fx"
 	"go.uber.org/zap/zapcore"
 )

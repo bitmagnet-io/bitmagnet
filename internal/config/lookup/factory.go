@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/config"
-	"github.com/bitmagnet-io/bitmagnet/internal/env"
+	"github.com/bitmagnet-io/bitmagnet/pkg/env"
 	"gopkg.in/yaml.v3"
 )
 

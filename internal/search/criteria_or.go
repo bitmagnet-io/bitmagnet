@@ -1,10 +1,20 @@
 package search
 
-import "github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+import (
+	"encoding/json"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+)
 
 const nameOr = "or"
 
 type Or []Criteria
+
+func (c Or) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string][]Criteria{
+		nameOr: c,
+	})
+}
 
 func (Or) criteria() {}
 

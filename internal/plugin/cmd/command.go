@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/cmd"
-	"github.com/bitmagnet-io/bitmagnet/internal/env"
-	"github.com/bitmagnet-io/bitmagnet/internal/fs"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/app"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
+	"github.com/bitmagnet-io/bitmagnet/pkg/env"
+	"github.com/bitmagnet-io/bitmagnet/pkg/fs"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

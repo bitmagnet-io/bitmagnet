@@ -6,11 +6,9 @@
   "customizations": {
     "vscode": {
       "settings": {
-        "terminal.integrated.defaultProfile.linux": "nix-shell"
+        "terminal.integrated.defaultProfile.linux": "zsh"
       }
     }
   },
-  "onCreateCommand": "cd ~/code && nix develop --install && ln -s $(nix develop -c which go) ~/.local/bin/go",
-  "waitFor": "onCreateCommand",
   "remoteUser": "bitmagnet"
 }

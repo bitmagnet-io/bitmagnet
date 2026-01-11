@@ -208,9 +208,16 @@ models:
   Ref:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/ref.Ref
+      - github.com/bitmagnet-io/bitmagnet/internal/ref.Nullable
   RegisterInput:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/auth/user.RegisterRequest
   PasswordEntropyResult:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/auth/user.PasswordEntropyResult
+  SearchIndexInfo:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/search/adapter/multi.IndexInfo
+  SearchResultType:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/search.ResultType

@@ -1,12 +1,12 @@
 package worker
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/env"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/app"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/cmd"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
+	"github.com/bitmagnet-io/bitmagnet/pkg/env"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"go.uber.org/fx"
 )
 
@@ -19,7 +19,7 @@ func NewStartCommand() plugin.Command {
 }
 
 type StartCommand struct {
-	cmd.Cmd
+	cmd.Cmd `cmd:"doc=Start the application"`
 	cmd.App[StartDeps]
 }
 

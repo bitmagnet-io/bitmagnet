@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
-	"github.com/bitmagnet-io/bitmagnet/internal/fs"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
+	"github.com/bitmagnet-io/bitmagnet/pkg/fs"
 )
 
 type FS fs.FS

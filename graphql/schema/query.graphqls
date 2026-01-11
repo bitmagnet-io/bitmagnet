@@ -8,4 +8,5 @@ type Query {
   health: HealthQuery! @auth(object: "health", action: "query")
   queue: QueueQuery! @auth(object: "queue", action: "query")
   torrent: TorrentQuery! @auth(object: "torrent", action: "query")
+  index: IndexQuery! @auth(object: "index", action: "query")
 }

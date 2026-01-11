@@ -8,34 +8,38 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/env"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
+	"github.com/bitmagnet-io/bitmagnet/internal/gql/httpserver"
+	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/http_server"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
+	"github.com/bitmagnet-io/bitmagnet/pkg/env"
 )
 
 type WorkerQuery struct {
+	I18n     *i18n.Bundle
 	Registry *registry.Registry
 }
 
-func (q *WorkerQuery) ListAll(_ context.Context) (gen.WorkerListAllQueryResult, error) {
-	return workersListAll(q.Registry)
+func (q *WorkerQuery) ListAll(ctx context.Context) (gen.WorkerListAllQueryResult, error) {
+	return workersListAll(httpserver.NewLocalizerFromContext(ctx, q.I18n), q.Registry)
 }
 
 type WorkerMutation struct {
+	I18n     *i18n.Bundle
 	Context  env.Context
 	Registry *registry.Registry
 }
 
-func (m *WorkerMutation) Start(_ context.Context, refs []ref.Ref) (gen.WorkerListAllQueryResult, error) {
+func (m *WorkerMutation) Start(ctx context.Context, refs []ref.Ref) (gen.WorkerListAllQueryResult, error) {
 	err := m.Registry.Start(m.Context, refs...)
 	if err != nil {
 		return gen.WorkerListAllQueryResult{}, err
 	}
 
-	return workersListAll(m.Registry)
+	return workersListAll(httpserver.NewLocalizerFromContext(ctx, m.I18n), m.Registry)
 }
 
 func (m *WorkerMutation) Shutdown(ctx context.Context, refs []ref.Ref) (gen.WorkerListAllQueryResult, error) {
@@ -68,10 +72,10 @@ func (m *WorkerMutation) Shutdown(ctx context.Context, refs []ref.Ref) (gen.Work
 		return gen.WorkerListAllQueryResult{}, err
 	}
 
-	return workersListAll(m.Registry)
+	return workersListAll(httpserver.NewLocalizerFromContext(ctx, m.I18n), m.Registry)
 }
 
-func (m *WorkerMutation) Restart(_ context.Context, refs []ref.Ref) (gen.WorkerListAllQueryResult, error) {
+func (m *WorkerMutation) Restart(ctx context.Context, refs []ref.Ref) (gen.WorkerListAllQueryResult, error) {
 	// Must be done in a goroutine to prevent deadlock:
 	go func() {
 		_ = m.Registry.Restart(m.Context, refs...)
@@ -80,10 +84,10 @@ func (m *WorkerMutation) Restart(_ context.Context, refs []ref.Ref) (gen.WorkerL
 	// Hopefully give workers time to enter shutdown state:
 	<-time.After(time.Millisecond * 100)
 
-	return workersListAll(m.Registry)
+	return workersListAll(httpserver.NewLocalizerFromContext(ctx, m.I18n), m.Registry)
 }
 
-func workersListAll(registry *registry.Registry) (gen.WorkerListAllQueryResult, error) {
+func workersListAll(localizer *i18n.Localizer, registry *registry.Registry) (gen.WorkerListAllQueryResult, error) {
 	stateMap := registry.WorkersState()
 	workers := make([]gen.Worker, 0, stateMap.Len())
 
@@ -94,8 +98,19 @@ func workersListAll(registry *registry.Registry) (gen.WorkerListAllQueryResult, 
 			err = &strErr
 		}
 
+		var label string
+		strRef := state.Ref.String()
+		if localized, _ := localizer.LocalizeMessage(&i18n.Message{
+			ID: strRef,
+		}); localized != "" {
+			label = localized
+		} else {
+			label = strRef
+		}
+
 		workers = append(workers, gen.Worker{
 			Ref:        state.Ref,
+			Label:      label,
 			State:      state.State,
 			Error:      err,
 			RequiredBy: state.RequiredBy.Refs(),

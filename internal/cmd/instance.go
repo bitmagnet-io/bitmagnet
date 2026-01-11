@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/env"
+	"github.com/bitmagnet-io/bitmagnet/pkg/env"
 )
 
 type instance struct {
@@ -19,6 +19,7 @@ type instance struct {
 	args          []string
 	index         int
 	subcmds       []Command
+	helpRequested bool
 }
 
 func (i *instance) Subcommands() []Command {
@@ -47,39 +48,40 @@ outer:
 
 		switch token.tokenType {
 		case tokenTypeKeyValue:
-			p, err := i.Spec.param(token.key)
-			if err != nil {
-				return fmt.Errorf("%w: %s: %w", ErrInvalidArgs, i.Name, err)
+			p, ok := i.Spec.param(token.key)
+			if !ok {
+				return fmt.Errorf("%w: %s: %w: %s", ErrInvalidArgs, i.name, ErrUnknownParam, token.key)
 			}
 
 			if err := i.handleParamValue(p, token.value); err != nil {
-				return fmt.Errorf("%w: %s: %w", ErrInvalidArgs, i.Name, err)
+				return fmt.Errorf("%w: %s: %w", ErrInvalidArgs, i.name, err)
 			}
 
 		case tokenTypeKey:
-			p, err := i.Spec.param(token.key)
-			if err != nil {
-				return fmt.Errorf("%w: %s: %w", ErrInvalidArgs, i.Name, err)
+			if token.key == helpParam {
+				i.helpRequested = true
+			}
+
+			p, ok := i.Spec.param(token.key)
+			if !ok {
+				return fmt.Errorf("%w: %s: %w: %s", ErrInvalidArgs, i.name, ErrUnknownParam, token.key)
 			}
 
 			if len(i.values[p.Name]) > 0 && !p.Multiple {
-				return fmt.Errorf("%w: %s: %w: %s", ErrInvalidArgs, i.Name, ErrRepeatedParam, p.Name)
+				return fmt.Errorf("%w: %s: %w: %s", ErrInvalidArgs, i.name, ErrRepeatedParam, p.Name)
 			}
 
-			var (
-				arg string
-				ok  bool
-			)
+			var arg string
 
 			if p.Type != paramTypeBool {
 				arg, ok = i.nextArg()
 				if !ok {
-					return fmt.Errorf("%w: %s: %w: %s", ErrInvalidArgs, i.Name, ErrMissingParamValue, p.Name)
+					return fmt.Errorf("%w: %s: %w: %s", ErrInvalidArgs, i.name, ErrMissingParamValue, p.Name)
 				}
 			}
 
 			if err := i.handleParamValue(p, arg); err != nil {
-				return fmt.Errorf("%w: %s: %w", ErrInvalidArgs, i.Name, err)
+				return fmt.Errorf("%w: %s: %w", ErrInvalidArgs, i.name, err)
 			}
 		case tokenTypePositional:
 			i.index--
@@ -90,10 +92,20 @@ outer:
 		}
 	}
 
+	for _, p := range i.Spec.Params() {
+		if p.Default != "" {
+			if _, ok := i.values[p.Name]; !ok {
+				if err := i.handleParamValue(p, p.Default); err != nil {
+					return fmt.Errorf("%w: %s: %w", ErrInvalidArgs, i.name, err)
+				}
+			}
+		}
+	}
+
 	i.applyValues()
 
 	if err := cmd.Setup(env); err != nil {
-		return fmt.Errorf("%w: %s: %w: %w", ErrExecution, i.Name, ErrSetup, err)
+		return fmt.Errorf("%w: %s: %w: %w", ErrExecution, i.name, ErrSetup, err)
 	}
 
 	if token, ok := i.nextToken(); ok {
@@ -103,7 +115,7 @@ outer:
 				if err != nil {
 					return err
 				}
-				if subCmdSpec.Name != token.value {
+				if subCmdSpec.name != token.value {
 					continue
 				}
 				subInstance := subCmdSpec.newInstance(subCmd, i.args[i.index:])
@@ -112,17 +124,24 @@ outer:
 			}
 		}
 
-		return fmt.Errorf("%w: %s: %w: %s", ErrInvalidArgs, i.Name, ErrUnexpectedArgument, token.arg)
+		return fmt.Errorf("%w: %s: %w: %s", ErrInvalidArgs, i.name, ErrUnexpectedArgument, token.arg)
 	}
 
-	err := cmd.Run(env)
+	var err error
+
+	if i.helpRequested {
+		err = cmd.Help(env)
+	} else {
+		err = cmd.Run(env)
+	}
+
 	if err != nil {
-		return fmt.Errorf("%w: %s: %w", ErrExecution, i.Name, err)
+		return fmt.Errorf("%w: %s: %w", ErrExecution, i.name, err)
 	}
 
 	err = cmd.Teardown(env)
 	if err != nil {
-		return fmt.Errorf("%w: %s: %w: %w", ErrExecution, i.Name, ErrTeardown, err)
+		return fmt.Errorf("%w: %s: %w: %w", ErrExecution, i.name, ErrTeardown, err)
 	}
 
 	return nil
@@ -199,7 +218,9 @@ func (i *instance) applyValues() {
 		default:
 			panic("unknown param type")
 		}
-		i.reflectValues[name].Set(reflect.ValueOf(value))
+		if rv, ok := i.reflectValues[name]; ok {
+			rv.Set(reflect.ValueOf(value))
+		}
 	}
 
 	i.cmdValue.Set(reflect.ValueOf(Cmd{

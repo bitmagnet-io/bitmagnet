@@ -1,21 +1,31 @@
 <ng-container *transloco="let t">
-    <mat-dialog-content>
-      <h3>{{t('workers.actions.'+action)}} {{t('workers.names.'+worker)}}?</h3>
-      @if (["shutdown", "restart"].includes(action) && requiredBy.length > 0) {
-        <p>{{t('workers.warnings.required_by')}}</p>
-        <ul>@for (name of requiredBy; let i = $index; track name) {
-          <li>{{t('workers.names.'+name)}}</li>
-        }</ul>
-      }
-      @if (action == "start" && dependsOn.length > 0) {
-        <p>{{t('workers.warnings.depends_on')}}</p>
-        <ul>@for (name of dependsOn; let i = $index; track name) {
-          <li>{{t('workers.names.'+name)}}</li>
-        }</ul>
-      }
-    </mat-dialog-content>
+  <mat-dialog-content>
+    <h3>
+      {{ t("workers.actions." + action) }} {{ t("workers.names." + worker) }}?
+    </h3>
+    @if (["shutdown", "restart"].includes(action) && requiredBy.length > 0) {
+      <p>{{ t("workers.warnings.required_by") }}</p>
+      <ul>
+        @for (name of requiredBy; let i = $index; track name) {
+          <li>{{ t("workers.names." + name) }}</li>
+        }
+      </ul>
+    }
+    @if (action == "start" && dependsOn.length > 0) {
+      <p>{{ t("workers.warnings.depends_on") }}</p>
+      <ul>
+        @for (name of dependsOn; let i = $index; track name) {
+          <li>{{ t("workers.names." + name) }}</li>
+        }
+      </ul>
+    }
+  </mat-dialog-content>
   <mat-dialog-actions>
-    <button mat-button color="secondary" (click)="cancel()">{{t('general.cancel')}}</button>
-    <button mat-button color="warning" (click)="confirm()">{{t('general.confirm')}}</button>
+    <button mat-button color="secondary" (click)="cancel()">
+      {{ t("general.cancel") }}
+    </button>
+    <button mat-button color="warning" (click)="confirm()">
+      {{ t("general.confirm") }}
+    </button>
   </mat-dialog-actions>
 </ng-container>

@@ -1,12 +1,13 @@
 {
-    "recommendations": [
-        "angular.ng-template",
-        "bbenoist.nix",
-        "editorconfig.editorconfig",
-        "esbenp.prettier-vscode",
-        "golang.go",
-        "graphql.vscode-graphql",
-        "ms-azuretools.vscode-containers",
-        "ms-vscode-remote.remote-containers"
-    ]
+  "recommendations": [
+    "angular.ng-template",
+    "editorconfig.editorconfig",
+    "esbenp.prettier-vscode",
+    "golang.go",
+    "graphql.vscode-graphql",
+    "ms-azuretools.vscode-containers",
+    "ms-vscode-remote.remote-containers",
+    "task.vscode-task",
+    "zxh404.vscode-proto3"
+  ]
 }

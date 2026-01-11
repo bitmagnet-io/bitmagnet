@@ -14,9 +14,9 @@ import {
 } from "rxjs";
 import { CombinedGraphQLErrors } from "@apollo/client/errors";
 import * as generated from "../graphql/generated";
+import { filterComplete } from "../graphql/util/filter-complete";
 import { AuthTokenService } from "./auth-token.service";
 import { newEnforcer, ObjectAction as _objectAction } from "./enforcer";
-import { filterComplete } from "../graphql/util/filter-complete";
 
 const pollInterval = 10000;
 
@@ -76,7 +76,7 @@ export class AuthService {
             err.errors.some(
               (gErr) =>
                 gErr.extensions?.["code"] ===
-                "core.http_server.graphql.unauthorized",
+                "http_server.graphql.unauthorized",
             )
           ) {
             this.tokenService.clearToken();

@@ -1,6 +1,8 @@
 package search
 
 import (
+	"encoding/json"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
 	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
@@ -10,15 +12,23 @@ const nameContentType = "contentType"
 
 type CriteriaContentType []model.ContentType
 
+func (c CriteriaContentType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string][]model.ContentType{
+		nameContentType: c,
+	})
+}
+
 func (CriteriaContentType) criteria() {}
+
+var specContentType = json_spec.Enum[model.ContentType]{
+	Values: model.ContentTypeValues(),
+}
 
 var criteriaSpecContentType = json_spec.SingleKeyValue[[]model.ContentType]{
 	Key: nameContentType,
 	ValueSpec: json_spec.MustSucceed[[]model.ContentType]{
 		Typed: json_spec.List[model.ContentType]{
-			ItemSpec: json_spec.Enum[model.ContentType]{
-				Values: model.ContentTypeValues(),
-			},
+			ItemSpec: specContentType,
 		},
 	},
 }

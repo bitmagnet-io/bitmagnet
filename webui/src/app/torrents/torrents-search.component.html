@@ -1,11 +1,16 @@
 <ng-container *transloco="let t">
   <app-document-title
     [parts]="[
-      controls.queryString,
-      (controls.contentType ?? 'null') === 'null'
+      (controller.controls$ | async)?.queryString,
+      ((controller.controls$ | async)?.contentType ?? 'null') === 'null'
         ? null
-        : t('content_types.plural.' + controls.contentType),
-      controls.page > 1 ? t('paginator.page_x', { x: controls.page }) : null,
+        : t(
+            'content_types.plural.' +
+              (controller.controls$ | async)?.contentType
+          ),
+      ((controller.controls$ | async)?.page ?? 0) > 1
+        ? t('paginator.page_x', { x: (controller.controls$ | async)?.page })
+        : null,
       t('routes.torrents'),
     ]"
   />
@@ -31,7 +36,11 @@
             <ul>
               <li
                 (click)="controller.selectContentType(null)"
-                [class]="controls.contentType === null ? 'active' : ''"
+                [class]="
+                  (controller.controls$ | async)?.contentType === null
+                    ? 'active'
+                    : ''
+                "
               >
                 <mat-icon fontSet="material-icons">emergency</mat-icon
                 >{{ t("content_types.plural.all") }}
@@ -48,7 +57,11 @@
                 ) {
                   <li
                     (click)="controller.selectContentType(ct.key)"
-                    [class]="controls.contentType === ct.key ? 'active' : ''"
+                    [class]="
+                      (controller.controls$ | async)?.contentType === ct.key
+                        ? 'active'
+                        : ''
+                    "
                   >
                     <mat-icon>{{ ct.icon }}</mat-icon>
                     {{ t("content_types.plural." + ct.key) }}
@@ -167,7 +180,7 @@
           <mat-form-field subscriptSizing="dynamic">
             <mat-label>{{ t("torrents.order_by") }}</mat-label>
             <mat-select
-              [value]="controls.orderBy.key"
+              [value]="(controller.controls$ | async)?.orderBy?.key"
               (valueChange)="controller.selectOrderBy($event)"
             >
               @for (option of orderByOptions; track option.key) {
@@ -185,10 +198,33 @@
             (click)="controller.toggleOrderByDirection()"
           >
             <mat-icon>{{
-              controls.orderBy.descending ? "arrow_downward" : "arrow_upward"
+              (controller.controls$ | async)?.orderBy?.descending
+                ? "arrow_downward"
+                : "arrow_upward"
             }}</mat-icon>
           </button>
         </div>
+        @if (indexes.indexes$ | async; as indexes) {
+          @if (indexes.default && indexes.infos.length > 1) {
+            <div class="form-field-container">
+              <mat-form-field subscriptSizing="dynamic">
+                <mat-label>{{ t("general.index") }}</mat-label>
+                <mat-select
+                  [value]="
+                    (controller.controls$ | async)?.index || indexes.default
+                  "
+                  (valueChange)="selectIndex($event)"
+                >
+                  @for (index of indexes.infos; track index.ref) {
+                    <mat-option [value]="index.ref">
+                      {{ index.name }}
+                    </mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+          }
+        }
         <div
           class="form-field-container button-container button-container-refresh"
         >
@@ -219,8 +255,8 @@
       />
       <app-paginator
         (paging)="controller.handlePageEvent($event)"
-        [page]="controls.page"
-        [pageSize]="controls.limit"
+        [page]="(controller.controls$ | async)?.page"
+        [pageSize]="(controller.controls$ | async)?.limit"
         [pageLength]="dataSource.result.items.length"
         [totalLength]="dataSource.result.totalCount ?? null"
         [totalIsEstimate]="dataSource.result.totalCountIsEstimate"

@@ -57,7 +57,7 @@ func New(queue string, f Func, opts ...Option) (h Handler) {
 	h = Handler{
 		Func:          f,
 		Queue:         queue,
-		CheckInterval: 30 * time.Second,
+		CheckInterval: 10 * time.Second,
 	}
 
 	h.WithOptions(opts...)

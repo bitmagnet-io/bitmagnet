@@ -1,30 +1,9 @@
 {
-  "content_types": {
-    "plural": {
-      "all": "الكل",
-      "audiobook": "الكتب الصوتية",
-      "comic": "القصص المصورة",
-      "ebook": "الكتب الإلكترونية",
-      "game": "الألعاب",
-      "movie": "الأفلام",
-      "music": "الموسيقى",
-      "null": "غير معروف",
-      "software": "البرمجيات",
-      "tv_show": "برامج التلفاز",
-      "xxx": "الإباحية"
-    },
-    "singular": {
-      "audiobook": "كتاب صوتي",
-      "comic": "قصة مصورة",
-      "ebook": "كتاب إلكتروني",
-      "game": "لعبة",
-      "movie": "فيلم",
-      "music": "موسيقى",
-      "null": "غير معروف",
-      "software": "برمجيات",
-      "tv_show": "برنامج تلفزيوني",
-      "xxx": "الإباحية"
-    }
+  "account": {
+    "account": "__missing__",
+    "api_key_created": "__missing__",
+    "api_key_take_note": "__missing__",
+    "new_api_key": "__missing__"
   },
   "admin": {
     "event": {
@@ -84,6 +63,55 @@
       "total_counts_by_status": "إجمالي العد حسب الحالة"
     }
   },
+  "auth": {
+    "claimed_by": "__missing__",
+    "confirm_password": "__missing__",
+    "created_by": "__missing__",
+    "expires_at": "__missing__",
+    "expiry": "__missing__",
+    "invitation_code": "__missing__",
+    "last_login_at": "__missing__",
+    "login": "__missing__",
+    "login_failed": "__missing__",
+    "logout": "__missing__",
+    "new_invitation": "__missing__",
+    "new_role": "__missing__",
+    "password": "__missing__",
+    "password_has_insufficient_entropy": "__missing__",
+    "passwords_do_not_match": "__missing__",
+    "register": "__missing__",
+    "register_failed": "__missing__",
+    "role": "__missing__",
+    "unclaimed": "__missing__",
+    "username": "__missing__"
+  },
+  "content_types": {
+    "plural": {
+      "all": "الكل",
+      "audiobook": "الكتب الصوتية",
+      "comic": "القصص المصورة",
+      "ebook": "الكتب الإلكترونية",
+      "game": "الألعاب",
+      "movie": "الأفلام",
+      "music": "الموسيقى",
+      "null": "غير معروف",
+      "software": "البرمجيات",
+      "tv_show": "برامج التلفاز",
+      "xxx": "الإباحية"
+    },
+    "singular": {
+      "audiobook": "كتاب صوتي",
+      "comic": "قصة مصورة",
+      "ebook": "كتاب إلكتروني",
+      "game": "لعبة",
+      "movie": "فيلم",
+      "music": "موسيقى",
+      "null": "غير معروف",
+      "software": "برمجيات",
+      "tv_show": "برنامج تلفزيوني",
+      "xxx": "الإباحية"
+    }
+  },
   "facets": {
     "content_type": "نوع المحتوى",
     "file_type": "نوع الملف",
@@ -108,13 +136,26 @@
     "video": "فيديو"
   },
   "general": {
+    "actions": "__missing__",
     "all": "الكل",
+    "cancel": "__missing__",
+    "code": "__missing__",
+    "confirm": "__missing__",
+    "copy_to_clipboard": "__missing__",
+    "created_at": "__missing__",
+    "delete": "__missing__",
     "dismiss": "رفض",
+    "email": "__missing__",
     "error": "خطأ",
+    "index": "__missing__",
+    "name": "__missing__",
+    "never": "__missing__",
     "none": "لا شيء",
     "page_not_found": "الصفحة غير موجودة",
     "refresh": "تحديث",
-    "status": "الحالة"
+    "save": "__missing__",
+    "status": "الحالة",
+    "system": "__missing__"
   },
   "health": {
     "bitmagnet_is_status": "bitmagnet هو {{status}}",
@@ -228,12 +269,19 @@
     "x_to_y_of_z": "{{x}} إلى {{y}} من {{z}}"
   },
   "routes": {
+    "account": "__missing__",
     "admin": "المسؤول",
+    "api_keys": "__missing__",
+    "config": "__missing__",
     "home": "الصفحة الرئيسية",
+    "invitations": "__missing__",
     "jobs": "الوظائف",
     "queues": "الطوابير",
+    "roles": "__missing__",
     "torrents": "التورنت",
-    "visualize": "تصور"
+    "users": "__missing__",
+    "visualize": "تصور",
+    "workers": "__missing__"
   },
   "torrents": {
     "classification": "التصنيف",
@@ -312,5 +360,24 @@
   "version": {
     "bitmagnet_version": "إصدار bitmagnet {{version}}",
     "unknown": "غير معروف"
+  },
+  "workers": {
+    "actions": {
+      "restart": "__missing__",
+      "shutdown": "__missing__",
+      "start": "__missing__"
+    },
+    "states": {
+      "error": "__missing__",
+      "idle": "__missing__",
+      "running": "__missing__",
+      "shutdown": "__missing__",
+      "startup": "__missing__"
+    },
+    "warnings": {
+      "depends_on": "__missing__",
+      "required_by": "__missing__"
+    },
+    "worker": "__missing__"
   }
 }

@@ -2,33 +2,33 @@ package crawler
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
-	"github.com/bitmagnet-io/bitmagnet/internal/dhtcrawler"
+	"github.com/bitmagnet-io/bitmagnet/internal/dht_crawler"
 	"github.com/bitmagnet-io/bitmagnet/internal/dhtcrawler/dhtcrawlerhealthcheck"
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database/info_hash_blocker"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/database/postgres"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/dht"
 	plugin_dht_server "github.com/bitmagnet-io/bitmagnet/internal/plugin/core/dht/server"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/info_hash_blocker"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/logging"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/meta_info"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/pipeline/classifier"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/pipeline/persister"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/pipeline/processor"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/persister"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/postgres"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/processor"
 	plugin_worker "github.com/bitmagnet-io/bitmagnet/internal/plugin/core/worker"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/server"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"go.uber.org/fx"
 )
 
 type deps struct {
 	fx.In
-	Autostart      dhtcrawler.Autostart
-	Runner         dhtcrawler.Runner
+	Autostart      dht_crawler.Autostart
+	Runner         dht_crawler.Runner
 	LastResponses  *atomic.Value[server.LastResponses]
 	WorkerRegistry registry.StateProvider
 }
@@ -51,12 +51,18 @@ var (
 			processor.Ref,
 			plugin_worker.Ref,
 		),
-		builder.WithConfig[deps](Ref.MustSub("autostart"), dhtcrawler.ParamAutostart),
-		builder.WithConfig[deps](Ref.MustSub("bootstrap_nodes"), dhtcrawler.ParamBootstrapNodes),
-		builder.WithConfig[deps](Ref.MustSub("reseed_bootstrap_nodes_interval"), dhtcrawler.ParamReseedBootstrapNodesInterval),
-		builder.WithConfig[deps](Ref.MustSub("save_files_threshold"), dhtcrawler.ParamSaveFilesThreshold),
-		builder.WithConfig[deps](Ref.MustSub("save_pieces"), dhtcrawler.ParamSavePieces),
-		builder.WithConfig[deps](Ref.MustSub("rescrape_threshold"), dhtcrawler.ParamRescrapeThreshold),
+		builder.WithConfig[deps](Ref.MustSub("autostart"), dht_crawler.ParamAutostart),
+		builder.WithConfig[deps](Ref.MustSub("bootstrap_nodes"), dht_crawler.ParamBootstrapNodes),
+		builder.WithConfig[deps](Ref.MustSub("reseed_bootstrap_nodes_interval"), dht_crawler.ParamReseedBootstrapNodesInterval),
+		builder.WithConfig[deps](Ref.MustSub("save_files_threshold"), dht_crawler.ParamSaveFilesThreshold),
+		builder.WithConfig[deps](Ref.MustSub("save_pieces"), dht_crawler.ParamSavePieces),
+		builder.WithConfig[deps](Ref.MustSub("rescrape_threshold"), dht_crawler.ParamRescrapeThreshold),
+		builder.WithConfig[deps](Ref.MustSub("scrape_concurrency"), dht_crawler.ParamScrapeConcurrency),
+		builder.WithConfig[deps](Ref.MustSub("ping_concurrency"), dht_crawler.ParamPingConcurrency),
+		builder.WithConfig[deps](Ref.MustSub("find_nodes_concurrency"), dht_crawler.ParamFindNodesConcurrency),
+		builder.WithConfig[deps](Ref.MustSub("get_peers_concurrency"), dht_crawler.ParamGetPeersConcurrency),
+		builder.WithConfig[deps](Ref.MustSub("sample_infohashes_concurrency"), dht_crawler.ParamSampleInfoHashesConcurrency),
+		builder.WithConfig[deps](Ref.MustSub("request_metainfo_concurrency"), dht_crawler.ParamRequestMetaInfoConcurrency),
 		builder.WithFxOption[deps](
 			fx.Provide(
 				fx.Private,
@@ -65,7 +71,7 @@ var (
 				},
 			),
 			fx.Provide(
-				dhtcrawler.New,
+				dht_crawler.New,
 			),
 		),
 		builder.WithWorker(

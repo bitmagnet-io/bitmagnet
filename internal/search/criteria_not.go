@@ -1,10 +1,20 @@
 package search
 
-import "github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+import (
+	"encoding/json"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+)
 
 const nameNot = "not"
 
 type Not []Criteria
+
+func (c Not) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string][]Criteria{
+		nameNot: c,
+	})
+}
 
 func (Not) criteria() {}
 

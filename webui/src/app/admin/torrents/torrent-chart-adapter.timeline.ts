@@ -21,9 +21,10 @@ const eventColors: Record<EventName, ThemeBaseColor> = {
 };
 
 @Injectable({ providedIn: "root" })
-export class TorrentChartAdapterTimeline
-  implements ChartAdapter<Result, "line">
-{
+export class TorrentChartAdapterTimeline implements ChartAdapter<
+  Result,
+  "line"
+> {
   private themeInfo = inject(ThemeInfoService);
   private transloco = inject(TranslocoService);
 

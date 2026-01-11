@@ -1,10 +1,10 @@
 package compat
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/tmdb"
 	internaltmdb "github.com/bitmagnet-io/bitmagnet/internal/tmdb"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"go.uber.org/fx"
 )
 

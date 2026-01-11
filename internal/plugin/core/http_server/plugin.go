@@ -3,15 +3,15 @@ package http_server
 import (
 	"slices"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/env"
 	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/internal/httpserver/circuitbreaker"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/config"
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
+	"github.com/bitmagnet-io/bitmagnet/pkg/env"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 )
@@ -23,7 +23,7 @@ type deps struct {
 }
 
 var (
-	Ref = core.Ref.MustSub("http_server")
+	Ref = ref.Root.MustSub("http_server")
 
 	Plugin = builder.NewPlugin(
 		Ref,
@@ -88,39 +88,6 @@ var (
 )
 
 func resolveOptions(options []httpserver.Option) (gin.OptionFunc, error) {
-	// paramMap := make(map[string]struct{})
-	// for _, p := range optionsNames {
-	// 	paramMap[p] = struct{}{}
-	// }
-
-	// enabledOptions := make([]httpserver.Option, 0, len(options))
-
-	// foundMap := make(map[string]struct{}, len(options))
-	// for _, o := range options {
-	// 	if _, ok := foundMap[o.Key()]; ok {
-	// 		return nil, fmt.Errorf("duplicate http server option: '%s'", o.Key())
-	// 	}
-
-	// 	foundMap[o.Key()] = struct{}{}
-
-	// 	enabled := false
-	// 	if _, ok := paramMap["*"]; ok {
-	// 		enabled = true
-	// 	} else if _, ok := paramMap[o.Key()]; ok {
-	// 		enabled = true
-	// 	}
-
-	// 	if enabled {
-	// 		enabledOptions = append(enabledOptions, o)
-	// 	}
-	// }
-
-	// for p := range paramMap {
-	// 	if _, ok := foundMap[p]; !ok && p != "*" {
-	// 		return nil, fmt.Errorf("unknown http server option: '%s'", p)
-	// 	}
-	// }
-
 	slices.SortFunc(options, func(a, b httpserver.Option) int {
 		return a.Compare(b)
 	})

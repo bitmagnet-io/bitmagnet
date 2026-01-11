@@ -3,13 +3,13 @@ package meta_info
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/config"
 	plugin_metrics "github.com/bitmagnet-io/bitmagnet/internal/plugin/core/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/banning"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/metainfo/metainforequester"
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -19,7 +19,7 @@ type deps struct {
 }
 
 var (
-	Ref = core.Ref.MustSub("meta_info")
+	Ref = ref.Root.MustSub("meta_info")
 
 	Plugin = builder.NewPlugin(
 		Ref,

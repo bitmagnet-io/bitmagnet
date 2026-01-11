@@ -13,8 +13,10 @@ import (
 
 type Validator[T any] interface {
 	Doc() string
-	Evaluate(T) bool
+	Evaluate(T) error
 }
+
+var ErrInvalid = errors.New("validation failed")
 
 func Validate[T any](validators ...Validator[T]) Option[T] {
 	return func(p *param[T]) error {
@@ -32,23 +34,21 @@ func (v Validators[T]) Doc() string {
 	}), "; ")
 }
 
-func (v Validators[T]) Evaluate(val T) bool {
-	return !slice.Some(v, func(validator Validator[T]) bool {
-		return !validator.Evaluate(val)
-	})
+func (v Validators[T]) Evaluate(val T) error {
+	return errors.Join(slice.Map(v, func(validator Validator[T]) error {
+		return validator.Evaluate(val)
+	})...)
 }
 
-var ErrInvalid = errors.New("validation failed")
-
 func (v Validators[T]) Validate(val T) error {
-	var errs []string
+	var errs []error
 	for _, validator := range v {
-		if !validator.Evaluate(val) {
-			errs = append(errs, validator.Doc())
+		if err := validator.Evaluate(val); err != nil {
+			errs = append(errs, err)
 		}
 	}
 	if len(errs) > 0 {
-		return fmt.Errorf("%w: %s", ErrInvalid, strings.Join(errs, "; "))
+		return fmt.Errorf("%w: %s", ErrInvalid, errors.Join(errs...))
 	}
 	return nil
 }
@@ -61,8 +61,11 @@ func (v minLengthValidator[T]) Doc() string {
 	return fmt.Sprintf("must have minimum length %d", v.min)
 }
 
-func (v minLengthValidator[T]) Evaluate(val T) bool {
-	return len(val) >= v.min
+func (v minLengthValidator[T]) Evaluate(val T) error {
+	if len(val) >= v.min {
+		return nil
+	}
+	return fmt.Errorf("length %d is less than minimum %d", len(val), v.min)
 }
 
 func MinLength[T ~string](min int) Option[T] {
@@ -83,8 +86,11 @@ func (v maxLengthValidator[T]) Doc() string {
 	return fmt.Sprintf("must have maximum length %d", v.max)
 }
 
-func (v maxLengthValidator[T]) Evaluate(val T) bool {
-	return len(val) <= v.max
+func (v maxLengthValidator[T]) Evaluate(val T) error {
+	if len(val) <= v.max {
+		return nil
+	}
+	return fmt.Errorf("length %d is greater than maximum %d", len(val), v.max)
 }
 
 func MaxLength[T ~string](max int) Option[T] {
@@ -102,8 +108,11 @@ func (v validatorMinItems[E, T]) Doc() string {
 	return fmt.Sprintf("must have minimum items %d", v.min)
 }
 
-func (v validatorMinItems[E, T]) Evaluate(val T) bool {
-	return len(val) >= v.min
+func (v validatorMinItems[E, T]) Evaluate(val T) error {
+	if len(val) >= v.min {
+		return nil
+	}
+	return fmt.Errorf("items count %d is less than minimum %d", len(val), v.min)
 }
 
 func MinItems[E any, T ~[]E](min int) Option[T] {
@@ -121,8 +130,11 @@ func (v validatorMaxItems[E, T]) Doc() string {
 	return fmt.Sprintf("must have maximum items %d", v.max)
 }
 
-func (v validatorMaxItems[E, T]) Evaluate(val T) bool {
-	return len(val) <= v.max
+func (v validatorMaxItems[E, T]) Evaluate(val T) error {
+	if len(val) <= v.max {
+		return nil
+	}
+	return fmt.Errorf("items count %d is greater than maximum %d", len(val), v.max)
 }
 
 func MaxItems[E any, T ~[]E](max int) Option[T] {
@@ -142,13 +154,13 @@ func (v validatorOneOf[T]) Doc() string {
 	return "must be one of: " + strings.Join(slice.Map(v.enumValues, v.stringifier), ", ")
 }
 
-func (v validatorOneOf[T]) Evaluate(val T) bool {
+func (v validatorOneOf[T]) Evaluate(val T) error {
 	for _, enumVal := range v.enumValues {
 		if v.comparator(val, enumVal) {
-			return true
+			return nil
 		}
 	}
-	return false
+	return fmt.Errorf("value %v is not one of the allowed values", val)
 }
 
 type validatorRegex[T ~string] struct {
@@ -159,8 +171,11 @@ func (v validatorRegex[T]) Doc() string {
 	return "must match pattern: " + v.Regexp.String()
 }
 
-func (v validatorRegex[T]) Evaluate(val T) bool {
-	return v.MatchString(string(val))
+func (v validatorRegex[T]) Evaluate(val T) error {
+	if v.MatchString(string(val)) {
+		return nil
+	}
+	return fmt.Errorf("value %q does not match pattern %q", val, v.Regexp.String())
 }
 
 func Regex[T ~string](regex *regexp.Regexp) Option[T] {
@@ -178,10 +193,10 @@ func (v validatorSlice[E, T]) Doc() string {
 	return "each element " + v.elementValidator.Doc()
 }
 
-func (v validatorSlice[E, T]) Evaluate(val T) bool {
-	return !slice.Some(val, func(item E) bool {
-		return !v.elementValidator.Evaluate(item)
-	})
+func (v validatorSlice[E, T]) Evaluate(val T) error {
+	return errors.Join(slice.Map(val, func(element E) error {
+		return v.elementValidator.Evaluate(element)
+	})...)
 }
 
 type validatorDynamic[T any] struct {
@@ -192,7 +207,7 @@ func (v validatorDynamic[T]) Doc() string {
 	return "each element " + v.elementValidator.Doc()
 }
 
-func (v validatorDynamic[T]) Evaluate(val *atomic.Value[T]) bool {
+func (v validatorDynamic[T]) Evaluate(val *atomic.Value[T]) error {
 	return v.elementValidator.Evaluate(val.Get())
 }
 
@@ -202,9 +217,12 @@ func (v validatorRequired[T]) Doc() string {
 	return "required"
 }
 
-func (v validatorRequired[T]) Evaluate(val T) bool {
+func (v validatorRequired[T]) Evaluate(val T) error {
 	var zero T
-	return val != zero
+	if val != zero {
+		return nil
+	}
+	return fmt.Errorf("value is required")
 }
 
 func Required[T comparable]() Option[T] {
@@ -224,8 +242,11 @@ func (v validatorGreaterThan[T]) Doc() string {
 	return fmt.Sprintf("must be greater than %v", v.value)
 }
 
-func (v validatorGreaterThan[T]) Evaluate(val T) bool {
-	return val > v.value
+func (v validatorGreaterThan[T]) Evaluate(val T) error {
+	if val > v.value {
+		return nil
+	}
+	return fmt.Errorf("value %v is not greater than %v", val, v.value)
 }
 
 func GreaterThan[T number](min T) Option[T] {
@@ -243,8 +264,11 @@ func (v validatorLessThan[T]) Doc() string {
 	return fmt.Sprintf("must be less than %v", v.value)
 }
 
-func (v validatorLessThan[T]) Evaluate(val T) bool {
-	return val < v.value
+func (v validatorLessThan[T]) Evaluate(val T) error {
+	if val < v.value {
+		return nil
+	}
+	return fmt.Errorf("value %v is not less than %v", val, v.value)
 }
 
 func LessThan[T number](max T) Option[T] {
@@ -259,8 +283,11 @@ func (v validatorMin[T]) Doc() string {
 	return fmt.Sprintf("must be at least %v", v.value)
 }
 
-func (v validatorMin[T]) Evaluate(val T) bool {
-	return val >= v.value
+func (v validatorMin[T]) Evaluate(val T) error {
+	if val >= v.value {
+		return nil
+	}
+	return fmt.Errorf("value %v is not at least %v", val, v.value)
 }
 
 func Min[T number](min T) Option[T] {
@@ -275,8 +302,11 @@ func (v validatorMax[T]) Doc() string {
 	return fmt.Sprintf("must be at most %v", v.value)
 }
 
-func (v validatorMax[T]) Evaluate(val T) bool {
-	return val <= v.value
+func (v validatorMax[T]) Evaluate(val T) error {
+	if val <= v.value {
+		return nil
+	}
+	return fmt.Errorf("value %v is not at most %v", val, v.value)
 }
 
 func Max[T number](max T) Option[T] {

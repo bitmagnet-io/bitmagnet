@@ -32,6 +32,7 @@ func Permissions() []rbac.Permission {
 				rbac.NewPermission(role, rbac.NewObjectAction(Namespace, "self", "query")),
 				rbac.NewPermission(role, rbac.NewObjectAction(Namespace, "health", "query")),
 				rbac.NewPermission(role, rbac.NewObjectAction(Namespace, "version", "query")),
+				rbac.NewPermission(role, rbac.NewObjectAction(Namespace, "index", "query")),
 			}
 		})...)
 }

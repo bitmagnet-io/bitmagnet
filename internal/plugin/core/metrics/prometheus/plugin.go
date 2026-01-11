@@ -4,10 +4,10 @@ import (
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
-	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	plugin_metrics "github.com/bitmagnet-io/bitmagnet/internal/plugin/core/metrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/telemetry/httpserver"
+	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"github.com/gin-gonic/gin"
 	sink "github.com/hashicorp/go-metrics/prometheus"
 	"github.com/prometheus/client_golang/prometheus"

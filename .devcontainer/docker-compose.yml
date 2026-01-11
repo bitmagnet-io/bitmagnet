@@ -1,28 +1,30 @@
 services:
-
   bitmagnet-dev:
     container_name: bitmagnet-dev
     build:
       context: ../
-      dockerfile: Dockerfile_dev
+      dockerfile: Dockerfile
+      target: dev
     volumes:
-#      - bitmagnet-nix-store:/nix/store
-      - ../:/home/bitmagnet/code
+      - ../:/home/bitmagnet/code:z
       - bitmagnet-cache:/home/bitmagnet/.cache
       - bitmagnet-gocache:/home/bitmagnet/go/pkg/mod
-      - ./.zshrc:/home/bitmagnet/.zshrc
+      - ./.zshrc:/home/bitmagnet/.zshrc:z
     environment:
-      CORE_DATABASE_POSTGRES_PASSWORD: postgres
-      CORE_DATABASE_POSTGRES_HOST: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: postgres
+      # insecure secret for development only:
+      AUTH_JWT_SECRET: changeme
     ports:
       - 3333:3333
       - 3334:3334
+      # - 4200:4200
 
   postgres:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     container_name: bitmagnet-postgres
     volumes:
-      - bitmagnet-postgres:/var/lib/postgresql/data
+      - bitmagnet-postgres:/var/lib/postgresql/18/docker
     ports:
       - "5432:5432"
     restart: unless-stopped
@@ -38,8 +40,52 @@ services:
       start_period: 20s
       interval: 10s
 
+  opensearch:
+    image: opensearchproject/opensearch:latest
+    container_name: bitmagnet-opensearch
+    environment:
+      - cluster.name=bitmagnet
+      - node.name=bitmagnet-node1
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "DISABLE_INSTALL_DEMO_CONFIG=true"
+      - "DISABLE_SECURITY_PLUGIN=true"
+      - "OPENSEARCH_INITIAL_ADMIN_PASSWORD=admin"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - bitmagnet-opensearch-data1:/usr/share/opensearch/data
+    ports:
+      - 9200:9200
+      - 9600:9600
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:latest
+    container_name: bitmagnet-opensearch-dashboards
+    volumes:
+      - ./opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
+    ports:
+      - 5601:5601
+    expose:
+      - "5601"
+    environment:
+      OPENSEARCH_HOSTS: '["http://bitmagnet-opensearch:9200"]'
+      DISABLE_SECURITY_PLUGIN: "true"
+      SERVER_HOST: 0.0.0.0
+      OPENSEARCH_SSL_VERIFICATIONMODE: none
+      OPENSEARCH_SSL_VERIFICATION_MODE: none
+      DISABLE_SECURITY_DASHBOARDS_PLUGIN: true
+    depends_on:
+      - opensearch
+
 volumes:
-  bitmagnet-nix-store:
   bitmagnet-cache:
   bitmagnet-gocache:
   bitmagnet-postgres:
+  bitmagnet-opensearch-data1:

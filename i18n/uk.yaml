@@ -1,336 +1,369 @@
-core.auth:
-    description: description for plugin core.auth
-    other: ""
-core.auth.jwt.duration:
-    description: 'description for config: core.auth.jwt.duration'
-    other: ""
-core.auth.jwt.secret:
-    description: 'description for config: core.auth.jwt.secret'
-    other: ""
-core.auth.password_policy.max_length:
-    description: 'description for config: core.auth.password_policy.max_length'
-    other: ""
-core.auth.password_policy.min_digit:
-    description: 'description for config: core.auth.password_policy.min_digit'
-    other: ""
-core.auth.password_policy.min_length:
-    description: 'description for config: core.auth.password_policy.min_length'
-    other: ""
-core.auth.password_policy.min_lower:
-    description: 'description for config: core.auth.password_policy.min_lower'
-    other: ""
-core.auth.password_policy.min_special:
-    description: 'description for config: core.auth.password_policy.min_special'
-    other: ""
-core.auth.password_policy.min_upper:
-    description: 'description for config: core.auth.password_policy.min_upper'
-    other: ""
-core.auth.password_policy.special_chars:
-    description: 'description for config: core.auth.password_policy.special_chars'
-    other: ""
-core.auth.rbac.anonymous_access:
-    description: 'description for config: core.auth.rbac.anonymous_access'
-    other: ""
-core.auth.rbac.cache_ttl:
-    description: 'description for config: core.auth.rbac.cache_ttl'
-    other: ""
-core.auth.user.account_disabled:
-    description: 'message for error: core.auth.user.account_disabled'
-    other: ""
-core.auth.user.credentials_invalid:
-    description: 'message for error: core.auth.user.credentials_invalid'
-    other: ""
-core.auth.user.email_invalid:
-    description: 'message for error: core.auth.user.email_invalid'
-    other: ""
-core.auth.user.email_missing:
-    description: 'message for error: core.auth.user.email_missing'
-    other: ""
-core.auth.user.email_required:
-    description: 'description for config: core.auth.user.email_required'
-    other: ""
-core.auth.user.email_verification:
-    description: 'description for config: core.auth.user.email_verification'
-    other: ""
-core.auth.user.invitation_claimed:
-    description: 'message for error: core.auth.user.invitation_claimed'
-    other: ""
-core.auth.user.invitation_code_missing:
-    description: 'message for error: core.auth.user.invitation_code_missing'
-    other: ""
-core.auth.user.invitation_expired:
-    description: 'message for error: core.auth.user.invitation_expired'
-    other: ""
-core.auth.user.invitation_not_found:
-    description: 'message for error: core.auth.user.invitation_not_found'
-    other: ""
-core.auth.user.invitation_required:
-    description: 'description for config: core.auth.user.invitation_required'
-    other: ""
-core.auth.user.password_policy_violation:
-    description: 'message for error: core.auth.user.password_policy_violation'
-    other: ""
-core.auth.user.user_already_exists:
-    description: 'message for error: core.auth.user.user_already_exists'
-    other: ""
-core.config:
-    description: description for plugin core.config
-    other: Надає функціональність конфігурації
-core.config.plugin_activation:
-    description: description for plugin activation param
-    other: ""
-core.database.gorm.cache:
-    description: description for plugin core.database.gorm.cache
-    other: Надає кешування результатів запитів Postgres
-core.database.gorm.cache.activation:
-    description: 'description for config: core.database.gorm.cache.activation'
-    other: ""
-core.database.gorm.cache.max_items:
-    description: 'description for config: core.database.gorm.cache.max_items'
-    other: Максимальна кількість елементів для кешування
-core.database.gorm.cache.ttl:
-    description: 'description for config: core.database.gorm.cache.ttl'
-    other: TTL для кешу
-core.database.info_hash_blocker:
-    description: description for plugin core.database.info_hash_blocker
-    other: Підтримує стабільний фільтр Блума інформаційних хешів, які були видалені та заблоковані, запобігаючи їх повторному скануванню
-core.database.migrator:
-    description: description for plugin core.database.migrator
-    other: ""
-core.database.persister:
-    description: description for plugin core.database.persister
-    other: ""
-core.database.persister.max_size:
-    description: 'description for config: core.database.persister.max_size'
-    other: Максимальний розмір буфера
-core.database.persister.max_wait:
-    description: 'description for config: core.database.persister.max_wait'
-    other: Максимальний час буферизації елементів перед очищенням
-core.database.postgres:
-    description: description for plugin core.database.postgres
-    other: Ініціює та керує підключенням до бази даних Postgres
-core.database.postgres.database:
-    description: 'description for config: core.database.postgres.database'
-    other: Ім'я бази даних Postgres
-core.database.postgres.dsn:
-    description: 'description for config: core.database.postgres.dsn'
-    other: Ім'я джерела даних Postgres (якщо вказано, всі інші параметри для цього плагіну ігноруються)
-core.database.postgres.host:
-    description: 'description for config: core.database.postgres.host'
-    other: Хост Postgres
-core.database.postgres.password:
-    description: 'description for config: core.database.postgres.password'
-    other: Пароль Postgres
-core.database.postgres.port:
-    description: 'description for config: core.database.postgres.port'
-    other: Номер порту Postgres
-core.database.postgres.user:
-    description: 'description for config: core.database.postgres.user'
-    other: Ім'я користувача Postgres
-core.database.search:
-    description: description for plugin core.database.search
-    other: Надає функціональність пошуку через базу даних Postgres
-core.dht.crawler:
-    description: description for plugin core.dht.crawler
-    other: Сканує DHT у пошуках торрентів
-core.dht.crawler.activation:
-    description: 'description for config: core.dht.crawler.activation'
-    other: ""
-core.dht.crawler.autostart:
-    description: 'description for config: core.dht.crawler.autostart'
-    other: Автоматично запускати воркер
-core.dht.crawler.bootstrap_nodes:
-    description: 'description for config: core.dht.crawler.bootstrap_nodes'
-    other: Список адрес вузлів для завантаження DHT-краулера
-core.dht.crawler.rescrape_threshold:
-    description: 'description for config: core.dht.crawler.rescrape_threshold'
-    other: Мінімальний інтервал перед повторним запитом кількості сідерів та лічерів з DHT
-core.dht.crawler.reseed_bootstrap_nodes_interval:
-    description: 'description for config: core.dht.crawler.reseed_bootstrap_nodes_interval'
-    other: Інтервал між пересівами вузлів завантаження
-core.dht.crawler.save_files_threshold:
-    description: 'description for config: core.dht.crawler.save_files_threshold'
-    other: Максимальний ліміт кількості файлів, що зберігаються DHT-краулером з кожним торентом
-core.dht.crawler.save_pieces:
-    description: 'description for config: core.dht.crawler.save_pieces'
-    other: Зберігати частини торента з кожним торентом (використовує багато дискового простору)
-core.dht.server:
-    description: description for plugin core.dht.server
-    other: Запускає вузол DHT-сервера
-core.dht.server.activation:
-    description: 'description for config: core.dht.server.activation'
-    other: ""
-core.dht.server.query_timeout:
-    description: 'description for config: core.dht.server.query_timeout'
-    other: Таймаут запиту
-core.dht.socket:
-    description: description for plugin core.dht.socket
-    other: Запускає UDP-сокет для DHT-сервера
-core.dht.socket.activation:
-    description: 'description for config: core.dht.socket.activation'
-    other: ""
-core.dht.socket.adapter:
-    description: 'description for config: core.dht.socket.adapter'
-    other: Ім'я адаптера сокета
-core.dht.socket.port:
-    description: 'description for config: core.dht.socket.port'
-    other: Номер порту сокета
-core.health:
-    description: description for plugin core.health
-    other: Надає функціональність перевірки працездатності
-core.http_server:
-    description: description for plugin core.http_server
-    other: Запускає HTTP-сервер
-core.http_server.activation:
-    description: 'description for config: core.http_server.activation'
-    other: ""
-core.http_server.cors:
-    description: description for plugin core.http_server.cors
-    other: Надає CORS middleware для HTTP-сервера
-core.http_server.cors.allowed_origins:
-    description: 'description for config: core.http_server.cors.allowed_origins'
-    other: Дозволені джерела CORS
-core.http_server.docs:
-    description: description for plugin core.http_server.docs
-    other: Запускає екземпляр сайту документації на ендпоінті /docs
-core.http_server.docs.activation:
-    description: 'description for config: core.http_server.docs.activation'
-    other: ""
-core.http_server.graphql:
-    description: description for plugin core.http_server.graphql
-    other: Запускає сервер GraphQL API
-core.http_server.graphql.activation:
-    description: 'description for config: core.http_server.graphql.activation'
-    other: ""
-core.http_server.graphql.unauthorized:
-    description: 'message for error: core.http_server.graphql.unauthorized'
-    other: ""
-core.http_server.local_address:
-    description: 'description for config: core.http_server.local_address'
-    other: Локальна адреса для прослуховування
-core.http_server.logging:
-    description: description for plugin core.http_server.logging
-    other: Надає логування для HTTP-сервера
-core.http_server.webui:
-    description: description for plugin core.http_server.webui
-    other: Запускає веб-інтерфейс користувача на ендпоінті /webui
-core.http_server.webui.activation:
-    description: 'description for config: core.http_server.webui.activation'
-    other: ""
-core.i18n:
-    description: description for plugin core.i18n
-    other: Надає переклади для бекенд сервісів
-core.importer:
-    description: description for plugin core.importer
-    other: Запускає засіб імпорту на ендпоінті /import
-core.importer.activation:
-    description: 'description for config: core.importer.activation'
-    other: ""
-core.logging:
-    description: description for plugin core.logging
-    other: Надає сервіси логування
-core.logging.console:
-    description: description for plugin core.logging.console
-    other: Виводить логи з форматуванням консолі
-core.logging.console.activation:
-    description: 'description for config: core.logging.console.activation'
-    other: ""
-core.logging.file_rotator:
-    description: description for plugin core.logging.file_rotator
-    other: ""
-core.logging.file_rotator.activation:
-    description: 'description for config: core.logging.file_rotator.activation'
-    other: ""
-core.logging.file_rotator.base_name:
-    description: 'description for config: core.logging.file_rotator.base_name'
-    other: ""
-core.logging.file_rotator.buffer_size:
-    description: 'description for config: core.logging.file_rotator.buffer_size'
-    other: ""
-core.logging.file_rotator.level:
-    description: 'description for config: core.logging.file_rotator.level'
-    other: ""
-core.logging.file_rotator.max_age:
-    description: 'description for config: core.logging.file_rotator.max_age'
-    other: ""
-core.logging.file_rotator.max_backups:
-    description: 'description for config: core.logging.file_rotator.max_backups'
-    other: ""
-core.logging.file_rotator.max_size:
-    description: 'description for config: core.logging.file_rotator.max_size'
-    other: ""
-core.logging.file_rotator.sub_path:
-    description: 'description for config: core.logging.file_rotator.sub_path'
-    other: ""
-core.logging.json:
-    description: description for plugin core.logging.json
-    other: ""
-core.logging.json.activation:
-    description: 'description for config: core.logging.json.activation'
-    other: ""
-core.logging.level:
-    description: 'description for config: core.logging.level'
-    other: Рівень логування
-core.meta_info:
-    description: description for plugin core.meta_info
-    other: Надає сервіси для завантаження мета-інформації торрентів з пірів
-core.meta_info.dial_timeout:
-    description: 'description for config: core.meta_info.dial_timeout'
-    other: Таймаут підключення
-core.meta_info.max_concurrency:
-    description: 'description for config: core.meta_info.max_concurrency'
-    other: Максимальна конкурентність запитів
-core.meta_info.request_timeout:
-    description: 'description for config: core.meta_info.request_timeout'
-    other: Таймаут запиту
-core.metrics:
-    description: description for plugin core.metrics
-    other: Надає метрики
-core.metrics.prometheus:
-    description: description for plugin core.metrics.prometheus
-    other: ""
-core.metrics.prometheus.activation:
-    description: 'description for config: core.metrics.prometheus.activation'
-    other: ""
-core.pipeline.batcher:
-    description: description for plugin core.pipeline.batcher
-    other: ""
-core.pipeline.classifier:
-    description: description for plugin core.pipeline.classifier
-    other: Надає сервіс класифікації торрентів
-core.pipeline.classifier.concurrency:
-    description: 'description for config: core.pipeline.classifier.concurrency'
-    other: Максимальна кількість класифікацій для паралельного виконання
-core.pipeline.classifier.delete_xxx:
-    description: 'description for config: core.pipeline.classifier.delete_xxx'
-    other: Булевий прапор, що вказує на те, що XXX контент повинен бути видалений класифікатором
-core.pipeline.classifier.extensions:
-    description: 'description for config: core.pipeline.classifier.extensions'
-    other: Карта типів файлів до пов'язаних з ними розширень файлів
-core.pipeline.classifier.flags:
-    description: 'description for config: core.pipeline.classifier.flags'
-    other: Карта ключів прапорів до значень прапорів для налаштування робочих процесів класифікатора
-core.pipeline.classifier.keywords:
-    description: 'description for config: core.pipeline.classifier.keywords'
-    other: Карта імен категорій до ключових слів, пов'язаних з різними типами торентів
-core.pipeline.classifier.workflow:
-    description: 'description for config: core.pipeline.classifier.workflow'
-    other: Робочий процес класифікатора за замовчуванням
-core.pipeline.processor:
-    description: description for plugin core.pipeline.processor
-    other: Надає сервіс процесора, який класифікує та індексує торренти
-core.queue:
-    description: description for plugin core.queue
-    other: Запускає воркер завдань черги
-core.queue.autostart:
-    description: 'description for config: core.queue.autostart'
-    other: ""
-core.torznab:
-    description: description for plugin core.torznab
-    other: Запускає сервер Torznab API на ендпоінті /torznab
-core.torznab.activation:
-    description: 'description for config: core.torznab.activation'
-    other: ""
-core.worker:
-    description: description for plugin core.worker
-    other: Керує воркерами
+auth:
+  description: description for plugin auth
+  other: ""
+auth.anonymous_access:
+  description: "description for config: auth.anonymous_access"
+  other: ""
+auth.email_required:
+  description: "description for config: auth.email_required"
+  other: ""
+auth.email_verification:
+  description: "description for config: auth.email_verification"
+  other: ""
+auth.invitation_required:
+  description: "description for config: auth.invitation_required"
+  other: ""
+auth.jwt_duration:
+  description: "description for config: auth.jwt_duration"
+  other: ""
+auth.jwt_secret:
+  description: "description for config: auth.jwt_secret"
+  other: ""
+auth.login_request_burst:
+  description: "description for config: auth.login_request_burst"
+  other: ""
+auth.login_requests_per_minute:
+  description: "description for config: auth.login_requests_per_minute"
+  other: ""
+auth.password_hashing_cost:
+  description: "description for config: auth.password_hashing_cost"
+  other: ""
+auth.password_min_entropy:
+  description: "description for config: auth.password_min_entropy"
+  other: ""
+auth.rbac_cache_ttl:
+  description: "description for config: auth.rbac_cache_ttl"
+  other: ""
+auth.user.account_disabled:
+  description: "message for error: auth.user.account_disabled"
+  other: ""
+auth.user.credentials_invalid:
+  description: "message for error: auth.user.credentials_invalid"
+  other: ""
+auth.user.email_invalid:
+  description: "message for error: auth.user.email_invalid"
+  other: ""
+auth.user.email_missing:
+  description: "message for error: auth.user.email_missing"
+  other: ""
+auth.user.invitation_claimed:
+  description: "message for error: auth.user.invitation_claimed"
+  other: ""
+auth.user.invitation_code_missing:
+  description: "message for error: auth.user.invitation_code_missing"
+  other: ""
+auth.user.invitation_expired:
+  description: "message for error: auth.user.invitation_expired"
+  other: ""
+auth.user.invitation_not_found:
+  description: "message for error: auth.user.invitation_not_found"
+  other: ""
+auth.user.password_insufficient_entropy:
+  description: "message for error: auth.user.password_insufficient_entropy"
+  other: ""
+auth.user.user_already_exists:
+  description: "message for error: auth.user.user_already_exists"
+  other: ""
+auth.user.username_invalid:
+  description: "message for error: auth.user.username_invalid"
+  other: ""
+config:
+  description: description for plugin config
+  other: Надає функціональність конфігурації
+config.plugin_activation:
+  description: description for plugin activation param
+  other: ""
+database.gorm.cache:
+  description: description for plugin database.gorm.cache
+  other: Надає кешування результатів запитів Postgres
+database.gorm.cache.activation:
+  description: "description for config: database.gorm.cache.activation"
+  other: ""
+database.gorm.cache.max_items:
+  description: "description for config: database.gorm.cache.max_items"
+  other: Максимальна кількість елементів для кешування
+database.gorm.cache.ttl:
+  description: "description for config: database.gorm.cache.ttl"
+  other: TTL для кешу
+database.info_hash_blocker:
+  description: description for plugin database.info_hash_blocker
+  other: Підтримує стабільний фільтр Блума інформаційних хешів, які були видалені та заблоковані, запобігаючи їх повторному скануванню
+database.migrator:
+  description: description for plugin database.migrator
+  other: ""
+database.persister:
+  description: description for plugin database.persister
+  other: ""
+database.persister.max_size:
+  description: "description for config: database.persister.max_size"
+  other: Максимальний розмір буфера
+database.persister.max_wait:
+  description: "description for config: database.persister.max_wait"
+  other: Максимальний час буферизації елементів перед очищенням
+database.postgres:
+  description: description for plugin database.postgres
+  other: Ініціює та керує підключенням до бази даних Postgres
+database.postgres.database:
+  description: "description for config: database.postgres.database"
+  other: Ім'я бази даних Postgres
+database.postgres.dsn:
+  description: "description for config: database.postgres.dsn"
+  other: Ім'я джерела даних Postgres (якщо вказано, всі інші параметри для цього плагіну ігноруються)
+database.postgres.host:
+  description: "description for config: database.postgres.host"
+  other: Хост Postgres
+database.postgres.password:
+  description: "description for config: database.postgres.password"
+  other: Пароль Postgres
+database.postgres.port:
+  description: "description for config: database.postgres.port"
+  other: Номер порту Postgres
+database.postgres.user:
+  description: "description for config: database.postgres.user"
+  other: Ім'я користувача Postgres
+dht.crawler:
+  description: description for plugin dht.crawler
+  other: Сканує DHT у пошуках торрентів
+dht.crawler.activation:
+  description: "description for config: dht.crawler.activation"
+  other: ""
+dht.crawler.autostart:
+  description: "description for config: dht.crawler.autostart"
+  other: Автоматично запускати воркер
+dht.crawler.bootstrap_nodes:
+  description: "description for config: dht.crawler.bootstrap_nodes"
+  other: Список адрес вузлів для завантаження DHT-краулера
+dht.crawler.rescrape_threshold:
+  description: "description for config: dht.crawler.rescrape_threshold"
+  other: Мінімальний інтервал перед повторним запитом кількості сідерів та лічерів з DHT
+dht.crawler.reseed_bootstrap_nodes_interval:
+  description: "description for config: dht.crawler.reseed_bootstrap_nodes_interval"
+  other: Інтервал між пересівами вузлів завантаження
+dht.crawler.save_files_threshold:
+  description: "description for config: dht.crawler.save_files_threshold"
+  other: Максимальний ліміт кількості файлів, що зберігаються DHT-краулером з кожним торентом
+dht.crawler.save_pieces:
+  description: "description for config: dht.crawler.save_pieces"
+  other: Зберігати частини торента з кожним торентом (використовує багато дискового простору)
+dht.server:
+  description: description for plugin dht.server
+  other: Запускає вузол DHT-сервера
+dht.server.activation:
+  description: "description for config: dht.server.activation"
+  other: ""
+dht.server.query_timeout:
+  description: "description for config: dht.server.query_timeout"
+  other: Таймаут запиту
+dht.socket:
+  description: description for plugin dht.socket
+  other: Запускає UDP-сокет для DHT-сервера
+dht.socket.activation:
+  description: "description for config: dht.socket.activation"
+  other: ""
+dht.socket.adapter:
+  description: "description for config: dht.socket.adapter"
+  other: Ім'я адаптера сокета
+dht.socket.port:
+  description: "description for config: dht.socket.port"
+  other: Номер порту сокета
+health:
+  description: description for plugin health
+  other: Надає функціональність перевірки працездатності
+http_server:
+  description: description for plugin http_server
+  other: Запускає HTTP-сервер
+http_server.activation:
+  description: "description for config: http_server.activation"
+  other: ""
+http_server.cors:
+  description: description for plugin http_server.cors
+  other: Надає CORS middleware для HTTP-сервера
+http_server.cors.allowed_origins:
+  description: "description for config: http_server.cors.allowed_origins"
+  other: Дозволені джерела CORS
+http_server.docs:
+  description: description for plugin http_server.docs
+  other: Запускає екземпляр сайту документації на ендпоінті /docs
+http_server.docs.activation:
+  description: "description for config: http_server.docs.activation"
+  other: ""
+http_server.graphql:
+  description: description for plugin http_server.graphql
+  other: Запускає сервер GraphQL API
+http_server.graphql.activation:
+  description: "description for config: http_server.graphql.activation"
+  other: ""
+http_server.graphql.unauthorized:
+  description: "message for error: http_server.graphql.unauthorized"
+  other: ""
+http_server.local_address:
+  description: "description for config: http_server.local_address"
+  other: Локальна адреса для прослуховування
+http_server.logging:
+  description: description for plugin http_server.logging
+  other: Надає логування для HTTP-сервера
+http_server.webui:
+  description: description for plugin http_server.webui
+  other: Запускає веб-інтерфейс користувача на ендпоінті /webui
+http_server.webui.activation:
+  description: "description for config: http_server.webui.activation"
+  other: ""
+i18n:
+  description: description for plugin i18n
+  other: Надає переклади для бекенд сервісів
+importer:
+  description: description for plugin importer
+  other: Запускає засіб імпорту на ендпоінті /import
+importer.activation:
+  description: "description for config: importer.activation"
+  other: ""
+logging:
+  description: description for plugin logging
+  other: Надає сервіси логування
+logging.console:
+  description: description for plugin logging.console
+  other: Виводить логи з форматуванням консолі
+logging.console.activation:
+  description: "description for config: logging.console.activation"
+  other: ""
+logging.file_rotator:
+  description: description for plugin logging.file_rotator
+  other: ""
+logging.file_rotator.activation:
+  description: "description for config: logging.file_rotator.activation"
+  other: ""
+logging.file_rotator.base_name:
+  description: "description for config: logging.file_rotator.base_name"
+  other: ""
+logging.file_rotator.buffer_size:
+  description: "description for config: logging.file_rotator.buffer_size"
+  other: ""
+logging.file_rotator.level:
+  description: "description for config: logging.file_rotator.level"
+  other: ""
+logging.file_rotator.max_age:
+  description: "description for config: logging.file_rotator.max_age"
+  other: ""
+logging.file_rotator.max_backups:
+  description: "description for config: logging.file_rotator.max_backups"
+  other: ""
+logging.file_rotator.max_size:
+  description: "description for config: logging.file_rotator.max_size"
+  other: ""
+logging.file_rotator.sub_path:
+  description: "description for config: logging.file_rotator.sub_path"
+  other: ""
+logging.json:
+  description: description for plugin logging.json
+  other: ""
+logging.json.activation:
+  description: "description for config: logging.json.activation"
+  other: ""
+logging.level:
+  description: "description for config: logging.level"
+  other: Рівень логування
+meta_info:
+  description: description for plugin meta_info
+  other: Надає сервіси для завантаження мета-інформації торрентів з пірів
+meta_info.dial_timeout:
+  description: "description for config: meta_info.dial_timeout"
+  other: Таймаут підключення
+meta_info.max_concurrency:
+  description: "description for config: meta_info.max_concurrency"
+  other: Максимальна конкурентність запитів
+meta_info.request_timeout:
+  description: "description for config: meta_info.request_timeout"
+  other: Таймаут запиту
+metrics:
+  description: description for plugin metrics
+  other: Надає метрики
+metrics.prometheus:
+  description: description for plugin metrics.prometheus
+  other: ""
+metrics.prometheus.activation:
+  description: "description for config: metrics.prometheus.activation"
+  other: ""
+pipeline.batcher:
+  description: description for plugin pipeline.batcher
+  other: ""
+pipeline.classifier:
+  description: description for plugin pipeline.classifier
+  other: Надає сервіс класифікації торрентів
+pipeline.classifier.concurrency:
+  description: "description for config: pipeline.classifier.concurrency"
+  other: Максимальна кількість класифікацій для паралельного виконання
+pipeline.classifier.delete_xxx:
+  description: "description for config: pipeline.classifier.delete_xxx"
+  other: Булевий прапор, що вказує на те, що XXX контент повинен бути видалений класифікатором
+pipeline.classifier.extensions:
+  description: "description for config: pipeline.classifier.extensions"
+  other: Карта типів файлів до пов'язаних з ними розширень файлів
+pipeline.classifier.flags:
+  description: "description for config: pipeline.classifier.flags"
+  other: Карта ключів прапорів до значень прапорів для налаштування робочих процесів класифікатора
+pipeline.classifier.keywords:
+  description: "description for config: pipeline.classifier.keywords"
+  other: Карта імен категорій до ключових слів, пов'язаних з різними типами торентів
+pipeline.classifier.workflow:
+  description: "description for config: pipeline.classifier.workflow"
+  other: Робочий процес класифікатора за замовчуванням
+pipeline.processor:
+  description: description for plugin pipeline.processor
+  other: Надає сервіс процесора, який класифікує та індексує торренти
+queue:
+  description: description for plugin queue
+  other: Запускає воркер завдань черги
+queue.autostart:
+  description: "description for config: queue.autostart"
+  other: ""
+search:
+  description: description for plugin search
+  other: ""
+search.facet.content_genre:
+  description: "label for search facet: content_genre"
+  other: ""
+search.facet.content_type:
+  description: "label for search facet: content_type"
+  other: ""
+search.facet.file_type:
+  description: "label for search facet: file_type"
+  other: ""
+search.facet.language:
+  description: "label for search facet: language"
+  other: ""
+search.facet.release_year:
+  description: "label for search facet: release_year"
+  other: ""
+search.facet.tag:
+  description: "label for search facet: tag"
+  other: ""
+search.facet.torrent_source:
+  description: "label for search facet: torrent_source"
+  other: ""
+search.facet.video_3d:
+  description: "label for search facet: video_3d"
+  other: ""
+search.facet.video_codec:
+  description: "label for search facet: video_codec"
+  other: ""
+search.facet.video_modifier:
+  description: "label for search facet: video_modifier"
+  other: ""
+search.facet.video_resolution:
+  description: "label for search facet: video_resolution"
+  other: ""
+search.facet.video_source:
+  description: "label for search facet: video_source"
+  other: ""
+tmdb.activation:
+  description: "description for config: tmdb.activation"
+  other: ""
+torznab:
+  description: description for plugin torznab
+  other: Запускає сервер Torznab API на ендпоінті /torznab
+torznab.activation:
+  description: "description for config: torznab.activation"
+  other: ""
+worker:
+  description: description for plugin worker
+  other: Керує воркерами

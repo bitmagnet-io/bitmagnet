@@ -321,6 +321,12 @@ export type HealthStatus =
   | 'unknown'
   | 'up';
 
+export type IndexQuery = {
+  __typename?: 'IndexQuery';
+  default: Scalars['Ref']['output'];
+  infos: Array<SearchIndexInfo>;
+};
+
 export type Invitation = {
   __typename?: 'Invitation';
   claimedBy?: Maybe<User>;
@@ -523,6 +529,7 @@ export type Query = {
   auth: AuthQuery;
   config: ConfigQuery;
   health: HealthQuery;
+  index: IndexQuery;
   plugin: PluginQuery;
   queue: QueueQuery;
   self: SelfQuery;
@@ -708,6 +715,13 @@ export type Role = {
   permissions: Array<Permission>;
 };
 
+export type SearchIndexInfo = {
+  __typename?: 'SearchIndexInfo';
+  name: Scalars['String']['output'];
+  ref: Scalars['Ref']['output'];
+  resultTypes: Array<SearchResultType>;
+};
+
 export type SearchInput = {
   aggregationBudget?: InputMaybe<Scalars['Float']['input']>;
   cached?: InputMaybe<Scalars['Boolean']['input']>;
@@ -715,6 +729,7 @@ export type SearchInput = {
   facets?: InputMaybe<Array<FacetInput>>;
   /** hasNextPage if true, the search result will include the hasNextPage field, indicating if there are more results to fetch */
   hasNextPage?: InputMaybe<Scalars['Boolean']['input']>;
+  index?: InputMaybe<Scalars['Ref']['input']>;
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<Array<TorrentContentOrderByInput>>;
@@ -729,6 +744,12 @@ export type SearchResult = {
   totalCount?: Maybe<Scalars['Int']['output']>;
   totalCountIsEstimate: Scalars['Boolean']['output'];
 };
+
+export type SearchResultType =
+  | 'content'
+  | 'torrent'
+  | 'torrent_content'
+  | 'torrent_file';
 
 export type Season = {
   __typename?: 'Season';
@@ -1077,6 +1098,7 @@ export type Worker = {
   __typename?: 'Worker';
   dependsOn: Array<Scalars['Ref']['output']>;
   error?: Maybe<Scalars['String']['output']>;
+  label: Scalars['String']['output'];
   ref: Scalars['Ref']['output'];
   requiredBy: Array<Scalars['Ref']['output']>;
   state: WorkerState;
@@ -1151,6 +1173,8 @@ export type QueueJobsQueryResultFragment = { __typename?: 'QueueJobsQueryResult'
 
 export type RoleFragment = { __typename?: 'Role', name: string, core: boolean, permissions: Array<{ __typename?: 'Permission', core: boolean, subject: { __typename?: 'AuthSubject', type: AuthSubjectType, name: string }, objectAction: { __typename?: 'AuthObjectAction', namespace: string, object: string, action: string } }> };
 
+export type SearchIndexInfoFragment = { __typename?: 'SearchIndexInfo', ref: string, name: string, resultTypes: Array<SearchResultType> };
+
 export type SelfFragment = { __typename?: 'Self', user?: { __typename?: 'User', id: number, username: string, role: string, lastLoginAt?: string | null, createdAt: string, updatedAt: string } | null, apiKey?: { __typename?: 'APIKey', id: number, userId: number, name: string, expiresAt?: string | null, createdAt: string } | null, permissions: Array<{ __typename?: 'AuthObjectAction', namespace: string, object: string, action: string }> };
 
 export type TorrentFragment = { __typename?: 'Torrent', infoHash: string, name: string, size: number, filesStatus: FilesStatus, filesCount?: number | null, hasFilesInfo: boolean, singleFile?: boolean | null, fileType?: FileType | null, seeders?: number | null, leechers?: number | null, tagNames: Array<string>, magnetUri: string, createdAt: string, updatedAt: string, sources: Array<{ __typename?: 'TorrentSourceInfo', key: string, name: string }> };
@@ -1165,7 +1189,7 @@ export type TorrentFilesSearchResultFragment = { __typename?: 'TorrentFilesSearc
 
 export type UserFragment = { __typename?: 'User', id: number, username: string, role: string, lastLoginAt?: string | null, createdAt: string, updatedAt: string };
 
-export type WorkerFragment = { __typename?: 'Worker', ref: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> };
+export type WorkerFragment = { __typename?: 'Worker', ref: string, label: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> };
 
 export type ConfigDeleteMutationVariables = Exact<{
   ref: Scalars['Ref']['input'];
@@ -1283,21 +1307,21 @@ export type WorkersRestartMutationVariables = Exact<{
 }>;
 
 
-export type WorkersRestartMutation = { __typename?: 'Mutation', worker: { __typename?: 'WorkerMutation', restart: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', ref: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
+export type WorkersRestartMutation = { __typename?: 'Mutation', worker: { __typename?: 'WorkerMutation', restart: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', ref: string, label: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
 
 export type WorkersShutdownMutationVariables = Exact<{
   refs: Array<Scalars['Ref']['input']> | Scalars['Ref']['input'];
 }>;
 
 
-export type WorkersShutdownMutation = { __typename?: 'Mutation', worker: { __typename?: 'WorkerMutation', shutdown: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', ref: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
+export type WorkersShutdownMutation = { __typename?: 'Mutation', worker: { __typename?: 'WorkerMutation', shutdown: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', ref: string, label: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
 
 export type WorkersStartMutationVariables = Exact<{
   refs: Array<Scalars['Ref']['input']> | Scalars['Ref']['input'];
 }>;
 
 
-export type WorkersStartMutation = { __typename?: 'Mutation', worker: { __typename?: 'WorkerMutation', start: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', ref: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
+export type WorkersStartMutation = { __typename?: 'Mutation', worker: { __typename?: 'WorkerMutation', start: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', ref: string, label: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
 
 export type ApiKeysQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1323,6 +1347,11 @@ export type IdentityQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type IdentityQuery = { __typename?: 'Query', self: { __typename?: 'SelfQuery', identity: { __typename?: 'Self', user?: { __typename?: 'User', id: number, username: string, role: string, lastLoginAt?: string | null, createdAt: string, updatedAt: string } | null, apiKey?: { __typename?: 'APIKey', id: number, userId: number, name: string, expiresAt?: string | null, createdAt: string } | null, permissions: Array<{ __typename?: 'AuthObjectAction', namespace: string, object: string, action: string }> } } };
+
+export type IndexesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type IndexesQuery = { __typename?: 'Query', index: { __typename?: 'IndexQuery', default: string, infos: Array<{ __typename?: 'SearchIndexInfo', ref: string, name: string, resultTypes: Array<SearchResultType> }> } };
 
 export type InvitationsQueryVariables = Exact<{
   input?: InputMaybe<ListInvitationsInput>;
@@ -1405,7 +1434,7 @@ export type VersionQuery = { __typename?: 'Query', version: string };
 export type WorkersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type WorkersQuery = { __typename?: 'Query', worker: { __typename?: 'WorkerQuery', listAll: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', ref: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
+export type WorkersQuery = { __typename?: 'Query', worker: { __typename?: 'WorkerQuery', listAll: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', ref: string, label: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
 
 export const JsonSchemaTopLevelFragmentDoc = gql`
     fragment JSONSchemaTopLevel on JSONSchema {
@@ -1554,6 +1583,13 @@ export const RoleFragmentDoc = gql`
   }
 }
     ${PermissionFragmentDoc}`;
+export const SearchIndexInfoFragmentDoc = gql`
+    fragment SearchIndexInfo on SearchIndexInfo {
+  ref
+  name
+  resultTypes
+}
+    `;
 export const ApiKeyFragmentDoc = gql`
     fragment APIKey on APIKey {
   id
@@ -1745,6 +1781,7 @@ export const TorrentFilesSearchResultFragmentDoc = gql`
 export const WorkerFragmentDoc = gql`
     fragment Worker on Worker {
   ref
+  label
   state
   error
   requiredBy
@@ -2213,6 +2250,27 @@ export const IdentityDocument = gql`
   })
   export class IdentityGQL extends Apollo.Query<IdentityQuery, IdentityQueryVariables> {
     override document = IdentityDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const IndexesDocument = gql`
+    query Indexes {
+  index {
+    default
+    infos {
+      ...SearchIndexInfo
+    }
+  }
+}
+    ${SearchIndexInfoFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class IndexesGQL extends Apollo.Query<IndexesQuery, IndexesQueryVariables> {
+    override document = IndexesDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

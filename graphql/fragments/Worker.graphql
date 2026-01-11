@@ -1,5 +1,6 @@
 fragment Worker on Worker {
   ref
+  label
   state
   error
   requiredBy
