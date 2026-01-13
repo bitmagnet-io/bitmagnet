@@ -233,7 +233,7 @@ import { BreakpointsService } from "./breakpoints.service";
             margin-right: 10px;
           }
           mat-icon[data-mat-icon-name="magnet"] {
-            margin-top: -5px;
+            margin-top: 5px;
             overflow: visible;
           }
         }
