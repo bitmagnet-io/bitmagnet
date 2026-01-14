@@ -18,7 +18,7 @@ services:
     ports:
       - 3333:3333
       - 3334:3334
-      # - 4200:4200
+      - 4200:4200
 
   postgres:
     image: postgres:18-alpine
