@@ -1,0 +1,34 @@
+{
+  "name": "opensearch_fake2",
+  "description": "OpenSearch indexer and search adapter",
+  "version": "0.1.0",
+  "concurrency": 4,
+  "capabilities": {
+    "indexer": {
+      "name": "OpenSearch"
+    },
+    "search_adapter": {
+      "name": "OpenSearch"
+    }
+  },
+  "permissions": {
+    "http": {}
+  },
+  "config": {
+    "addresses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of OpenSearch node addresses",
+      "default": [
+        "http://localhost:9200"
+      ]
+    },
+    "index_prefix": {
+      "type": "string",
+      "description": "Prefix for OpenSearch indices",
+      "default": "bitmagnet-"
+    }
+  }
+}

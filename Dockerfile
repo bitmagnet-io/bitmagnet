@@ -23,6 +23,7 @@ RUN apk --update add \
   sudo \
   ruby \
   vim \
+  make \
   zsh \
   zsh-autosuggestions \
   zsh-history-substring-search \
