@@ -1,6 +1,8 @@
 package plugin
 
 import (
+	"fmt"
+
 	config_registry "github.com/bitmagnet-io/bitmagnet/internal/config/registry"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
 	"github.com/bitmagnet-io/bitmagnet/internal/indexer"
@@ -53,16 +55,20 @@ func (*Plugin) Commands() []plugin.Command {
 func (p *Plugin) FXOption() fx.Option {
 	type instance Instance
 
+	instanceTag := fmt.Sprintf(`name:"%v"`, p.Ref())
 	options := []fx.Option{
 		fx.Provide(
-			func(env env.Env, cfg resolver.Resolved) (instance, error) {
-				instance, err := p.NewInstance(env, cfg)
-				if err != nil {
-					return nil, err
-				}
+			fx.Annotate(
+				func(env env.Env, cfg resolver.Resolved) (instance, error) {
+					instance, err := p.NewInstance(env, cfg)
+					if err != nil {
+						return nil, err
+					}
 
-				return instance, nil
-			},
+					return instance, nil
+				},
+				fx.ResultTags(instanceTag),
+			),
 		),
 	}
 
@@ -73,21 +79,23 @@ func (p *Plugin) FXOption() fx.Option {
 					return indexer.NewProto(inst.Indexer())
 				},
 				fx.ResultTags(`group:"indexers"`),
+				fx.ParamTags(instanceTag),
 			),
 		))
 	}
 
-	if cap := p.manifest.Capabilities.SearchAdapter; cap != nil {
+	if caplty := p.manifest.Capabilities.SearchAdapter; caplty != nil {
 		options = append(options, fx.Provide(
 			fx.Annotate(
 				func(inst instance) multi.Index {
 					return multi.Index{
 						Ref:     p.ref,
-						Name:    cap.Name,
+						Name:    caplty.Name,
 						Adapter: proto.New(inst.SearchAdapter()),
 					}
 				},
 				fx.ResultTags(`group:"search_adapters"`),
+				fx.ParamTags(instanceTag),
 			),
 		))
 	}
