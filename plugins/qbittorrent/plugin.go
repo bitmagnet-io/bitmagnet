@@ -4,7 +4,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/bitmagnet-io/bitmagnet/proto/api"
 	"github.com/bitmagnet-io/bitmagnet/proto/host/configurator"
@@ -22,13 +21,7 @@ func init() {
 }
 
 func doInit(ctx context.Context) error {
-	rawConfig, err := configurator.NewService().GetConfig(ctx, nil)
-	if err != nil {
-		return err
-	}
-
-	var cfg config.Config
-	err = json.Unmarshal([]byte(rawConfig.Json), &cfg)
+	cfg, err := configurator.Resolve[config.Config](ctx)
 	if err != nil {
 		return err
 	}
