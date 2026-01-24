@@ -25,27 +25,27 @@ type (
 
 	File = afero.File
 
-	FSConfigProvider interface {
+	ConfigProvider interface {
 		FSConfig() FS
 	}
 
-	FSDataProvider interface {
+	DataProvider interface {
 		FSData() FS
 	}
 
-	FSCurrentProvider interface {
+	CurrentProvider interface {
 		FSCurrent() FS
 	}
 
-	FSRootProvider interface {
+	RootProvider interface {
 		FSRoot() FS
 	}
 
-	FSProvider interface {
-		FSConfigProvider
-		FSDataProvider
-		FSCurrentProvider
-		FSRootProvider
+	Provider interface {
+		ConfigProvider
+		DataProvider
+		CurrentProvider
+		RootProvider
 	}
 )
 
@@ -56,20 +56,20 @@ var (
 	nopFs = afero.NewReadOnlyFs(afero.NewMemMapFs())
 )
 
-type FSProviderNop struct{}
+type ProviderNop struct{}
 
-func (FSProviderNop) FSConfig() FS {
+func (ProviderNop) FSConfig() FS {
 	return afero.Afero{Fs: nopFs}
 }
 
-func (FSProviderNop) FSData() FS {
+func (ProviderNop) FSData() FS {
 	return afero.Afero{Fs: nopFs}
 }
 
-func (FSProviderNop) FSCurrent() FS {
+func (ProviderNop) FSCurrent() FS {
 	return afero.Afero{Fs: nopFs}
 }
 
-func (FSProviderNop) FSRoot() FS {
+func (ProviderNop) FSRoot() FS {
 	return afero.Afero{Fs: nopFs}
 }

@@ -15,7 +15,7 @@ func (orCondition) name() string {
 
 var orConditionSpec = json_spec.SingleKeyValue[[]any]{
 	Key: orName,
-	ValueSpec: json_spec.MustSucceed[[]any]{json_spec.List[any]{
+	ValueSpec: json_spec.MustSucceed[[]any]{Typed: json_spec.List[any]{
 		ItemSpec: json_spec.Generic[any]{
 			Schema: json_schema.MustNew(
 				json_schema.RefDefinition("condition"),
@@ -50,6 +50,7 @@ func (orCondition) compileCondition(ctx compilerContext) (condition, error) {
 				return true, nil
 			}
 		}
+
 		return false, nil
 	}}, nil
 }

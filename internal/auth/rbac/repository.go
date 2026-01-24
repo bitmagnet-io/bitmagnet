@@ -109,7 +109,6 @@ func (r *repository) PutRole(ctx context.Context, role Role, objectActions []Obj
 			Create(&model.Role{
 				Name: string(role),
 			})
-
 		if err != nil {
 			return err
 		}
@@ -122,7 +121,6 @@ func (r *repository) PutRole(ctx context.Context, role Role, objectActions []Obj
 			RolePermission.
 			Where(tx.RolePermission.RoleName.Eq(string(role))).
 			Delete()
-
 		if err != nil {
 			return err
 		}
@@ -137,7 +135,6 @@ func (r *repository) PutRole(ctx context.Context, role Role, objectActions []Obj
 					Action:    objAct.Action,
 				}
 			})...)
-
 		if err != nil {
 			return err
 		}
@@ -147,7 +144,6 @@ func (r *repository) PutRole(ctx context.Context, role Role, objectActions []Obj
 			Preload(tx.Role.Permissions).
 			Where(tx.Role.Name.Eq(string(role))).
 			First()
-
 		if err != nil {
 			return err
 		}
@@ -174,7 +170,11 @@ func (r *repository) DeleteRole(ctx context.Context, role Role) error {
 	return err
 }
 
-func (r *repository) DeleteRolePermissions(ctx context.Context, role Role, objectActions []ObjectAction) (RoleInfo, error) {
+func (r *repository) DeleteRolePermissions(
+	ctx context.Context,
+	role Role,
+	objectActions []ObjectAction,
+) (RoleInfo, error) {
 	var roleInfo RoleInfo
 
 	err := r.dao.DaoTransaction(func(tx *dao.Query) error {
@@ -184,15 +184,15 @@ func (r *repository) DeleteRolePermissions(ctx context.Context, role Role, objec
 					return scope.Where(dao.RolePermission.RoleName.Eq(string(role)))
 				},
 				func(scope gen.Dao) gen.Dao {
-					return scope.Or(slice.Map(objectActions, func(objAct ObjectAction) gen.Condition {
-						return dao.RolePermission.
-							Where(dao.RolePermission.Object.Eq(objAct.Namespace)).
-							Where(dao.RolePermission.Object.Eq(objAct.Object)).
-							Where(dao.RolePermission.Action.Eq(objAct.Action))
-					})...)
+					return scope.Or(
+						slice.Map(objectActions, func(objAct ObjectAction) gen.Condition {
+							return dao.RolePermission.
+								Where(dao.RolePermission.Object.Eq(objAct.Namespace)).
+								Where(dao.RolePermission.Object.Eq(objAct.Object)).
+								Where(dao.RolePermission.Action.Eq(objAct.Action))
+						})...)
 				},
 			).Delete()
-
 			if err != nil {
 				return err
 			}
@@ -203,7 +203,6 @@ func (r *repository) DeleteRolePermissions(ctx context.Context, role Role, objec
 			Preload(dao.Role.Permissions).
 			Where(dao.Role.Name.Eq(string(role))).
 			First()
-
 		if err != nil {
 			return err
 		}

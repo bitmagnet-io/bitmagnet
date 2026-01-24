@@ -137,6 +137,7 @@ func (j *persistJob) handleTorrentSources(ctx context.Context, tx *dao.Query) er
 	}
 
 	stats.Affected += int(result.RowsAffected)
+
 	for _, m := range torrentSourcesPtr {
 		if m.CreatedAt.Before(j.startTime) {
 			stats.Updated++
@@ -195,13 +196,17 @@ func (j *persistJob) handleTorrents(ctx context.Context, tx *dao.Query) error {
 	return nil
 }
 
-func (j *persistJob) handleTorrentPieces(ctx context.Context, tx *dao.Query, missingInfoHashes map[protocol.ID]struct{}) error {
+func (j *persistJob) handleTorrentPieces(
+	ctx context.Context,
+	tx *dao.Query,
+	missingInfoHashes map[protocol.ID]struct{},
+) error {
 	var stats TableStats
 
 	if torrentPieces := slice.Filter(
 		j.torrentPieces.Values(),
 		func(m model.TorrentPieces) bool {
-			if _, ok := missingInfoHashes[m.InfoHash]; ok || j.payload.deleteInfoHashes.Has(m.InfoHash) {
+			if _, ok := missingInfoHashes[m.InfoHash]; ok || j.deleteInfoHashes.Has(m.InfoHash) {
 				stats.Ignored++
 				return false
 			}
@@ -240,13 +245,17 @@ func (j *persistJob) handleTorrentPieces(ctx context.Context, tx *dao.Query, mis
 	return nil
 }
 
-func (j *persistJob) handleTorrentsTorrentSources(ctx context.Context, tx *dao.Query, missingInfoHashes map[protocol.ID]struct{}) error {
+func (j *persistJob) handleTorrentsTorrentSources(
+	ctx context.Context,
+	tx *dao.Query,
+	missingInfoHashes map[protocol.ID]struct{},
+) error {
 	var stats TableStats
 
 	if torrentsTorrentSources := slice.Filter(
 		j.torrentsTorrentSources.Values(),
 		func(m model.TorrentsTorrentSource) bool {
-			if _, ok := missingInfoHashes[m.InfoHash]; ok || j.payload.deleteInfoHashes.Has(m.InfoHash) {
+			if _, ok := missingInfoHashes[m.InfoHash]; ok || j.deleteInfoHashes.Has(m.InfoHash) {
 				stats.Ignored++
 				return false
 			}
@@ -259,7 +268,9 @@ func (j *persistJob) handleTorrentsTorrentSources(ctx context.Context, tx *dao.Q
 		result := tx.TorrentsTorrentSource.WithContext(ctx).
 			Clauses(
 				clause.Returning{
-					Columns: []clause.Column{{Name: string(tx.TorrentsTorrentSource.CreatedAt.ColumnName())}},
+					Columns: []clause.Column{
+						{Name: string(tx.TorrentsTorrentSource.CreatedAt.ColumnName())},
+					},
 				},
 				clause.OnConflict{
 					Columns: []clause.Column{
@@ -295,13 +306,17 @@ func (j *persistJob) handleTorrentsTorrentSources(ctx context.Context, tx *dao.Q
 	return nil
 }
 
-func (j *persistJob) handleTorrentFiles(ctx context.Context, tx *dao.Query, missingInfoHashes map[protocol.ID]struct{}) error {
+func (j *persistJob) handleTorrentFiles(
+	ctx context.Context,
+	tx *dao.Query,
+	missingInfoHashes map[protocol.ID]struct{},
+) error {
 	var stats TableStats
 
 	if torrentFiles := slice.Filter(
 		j.torrentFiles.Values(),
 		func(m model.TorrentFile) bool {
-			if _, ok := missingInfoHashes[m.InfoHash]; ok || j.payload.deleteInfoHashes.Has(m.InfoHash) {
+			if _, ok := missingInfoHashes[m.InfoHash]; ok || j.deleteInfoHashes.Has(m.InfoHash) {
 				stats.Ignored++
 				return false
 			}
@@ -377,7 +392,11 @@ func (j *persistJob) handleContent(ctx context.Context, tx *dao.Query) error {
 	return nil
 }
 
-func (j *persistJob) handleTorrentContent(ctx context.Context, tx *dao.Query, missingInfoHashes map[protocol.ID]struct{}) error {
+func (j *persistJob) handleTorrentContent(
+	ctx context.Context,
+	tx *dao.Query,
+	missingInfoHashes map[protocol.ID]struct{},
+) error {
 	var stats TableStats
 
 	if j.deleteTorrentContent.Len() > 0 {
@@ -400,7 +419,7 @@ func (j *persistJob) handleTorrentContent(ctx context.Context, tx *dao.Query, mi
 	if torrentContents := slice.Filter(
 		j.torrentContents.Values(),
 		func(m model.TorrentContent) bool {
-			if _, ok := missingInfoHashes[m.InfoHash]; ok || j.payload.deleteInfoHashes.Has(m.InfoHash) {
+			if _, ok := missingInfoHashes[m.InfoHash]; ok || j.deleteInfoHashes.Has(m.InfoHash) {
 				stats.Ignored++
 				return false
 			}
@@ -425,6 +444,7 @@ func (j *persistJob) handleTorrentContent(ctx context.Context, tx *dao.Query, mi
 		}
 
 		stats.Affected += int(result.RowsAffected)
+
 		for _, m := range torrentContentsPtr {
 			if m.CreatedAt.Before(j.startTime) {
 				stats.Updated++
@@ -439,7 +459,11 @@ func (j *persistJob) handleTorrentContent(ctx context.Context, tx *dao.Query, mi
 	return nil
 }
 
-func (j *persistJob) handleTorrentTags(ctx context.Context, tx *dao.Query, missingInfoHashes map[protocol.ID]struct{}) error {
+func (j *persistJob) handleTorrentTags(
+	ctx context.Context,
+	tx *dao.Query,
+	missingInfoHashes map[protocol.ID]struct{},
+) error {
 	var (
 		stats       TableStats
 		torrentTags []*model.TorrentTag
@@ -447,7 +471,7 @@ func (j *persistJob) handleTorrentTags(ctx context.Context, tx *dao.Query, missi
 
 	torrentTagsToDelete := maps.NewInsertMap[hashWithID, struct{}]()
 
-	for _, entry := range j.payload.torrentTags.Entries() {
+	for _, entry := range j.torrentTags.Entries() {
 		if _, ok := missingInfoHashes[entry.Key.hash]; ok {
 			if entry.Value {
 				stats.Ignored++
@@ -498,7 +522,6 @@ func (j *persistJob) handleTorrentTags(ctx context.Context, tx *dao.Query, missi
 			tx.TorrentTag.InfoHash.Eq(key.hash),
 			tx.TorrentTag.Name.Eq(key.id),
 		).Delete()
-
 		if err != nil {
 			return err
 		}

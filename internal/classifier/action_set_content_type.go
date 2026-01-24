@@ -33,6 +33,7 @@ func (setContentTypeAction) compile(ctx compilerContext) (action, error) {
 		func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result
 			cl.ContentType = contentType
+
 			return cl, nil
 		},
 	}, nil

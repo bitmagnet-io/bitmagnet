@@ -53,6 +53,8 @@ func (b builder) handle(ctx *gin.Context, i importer.Importer) {
 	}
 	addItem := func() error {
 		item := importer.Torrent{}
+
+		//nolint:musttag
 		if err := json.Unmarshal([]byte(string(currentLine)), &item); err != nil {
 			b.logger.Error("failed to add item", zap.Error(err))
 			ctx.Status(400)

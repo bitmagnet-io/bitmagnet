@@ -104,7 +104,6 @@ func (s *socketNet) Receive(data []byte) (int, netip.AddrPort, error) {
 	}
 
 	n, addr, err := conn.ReadFromUDP(data)
-
 	if err != nil {
 		s.mtx.RLock()
 		isShutdown := s.conn != conn

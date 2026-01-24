@@ -26,7 +26,7 @@ var tasksQueuedDesc = prometheus.NewDesc(
 	[]string{"queue", "status"}, nil,
 )
 
-func (qmc *queueMetricsCollector) Describe(ch chan<- *prometheus.Desc) {
+func (*queueMetricsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- tasksQueuedDesc
 }
 

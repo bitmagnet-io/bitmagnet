@@ -17,6 +17,7 @@ func ReadMemory(mem api.Memory, offset, size uint32) ([]byte, error) {
 	if !ok {
 		return nil, fmt.Errorf("Memory.Read(%d, %d) out of range", offset, size)
 	}
+
 	return buf, nil
 }
 
@@ -35,6 +36,7 @@ func WriteMemory(ctx context.Context, m api.Module, data []byte) (uint64, error)
 	if err != nil {
 		return 0, err
 	}
+
 	dataPtr := results[0]
 
 	// The pointer is a linear memory offset, which is where we write the name.

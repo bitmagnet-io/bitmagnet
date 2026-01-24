@@ -15,6 +15,6 @@ func (PermissionHTTP) jsonSchema() json_schema.JSONSchema {
 	)
 }
 
-func (p PermissionHTTP) build(b *instanceBuilder) {
+func (PermissionHTTP) build(b *instanceBuilder) {
 	b.instantiators = append(b.instantiators, http_client.Instantiator())
 }

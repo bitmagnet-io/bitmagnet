@@ -10,27 +10,27 @@ import (
 	"go.uber.org/zap"
 )
 
-func NewDevCommand() plugin.Command {
+func NewCommand() plugin.Command {
 	return func(appBuilder app.Builder) cmd.Command {
-		return &DevCommand{
-			App: cmd.NewApp[DevCommandDeps](appBuilder),
+		return &Command{
+			App: cmd.NewApp[CommandDeps](appBuilder),
 		}
 	}
 }
 
-type DevCommandDeps struct {
+type CommandDeps struct {
 	fx.In
 	DBProvider   database.RunnerProvider
 	I18nProvider i18n.Provider
 	Logger       *zap.Logger
 }
 
-type DevCommand struct {
-	cmd.Cmd `cmd:"doc=Development utilities"`
-	cmd.App[DevCommandDeps]
+type Command struct {
+	cmd.Cmd `cmd:"name=dev,doc=Development utilities"`
+	cmd.App[CommandDeps]
 }
 
-func (c *DevCommand) Subcommands() []cmd.Command {
+func (c *Command) Subcommands() []cmd.Command {
 	return []cmd.Command{
 		&GormGenCommand{
 			App: c.App,

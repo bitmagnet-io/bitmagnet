@@ -33,7 +33,9 @@ var (
 	)
 
 	ParamKeywords = param.MustNew(
-		param.Description[Keywords]("A map of category names to keywords associated with different types of torrents"),
+		param.Description[Keywords](
+			"A map of category names to keywords associated with different types of torrents",
+		),
 		param.Mapstructure[Keywords](),
 		param.JSONSchema[Keywords](schemaMapStringStrings),
 	)
@@ -50,7 +52,9 @@ var (
 	)
 
 	ParamDeleteXXX = param.MustNew(
-		param.Description[DeleteXXX]("A boolean flag indicating that XXX content should be deleted by the classifier"),
+		param.Description[DeleteXXX](
+			"A boolean flag indicating that XXX content should be deleted by the classifier",
+		),
 		param.Bool[DeleteXXX](),
 	)
 

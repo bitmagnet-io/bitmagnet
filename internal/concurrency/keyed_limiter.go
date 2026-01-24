@@ -47,6 +47,7 @@ func (i *keyedLimiter) getLimiter(key string) *rate.Limiter {
 		l = rate.NewLimiter(i.rl, i.burst)
 		i.lru.Add(key, l)
 	}
+
 	i.mu.Unlock()
 
 	return l

@@ -14,18 +14,21 @@ import (
 	"time"
 )
 
+const val = "val1"
+
 func BenchmarkLRU_Rand_NoExpire(b *testing.B) {
 	l := New[int64, int64](8192, nil, 0)
 
 	trace := make([]int64, b.N*2)
-	for i := 0; i < b.N*2; i++ {
+	for i := range b.N * 2 {
 		trace[i] = getRand(b) % 32768
 	}
 
 	b.ResetTimer()
 
 	var hit, miss int
-	for i := 0; i < 2*b.N; i++ {
+
+	for i := range 2 * b.N {
 		if i%2 == 0 {
 			l.Add(trace[i], trace[i])
 		} else {
@@ -36,6 +39,7 @@ func BenchmarkLRU_Rand_NoExpire(b *testing.B) {
 			}
 		}
 	}
+
 	b.Logf("hit: %d miss: %d ratio: %f", hit, miss, float64(hit)/float64(hit+miss))
 }
 
@@ -43,7 +47,7 @@ func BenchmarkLRU_Freq_NoExpire(b *testing.B) {
 	l := New[int64, int64](8192, nil, 0)
 
 	trace := make([]int64, b.N*2)
-	for i := 0; i < b.N*2; i++ {
+	for i := range b.N * 2 {
 		if i%2 == 0 {
 			trace[i] = getRand(b) % 16384
 		} else {
@@ -53,17 +57,20 @@ func BenchmarkLRU_Freq_NoExpire(b *testing.B) {
 
 	b.ResetTimer()
 
-	for i := 0; i < b.N; i++ {
+	for i := range b.N {
 		l.Add(trace[i], trace[i])
 	}
+
 	var hit, miss int
-	for i := 0; i < b.N; i++ {
+
+	for i := range b.N {
 		if _, ok := l.Get(trace[i]); ok {
 			hit++
 		} else {
 			miss++
 		}
 	}
+
 	b.Logf("hit: %d miss: %d ratio: %f", hit, miss, float64(hit)/float64(hit+miss))
 }
 
@@ -71,14 +78,15 @@ func BenchmarkLRU_Rand_WithExpire(b *testing.B) {
 	l := New[int64, int64](8192, nil, time.Millisecond*10)
 
 	trace := make([]int64, b.N*2)
-	for i := 0; i < b.N*2; i++ {
+	for i := range b.N * 2 {
 		trace[i] = getRand(b) % 32768
 	}
 
 	b.ResetTimer()
 
 	var hit, miss int
-	for i := 0; i < 2*b.N; i++ {
+
+	for i := range 2 * b.N {
 		if i%2 == 0 {
 			l.Add(trace[i], trace[i])
 		} else {
@@ -89,6 +97,7 @@ func BenchmarkLRU_Rand_WithExpire(b *testing.B) {
 			}
 		}
 	}
+
 	b.Logf("hit: %d miss: %d ratio: %f", hit, miss, float64(hit)/float64(hit+miss))
 }
 
@@ -96,7 +105,7 @@ func BenchmarkLRU_Freq_WithExpire(b *testing.B) {
 	l := New[int64, int64](8192, nil, time.Millisecond*10)
 
 	trace := make([]int64, b.N*2)
-	for i := 0; i < b.N*2; i++ {
+	for i := range b.N * 2 {
 		if i%2 == 0 {
 			trace[i] = getRand(b) % 16384
 		} else {
@@ -106,21 +115,26 @@ func BenchmarkLRU_Freq_WithExpire(b *testing.B) {
 
 	b.ResetTimer()
 
-	for i := 0; i < b.N; i++ {
+	for i := range b.N {
 		l.Add(trace[i], trace[i])
 	}
+
 	var hit, miss int
-	for i := 0; i < b.N; i++ {
+
+	for i := range b.N {
 		if _, ok := l.Get(trace[i]); ok {
 			hit++
 		} else {
 			miss++
 		}
 	}
+
 	b.Logf("hit: %d miss: %d ratio: %f", hit, miss, float64(hit)/float64(hit+miss))
 }
 
 func TestLRUEdgeCases(t *testing.T) {
+	t.Parallel()
+
 	lc := New[string, *string](2, nil, time.Minute)
 
 	// Adding a nil value
@@ -132,7 +146,7 @@ func TestLRUEdgeCases(t *testing.T) {
 	}
 
 	// Adding an entry with the same key but different value
-	newVal := "val1"
+	newVal := val
 	lc.Add("key1", &newVal)
 
 	value, exists = lc.Get("key1")
@@ -142,14 +156,16 @@ func TestLRUEdgeCases(t *testing.T) {
 }
 
 func TestLRU_Values(t *testing.T) {
+	t.Parallel()
+
 	lc := New[string, string](3, nil, time.Minute)
 
-	lc.Add("key1", "val1")
+	lc.Add("key1", val)
 	lc.Add("key2", "val2")
 	lc.Add("key3", "val3")
 
 	values := lc.Values()
-	if !reflect.DeepEqual(values, []string{"val1", "val2", "val3"}) {
+	if !reflect.DeepEqual(values, []string{val, "val2", "val3"}) {
 		t.Fatalf("values differs from expected")
 	}
 }
@@ -162,40 +178,49 @@ func TestLRU_Values(t *testing.T) {
 // }
 
 func TestLRUWithPurge(t *testing.T) {
+	t.Parallel()
+
 	var evicted []string
+
 	lc := New(10, func(key string, value string) { evicted = append(evicted, key, value) }, 150*time.Millisecond)
 
 	k, v, ok := lc.GetOldest()
 	if k != "" {
 		t.Fatalf("should be empty")
 	}
+
 	if v != "" {
 		t.Fatalf("should be empty")
 	}
+
 	if ok {
 		t.Fatalf("should be false")
 	}
 
-	lc.Add("key1", "val1")
+	lc.Add("key1", val)
 
 	time.Sleep(100 * time.Millisecond) // not enough to expire
+
 	if lc.Len() != 1 {
 		t.Fatalf("length differs from expected")
 	}
 
 	v, ok = lc.Get("key1")
-	if v != "val1" {
+	if v != val {
 		t.Fatalf("value differs from expected")
 	}
+
 	if !ok {
 		t.Fatalf("should be true")
 	}
 
 	time.Sleep(200 * time.Millisecond) // expire
+
 	v, ok = lc.Get("key1")
 	if ok {
 		t.Fatalf("should be false")
 	}
+
 	if v != "" {
 		t.Fatalf("should be nil")
 	}
@@ -203,12 +228,14 @@ func TestLRUWithPurge(t *testing.T) {
 	if lc.Len() != 0 {
 		t.Fatalf("length differs from expected")
 	}
-	if !reflect.DeepEqual(evicted, []string{"key1", "val1"}) {
+
+	if !reflect.DeepEqual(evicted, []string{"key1", val}) {
 		t.Fatalf("value differs from expected")
 	}
 
 	// add new entry
 	lc.Add("key2", "val2")
+
 	if lc.Len() != 1 {
 		t.Fatalf("length differs from expected")
 	}
@@ -217,45 +244,55 @@ func TestLRUWithPurge(t *testing.T) {
 	if k != "key2" {
 		t.Fatalf("value differs from expected")
 	}
+
 	if v != "val2" {
 		t.Fatalf("value differs from expected")
 	}
+
 	if !ok {
 		t.Fatalf("should be true")
 	}
 
 	// DeleteExpired, nothing deleted
 	lc.deleteExpired()
+
 	if lc.Len() != 1 {
 		t.Fatalf("length differs from expected")
 	}
-	if !reflect.DeepEqual(evicted, []string{"key1", "val1"}) {
+
+	if !reflect.DeepEqual(evicted, []string{"key1", val}) {
 		t.Fatalf("value differs from expected")
 	}
 
 	// Purge, cache should be clean
 	lc.Purge()
+
 	if lc.Len() != 0 {
 		t.Fatalf("length differs from expected")
 	}
-	if !reflect.DeepEqual(evicted, []string{"key1", "val1", "key2", "val2"}) {
+
+	if !reflect.DeepEqual(evicted, []string{"key1", val, "key2", "val2"}) {
 		t.Fatalf("value differs from expected")
 	}
 }
 
 func TestLRUWithPurgeEnforcedBySize(t *testing.T) {
+	t.Parallel()
+
 	lc := New[string, string](10, nil, time.Hour)
 
-	for i := 0; i < 100; i++ {
-		i := i
+	for i := range 100 {
 		lc.Add(fmt.Sprintf("key%d", i), fmt.Sprintf("val%d", i))
+
 		v, ok := lc.Get(fmt.Sprintf("key%d", i))
 		if v != fmt.Sprintf("val%d", i) {
 			t.Fatalf("value differs from expected")
 		}
+
 		if !ok {
 			t.Fatalf("should be true")
 		}
+
 		if lc.Len() > 20 {
 			t.Fatalf("length should be less than 20")
 		}
@@ -267,72 +304,90 @@ func TestLRUWithPurgeEnforcedBySize(t *testing.T) {
 }
 
 func TestLRUConcurrency(t *testing.T) {
+	t.Parallel()
+
 	lc := New[string, string](0, nil, time.Minute)
 	wg := sync.WaitGroup{}
 	wg.Add(1000)
-	for i := 0; i < 1000; i++ {
+
+	for i := range 1000 {
 		go func(i int) {
 			lc.Add(fmt.Sprintf("key-%d", i/10), fmt.Sprintf("val-%d", i/10))
 			wg.Done()
 		}(i)
 	}
+
 	wg.Wait()
+
 	if lc.Len() != 100 {
 		t.Fatalf("length differs from expected")
 	}
 }
 
 func TestLRUInvalidateAndEvict(t *testing.T) {
+	t.Parallel()
+
 	var evicted int
+
 	lc := New(-1, func(_, _ string) { evicted++ }, time.Minute)
 
-	lc.Add("key1", "val1")
+	lc.Add("key1", val)
 	lc.Add("key2", "val2")
 
-	val, ok := lc.Get("key1")
+	result, ok := lc.Get("key1")
 	if !ok {
 		t.Fatalf("should be true")
 	}
-	if val != "val1" {
+
+	if result != val {
 		t.Fatalf("value differs from expected")
 	}
+
 	if evicted != 0 {
 		t.Fatalf("value differs from expected")
 	}
 
 	lc.Remove("key1")
+
 	if evicted != 1 {
 		t.Fatalf("value differs from expected")
 	}
-	val, ok = lc.Get("key1")
-	if val != "" {
+
+	result, ok = lc.Get("key1")
+	if result != "" {
 		t.Fatalf("should be empty")
 	}
+
 	if ok {
 		t.Fatalf("should be false")
 	}
 }
 
 func TestLoadingExpired(t *testing.T) {
+	t.Parallel()
+
 	lc := New[string, string](0, nil, time.Millisecond*5)
 
-	lc.Add("key1", "val1")
+	lc.Add("key1", val)
+
 	if lc.Len() != 1 {
 		t.Fatalf("length differs from expected")
 	}
 
 	v, ok := lc.Peek("key1")
-	if v != "val1" {
+	if v != val {
 		t.Fatalf("value differs from expected")
 	}
+
 	if !ok {
 		t.Fatalf("should be true")
 	}
 
 	v, ok = lc.Get("key1")
-	if v != "val1" {
+	if v != val {
 		t.Fatalf("value differs from expected")
 	}
+
 	if !ok {
 		t.Fatalf("should be true")
 	}
@@ -342,12 +397,14 @@ func TestLoadingExpired(t *testing.T) {
 		if ok && result == "" {
 			t.Fatalf("ok should return a result")
 		}
+
 		if !ok {
 			break
 		}
 	}
 
 	time.Sleep(time.Millisecond * 100) // wait for expiration reaper
+
 	if lc.Len() != 0 {
 		t.Fatalf("length differs from expected")
 	}
@@ -356,6 +413,7 @@ func TestLoadingExpired(t *testing.T) {
 	if v != "" {
 		t.Fatalf("should be empty")
 	}
+
 	if ok {
 		t.Fatalf("should be false")
 	}
@@ -364,12 +422,15 @@ func TestLoadingExpired(t *testing.T) {
 	if v != "" {
 		t.Fatalf("should be empty")
 	}
+
 	if ok {
 		t.Fatalf("should be false")
 	}
 }
 
 func TestLRURemoveOldest(t *testing.T) {
+	t.Parallel()
+
 	lc := New[string, string](2, nil, time.Minute)
 
 	if lc.Cap() != 2 {
@@ -380,9 +441,11 @@ func TestLRURemoveOldest(t *testing.T) {
 	if k != "" {
 		t.Fatalf("should be empty")
 	}
+
 	if v != "" {
 		t.Fatalf("should be empty")
 	}
+
 	if ok {
 		t.Fatalf("should be false")
 	}
@@ -392,7 +455,8 @@ func TestLRURemoveOldest(t *testing.T) {
 		t.Fatalf("should be false")
 	}
 
-	lc.Add("key1", "val1")
+	lc.Add("key1", val)
+
 	if lc.Len() != 1 {
 		t.Fatalf("length differs from expected")
 	}
@@ -401,21 +465,25 @@ func TestLRURemoveOldest(t *testing.T) {
 	if !ok {
 		t.Fatalf("should be true")
 	}
-	if v != "val1" {
+
+	if v != val {
 		t.Fatalf("value differs from expected")
 	}
 
 	if !reflect.DeepEqual(lc.Keys(), []string{"key1"}) {
 		t.Fatalf("value differs from expected")
 	}
+
 	if lc.Len() != 1 {
 		t.Fatalf("length differs from expected")
 	}
 
 	lc.Add("key2", "val2")
+
 	if !reflect.DeepEqual(lc.Keys(), []string{"key1", "key2"}) {
 		t.Fatalf("value differs from expected")
 	}
+
 	if lc.Len() != 2 {
 		t.Fatalf("length differs from expected")
 	}
@@ -424,9 +492,11 @@ func TestLRURemoveOldest(t *testing.T) {
 	if k != "key1" {
 		t.Fatalf("value differs from expected")
 	}
-	if v != "val1" {
+
+	if v != val {
 		t.Fatalf("value differs from expected")
 	}
+
 	if !ok {
 		t.Fatalf("should be true")
 	}
@@ -434,6 +504,7 @@ func TestLRURemoveOldest(t *testing.T) {
 	if !reflect.DeepEqual(lc.Keys(), []string{"key2"}) {
 		t.Fatalf("value differs from expected")
 	}
+
 	if lc.Len() != 1 {
 		t.Fatalf("length differs from expected")
 	}
@@ -444,7 +515,7 @@ func ExampleLRU() {
 	cache := New[string, string](5, nil, time.Millisecond*10)
 
 	// set value under key1.
-	cache.Add("key1", "val1")
+	cache.Add("key1", val)
 
 	// get value under key1
 	r, ok := cache.Get("key1")
@@ -466,21 +537,25 @@ func ExampleLRU() {
 
 	fmt.Printf("Cache len: %d\n", cache.Len())
 	// Output:
-	// value before expiration is found: true, value: "val1"
+	// value before expiration is found: true, value: val
 	// value after expiration is found: false, value: ""
 	// Cache len: 1
 }
 
 func getRand(tb testing.TB) int64 {
+	tb.Helper()
+
 	out, err := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
 	if err != nil {
 		tb.Fatal(err)
 	}
+
 	return out.Int64()
 }
 
 func (c *LRU[K, V]) wantKeys(t *testing.T, want []K) {
 	t.Helper()
+
 	got := c.Keys()
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("wrong keys got: %v, want: %v ", got, want)
@@ -488,6 +563,8 @@ func (c *LRU[K, V]) wantKeys(t *testing.T, want []K) {
 }
 
 func TestCache_EvictionSameKey(t *testing.T) {
+	t.Parallel()
+
 	var evictedKeys []int
 
 	cache := New[int, struct{}](
@@ -501,21 +578,25 @@ func TestCache_EvictionSameKey(t *testing.T) {
 	if evicted := cache.Add(1, struct{}{}); evicted {
 		t.Error("First 1: got unexpected eviction")
 	}
+
 	cache.wantKeys(t, []int{1})
 
 	if evicted := cache.Add(2, struct{}{}); evicted {
 		t.Error("2: got unexpected eviction")
 	}
+
 	cache.wantKeys(t, []int{1, 2})
 
 	if evicted := cache.Add(1, struct{}{}); evicted {
 		t.Error("Second 1: got unexpected eviction")
 	}
+
 	cache.wantKeys(t, []int{2, 1})
 
 	if evicted := cache.Add(3, struct{}{}); !evicted {
 		t.Error("3: did not get expected eviction")
 	}
+
 	cache.wantKeys(t, []int{1, 3})
 
 	want := []int{2}

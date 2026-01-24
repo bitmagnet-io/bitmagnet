@@ -39,7 +39,7 @@ func (r Resolver) Resolve() (Resolved, error) {
 }
 
 func (r Resolver) resolve(param registry.Param) (*Param, error) {
-	lookup, _, err := r.lookup.Lookup(param.Ref.Path())
+	lookup, _, err := r.lookup.Lookup(param.Path())
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,6 @@ func (r Resolver) resolve(param registry.Param) (*Param, error) {
 
 	for i := len(lookupChain) - 1; i >= 0; i-- {
 		value, err := resolveValue(param, lookupChain[i])
-
 		if err == nil {
 			err = param.ValidateAny(value)
 		}
@@ -61,6 +60,7 @@ func (r Resolver) resolve(param registry.Param) (*Param, error) {
 			if i > 0 {
 				continue
 			}
+
 			return nil, err
 		}
 
@@ -77,6 +77,7 @@ func resolveValue(param registry.Param, item lookup.Result) (any, error) {
 	rt := param.ReflectType()
 	if rt != nil {
 		rv := reflect.New(rt).Elem()
+
 		rvv := reflect.ValueOf(rawValue)
 		if rvv.Type().AssignableTo(rv.Type()) {
 			rv.Set(rvv)

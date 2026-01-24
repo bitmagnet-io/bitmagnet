@@ -38,6 +38,7 @@ func (contentCollectionsHydrator) GetJoinSubs(
 	refMap := contentMapFromRefs(ids...)
 	q := dbCtx.Query()
 
+	//nolint:prealloc
 	var conds []gen.Condition
 
 	for contentType, sourceMap := range refMap {

@@ -111,7 +111,6 @@ type SelfMutation struct {
 
 func (m *SelfMutation) Register(ctx context.Context, input user.RegisterRequest) (RegisterResult, error) {
 	usr, err := m.User.Register(ctx, input)
-
 	if err != nil {
 		return RegisterResult{}, err
 	}
@@ -123,7 +122,6 @@ func (m *SelfMutation) Register(ctx context.Context, input user.RegisterRequest)
 
 func (m *SelfMutation) Login(ctx context.Context, username, password string) (LoginResult, error) {
 	success, err := m.User.Login(ctx, username, password)
-
 	if err != nil {
 		return LoginResult{}, err
 	}
@@ -166,7 +164,6 @@ func (m *SelfMutation) CreateAPIKey(ctx context.Context, input gen.CreateAPIKeyI
 		}),
 		Expiry: expiry,
 	})
-
 	if err != nil {
 		return gen.CreateAPIKeyResult{}, err
 	}

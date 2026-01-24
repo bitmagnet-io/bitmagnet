@@ -17,8 +17,9 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/channel"
 )
 
-// newPersistTorrentsWorker returns a worker that waits on the persistTorrents channel, and persists torrents to the database in batches.
-// After persisting each batch it will publish a message to the classifier, and forward the hash on the scrape channel to attempt finding the seeders/leechers.
+// newPersistTorrentsWorker returns a worker that waits on the persistTorrents channel, and persists torrents to the
+// database in batches. After persisting each batch it will publish a message to the classifier, and forward the hash on
+// the scrape channel to attempt finding the seeders/leechers.
 func newPersistTorrentsWorker(
 	classifierRunner classifier.Runner,
 	persisterAdder persister.Adder,
@@ -42,7 +43,10 @@ func newPersistTorrentsWorker(
 
 				switch {
 				case err == nil:
-					inputs = append(inputs, persister.InputTorrentContent(classifyResult.ToTorrentContent()))
+					inputs = append(
+						inputs,
+						persister.InputTorrentContent(classifyResult.ToTorrentContent()),
+					)
 				case errors.Is(err, classification.ErrDeleteTorrent):
 					inputs = persister.Inputs{persister.InputDeleteInfoHashes(i.infoHash)}
 				default:

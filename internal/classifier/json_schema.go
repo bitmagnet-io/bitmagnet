@@ -27,9 +27,13 @@ func (f features) JSONSchema() json_schema.JSONSchema {
 				json_schema.AdditionalPropertiesType(
 					json_schema.MustNew(
 						json_schema.Typed(json_schema.TypeString),
-						json_schema.Enum(slice.Map(FlagTypeValues(), func(ft FlagType) json_schema.JSONValue {
-							return json_schema.MustNewValue(string(ft))
-						})...),
+						json_schema.Enum(
+							slice.Map(
+								FlagTypeValues(),
+								func(ft FlagType) json_schema.JSONValue {
+									return json_schema.MustNewValue(string(ft))
+								},
+							)...),
 					),
 				),
 			),
@@ -80,14 +84,25 @@ func (f features) JSONSchema() json_schema.JSONSchema {
 					),
 				),
 				"action_single": json_schema.MustNew(
-					json_schema.OneOf(slice.Map(f.actions, func(a actionDefinition) json_schema.JSONSchema {
-						return json_schema.MustNew(json_schema.RefDefinition("action__" + a.name()))
-					})...),
+					json_schema.OneOf(
+						slice.Map(f.actions, func(a actionDefinition) json_schema.JSONSchema {
+							return json_schema.MustNew(
+								json_schema.RefDefinition("action__" + a.name()),
+							)
+						})...),
 				),
 				"condition": json_schema.MustNew(
-					json_schema.OneOf(slice.Map(f.conditions, func(c conditionDefinition) json_schema.JSONSchema {
-						return json_schema.MustNew(json_schema.RefDefinition("condition__" + c.name()))
-					})...),
+					json_schema.OneOf(
+						slice.Map(
+							f.conditions,
+							func(c conditionDefinition) json_schema.JSONSchema {
+								return json_schema.MustNew(
+									json_schema.RefDefinition(
+										"condition__" + c.name(),
+									),
+								)
+							},
+						)...),
 				),
 			},
 		),

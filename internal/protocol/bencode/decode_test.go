@@ -3,6 +3,7 @@ package bencode
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"math/big"
@@ -15,12 +16,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type random_decode_test struct {
+type randomDecodeTest struct {
 	data     string
 	expected interface{}
 }
 
-var random_decode_tests = []random_decode_test{
+var randomDecodeTests = []randomDecodeTest{
 	{"i57e", int64(57)},
 	{"i-9223372036854775808e", int64(-9223372036854775808)},
 	{"5:hello", "hello"},
@@ -46,38 +47,56 @@ var random_decode_tests = []random_decode_test{
 }
 
 func TestRandomDecode(t *testing.T) {
-	for _, test := range random_decode_tests {
+	t.Parallel()
+
+	for _, test := range randomDecodeTests {
 		var value interface{}
+
 		err := Unmarshal([]byte(test.data), &value)
 		if err != nil {
 			t.Error(err, test.data)
 			continue
 		}
+
 		assert.EqualValues(t, test.expected, value)
 	}
 }
 
 func TestLoneE(t *testing.T) {
+	t.Parallel()
+
 	var v int
+
 	err := Unmarshal([]byte("e"), &v)
-	se := err.(*SyntaxError)
+	se := func() *SyntaxError {
+		target := &SyntaxError{}
+		_ = errors.As(err, &target)
+
+		return target
+	}()
 	require.EqualValues(t, 0, se.Offset)
 }
 
 func TestDecoderConsecutive(t *testing.T) {
+	t.Parallel()
+
 	d := NewDecoder(bytes.NewReader([]byte("i1ei2e")))
+
 	var i int
+
 	err := d.Decode(&i)
 	require.NoError(t, err)
-	require.EqualValues(t, 1, i)
+	require.Equal(t, 1, i)
 	err = d.Decode(&i)
 	require.NoError(t, err)
-	require.EqualValues(t, 2, i)
+	require.Equal(t, 2, i)
 	err = d.Decode(&i)
 	require.Equal(t, io.EOF, err)
 }
 
 func TestDecoderConsecutiveDicts(t *testing.T) {
+	t.Parallel()
+
 	bb := bytes.NewBufferString("d4:herp4:derped3:wat1:ke17:oh baby a triple!")
 
 	d := NewDecoder(bb)
@@ -103,13 +122,9 @@ func TestDecoderConsecutiveDicts(t *testing.T) {
 	assert.EqualValues(t, 44, d.Offset)
 }
 
-func check_error(t *testing.T, err error) {
-	if err != nil {
-		t.Error(err)
-	}
-}
+func assertEqual(t *testing.T, x, y interface{}) {
+	t.Helper()
 
-func assert_equal(t *testing.T, x, y interface{}) {
 	if !reflect.DeepEqual(x, y) {
 		t.Errorf("got: %v (%T), expected: %v (%T)\n", x, x, y, y)
 	}
@@ -133,56 +148,73 @@ func (me *unmarshalerString) UnmarshalBencode(data []byte) error {
 }
 
 func TestUnmarshalerBencode(t *testing.T) {
-	var i unmarshalerInt
-	var ss []unmarshalerString
-	check_error(t, Unmarshal([]byte("i71e"), &i))
-	assert_equal(t, i.x, 71)
-	check_error(t, Unmarshal([]byte("l5:hello5:fruit3:waye"), &ss))
-	assert_equal(t, ss[0].x, "5:hello")
-	assert_equal(t, ss[1].x, "5:fruit")
-	assert_equal(t, ss[2].x, "3:way")
+	t.Parallel()
+
+	var (
+		i  unmarshalerInt
+		ss []unmarshalerString
+	)
+
+	require.NoError(t, Unmarshal([]byte("i71e"), &i))
+	assertEqual(t, i.x, 71)
+	require.NoError(t, Unmarshal([]byte("l5:hello5:fruit3:waye"), &ss))
+	assertEqual(t, ss[0].x, "5:hello")
+	assertEqual(t, ss[1].x, "5:fruit")
+	assertEqual(t, ss[2].x, "3:way")
 }
 
 func TestIgnoreUnmarshalTypeError(t *testing.T) {
+	t.Parallel()
+
 	s := struct {
 		Ignore int `bencode:",ignore_unmarshal_type_error"`
 		Normal int
 	}{}
 	require.Error(t, Unmarshal([]byte("d6:Normal5:helloe"), &s))
-	assert.NoError(t, Unmarshal([]byte("d6:Ignore5:helloe"), &s))
+	require.NoError(t, Unmarshal([]byte("d6:Ignore5:helloe"), &s))
 	qt.Assert(t, Unmarshal([]byte("d6:Ignorei42ee"), &s), qt.IsNil)
-	assert.EqualValues(t, 42, s.Ignore)
+	assert.Equal(t, 42, s.Ignore)
 }
 
 // Test unmarshalling []byte into something that has the same kind but
 // different type.
 func TestDecodeCustomSlice(t *testing.T) {
+	t.Parallel()
+
 	type flag byte
+
 	var fs3, fs2 []flag
 	// We do a longer slice then a shorter slice to see if the buffers are
 	// shared.
 	d := NewDecoder(bytes.NewBufferString("3:\x01\x10\xff2:\x04\x0f"))
 	require.NoError(t, d.Decode(&fs3))
 	require.NoError(t, d.Decode(&fs2))
-	assert.EqualValues(t, []flag{1, 16, 255}, fs3)
-	assert.EqualValues(t, []flag{4, 15}, fs2)
+	assert.Equal(t, []flag{1, 16, 255}, fs3)
+	assert.Equal(t, []flag{4, 15}, fs2)
 }
 
 func TestUnmarshalUnusedBytes(t *testing.T) {
+	t.Parallel()
+
 	var i int
-	require.EqualValues(t, ErrUnusedTrailingBytes{1}, Unmarshal([]byte("i42ee"), &i))
-	assert.EqualValues(t, 42, i)
+	require.EqualValues(t, UnusedTrailingBytesError{1}, Unmarshal([]byte("i42ee"), &i))
+	assert.Equal(t, 42, i)
 }
 
 func TestUnmarshalByteArray(t *testing.T) {
+	t.Parallel()
+
 	var ba [2]byte
-	assert.NoError(t, Unmarshal([]byte("2:hi"), &ba))
+	require.NoError(t, Unmarshal([]byte("2:hi"), &ba))
 	assert.EqualValues(t, "hi", ba[:])
 }
 
 func TestDecodeDictIntoUnsupported(t *testing.T) {
+	t.Parallel()
+
 	// Any type that a dict shouldn't be unmarshallable into.
 	var i int
+
 	c := qt.New(t)
 	err := Unmarshal([]byte("d1:a1:be"), &i)
 	t.Log(err)
@@ -190,8 +222,11 @@ func TestDecodeDictIntoUnsupported(t *testing.T) {
 }
 
 func TestUnmarshalDictKeyNotString(t *testing.T) {
+	t.Parallel()
+
 	// Any type that a dict shouldn't be unmarshallable into.
 	var i int
+
 	c := qt.New(t)
 	err := Unmarshal([]byte("di42e3:yese"), &i)
 	t.Log(err)
@@ -205,15 +240,20 @@ func (arbitraryReader) Read(b []byte) (int, error) {
 }
 
 func decodeHugeString(t *testing.T, strLen int64, header, tail string, v interface{}, maxStrLen MaxStrLen) error {
+	t.Helper()
+
 	r, w := io.Pipe()
+
 	go func() {
 		fmt.Fprintf(w, header, strLen)
-		io.CopyN(w, arbitraryReader{}, strLen)
-		w.Write([]byte(tail))
+		_, _ = io.CopyN(w, arbitraryReader{}, strLen)
+		_, _ = w.Write([]byte(tail))
 		w.Close()
 	}()
+
 	d := NewDecoder(r)
 	d.MaxStrLen = maxStrLen
+
 	return d.Decode(v)
 }
 
@@ -226,6 +266,7 @@ func TestDecodeMaxStrLen(t *testing.T) {
 		if strLen == 0 {
 			strLen = DefaultDecodeMaxStrLen
 		}
+
 		c.Assert(decodeHugeString(t, strLen, header, tail, v, maxStrLen), qt.IsNil)
 		c.Assert(decodeHugeString(t, strLen+1, header, tail, v, maxStrLen), qt.IsNotNil)
 	}
@@ -239,19 +280,21 @@ func TestDecodeMaxStrLen(t *testing.T) {
 
 // This is for the "github.com/anacrolix/torrent/metainfo".Info.Private field.
 func TestDecodeStringIntoBoolPtr(t *testing.T) {
+	t.Parallel()
+
 	var m struct {
 		Private *bool `bencode:"private,omitempty"`
 	}
+
 	c := qt.New(t)
 	check := func(msg string, expectNil, expectTrue bool) {
 		m.Private = nil
 		c.Check(Unmarshal([]byte(msg), &m), qt.IsNil, qt.Commentf("%q", msg))
+
 		if expectNil {
 			c.Check(m.Private, qt.IsNil)
-		} else {
-			if c.Check(m.Private, qt.IsNotNil, qt.Commentf("%q", msg)) {
-				c.Check(*m.Private, qt.Equals, expectTrue, qt.Commentf("%q", msg))
-			}
+		} else if c.Check(m.Private, qt.IsNotNil, qt.Commentf("%q", msg)) {
+			c.Check(*m.Private, qt.Equals, expectTrue, qt.Commentf("%q", msg))
 		}
 	}
 	check("d7:privatei1ee", false, true)
@@ -270,19 +313,26 @@ func TestDecodeStringIntoBoolPtr(t *testing.T) {
 
 // To set expectations about how our Decoder should work.
 func TestJsonDecoderBehaviour(t *testing.T) {
+	t.Parallel()
+
 	c := qt.New(t)
 	test := func(input string, items int, finalErr error) {
 		d := json.NewDecoder(strings.NewReader(input))
 		actualItems := 0
+
 		var firstErr error
+
 		for {
 			var discard any
+
 			firstErr = d.Decode(&discard)
 			if firstErr != nil {
 				break
 			}
+
 			actualItems++
 		}
+
 		c.Check(firstErr, qt.Equals, finalErr)
 		c.Check(actualItems, qt.Equals, items)
 	}

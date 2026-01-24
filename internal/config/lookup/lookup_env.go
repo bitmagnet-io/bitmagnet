@@ -6,7 +6,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/pkg/env"
 )
 
-func LookupEnv(source string, varsLookup env.VarsLookup) Lookup {
+func Env(source string, varsLookup env.VarsLookup) Lookup {
 	return lookupEnv{
 		source:     source,
 		VarsLookup: varsLookup,

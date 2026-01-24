@@ -9,22 +9,9 @@ import (
 
 // Go names of implementation-specific struct fields in generated messages.
 const (
-	State_goname = "state"
-
-	SizeCache_goname  = "sizeCache"
-	SizeCacheA_goname = "XXX_sizecache"
-
-	WeakFields_goname  = "weakFields"
-	WeakFieldsA_goname = "XXX_weak"
-
-	UnknownFields_goname  = "unknownFields"
-	UnknownFieldsA_goname = "XXX_unrecognized"
-
-	ExtensionFields_goname  = "extensionFields"
-	ExtensionFieldsA_goname = "XXX_InternalExtensions"
-	ExtensionFieldsB_goname = "XXX_extensions"
-
-	WeakFieldPrefix_goname = "XXX_weak_"
+	goSizeCache     = "sizeCache"
+	goState         = "state"
+	goUnknownFields = "unknownFields"
 )
 
 func GenTypes(s spec.FileInfo) *jen.File {
@@ -48,6 +35,7 @@ func GenTypes(s spec.FileInfo) *jen.File {
 		if svc.Type == spec.ServiceUnknown || svc.Type == spec.ServiceNone {
 			continue
 		}
+
 		f.Add(genService(svc))
 	}
 
@@ -66,12 +54,14 @@ func genEnum(s spec.EnumInfo) *jen.Statement {
 			for _, v := range s.Values {
 				g.Line().Lit(int32(v.Number)).Op(":").Lit(string(v.Name))
 			}
+
 			g.Line()
 		}).Line()
 		g.Id(s.GoIdent.GoName + "_value").Op("=").Map(jen.String()).Int32().ValuesFunc(func(g *jen.Group) {
 			for _, v := range s.Values {
 				g.Line().Lit(string(v.Name)).Op(":").Lit(int32(v.Number))
 			}
+
 			g.Line()
 		}).Line()
 	}).Line().
@@ -84,15 +74,17 @@ func genEnum(s spec.EnumInfo) *jen.Statement {
 
 func genMessage(s spec.MessageInfo) *jen.Statement {
 	st := jen.Type().Id(s.GoIdent.GoName).StructFunc(func(g *jen.Group) {
-		g.Id(State_goname).Qual(pkgProtoImpl, "MessageState")
-		g.Id(SizeCache_goname).Qual(pkgProtoImpl, "SizeCache")
-		g.Id(UnknownFields_goname).Qual(pkgProtoImpl, "UnknownFields")
+		g.Id(goState).Qual(pkgProtoImpl, "MessageState")
+		g.Id(goSizeCache).Qual(pkgProtoImpl, "SizeCache")
+		g.Id(goUnknownFields).Qual(pkgProtoImpl, "UnknownFields")
 
 		for _, f := range s.Fields {
 			g.Add(genMessageField(f))
 		}
 	}).Line().
-		Func().Params(jen.Id("x").Op("*").Id(s.GoIdent.GoName)).Id("ProtoReflect").Params().Qual(pkgProtoReflect, "Message").Block(
+		Func().
+		Params(jen.Id("x").Op("*").Id(s.GoIdent.GoName)).
+		Id("ProtoReflect").Params().Qual(pkgProtoReflect, "Message").Block(
 		jen.Panic(jen.Lit("not implemented")),
 	).Line().Line()
 
@@ -123,9 +115,11 @@ func genMessageField(s spec.MessageFieldInfo) *jen.Statement {
 	if s.LeadingComments != "" {
 		st = jen.Comment(string(s.LeadingComments)).Line()
 	}
+
 	if s.IsDeprecated {
 		st = st.Comment("Deprecated: do not use.").Line()
 	}
+
 	tag := map[string]string{
 		"protobuf": s.ProtobufTagValue,
 		"json":     string(s.Name) + ",omitempty",
@@ -135,6 +129,7 @@ func genMessageField(s spec.MessageFieldInfo) *jen.Statement {
 		tag["protobuf_key"] = s.MapKeyValue[0].ProtobufTagValue
 		tag["protobuf_value"] = s.MapKeyValue[1].ProtobufTagValue
 	}
+
 	st.Add(jen.Id(s.GoName).Add(genGoType(s)).Tag(tag))
 
 	if s.TrailingComments != "" {
@@ -193,11 +188,15 @@ func genService(s spec.ServiceInfo) *jen.Statement {
 		for _, method := range s.Methods {
 			g.Id(method.GoName).Params(
 				jen.Id("ctx").Qual(pkgContext, "Context"),
-				jen.Id(strcase.ToLowerCamel(method.InputGoIdent.GoName)).Op("*").Qual(string(method.InputGoIdent.GoImportPath), method.InputGoIdent.GoName),
-			).Params(
-				jen.Op("*").Qual(string(method.OutputGoIdent.GoImportPath), method.OutputGoIdent.GoName),
-				jen.Error(),
-			)
+				jen.Id(strcase.ToLowerCamel(method.InputGoIdent.GoName)).
+					Op("*").
+					Qual(string(method.InputGoIdent.GoImportPath), method.InputGoIdent.GoName),
+			).
+				Params(
+					jen.Op("*").
+						Qual(string(method.OutputGoIdent.GoImportPath), method.OutputGoIdent.GoName),
+					jen.Error(),
+				)
 		}
 	}).Line()
 }

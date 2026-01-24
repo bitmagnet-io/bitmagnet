@@ -29,6 +29,8 @@ const MetricInfoHashTriage = "info_hash_triage"
 //  3. The hash is in the database, but the seeders/leechers are not known or are outdated,
 //     so it is forwarded to the scrape channel.
 //  4. The hash is in the database and the seeders/leechers are known and up to date, so it is discarded.
+//
+// revive:disable:argument-limit
 func newInfoHashTriageWorker(
 	daoProvider database.DaoProvider,
 	blockerBlocker blocker.Blocker,
@@ -113,8 +115,8 @@ func newInfoHashTriageWorker(
 					if t, ok := foundTorrents[r.infoHash]; !ok ||
 						t.FilesStatus == model.FilesStatusNoInfo ||
 						(t.FilesStatus != model.FilesStatusSingle && !t.FilesCount.Valid) ||
-						(t.FilesStatus == model.FilesStatusOverThreshold && t.FilesCount.Int <= int(saveFilesThreshold)) {
-
+						(t.FilesStatus == model.FilesStatusOverThreshold &&
+							t.FilesCount.Int <= int(saveFilesThreshold)) {
 						if !ok {
 							r.isVerifiedAbsentFromDB = true
 						}

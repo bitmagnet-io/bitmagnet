@@ -13,6 +13,7 @@ func fileVarName(f *protogen.File, suffix string) string {
 	prefix := f.GoDescriptorIdent.GoName
 	_, n := utf8.DecodeRuneInString(prefix)
 	prefix = strings.ToLower(prefix[:n]) + prefix[n:]
+
 	return prefix + "_" + suffix
 }
 
@@ -24,12 +25,15 @@ func parseParam(comment string) (Parameter, error) {
 		Type:       ServiceNone,
 		Module:     EnvModuleName,
 	}
+
 	for _, line := range strings.Split(comment, "\n") {
 		line = strings.TrimPrefix(line, "//")
+
 		line = strings.TrimSpace(line)
 		if !strings.HasPrefix(line, "go:plugin") {
 			continue
 		}
+
 		line = strings.TrimPrefix(line, "go:plugin")
 
 		for _, field := range strings.Fields(line) {
@@ -38,9 +42,11 @@ func parseParam(comment string) (Parameter, error) {
 				value = field[i+1:]
 				key = field[0:i]
 			}
+
 			if key == "" || value == "" {
 				continue
 			}
+
 			switch key {
 			case "type":
 				switch value {
@@ -56,6 +62,7 @@ func parseParam(comment string) (Parameter, error) {
 				if err != nil {
 					return Parameter{}, fmt.Errorf("invalid version: %w", err)
 				}
+
 				param.APIVersion = ver
 			case "module":
 				if param.Type == ServiceHost && len(value) > 0 {
@@ -64,5 +71,6 @@ func parseParam(comment string) (Parameter, error) {
 			}
 		}
 	}
+
 	return param, nil
 }

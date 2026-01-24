@@ -36,6 +36,7 @@ func (l *lazy[T]) Get() (T, error) {
 func (l *lazy[T]) Decorate(fn func(T) (T, error)) {
 	l.mtx.Lock()
 	defer l.mtx.Unlock()
+
 	baseFn := l.fn
 	l.fn = func() (T, error) {
 		v, err := baseFn()

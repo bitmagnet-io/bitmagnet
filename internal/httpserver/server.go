@@ -29,9 +29,9 @@ func New(
 
 		go func() {
 			err := srv.Serve(ln)
+
 			select {
 			case <-shutdown:
-				err = nil
 			default:
 				cancel(err)
 			}

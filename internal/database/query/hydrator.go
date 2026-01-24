@@ -37,6 +37,7 @@ func hydrateHasOne[Root any, Sub any, SubID comparable](
 	ids := make([]SubID, 0, len(roots))
 
 	cbCtx.Lock()
+
 	for i, root := range roots {
 		if subID, ok1 := h.RootToSubID(root); ok1 {
 			indexMap[i] = subID
@@ -47,6 +48,7 @@ func hydrateHasOne[Root any, Sub any, SubID comparable](
 			}
 		}
 	}
+
 	cbCtx.Unlock()
 
 	if len(ids) == 0 {
@@ -110,6 +112,7 @@ func hydrateHasMany[Root any, RootID comparable, JoinSub any, Sub any](
 	ids := make([]RootID, 0, len(roots))
 
 	cbCtx.Lock()
+
 	for i, root := range roots {
 		if rootID, ok1 := h.RootID(root); ok1 {
 			indexMap[i] = rootID
@@ -120,6 +123,7 @@ func hydrateHasMany[Root any, RootID comparable, JoinSub any, Sub any](
 			}
 		}
 	}
+
 	cbCtx.Unlock()
 
 	if len(ids) == 0 {

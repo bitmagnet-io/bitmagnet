@@ -34,7 +34,6 @@ func (s *service) SetEnabled(ctx context.Context, userID int, enabled bool) (mod
 
 		return err
 	})
-
 	if err == nil {
 		err = userErr
 	}

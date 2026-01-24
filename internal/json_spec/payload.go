@@ -47,7 +47,6 @@ func (s Union[T]) JSONSchema() json_schema.JSONSchema {
 }
 
 func (s Union[T]) Parse(ctx ParseContext) (to T, _ error) {
-	//nolint:prealloc
 	var errs []error
 
 	for _, def := range s.OneOf {

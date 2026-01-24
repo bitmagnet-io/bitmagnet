@@ -17,7 +17,7 @@ type testCommand struct {
 	sub     *string
 }
 
-func (c *testCommand) Run(env.Env) error {
+func (*testCommand) Run(env.Env) error {
 	return nil
 }
 

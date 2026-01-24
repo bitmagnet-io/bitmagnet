@@ -26,6 +26,7 @@ func newBootstrapper(
 		addError := func(err error) {
 			mtx.Lock()
 			defer mtx.Unlock()
+
 			errs = append(errs, err)
 		}
 

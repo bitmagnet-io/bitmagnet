@@ -22,6 +22,7 @@ func Options[T any](opts ...Option[T]) Option[T] {
 				return err
 			}
 		}
+
 		return nil
 	}
 }
@@ -142,7 +143,9 @@ func Bool[T ~bool]() Option[T] {
 }
 
 var (
-	regexDuration         = ecma262.MustCompile(`^([-+]?((\d+(\.\d*)?|\.\d+)(ns|us|\\u00b5s|\\u03bcs|ms|s|m|h))+|0)$`)
+	regexDuration = ecma262.MustCompile(
+		`^([-+]?((\d+(\.\d*)?|\.\d+)(ns|us|\\u00b5s|\\u03bcs|ms|s|m|h))+|0)$`,
+	)
 	regexPositiveDuration = ecma262.MustCompile(`^(\+?((\d+(\.\d*)?|\.\d+)(ns|us|\\u00b5s|\\u03bcs|ms|s|m|h))+)$`)
 )
 
@@ -244,6 +247,7 @@ func EnumValues[T any](enumValues ...T) Option[T] {
 			if err != nil {
 				return err
 			}
+
 			jsonValues = append(jsonValues, json_schema.JSONValue(enc))
 		}
 

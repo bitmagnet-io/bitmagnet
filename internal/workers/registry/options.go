@@ -19,7 +19,7 @@ func WithWorker(ref ref.Ref, run runner.Provider, options ...worker.Option) Opti
 }
 
 func OptionNop() Option {
-	return func(r *Registry) {}
+	return func(*Registry) {}
 }
 
 func Options(options ...Option) Option {

@@ -17,7 +17,6 @@ func MapErr[T any, R any](t []T, mapFunc func(T) (R, error)) ([]R, error) {
 
 	for i, e := range t {
 		r[i], err = mapFunc(e)
-
 		if err != nil {
 			return nil, err
 		}
@@ -27,6 +26,7 @@ func MapErr[T any, R any](t []T, mapFunc func(T) (R, error)) ([]R, error) {
 }
 
 func FlatMap[T any, R any](t []T, mapFunc func(T) []R) []R {
+	//nolint:prealloc
 	var result []R
 
 	for _, e := range t {

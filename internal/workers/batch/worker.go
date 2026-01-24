@@ -126,7 +126,7 @@ func defaultKeyer[K comparable, V any](v V) K {
 	return k
 }
 
-func defaultMerger[V any](a, b V) V {
+func defaultMerger[V any](_, b V) V {
 	return b
 }
 

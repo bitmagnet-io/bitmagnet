@@ -15,12 +15,14 @@ import (
 func Write(messages []*i18n.Message) error {
 	for _, lang := range languages {
 		filePath := filepath.Join(".", "i18n", fmt.Sprintf("%s.yaml", lang))
+
 		var current map[string]fileMessage
 
 		currentBytes, err := os.ReadFile(filePath)
 		if err == nil {
 			err = yaml.Unmarshal(currentBytes, &current)
 		}
+
 		if err != nil {
 			current = make(fileMessages)
 		}
@@ -29,12 +31,13 @@ func Write(messages []*i18n.Message) error {
 		if err != nil {
 			return err
 		}
+
 		content, err := yaml.Marshal(v)
 		if err != nil {
-			return fmt.Errorf("failed to marshal %s strings: %s", lang, err)
+			return fmt.Errorf("failed to marshal %s strings: %w", lang, err)
 		}
 
-		err = os.WriteFile(filePath, content, 0666)
+		err = os.WriteFile(filePath, content, 0o666)
 		if err != nil {
 			return err
 		}
@@ -94,31 +97,37 @@ func marshalValue(messages []*i18n.Message, current fileMessages, sourceLanguage
 				if !sourceLanguage && curr.Zero != nil {
 					src = *curr.Zero
 				}
+
 				m.Zero = &src
 			case "one":
 				if !sourceLanguage && curr.One != nil {
 					src = *curr.One
 				}
+
 				m.One = &src
 			case "two":
 				if !sourceLanguage && curr.Two != nil {
 					src = *curr.Two
 				}
+
 				m.Two = &src
 			case "few":
 				if !sourceLanguage && curr.Few != nil {
 					src = *curr.Few
 				}
+
 				m.Few = &src
 			case "many":
 				if !sourceLanguage && curr.Many != nil {
 					src = *curr.Many
 				}
+
 				m.Many = &src
 			case "other":
 				if !sourceLanguage && curr.Other != nil {
 					src = *curr.Other
 				}
+
 				m.Other = &src
 			}
 		}

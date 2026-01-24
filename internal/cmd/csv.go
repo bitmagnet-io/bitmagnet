@@ -22,6 +22,7 @@ func (c *CSV[T]) UnmarshalText(text []byte) error {
 		if err != nil {
 			return err
 		}
+
 		values = append(values, value)
 	}
 
@@ -30,7 +31,7 @@ func (c *CSV[T]) UnmarshalText(text []byte) error {
 	return nil
 }
 
-func (c *CSV[T]) parse(str string) (T, error) {
+func (*CSV[T]) parse(str string) (T, error) {
 	var result T
 
 	value := new(T)
@@ -40,6 +41,7 @@ func (c *CSV[T]) parse(str string) (T, error) {
 		if err != nil {
 			return result, err
 		}
+
 		return *value, nil
 	}
 

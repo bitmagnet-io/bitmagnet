@@ -9,12 +9,10 @@ type (
 	AdapterName string
 )
 
-var (
-	ParamPort = param.MustNew(
-		param.Description[Port]("Socket port number"),
-		param.PortNumber[Port](),
-		param.Default(Port(3334)),
-	)
+var ParamPort = param.MustNew(
+	param.Description[Port]("Socket port number"),
+	param.PortNumber[Port](),
+	param.Default(Port(3334)),
 )
 
 func ParamAdapter() param.Param[AdapterName] {

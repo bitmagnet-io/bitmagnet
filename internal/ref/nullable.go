@@ -21,22 +21,23 @@ func (n Nullable) Value() (Ref, bool) {
 	return n.Ref, n.Valid
 }
 
-func (r Nullable) MarshalGQL(w io.Writer) {
-	if !r.Valid {
+func (n Nullable) MarshalGQL(w io.Writer) {
+	if !n.Valid {
 		_, _ = fmt.Fprintf(w, `null`)
 		return
 	}
-	r.Ref.MarshalGQL(w)
+
+	n.Ref.MarshalGQL(w)
 }
 
-func (r *Nullable) UnmarshalGQL(v any) error {
+func (n *Nullable) UnmarshalGQL(v any) error {
 	vStr, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("expected string, got %T", v)
 	}
 
 	if vStr == "" || vStr == "null" {
-		r.Valid = false
+		n.Valid = false
 		return nil
 	}
 
@@ -45,7 +46,7 @@ func (r *Nullable) UnmarshalGQL(v any) error {
 		return err
 	}
 
-	*r = NewNullable(parsed)
+	*n = NewNullable(parsed)
 
 	return nil
 }

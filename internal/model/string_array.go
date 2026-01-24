@@ -30,9 +30,15 @@ func scanLinearArray(src, del []byte, typ string) (elems [][]byte, err error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if len(dims) > 1 {
-		return nil, fmt.Errorf("pq: cannot convert ARRAY%s to %s", strings.Replace(fmt.Sprint(dims), " ", "][", -1), typ)
+		return nil, fmt.Errorf(
+			"pq: cannot convert ARRAY%s to %s",
+			strings.ReplaceAll(fmt.Sprint(dims), " ", "]["),
+			typ,
+		)
 	}
+
 	return elems, err
 }
 
@@ -62,6 +68,7 @@ Open:
 			break Open
 		}
 	}
+
 	dims = make([]int, i)
 
 Element:
@@ -71,12 +78,16 @@ Element:
 			if depth == len(dims) {
 				break Element
 			}
+
 			depth++
 			dims[depth-1] = 0
 			i++
 		case '"':
-			var elem = []byte{}
-			var escape bool
+			var (
+				elem   = []byte{}
+				escape bool
+			)
+
 			for i++; i < len(src); i++ {
 				if escape {
 					elem = append(elem, src[i])
@@ -90,6 +101,7 @@ Element:
 					case '"':
 						elems = append(elems, elem)
 						i++
+
 						break Element
 					}
 				}
@@ -101,10 +113,13 @@ Element:
 					if len(elem) == 0 {
 						return nil, nil, fmt.Errorf("pq: unable to parse array; unexpected %q at offset %d", src[i], i)
 					}
+
 					if bytes.Equal(elem, []byte("NULL")) {
 						elem = nil
 					}
+
 					elems = append(elems, elem)
+
 					break Element
 				}
 			}
@@ -115,35 +130,41 @@ Element:
 		if bytes.HasPrefix(src[i:], del) && depth > 0 {
 			dims[depth-1]++
 			i += len(del)
+
 			goto Element
-		} else if src[i] == '}' && depth > 0 {
-			dims[depth-1]++
-			depth--
-			i++
-		} else {
+		} else if src[i] != '}' || depth <= 0 {
 			return nil, nil, fmt.Errorf("pq: unable to parse array; unexpected %q at offset %d", src[i], i)
 		}
+
+		dims[depth-1]++
+		depth--
+		i++
 	}
 
 Close:
 	for i < len(src) {
-		if src[i] == '}' && depth > 0 {
-			depth--
-			i++
-		} else {
+		if src[i] != '}' || depth <= 0 {
 			return nil, nil, fmt.Errorf("pq: unable to parse array; unexpected %q at offset %d", src[i], i)
 		}
+
+		depth--
+		i++
 	}
+
 	if depth > 0 {
 		err = fmt.Errorf("pq: unable to parse array; expected %q at offset %d", '}', i)
 	}
+
 	if err == nil {
 		for _, d := range dims {
 			if (len(elems) % d) != 0 {
-				err = fmt.Errorf("pq: multidimensional arrays must have elements with matching dimensions")
+				err = fmt.Errorf(
+					"pq: multidimensional arrays must have elements with matching dimensions",
+				)
 			}
 		}
 	}
+
 	return
 }
 
@@ -152,6 +173,7 @@ func (a *StringArray) scanBytes(src []byte) error {
 	if err != nil {
 		return err
 	}
+
 	if *a != nil && len(elems) == 0 {
 		*a = (*a)[:0]
 	} else {
@@ -161,14 +183,17 @@ func (a *StringArray) scanBytes(src []byte) error {
 				return fmt.Errorf("pq: parsing array element index %d: cannot convert nil to string", i)
 			}
 		}
+
 		*a = b
 	}
+
 	return nil
 }
 
 // Value implements the driver.Valuer interface.
 func (a StringArray) Value() (driver.Value, error) {
 	if a == nil {
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -192,17 +217,21 @@ func (a StringArray) Value() (driver.Value, error) {
 
 func appendArrayQuotedBytes(b, v []byte) []byte {
 	b = append(b, '"')
+
 	for {
 		i := bytes.IndexAny(v, `"\`)
 		if i < 0 {
 			b = append(b, v...)
 			break
 		}
+
 		if i > 0 {
 			b = append(b, v[:i]...)
 		}
+
 		b = append(b, '\\', v[i])
 		v = v[i+1:]
 	}
+
 	return append(b, '"')
 }

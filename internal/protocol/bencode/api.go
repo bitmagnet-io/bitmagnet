@@ -34,6 +34,7 @@ func (e *UnmarshalInvalidArgError) Error() string {
 	if e.Type.Kind() != reflect.Ptr {
 		return "bencode: Unmarshal(non-pointer " + e.Type.String() + ")"
 	}
+
 	return "bencode: Unmarshal(nil " + e.Type.String() + ")"
 }
 
@@ -117,11 +118,14 @@ type Unmarshaler interface {
 // an error if any.
 func Marshal(v interface{}) ([]byte, error) {
 	var buf bytes.Buffer
+
 	e := Encoder{w: &buf}
+
 	err := e.Encode(v)
 	if err != nil {
 		return nil, err
 	}
+
 	return buf.Bytes(), nil
 }
 
@@ -130,6 +134,7 @@ func MustMarshal(v interface{}) []byte {
 	if err != nil {
 		panic(err)
 	}
+
 	return b
 }
 
@@ -140,21 +145,24 @@ func MustMarshal(v interface{}) []byte {
 func Unmarshal(data []byte, v interface{}) (err error) {
 	buf := bytes.NewReader(data)
 	dec := Decoder{r: buf}
+
 	err = dec.Decode(v)
 	if err != nil {
 		return
 	}
+
 	if buf.Len() != 0 {
-		return ErrUnusedTrailingBytes{buf.Len()}
+		return UnusedTrailingBytesError{buf.Len()}
 	}
+
 	return dec.ReadEOF()
 }
 
-type ErrUnusedTrailingBytes struct {
+type UnusedTrailingBytesError struct {
 	NumUnusedBytes int
 }
 
-func (me ErrUnusedTrailingBytes) Error() string {
+func (me UnusedTrailingBytesError) Error() string {
 	return fmt.Sprintf("%d unused trailing bytes", me.NumUnusedBytes)
 }
 

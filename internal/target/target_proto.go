@@ -54,6 +54,7 @@ func (t *targetProto) DataSchama(ctx context.Context) (*json_schema.JSONSchema, 
 	}
 
 	if schema == nil {
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -68,18 +69,19 @@ func (t *targetProto) dataSchama(ctx context.Context) (*dataSchema, error) {
 			return
 		}
 
-		if res == nil || len(res.Data) == 0 {
+		if res == nil || len(res.GetData()) == 0 {
 			return
 		}
 
 		var js json_schema.JSONSchema
-		if err := js.UnmarshalJSON(res.Data); err != nil {
+		if err := js.UnmarshalJSON(res.GetData()); err != nil {
 			t.dataSchemaErr = err
 			return
 		}
 
 		var gjsSchema *gojsonschema.Schema
-		gjsSchema, err = gojsonschema.NewSchema(gojsonschema.NewBytesLoader(res.Data))
+
+		gjsSchema, err = gojsonschema.NewSchema(gojsonschema.NewBytesLoader(res.GetData()))
 		if err != nil {
 			t.dataSchemaErr = err
 			return
@@ -107,11 +109,12 @@ func (t *targetProto) UISchema(ctx context.Context, acceptLanguage []string) (*j
 		return nil, fmt.Errorf("%w: %w", ErrUISchema, err)
 	}
 
-	if res == nil || len(res.Data) == 0 {
+	if res == nil || len(res.GetData()) == 0 {
+		//nolint:nilnil
 		return nil, nil
 	}
 
-	uiSchema, err := json_forms.UnmarshalUISchema(res.Data)
+	uiSchema, err := json_forms.UnmarshalUISchema(res.GetData())
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrUISchema, err)
 	}
@@ -119,7 +122,11 @@ func (t *targetProto) UISchema(ctx context.Context, acceptLanguage []string) (*j
 	return &uiSchema, nil
 }
 
-func (t *targetProto) Send(ctx context.Context, torrents []model.TorrentContent, data json_schema.JSONValue) (*json_schema.JSONValue, error) {
+func (t *targetProto) Send(
+	ctx context.Context,
+	torrents []model.TorrentContent,
+	data json_schema.JSONValue,
+) (*json_schema.JSONValue, error) {
 	jsonBytes, err := json.Marshal(data)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrMarshalData, err)
@@ -147,9 +154,11 @@ func (t *targetProto) Send(ctx context.Context, torrents []model.TorrentContent,
 	}
 
 	var returnData *json_schema.JSONValue
-	if len(res.Data) > 0 {
+
+	if len(res.GetData()) > 0 {
 		var raw any
-		err = json.Unmarshal(res.Data, &raw)
+
+		err = json.Unmarshal(res.GetData(), &raw)
 		if err == nil {
 			val, err := json_schema.NewValue(raw)
 			if err == nil {

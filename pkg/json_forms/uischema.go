@@ -15,6 +15,7 @@ func UnmarshalUISchema(data []byte) (UISchema, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return UISchema(element), nil
 }
 
@@ -34,18 +35,21 @@ func unmarshalElement(data []byte) (Element, error) {
 		if err := json.Unmarshal(data, &layout); err != nil {
 			return nil, err
 		}
+
 		return layout, nil
 	case string(CategorizationCategorization):
 		var categorization Categorization
 		if err := json.Unmarshal(data, &categorization); err != nil {
 			return nil, err
 		}
+
 		return categorization, nil
 	default:
 		var control Control
 		if err := json.Unmarshal(data, &control); err != nil {
 			return nil, err
 		}
+
 		return control, nil
 	}
 }
@@ -74,6 +78,7 @@ type Options struct {
 
 func (o *Options) UnmarshalJSON(data []byte) error {
 	type Alias Options
+
 	aux := &struct {
 		Detail json.RawMessage `json:"detail,omitempty"`
 		*Alias
@@ -90,6 +95,7 @@ func (o *Options) UnmarshalJSON(data []byte) error {
 		if err != nil {
 			return err
 		}
+
 		o.Detail = d
 	}
 
@@ -98,6 +104,7 @@ func (o *Options) UnmarshalJSON(data []byte) error {
 
 func unmarshalDetail(data []byte) (Detail, error) {
 	if string(data) == "null" {
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -124,6 +131,7 @@ func (d *DetailStr) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &str); err != nil {
 		return err
 	}
+
 	switch str {
 	case string(DetailDefault), string(DetailGenerated), string(DetailRegistered):
 		*d = DetailStr(str)
@@ -162,7 +170,9 @@ func (f *Format) UnmarshalJSON(data []byte) error {
 	if str != string(FormatRadio) {
 		return errors.New("invalid format value")
 	}
+
 	*f = FormatRadio
+
 	return nil
 }
 
@@ -179,6 +189,7 @@ type Layout struct {
 
 func (l *Layout) UnmarshalJSON(data []byte) error {
 	type Alias Layout
+
 	aux := &struct {
 		Elements []json.RawMessage `json:"elements"`
 		*Alias
@@ -196,6 +207,7 @@ func (l *Layout) UnmarshalJSON(data []byte) error {
 		if err != nil {
 			return err
 		}
+
 		l.Elements[i] = elem
 	}
 
@@ -235,6 +247,7 @@ type Categorization struct {
 
 func (c *Categorization) UnmarshalJSON(data []byte) error {
 	type Alias Categorization
+
 	aux := &struct {
 		Elements []json.RawMessage `json:"elements"`
 		*Alias
@@ -252,6 +265,7 @@ func (c *Categorization) UnmarshalJSON(data []byte) error {
 		if err := json.Unmarshal(elemData, &category); err != nil {
 			return err
 		}
+
 		c.Elements[i] = category
 	}
 
@@ -271,7 +285,9 @@ func (c *CategorizationStr) UnmarshalJSON(data []byte) error {
 	if str != string(CategorizationCategorization) {
 		return errors.New("invalid categorization type")
 	}
+
 	*c = CategorizationCategorization
+
 	return nil
 }
 
@@ -288,6 +304,7 @@ type Category struct {
 
 func (c *Category) UnmarshalJSON(data []byte) error {
 	type Alias Category
+
 	aux := &struct {
 		Elements []json.RawMessage `json:"elements"`
 		*Alias
@@ -298,12 +315,14 @@ func (c *Category) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &aux); err != nil {
 		return err
 	}
+
 	c.Elements = make([]Element, len(aux.Elements))
 	for i, elemData := range aux.Elements {
 		elem, err := unmarshalElement(elemData)
 		if err != nil {
 			return err
 		}
+
 		c.Elements[i] = elem
 	}
 

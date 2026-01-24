@@ -38,8 +38,10 @@ func (d *Deduplicator[T]) Add(item T) bool {
 		if time.Since(info.addedAt) < d.ttl {
 			return false // Item is still valid
 		}
+
 		delete(d.items, item)
 		delete(d.keys, info.index)
+
 		if d.minIndex == info.index {
 			d.minIndex++
 		}

@@ -31,6 +31,7 @@ func (attachLocalContentByIDAction) compile(ctx compilerContext) (action, error)
 			if cl.Torrent.Hint.IsNil() || !cl.Torrent.Hint.ContentSource.Valid {
 				return cl, classification.ErrUnmatched
 			}
+
 			content, err := ctx.search.ContentByID(ctx, model.ContentRef{
 				Type:   cl.Torrent.Hint.ContentType,
 				Source: cl.Torrent.Hint.ContentSource.String,
@@ -39,7 +40,9 @@ func (attachLocalContentByIDAction) compile(ctx compilerContext) (action, error)
 			if err != nil {
 				return cl, err
 			}
+
 			cl.AttachContent(&content)
+
 			return cl, nil
 		},
 	}, nil

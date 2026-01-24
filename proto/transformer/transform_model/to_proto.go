@@ -62,6 +62,7 @@ func TorrentFileToProto(f model.TorrentFile) *proto.TorrentFile {
 				str := ft.FileType.String()
 				return &str
 			}
+
 			return nil
 		}(),
 		Size:      int64(f.Size),
@@ -206,6 +207,7 @@ func TorrentContentToProto(tc model.TorrentContent) *proto.TorrentContent {
 				value := int32(tc.FilesCount.Uint)
 				return &value
 			}
+
 			return nil
 		}(),
 		Tags:        tc.Tags,
@@ -245,6 +247,7 @@ func ContentToProto(c model.Content) *proto.Content {
 
 				return &value
 			}
+
 			return nil
 		}(),
 		OriginalTitle: func() *string {
@@ -371,6 +374,7 @@ func DateToProto(d model.Date) *proto.Date {
 
 				return &value
 			}
+
 			return nil
 		}(),
 	}

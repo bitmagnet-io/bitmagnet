@@ -16,9 +16,9 @@ type APIKey struct {
 
 func (a APIKey) Self() Self {
 	return Self{
-		User:   &a.APIKey.User,
+		User:   &a.User,
 		APIKey: &a.APIKey,
-		Permissions: append(slice.Map(a.APIKey.Permissions, func(perm model.APIKeyPermission) rbac.ObjectAction {
+		Permissions: append(slice.Map(a.Permissions, func(perm model.APIKeyPermission) rbac.ObjectAction {
 			return rbac.ObjectAction{
 				Namespace: perm.Namespace,
 				Object:    perm.Object,
@@ -41,7 +41,7 @@ func (a APIKey) Enforce(ctx context.Context, objectAction rbac.ObjectAction) (bo
 
 	return a.enforcer.EnforceAny(
 		ctx,
-		append(slice.Map(a.APIKey.Permissions, func(perm model.APIKeyPermission) rbac.Subject {
+		append(slice.Map(a.Permissions, func(perm model.APIKeyPermission) rbac.Subject {
 			return rbac.SubjectPermission{
 				ObjectAction: rbac.ObjectAction{
 					Namespace: perm.Namespace,

@@ -90,7 +90,6 @@ func (p *provider) Runner() runner.Runner {
 
 		defer func() {
 			p.err = err
-
 			if err != nil {
 				p.instances = nil
 
@@ -198,7 +197,6 @@ outer:
 			break outer
 		case <-time.After(waitFor):
 			err = pool.Ping(ctx)
-
 			if err == nil {
 				break outer
 			}

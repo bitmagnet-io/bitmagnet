@@ -88,6 +88,7 @@ func transformTorrentFilesFacets(facets []adapter.FacetParam) (query.Option, err
 		if _, ok := seenFacets[facet.Key]; ok {
 			return nil, fmt.Errorf("facet key is repeated: %s", facet.Key)
 		}
+
 		facet, err := transformTorrentFilesFacet(facet)
 		if err != nil {
 			return nil, err

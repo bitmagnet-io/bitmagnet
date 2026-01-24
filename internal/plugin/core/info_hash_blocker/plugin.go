@@ -23,7 +23,8 @@ var (
 	Plugin = builder.NewPlugin(
 		Ref,
 		builder.WithDescription[deps](
-			"Maintains a stable bloom filter of info hashes that have been deleted and blocked, preventing them from being crawled again",
+			"Maintains a stable bloom filter of info hashes that have been deleted and blocked, "+
+				"preventing them from being crawled again",
 		),
 		builder.WithDependencies[deps](
 			migrator.Ref,

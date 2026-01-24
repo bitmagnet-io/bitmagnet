@@ -25,9 +25,7 @@ var (
 		builder.WithConfig[deps](Ref.MustSub("adapter"), socket.ParamAdapter()),
 		builder.WithConfig[deps](Ref.MustSub("port"), socket.ParamPort),
 		builder.WithFxOption[deps](fx.Provide(
-			func(adapterName socket.AdapterName) (socket.Adapter, error) {
-				return socket.GetAdapter(adapterName)
-			},
+			socket.GetAdapter,
 			fx.Annotate(
 				func(adapter socket.Adapter, port socket.Port) socket.Runner {
 					return adapter(netip.AddrPortFrom(

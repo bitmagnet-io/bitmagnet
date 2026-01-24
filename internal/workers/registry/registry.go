@@ -52,7 +52,7 @@ func (r *Registry) validate() error {
 }
 
 func (r *Registry) Runner() runner.Runner {
-	return func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
+	return func(ctx context.Context, _ context.CancelCauseFunc) (runner.Shutdowner, error) {
 		err := r.Autostart(ctx)
 
 		return func(ctx context.Context) error {
@@ -127,6 +127,7 @@ func (r *Registry) Start(ctx context.Context, workers ...ref.Ref) error {
 	for _, wrk := range workerMap.Values() {
 		go func(wrk *worker.Worker) {
 			var err error
+
 			defer func() {
 				workerDone(wrk.Ref(), err)
 			}()
@@ -173,7 +174,7 @@ func (r *Registry) workerMap(forward bool, workers ...ref.Ref) (ref.Map[*worker.
 
 		result.Set(wRef, wrk)
 
-		deps := ref.NewSet()
+		var deps ref.Set
 		if forward {
 			deps = r.dependenciesForward(wRef)
 		} else {
@@ -240,6 +241,7 @@ func (r *Registry) Shutdown(ctx context.Context, workers ...ref.Ref) error {
 	for _, wrk := range workerMap.Values() {
 		go func(wrk *worker.Worker) {
 			var errs []error
+
 			defer func() {
 				workerDone(wrk.Ref(), errors.Join(errs...))
 			}()
@@ -313,6 +315,7 @@ func (r *Registry) dependenciesForward(rf ref.Ref) ref.Set {
 	if ok {
 		for _, dep := range wrk.Dependencies() {
 			result.Set(dep, struct{}{})
+
 			for _, childDep := range r.dependenciesForward(dep).Refs() {
 				result.Set(childDep, struct{}{})
 			}
@@ -328,6 +331,7 @@ func (r *Registry) dependenciesBackward(rf ref.Ref) ref.Set {
 	for _, wrk := range r.workers.Values() {
 		if wrk.DependsOn(rf) {
 			result.Set(wrk.Ref(), struct{}{})
+
 			for _, childDep := range r.dependenciesBackward(wrk.Ref()).Refs() {
 				result.Set(childDep, struct{}{})
 			}

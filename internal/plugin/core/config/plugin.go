@@ -30,7 +30,7 @@ var (
 			fx.Provide(
 				lookup.NewFromEnv,
 				resolver.New,
-				func(provider fs.FSProvider) manager.FS {
+				func(provider fs.Provider) manager.FS {
 					return afero.Afero{
 						Fs: afero.NewBasePathFs(provider.FSData(), config.SubpathPersisted),
 					}

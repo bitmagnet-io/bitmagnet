@@ -27,7 +27,6 @@ func newEnqueueProcessTorrentWorker(
 				// delay the classifier by a minute to allow time for the S/L scrape:
 				model.QueueJobDelayBy(time.Minute),
 			)
-
 			if err != nil {
 				return err
 			}

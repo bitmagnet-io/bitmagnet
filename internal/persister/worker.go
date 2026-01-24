@@ -111,6 +111,7 @@ func (w *worker) Runner() runner.Runner {
 					}
 
 					item(payload)
+
 					_ = checkFlush(ctx)
 				}
 			}

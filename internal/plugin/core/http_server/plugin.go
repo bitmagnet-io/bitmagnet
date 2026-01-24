@@ -55,11 +55,7 @@ var (
 			fx.Provide(
 				circuitbreaker.New,
 				fx.Annotate(
-					func(
-						options []httpserver.Option,
-					) (gin.OptionFunc, error) {
-						return resolveOptions(options)
-					},
+					resolveOptions,
 					fx.ParamTags(`group:"http_server_options"`),
 				),
 			),

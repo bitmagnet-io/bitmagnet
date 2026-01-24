@@ -53,7 +53,6 @@ func (s *service) UpdatePassword(ctx context.Context, userID int, currentPasswor
 
 		return err
 	})
-
 	if errTx != nil {
 		return fmt.Errorf("%w: %w: %w: %w", Err, ErrUpdatePassword, ErrTransaction, errTx)
 	} else if errUser != nil {

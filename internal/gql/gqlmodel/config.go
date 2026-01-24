@@ -33,7 +33,7 @@ func (q ConfigQuery) Pending() bool {
 func transformConfigParam(param *resolver.Param, localizer *i18n.Localizer) gen.ConfigParam {
 	var description *string
 	if localized, _ := localizer.LocalizeMessage(&i18n.Message{
-		ID: param.Ref.String(),
+		ID: param.String(),
 	}); localized != "" {
 		description = &localized
 	} else {

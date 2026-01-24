@@ -15,7 +15,7 @@ func (notCondition) name() string {
 
 var notConditionSpec = json_spec.SingleKeyValue[any]{
 	Key: notName,
-	ValueSpec: json_spec.MustSucceed[any]{json_spec.Generic[any]{
+	ValueSpec: json_spec.MustSucceed[any]{Typed: json_spec.Generic[any]{
 		Schema: json_schema.MustNew(
 			json_schema.RefDefinition("condition"),
 		),

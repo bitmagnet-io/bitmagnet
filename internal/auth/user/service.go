@@ -40,6 +40,7 @@ type service struct {
 	loginLimiter        *rate.Limiter
 }
 
+// revive:disable:argument-limit
 func NewService(
 	daoProvider database.DaoTransactionProvider,
 	jwtService jwt.Service,

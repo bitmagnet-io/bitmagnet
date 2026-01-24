@@ -39,7 +39,6 @@ func SimpleRunner(fn func(context.Context) error) Runner {
 	return func(ctx context.Context, cancel context.CancelCauseFunc) (Shutdowner, error) {
 		go func() {
 			err := fn(ctx)
-
 			if err == nil {
 				err = ErrCompleted
 			}

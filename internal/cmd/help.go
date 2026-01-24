@@ -18,10 +18,12 @@ func (wr *helpWriter) Write(p []byte) (n int, err error) {
 	if wr.err != nil {
 		return 0, wr.err
 	}
+
 	n, err = wr.Writer.Write(p)
 	if err != nil {
 		wr.err = err
 	}
+
 	return n, err
 }
 
@@ -51,21 +53,25 @@ const colWidth = 25
 func (wr *helpWriter) printOption(item, description string, bracketed ...string) {
 	lhs := "  " + item
 	wr.print(lhs)
+
 	if description != "" {
 		if len(lhs)+2 < colWidth {
 			wr.print(strings.Repeat(" ", colWidth-len(lhs)))
 		} else {
 			wr.print("\n" + strings.Repeat(" ", colWidth))
 		}
+
 		wr.print(description)
 	}
 
 	var brack string
+
 	for _, s := range bracketed {
 		if s != "" {
 			if brack != "" {
 				brack += ", "
 			}
+
 			brack += s
 		}
 	}
@@ -92,37 +98,45 @@ func (i *instance) printHelp(wr io.Writer) error {
 
 	var path []string
 	for curr := i; curr != nil; curr = curr.parent {
-		path = append(path, curr.Spec.name)
+		path = append(path, curr.name)
 	}
+
 	slices.Reverse(path)
 
-	if len(path) > 1 || i.Spec.doc != "" {
+	if len(path) > 1 || i.doc != "" {
 		hw.print(strings.Join(path, " "))
-		if i.Spec.doc != "" {
-			hw.print(": " + i.Spec.doc)
+
+		if i.doc != "" {
+			hw.print(": " + i.doc)
 		}
 
 		hw.print("\n\n")
 	}
 
 	hw.print("Usage:\n\n" + strings.Join(path, " [<args>] "))
-	for _, paramKey := range i.Spec.paramKeys {
+
+	for _, paramKey := range i.paramKeys {
 		if paramKey == helpParam {
 			continue
 		}
-		param := i.Spec.params[paramKey]
+
+		param := i.params[paramKey]
+
 		shortLong := [2]string{param.Abbr, param.Name}
 		for i, name := range shortLong {
 			if name == "" {
 				continue
 			}
+
 			tmpl := strings.Repeat("-", i+1) + name
 			if param.Type != paramTypeBool {
 				tmpl += "=" + param.Example
 			}
+
 			if param.Required {
 				tmpl = "[" + tmpl + "]"
 			}
+
 			hw.print(" " + tmpl)
 		}
 	}
@@ -135,26 +149,32 @@ func (i *instance) printHelp(wr io.Writer) error {
 
 	hw.print("\n\n")
 
-	if len(i.Spec.paramKeys) > 0 {
+	if len(i.paramKeys) > 0 {
 		hw.print("Parameters:\n\n")
-		for _, paramKey := range i.Spec.paramKeys {
-			param := i.Spec.params[paramKey]
+
+		for _, paramKey := range i.paramKeys {
+			param := i.params[paramKey]
+
 			ways := make([]string, 0, 2)
 			if param.Name != "" {
 				ways = append(ways, synopsis(param, "--"+param.Name))
 			}
+
 			if param.Abbr != "" {
 				ways = append(ways, synopsis(param, "-"+param.Abbr))
 			}
+
 			if len(ways) > 0 {
 				hw.printOption(strings.Join(ways, ", "), param.Doc, withDefault(param.Default))
 			}
 		}
+
 		hw.print("\n")
 	}
 
 	if len(subcmds) > 0 {
 		hw.print("Commands:\n\n")
+
 		for _, subcmd := range subcmds {
 			spec, err := introspect(subcmd)
 			if err != nil {
@@ -162,9 +182,11 @@ func (i *instance) printHelp(wr io.Writer) error {
 			}
 
 			hw.print("  " + spec.name)
+
 			if spec.doc != "" {
 				hw.print(strings.Repeat(" ", colWidth-len(spec.name)-2) + spec.doc)
 			}
+
 			hw.print("\n")
 		}
 	}
@@ -179,6 +201,7 @@ func synopsis(param Param, form string) string {
 	if param.Type == paramTypeBool || param.Example == "" {
 		return form
 	}
+
 	return form + "=" + param.Example
 }
 
@@ -186,5 +209,6 @@ func withDefault(s string) string {
 	if s == "" {
 		return ""
 	}
+
 	return "default: " + s
 }

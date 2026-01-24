@@ -164,7 +164,7 @@ func (m *manager) flush(ctx context.Context) error {
 			_, err = bf.ReadFrom(obj)
 			obj.Close()
 
-			//todo: Check!
+			// todo: Check!
 			if err != nil && !errors.Is(err, io.EOF) {
 				return fmt.Errorf("failed to read bloom filter: %w", err)
 			}
@@ -200,7 +200,7 @@ func (m *manager) flush(ctx context.Context) error {
 
 	now := time.Now()
 	if !found {
-		//todo: Check! on conflict clause?
+		// todo: Check! on conflict clause?
 		_, err = tx.Exec(ctx,
 			"INSERT INTO bloom_filters (key, oid, created_at, updated_at) VALUES ($1, $2, $3, $4)",
 			blockedTorrentsBloomFilterKey, oid, now, now)

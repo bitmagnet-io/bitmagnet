@@ -20,19 +20,22 @@ func isEmptyValue(v reflect.Value) bool {
 		return v.IsNil()
 	case reflect.Array:
 		z := true
-		for i := 0; i < v.Len(); i++ {
+		for i := range v.Len() {
 			z = z && isEmptyValue(v.Index(i))
 		}
+
 		return z
 	case reflect.Struct:
 		z := true
-		for i := 0; i < v.NumField(); i++ {
+		for i := range v.NumField() {
 			z = z && isEmptyValue(v.Field(i))
 		}
+
 		return z
 	}
 	// Compare other types directly:
 	z := reflect.Zero(v.Type())
+
 	return v.Interface() == z.Interface()
 }
 
@@ -45,19 +48,24 @@ func (e *Encoder) Encode(v interface{}) (err error) {
 	if v == nil {
 		return
 	}
+
 	defer func() {
 		if e := recover(); e != nil {
 			if _, ok := e.(runtime.Error); ok {
 				panic(e)
 			}
+
 			var ok bool
+
 			err, ok = e.(error)
 			if !ok {
 				panic(e)
 			}
 		}
 	}()
+
 	e.reflectValue(reflect.ValueOf(v))
+
 	return nil
 }
 
@@ -103,18 +111,22 @@ func (e *Encoder) reflectByteSlice(s []byte) {
 // done successfully.
 func (e *Encoder) reflectMarshaler(v reflect.Value) bool {
 	if !v.Type().Implements(marshalerType) {
-		if v.Kind() != reflect.Ptr && v.CanAddr() && v.Addr().Type().Implements(marshalerType) {
-			v = v.Addr()
-		} else {
+		if v.Kind() == reflect.Ptr || !v.CanAddr() || !v.Addr().Type().Implements(marshalerType) {
 			return false
 		}
+
+		v = v.Addr()
 	}
+
 	m := v.Interface().(Marshaler)
+
 	data, err := m.MarshalBencode()
 	if err != nil {
 		panic(&MarshalerError{v.Type(), err})
 	}
+
 	e.write(data)
+
 	return true
 }
 
@@ -127,9 +139,11 @@ func (e *Encoder) reflectValue(v reflect.Value) {
 
 	if v.Type() == bigIntType {
 		e.writeString("i")
+
 		bi := v.Interface().(big.Int)
 		e.writeString(bi.String())
 		e.writeString("e")
+
 		return
 	}
 
@@ -154,33 +168,42 @@ func (e *Encoder) reflectValue(v reflect.Value) {
 		e.reflectString(v.String())
 	case reflect.Struct:
 		e.writeString("d")
+
 		for _, ef := range getEncodeFields(v.Type()) {
 			fieldValue := ef.i(v)
 			if !fieldValue.IsValid() {
 				continue
 			}
+
 			if ef.omitEmpty && isEmptyValue(fieldValue) {
 				continue
 			}
+
 			e.reflectString(ef.tag)
 			e.reflectValue(fieldValue)
 		}
+
 		e.writeString("e")
 	case reflect.Map:
 		if v.Type().Key().Kind() != reflect.String {
 			panic(&MarshalTypeError{v.Type()})
 		}
+
 		if v.IsNil() {
 			e.writeString("de")
 			break
 		}
+
 		e.writeString("d")
+
 		sv := stringValues(v.MapKeys())
 		sort.Sort(sv)
+
 		for _, key := range sv {
 			e.reflectString(key.String())
 			e.reflectValue(v.MapIndex(key))
 		}
+
 		e.writeString("e")
 	case reflect.Slice, reflect.Array:
 		e.reflectSequence(v)
@@ -192,6 +215,7 @@ func (e *Encoder) reflectValue(v reflect.Value) {
 		} else {
 			v = v.Elem()
 		}
+
 		e.reflectValue(v)
 	default:
 		panic(&MarshalTypeError{v.Type()})
@@ -205,27 +229,37 @@ func (e *Encoder) reflectSequence(v reflect.Value) {
 			// Can't use []byte optimization
 			if !v.CanAddr() {
 				e.writeStringPrefix(int64(v.Len()))
-				for i := 0; i < v.Len(); i++ {
+
+				for i := range v.Len() {
 					var b [1]byte
+
 					b[0] = byte(v.Index(i).Uint())
 					e.write(b[:])
 				}
+
 				return
 			}
+
 			v = v.Slice(0, v.Len())
 		}
+
 		s := v.Bytes()
 		e.reflectByteSlice(s)
+
 		return
 	}
+
 	if v.IsNil() {
 		e.writeString("le")
 		return
 	}
+
 	e.writeString("l")
+
 	for i, n := 0, v.Len(); i < n; i++ {
 		e.reflectValue(v.Index(i))
 	}
+
 	e.writeString("e")
 }
 
@@ -248,30 +282,40 @@ var (
 
 func getEncodeFields(t reflect.Type) []encodeField {
 	typeCacheLock.RLock()
+
 	fs, ok := encodeFieldsCache[t]
+
 	typeCacheLock.RUnlock()
+
 	if ok {
 		return fs
 	}
+
 	fs = makeEncodeFields(t)
+
 	typeCacheLock.Lock()
 	defer typeCacheLock.Unlock()
+
 	encodeFieldsCache[t] = fs
+
 	return fs
 }
 
 func makeEncodeFields(t reflect.Type) (fs []encodeField) {
 	for _i, n := 0, t.NumField(); _i < n; _i++ {
 		i := _i
+
 		f := t.Field(i)
 		if f.PkgPath != "" {
 			continue
 		}
+
 		if f.Anonymous {
 			t := f.Type
 			if t.Kind() == reflect.Ptr {
 				t = t.Elem()
 			}
+
 			anonEFs := makeEncodeFields(t)
 			for aefi := range anonEFs {
 				anonEF := anonEFs[aefi]
@@ -283,15 +327,20 @@ func makeEncodeFields(t reflect.Type) (fs []encodeField) {
 							// This will skip serializing this value.
 							return reflect.Value{}
 						}
+
 						v = v.Elem()
 					}
+
 					return anonEF.i(v)
 				}
 				fs = append(fs, bottomField)
 			}
+
 			continue
 		}
+
 		var ef encodeField
+
 		ef.i = func(v reflect.Value) reflect.Value {
 			return v.Field(i)
 		}
@@ -301,13 +350,17 @@ func makeEncodeFields(t reflect.Type) (fs []encodeField) {
 		if tv.Ignore() {
 			continue
 		}
+
 		if tv.Key() != "" {
 			ef.tag = tv.Key()
 		}
+
 		ef.omitEmpty = tv.OmitEmpty()
 		fs = append(fs, ef)
 	}
+
 	fss := encodeFieldsSortType(fs)
 	sort.Sort(fss)
+
 	return fs
 }

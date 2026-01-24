@@ -20,10 +20,12 @@ func torrentContentAttributeCriteria[T attribute](getFld func(*dao.Query) field.
 			Conditions: func(ctx query.DBContext) ([]field.Expr, error) {
 				q := ctx.Query()
 				fld := getFld(q)
+
 				valuers := make([]driver.Valuer, 0, len(values))
 				for _, v := range values {
 					valuers = append(valuers, v)
 				}
+
 				return []field.Expr{fld.In(valuers...)}, nil
 			},
 			Joins: maps.NewInsertMap(

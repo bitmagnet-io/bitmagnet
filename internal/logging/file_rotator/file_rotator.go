@@ -10,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"github.com/bitmagnet-io/bitmagnet/pkg/fs"
 )
@@ -19,7 +18,6 @@ type FS fs.FS
 
 func New(
 	fs FS,
-	level *atomic.Value[Level],
 	subPath SubPath,
 	baseName BaseName,
 	maxAge MaxAge,
@@ -240,7 +238,6 @@ func (r *FileRotator) prune(now time.Time) error {
 		return fmt.Errorf("%w: %w: %w: %w", Err, ErrPrune, ErrReadDirectory, err)
 	}
 
-	//nolint:prealloc
 	var backupFiles []string
 
 	strNow := now.Format(timeFormat)

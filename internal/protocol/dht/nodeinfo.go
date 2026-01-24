@@ -42,6 +42,7 @@ var _ interface {
 
 func (ni NodeInfo) MarshalBinary() ([]byte, error) {
 	var w bytes.Buffer
+
 	_, _ = w.Write(ni.ID[:])
 	_, _ = w.Write(ni.Addr.IP)
 
@@ -69,11 +70,13 @@ func slicesMap(f, input interface{}) interface{} {
 	inputValue := reflect.ValueOf(input)
 	funcValue := reflect.ValueOf(f)
 	_len := inputValue.Len()
+
 	retValue := reflect.MakeSlice(reflect.TypeOf(input), _len, _len)
-	for i := 0; i < _len; i++ {
+	for i := range _len {
 		out := funcValue.Call([]reflect.Value{inputValue.Index(i)})
 		retValue.Index(i).Set(out[0])
 	}
+
 	return retValue.Interface()
 }
 

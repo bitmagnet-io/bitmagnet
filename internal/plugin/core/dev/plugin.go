@@ -14,6 +14,6 @@ var (
 	Plugin = builder.NewPlugin(
 		Ref,
 		builder.WithActivation[deps](plugin.ActivationAlways),
-		builder.WithCliCommand[deps](NewDevCommand()),
+		builder.WithCliCommand[deps](NewCommand()),
 	)
 )

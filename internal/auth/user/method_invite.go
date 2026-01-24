@@ -60,7 +60,6 @@ func (s *service) Invite(ctx context.Context, request InviteRequest) (model.Invi
 
 		return nil
 	})
-
 	if err != nil {
 		return model.Invitation{}, fmt.Errorf("%w: %w: %w: %w", Err, ErrInvite, ErrTransaction, err)
 	}

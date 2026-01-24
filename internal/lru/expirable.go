@@ -65,7 +65,7 @@ func New[K comparable, V any](size int, onEvict EvictCallback[K, V], ttl time.Du
 
 	// initialize the buckets
 	res.buckets = make([]bucket[K, V], numBuckets)
-	for i := 0; i < numBuckets; i++ {
+	for i := range numBuckets {
 		res.buckets[i] = bucket[K, V]{entries: make(map[K]*entry[K, V])}
 	}
 
@@ -114,8 +114,10 @@ func (c *LRU[K, V]) purge() {
 		if c.onEvict != nil {
 			c.onEvict(k, v.Value)
 		}
+
 		delete(c.items, k)
 	}
+
 	for _, b := range c.buckets {
 		for _, ent := range b.entries {
 			delete(b.entries, ent.Key)
@@ -143,6 +145,7 @@ func (c *LRU[K, V]) Add(key K, value V) (evicted bool) {
 		ent.Value = value
 		ent.AddedAt = now
 		c.addToBucket(ent)
+
 		return false
 	}
 
@@ -156,6 +159,7 @@ func (c *LRU[K, V]) Add(key K, value V) (evicted bool) {
 	if evict {
 		c.removeOldest()
 	}
+
 	return evict
 }
 
@@ -174,9 +178,12 @@ func (c *LRU[K, V]) Get(key K) (value V, ok bool) {
 		if time.Since(ent.AddedAt) > c.ttl {
 			return value, false
 		}
+
 		c.evictList.moveToFront(ent)
+
 		return ent.Value, true
 	}
+
 	return
 }
 
@@ -191,6 +198,7 @@ func (c *LRU[K, V]) Contains(key K) (ok bool) {
 	}
 
 	_, ok = c.items[key]
+
 	return ok
 }
 
@@ -210,8 +218,10 @@ func (c *LRU[K, V]) Peek(key K) (value V, ok bool) {
 		if time.Since(ent.AddedAt) > c.ttl {
 			return value, false
 		}
+
 		return ent.Value, true
 	}
+
 	return
 }
 
@@ -229,6 +239,7 @@ func (c *LRU[K, V]) Remove(key K) bool {
 		c.removeElement(ent)
 		return true
 	}
+
 	return false
 }
 
@@ -245,6 +256,7 @@ func (c *LRU[K, V]) RemoveOldest() (key K, value V, ok bool) {
 		c.removeElement(ent)
 		return ent.Key, ent.Value, true
 	}
+
 	return
 }
 
@@ -260,6 +272,7 @@ func (c *LRU[K, V]) GetOldest() (key K, value V, ok bool) {
 	if ent := c.evictList.back(); ent != nil {
 		return ent.Key, ent.Value, true
 	}
+
 	return
 }
 
@@ -274,13 +287,16 @@ func (c *LRU[K, V]) Keys() []K {
 	}
 
 	keys := make([]K, 0, len(c.items))
+
 	now := time.Now()
 	for ent := c.evictList.back(); ent != nil; ent = ent.prevEntry() {
 		if now.After(ent.AddedAt.Add(c.ttl)) {
 			continue
 		}
+
 		keys = append(keys, ent.Key)
 	}
+
 	return keys
 }
 
@@ -295,13 +311,16 @@ func (c *LRU[K, V]) Values() []V {
 	}
 
 	values := make([]V, 0, len(c.items))
+
 	now := time.Now()
 	for ent := c.evictList.back(); ent != nil; ent = ent.prevEntry() {
 		if now.After(ent.AddedAt.Add(c.ttl)) {
 			continue
 		}
+
 		values = append(values, ent.Value)
 	}
+
 	return values
 }
 
@@ -330,14 +349,18 @@ func (c *LRU[K, V]) Resize(size int) (evicted int) {
 		c.size = 0
 		return 0
 	}
+
 	diff := c.evictList.length() - size
 	if diff < 0 {
 		diff = 0
 	}
-	for i := 0; i < diff; i++ {
+
+	for range diff {
 		c.removeOldest()
 	}
+
 	c.size = size
+
 	return diff
 }
 
@@ -368,6 +391,7 @@ func (c *LRU[K, V]) removeElement(e *entry[K, V]) {
 	c.evictList.remove(e)
 	delete(c.items, e.Key)
 	c.removeFromBucket(e)
+
 	if c.onEvict != nil {
 		c.onEvict(e.Key, e.Value)
 	}
@@ -393,9 +417,11 @@ func (c *LRU[K, V]) deleteExpired() int {
 
 		for _, ent := range c.buckets[bucketIdx].entries {
 			c.removeElement(ent)
+
 			removed++
 			shouldStop = false
 		}
+
 		c.nextCleanupBucket = (c.nextCleanupBucket + 1) % numBuckets
 
 		if shouldStop {
@@ -404,10 +430,12 @@ func (c *LRU[K, V]) deleteExpired() int {
 	}
 }
 
-// addToBucket adds entry to expire bucket so that it will be cleaned up when the time comes. Has to be called with lock!
+// addToBucket adds entry to expire bucket so that it will be cleaned up when the time comes. Has to be called with
+// lock!
 func (c *LRU[K, V]) addToBucket(e *entry[K, V]) {
 	bucketID := (numBuckets + c.nextCleanupBucket - 1) % numBuckets
 	e.ExpireBucket = bucketID
+
 	c.buckets[bucketID].entries[e.Key] = e
 	if c.buckets[bucketID].newestEntry.Before(e.AddedAt) {
 		c.buckets[bucketID].newestEntry = e.AddedAt

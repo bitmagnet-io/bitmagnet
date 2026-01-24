@@ -57,12 +57,11 @@ var (
 			fx.Provide(
 				func(
 					resolverRoot resolvers.Resolver,
-					enforcer rbac.Enforcer,
 				) graphql.ExecutableSchema {
 					return gql.NewExecutableSchema(gql.Config{
 						Resolvers: &resolverRoot,
 						Directives: gql.DirectiveRoot{
-							Auth: auth.NewDirective(enforcer),
+							Auth: auth.NewDirective(),
 						},
 					})
 				},
@@ -75,7 +74,7 @@ var (
 		),
 		builder.WithAuthObjectActions(
 			func(deps deps) []rbac.ObjectAction {
-				return auth.AuthObjectActions(deps.AuthDirectives)
+				return auth.ObjectActions(deps.AuthDirectives)
 			},
 		),
 		builder.WithPermissionProvider(

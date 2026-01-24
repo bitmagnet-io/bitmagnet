@@ -57,7 +57,6 @@ func newScrapeWorker(
 					},
 				),
 			)
-
 			if err != nil {
 				return err
 			}

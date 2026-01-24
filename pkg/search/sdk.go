@@ -2,9 +2,7 @@ package search
 
 import "github.com/bitmagnet-io/bitmagnet/internal/search"
 
-var (
-	ParseCriteria = search.ParseCriteria
-)
+var ParseCriteria = search.ParseCriteria
 
 type (
 	Criteria            = search.Criteria

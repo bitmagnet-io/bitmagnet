@@ -147,9 +147,17 @@ func (cmd *App[Deps]) wrapSignals(
 			case sig := <-sigChan:
 				switch sig {
 				case os.Interrupt:
-					cmd.log(zapcore.InfoLevel, "received signal, starting graceful shutdown", zap.String("signal", sig.String()))
+					cmd.log(
+						zapcore.InfoLevel,
+						"received signal, starting graceful shutdown",
+						zap.String("signal", sig.String()),
+					)
 				case syscall.SIGTERM:
-					cmd.log(zapcore.WarnLevel, "received signal, exiting immediately", zap.String("signal", sig.String()))
+					cmd.log(
+						zapcore.WarnLevel,
+						"received signal, exiting immediately",
+						zap.String("signal", sig.String()),
+					)
 					cancel(fmt.Errorf("received signal: %s", sig))
 
 					return
@@ -159,7 +167,7 @@ func (cmd *App[Deps]) wrapSignals(
 			shutdownCtx, shutdownCancel := context.WithTimeout(ctx, shutdownTimeout)
 			defer shutdownCancel()
 
-			doShutdown(shutdownCtx)
+			_ = doShutdown(shutdownCtx)
 		}()
 
 		return func(shutdownCtx context.Context) error {
@@ -180,7 +188,7 @@ func envOption(envEnv env.Env) fx.Option {
 			fx.As(new(env.VarsLookup)),
 			fx.As(new(env.ArgsProvider)),
 			fx.As(new(env.SignalsProvider)),
-			fx.As(new(fs.FSProvider)),
+			fx.As(new(fs.Provider)),
 		),
 	)
 }

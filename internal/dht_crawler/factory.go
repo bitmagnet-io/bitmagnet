@@ -23,6 +23,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 )
 
+// revive:disable:argument-limit
 func New(
 	config Config,
 	kTable ktable.Table,
@@ -68,6 +69,7 @@ func New(
 			setupComplete := make(chan struct{})
 			defer close(setupComplete)
 
+			//nolint:prealloc
 			var discoveredNodesAdders []channel.Adder[ktable.Node]
 
 			discoveredNodes := newDiscoveredNodesWorker(

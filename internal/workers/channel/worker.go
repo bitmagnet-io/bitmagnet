@@ -96,7 +96,7 @@ func (w *worker[T]) Runner() runner.Runner {
 
 		go func() {
 			defer func() {
-				sem.Acquire(ctx, semUnsubscribe())
+				_ = sem.Acquire(ctx, semUnsubscribe())
 
 				cancel(nil)
 				w.metrics.Reset()
@@ -119,6 +119,7 @@ func (w *worker[T]) Runner() runner.Runner {
 						if err := sem.Acquire(ctx, 1); err != nil {
 							return
 						}
+
 						go func(item T) {
 							defer func() {
 								if n := sem.Release(1); n == 1 {

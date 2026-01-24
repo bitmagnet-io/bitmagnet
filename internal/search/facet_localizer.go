@@ -19,11 +19,13 @@ type FacetLocalizer struct {
 
 func (f FacetLocalizer) Label(facet Facet, acceptLanguage []string) string {
 	localizer := i18n.NewLocalizer(f.i18n, acceptLanguage...)
+
 	result, _ := localizer.LocalizeMessage(&i18n.Message{
 		ID: f.ref.String() + "." + facet.String(),
 	})
 	if result == "" {
 		return facet.Label()
 	}
+
 	return result
 }

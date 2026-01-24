@@ -18,17 +18,15 @@ import (
 	"github.com/prometheus/client_golang/prometheus/push"
 )
 
-var (
-	// DefaultPrometheusOpts is the default set of options used when creating a
-	// PrometheusSink.
-	DefaultPrometheusOpts = PrometheusOpts{
-		Expiration: 60 * time.Second,
-		Name:       "default_prometheus_sink",
-	}
-)
+// DefaultPrometheusOpts is the default set of options used when creating a
+// PrometheusSink.
+var DefaultPrometheusOpts = Opts{
+	Expiration: 60 * time.Second,
+	Name:       "default_prometheus_sink",
+}
 
-// PrometheusOpts is used to configure the Prometheus Sink
-type PrometheusOpts struct {
+// Opts is used to configure the Prometheus Sink
+type Opts struct {
 	// Expiration is the duration a metric is valid for, after which it will be
 	// untracked. If the value is zero, a metric is never expired.
 	Expiration time.Duration
@@ -55,7 +53,7 @@ type PrometheusOpts struct {
 	Name               string
 }
 
-type PrometheusSink struct {
+type Sink struct {
 	// If these will ever be copied, they should be converted to *sync.Map values and initialized appropriately
 	gauges     sync.Map
 	summaries  sync.Map
@@ -75,7 +73,8 @@ type GaugeDefinition struct {
 type gauge struct {
 	prometheus.Gauge
 	updatedAt time.Time
-	// canDelete is set if the metric is created during runtime so we know it's ephemeral and can delete it on expiry.
+	// canDelete is set if the metric is created during runtime so we know it's ephemeral and can delete it on
+	// expiry.
 	canDelete bool
 }
 
@@ -106,17 +105,18 @@ type counter struct {
 }
 
 // NewPrometheusSink creates a new PrometheusSink using the default options.
-func NewPrometheusSink() (*PrometheusSink, error) {
+func NewPrometheusSink() (*Sink, error) {
 	return NewPrometheusSinkFrom(DefaultPrometheusOpts)
 }
 
 // NewPrometheusSinkFrom creates a new PrometheusSink using the passed options.
-func NewPrometheusSinkFrom(opts PrometheusOpts) (*PrometheusSink, error) {
+func NewPrometheusSinkFrom(opts Opts) (*Sink, error) {
 	name := opts.Name
 	if name == "" {
 		name = "default_prometheus_sink"
 	}
-	sink := &PrometheusSink{
+
+	sink := &Sink{
 		gauges:     sync.Map{},
 		summaries:  sync.Map{},
 		counters:   sync.Map{},
@@ -141,7 +141,7 @@ func NewPrometheusSinkFrom(opts PrometheusOpts) (*PrometheusSink, error) {
 // Note that we cannot describe all the metrics (gauges, counters, summaries) in the sink as
 // metrics can be added at any point during the lifecycle of the sink, which does not respect
 // the idempotency aspect of the Collector.Describe() interface
-func (p *PrometheusSink) Describe(c chan<- *prometheus.Desc) {
+func (p *Sink) Describe(c chan<- *prometheus.Desc) {
 	// dummy value to be able to register and unregister "empty" sinks
 	// Note this is not actually retained in the PrometheusSink so this has no side effects
 	// on the caller's sink. So it shouldn't show up to any of its consumers.
@@ -151,19 +151,21 @@ func (p *PrometheusSink) Describe(c chan<- *prometheus.Desc) {
 // Collect meets the collection interface and allows us to enforce our expiration
 // logic to clean up ephemeral metrics if their value haven't been set for a
 // duration exceeding our allowed expiration time.
-func (p *PrometheusSink) Collect(c chan<- prometheus.Metric) {
+func (p *Sink) Collect(c chan<- prometheus.Metric) {
 	p.collectAtTime(c, time.Now())
 }
 
 // collectAtTime allows internal testing of the expiry based logic here without
 // mocking clocks or making tests timing sensitive.
-func (p *PrometheusSink) collectAtTime(c chan<- prometheus.Metric, t time.Time) {
+func (p *Sink) collectAtTime(c chan<- prometheus.Metric, t time.Time) {
 	expire := p.expiration != 0
 	p.gauges.Range(func(k, v interface{}) bool {
 		if v == nil {
 			return true
 		}
+
 		g := v.(*gauge)
+
 		lastUpdate := g.updatedAt
 		if expire && lastUpdate.Add(p.expiration).Before(t) {
 			if g.canDelete {
@@ -171,14 +173,18 @@ func (p *PrometheusSink) collectAtTime(c chan<- prometheus.Metric, t time.Time) 
 				return true
 			}
 		}
+
 		g.Collect(c)
+
 		return true
 	})
 	p.summaries.Range(func(k, v interface{}) bool {
 		if v == nil {
 			return true
 		}
+
 		s := v.(*summary)
+
 		lastUpdate := s.updatedAt
 		if expire && lastUpdate.Add(p.expiration).Before(t) {
 			if s.canDelete {
@@ -186,14 +192,18 @@ func (p *PrometheusSink) collectAtTime(c chan<- prometheus.Metric, t time.Time) 
 				return true
 			}
 		}
+
 		s.Collect(c)
+
 		return true
 	})
 	p.counters.Range(func(k, v interface{}) bool {
 		if v == nil {
 			return true
 		}
+
 		count := v.(*counter)
+
 		lastUpdate := count.updatedAt
 		if expire && lastUpdate.Add(p.expiration).Before(t) {
 			if count.canDelete {
@@ -201,7 +211,9 @@ func (p *PrometheusSink) collectAtTime(c chan<- prometheus.Metric, t time.Time) 
 				return true
 			}
 		}
+
 		count.Collect(c)
+
 		return true
 	})
 }
@@ -249,11 +261,11 @@ func initCounters(m *sync.Map, counters []CounterDefinition, help map[string]str
 
 var forbiddenCharsReplacer = strings.NewReplacer(" ", "_", ".", "_", "=", "_", "-", "_", "/", "_")
 
-func flattenKey(parts []string, labels []metrics.Label) (string, string) {
-	key := strings.Join(parts, "_")
+func flattenKey(parts []string, labels []metrics.Label) (key string, hash string) {
+	key = strings.Join(parts, "_")
 	key = forbiddenCharsReplacer.Replace(key)
 
-	hash := key
+	hash = key
 	for _, label := range labels {
 		hash += ";" + label.Name + "=" + label.Value
 	}
@@ -266,22 +278,23 @@ func prometheusLabels(labels []metrics.Label) prometheus.Labels {
 	for _, label := range labels {
 		l[label.Name] = label.Value
 	}
+
 	return l
 }
 
-func (p *PrometheusSink) SetGauge(parts []string, val float32) {
+func (p *Sink) SetGauge(parts []string, val float32) {
 	p.SetPrecisionGauge(parts, float64(val))
 }
 
-func (p *PrometheusSink) SetGaugeWithLabels(parts []string, val float32, labels []metrics.Label) {
+func (p *Sink) SetGaugeWithLabels(parts []string, val float32, labels []metrics.Label) {
 	p.SetPrecisionGaugeWithLabels(parts, float64(val), labels)
 }
 
-func (p *PrometheusSink) SetPrecisionGauge(parts []string, val float64) {
+func (p *Sink) SetPrecisionGauge(parts []string, val float64) {
 	p.SetPrecisionGaugeWithLabels(parts, val, nil)
 }
 
-func (p *PrometheusSink) SetPrecisionGaugeWithLabels(parts []string, val float64, labels []metrics.Label) {
+func (p *Sink) SetPrecisionGaugeWithLabels(parts []string, val float64, labels []metrics.Label) {
 	key, hash := flattenKey(parts, labels)
 	pg, ok := p.gauges.Load(hash)
 
@@ -300,10 +313,12 @@ func (p *PrometheusSink) SetPrecisionGaugeWithLabels(parts []string, val float64
 		// The gauge does not exist, create the gauge and allow it to be deleted
 	} else {
 		help := key
+
 		existingHelp, ok := p.help[fmt.Sprintf("gauge.%s", key)]
 		if ok {
 			help = existingHelp
 		}
+
 		g := prometheus.NewGauge(prometheus.GaugeOpts{
 			Name:        key,
 			Help:        help,
@@ -319,11 +334,11 @@ func (p *PrometheusSink) SetPrecisionGaugeWithLabels(parts []string, val float64
 	}
 }
 
-func (p *PrometheusSink) AddSample(parts []string, val float32) {
+func (p *Sink) AddSample(parts []string, val float32) {
 	p.AddSampleWithLabels(parts, val, nil)
 }
 
-func (p *PrometheusSink) AddSampleWithLabels(parts []string, val float32, labels []metrics.Label) {
+func (p *Sink) AddSampleWithLabels(parts []string, val float32, labels []metrics.Label) {
 	key, hash := flattenKey(parts, labels)
 	ps, ok := p.summaries.Load(hash)
 
@@ -336,10 +351,12 @@ func (p *PrometheusSink) AddSampleWithLabels(parts []string, val float32, labels
 		// The summary does not exist, create the Summary and allow it to be deleted
 	} else {
 		help := key
+
 		existingHelp, ok := p.help[fmt.Sprintf("summary.%s", key)]
 		if ok {
 			help = existingHelp
 		}
+
 		s := prometheus.NewSummary(prometheus.SummaryOpts{
 			Name:        key,
 			Help:        help,
@@ -360,14 +377,14 @@ func (p *PrometheusSink) AddSampleWithLabels(parts []string, val float32, labels
 // EmitKey is not implemented. Prometheus doesn’t offer a type for which an
 // arbitrary number of values is retained, as Prometheus works with a pull
 // model, rather than a push model.
-func (p *PrometheusSink) EmitKey(key []string, val float32) {
+func (*Sink) EmitKey([]string, float32) {
 }
 
-func (p *PrometheusSink) IncrCounter(parts []string, val float32) {
+func (p *Sink) IncrCounter(parts []string, val float32) {
 	p.IncrCounterWithLabels(parts, val, nil)
 }
 
-func (p *PrometheusSink) IncrCounterWithLabels(parts []string, val float32, labels []metrics.Label) {
+func (p *Sink) IncrCounterWithLabels(parts []string, val float32, labels []metrics.Label) {
 	key, hash := flattenKey(parts, labels)
 	pc, ok := p.counters.Load(hash)
 
@@ -388,10 +405,12 @@ func (p *PrometheusSink) IncrCounterWithLabels(parts []string, val float32, labe
 		// The counter does not exist yet, create it and allow it to be deleted
 	} else {
 		help := key
+
 		existingHelp, ok := p.help[fmt.Sprintf("counter.%s", key)]
 		if ok {
 			help = existingHelp
 		}
+
 		c := prometheus.NewCounter(prometheus.CounterOpts{
 			Name:        key,
 			Help:        help,
@@ -407,19 +426,19 @@ func (p *PrometheusSink) IncrCounterWithLabels(parts []string, val float32, labe
 	}
 }
 
-// PrometheusPushSink wraps a normal prometheus sink and provides an address and facilities to export it to an address
+// PushSink wraps a normal prometheus sink and provides an address and facilities to export it to an address
 // on an interval.
-type PrometheusPushSink struct {
-	*PrometheusSink
+type PushSink struct {
+	*Sink
 	pusher       *push.Pusher
 	address      string
 	pushInterval time.Duration
 	stopChan     chan struct{}
 }
 
-// NewPrometheusPushSink creates a PrometheusPushSink by taking an address, interval, and destination name.
-func NewPrometheusPushSink(address string, pushInterval time.Duration, name string) (*PrometheusPushSink, error) {
-	promSink := &PrometheusSink{
+// NewPushSink creates a PushSink by taking an address, interval, and destination name.
+func NewPushSink(address string, pushInterval time.Duration, name string) (*PushSink, error) {
+	promSink := &Sink{
 		gauges:     sync.Map{},
 		summaries:  sync.Map{},
 		counters:   sync.Map{},
@@ -429,7 +448,7 @@ func NewPrometheusPushSink(address string, pushInterval time.Duration, name stri
 
 	pusher := push.New(address, name).Collector(promSink)
 
-	sink := &PrometheusPushSink{
+	sink := &PushSink{
 		promSink,
 		pusher,
 		address,
@@ -438,10 +457,11 @@ func NewPrometheusPushSink(address string, pushInterval time.Duration, name stri
 	}
 
 	sink.flushMetrics()
+
 	return sink, nil
 }
 
-func (s *PrometheusPushSink) flushMetrics() {
+func (s *PushSink) flushMetrics() {
 	ticker := time.NewTicker(s.pushInterval)
 
 	go func() {
@@ -461,7 +481,7 @@ func (s *PrometheusPushSink) flushMetrics() {
 }
 
 // Shutdown tears down the PrometheusPushSink, and blocks while flushing metrics to the backend.
-func (s *PrometheusPushSink) Shutdown() {
+func (s *PushSink) Shutdown() {
 	close(s.stopChan)
 	// Closing the channel only stops the running goroutine that pushes metrics.
 	// To minimize the chance of data loss pusher.Push is called one last time.

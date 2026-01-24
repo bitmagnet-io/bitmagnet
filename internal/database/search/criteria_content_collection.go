@@ -31,6 +31,7 @@ func ContentCollectionCriteria(refs ...model.ContentCollectionRef) query.Criteri
 		refMap := collectionMapFromRefs(refs...)
 		q := ctx.Query()
 
+		//nolint:prealloc
 		var criteria []query.Criteria
 
 		for collectionType, sourceMap := range refMap {

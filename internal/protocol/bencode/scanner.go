@@ -22,6 +22,7 @@ func (me *scanner) ReadByte() (byte, error) {
 		me.unread = false
 		return me.b[0], nil
 	}
+
 	for {
 		n, err := me.r.Read(me.b[:])
 		switch n {
@@ -31,6 +32,7 @@ func (me *scanner) ReadByte() (byte, error) {
 			if err != nil {
 				return 0, err
 			}
+
 			panic(err)
 		case 1:
 			// There's no way to signal that the byte is valid unless error is nil.
@@ -41,6 +43,7 @@ func (me *scanner) ReadByte() (byte, error) {
 				// tell us why.
 				panic(err)
 			}
+
 			panic(n)
 		}
 	}
@@ -50,6 +53,8 @@ func (me *scanner) UnreadByte() error {
 	if me.unread {
 		return errors.New("byte already unread")
 	}
+
 	me.unread = true
+
 	return nil
 }

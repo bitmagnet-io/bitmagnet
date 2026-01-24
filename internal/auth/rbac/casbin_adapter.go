@@ -37,38 +37,44 @@ func policyTokensFromPermission(permission Permission) []string {
 
 var errUnimplemented = errors.New("unimplemented")
 
-func (casbinAdapter) UpdatePolicy(sec string, ptype string, oldRule, newRule []string) error {
+func (casbinAdapter) UpdatePolicy(_ string, _ string, _, _ []string) error {
 	return errUnimplemented
 }
 
-func (casbinAdapter) UpdatePolicies(sec string, ptype string, oldRules, newRules [][]string) error {
+func (casbinAdapter) UpdatePolicies(_ string, _ string, _, _ [][]string) error {
 	return errUnimplemented
 }
 
-func (casbinAdapter) UpdateFilteredPolicies(sec string, ptype string, newRules [][]string, fieldIndex int, fieldValues ...string) ([][]string, error) {
+func (casbinAdapter) UpdateFilteredPolicies(
+	_ string,
+	_ string,
+	_ [][]string,
+	_ int,
+	_ ...string,
+) ([][]string, error) {
 	return nil, errUnimplemented
 }
 
-func (casbinAdapter) SavePolicy(model model.Model) error {
+func (casbinAdapter) SavePolicy(model.Model) error {
 	return errUnimplemented
 }
 
-func (casbinAdapter) AddPolicy(sec string, ptype string, rule []string) error {
+func (casbinAdapter) AddPolicy(string, string, []string) error {
 	return errUnimplemented
 }
 
-func (casbinAdapter) AddPolicies(sec string, ptype string, rules [][]string) error {
+func (casbinAdapter) AddPolicies(string, string, [][]string) error {
 	return errUnimplemented
 }
 
-func (casbinAdapter) RemovePolicy(sec string, ptype string, rule []string) error {
+func (casbinAdapter) RemovePolicy(string, string, []string) error {
 	return errUnimplemented
 }
 
-func (casbinAdapter) RemovePolicies(sec string, ptype string, rules [][]string) error {
+func (casbinAdapter) RemovePolicies(string, string, [][]string) error {
 	return errUnimplemented
 }
 
-func (casbinAdapter) RemoveFilteredPolicy(sec string, ptype string, fieldIndex int, fieldValues ...string) error {
+func (casbinAdapter) RemoveFilteredPolicy(string, string, int, ...string) error {
 	return errUnimplemented
 }

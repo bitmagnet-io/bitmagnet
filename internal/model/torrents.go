@@ -191,6 +191,7 @@ func (t Torrent) fileSearchStrings() []string {
 	firstPass := make([]string, 0, len(t.Files))
 
 	var prevPath string
+
 outer:
 	for _, f := range t.Files {
 		i := 0
@@ -198,14 +199,18 @@ outer:
 			if i >= len(f.Path) {
 				continue outer
 			}
+
 			if i >= len(prevPath) || prevPath[i] != f.Path[i] {
 				break
 			}
+
 			i++
 		}
+
 		for i != 0 && lexer.IsWordChar(rune(f.Path[i])) {
 			i--
 		}
+
 		firstPass = append(firstPass, f.Path[i:])
 		prevPath = f.Path
 	}

@@ -59,14 +59,15 @@ func (s *service) Register(ctx context.Context, request RegisterRequest) (model.
 		return model.User{}, fmt.Errorf("%w: %w: %w", Err, ErrRegister, ErrPasswordInsufficientEntropy)
 	}
 
-	if hashedPassword, err := bcrypt.GenerateFromPassword(
+	hashedPassword, err := bcrypt.GenerateFromPassword(
 		[]byte(request.Password),
 		int(s.passwordHashingCost.Get()),
-	); err != nil {
+	)
+	if err != nil {
 		return model.User{}, fmt.Errorf("%w: %w: %w", Err, ErrRegister, err)
-	} else {
-		user.Password = hashedPassword
 	}
+
+	user.Password = hashedPassword
 
 	var errUser error
 
@@ -76,7 +77,6 @@ func (s *service) Register(ctx context.Context, request RegisterRequest) (model.
 			invitation, err := tx.WithContext(ctx).Invitation.
 				Where(tx.Invitation.Code.Eq(request.InvitationCode)).
 				First()
-
 			if err != nil {
 				if errors.Is(err, gorm.ErrRecordNotFound) {
 					errUser = ErrInvitationNotFound
@@ -101,7 +101,9 @@ func (s *service) Register(ctx context.Context, request RegisterRequest) (model.
 		}
 
 		// Check if user already exists
-		if existing, err := tx.WithContext(ctx).User.Where(tx.User.Username.Eq(request.Username)).Count(); err != nil {
+		if existing, err := tx.WithContext(ctx).
+			User.Where(tx.User.Username.Eq(request.Username)).
+			Count(); err != nil {
 			return err
 		} else if existing > 0 {
 			errUser = ErrAlreadyExists
@@ -126,7 +128,6 @@ func (s *service) Register(ctx context.Context, request RegisterRequest) (model.
 
 		return nil
 	})
-
 	if errTx != nil {
 		return model.User{}, fmt.Errorf("%w: %w: %w: %w", Err, ErrRegister, ErrTransaction, errTx)
 	} else if errUser != nil {

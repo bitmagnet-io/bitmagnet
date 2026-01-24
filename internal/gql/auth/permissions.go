@@ -37,7 +37,7 @@ func Permissions() []rbac.Permission {
 		})...)
 }
 
-func AuthObjectActions(directives directive.AuthDirectives) []rbac.ObjectAction {
+func ObjectActions(directives directive.AuthDirectives) []rbac.ObjectAction {
 	return slice.Map(slices.Collect(maps.Keys(directives)), func(dir directive.AuthDirective) rbac.ObjectAction {
 		return rbac.NewObjectAction("graphql", dir.Object, dir.Action)
 	})

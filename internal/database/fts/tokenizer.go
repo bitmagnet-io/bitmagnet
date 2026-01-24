@@ -30,6 +30,7 @@ type tokenizerLexer struct {
 }
 
 func TokenizeFlat(str string) []string {
+	//nolint:prealloc
 	var tokens []string
 	for _, phrase := range Tokenize(str) {
 		tokens = append(tokens, phrase...)

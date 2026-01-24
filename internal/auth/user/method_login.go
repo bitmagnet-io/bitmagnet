@@ -35,19 +35,37 @@ func (s *service) Login(ctx context.Context, username, password string) (LoginRe
 		First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return LoginResult{}, fmt.Errorf("%w: %w: %w: %w", Err, ErrLogin, ErrCredentialsInvalid, ErrNotFound)
+			return LoginResult{}, fmt.Errorf(
+				"%w: %w: %w: %w",
+				Err,
+				ErrLogin,
+				ErrCredentialsInvalid,
+				ErrNotFound,
+			)
 		}
 
 		return LoginResult{}, fmt.Errorf("%w: %w: %w", Err, ErrLogin, err)
 	}
 
 	if len(user.Password) == 0 {
-		return LoginResult{}, fmt.Errorf("%w: %w: %w: %w", Err, ErrLogin, ErrCredentialsInvalid, ErrHasNoPassword)
+		return LoginResult{}, fmt.Errorf(
+			"%w: %w: %w: %w",
+			Err,
+			ErrLogin,
+			ErrCredentialsInvalid,
+			ErrHasNoPassword,
+		)
 	}
 
 	err = bcrypt.CompareHashAndPassword(user.Password, []byte(password))
 	if err != nil {
-		return LoginResult{}, fmt.Errorf("%w: %w: %w: %w", Err, ErrLogin, ErrCredentialsInvalid, ErrIncorrectPassword)
+		return LoginResult{}, fmt.Errorf(
+			"%w: %w: %w: %w",
+			Err,
+			ErrLogin,
+			ErrCredentialsInvalid,
+			ErrIncorrectPassword,
+		)
 	}
 
 	if !user.Enabled {

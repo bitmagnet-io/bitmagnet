@@ -172,6 +172,7 @@ func (p param[T]) EncodeYAMLAnyAny(val any) (any, error) {
 	}
 
 	var decoded any
+
 	err = node.Decode(&decoded)
 	if err != nil {
 		return nil, err
@@ -205,7 +206,7 @@ func (p param[T]) DecodeYAMLAnyAny(value any) (any, error) {
 	return p.DecodeYAMLAny(node)
 }
 
-func (p param[T]) ReflectType() reflect.Type {
+func (param[T]) ReflectType() reflect.Type {
 	var t T
 	return reflect.TypeOf(t)
 }
@@ -253,6 +254,7 @@ func parserYAML[T any](elementParser func(yaml.Node) (T, error)) func(string) (T
 		if err := yaml.Unmarshal([]byte(s), &node); err != nil {
 			return *new(T), err
 		}
+
 		return elementParser(node)
 	}
 }
@@ -263,14 +265,18 @@ func parserSlice[E any, T ~[]E](elementParser func(string) (E, error)) func(stri
 		if err != nil {
 			return nil, err
 		}
+
 		var result T
+
 		for _, item := range parts {
 			parsed, err := elementParser(item)
 			if err != nil {
 				return nil, err
 			}
+
 			result = append(result, parsed)
 		}
+
 		return result, nil
 	}
 }
@@ -289,7 +295,9 @@ func parserDynamic[T any](elementParser func(string) (T, error)) func(string) (*
 func stringifierSlice[E any, T ~[]E](elementStringifier func(E) string) func(T) string {
 	return func(sl T) string {
 		var b strings.Builder
-		csv.NewWriter(&b).Write(slice.Map(sl, elementStringifier))
+
+		_ = csv.NewWriter(&b).Write(slice.Map(sl, elementStringifier))
+
 		return b.String()
 	}
 }

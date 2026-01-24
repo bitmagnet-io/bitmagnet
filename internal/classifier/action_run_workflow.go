@@ -19,7 +19,7 @@ func (runWorkflowAction) name() string {
 var runWorkflowSpec = json_spec.SingleKeyValue[[]string]{
 	Key: runWorkflowName,
 	ValueSpec: json_spec.MustSucceed[[]string]{
-		json_spec.List[string]{
+		Typed: json_spec.List[string]{
 			ItemSpec: json_spec.Generic[string]{
 				Schema: json_schema.MustNew(
 					json_schema.Typed(json_schema.TypeString),
@@ -46,6 +46,7 @@ func (runWorkflowAction) compile(ctx compilerContext) (action, error) {
 	return action{
 		func(ctx executionContext) (classification.Result, error) {
 			var err error
+
 			cl := ctx.result
 			for _, name := range names {
 				cl, err = ctx.workflows[Workflow(name)].run(ctx.withResult(cl))
@@ -53,6 +54,7 @@ func (runWorkflowAction) compile(ctx compilerContext) (action, error) {
 					return cl, err
 				}
 			}
+
 			return cl, nil
 		},
 	}, nil

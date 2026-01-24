@@ -11,7 +11,7 @@ import (
 type (
 	Registry struct {
 		config
-		pluginInfos []plugin.PluginInfo
+		pluginInfos []plugin.Info
 		commands    []plugin.Command
 		fxOption    fx.Option
 	}
@@ -19,8 +19,8 @@ type (
 	config = config_resolver.Resolved
 )
 
-func (r *Registry) PluginInfos() []plugin.PluginInfo {
-	return append([]plugin.PluginInfo(nil), r.pluginInfos...)
+func (r *Registry) PluginInfos() []plugin.Info {
+	return append([]plugin.Info(nil), r.pluginInfos...)
 }
 
 func (r *Registry) Commands() []cmd.Command {

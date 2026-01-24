@@ -354,7 +354,9 @@ func (n branchNode) furthestXor() (NodeID, bool) {
 }
 
 func (n branchNode) allXors() []NodeID {
+	//nolint:prealloc
 	var xors []NodeID
+
 	xors = append(xors, n.branches[Bit0].allXors()...)
 	xors = append(xors, n.branches[Bit1].allXors()...)
 

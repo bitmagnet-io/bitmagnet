@@ -21,16 +21,22 @@ func (i Inputs) Input() Input {
 
 func InputTorrentSources(torrentSources ...model.TorrentSource) Input {
 	return func(p *payload) {
-		p.torrentSources.SetEntries(slice.Map(torrentSources, func(ts model.TorrentSource) maps.MapEntry[string, model.TorrentSource] {
-			return maps.MapEntry[string, model.TorrentSource]{
-				Key:   ts.Key,
-				Value: ts,
-			}
-		})...)
+		p.torrentSources.SetEntries(
+			slice.Map(
+				torrentSources,
+				func(ts model.TorrentSource) maps.MapEntry[string, model.TorrentSource] {
+					return maps.MapEntry[string, model.TorrentSource]{
+						Key:   ts.Key,
+						Value: ts,
+					}
+				},
+			)...)
 	}
 }
 
-func torrentsTorrentSourcesEntries(torrentsTorrentSources ...model.TorrentsTorrentSource) []maps.MapEntry[hashWithID, model.TorrentsTorrentSource] {
+func torrentsTorrentSourcesEntries(
+	torrentsTorrentSources ...model.TorrentsTorrentSource,
+) []maps.MapEntry[hashWithID, model.TorrentsTorrentSource] {
 	return slice.Map(
 		torrentsTorrentSources,
 		func(ts model.TorrentsTorrentSource) maps.MapEntry[hashWithID, model.TorrentsTorrentSource] {
@@ -90,12 +96,13 @@ func InputTorrentFiles(torrentFiles ...model.TorrentFile) Input {
 
 func InputTorrents(torrents ...model.Torrent) Input {
 	return func(p *payload) {
-		p.torrents.SetEntries(slice.Map(torrents, func(t model.Torrent) maps.MapEntry[protocol.ID, model.Torrent] {
-			return maps.MapEntry[protocol.ID, model.Torrent]{
-				Key:   t.InfoHash,
-				Value: t,
-			}
-		})...)
+		p.torrents.SetEntries(
+			slice.Map(torrents, func(t model.Torrent) maps.MapEntry[protocol.ID, model.Torrent] {
+				return maps.MapEntry[protocol.ID, model.Torrent]{
+					Key:   t.InfoHash,
+					Value: t,
+				}
+			})...)
 	}
 }
 
@@ -130,21 +137,25 @@ func InputTorrentContent(torrentContents ...model.TorrentContent) Input {
 func InputDeleteTorrentContent(torrentContentRefs ...model.TorrentContentRef) Input {
 	return func(p *payload) {
 		p.deleteTorrentContent.SetEntries(
-			slice.Map(torrentContentRefs, func(ref model.TorrentContentRef) maps.MapEntry[model.TorrentContentRef, struct{}] {
-				return maps.MapEntry[model.TorrentContentRef, struct{}]{
-					Key: ref,
-				}
-			})...)
+			slice.Map(
+				torrentContentRefs,
+				func(ref model.TorrentContentRef) maps.MapEntry[model.TorrentContentRef, struct{}] {
+					return maps.MapEntry[model.TorrentContentRef, struct{}]{
+						Key: ref,
+					}
+				},
+			)...)
 	}
 }
 
 func InputDeleteInfoHashes(infoHashes ...protocol.ID) Input {
 	return func(p *payload) {
-		p.deleteInfoHashes.SetEntries(slice.Map(infoHashes, func(id protocol.ID) maps.MapEntry[protocol.ID, struct{}] {
-			return maps.MapEntry[protocol.ID, struct{}]{
-				Key: id,
-			}
-		})...)
+		p.deleteInfoHashes.SetEntries(
+			slice.Map(infoHashes, func(id protocol.ID) maps.MapEntry[protocol.ID, struct{}] {
+				return maps.MapEntry[protocol.ID, struct{}]{
+					Key: id,
+				}
+			})...)
 	}
 }
 
@@ -182,12 +193,13 @@ func InputDeleteTorrentTags(infoHash protocol.ID, tags ...string) Input {
 
 func InputQueueJobs(queueJobs ...model.QueueJob) Input {
 	return func(p *payload) {
-		p.queueJobs.SetEntries(slice.Map(queueJobs, func(j model.QueueJob) maps.MapEntry[string, model.QueueJob] {
-			return maps.MapEntry[string, model.QueueJob]{
-				Key:   j.Queue + ":" + j.Fingerprint,
-				Value: j,
-			}
-		})...)
+		p.queueJobs.SetEntries(
+			slice.Map(queueJobs, func(j model.QueueJob) maps.MapEntry[string, model.QueueJob] {
+				return maps.MapEntry[string, model.QueueJob]{
+					Key:   j.Queue + ":" + j.Fingerprint,
+					Value: j,
+				}
+			})...)
 	}
 }
 

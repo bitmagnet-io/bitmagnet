@@ -129,6 +129,8 @@ func TestStringSlice(t *testing.T) {
 }
 
 func TestStruct(t *testing.T) {
+	t.Parallel()
+
 	type TestStruct struct {
 		CamelCase string
 		Bar       int
@@ -152,6 +154,7 @@ func TestStruct(t *testing.T) {
 	}, p.NewDefault())
 
 	yamlBytes := []byte(`{"camel_case":"foo","bar":6}`)
+
 	var yamlNode yaml.Node
 	require.NoError(t, yaml.Unmarshal(yamlBytes, &yamlNode))
 
@@ -164,6 +167,8 @@ func TestStruct(t *testing.T) {
 }
 
 func TestBoolAlias(t *testing.T) {
+	t.Parallel()
+
 	type BoolAlias bool
 
 	p, err := param.New(
@@ -176,6 +181,7 @@ func TestBoolAlias(t *testing.T) {
 	assert.Equal(t, BoolAlias(true), p.NewDefault())
 
 	yamlBytes := []byte(`false`)
+
 	var yamlNode yaml.Node
 	require.NoError(t, yaml.Unmarshal(yamlBytes, &yamlNode))
 

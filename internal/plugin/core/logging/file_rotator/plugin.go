@@ -33,7 +33,7 @@ var (
 		builder.WithConfig[deps](Ref.MustSub("buffer_size"), file_rotator.ParamBufferSize),
 		builder.WithFxOption[deps](
 			fx.Provide(
-				func(fsProvider fs.FSProvider) file_rotator.FS {
+				func(fsProvider fs.Provider) file_rotator.FS {
 					return fsProvider.FSData()
 				},
 				file_rotator.New,

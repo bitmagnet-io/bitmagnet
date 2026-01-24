@@ -11,6 +11,7 @@ type PasswordEntropyResult struct {
 func (s *service) PasswordEntropy(password string) PasswordEntropyResult {
 	minEntropy := float64(s.passwordMinEntropy.Get())
 	entropy := passwordvalidator.GetEntropy(password)
+
 	return PasswordEntropyResult{
 		Entropy:    entropy,
 		MinEntropy: minEntropy,

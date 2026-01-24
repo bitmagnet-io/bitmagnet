@@ -42,32 +42,39 @@ type FileInfo struct {
 
 func New(plugin *protogen.Plugin) (Spec, error) {
 	var spec Spec
+
 	protocVersion := "(unknown)"
 	if v := plugin.Request.GetCompilerVersion(); v != nil {
 		protocVersion = fmt.Sprintf("v%v.%v.%v", v.GetMajor(), v.GetMinor(), v.GetPatch())
 	}
+
 	spec.ProtocVersion = protocVersion
+
 	for _, file := range plugin.Files {
 		f, err := newFile(file)
 		if err != nil {
 			return Spec{}, err
 		}
+
 		f.ProtocVersion = protocVersion
 		spec.Files = append(spec.Files, f)
 	}
+
 	return spec, nil
 }
 
 const (
-	FileDescriptorProto_Syntax_field_number  protoreflect.FieldNumber = 12
-	FileDescriptorProto_Package_field_number protoreflect.FieldNumber = 2
+	FileDescriptorProtoSyntaxFieldNumber  protoreflect.FieldNumber = 12
+	FileDescriptorProtoPackageFieldNumber protoreflect.FieldNumber = 2
 )
 
 func newFile(file *protogen.File) (FileInfo, error) {
 	f := FileInfo{
-		Generate:                file.Generate,
-		SyntaxCommentLocation:   file.Desc.SourceLocations().ByPath(protoreflect.SourcePath{int32(FileDescriptorProto_Syntax_field_number)}),
-		PackageCommentLocation:  file.Desc.SourceLocations().ByPath(protoreflect.SourcePath{int32(FileDescriptorProto_Package_field_number)}),
+		Generate: file.Generate,
+		SyntaxCommentLocation: file.Desc.SourceLocations().
+			ByPath(protoreflect.SourcePath{int32(FileDescriptorProtoSyntaxFieldNumber)}),
+		PackageCommentLocation: file.Desc.SourceLocations().
+			ByPath(protoreflect.SourcePath{int32(FileDescriptorProtoPackageFieldNumber)}),
 		RawDescVarName:          fileVarName(file, "rawDesc"),
 		Path:                    file.Desc.Path(),
 		GeneratedFilenamePrefix: file.GeneratedFilenamePrefix,
@@ -99,10 +106,12 @@ func newFile(file *protogen.File) (FileInfo, error) {
 			if f.HostService != nil {
 				return FileInfo{}, errors.New("type=host can be defined only once")
 			}
+
 			f.HostService = &si
 		case ServiceUnknown:
 			return FileInfo{}, errors.New("unknown go-plugin type")
 		}
+
 		f.Services = append(f.Services, si)
 	}
 
@@ -114,6 +123,7 @@ func newFile(file *protogen.File) (FileInfo, error) {
 		for _, enum := range m.Enums {
 			f.Enums = append(f.Enums, newEnumInfo(enum))
 		}
+
 		for _, message := range m.Messages {
 			f.Messages = append(f.Messages, newMessageInfo(message))
 		}
@@ -223,6 +233,7 @@ func newMessageInfo(message *protogen.Message) MessageInfo {
 	for _, field := range message.Fields {
 		m.Fields = append(m.Fields, newMessageFieldInfo(field))
 	}
+
 	return m
 }
 
@@ -251,11 +262,13 @@ func newMessageFieldInfo(field *protogen.Field) MessageFieldInfo {
 	var enumName string
 	if field.Desc.Kind() == protoreflect.EnumKind {
 		enumName = protoimpl.X.LegacyEnumName(field.Enum.Desc)
+
 		info.EnumGoIdent = field.Enum.GoIdent
 		if len(field.Enum.Values) > 0 {
 			info.EnumFirstValueGoIdent = field.Enum.Values[0].GoIdent
 		}
 	}
+
 	info.ProtobufTagValue = marshalTag(field.Desc, enumName)
 
 	// if o := field.Oneof; o != nil {
@@ -270,20 +283,20 @@ func newMessageFieldInfo(field *protogen.Field) MessageFieldInfo {
 	return info
 }
 
-func newOneOfInfo(oneof *protogen.Oneof) OneOfInfo {
-	return OneOfInfo{
-		Name:             oneof.Desc.Name(),
-		GoName:           oneof.GoName,
-		GoIdent:          oneof.GoIdent,
-		Location:         oneof.Location,
-		IsSynthetic:      oneof.Desc.IsSynthetic(),
-		LeadingComments:  oneof.Comments.Leading,
-		TrailingComments: oneof.Comments.Trailing,
-		Fields: slice.Map(oneof.Fields, func(fld *protogen.Field) MessageFieldInfo {
-			return newMessageFieldInfo(fld)
-		}),
-	}
-}
+// func newOneOfInfo(oneof *protogen.Oneof) OneOfInfo {
+// 	return OneOfInfo{
+// 		Name:             oneof.Desc.Name(),
+// 		GoName:           oneof.GoName,
+// 		GoIdent:          oneof.GoIdent,
+// 		Location:         oneof.Location,
+// 		IsSynthetic:      oneof.Desc.IsSynthetic(),
+// 		LeadingComments:  oneof.Comments.Leading,
+// 		TrailingComments: oneof.Comments.Trailing,
+// 		Fields: slice.Map(oneof.Fields, func(fld *protogen.Field) MessageFieldInfo {
+// 			return newMessageFieldInfo(fld)
+// 		}),
+// 	}
+// }
 
 type ServiceInfo struct {
 	GoName          string
@@ -310,9 +323,7 @@ func newServiceInfo(service *protogen.Service, param Parameter) ServiceInfo {
 		GoName:          service.GoName,
 		Location:        service.Location,
 		LeadingComments: service.Comments.Leading,
-		Methods: slice.Map(service.Methods, func(m *protogen.Method) ServiceMethodInfo {
-			return newServiceMethodInfo(m)
-		}),
+		Methods:         slice.Map(service.Methods, newServiceMethodInfo),
 	}
 }
 
@@ -335,8 +346,14 @@ func newServiceMethodInfo(method *protogen.Method) ServiceMethodInfo {
 // responsibility to provide a function to obtain that information.
 func marshalTag(fd protoreflect.FieldDescriptor, enumName string) string {
 	var tag []string
+
 	switch fd.Kind() {
-	case protoreflect.BoolKind, protoreflect.EnumKind, protoreflect.Int32Kind, protoreflect.Uint32Kind, protoreflect.Int64Kind, protoreflect.Uint64Kind:
+	case protoreflect.BoolKind,
+		protoreflect.EnumKind,
+		protoreflect.Int32Kind,
+		protoreflect.Uint32Kind,
+		protoreflect.Int64Kind,
+		protoreflect.Uint64Kind:
 		tag = append(tag, "varint")
 	case protoreflect.Sint32Kind:
 		tag = append(tag, "zigzag32")
@@ -351,6 +368,7 @@ func marshalTag(fd protoreflect.FieldDescriptor, enumName string) string {
 	case protoreflect.GroupKind:
 		tag = append(tag, "group")
 	}
+
 	tag = append(tag, strconv.Itoa(int(fd.Number())))
 	switch fd.Cardinality() {
 	case protoreflect.Optional:
@@ -360,9 +378,11 @@ func marshalTag(fd protoreflect.FieldDescriptor, enumName string) string {
 	case protoreflect.Repeated:
 		tag = append(tag, "rep")
 	}
+
 	if fd.IsPacked() {
 		tag = append(tag, "packed")
 	}
+
 	name := string(fd.Name())
 	if fd.Kind() == protoreflect.GroupKind {
 		// The name of the FieldDescriptor for a group field is
@@ -370,6 +390,7 @@ func marshalTag(fd protoreflect.FieldDescriptor, enumName string) string {
 		// look in the field's MessageType.
 		name = string(fd.Message().Name())
 	}
+
 	tag = append(tag, "name="+name)
 	if jsonName := fd.JSONName(); jsonName != "" && jsonName != name && !fd.IsExtension() {
 		// NOTE: The jsonName != name condition is suspect, but it preserve
@@ -382,9 +403,11 @@ func marshalTag(fd protoreflect.FieldDescriptor, enumName string) string {
 	if fd.Syntax() == protoreflect.Proto3 && !fd.IsExtension() {
 		tag = append(tag, "proto3")
 	}
+
 	if fd.Kind() == protoreflect.EnumKind && enumName != "" {
 		tag = append(tag, "enum="+enumName)
 	}
+
 	if fd.ContainingOneof() != nil {
 		tag = append(tag, "oneof")
 	}

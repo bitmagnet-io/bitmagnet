@@ -188,8 +188,10 @@ func (p processor) handleTorrents(
 			return classifyCtx.Err()
 		case <-shutdown:
 			mtx.Lock()
+
 			failedHashes = append(failedHashes, torrent.InfoHash)
 			interrupted = true
+
 			mtx.Unlock()
 
 			continue
@@ -303,7 +305,6 @@ func (p processor) handleTorrent(
 	}
 
 	cl, err := p.runner.Run(ctx, workflowName, params.ClassifierFlags, torrent)
-
 	if err != nil {
 		return errorToInputs(torrent.InfoHash, err)
 	}
@@ -337,6 +338,7 @@ func resultToInputs(result handleTorrentResult) persister.Inputs {
 	inputs = append(inputs, persister.InputTorrentContent(result.torrentContent))
 
 	var tagsToAdd, tagsToRemove []string
+
 	for tagName, addRemove := range result.tags {
 		if addRemove {
 			tagsToAdd = append(tagsToAdd, tagName)

@@ -8,6 +8,6 @@ type Permission interface {
 }
 
 type Permissions struct {
-	FS   *PermissionFS
-	HTTP *PermissionHTTP
+	FS   *PermissionFS   `json:"fs,omitempty"`
+	HTTP *PermissionHTTP `json:"http,omitempty"`
 }

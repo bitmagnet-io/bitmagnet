@@ -32,7 +32,6 @@ func (f *fileRotatorFile) flush() error {
 
 func (f *fileRotatorFile) close() error {
 	err := f.flush()
-
 	if err == nil {
 		err = f.file.Close()
 	}

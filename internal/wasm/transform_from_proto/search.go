@@ -22,24 +22,30 @@ func SearchTorrentContentResult(
 			Valid: true,
 		}
 	}
+
 	if e := result.GetTotalCountIsEstimate(); e != nil {
 		totalCountIsEstimate = *e
 	}
+
 	if h := result.GetHasNextPage(); h != nil {
 		hasNextPage = model.NullBool{
 			Bool:  *h,
 			Valid: true,
 		}
 	}
+
 	return search.TorrentContentResult{
 		TotalCount:           totalCount,
 		TotalCountIsEstimate: totalCountIsEstimate,
 		HasNextPage:          hasNextPage,
-		Items: slice.Map(result.GetItems(), func(tc *proto_model.TorrentContent) search.TorrentContentResultItem {
-			return search.TorrentContentResultItem{
-				TorrentContent: TorrentContent(tc),
-			}
-		}),
+		Items: slice.Map(
+			result.GetItems(),
+			func(tc *proto_model.TorrentContent) search.TorrentContentResultItem {
+				return search.TorrentContentResultItem{
+					TorrentContent: TorrentContent(tc),
+				}
+			},
+		),
 		Facets: slice.Map(result.GetFacets(), SearchFacetResult),
 	}
 }
@@ -58,23 +64,24 @@ func SearchTorrentFilesResult(
 			Valid: true,
 		}
 	}
+
 	if e := result.GetTotalCountIsEstimate(); e != nil {
 		totalCountIsEstimate = *e
 	}
+
 	if h := result.GetHasNextPage(); h != nil {
 		hasNextPage = model.NullBool{
 			Bool:  *h,
 			Valid: true,
 		}
 	}
+
 	return search.TorrentFilesResult{
 		TotalCount:           totalCount,
 		TotalCountIsEstimate: totalCountIsEstimate,
 		HasNextPage:          hasNextPage,
-		Items: slice.Map(result.GetItems(), func(tc *proto_model.TorrentFile) model.TorrentFile {
-			return TorrentFile(tc)
-		}),
-		Facets: slice.Map(result.GetFacets(), SearchFacetResult),
+		Items:                slice.Map(result.GetItems(), TorrentFile),
+		Facets:               slice.Map(result.GetFacets(), SearchFacetResult),
 	}
 }
 
@@ -92,6 +99,7 @@ func SearchFacetResult(
 					if label != nil {
 						return *label
 					}
+
 					return item.GetValue()
 				}(),
 				Count: uint(item.GetCount()),

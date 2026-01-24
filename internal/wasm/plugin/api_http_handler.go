@@ -16,7 +16,9 @@ func (api *apiHTTPHandler) Config(ctx context.Context, empty *plugin_api.Empty) 
 
 	err := api.do(ctx, func(httpHandler plugin_api.HTTPHandler) error {
 		var err error
+
 		result, err = httpHandler.Config(ctx, empty)
+
 		return err
 	})
 
@@ -28,7 +30,9 @@ func (api *apiHTTPHandler) HandleRequest(ctx context.Context, request *http.Requ
 
 	err := api.do(ctx, func(httpHandler plugin_api.HTTPHandler) error {
 		var err error
+
 		result, err = httpHandler.HandleRequest(ctx, request)
+
 		return err
 	})
 

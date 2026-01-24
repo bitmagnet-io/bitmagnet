@@ -20,7 +20,7 @@ type Bucket struct {
 }
 
 type Request struct {
-	BucketDuration bucket.BucketDuration
+	BucketDuration bucket.Duration
 	Statuses       []model.QueueJobStatus
 	Queues         []string
 	StartTime      time.Time

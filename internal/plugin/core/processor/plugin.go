@@ -44,7 +44,9 @@ var (
 						return model.NewQueueJob(
 							Ref.String(),
 							msg,
-							append([]model.QueueJobOption{model.QueueJobMaxRetries(2)}, options...)...,
+							append(
+								[]model.QueueJobOption{model.QueueJobMaxRetries(2)},
+								options...)...,
 						)
 					}
 				},

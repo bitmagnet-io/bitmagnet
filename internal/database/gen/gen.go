@@ -28,6 +28,7 @@ func BuildGenerator(db *gorm.DB) *gen.Generator {
 			if n, ok := columnType.Nullable(); ok && n {
 				return "NullString"
 			}
+
 			return "string"
 		},
 		"bytea": func(gorm.ColumnType) (dataType string) {

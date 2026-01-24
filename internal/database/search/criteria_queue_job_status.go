@@ -15,6 +15,7 @@ func QueueJobStatusCriteria(statuses ...model.QueueJobStatus) query.Criteria {
 	return query.DaoCriteria{
 		Conditions: func(ctx query.DBContext) ([]field.Expr, error) {
 			q := ctx.Query()
+
 			return []field.Expr{
 				q.QueueJob.Status.In(strStatuses...),
 			}, nil

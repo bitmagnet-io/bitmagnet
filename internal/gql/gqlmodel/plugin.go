@@ -12,18 +12,18 @@ import (
 
 type PluginQuery struct {
 	I18n  *i18n.Bundle
-	Infos plugin.PluginInfos
+	Infos plugin.Infos
 }
 
 func (q PluginQuery) List(ctx context.Context) []gen.PluginInfo {
 	localizer := httpserver.NewLocalizerFromContext(ctx, q.I18n)
 
-	return slice.Map(q.Infos, func(info plugin.PluginInfo) gen.PluginInfo {
+	return slice.Map(q.Infos, func(info plugin.Info) gen.PluginInfo {
 		return transformPluginInfo(info, localizer)
 	})
 }
 
-func transformPluginInfo(info plugin.PluginInfo, localizer *i18n.Localizer) gen.PluginInfo {
+func transformPluginInfo(info plugin.Info, localizer *i18n.Localizer) gen.PluginInfo {
 	var description *string
 	if localized, _ := localizer.LocalizeMessage(&i18n.Message{
 		ID: info.Ref.String(),

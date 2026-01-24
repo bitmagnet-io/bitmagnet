@@ -29,7 +29,7 @@ func introspect(cmd Command) (Spec, error) {
 		params: make(map[string]Param),
 	}
 
-	for i := 0; i < v.NumField(); i++ {
+	for i := range v.NumField() {
 		ft := t.Field(i)
 
 		if !ft.IsExported() {
@@ -113,10 +113,12 @@ func applyParam(t reflect.StructField) func(*Spec) error {
 		if err != nil {
 			return err
 		}
+
 		if param != nil {
 			s.params[param.Name] = *param
 			s.paramKeys = append(s.paramKeys, param.Name)
 		}
+
 		return nil
 	}
 }
@@ -124,6 +126,7 @@ func applyParam(t reflect.StructField) func(*Spec) error {
 func extractParam(t reflect.StructField) (*Param, error) {
 	tag := t.Tag.Get("cmd")
 	if tag == "-" {
+		//nolint:nilnil
 		return nil, nil
 	}
 
@@ -148,11 +151,13 @@ func extractParam(t reflect.StructField) (*Param, error) {
 			if !regexParamKey.MatchString(v) {
 				return nil, fmt.Errorf("%w: %s: %s", ErrInvalidName, t.Name, v)
 			}
+
 			param.Name = v
 		case "abbr":
 			if !regexParamKey.MatchString(v) {
 				return nil, fmt.Errorf("%w: %s: %s", ErrInvalidAbbr, t.Name, v)
 			}
+
 			param.Abbr = v
 		case "example":
 			param.Example = v
@@ -178,6 +183,7 @@ func reflectTypeToParamType(t reflect.Type) (paramType, error) {
 	if reflect.PointerTo(t).Implements(textUnmarshalerType) {
 		return paramTypeTextUnmarshaler, nil
 	}
+
 	switch t.Kind() {
 	case reflect.String:
 		return paramTypeString, nil
@@ -196,14 +202,20 @@ func tagKeyValues(tag string) map[string]string {
 	}
 
 	kvs := make(map[string]string)
-	var parts []string
-	var current strings.Builder
-	var inQuotes bool
+
+	var (
+		parts    []string
+		current  strings.Builder
+		inQuotes bool
+	)
 
 	// Split by commas, respecting single quotes
+
+	//nolint:gocritic
 	for _, ch := range tag {
 		if ch == '\'' {
 			inQuotes = !inQuotes
+
 			current.WriteRune(ch)
 		} else if ch == ',' && !inQuotes {
 			parts = append(parts, current.String())
@@ -212,6 +224,7 @@ func tagKeyValues(tag string) map[string]string {
 			current.WriteRune(ch)
 		}
 	}
+
 	if current.Len() > 0 {
 		parts = append(parts, current.String())
 	}
@@ -220,6 +233,7 @@ func tagKeyValues(tag string) map[string]string {
 	for _, part := range parts {
 		split := strings.SplitN(part, "=", 2)
 		key := strings.TrimSpace(split[0])
+
 		var value string
 		if len(split) > 1 {
 			value = strings.TrimSpace(split[1])
@@ -228,7 +242,9 @@ func tagKeyValues(tag string) map[string]string {
 				value = value[1 : len(value)-1]
 			}
 		}
+
 		kvs[key] = value
 	}
+
 	return kvs
 }

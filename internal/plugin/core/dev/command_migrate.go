@@ -11,11 +11,11 @@ import (
 
 type MigrateCommand struct {
 	cmd.Cmd `cmd:"doc=Run database migrations"`
-	cmd.App[DevCommandDeps]
+	cmd.App[CommandDeps]
 }
 
 func (c *MigrateCommand) Run(env env.Env) error {
-	return c.NewRunner(func(deps DevCommandDeps) runner.Runner {
+	return c.NewRunner(func(deps CommandDeps) runner.Runner {
 		return runner.SimpleRunner(func(ctx context.Context) error {
 			ctx, cancel := context.WithCancelCause(ctx)
 			defer cancel(nil)

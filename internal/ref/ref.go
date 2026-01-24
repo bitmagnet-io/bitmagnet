@@ -63,8 +63,8 @@ func Parse(name string) (Ref, error) {
 		return Ref{}, err
 	}
 
-	for i := 0; i < len(parts); i++ {
-		nextResult, err := result.sub(parts[i])
+	for _, part := range parts {
+		nextResult, err := result.sub(part)
 		if err != nil {
 			return Ref{}, err
 		}

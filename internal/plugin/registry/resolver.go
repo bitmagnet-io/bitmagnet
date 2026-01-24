@@ -43,7 +43,7 @@ func (r *resolver) resolve() (*Registry, error) {
 
 	requiredBy := make(map[string][]ref.Ref)
 
-	pluginInfos := plugin.PluginInfos(slice.Map(r.plugins.Refs(), func(ref ref.Ref) plugin.PluginInfo {
+	pluginInfos := plugin.Infos(slice.Map(r.plugins.Refs(), func(ref ref.Ref) plugin.Info {
 		_, enabled := resolvedNamesMap[ref.String()]
 
 		dependsOn := r.dependenciesOf(ref)
@@ -52,7 +52,7 @@ func (r *resolver) resolve() (*Registry, error) {
 			requiredBy[dep.String()] = append(requiredBy[dep.String()], ref)
 		}
 
-		return plugin.PluginInfo{
+		return plugin.Info{
 			Ref:       ref,
 			Enabled:   enabled,
 			DependsOn: dependsOn,
@@ -66,7 +66,7 @@ func (r *resolver) resolve() (*Registry, error) {
 	return &Registry{
 		pluginInfos: pluginInfos,
 		config:      r.config,
-		commands: slice.FlatMap(pluginInfos, func(info plugin.PluginInfo) []plugin.Command {
+		commands: slice.FlatMap(pluginInfos, func(info plugin.Info) []plugin.Command {
 			if !info.Enabled {
 				return nil
 			}
@@ -141,6 +141,7 @@ func (r *resolver) resolveNames() (map[string]ref.Ref, error) {
 	resultMap := make(map[string]ref.Ref)
 
 	var addPlugin func(ref.Ref) error
+
 	addPlugin = func(ref ref.Ref) error {
 		if !r.plugins.Has(ref) {
 			return fmt.Errorf("%w: %s", ErrUnknownPlugin, ref)

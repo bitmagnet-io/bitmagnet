@@ -70,7 +70,7 @@ var (
 	regexParamKeyValue = regexp.MustCompile(`^([a-z0-9]+(?:-[a-z0-9]+)*)=(.+)$`)
 )
 
-func parseKeyValue(prefix, arg string) (string, string, bool) {
+func parseKeyValue(prefix, arg string) (key string, value string, ok bool) {
 	if !strings.HasPrefix(arg, prefix) || len(arg) <= len(prefix) {
 		return "", "", false
 	}

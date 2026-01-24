@@ -38,11 +38,14 @@ func (c *circuitBreaker) WorkersState() ref.Map[WorkerState] {
 func (c *circuitBreaker) ReceiveRegistry(r *Registry) error {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
+
 	if c.registry != nil {
 		return errors.New("registry already set")
 	}
+
 	c.registry = r
 	close(c.received)
+
 	return nil
 }
 

@@ -42,14 +42,17 @@ func (v Validators[T]) Evaluate(val T) error {
 
 func (v Validators[T]) Validate(val T) error {
 	var errs []error
+
 	for _, validator := range v {
 		if err := validator.Evaluate(val); err != nil {
 			errs = append(errs, err)
 		}
 	}
+
 	if len(errs) > 0 {
-		return fmt.Errorf("%w: %s", ErrInvalid, errors.Join(errs...))
+		return fmt.Errorf("%w: %w", ErrInvalid, errors.Join(errs...))
 	}
+
 	return nil
 }
 
@@ -65,16 +68,17 @@ func (v minLengthValidator[T]) Evaluate(val T) error {
 	if len(val) >= v.min {
 		return nil
 	}
+
 	return fmt.Errorf("length %d is less than minimum %d", len(val), v.min)
 }
 
-func MinLength[T ~string](min int) Option[T] {
+func MinLength[T ~string](n int) Option[T] {
 	return Options(
 		JSONSchemaOption[T](
-			json_schema.MinLength(min),
+			json_schema.MinLength(n),
 			json_schema.Required(json_schema.RequiredBool(true)),
 		),
-		Validate(minLengthValidator[T]{min: min}),
+		Validate(minLengthValidator[T]{min: n}),
 	)
 }
 
@@ -90,13 +94,14 @@ func (v maxLengthValidator[T]) Evaluate(val T) error {
 	if len(val) <= v.max {
 		return nil
 	}
+
 	return fmt.Errorf("length %d is greater than maximum %d", len(val), v.max)
 }
 
-func MaxLength[T ~string](max int) Option[T] {
+func MaxLength[T ~string](n int) Option[T] {
 	return Options(
-		JSONSchemaOption[T](json_schema.MaxLength(max)),
-		Validate(maxLengthValidator[T]{max: max}),
+		JSONSchemaOption[T](json_schema.MaxLength(n)),
+		Validate(maxLengthValidator[T]{max: n}),
 	)
 }
 
@@ -112,13 +117,14 @@ func (v validatorMinItems[E, T]) Evaluate(val T) error {
 	if len(val) >= v.min {
 		return nil
 	}
+
 	return fmt.Errorf("items count %d is less than minimum %d", len(val), v.min)
 }
 
-func MinItems[E any, T ~[]E](min int) Option[T] {
+func MinItems[E any, T ~[]E](n int) Option[T] {
 	return Options(
-		JSONSchemaOption[T](json_schema.MinItems(min)),
-		Validate(validatorMinItems[E, T]{min: min}),
+		JSONSchemaOption[T](json_schema.MinItems(n)),
+		Validate(validatorMinItems[E, T]{min: n}),
 	)
 }
 
@@ -134,13 +140,14 @@ func (v validatorMaxItems[E, T]) Evaluate(val T) error {
 	if len(val) <= v.max {
 		return nil
 	}
+
 	return fmt.Errorf("items count %d is greater than maximum %d", len(val), v.max)
 }
 
-func MaxItems[E any, T ~[]E](max int) Option[T] {
+func MaxItems[E any, T ~[]E](n int) Option[T] {
 	return Options(
-		JSONSchemaOption[T](json_schema.MaxItems(max)),
-		Validate(validatorMaxItems[E, T]{max: max}),
+		JSONSchemaOption[T](json_schema.MaxItems(n)),
+		Validate(validatorMaxItems[E, T]{max: n}),
 	)
 }
 
@@ -160,6 +167,7 @@ func (v validatorOneOf[T]) Evaluate(val T) error {
 			return nil
 		}
 	}
+
 	return fmt.Errorf("value %v is not one of the allowed values", val)
 }
 
@@ -168,14 +176,15 @@ type validatorRegex[T ~string] struct {
 }
 
 func (v validatorRegex[T]) Doc() string {
-	return "must match pattern: " + v.Regexp.String()
+	return "must match pattern: " + v.String()
 }
 
 func (v validatorRegex[T]) Evaluate(val T) error {
 	if v.MatchString(string(val)) {
 		return nil
 	}
-	return fmt.Errorf("value %q does not match pattern %q", val, v.Regexp.String())
+
+	return fmt.Errorf("value %q does not match pattern %q", val, v.String())
 }
 
 func Regex[T ~string](regex *regexp.Regexp) Option[T] {
@@ -213,15 +222,16 @@ func (v validatorDynamic[T]) Evaluate(val *atomic.Value[T]) error {
 
 type validatorRequired[T comparable] struct{}
 
-func (v validatorRequired[T]) Doc() string {
+func (validatorRequired[T]) Doc() string {
 	return "required"
 }
 
-func (v validatorRequired[T]) Evaluate(val T) error {
+func (validatorRequired[T]) Evaluate(val T) error {
 	var zero T
 	if val != zero {
 		return nil
 	}
+
 	return fmt.Errorf("value is required")
 }
 
@@ -246,13 +256,14 @@ func (v validatorGreaterThan[T]) Evaluate(val T) error {
 	if val > v.value {
 		return nil
 	}
+
 	return fmt.Errorf("value %v is not greater than %v", val, v.value)
 }
 
-func GreaterThan[T number](min T) Option[T] {
+func GreaterThan[T number](n T) Option[T] {
 	return Options(
-		JSONSchemaOption[T](json_schema.ExclusiveMinimum(float64(min))),
-		Validate(validatorGreaterThan[T]{value: min}),
+		JSONSchemaOption[T](json_schema.ExclusiveMinimum(float64(n))),
+		Validate(validatorGreaterThan[T]{value: n}),
 	)
 }
 
@@ -268,11 +279,12 @@ func (v validatorLessThan[T]) Evaluate(val T) error {
 	if val < v.value {
 		return nil
 	}
+
 	return fmt.Errorf("value %v is not less than %v", val, v.value)
 }
 
-func LessThan[T number](max T) Option[T] {
-	return Validate(validatorLessThan[T]{value: max})
+func LessThan[T number](n T) Option[T] {
+	return Validate(validatorLessThan[T]{value: n})
 }
 
 type validatorMin[T number] struct {
@@ -287,11 +299,12 @@ func (v validatorMin[T]) Evaluate(val T) error {
 	if val >= v.value {
 		return nil
 	}
+
 	return fmt.Errorf("value %v is not at least %v", val, v.value)
 }
 
-func Min[T number](min T) Option[T] {
-	return Validate(validatorMin[T]{value: min})
+func Min[T number](n T) Option[T] {
+	return Validate(validatorMin[T]{value: n})
 }
 
 type validatorMax[T number] struct {
@@ -306,9 +319,10 @@ func (v validatorMax[T]) Evaluate(val T) error {
 	if val <= v.value {
 		return nil
 	}
+
 	return fmt.Errorf("value %v is not at most %v", val, v.value)
 }
 
-func Max[T number](max T) Option[T] {
-	return Validate(validatorMax[T]{value: max})
+func Max[T number](n T) Option[T] {
+	return Validate(validatorMax[T]{value: n})
 }

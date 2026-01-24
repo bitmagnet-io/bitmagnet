@@ -75,6 +75,7 @@ func (wr *workerRunner[K, V]) addItemsAndCheckFlush(items []V, forceFlush bool) 
 		} else {
 			v = value[V]{value: item, added: now}
 		}
+
 		wr.buffer.Set(key, v)
 	}
 
@@ -105,7 +106,6 @@ func (wr *workerRunner[K, V]) addItemsAndCheckFlush(items []V, forceFlush bool) 
 		}
 
 		err := wr.flusher(wr.ctx, items)
-
 		if err != nil {
 			return fmt.Errorf("%w: %w: %w", Err, ErrFlush, err)
 		}

@@ -17,7 +17,7 @@ func (removeTagAction) name() string {
 var removeTagSpec = json_spec.SingleKeyValue[[]string]{
 	Key: removeTagName,
 	ValueSpec: json_spec.MustSucceed[[]string]{
-		json_spec.List[string]{
+		Typed: json_spec.List[string]{
 			ItemSpec: tagSpec,
 		},
 	},
@@ -36,6 +36,7 @@ func (removeTagAction) compile(ctx compilerContext) (action, error) {
 			for _, tag := range tags {
 				cl.Tags[tag] = false
 			}
+
 			return cl, nil
 		},
 	}, nil

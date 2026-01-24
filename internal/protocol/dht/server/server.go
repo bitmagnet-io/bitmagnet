@@ -197,6 +197,7 @@ func (s *server) Query(
 
 	queryCtx, cancel := context.WithTimeout(ctx, s.queryTimeout)
 	defer cancel()
+
 	select {
 	case <-queryCtx.Done():
 		err = queryCtx.Err()

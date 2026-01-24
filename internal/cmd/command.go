@@ -23,10 +23,8 @@ func (f Factory[C]) Run(env env.Env) (int, error) {
 	inst := spec.newInstance(cmd, env.Args())
 
 	err = inst.run(env)
-
 	if err != nil {
 		exitCode, err := inst.OnError(env, err)
-
 		if err != nil {
 			err = fmt.Errorf("%w: %w", Err, err)
 		}
@@ -66,7 +64,8 @@ func (c *Cmd) Help(wr io.Writer) error {
 	if c.instance == nil {
 		return ErrUninitialized
 	}
-	return c.instance.printHelp(wr)
+
+	return c.printHelp(wr)
 }
 
 func (*Cmd) Teardown(env.Env) error {
@@ -77,12 +76,15 @@ func (c *Cmd) OnError(env env.Env, err error) (int, error) {
 	exitCode := 1
 	if errors.Is(err, ErrInvalidArgs) {
 		exitCode = 2
+
 		if c.instance != nil {
-			c.instance.printHelp(env)
-			env.Write([]byte("\n"))
+			_ = c.printHelp(env)
+			_, _ = env.Write([]byte("\n"))
 		}
 	}
+
 	fmt.Fprintln(env.Stderr(), err)
+
 	return exitCode, err
 }
 

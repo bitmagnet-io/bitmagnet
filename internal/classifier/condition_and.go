@@ -15,7 +15,7 @@ func (andCondition) name() string {
 
 var andConditionSpec = json_spec.SingleKeyValue[[]any]{
 	Key: andName,
-	ValueSpec: json_spec.MustSucceed[[]any]{json_spec.List[any]{
+	ValueSpec: json_spec.MustSucceed[[]any]{Typed: json_spec.List[any]{
 		ItemSpec: json_spec.Generic[any]{
 			Schema: json_schema.MustNew(
 				json_schema.RefDefinition("condition"),
@@ -51,6 +51,7 @@ func (andCondition) compileCondition(ctx compilerContext) (condition, error) {
 					return false, nil
 				}
 			}
+
 			return true, nil
 		},
 	}, nil

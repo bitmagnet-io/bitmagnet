@@ -41,9 +41,12 @@ func genPluginService(s spec.ServiceInfo) *jen.Statement {
 	for _, method := range s.Methods {
 		exportedName := strcase.ToSnake(s.GoName + method.GoName)
 		st = st.Line().Comment("//go:wasmexport "+exportedName).Line().
-			Func().Id("_"+exportedName).Params(jen.Id("ptr").Uint32(), jen.Id("size").Uint32()).Uint64().Block(
+			Func().
+			Id("_"+exportedName).Params(jen.Id("ptr").Uint32(), jen.Id("size").Uint32()).Uint64().Block(
 			jen.Id("b").Op(":=").Qual(pkgWasm, "PtrToByte").Call(jen.Id("ptr"), jen.Id("size")),
-			jen.Id("req").Op(":=").New(jen.Qual(string(method.InputGoIdent.GoImportPath), method.InputGoIdent.GoName)),
+			jen.Id("req").
+				Op(":=").
+				New(jen.Qual(string(method.InputGoIdent.GoImportPath), method.InputGoIdent.GoName)),
 			jen.Err().Op(":=").Id("req").Dot("UnmarshalVT").Call(jen.Id("b")),
 			jen.If(jen.Id("err").Op("!=").Nil()).Block(
 				jen.Panic(jen.Id("err")),
@@ -53,15 +56,28 @@ func genPluginService(s spec.ServiceInfo) *jen.Statement {
 				jen.Id("req"),
 			),
 			jen.If(jen.Id("err").Op("!=").Nil()).Block(
-				jen.List(jen.Id("ptr"), jen.Id("size")).Op("=").Qual(pkgWasm, "ByteToPtr").Call(jen.Index().Byte().Call(jen.Id("err").Dot("Error").Call())),
-				jen.Return().Parens(jen.Id("uint64").Call(jen.Id("ptr")).Op("<<").Uint64().Call(jen.Lit(32))).Op("|").Uint64().Call(jen.Id("size")).Op("|").Parens(jen.Lit(1).Op("<<").Lit(31)),
+				jen.List(jen.Id("ptr"), jen.Id("size")).
+					Op("=").
+					Qual(pkgWasm, "ByteToPtr").
+					Call(jen.Index().Byte().Call(jen.Id("err").Dot("Error").Call())),
+				jen.Return().
+					Parens(jen.Id("uint64").Call(jen.Id("ptr")).Op("<<").Uint64().Call(jen.Lit(32))).
+					Op("|").
+					Uint64().
+					Call(jen.Id("size")).
+					Op("|").
+					Parens(jen.Lit(1).Op("<<").Lit(31)),
 			),
 			jen.Id("b").Op(",").Err().Op("=").Id("resp").Dot("MarshalVT").Call(),
 			jen.If(jen.Id("err").Op("!=").Nil()).Block(
 				jen.Panic(jen.Id("err")),
 			),
 			jen.List(jen.Id("ptr"), jen.Id("size")).Op("=").Qual(pkgWasm, "ByteToPtr").Call(jen.Id("b")),
-			jen.Return().Parens(jen.Id("uint64").Call(jen.Id("ptr")).Op("<<").Uint64().Call(jen.Lit(32))).Op("|").Uint64().Call(jen.Id("size")),
+			jen.Return().
+				Parens(jen.Id("uint64").Call(jen.Id("ptr")).Op("<<").Uint64().Call(jen.Lit(32))).
+				Op("|").
+				Uint64().
+				Call(jen.Id("size")),
 		)
 	}
 
@@ -86,8 +102,13 @@ func genPluginHostFunctions(s spec.FileInfo) *jen.Statement {
 
 		st.Func().Params(jen.Id("h").Id(structName)).Id(method.GoName).Params(
 			jen.Id("ctx").Qual(pkgContext, "Context"),
-			jen.Id("request").Op("*").Qual(string(method.InputGoIdent.GoImportPath), method.InputGoIdent.GoName),
-		).Op("(*").Qual(string(method.OutputGoIdent.GoImportPath), method.OutputGoIdent.GoName).Op(", error)").Block(
+			jen.Id("request").
+				Op("*").
+				Qual(string(method.InputGoIdent.GoImportPath), method.InputGoIdent.GoName),
+		).
+			Op("(*").
+			Qual(string(method.OutputGoIdent.GoImportPath), method.OutputGoIdent.GoName).
+			Op(", error)").Block(
 			jen.Id("buf").Op(",").Err().Op(":=").Id("request").Dot("MarshalVT").Call(),
 			jen.If(jen.Id("err").Op("!=").Nil()).Block(
 				jen.Return().List(jen.Nil(), jen.Id("err")),
@@ -98,13 +119,16 @@ func genPluginHostFunctions(s spec.FileInfo) *jen.Statement {
 			jen.Id("ptr").Op("=").Uint32().Parens(jen.Id("ptrSize").Op(">>").Lit(32)),
 			jen.Id("size").Op("=").Uint32().Call(jen.Id("ptrSize")),
 			jen.Id("buf").Op("=").Qual(pkgWasm, "PtrToByte").Call(jen.Id("ptr"), jen.Id("size")),
-			jen.Id("response").Op(":=").New(jen.Qual(string(method.OutputGoIdent.GoImportPath), method.OutputGoIdent.GoName)),
+			jen.Id("response").
+				Op(":=").
+				New(jen.Qual(string(method.OutputGoIdent.GoImportPath), method.OutputGoIdent.GoName)),
 			jen.Err().Op("=").Id("response").Dot("UnmarshalVT").Call(jen.Id("buf")),
 			jen.If(jen.Id("err").Op("!=").Nil()).Block(
 				jen.Return().List(jen.Nil(), jen.Id("err")),
 			),
 			jen.Return().List(jen.Id("response"), jen.Nil()),
-		).Line()
+		).
+			Line()
 	}
 
 	return st

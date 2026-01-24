@@ -20,7 +20,9 @@ type (
 
 var (
 	ParamDSN = param.MustNew(
-		param.Description[DSN]("Postgres Data Source Name (if specified, all other options for this plugin are ignored)"),
+		param.Description[DSN](
+			"Postgres Data Source Name (if specified, all other options for this plugin are ignored)",
+		),
 	)
 
 	ParamHost = param.MustNew(

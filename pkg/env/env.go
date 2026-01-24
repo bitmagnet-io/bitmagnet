@@ -49,7 +49,7 @@ type (
 		VarsLookup
 		ArgsProvider
 		SignalsProvider
-		fs.FSProvider
+		fs.Provider
 	}
 )
 
@@ -72,7 +72,7 @@ type environment struct {
 	io.Reader
 	io.Writer
 	SignalsProvider
-	fs.FSProvider
+	fs.Provider
 	env    map[string]string
 	args   []string
 	stderr io.Writer

@@ -11,7 +11,7 @@ func providerValues(values ...string) VarsProvider {
 		env := make(map[string]string, len(values))
 
 		for _, s := range values {
-			for j := 0; j < len(s); j++ {
+			for j := range len(s) {
 				if s[j] == '=' {
 					key := s[:j]
 					if _, ok := env[key]; !ok {
@@ -40,7 +40,6 @@ func providerOSEnviron() VarsProvider {
 func providerDotEnv(filenames ...string) VarsProvider {
 	return func() map[string]string {
 		env, err := godotenv.Read(filenames...)
-
 		if err != nil {
 			return nil
 		}

@@ -12,7 +12,7 @@ import (
 )
 
 func NewFromEnv(env env.Env) (Lookup, error) {
-	var lookups LookupChain
+	var lookups Chain
 
 	persistedPath := filepath.Join(config.SubpathPersisted, config.FilePersisted)
 	if yamlBytes, err := env.FSData().ReadFile(persistedPath); err == nil {
@@ -20,18 +20,20 @@ func NewFromEnv(env env.Env) (Lookup, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		lookups = append(lookups, lookup)
 	} else if !errors.Is(err, fs.ErrNotExist) {
 		return nil, fmt.Errorf("%w: %w: %s: %w", Err, ErrReadFile, persistedPath, err)
 	}
 
-	lookups = append(lookups, LookupEnv("env", env))
+	lookups = append(lookups, Env("env", env))
 
 	if yamlBytes, err := env.FSCurrent().ReadFile("./config.yml"); err == nil {
 		lookup, err := NewFromYAML("file:./config.yml", yamlBytes)
 		if err != nil {
 			return nil, err
 		}
+
 		lookups = append(lookups, lookup)
 	} else if !errors.Is(err, fs.ErrNotExist) {
 		return nil, fmt.Errorf("%w: %w: %s: %w", Err, ErrReadFile, "./config.yml", err)
@@ -43,6 +45,7 @@ func NewFromEnv(env env.Env) (Lookup, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		lookups = append(lookups, lookup)
 	} else if !errors.Is(err, fs.ErrNotExist) {
 		return nil, fmt.Errorf("%w: %w: %s: %w", Err, ErrReadFile, xdgFile, err)

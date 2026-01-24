@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 )
 

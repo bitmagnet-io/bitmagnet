@@ -126,7 +126,6 @@ func (se Season) String() string {
 }
 
 func getContiguousRanges(orderedInts []int) []contiguousRange {
-	//nolint:prealloc
 	var contiguousRanges []contiguousRange
 
 	var currentRange contiguousRange

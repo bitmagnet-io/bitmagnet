@@ -11,10 +11,10 @@ import (
 
 type I18nCommand struct {
 	cmd.Cmd `cmd:"doc=Internationalization commands"`
-	cmd.App[DevCommandDeps]
+	cmd.App[CommandDeps]
 }
 
-func (c *I18nCommand) Name() string {
+func (*I18nCommand) Name() string {
 	return "i18n"
 }
 
@@ -29,11 +29,11 @@ func (c *I18nCommand) Subcommands() []cmd.Command {
 
 type extractCommand struct {
 	cmd.Cmd `cmd:"doc=Extract translatable strings to i18n files"`
-	cmd.App[DevCommandDeps]
+	cmd.App[CommandDeps]
 }
 
 func (cmd *extractCommand) Run(env env.Env) error {
-	return cmd.NewRunner(func(deps DevCommandDeps) runner.Runner {
+	return cmd.NewRunner(func(deps CommandDeps) runner.Runner {
 		return runner.SimpleRunner(func(context.Context) error {
 			return i18n.Write(deps.I18nProvider())
 		})

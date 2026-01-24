@@ -14,6 +14,7 @@ func ReflectType(tp reflect.Type) (Reflected, bool) {
 	if tp.Kind() != reflect.Ptr {
 		return Reflected{}, false
 	}
+
 	return ReflectValue(reflect.New(tp).Elem())
 }
 

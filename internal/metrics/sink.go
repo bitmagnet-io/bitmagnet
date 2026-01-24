@@ -16,7 +16,7 @@ type sink struct {
 
 var _ metrics.MetricSink = (*sink)(nil)
 
-func (t *sink) EmitKey(_ []string, _ float32) {
+func (*sink) EmitKey(_ []string, _ float32) {
 	// unsupported
 }
 

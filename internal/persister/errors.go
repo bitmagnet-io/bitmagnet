@@ -2,6 +2,4 @@ package persister
 
 import "errors"
 
-var (
-	Err = errors.New("persister")
-)
+var Err = errors.New("persister")

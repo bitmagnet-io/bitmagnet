@@ -41,7 +41,7 @@ type Resolver struct {
 	Indexer              processor.Processor
 	PersisterAdder       persister.Adder
 	ConfigManager        *config_manager.Manager
-	Plugins              plugin.PluginInfos
+	Plugins              plugin.Infos
 	I18n                 *i18n.Bundle
 	User                 user.Service
 	APIKey               api_key.Service

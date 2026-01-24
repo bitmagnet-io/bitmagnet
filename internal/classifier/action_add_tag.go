@@ -32,7 +32,7 @@ var tagSpec = json_spec.Transformer[string, string]{
 var addTagSpec = json_spec.SingleKeyValue[[]string]{
 	Key: addTagName,
 	ValueSpec: json_spec.MustSucceed[[]string]{
-		json_spec.List[string]{
+		Typed: json_spec.List[string]{
 			ItemSpec: tagSpec,
 		},
 	},
@@ -51,6 +51,7 @@ func (addTagAction) compile(ctx compilerContext) (action, error) {
 			for _, tag := range tags {
 				cl.Tags[tag] = true
 			}
+
 			return cl, nil
 		},
 	}, nil

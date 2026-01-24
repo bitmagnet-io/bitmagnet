@@ -117,7 +117,6 @@ outer:
 			}
 
 			c, err := def.compile(actionCtx.child(def.name(), raw))
-
 			if err == nil {
 				criteria = append(criteria, c)
 				continue outer
@@ -127,6 +126,7 @@ outer:
 				return nil, err
 			}
 		}
+
 		errs = append(errs, fmt.Errorf("no criteria matched: %v", ctx.Source))
 	}
 

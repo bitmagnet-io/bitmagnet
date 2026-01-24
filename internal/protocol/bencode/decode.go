@@ -36,20 +36,23 @@ func (d *Decoder) Decode(v interface{}) (err error) {
 		if err != nil {
 			return
 		}
+
 		r := recover()
 		if r == nil {
 			return
 		}
+
 		_, ok := r.(runtime.Error)
 		if ok {
 			panic(r)
 		}
+
 		if err, ok = r.(error); !ok {
 			panic(r)
 		}
 		// Errors thrown from deeper in parsing are unexpected. At value boundaries, errors should
 		// be returned directly (at least until all the panic nonsense is removed entirely).
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			err = io.ErrUnexpectedEOF
 		}
 	}()
@@ -63,9 +66,11 @@ func (d *Decoder) Decode(v interface{}) (err error) {
 	if err != nil {
 		return
 	}
+
 	if !ok {
 		d.throwSyntaxError(d.Offset-1, errors.New("unexpected 'e'"))
 	}
+
 	return
 }
 
@@ -78,16 +83,19 @@ func (d *Decoder) ReadEOF() error {
 		if err != nil {
 			panic(err)
 		}
+
 		return errors.New("expected EOF")
 	}
-	if err == io.EOF {
+
+	if errors.Is(err, io.EOF) {
 		return nil
 	}
+
 	return fmt.Errorf("expected EOF, got %w", err)
 }
 
 func checkForUnexpectedEOF(err error, offset int64) {
-	if err == io.EOF {
+	if errors.Is(err, io.EOF) {
 		panic(&SyntaxError{
 			Offset: offset,
 			What:   io.ErrUnexpectedEOF,
@@ -103,6 +111,7 @@ func (d *Decoder) readByte() byte {
 	}
 
 	d.Offset++
+
 	return b
 }
 
@@ -114,6 +123,7 @@ func (d *Decoder) readUntil(sep byte) {
 		if b == sep {
 			return
 		}
+
 		d.buf.WriteByte(b)
 	}
 }
@@ -127,7 +137,7 @@ func checkForIntParseError(err error, offset int64) {
 	}
 }
 
-func (d *Decoder) throwSyntaxError(offset int64, err error) {
+func (*Decoder) throwSyntaxError(offset int64, err error) {
 	panic(&SyntaxError{
 		Offset: offset,
 		What:   err,
@@ -138,6 +148,7 @@ func (d *Decoder) throwSyntaxError(offset int64, err error) {
 func (d *Decoder) readInt() error {
 	// start := d.Offset - 1
 	d.readUntil('e')
+
 	if err := d.checkBufferedInt(); err != nil {
 		return err
 	}
@@ -157,6 +168,7 @@ func (d *Decoder) parseInt(v reflect.Value) error {
 	if err := d.readInt(); err != nil {
 		return err
 	}
+
 	s := d.buf.String()
 
 	switch v.Kind() {
@@ -170,6 +182,7 @@ func (d *Decoder) parseInt(v reflect.Value) error {
 				UnmarshalTargetType: v.Type(),
 			}
 		}
+
 		v.SetInt(n)
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		n, err := strconv.ParseUint(s, 10, 64)
@@ -181,6 +194,7 @@ func (d *Decoder) parseInt(v reflect.Value) error {
 				UnmarshalTargetType: v.Type(),
 			}
 		}
+
 		v.SetUint(n)
 	case reflect.Bool:
 		v.SetBool(s != "0")
@@ -190,7 +204,9 @@ func (d *Decoder) parseInt(v reflect.Value) error {
 			UnmarshalTargetType: v.Type(),
 		}
 	}
+
 	d.buf.Reset()
+
 	return nil
 }
 
@@ -199,12 +215,15 @@ func (d *Decoder) checkBufferedInt() error {
 	if len(b) <= 1 {
 		return nil
 	}
+
 	if b[0] == '-' {
 		b = b[1:]
 	}
+
 	if b[0] < '1' || b[0] > '9' {
 		return errors.New("invalid leading digit")
 	}
+
 	return nil
 }
 
@@ -212,6 +231,7 @@ func (d *Decoder) parseStringLength() (int, error) {
 	// We should have already consumed the first byte of the length into the Decoder buf.
 	start := d.Offset - 1
 	d.readUntil(':')
+
 	if err := d.checkBufferedInt(); err != nil {
 		return 0, err
 	}
@@ -220,10 +240,13 @@ func (d *Decoder) parseStringLength() (int, error) {
 	// decoded value (by reading it in in-place and then operating on a view).
 	length, err := strconv.ParseInt(d.buf.String(), 10, 0)
 	checkForIntParseError(err, start)
-	if int64(length) > d.getMaxStrLen() {
+
+	if length > d.getMaxStrLen() {
 		err = fmt.Errorf("parsed string length %v exceeds limit (%v)", length, DefaultDecodeMaxStrLen)
 	}
+
 	d.buf.Reset()
+
 	return int(length), err
 }
 
@@ -233,8 +256,10 @@ func (d *Decoder) parseString(v reflect.Value) error {
 		return err
 	}
 	defer d.buf.Reset()
+
 	read := func(b []byte) {
 		n, err := io.ReadFull(d.r, b)
+
 		d.Offset += int64(n)
 		if err != nil {
 			checkForUnexpectedEOF(err, d.Offset)
@@ -250,33 +275,41 @@ func (d *Decoder) parseString(v reflect.Value) error {
 		b := make([]byte, length)
 		read(b)
 		v.SetString(string(b))
+
 		return nil
 	case reflect.Slice:
 		if v.Type().Elem().Kind() != reflect.Uint8 {
 			break
 		}
+
 		b := make([]byte, length)
 		read(b)
 		v.SetBytes(b)
+
 		return nil
 	case reflect.Array:
 		if v.Type().Elem().Kind() != reflect.Uint8 {
 			break
 		}
+
 		d.buf.Grow(length)
 		b := d.buf.Bytes()[:length]
 		read(b)
 		reflect.Copy(v, reflect.ValueOf(b))
+
 		return nil
 	case reflect.Bool:
 		d.buf.Grow(length)
 		b := d.buf.Bytes()[:length]
 		read(b)
+
 		x, err := strconv.ParseBool(string(b))
 		if err != nil {
 			x = length != 0
 		}
+
 		v.SetBool(x)
+
 		return nil
 	}
 	// Can't move this into default clause because some cases above fail through to here after
@@ -321,6 +354,7 @@ func getDictField(dict reflect.Type, key reflect.Value) (_ dictField, err error)
 			// bencode tag.
 			panic(key)
 		}
+
 		return getStructFieldForKey(dict, key.String()), nil
 		// if sf.r.PkgPath != "" {
 		//	panic(&UnmarshalFieldError{
@@ -340,15 +374,17 @@ var (
 	structFields   = map[reflect.Type]map[string]dictField{}
 )
 
-func parseStructFields(struct_ reflect.Type, each func(key string, df dictField)) {
-	for _i, n := 0, struct_.NumField(); _i < n; _i++ {
+func parseStructFields(tp reflect.Type, each func(key string, df dictField)) {
+	for _i, n := 0, tp.NumField(); _i < n; _i++ {
 		i := _i
-		f := struct_.Field(i)
+
+		f := tp.Field(i)
 		if f.Anonymous {
 			t := f.Type
 			if t.Kind() == reflect.Ptr {
 				t = t.Elem()
 			}
+
 			parseStructFields(t, func(key string, df dictField) {
 				innerGet := df.Get
 				df.Get = func(value reflect.Value) func(reflect.Value) {
@@ -357,50 +393,63 @@ func parseStructFields(struct_ reflect.Type, each func(key string, df dictField)
 						anonPtr.Set(reflect.New(f.Type.Elem()))
 						anonPtr = anonPtr.Elem()
 					}
+
 					return innerGet(anonPtr)
 				}
 				each(key, df)
 			})
+
 			continue
 		}
+
 		tagStr := f.Tag.Get("bencode")
 		if tagStr == "-" {
 			continue
 		}
+
 		tag := parseTag(tagStr)
+
 		key := tag.Key()
 		if key == "" {
 			key = f.Name
 		}
+
 		each(key, dictField{f.Type, func(value reflect.Value) func(reflect.Value) {
 			return value.Field(i).Set
 		}, tag})
 	}
 }
 
-func saveStructFields(struct_ reflect.Type) {
+func saveStructFields(tp reflect.Type) {
 	m := make(map[string]dictField)
-	parseStructFields(struct_, func(key string, sf dictField) {
+
+	parseStructFields(tp, func(key string, sf dictField) {
 		m[key] = sf
 	})
-	structFields[struct_] = m
+	structFields[tp] = m
 }
 
-func getStructFieldForKey(struct_ reflect.Type, key string) (f dictField) {
+func getStructFieldForKey(tp reflect.Type, key string) (f dictField) {
 	structFieldsMu.Lock()
-	if _, ok := structFields[struct_]; !ok {
-		saveStructFields(struct_)
+
+	if _, ok := structFields[tp]; !ok {
+		saveStructFields(tp)
 	}
-	f, ok := structFields[struct_][key]
+
+	f, ok := structFields[tp][key]
+
 	structFieldsMu.Unlock()
+
 	if !ok {
 		var discard interface{}
+
 		return dictField{
 			Type: reflect.TypeOf(discard),
 			Get:  func(reflect.Value) func(reflect.Value) { return func(reflect.Value) {} },
 			Tags: nil,
 		}
 	}
+
 	return
 }
 
@@ -425,12 +474,15 @@ func (d *Decoder) parseDict(v reflect.Value) error {
 	if keyType == nil {
 		return fmt.Errorf("cannot parse dicts into %v", v.Type())
 	}
+
 	for {
 		keyValue := reflect.New(keyType).Elem()
+
 		ok, err := d.parseValue(keyValue)
 		if err != nil {
 			return fmt.Errorf("error parsing dict key: %w", err)
 		}
+
 		if !ok {
 			return nil
 		}
@@ -443,28 +495,34 @@ func (d *Decoder) parseDict(v reflect.Value) error {
 		// now we need to actually parse it
 		if df.Type == nil {
 			// Discard the value, there's nowhere to put it.
-			var if_ interface{}
-			if_, ok = d.parseValueInterface()
-			if if_ == nil {
+			var iface interface{}
+
+			iface, ok = d.parseValueInterface()
+			if iface == nil {
 				return fmt.Errorf("error parsing value for key %q", keyValue)
 			}
+
 			if !ok {
 				return fmt.Errorf("missing value for key %q", keyValue)
 			}
+
 			continue
 		}
+
 		setValue := reflect.New(df.Type).Elem()
 		// log.Printf("parsing into %v", setValue.Type())
 		ok, err = d.parseValue(setValue)
 		if err != nil {
 			var target *UnmarshalTypeError
-			if !(errors.As(err, &target) && df.Tags.IgnoreUnmarshalTypeError()) {
+			if !errors.As(err, &target) || !df.Tags.IgnoreUnmarshalTypeError() {
 				return fmt.Errorf("parsing value for key %q: %w", keyValue, err)
 			}
 		}
+
 		if !ok {
 			return fmt.Errorf("missing value for key %q", keyValue)
 		}
+
 		df.Get(v)(setValue)
 	}
 }
@@ -478,13 +536,16 @@ func (d *Decoder) parseList(v reflect.Value) error {
 		if err := d.parseList(l.Elem()); err != nil {
 			return err
 		}
+
 		if l.Elem().Len() != 1 {
 			return &UnmarshalTypeError{
 				BencodeTypeName:     "list",
 				UnmarshalTargetType: v.Type(),
 			}
 		}
+
 		v.Set(l.Elem().Index(0))
+
 		return nil
 	case reflect.Array, reflect.Slice:
 		// We can work with this. Normal case, fallthrough.
@@ -501,6 +562,7 @@ func (d *Decoder) parseList(v reflect.Value) error {
 			if err != nil {
 				return err
 			}
+
 			if !ok {
 				break
 			}
@@ -526,6 +588,7 @@ func (d *Decoder) parseList(v reflect.Value) error {
 	if i == 0 && v.Kind() == reflect.Slice {
 		v.Set(reflect.MakeSlice(v.Type(), 0, 0))
 	}
+
 	return nil
 }
 
@@ -534,13 +597,14 @@ func (d *Decoder) readOneValue() bool {
 	if err != nil {
 		panic(err)
 	}
+
 	if b == 'e' {
-		d.r.UnreadByte()
+		_ = d.r.UnreadByte()
 		return false
-	} else {
-		d.Offset++
-		d.buf.WriteByte(b)
 	}
+
+	d.Offset++
+	d.buf.WriteByte(b)
 
 	switch b {
 	case 'd', 'l':
@@ -562,6 +626,7 @@ func (d *Decoder) readOneValue() bool {
 
 			d.buf.WriteString(":")
 			n, err := io.CopyN(&d.buf, d.r, length)
+
 			d.Offset += n
 			if err != nil {
 				checkForUnexpectedEOF(err, d.Offset)
@@ -570,6 +635,7 @@ func (d *Decoder) readOneValue() bool {
 					What:   errors.New("unexpected I/O error: " + err.Error()),
 				})
 			}
+
 			break
 		}
 
@@ -581,21 +647,26 @@ func (d *Decoder) readOneValue() bool {
 
 func (d *Decoder) parseUnmarshaler(v reflect.Value) bool {
 	if !v.Type().Implements(unmarshalerType) {
-		if v.Addr().Type().Implements(unmarshalerType) {
-			v = v.Addr()
-		} else {
+		if !v.Addr().Type().Implements(unmarshalerType) {
 			return false
 		}
+
+		v = v.Addr()
 	}
+
 	d.buf.Reset()
+
 	if !d.readOneValue() {
 		return false
 	}
+
 	m := v.Interface().(Unmarshaler)
+
 	err := m.UnmarshalBencode(d.buf.Bytes())
 	if err != nil {
 		panic(&UnmarshalerError{v.Type(), err})
 	}
+
 	return true
 }
 
@@ -609,6 +680,7 @@ func (d *Decoder) parseValue(v reflect.Value) (bool, error) {
 		if v.IsNil() {
 			v.Set(reflect.New(v.Type().Elem()))
 		}
+
 		v = v.Elem()
 	}
 
@@ -620,6 +692,7 @@ func (d *Decoder) parseValue(v reflect.Value) (bool, error) {
 	if v.Kind() == reflect.Interface && v.NumMethod() == 0 {
 		iface, _ := d.parseValueInterface()
 		v.Set(reflect.ValueOf(iface))
+
 		return true, nil
 	}
 
@@ -627,6 +700,7 @@ func (d *Decoder) parseValue(v reflect.Value) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
 	d.Offset++
 
 	switch b {
@@ -644,16 +718,18 @@ func (d *Decoder) parseValue(v reflect.Value) (bool, error) {
 			d.buf.Reset()
 			// Write the first digit of the length to the buffer.
 			d.buf.WriteByte(b)
+
 			return true, d.parseString(v)
 		}
 
 		d.raiseUnknownValueType(b, d.Offset-1)
 	}
+
 	panic("unreachable")
 }
 
 // An unknown bencode type character was encountered.
-func (d *Decoder) raiseUnknownValueType(b byte, offset int64) {
+func (*Decoder) raiseUnknownValueType(b byte, offset int64) {
 	panic(&SyntaxError{
 		Offset: offset,
 		What:   fmt.Errorf("unknown value type %+q", b),
@@ -665,6 +741,7 @@ func (d *Decoder) parseValueInterface() (interface{}, bool) {
 	if err != nil {
 		panic(err)
 	}
+
 	d.Offset++
 
 	switch b {
@@ -696,9 +773,13 @@ func (d *Decoder) parseIntInterface() (ret interface{}) {
 	if err := d.readInt(); err != nil {
 		panic(err)
 	}
+
 	n, err := strconv.ParseInt(d.buf.String(), 10, 64)
+
+	//nolint:errorlint
 	if ne, ok := err.(*strconv.NumError); ok && ne.Err == strconv.ErrRange {
 		i := new(big.Int)
+
 		_, ok := i.SetString(d.buf.String(), 10)
 		if !ok {
 			panic(&SyntaxError{
@@ -706,13 +787,16 @@ func (d *Decoder) parseIntInterface() (ret interface{}) {
 				What:   errors.New("failed to parse integer"),
 			})
 		}
+
 		ret = i
 	} else {
 		checkForIntParseError(err, start)
+
 		ret = n
 	}
 
 	d.buf.Reset()
+
 	return
 }
 
@@ -721,9 +805,11 @@ func (d *Decoder) readBytes(length int) []byte {
 	if err != nil {
 		panic(err)
 	}
+
 	if len(b) != length {
 		panic(fmt.Errorf("read %v bytes expected %v", len(b), length))
 	}
+
 	return b
 }
 
@@ -732,20 +818,27 @@ func (d *Decoder) parseStringInterface() string {
 	if err != nil {
 		panic(err)
 	}
-	b := d.readBytes(int(length))
+
+	b := d.readBytes(length)
+
 	d.Offset += int64(len(b))
 	if err != nil {
 		panic(&SyntaxError{Offset: d.Offset, What: err})
 	}
+
 	return string(b)
 }
 
 func (d *Decoder) parseDictInterface() interface{} {
 	dict := make(map[string]interface{})
+
 	var lastKey string
+
 	lastKeyOk := false
+
 	for {
 		start := d.Offset
+
 		keyi, ok := d.parseValueInterface()
 		if !ok {
 			break
@@ -758,10 +851,13 @@ func (d *Decoder) parseDictInterface() interface{} {
 				What:   errors.New("non-string key in a dict"),
 			})
 		}
+
 		if lastKeyOk && key <= lastKey {
 			d.throwSyntaxError(start, fmt.Errorf("dict keys unsorted: %q <= %q", key, lastKey))
 		}
+
 		start = d.Offset
+
 		valuei, ok := d.parseValueInterface()
 		if !ok {
 			d.throwSyntaxError(start, fmt.Errorf("dict elem missing value [key=%v]", key))
@@ -771,16 +867,19 @@ func (d *Decoder) parseDictInterface() interface{} {
 		lastKeyOk = true
 		dict[key] = valuei
 	}
+
 	return dict
 }
 
 func (d *Decoder) parseListInterface() (list []interface{}) {
 	list = []interface{}{}
+
 	valuei, ok := d.parseValueInterface()
 	for ok {
 		list = append(list, valuei)
 		valuei, ok = d.parseValueInterface()
 	}
+
 	return
 }
 
@@ -788,5 +887,6 @@ func (d *Decoder) getMaxStrLen() int64 {
 	if d.MaxStrLen == 0 {
 		return DefaultDecodeMaxStrLen
 	}
+
 	return d.MaxStrLen
 }

@@ -11,13 +11,17 @@ import (
 
 func yamlEncoder[T any](v T) (yaml.Node, error) {
 	var node yaml.Node
+
 	err := node.Encode(v)
+
 	return node, err
 }
 
 func yamlDecoder[T any](node yaml.Node) (T, error) {
 	var v T
+
 	err := node.Decode(&v)
+
 	return v, err
 }
 
@@ -44,13 +48,16 @@ func yamlEncoderSlice[E any, T ~[]E](elementEncoder func(E) (yaml.Node, error)) 
 		node := yaml.Node{
 			Kind: yaml.SequenceNode,
 		}
+
 		for _, elem := range slice {
 			encodedElem, err := elementEncoder(elem)
 			if err != nil {
 				return yaml.Node{}, err
 			}
+
 			node.Content = append(node.Content, &encodedElem)
 		}
+
 		return node, nil
 	}
 }
@@ -60,14 +67,18 @@ func yamlDecoderSlice[E any, T ~[]E](elementDecoder func(yaml.Node) (E, error)) 
 		if node.Kind != yaml.SequenceNode {
 			return nil, fmt.Errorf("expected sequence node, got %v", node.Kind)
 		}
+
 		var result T
+
 		for _, item := range node.Content {
 			decodedItem, err := elementDecoder(*item)
 			if err != nil {
 				return nil, err
 			}
+
 			result = append(result, decodedItem)
 		}
+
 		return result, nil
 	}
 }
@@ -94,13 +105,13 @@ func yamlDecoderMapstructure[T any]() func(node yaml.Node) (T, error) {
 		var value T
 
 		var mapAny map[string]any
+
 		err := node.Decode(&mapAny)
 		if err != nil {
 			return value, err
 		}
 
 		decoder, err := newDecoder(&value)
-
 		if err != nil {
 			return value, fmt.Errorf("failed to create decoder for type %T: %w", value, err)
 		}

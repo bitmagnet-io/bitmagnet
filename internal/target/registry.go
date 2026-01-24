@@ -54,7 +54,6 @@ func (r Registry) Send(ctx context.Context, params Params) (Result, error) {
 		Index:    params.Index,
 		Criteria: search.CriteriaInfoHash(params.InfoHashes),
 	})
-
 	if err != nil {
 		return Result{}, fmt.Errorf("%w %s: %w: %w", Err, params.Target, ErrLookupTorrents, err)
 	}
@@ -68,7 +67,7 @@ func (r Registry) Send(ctx context.Context, params Params) (Result, error) {
 		var torrent *model.TorrentContent
 
 		for _, item := range result.Items {
-			if item.TorrentContent.InfoHash == infoHash {
+			if item.InfoHash == infoHash {
 				torrent = &item.TorrentContent
 				break
 			}

@@ -22,6 +22,7 @@ func (s AllTablesStats) Add(tableName string, stats TableStats) {
 	if s == nil {
 		s = make(AllTablesStats)
 	}
+
 	existing := s[tableName]
 	existing.Merge(stats)
 	s[tableName] = existing

@@ -51,6 +51,7 @@ func (v JSONValue) yamlNode() *yaml.Node {
 
 func (v JSONValue) Raw() any {
 	var raw any
+
 	_ = v.yamlNode().Decode(&raw)
 
 	return raw

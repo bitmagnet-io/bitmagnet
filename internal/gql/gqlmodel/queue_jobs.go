@@ -4,7 +4,6 @@ import (
 	"context"
 
 	q "github.com/bitmagnet-io/bitmagnet/internal/database/query"
-	query2 "github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
@@ -90,12 +89,12 @@ func (qq QueueQuery) Jobs(
 		fullOrderBy.Set(field, direction)
 	}
 
-	options = append(options, query2.OrderBy(search.QueueJobsFullOrderByClauses(fullOrderBy)...))
+	options = append(options, q.OrderBy(search.QueueJobsFullOrderByClauses(fullOrderBy)...))
 
 	return qq.doQueueJobsQuery(ctx, options...)
 }
 
-func (qq QueueQuery) doQueueJobsQuery(ctx context.Context, options ...q.Option) (QueueJobsQueryResult, error) {
+func (QueueQuery) doQueueJobsQuery(_ context.Context, _ ...q.Option) (QueueJobsQueryResult, error) {
 	return QueueJobsQueryResult{}, nil
 	// result, resultErr := qq.QueueJobSearch.QueueJobs(ctx, options...)
 	// if resultErr != nil {

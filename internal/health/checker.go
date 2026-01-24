@@ -339,6 +339,7 @@ func withCheckContext(ctx context.Context, check *Check, f func(checkCtx context
 	}
 
 	defer cancel()
+
 	f(ctx)
 }
 

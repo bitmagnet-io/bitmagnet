@@ -13,7 +13,7 @@ import (
 func NewCheck(
 	name string,
 	isActive func() bool,
-	//isActive *concurrency.Value[bool],
+	// isActive *concurrency.Value[bool],
 	lastResponses *atomic.Value[server.LastResponses],
 ) health.Check {
 	return health.Check{
@@ -25,16 +25,20 @@ func NewCheck(
 			if lr.StartTime.IsZero() {
 				return nil
 			}
+
 			now := time.Now()
 			if lr.LastSuccess.IsZero() {
 				if now.Sub(lr.StartTime) < 30*time.Second {
 					return nil
 				}
+
 				return errors.New("no response within 30 seconds")
 			}
+
 			if now.Sub(lr.LastSuccess) > time.Minute {
 				return errors.New("no successful responses within last minute")
 			}
+
 			return nil
 		},
 	}

@@ -18,7 +18,7 @@ func (findMatchAction) name() string {
 
 var findMatchSpec = json_spec.SingleKeyValue[[]any]{
 	Key: findMatchName,
-	ValueSpec: json_spec.MustSucceed[[]any]{json_spec.List[any]{
+	ValueSpec: json_spec.MustSucceed[[]any]{Typed: json_spec.List[any]{
 		ItemSpec: json_spec.Generic[any]{
 			Schema: json_schema.MustNew(
 				json_schema.RefDefinition("action_single"),
@@ -55,13 +55,16 @@ func (findMatchAction) compile(ctx compilerContext) (action, error) {
 					if errors.Is(err, classification.ErrUnmatched) {
 						continue
 					}
+
 					return classification.Result{}, classification.RuntimeError{
 						Cause: err,
 						Path:  path,
 					}
 				}
+
 				return result, nil
 			}
+
 			return ctx.result, nil
 		},
 	}, nil

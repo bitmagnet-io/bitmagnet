@@ -6,7 +6,7 @@ import (
 )
 
 var contentTypeSpec = json_spec.Transformer[string, model.NullContentType]{
-	Typed: json_spec.Enum[string]{append(model.ContentTypeNames(), "unknown")},
+	Typed: json_spec.Enum[string]{Values: append(model.ContentTypeNames(), "unknown")},
 	Transform: func(str string, _ json_spec.ParseContext) (model.NullContentType, error) {
 		if str == "unknown" {
 			return model.NullContentType{}, nil

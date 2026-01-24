@@ -32,7 +32,11 @@ func (r *requestLogger) Request(ctx context.Context, infoHash protocol.ID, addr 
 			fields = append(fields, zap.Error(err))
 			message += " failed"
 		} else {
-			fields = append(fields, zap.Stringer("peer_id", resp.PeerID), zap.String("torrent_name", resp.Info.BestName()))
+			fields = append(
+				fields,
+				zap.Stringer("peer_id", resp.PeerID),
+				zap.String("torrent_name", resp.Info.BestName()),
+			)
 		}
 
 		r.logger.Debug(message, fields...)

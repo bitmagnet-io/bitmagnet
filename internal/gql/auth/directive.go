@@ -40,7 +40,7 @@ type Directive func(
 
 const Namespace = "graphql"
 
-func NewDirective(enforcer rbac.Enforcer) Directive {
+func NewDirective() Directive {
 	return func(
 		ctx context.Context,
 		_ any,

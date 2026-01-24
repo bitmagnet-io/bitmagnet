@@ -14,7 +14,7 @@ type fsProviderXDG struct {
 	subPath string
 }
 
-func NewFSProviderXDG(subPath string) FSProvider {
+func NewFSProviderXDG(subPath string) Provider {
 	return fsProviderXDG{
 		subPath: subPath,
 	}
@@ -33,6 +33,7 @@ func (fsProviderXDG) FSCurrent() FS {
 	if err != nil {
 		return afero.Afero{Fs: nopFs}
 	}
+
 	return afero.Afero{Fs: afero.NewReadOnlyFs(afero.NewBasePathFs(osFs, wd))}
 }
 

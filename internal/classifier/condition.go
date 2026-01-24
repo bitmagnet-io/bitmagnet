@@ -23,7 +23,6 @@ type conditionDefinition interface {
 }
 
 func compileCondition(ctx compilerContext) (condition, error) {
-	//nolint:prealloc
 	var errs []error
 
 	for _, def := range ctx.conditions {

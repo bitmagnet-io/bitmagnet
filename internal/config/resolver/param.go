@@ -121,13 +121,12 @@ func (p *Param) Save(value any) error {
 		// if valueReflected, ok := atomic.ReflectValue(reflect.ValueOf(value)); ok {
 		// 	value = valueReflected.GetAny()
 		// }
-
 		err := reflected.SetAny(value)
 		if err != nil {
 			return err
 		}
 
-		if p.chain.source != config.SourceDynamic {
+		if p.source != config.SourceDynamic {
 			p.chain = &chain{
 				source: config.SourceDynamic,
 				value:  chainCopy.value,
@@ -135,7 +134,7 @@ func (p *Param) Save(value any) error {
 			}
 		}
 	} else {
-		if p.chain.source != config.SourcePending {
+		if p.source != config.SourcePending {
 			p.chain = &chain{
 				source: config.SourcePending,
 				prev:   chainCopy,
@@ -155,7 +154,7 @@ func (p *Param) Delete() error {
 
 	if reflected, ok := atomic.ReflectValue(reflect.ValueOf(p.value)); ok {
 		if p.source == config.SourceDynamic || p.source == config.SourcePersisted {
-			prev := p.chain.prev
+			prev := p.prev
 
 			err := reflected.SetAny(prev.initialValue)
 			if err != nil {
@@ -167,7 +166,7 @@ func (p *Param) Delete() error {
 	} else {
 		if p.source == config.SourcePending || p.source == config.SourcePersisted {
 			p.pending = p.source == config.SourcePersisted
-			p.chain = p.chain.prev
+			p.chain = p.prev
 		}
 	}
 

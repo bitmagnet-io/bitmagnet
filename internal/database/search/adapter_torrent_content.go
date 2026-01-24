@@ -117,6 +117,7 @@ func transformTorrentContentFacets(facets []adapter.FacetParam) (query.Option, e
 		if _, ok := seenFacets[facet.Key]; ok {
 			return nil, fmt.Errorf("facet key is repeated: %s", facet.Key)
 		}
+
 		facet, err := transformTorrentContentFacet(facet)
 		if err != nil {
 			return nil, err

@@ -54,7 +54,7 @@ func (c executionContext) withResult(result classification.Result) executionCont
 }
 
 func (c compilerContext) child(pathPart string, source any) compilerContext {
-	c.jsonSpec = c.jsonSpec.Child(pathPart, source)
+	c.jsonSpec = c.Child(pathPart, source)
 
 	return c
 }
@@ -67,8 +67,8 @@ func (c compiler) Compile(source Source) (Runner, error) {
 		},
 		workflowNames: source.workflowNames(),
 	}
-	source, sourceErr := json_spec.Decode[Source](ctx.jsonSpec)
 
+	source, sourceErr := json_spec.Decode[Source](ctx.jsonSpec)
 	if sourceErr != nil {
 		return nil, ctx.Fatal(sourceErr)
 	}

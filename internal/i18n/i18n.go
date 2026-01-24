@@ -12,9 +12,7 @@ type (
 	MessageOption func(*Message)
 )
 
-var (
-	NewLocalizer = i18n.NewLocalizer
-)
+var NewLocalizer = i18n.NewLocalizer
 
 var languages = []language.Tag{
 	language.Arabic,

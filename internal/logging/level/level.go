@@ -2,6 +2,8 @@ package level
 
 import "go.uber.org/zap/zapcore"
 
+// revive:disable:line-length-limit
+
 //go:generate go run github.com/abice/go-enum --marshal --names --nocase --nocomments --sql --sqlnullstr --values -t ../../gql/enums.gql.tmpl -f level.go
 
 // Level represents a logging level

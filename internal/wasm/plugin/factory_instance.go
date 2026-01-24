@@ -19,7 +19,6 @@ type instanceBuilder struct {
 	data          []byte
 	runtimeConfig wazero.RuntimeConfig
 	moduleConfig  wazero.ModuleConfig
-	pluginConfig  []byte
 	instantiators []instantiator
 }
 
@@ -53,20 +52,26 @@ func (p *Plugin) NewInstance(
 
 	if len(p.manifest.Config) > 0 {
 		cfg := make(map[string]any)
+
 		for _, param := range p.configParams {
 			if value, ok := resolvedConfig.Param(param.Ref); ok {
 				cfg[param.Name()] = value.Value()
 			}
 		}
+
 		jsonCfg, err := json.Marshal(cfg)
 		if err != nil {
 			return nil, err
 		}
-		builder.instantiators = append(builder.instantiators, func(ctx context.Context, runtime wazero.Runtime) error {
-			return configurator.Instantiate(ctx, runtime, configuratorImpl{
-				jsonConfig: string(jsonCfg),
-			})
-		})
+
+		builder.instantiators = append(
+			builder.instantiators,
+			func(ctx context.Context, runtime wazero.Runtime) error {
+				return configurator.Instantiate(ctx, runtime, configuratorImpl{
+					jsonConfig: string(jsonCfg),
+				})
+			},
+		)
 	}
 
 	if p.manifest.Permissions.FS != nil {
@@ -96,7 +101,7 @@ func (p *Plugin) NewInstance(
 			func(ctx context.Context, obj *pool.PooledObject) error {
 				return obj.Object.(*module).Close(ctx)
 			},
-			func(ctx context.Context, obj *pool.PooledObject) bool {
+			func(_ context.Context, obj *pool.PooledObject) bool {
 				return !obj.Object.(*module).IsClosed()
 			},
 			nil,

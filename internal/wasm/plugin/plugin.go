@@ -82,13 +82,13 @@ func (p *Plugin) FXOption() fx.Option {
 		))
 	}
 
-	if cap := p.manifest.Capabilities.SearchAdapter; cap != nil {
+	if cp := p.manifest.Capabilities.SearchAdapter; cp != nil {
 		options = append(options, fx.Provide(
 			fx.Annotate(
 				func(inst Instance) multi.Index {
 					return multi.Index{
 						Ref:     p.ref,
-						Name:    cap.Name,
+						Name:    cp.Name,
 						Adapter: search_proto.New(inst.SearchAdapter()),
 					}
 				},
@@ -98,13 +98,13 @@ func (p *Plugin) FXOption() fx.Option {
 		))
 	}
 
-	if cap := p.manifest.Capabilities.TorrentTarget; cap != nil {
+	if cp := p.manifest.Capabilities.TorrentTarget; cp != nil {
 		options = append(options, fx.Provide(
 			fx.Annotate(
 				func(inst Instance) target.TorrentContentTarget {
 					return target.NewTargetProto(
 						p.ref,
-						cap.Name,
+						cp.Name,
 						inst.TorrentTarget(),
 					)
 				},

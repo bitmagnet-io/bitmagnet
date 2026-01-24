@@ -18,7 +18,6 @@ func Options(options ...Option) Option {
 	return func(s *JSONSchema) error {
 		for _, option := range options {
 			err := option(s)
-
 			if err != nil {
 				return err
 			}
@@ -122,6 +121,7 @@ func Default(value JSONValue) Option {
 		}
 
 		s.Default = &value
+
 		return nil
 	}
 }
@@ -150,6 +150,7 @@ func Enum(values ...JSONValue) Option {
 		}
 
 		s.Enum = values
+
 		return nil
 	}
 }
@@ -188,6 +189,7 @@ func MultipleOf(value float64) Option {
 		}
 
 		s.MultipleOf = &value
+
 		return nil
 	}
 }
@@ -204,6 +206,7 @@ func Maximum(value float64) Option {
 		}
 
 		s.Maximum = &value
+
 		return nil
 	}
 }
@@ -220,6 +223,7 @@ func ExclusiveMaximum(value float64) Option {
 		}
 
 		s.ExclusiveMaximum = &value
+
 		return nil
 	}
 }
@@ -236,6 +240,7 @@ func Minimum(value float64) Option {
 		}
 
 		s.Minimum = &value
+
 		return nil
 	}
 }
@@ -252,6 +257,7 @@ func ExclusiveMinimum(value float64) Option {
 		}
 
 		s.ExclusiveMinimum = &value
+
 		return nil
 	}
 }
@@ -268,6 +274,7 @@ func MaxLength(value int) Option {
 		}
 
 		s.MaxLength = &value
+
 		return nil
 	}
 }
@@ -284,6 +291,7 @@ func MinLength(value int) Option {
 		}
 
 		s.MinLength = &value
+
 		return nil
 	}
 }
@@ -300,6 +308,7 @@ func MinItems(value int) Option {
 		}
 
 		s.MinItems = &value
+
 		return nil
 	}
 }
@@ -316,6 +325,7 @@ func MaxItems(value int) Option {
 		}
 
 		s.MaxItems = &value
+
 		return nil
 	}
 }
@@ -332,6 +342,7 @@ func UniqueItems(value bool) Option {
 		}
 
 		s.UniqueItems = &value
+
 		return nil
 	}
 }
@@ -344,6 +355,7 @@ func Required(value RequiredParam) Option {
 		}
 
 		s.Required = &value
+
 		return nil
 	}
 }
@@ -360,6 +372,7 @@ func Items(schema JSONSchema) Option {
 		}
 
 		s.Items = &schema
+
 		return nil
 	}
 }

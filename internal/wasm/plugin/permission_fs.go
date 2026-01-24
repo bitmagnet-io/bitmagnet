@@ -19,7 +19,7 @@ func (PermissionFS) jsonSchema() json_schema.JSONSchema {
 	)
 }
 
-func (p PermissionFS) build(b *instanceBuilder) {
+func (PermissionFS) build(b *instanceBuilder) {
 	b.moduleConfig = b.moduleConfig.WithFS(&aferoFSAdapter{
 		Fs: afero.NewBasePathFs(
 			b.env.FSData(),
@@ -37,7 +37,7 @@ func (a *aferoFSAdapter) Open(name string) (fs.File, error) {
 	var err error
 
 	a.mkdirOnce.Do(func() {
-		err = a.MkdirAll(".", 0755)
+		err = a.MkdirAll(".", 0o755)
 	})
 
 	if err != nil {

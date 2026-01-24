@@ -157,7 +157,6 @@ func (w *Worker) Start(ctx context.Context) (runner.Shutdowner, error) {
 			runCancel(err)
 			w.mtx.Unlock()
 		})
-
 		if err == nil {
 			if w.shortLived {
 				w.logger.Debug("started")

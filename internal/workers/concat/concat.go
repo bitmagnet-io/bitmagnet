@@ -14,12 +14,13 @@ import (
 func Runners(providers ...runner.Provider) runner.Runner {
 	return runner.Runner(func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
 		var (
-			shutdowners []runner.Shutdowner
 			startupErrs []error
 			cancelErrs  []error
 			mtx         sync.Mutex
 			waitGroup   sync.WaitGroup
 		)
+
+		shutdowners := make([]runner.Shutdowner, 0, len(providers))
 
 		waitGroup.Add(len(providers))
 
@@ -34,7 +35,9 @@ func Runners(providers ...runner.Provider) runner.Runner {
 
 					if err != nil {
 						mtx.Lock()
+
 						cancelErrs = append(cancelErrs, err)
+
 						mtx.Unlock()
 					}
 
@@ -64,8 +67,8 @@ func Runners(providers ...runner.Provider) runner.Runner {
 			waitGroup.Wait()
 
 			err := ErrAllRunnersStopped
-			cancelErr := errors.Join(cancelErrs...)
 
+			cancelErr := errors.Join(cancelErrs...)
 			if cancelErr != nil {
 				err = fmt.Errorf("%w: %w", err, cancelErr)
 			}
@@ -76,7 +79,6 @@ func Runners(providers ...runner.Provider) runner.Runner {
 		}()
 
 		startupErr := errors.Join(startupErrs...)
-
 		if startupErr != nil {
 			if len(startupErrs) < len(providers) {
 				startupErr = fmt.Errorf("%w: %w", ErrPartial, startupErr)

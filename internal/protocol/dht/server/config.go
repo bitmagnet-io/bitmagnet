@@ -10,12 +10,10 @@ type (
 	QueryTimeout time.Duration
 )
 
-var (
-	ParamQueryTimeout = param.MustNew(
-		param.Description[QueryTimeout]("Query timeout"),
-		param.Duration[QueryTimeout](true),
-		param.Default(QueryTimeout(time.Second*10)),
-	)
+var ParamQueryTimeout = param.MustNew(
+	param.Description[QueryTimeout]("Query timeout"),
+	param.Duration[QueryTimeout](true),
+	param.Default(QueryTimeout(time.Second*10)),
 )
 
 // type Config struct {

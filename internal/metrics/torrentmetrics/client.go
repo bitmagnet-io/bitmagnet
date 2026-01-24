@@ -18,7 +18,7 @@ type Bucket struct {
 }
 
 type Request struct {
-	BucketDuration bucket.BucketDuration
+	BucketDuration bucket.Duration
 	Sources        []string
 	StartTime      time.Time
 	EndTime        time.Time

@@ -11,11 +11,11 @@ import (
 
 type GormGenCommand struct {
 	cmd.Cmd `cmd:"doc=Generate GORM models from the database schema"`
-	cmd.App[DevCommandDeps]
+	cmd.App[CommandDeps]
 }
 
 func (c *GormGenCommand) Run(env env.Env) error {
-	return c.NewRunner(func(deps DevCommandDeps) runner.Runner {
+	return c.NewRunner(func(deps CommandDeps) runner.Runner {
 		return runner.SimpleRunner(func(ctx context.Context) error {
 			ctx, cancel := context.WithCancelCause(ctx)
 			defer cancel(nil)

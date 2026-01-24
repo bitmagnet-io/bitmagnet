@@ -15,6 +15,8 @@ type responderNodeDiscovery struct {
 	discoveredNodes channel.Worker[ktable.Node]
 }
 
+var _ Responder = responderNodeDiscovery{}
+
 func (r responderNodeDiscovery) Respond(ctx context.Context, msg dht.RecvMsg) (dht.Return, error) {
 	ret, err := r.responder.Respond(ctx, msg)
 	if err == nil {

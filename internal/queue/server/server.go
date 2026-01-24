@@ -59,6 +59,7 @@ func (s *server) Start(ctx context.Context, cancel context.CancelCauseFunc) (run
 		for _, h := range handlers {
 			go func(h serverHandler) {
 				defer wg.Done()
+
 				h.drain(ctx)
 			}(h)
 		}

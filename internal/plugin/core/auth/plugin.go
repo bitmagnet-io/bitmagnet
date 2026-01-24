@@ -53,7 +53,10 @@ var (
 		builder.WithConfig[deps](Ref.MustSub("login_requests_per_minute"), user.ParamLoginRequestsPerMinute),
 		builder.WithConfig[deps](Ref.MustSub("login_request_burst"), user.ParamLoginRequestBurst),
 		builder.WithError[deps](RefUser.MustSub("user_already_exists"), user.ErrAlreadyExists),
-		builder.WithError[deps](RefUser.MustSub("password_insufficient_entropy"), user.ErrPasswordInsufficientEntropy),
+		builder.WithError[deps](
+			RefUser.MustSub("password_insufficient_entropy"),
+			user.ErrPasswordInsufficientEntropy,
+		),
 		builder.WithError[deps](RefUser.MustSub("username_invalid"), user.ErrUsernameInvalid),
 		builder.WithError[deps](RefUser.MustSub("email_invalid"), user.ErrEmailInvalid),
 		builder.WithError[deps](RefUser.MustSub("email_missing"), user.ErrEmailMissing),

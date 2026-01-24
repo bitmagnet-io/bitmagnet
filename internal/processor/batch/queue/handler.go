@@ -83,7 +83,6 @@ func New(
 					processJobProvider,
 					batchJobProvider,
 				)
-
 				if err == nil {
 					err = runner.ErrCompleted
 				}

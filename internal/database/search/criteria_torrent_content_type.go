@@ -16,6 +16,7 @@ func TorrentContentTypeCriteria(types ...model.ContentType) query.Criteria {
 	return query.DaoCriteria{
 		Conditions: func(ctx query.DBContext) ([]field.Expr, error) {
 			q := ctx.Query()
+
 			return []field.Expr{
 				q.TorrentContent.ContentType.In(strTypes...),
 			}, nil

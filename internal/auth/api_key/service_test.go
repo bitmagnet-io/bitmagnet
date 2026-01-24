@@ -18,6 +18,8 @@ type testHarness struct {
 }
 
 func newTestHarness(t *testing.T) testHarness {
+	t.Helper()
+
 	repository := api_key_mocks.NewRepository(t)
 
 	return testHarness{

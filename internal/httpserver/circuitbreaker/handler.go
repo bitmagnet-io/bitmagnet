@@ -38,6 +38,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) getHandler() http.Handler {
 	<-h.optionSet
+
 	h.mtx.Lock()
 	defer h.mtx.Unlock()
 

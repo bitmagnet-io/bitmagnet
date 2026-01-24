@@ -12,7 +12,8 @@ import (
 func NewBundle() (*Bundle, error) {
 	bundle := i18n.NewBundle(language.English)
 	bundle.RegisterUnmarshalFunc("yaml", yaml.Unmarshal)
-	embed_i18n.FS.Walk(".", func(path string, info fs.FileInfo, err error) error {
+
+	err := embed_i18n.FS.Walk(".", func(path string, info fs.FileInfo, _ error) error {
 		if !info.IsDir() {
 			bytes, err := embed_i18n.FS.ReadFile(path)
 			if err != nil {
@@ -28,5 +29,5 @@ func NewBundle() (*Bundle, error) {
 		return nil
 	})
 
-	return bundle, nil
+	return bundle, err
 }

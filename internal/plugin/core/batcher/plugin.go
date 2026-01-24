@@ -50,7 +50,9 @@ var (
 					return model.NewQueueJob(
 						Ref.String(),
 						msg,
-						append([]model.QueueJobOption{model.QueueJobMaxRetries(2)}, options...)...,
+						append(
+							[]model.QueueJobOption{model.QueueJobMaxRetries(2)},
+							options...)...,
 					)
 				}
 			}),
@@ -59,7 +61,11 @@ var (
 			func(deps deps) handler.Handler {
 				return handler.New(
 					Ref.String(),
-					batch_queue.New(deps.DaoProvider, deps.ProcessJobProvider, deps.BatchJobProvider),
+					batch_queue.New(
+						deps.DaoProvider,
+						deps.ProcessJobProvider,
+						deps.BatchJobProvider,
+					),
 					handler.JobTimeout(time.Second*60*10),
 					handler.Concurrency(1),
 				)

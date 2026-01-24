@@ -7,7 +7,7 @@ import (
 
 type BaseSearchResult[T any] search.Result[T]
 
-func (r BaseSearchResult[_]) IsSearchResult() {}
+func (BaseSearchResult[_]) IsSearchResult() {}
 
 func (r BaseSearchResult[_]) GetTotalCount() *int {
 	if r.TotalCount.Valid {

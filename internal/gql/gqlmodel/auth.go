@@ -82,8 +82,7 @@ func transformRole(role rbac.RoleInfo) Role {
 func transformPermission(perm rbac.Permission) Permission {
 	var subjectType gen.AuthSubjectType
 
-	switch perm.SubjectType() {
-	case rbac.SubjectTypeRole:
+	if perm.SubjectType() == rbac.SubjectTypeRole {
 		subjectType = gen.AuthSubjectTypeRole
 	}
 
@@ -163,11 +162,7 @@ func (q *AuthQuery) ListRoles(ctx context.Context) ([]Role, error) {
 
 func (q *AuthQuery) ListObjectActions() []AuthObjectAction {
 	return slice.Map(q.RBAC.GetObjectActions(), func(objAct rbac.ObjectAction) AuthObjectAction {
-		return AuthObjectAction{
-			Namespace: objAct.Namespace,
-			Object:    objAct.Object,
-			Action:    objAct.Action,
-		}
+		return objAct
 	})
 }
 
@@ -329,7 +324,10 @@ func (m *AuthMutation) DeleteInvitation(ctx context.Context, code string) (*stri
 	return nil, m.User.DeleteInvitation(ctx, code)
 }
 
-func (q *AuthQuery) ListInvitations(ctx context.Context, input *gen.ListInvitationsInput) (ListInvitationsResult, error) {
+func (q *AuthQuery) ListInvitations(
+	ctx context.Context,
+	input *gen.ListInvitationsInput,
+) (ListInvitationsResult, error) {
 	var params user.ListInvitationsParams
 
 	if input != nil {

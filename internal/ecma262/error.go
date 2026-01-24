@@ -8,9 +8,9 @@ import (
 
 var Err = errors.New("regular expression is incompatible with ECMA 262")
 
-type ErrReasons []ECMA262IncompatibilityReason
+type IncompatibilityError []IncompatibilityReason
 
-func (rs ErrReasons) Error() string {
+func (rs IncompatibilityError) Error() string {
 	msg := ""
 
 	for i, r := range rs {
@@ -29,13 +29,14 @@ func RegexpCompatibilityError(re *regexp.Regexp) error {
 	return PatternStringCompatibilityError(re.String())
 }
 
-// PatternStringCompatibilityError returns an error if the provided regular expression pattern string is not compatible with ECMA 262
+// PatternStringCompatibilityError returns an error if the provided regular expression pattern string is not compatible
+// with ECMA 262
 func PatternStringCompatibilityError(str string) error {
 	compatible, reasons := IsPatternStringCompatible(str)
 
 	if compatible {
 		return nil
-	} else {
-		return fmt.Errorf("%w: %s: %w", Err, str, ErrReasons(reasons))
 	}
+
+	return fmt.Errorf("%w: %s: %w", Err, str, IncompatibilityError(reasons))
 }

@@ -101,12 +101,15 @@ type activeImport struct {
 
 func (i *activeImport) run(ctx context.Context) {
 	i.mutex.Lock()
+
 	go (func() {
 		iCtx, cancel := context.WithCancel(ctx)
 		defer cancel()
+
 		i.ctx = iCtx
 		i.stop = cancel
 		i.mutex.Unlock()
+
 		for {
 			select {
 			case <-iCtx.Done():
@@ -116,6 +119,7 @@ func (i *activeImport) run(ctx context.Context) {
 				if !ok {
 					return
 				}
+
 				go i.buffer(item)
 			case <-time.After(i.maxWaitTime):
 				go i.flush()
@@ -126,6 +130,7 @@ func (i *activeImport) run(ctx context.Context) {
 
 func (i *activeImport) buffer(item Torrent) {
 	defer i.wg.Done()
+
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
 
@@ -138,6 +143,7 @@ func (i *activeImport) buffer(item Torrent) {
 func (i *activeImport) flush() {
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
+
 	i.flushLocked()
 }
 
@@ -221,7 +227,8 @@ func (i *activeImport) persistItems(items ...Torrent) error {
 			if _, deleteErr := tx.TorrentFile.WithContext(i.ctx).Where(
 				tx.TorrentFile.InfoHash.In(slice.Map(infoHashesWithFiles, func(id protocol.ID) driver.Valuer {
 					return id
-				})...)).
+				})...),
+			).
 				Delete(); deleteErr != nil {
 				return deleteErr
 			}
@@ -253,9 +260,11 @@ func (i *activeImport) persistItems(items ...Torrent) error {
 			}
 		}
 
-		if createTorrentsTorrentSourcesErr := tx.TorrentsTorrentSource.WithContext(i.ctx).Clauses(clause.OnConflict{
-			UpdateAll: true,
-		}).CreateInBatches(torrentsTorrentSources, 100); createTorrentsTorrentSourcesErr != nil {
+		if createTorrentsTorrentSourcesErr := tx.TorrentsTorrentSource.WithContext(i.ctx).
+			Clauses(clause.OnConflict{
+				UpdateAll: true,
+			}).
+			CreateInBatches(torrentsTorrentSources, 100); createTorrentsTorrentSourcesErr != nil {
 			return createTorrentsTorrentSourcesErr
 		}
 
@@ -294,6 +303,7 @@ func createTorrentModel(info Info, item Torrent) model.Torrent {
 
 	actualFilesCount := uint(len(files))
 
+	//nolint:gocritic
 	if item.FilesCount.Valid {
 		filesCount = item.FilesCount
 		if filesCount.Uint == 0 {
@@ -395,6 +405,7 @@ func (i *activeImport) Closed() bool {
 func (i *activeImport) Close() error {
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
+
 	i.flushLocked()
 
 	if !i.stopped {

@@ -16,13 +16,14 @@ import (
 
 func NewFactpry(bundles ...plugin.Provider) cmd.CommandFactory {
 	return func() cmd.Command {
-		return &RootCommand{
+		return &Command{
 			bundles: bundles,
 		}
 	}
 }
 
-type RootCommand struct {
+// revive:disable:line-length-limit
+type Command struct {
 	cmd.Cmd       `cmd:"name=bitmagnet"`
 	bundles       []plugin.Provider
 	LoadPlugin    cmd.CSV[loadPlugin] `cmd:"doc=Load plugins from the specified paths,example='/path/to/plugin,alias:/path/to/plugin'"`
@@ -32,7 +33,7 @@ type RootCommand struct {
 	registry      *registry.Registry
 }
 
-func (cmd *RootCommand) Setup(env env.Env) error {
+func (cmd *Command) Setup(env env.Env) error {
 	if !cmd.NoBanner {
 		banner.Write(env)
 	}
@@ -49,6 +50,7 @@ func (cmd *RootCommand) Setup(env env.Env) error {
 		if err != nil {
 			return err
 		}
+
 		bundles = append(
 			bundles,
 			bundle,
@@ -69,7 +71,7 @@ func (cmd *RootCommand) Setup(env env.Env) error {
 	return nil
 }
 
-func (cmd *RootCommand) Subcommands() []cmd.Command {
+func (cmd *Command) Subcommands() []cmd.Command {
 	return cmd.registry.Commands()
 }
 
@@ -87,8 +89,10 @@ func (l *loadPlugin) UnmarshalText(text []byte) error {
 		l.alias = string(parts[0])
 		l.path = string(parts[1])
 	}
+
 	if l.path == "" {
 		return errors.New("plugin path cannot be empty")
 	}
+
 	return nil
 }

@@ -4,15 +4,15 @@ import "time"
 
 type nop struct{}
 
-func (nop) IncrAdded(n int) {}
+func (nop) IncrAdded(int) {}
 
 func (nop) IncrDiscarded() {}
 
 func (nop) IncrDeduplicated() {}
 
-func (nop) IncrDequeued(latency time.Duration) {}
+func (nop) IncrDequeued(time.Duration) {}
 
-func (nop) IncrFlushed(latency time.Duration) {}
+func (nop) IncrFlushed(time.Duration) {}
 
 func (nop) Reset() {}
 

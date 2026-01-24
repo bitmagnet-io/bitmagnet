@@ -80,7 +80,8 @@ func (p payload) flatten() payload {
 			) maps.MapEntry[model.TorrentContentRef, model.TorrentContent] {
 				e.Value.Torrent = model.Torrent{}
 
-				if contentRef := e.Value.ContentRef(); contentRef.Valid && contentRef.Val == e.Value.Content.Ref() {
+				if contentRef := e.Value.ContentRef(); contentRef.Valid &&
+					contentRef.Val == e.Value.Content.Ref() {
 					flattened.content.Set(contentRef.Val, e.Value.Content)
 				}
 
@@ -163,6 +164,7 @@ func (p payload) missingInfoHashes(ctx context.Context, tx *dao.Query) (map[prot
 	}
 
 	var result []*model.Torrent
+
 	err := tx.Torrent.WithContext(ctx).Select(
 		tx.Torrent.InfoHash,
 	).Where(

@@ -14,7 +14,7 @@ type Anon struct {
 
 func (a Anon) Self() Self {
 	return Self{
-		Permissions: slice.Map(a.RoleInfo.Permissions, func(perm rbac.Permission) rbac.ObjectAction {
+		Permissions: slice.Map(a.Permissions, func(perm rbac.Permission) rbac.ObjectAction {
 			return perm.ObjectAction()
 		}),
 	}

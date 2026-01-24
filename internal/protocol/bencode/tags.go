@@ -27,11 +27,13 @@ func (me tag) HasOpt(opt string) bool {
 	if len(me) < 1 {
 		return false
 	}
+
 	for _, s := range me[1:] {
 		if s == opt {
 			return true
 		}
 	}
+
 	return false
 }
 

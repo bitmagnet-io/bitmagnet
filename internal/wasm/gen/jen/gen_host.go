@@ -31,8 +31,8 @@ func GenHostFile(s spec.FileInfo) *jen.File {
 func genHostFunctions(s spec.FileInfo) *jen.Statement {
 	structName := "_" + strcase.ToLowerCamel(s.HostService.GoName)
 	st := jen.Const().Defs(
-		jen.Id("i32").Op("=").Qual(pkgWazeroApi, "ValueTypeI32"),
-		jen.Id("i64").Op("=").Qual(pkgWazeroApi, "ValueTypeI64"),
+		jen.Id("i32").Op("=").Qual(pkgWazeroAPI, "ValueTypeI32"),
+		jen.Id("i64").Op("=").Qual(pkgWazeroAPI, "ValueTypeI64"),
 	).Line().
 		Type().Id(structName).Struct(
 		jen.Id(s.HostService.GoName),
@@ -43,14 +43,14 @@ func genHostFunctions(s spec.FileInfo) *jen.Statement {
 	for _, method := range s.HostService.Methods {
 		funcSt.Line().Id("envBuilder").Dot("NewFunctionBuilder").Call().
 			Dot("WithGoModuleFunction").ParamsFunc(func(g *jen.Group) {
-			g.Line().Qual(pkgWazeroApi, "GoModuleFunc").Call(
+			g.Line().Qual(pkgWazeroAPI, "GoModuleFunc").Call(
 				jen.Id("h").Dot("_" + method.GoName),
 			)
-			g.Line().Index().Qual(pkgWazeroApi, "ValueType").Values(
+			g.Line().Index().Qual(pkgWazeroAPI, "ValueType").Values(
 				jen.Id("i32"),
 				jen.Id("i32"),
 			)
-			g.Line().Index().Qual(pkgWazeroApi, "ValueType").Values(
+			g.Line().Index().Qual(pkgWazeroAPI, "ValueType").Values(
 				jen.Id("i64"),
 			)
 			g.Line()
@@ -105,7 +105,7 @@ func genHostFunctions(s spec.FileInfo) *jen.Statement {
 			jen.Id("h").Id(structName),
 		).Id("_"+method.GoName).Params(
 			jen.Id("ctx").Qual(pkgContext, "Context"),
-			jen.Id("m").Qual(pkgWazeroApi, "Module"),
+			jen.Id("m").Qual(pkgWazeroAPI, "Module"),
 			jen.Id("stack").Index().Uint64(),
 		).Block(
 			jen.List(jen.Id("offset"), jen.Id("size")).Op(":=").List(
@@ -177,7 +177,7 @@ func genHostService(s spec.ServiceInfo) *jen.Statement {
 
 	loadModuleParams := []jen.Code{
 		jen.Id("ctx").Qual(pkgContext, "Context"),
-		jen.Id("module").Qual(pkgWazeroApi, "Module"),
+		jen.Id("module").Qual(pkgWazeroAPI, "Module"),
 	}
 
 	if s.Type == spec.ServiceHost {
@@ -289,10 +289,12 @@ func genHostService(s spec.ServiceInfo) *jen.Statement {
 					g.Line().Id("module").Op(":").Id("module")
 					g.Line().Id("malloc").Op(":").Id("malloc")
 					g.Line().Id("free").Op(":").Id("free")
+
 					for _, method := range s.Methods {
 						varName := strcase.ToLowerCamel(method.GoName)
 						g.Line().Id(varName).Op(":").Id(varName)
 					}
+
 					g.Line()
 				}),
 				jen.Nil(),
@@ -301,14 +303,16 @@ func genHostService(s spec.ServiceInfo) *jen.Statement {
 
 	st.Line().Type().Id(pluginStructName).StructFunc(func(g *jen.Group) {
 		// g.Id("sem").Chan().Struct()
-		g.Id("module").Qual(pkgWazeroApi, "Module")
-		g.Id("malloc").Qual(pkgWazeroApi, "Function")
-		g.Id("free").Qual(pkgWazeroApi, "Function")
+		g.Id("module").Qual(pkgWazeroAPI, "Module")
+		g.Id("malloc").Qual(pkgWazeroAPI, "Function")
+		g.Id("free").Qual(pkgWazeroAPI, "Function")
+
 		for _, method := range s.Methods {
 			varName := strcase.ToLowerCamel(method.GoName)
-			g.Id(varName).Qual(pkgWazeroApi, "Function")
+			g.Id(varName).Qual(pkgWazeroAPI, "Function")
 		}
 	})
+
 	for _, method := range s.Methods {
 		st.Line().Add(genHostServiceMethod(pluginStructName, method))
 	}
@@ -383,11 +387,16 @@ func genHostServiceMethod(structName string, m spec.ServiceMethodInfo) *jen.Stat
 				),
 			)),
 		),
-		jen.List(jen.Id("ptrSize"), jen.Err()).Op(":=").Id("p").Dot(strcase.ToLowerCamel(m.GoName)).Dot("Call").Call(
-			jen.Id("ctx"),
-			jen.Id("ptr"),
-			jen.Uint64().Call(jen.Id("dataSize")),
-		),
+		jen.List(jen.Id("ptrSize"), jen.Err()).
+			Op(":=").
+			Id("p").
+			Dot(strcase.ToLowerCamel(m.GoName)).
+			Dot("Call").
+			Call(
+				jen.Id("ctx"),
+				jen.Id("ptr"),
+				jen.Uint64().Call(jen.Id("dataSize")),
+			),
 		jen.If(
 			jen.Err().Op("!=").Nil(),
 		).Block(
@@ -413,10 +422,17 @@ func genHostServiceMethod(structName string, m spec.ServiceMethodInfo) *jen.Stat
 				jen.Uint64().Call(jen.Id("resPtr")),
 			),
 		),
-		jen.List(jen.Id("bytes"), jen.Id("ok")).Op(":=").Id("p").Dot("module").Dot("Memory").Call().Dot("Read").Call(
-			jen.Id("resPtr"),
-			jen.Id("resSize"),
-		),
+		jen.List(jen.Id("bytes"), jen.Id("ok")).
+			Op(":=").
+			Id("p").
+			Dot("module").
+			Dot("Memory").
+			Call().
+			Dot("Read").
+			Call(
+				jen.Id("resPtr"),
+				jen.Id("resSize"),
+			),
 		jen.If(
 			jen.Op("!").Id("ok"),
 		).Block(
@@ -455,5 +471,6 @@ func genHostServiceMethod(structName string, m spec.ServiceMethodInfo) *jen.Stat
 			jen.Id("response"),
 			jen.Nil(),
 		),
-	).Line()
+	).
+		Line()
 }

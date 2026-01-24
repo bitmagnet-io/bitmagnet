@@ -2,7 +2,6 @@ package search
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
-	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 	"gorm.io/gorm/clause"
@@ -48,7 +47,7 @@ func QueueJobsOrderByClauses(ob adapter.QueueJobsOrderBy, direction adapter.Orde
 }
 
 func QueueJobsFullOrderByClauses(fob adapter.QueueJobsFullOrderBy) []query.OrderByColumn {
-	im := maps.InsertMap[adapter.QueueJobsOrderBy, adapter.OrderDirection](fob)
+	im := fob
 	clauses := make([]query.OrderByColumn, 0, im.Len())
 
 	for _, ob := range im.Entries() {

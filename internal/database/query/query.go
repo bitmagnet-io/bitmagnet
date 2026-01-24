@@ -16,7 +16,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/search"
-	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 	"gorm.io/gen"
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
@@ -32,22 +31,22 @@ func GenericQuery[T interface{}](
 	option Option,
 	tableName string,
 	factory SubQueryFactory,
-) (adapter.Result[T], error) {
+) (search.Result[T], error) {
 	daoQ, err := daoP.Dao()
 	if err != nil {
-		return adapter.Result[T]{}, err
+		return search.Result[T]{}, err
 	}
 
 	gq := genericQuery[T]{
 		daoQ:    daoQ,
 		factory: factory,
 	}
+
 	builder, optionErr := option(newQueryContext(dbContext{
 		q:         daoQ,
 		tableName: tableName,
 		factory:   factory,
 	}))
-
 	if optionErr != nil {
 		return gq.result, optionErr
 	}
@@ -60,10 +59,12 @@ func GenericQuery[T interface{}](
 	//nolint:contextcheck
 	go func() {
 		defer wg.Done()
+
 		gq.doItems()
 	}()
 	go func() {
 		defer wg.Done()
+
 		gq.doCount()
 	}()
 	go func() {
@@ -75,6 +76,7 @@ func GenericQuery[T interface{}](
 			gq.result.Facets = facets
 		}
 	}()
+
 	wg.Wait()
 
 	return gq.result, errors.Join(gq.errs...)
@@ -87,7 +89,7 @@ type genericQuery[T interface{}] struct {
 	builder OptionBuilder
 	mtx     sync.Mutex
 	errs    []error
-	result  adapter.Result[T]
+	result  search.Result[T]
 }
 
 func (gq *genericQuery[_]) newSubQuery(ctx context.Context, withOrder bool) (SubQuery, error) {
@@ -106,6 +108,7 @@ func (gq *genericQuery[_]) newSubQuery(ctx context.Context, withOrder bool) (Sub
 func (gq *genericQuery[_]) addError(err error) {
 	gq.mtx.Lock()
 	defer gq.mtx.Unlock()
+
 	gq.errs = append(gq.errs, err)
 }
 
@@ -176,6 +179,7 @@ func (gq *genericQuery[T]) doItems() {
 				// copy items slice to avoid modifying cached results
 				finalItems = append([]T{}, items...)
 			}
+
 			doneChan <- err
 		}
 		// start the default strategy
@@ -246,6 +250,7 @@ func (gq *genericQuery[T]) doItems() {
 				done(items, nil)
 			}()
 		}
+
 		select {
 		case doneErr := <-doneChan:
 			raceCancel()
@@ -384,7 +389,7 @@ type OptionBuilder interface {
 	applyPre(sq SubQuery, withOrderJoins bool) error
 	applyPost(*gorm.DB) error
 	createFacetsFilterCriteria() (Criteria, error)
-	calculateFacets(context.Context) ([]adapter.FacetResult, error)
+	calculateFacets(context.Context) ([]search.FacetResult, error)
 	WithTotalCount(bool) OptionBuilder
 	WithHasNextPage(bool) OptionBuilder
 	WithAggregationBudget(float64) OptionBuilder
@@ -799,9 +804,11 @@ func (b optionBuilder) applyCallbacks(ctx context.Context, results any) error {
 	for _, cb := range b.callbacks {
 		go (func(cb Callback) {
 			defer wg.Done()
+
 			if err := cb(ctx, cbCtx, results); err != nil {
 				cbCtx.Lock()
 				defer cbCtx.Unlock()
+
 				errs = append(errs, err)
 			}
 		})(cb)

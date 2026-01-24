@@ -2,7 +2,7 @@ package lookup
 
 import "strings"
 
-func LookupDynamic(source string, values map[string]any) Lookup {
+func Dynamic(source string, values map[string]any) Lookup {
 	return lookupDynamic{
 		source: source,
 		values: values,

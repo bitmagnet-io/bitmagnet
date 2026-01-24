@@ -59,9 +59,15 @@ var (
 						Logger: corsLogger{
 							deps.Logger.WithOptions(
 								zap.WrapCore(func(core zapcore.Core) zapcore.Core {
-									return zapcore.NewSamplerWithOptions(core, time.Hour, 10, 0)
+									return zapcore.NewSamplerWithOptions(
+										core,
+										time.Hour,
+										10,
+										0,
+									)
 								}),
-							).Named(Ref.String())},
+							).Named(Ref.String()),
+						},
 					}))
 				}
 			}),

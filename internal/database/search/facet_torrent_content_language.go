@@ -47,19 +47,26 @@ func (torrentContentLanguageFacet) Criteria(filter query.FacetFilter) []query.Cr
 				if !lang.Valid {
 					return nil, errors.New("invalid language filter specified")
 				}
+
 				langs = append(langs, lang.Language)
 			}
+
 			if len(langs) == 0 {
 				return query.AndCriteria{}, nil
 			}
+
 			array := "array["
+
 			for i, lang := range langs {
 				if i > 0 {
 					array += ","
 				}
+
 				array += fmt.Sprintf("'%s'", lang.ID())
 			}
+
 			array += "]"
+
 			return query.RawCriteria{
 				Query: "torrent_contents.languages ?| " + array,
 				Joins: maps.NewInsertMap(

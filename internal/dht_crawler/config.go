@@ -53,7 +53,9 @@ var (
 	)
 
 	ParamSaveFilesThreshold = param.MustNew(
-		param.Description[SaveFilesThreshold]("The maximum limit for the number of files saved by the DHT crawler with each torrent"),
+		param.Description[SaveFilesThreshold](
+			"The maximum limit for the number of files saved by the DHT crawler with each torrent",
+		),
 		param.Int[SaveFilesThreshold](),
 		param.Default(SaveFilesThreshold(100)),
 		param.Min[SaveFilesThreshold](0),
@@ -65,7 +67,9 @@ var (
 	)
 
 	ParamRescrapeThreshold = param.MustNew(
-		param.Description[RescrapeThreshold]("The minimum interval before re-querying seeder and leecher numbers from the DHT"),
+		param.Description[RescrapeThreshold](
+			"The minimum interval before re-querying seeder and leecher numbers from the DHT",
+		),
 		param.Default(RescrapeThreshold(time.Hour*24*30)),
 		param.Duration[RescrapeThreshold](true),
 	)

@@ -36,6 +36,7 @@ func (e *entry[K, V]) prevEntry() *entry[K, V] {
 	if p := e.prev; e.list != nil && p != &e.list.root {
 		return p
 	}
+
 	return nil
 }
 
@@ -51,6 +52,7 @@ func (l *lruList[K, V]) init() *lruList[K, V] {
 	l.root.next = &l.root
 	l.root.prev = &l.root
 	l.len = 0
+
 	return l
 }
 
@@ -66,6 +68,7 @@ func (l *lruList[K, V]) back() *entry[K, V] {
 	if l.len == 0 {
 		return nil
 	}
+
 	return l.root.prev
 }
 
@@ -84,6 +87,7 @@ func (l *lruList[K, V]) insert(e, at *entry[K, V]) *entry[K, V] {
 	e.next.prev = e
 	e.list = l
 	l.len++
+
 	return e
 }
 
@@ -105,10 +109,11 @@ func (l *lruList[K, V]) remove(e *entry[K, V]) V {
 }
 
 // move moves e to next to at.
-func (l *lruList[K, V]) move(e, at *entry[K, V]) {
+func (*lruList[K, V]) move(e, at *entry[K, V]) {
 	if e == at {
 		return
 	}
+
 	e.prev.next = e.next
 	e.next.prev = e.prev
 
@@ -116,12 +121,6 @@ func (l *lruList[K, V]) move(e, at *entry[K, V]) {
 	e.next = at.next
 	e.prev.next = e
 	e.next.prev = e
-}
-
-// pushFront inserts a new element e with value v at the front of list l and returns e.
-func (l *lruList[K, V]) pushFront(k K, v V) *entry[K, V] {
-	l.lazyInit()
-	return l.insertValue(k, v, time.Time{}, &l.root)
 }
 
 // pushFrontExpirable inserts a new expirable element e with Value v at the front of list l and returns e.

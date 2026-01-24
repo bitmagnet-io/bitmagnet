@@ -136,7 +136,11 @@ func WithConfig[Deps any, T any](ref ref.Ref, p param.Param[T]) Option[Deps] {
 
 					value, ok = resolved.Value().(T)
 					if !ok {
-						return value, fmt.Errorf("failed to cast from %T to %T", resolved.Value(), value)
+						return value, fmt.Errorf(
+							"failed to cast from %T to %T",
+							resolved.Value(),
+							value,
+						)
 					}
 
 					return value, nil

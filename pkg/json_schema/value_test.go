@@ -20,10 +20,10 @@ func TestValue(t *testing.T) {
 	jsonBytes, err := value.MarshalJSON()
 	require.NoError(t, err)
 
-	assert.Equal(t, []byte(`{"foo":"bar"}`), jsonBytes)
+	assert.JSONEq(t, `{"foo":"bar"}`, string(jsonBytes))
 
 	mYamlBytes, err := value.MarshalYAML()
 	require.NoError(t, err)
 
-	assert.Equal(t, yamlBytes, mYamlBytes)
+	assert.YAMLEq(t, string(yamlBytes), string(mYamlBytes))
 }

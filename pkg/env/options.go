@@ -101,15 +101,15 @@ func WithOSSignalsProvider() Option {
 	}
 }
 
-func WithFSProvider(provider fs.FSProvider) Option {
+func WithFSProvider(provider fs.Provider) Option {
 	return func(e *environment) {
-		e.FSProvider = provider
+		e.Provider = provider
 	}
 }
 
 func WithXDGFSProvider(subPath string) Option {
 	return func(e *environment) {
-		e.FSProvider = fs.NewFSProviderXDG(subPath)
+		e.Provider = fs.NewFSProviderXDG(subPath)
 	}
 }
 
@@ -135,8 +135,8 @@ func ensureValues() Option {
 			e.SignalsProvider = nopSignalsProvider{}
 		}
 
-		if e.FSProvider == nil {
-			e.FSProvider = fs.FSProviderNop{}
+		if e.Provider == nil {
+			e.Provider = fs.ProviderNop{}
 		}
 	}
 }

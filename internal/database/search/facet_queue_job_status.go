@@ -43,6 +43,7 @@ func (queueJobStatusFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 		query.DaoCriteria{
 			Conditions: func(ctx query.DBContext) ([]field.Expr, error) {
 				q := ctx.Query()
+
 				return []field.Expr{
 					q.QueueJob.Status.In(values...),
 				}, nil

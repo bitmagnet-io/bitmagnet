@@ -35,6 +35,7 @@ func DecodeTo[T any](ctx ParseContext, target *T) error {
 
 func Decode[T any](ctx ParseContext) (T, error) {
 	var target T
+
 	err := DecodeTo(ctx, &target)
 
 	return target, err

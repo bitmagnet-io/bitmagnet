@@ -47,6 +47,7 @@ func (tc TorrentContent) Ref() TorrentContentRef {
 
 	if tc.ContentType.Valid {
 		ct := tc.ContentType.ContentType
+
 		var sourceID Maybe[ContentSourceID]
 		if tc.ContentSource.Valid && tc.ContentID.Valid {
 			sourceID = MaybeValid(ContentSourceID{
@@ -54,6 +55,7 @@ func (tc TorrentContent) Ref() TorrentContentRef {
 				ID:     tc.ContentID.String,
 			})
 		}
+
 		contentRef = MaybeValid(TorrentContentContentRef{
 			Type:     ct,
 			SourceID: sourceID,

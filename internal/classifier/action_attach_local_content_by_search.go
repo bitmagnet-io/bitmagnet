@@ -30,6 +30,7 @@ func (attachLocalContentBySearchAction) compile(ctx compilerContext) (action, er
 			if !cl.ContentType.Valid || !cl.BaseTitle.Valid {
 				return cl, classification.ErrUnmatched
 			}
+
 			content, err := ctx.search.ContentBySearch(
 				ctx.Context,
 				cl.ContentType.ContentType,
@@ -39,7 +40,9 @@ func (attachLocalContentBySearchAction) compile(ctx compilerContext) (action, er
 			if err != nil {
 				return cl, err
 			}
+
 			cl.AttachContent(&content)
+
 			return cl, nil
 		},
 	}, nil

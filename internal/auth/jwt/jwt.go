@@ -56,10 +56,9 @@ func (j *service) Generate(userID int, username string) (string, error) {
 }
 
 func (j *service) Parse(token string) (*Claims, error) {
-	parsed, err := jwt.ParseWithClaims(token, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+	parsed, err := jwt.ParseWithClaims(token, &Claims{}, func(*jwt.Token) (interface{}, error) {
 		return j.secretKey, nil
 	})
-
 	if err != nil {
 		return nil, err
 	}

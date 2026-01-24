@@ -34,6 +34,7 @@ type WorkerMutation struct {
 }
 
 func (m *WorkerMutation) Start(ctx context.Context, refs []ref.Ref) (gen.WorkerListAllQueryResult, error) {
+	//nolint:contextcheck // we want the global context, not the request one
 	err := m.Registry.Start(m.Context, refs...)
 	if err != nil {
 		return gen.WorkerListAllQueryResult{}, err
@@ -77,6 +78,7 @@ func (m *WorkerMutation) Shutdown(ctx context.Context, refs []ref.Ref) (gen.Work
 
 func (m *WorkerMutation) Restart(ctx context.Context, refs []ref.Ref) (gen.WorkerListAllQueryResult, error) {
 	// Must be done in a goroutine to prevent deadlock:
+	//nolint:contextcheck
 	go func() {
 		_ = m.Registry.Restart(m.Context, refs...)
 	}()
@@ -93,12 +95,14 @@ func workersListAll(localizer *i18n.Localizer, registry *registry.Registry) (gen
 
 	for _, state := range stateMap.Values() {
 		var err *string
+
 		if state.Err != nil {
 			strErr := state.Err.Error()
 			err = &strErr
 		}
 
 		var label string
+
 		strRef := state.Ref.String()
 		if localized, _ := localizer.LocalizeMessage(&i18n.Message{
 			ID: strRef,

@@ -72,10 +72,12 @@ func resolveConfig(env env.Env, plugins ref.Map[plugin.Plugin]) (*config_resolve
 	})
 
 	configResolver := config_resolver.New(configLookup, configParams...)
+
 	resolvedConfig, err := configResolver.Resolve()
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", Err, err)
 	}
+
 	return &resolvedConfig, nil
 }
 
@@ -91,21 +93,31 @@ func resolveI18n(plugins ref.Map[plugin.Plugin]) i18n.Provider {
 			slice.FlatMap(plugins.Values(), func(plugin plugin.Plugin) []*i18n.Message {
 				messages := plugin.I18nMessages()
 
-				messages = append(messages, slice.Map(plugin.Errors().Entries(), func(entry ref.Entry[error]) *i18n.Message {
-					return i18n.NewMessage(
-						entry.Ref.String(),
-						fmt.Sprintf("message for error: %s", entry.Ref),
-						i18n.WithOther(entry.Value.Error()),
-					)
-				})...)
+				messages = append(
+					messages,
+					slice.Map(
+						plugin.Errors().Entries(),
+						func(entry ref.Entry[error]) *i18n.Message {
+							return i18n.NewMessage(
+								entry.String(),
+								fmt.Sprintf("message for error: %s", entry.Ref),
+								i18n.WithOther(entry.Value.Error()),
+							)
+						},
+					)...)
 
-				messages = append(messages, slice.Map(plugin.ConfigParams(), func(param config_registry.Param) *i18n.Message {
-					return i18n.NewMessage(
-						param.Ref.String(),
-						fmt.Sprintf("description for config: %s", param.Ref),
-						i18n.WithOther(param.Description()),
-					)
-				})...)
+				messages = append(
+					messages,
+					slice.Map(
+						plugin.ConfigParams(),
+						func(param config_registry.Param) *i18n.Message {
+							return i18n.NewMessage(
+								param.String(),
+								fmt.Sprintf("description for config: %s", param.Ref),
+								i18n.WithOther(param.Description()),
+							)
+						},
+					)...)
 
 				return messages
 			})...,

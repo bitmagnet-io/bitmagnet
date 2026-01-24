@@ -47,6 +47,7 @@ func (v *Value[T]) GetAny() any {
 func (v *Value[T]) Set(value T) {
 	v.mutex.Lock()
 	defer v.mutex.Unlock()
+
 	v.set(value)
 }
 
@@ -66,6 +67,7 @@ func (v *Value[T]) SetAny(value any) error {
 func (v *Value[T]) Update(fn func(T) T) T {
 	v.mutex.Lock()
 	defer v.mutex.Unlock()
+
 	v.set(fn(v.value))
 
 	return v.value

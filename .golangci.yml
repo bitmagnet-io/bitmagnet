@@ -72,7 +72,7 @@ linters:
     - usetesting
     - wastedassign
     - whitespace
-    - wsl
+    - wsl_v5
   settings:
     revive:
       rules:
@@ -99,14 +99,12 @@ linters:
         - name: error-strings
         - name: errorf
         - name: exported
-        - name: if-return
         - name: identical-branches
         - name: increment-decrement
         - name: indent-error-flow
         - name: line-length-limit
           arguments:
             - 120
-        - name: nested-structs
         - name: package-comments
         - name: range
         - name: range-val-address
@@ -127,6 +125,11 @@ linters:
         - name: unused-receiver
         - name: var-declaration
         - name: var-naming
+          arguments: [[], [], [{ skipPackageNameChecks: true }]]
+    wsl_v5:
+      allow-first-in-block: true
+      allow-whole-block: false
+      branch-max-lines: 2
   exclusions:
     generated: lax
     presets:

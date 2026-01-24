@@ -26,6 +26,7 @@ func newGetNodesForFindNodeWorker(
 		time.Minute,
 		func(ctx context.Context) error {
 			nodes := kTable.GetOldestNodes(time.Now().Add(-(5 * time.Second)), 10)
+
 			err := findNodesAdder.Add(ctx, nodes...)
 			if err != nil {
 				return err
@@ -49,7 +50,6 @@ func newFindNodesWorker(
 	return channel.NewWorker(
 		func(ctx context.Context, node ktable.Node) error {
 			res, err := cl.FindNode(ctx, node.Addr(), soughtNodeID.Get())
-
 			if err != nil {
 				kTable.BatchCommand(ktable.DropNode{
 					ID:     node.ID(),
@@ -57,17 +57,19 @@ func newFindNodesWorker(
 				})
 
 				return nil
-			} else {
-				kTable.BatchCommand(ktable.PutNode{
-					ID:      node.ID(),
-					Addr:    node.Addr(),
-					Options: []ktable.NodeOption{ktable.NodeResponded()},
-				})
 			}
 
-			return discoveredNodesAdder.Add(ctx, slice.Map(res.Nodes, func(info client.NodeInfo) ktable.Node {
-				return ktable.NewNode(info.ID, info.Addr)
-			})...)
+			kTable.BatchCommand(ktable.PutNode{
+				ID:      node.ID(),
+				Addr:    node.Addr(),
+				Options: []ktable.NodeOption{ktable.NodeResponded()},
+			})
+
+			return discoveredNodesAdder.Add(
+				ctx,
+				slice.Map(res.Nodes, func(info client.NodeInfo) ktable.Node {
+					return ktable.NewNode(info.ID, info.Addr)
+				})...)
 		},
 		channel.WithQuickShutdown[ktable.Node](),
 		channel.WithAtomicSize[ktable.Node](

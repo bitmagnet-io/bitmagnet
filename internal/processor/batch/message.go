@@ -37,7 +37,7 @@ func (p MessageParams) ApisDisabled() bool {
 }
 
 //
-//func NewQueueJob(msg MessageParams, options ...model.QueueJobOption) (model.QueueJob, error) {
+// func NewQueueJob(msg MessageParams, options ...model.QueueJobOption) (model.QueueJob, error) {
 //	if msg.BatchSize == 0 {
 //		msg.BatchSize = 100
 //	}

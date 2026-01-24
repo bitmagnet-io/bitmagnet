@@ -31,7 +31,6 @@ func (s *service) CreateInitialInvitation(ctx context.Context) (InitialInvitatio
 			tx.User.RoleName.Eq("admin"),
 			tx.User.Enabled.Is(true),
 		).Count()
-
 		if err != nil {
 			return err
 		}
@@ -51,7 +50,6 @@ func (s *service) CreateInitialInvitation(ctx context.Context) (InitialInvitatio
 				tx.Invitation.ExpiresAt.IsNull(),
 			).
 			First()
-
 		if err == nil {
 			initialInvitation.Invitation = *invitation
 			initialInvitation.Status = InitialInvitationUnclaimed
@@ -78,7 +76,6 @@ func (s *service) CreateInitialInvitation(ctx context.Context) (InitialInvitatio
 
 		return nil
 	})
-
 	if err != nil {
 		return InitialInvitation{}, fmt.Errorf("%w: %w: %w", Err, ErrInitialInvitation, err)
 	}

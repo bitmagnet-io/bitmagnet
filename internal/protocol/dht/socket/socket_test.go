@@ -41,6 +41,7 @@ func TestAdapters(t *testing.T) {
 			))
 
 			ctx, runnerCancel := context.WithCancelCause(ctx)
+
 			t.Cleanup(func() {
 				runnerCancel(nil)
 			})
@@ -126,6 +127,7 @@ func TestAdapters(t *testing.T) {
 					nodeAddr, ok := expectedIDs[msg.T]
 					if ok {
 						t.Logf("received response from node: %s", nodeAddr)
+
 						receivedResponse = true
 					}
 				}

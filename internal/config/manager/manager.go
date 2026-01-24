@@ -70,14 +70,17 @@ func (m *Manager) Save(rf ref.Ref, value any) (*resolver.Param, error) {
 	m.overridden.Set(rf, yamlNode)
 
 	mapToWrite := ref.NewMap[yaml.Node]()
+
 	for _, param := range m.resolved.Params() {
 		if m.overridden.Has(param.Ref) || !shouldWriteSource(param.Source()) {
 			continue
 		}
+
 		thisNode, err := param.EncodeYAMLAny(param.Value())
 		if err != nil {
 			return param, fmt.Errorf("yaml encode failed for key: %s: %w", param.Ref, err)
 		}
+
 		mapToWrite.Set(param.Ref, thisNode)
 	}
 
@@ -115,14 +118,17 @@ func (m *Manager) Delete(rf ref.Ref) (*resolver.Param, error) {
 	}
 
 	mapToWrite := ref.NewMap[yaml.Node]()
+
 	for _, param := range m.resolved.Params() {
-		if m.overridden.Has(param.Ref) || !shouldWriteSource(param.Source()) || param.Ref.Equals(rf) {
+		if m.overridden.Has(param.Ref) || !shouldWriteSource(param.Source()) || param.Equals(rf) {
 			continue
 		}
+
 		thisNode, err := param.EncodeYAMLAny(param.Value())
 		if err != nil {
-			return nil, fmt.Errorf("yaml encode failed for key: %s: %w", param.Ref.String(), err)
+			return nil, fmt.Errorf("yaml encode failed for key: %s: %w", param.String(), err)
 		}
+
 		mapToWrite.Set(param.Ref, thisNode)
 	}
 

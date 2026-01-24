@@ -53,7 +53,10 @@ var (
 		),
 		builder.WithConfig[deps](Ref.MustSub("autostart"), dht_crawler.ParamAutostart),
 		builder.WithConfig[deps](Ref.MustSub("bootstrap_nodes"), dht_crawler.ParamBootstrapNodes),
-		builder.WithConfig[deps](Ref.MustSub("reseed_bootstrap_nodes_interval"), dht_crawler.ParamReseedBootstrapNodesInterval),
+		builder.WithConfig[deps](
+			Ref.MustSub("reseed_bootstrap_nodes_interval"),
+			dht_crawler.ParamReseedBootstrapNodesInterval,
+		),
 		builder.WithConfig[deps](Ref.MustSub("save_files_threshold"), dht_crawler.ParamSaveFilesThreshold),
 		builder.WithConfig[deps](Ref.MustSub("save_pieces"), dht_crawler.ParamSavePieces),
 		builder.WithConfig[deps](Ref.MustSub("rescrape_threshold"), dht_crawler.ParamRescrapeThreshold),
@@ -61,8 +64,14 @@ var (
 		builder.WithConfig[deps](Ref.MustSub("ping_concurrency"), dht_crawler.ParamPingConcurrency),
 		builder.WithConfig[deps](Ref.MustSub("find_nodes_concurrency"), dht_crawler.ParamFindNodesConcurrency),
 		builder.WithConfig[deps](Ref.MustSub("get_peers_concurrency"), dht_crawler.ParamGetPeersConcurrency),
-		builder.WithConfig[deps](Ref.MustSub("sample_infohashes_concurrency"), dht_crawler.ParamSampleInfoHashesConcurrency),
-		builder.WithConfig[deps](Ref.MustSub("request_metainfo_concurrency"), dht_crawler.ParamRequestMetaInfoConcurrency),
+		builder.WithConfig[deps](
+			Ref.MustSub("sample_infohashes_concurrency"),
+			dht_crawler.ParamSampleInfoHashesConcurrency,
+		),
+		builder.WithConfig[deps](
+			Ref.MustSub("request_metainfo_concurrency"),
+			dht_crawler.ParamRequestMetaInfoConcurrency,
+		),
 		builder.WithFxOption[deps](
 			fx.Provide(
 				fx.Private,

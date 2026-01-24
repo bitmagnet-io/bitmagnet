@@ -21,7 +21,9 @@ outer:
 	for {
 		if currentIndex == len(path) {
 			var value any
+
 			err := currentNode.Decode(&value)
+
 			return Result{source: l.source, value: value}, true, err
 		}
 
@@ -41,6 +43,7 @@ outer:
 			if keyNode.Tag == "!!str" && keyNode.Value == path[currentIndex] {
 				currentIndex++
 				currentNode = *currentNode.Content[j+1]
+
 				continue outer
 			}
 		}

@@ -50,7 +50,6 @@ func (s *service) SetRole(ctx context.Context, userID int, roleName string) (mod
 
 		return err
 	})
-
 	if err == nil {
 		err = userErr
 	}

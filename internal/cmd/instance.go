@@ -48,7 +48,7 @@ outer:
 
 		switch token.tokenType {
 		case tokenTypeKeyValue:
-			p, ok := i.Spec.param(token.key)
+			p, ok := i.param(token.key)
 			if !ok {
 				return fmt.Errorf("%w: %s: %w: %s", ErrInvalidArgs, i.name, ErrUnknownParam, token.key)
 			}
@@ -62,7 +62,7 @@ outer:
 				i.helpRequested = true
 			}
 
-			p, ok := i.Spec.param(token.key)
+			p, ok := i.param(token.key)
 			if !ok {
 				return fmt.Errorf("%w: %s: %w: %s", ErrInvalidArgs, i.name, ErrUnknownParam, token.key)
 			}
@@ -92,7 +92,7 @@ outer:
 		}
 	}
 
-	for _, p := range i.Spec.Params() {
+	for _, p := range i.Params() {
 		if p.Default != "" {
 			if _, ok := i.values[p.Name]; !ok {
 				if err := i.handleParamValue(p, p.Default); err != nil {
@@ -115,11 +115,14 @@ outer:
 				if err != nil {
 					return err
 				}
+
 				if subCmdSpec.name != token.value {
 					continue
 				}
+
 				subInstance := subCmdSpec.newInstance(subCmd, i.args[i.index:])
 				subInstance.parent = i
+
 				return subInstance.run(env)
 			}
 		}
@@ -169,9 +172,7 @@ func (i *instance) nextArg() (string, bool) {
 }
 
 func (i *instance) handleParamValue(param Param, strValue string) error {
-	var (
-		values []any
-	)
+	var values []any
 
 	switch param.Type {
 	case paramTypeTextUnmarshaler:
@@ -179,10 +180,12 @@ func (i *instance) handleParamValue(param Param, strValue string) error {
 		ptr := reflect.New(v.Type())
 		ptr.Elem().Set(v)
 		unmarshaler := ptr.Interface().(encoding.TextUnmarshaler)
+
 		err := unmarshaler.UnmarshalText([]byte(strValue))
 		if err != nil {
 			return fmt.Errorf("%w: %s: %w", ErrParseParamValue, param.Name, err)
 		}
+
 		values = append(values, unmarshaler)
 	case paramTypeBool:
 		if strValue == "" {
@@ -192,6 +195,7 @@ func (i *instance) handleParamValue(param Param, strValue string) error {
 			if err != nil {
 				return fmt.Errorf("%w: %s: %w", ErrParseParamValue, param.Name, err)
 			}
+
 			values = append(values, value)
 		}
 	case paramTypeString:
@@ -205,7 +209,8 @@ func (i *instance) handleParamValue(param Param, strValue string) error {
 
 func (i *instance) applyValues() {
 	for name, values := range i.values {
-		param := i.Spec.params[name]
+		param := i.params[name]
+
 		var value any
 
 		switch param.Type {
@@ -218,6 +223,7 @@ func (i *instance) applyValues() {
 		default:
 			panic("unknown param type")
 		}
+
 		if rv, ok := i.reflectValues[name]; ok {
 			rv.Set(reflect.ValueOf(value))
 		}

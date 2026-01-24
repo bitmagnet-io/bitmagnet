@@ -43,12 +43,15 @@ func newGetPeersWorker(
 			})
 
 			if len(res.Nodes) > 0 {
-				// block the channel for up to a second in an attempt to add the nodes to the discoveredNodes channel
+				// block the channel for up to a second in an attempt to add the nodes to the
+				// discoveredNodes channel
 				cancelCtx, cancel := context.WithTimeout(ctx, time.Second)
 
-				discoveredNodesAdder.Add(cancelCtx, slice.Map(res.Nodes, func(info client.NodeInfo) ktable.Node {
-					return ktable.NewNode(info.ID, info.Addr)
-				})...)
+				_ = discoveredNodesAdder.Add(
+					cancelCtx,
+					slice.Map(res.Nodes, func(info client.NodeInfo) ktable.Node {
+						return ktable.NewNode(info.ID, info.Addr)
+					})...)
 
 				cancel()
 			}

@@ -23,32 +23,40 @@ func SearchParams(params internal_search.Params) *proto_search.Params {
 	if params.QueryString.Valid {
 		queryString = &params.QueryString.String
 	}
+
 	if bytes, err := json.Marshal(params.Criteria); err == nil {
 		str := string(bytes)
 		criteria = &str
 	}
+
 	if params.Limit.Valid {
 		l := int32(params.Limit.Uint)
 		limit = &l
 	}
+
 	if params.Page.Valid {
 		p := int32(params.Page.Uint)
 		page = &p
 	}
+
 	if params.Offset.Valid {
 		o := int32(params.Offset.Uint)
 		offset = &o
 	}
+
 	if params.TotalCount.Valid {
 		totalCount = &params.TotalCount.Bool
 	}
+
 	if params.HasNextPage.Valid {
 		hasNextPage = &params.HasNextPage.Bool
 	}
+
 	if params.AggregationBudget.Valid {
 		ab := float32(params.AggregationBudget.Float64)
 		aggregationBudget = &ab
 	}
+
 	return &proto_search.Params{
 		QueryString:       queryString,
 		Criteria:          criteria,

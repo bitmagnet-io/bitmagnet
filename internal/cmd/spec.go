@@ -29,6 +29,7 @@ func (s Spec) param(key string) (Param, bool) {
 func (s Spec) newInstance(cmd Command, args []string) *instance {
 	reflectValue := reflect.ValueOf(cmd).Elem()
 	reflectValues := make(map[string]reflect.Value)
+
 	for name, param := range s.params {
 		if param.index != nil {
 			reflectValues[name] = reflectValue.FieldByIndex(param.index)
@@ -56,7 +57,7 @@ const (
 	paramTypeTextUnmarshaler
 )
 
-func (p paramType) isMultiple() bool {
+func (paramType) isMultiple() bool {
 	// switch p {
 	// case paramTypeStringSlice:
 	// 	return true

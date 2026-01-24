@@ -26,12 +26,15 @@ func (a Index) Info() IndexInfo {
 	if _, ok := any(a.Adapter).(search.TorrentContent); ok {
 		resultTypes = append(resultTypes, search.ResultTypeTorrentContent)
 	}
+
 	if _, ok := any(a.Adapter).(search.TorrentFiles); ok {
 		resultTypes = append(resultTypes, search.ResultTypeTorrentFile)
 	}
+
 	if _, ok := any(a.Adapter).(search.Content); ok {
 		resultTypes = append(resultTypes, search.ResultTypeContent)
 	}
+
 	return IndexInfo{
 		Ref:         a.Ref,
 		Name:        a.Name,

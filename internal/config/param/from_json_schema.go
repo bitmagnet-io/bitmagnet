@@ -27,10 +27,12 @@ func JSONSchemaDecoder[T any](schema json_schema.JSONSchema) Option[T] {
 
 		if schema.Default != nil {
 			var value T
+
 			def := yaml.Node(*schema.Default)
 			if err := def.Decode(&value); err != nil {
 				return err
 			}
+
 			options = append(options, Default(value))
 		}
 
@@ -46,20 +48,25 @@ func jsonSchemaDecoder[T any](schema *gojsonschema.Schema) Option[T] {
 				var zero T
 				return zero, err
 			}
+
 			if err := jsonSchemaValidate(schema, raw); err != nil {
 				var zero T
 				return zero, err
 			}
+
 			var value T
+
 			decoder, err := newDecoder(&value)
 			if err != nil {
 				var zero T
 				return zero, err
 			}
+
 			if err := decoder.Decode(raw); err != nil {
 				var zero T
 				return zero, err
 			}
+
 			return value, nil
 		})(p)
 	}
@@ -67,16 +74,20 @@ func jsonSchemaDecoder[T any](schema *gojsonschema.Schema) Option[T] {
 
 func jsonSchemaValidate(schema *gojsonschema.Schema, val any) error {
 	ld := gojsonschema.NewGoLoader(val)
+
 	result, err := schema.Validate(ld)
 	if err != nil {
 		return err
 	}
+
 	if result.Valid() {
 		return nil
 	}
+
 	var errs []error
 	for _, desc := range result.Errors() {
 		errs = append(errs, fmt.Errorf("%s", desc.String()))
 	}
+
 	return fmt.Errorf("schema validation failed: %w", errors.Join(errs...))
 }

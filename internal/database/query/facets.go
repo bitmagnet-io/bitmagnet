@@ -234,9 +234,11 @@ func (b optionBuilder) calculateFacets(ctx context.Context) ([]search.FacetResul
 	for _, facet := range b.facets {
 		go (func(facet Facet) {
 			defer wgOuter.Done()
+
 			if !facet.IsAggregated() {
 				return
 			}
+
 			values, valuesErr := facet.Values(facetContext{
 				OptionBuilder: b,
 				ctx:           ctx,
@@ -245,28 +247,36 @@ func (b optionBuilder) calculateFacets(ctx context.Context) ([]search.FacetResul
 				addErr(fmt.Errorf("failed to get values for key '%s': %w",
 					facet.Key(),
 					valuesErr))
+
 				return
 			}
+
 			filter := facet.Filter()
 			items := make([]search.FacetResultItem, 0, len(values))
 			addItem := func(item search.FacetResultItem) {
 				mtx.Lock()
 				defer mtx.Unlock()
+
 				items = append(items, item)
 			}
 			wgInner := sync.WaitGroup{}
 			wgInner.Add(len(values))
+
 			for key, label := range values {
 				go func(key, label string) {
 					defer wgInner.Done()
+
 					criterias := facet.Criteria(FacetFilter{key: struct{}{}})
+
 					var criteria Criteria
+
 					switch facet.Logic() {
 					case model.FacetLogicAnd:
 						criteria = AndCriteria{criterias}
 					case model.FacetLogicOr:
 						criteria = OrCriteria{criterias}
 					}
+
 					aggBuilder, aggBuilderErr := Options(
 						facet.AggregationOption,
 						withCurrentFacet(facet.Key()),
@@ -277,18 +287,22 @@ func (b optionBuilder) calculateFacets(ctx context.Context) ([]search.FacetResul
 							fmt.Errorf(
 								"failed to create aggregation option for key '%s': %w", facet.Key(), aggBuilderErr),
 						)
+
 						return
 					}
+
 					q := aggBuilder.NewSubQuery(ctx)
 					if preErr := aggBuilder.applyPre(q, false); preErr != nil {
 						addErr(fmt.Errorf("failed to apply pre for key '%s': %w", facet.Key(), preErr))
 						return
 					}
+
 					countResult, countErr := dao.BudgetedCount(q.UnderlyingDB(), b.aggregationBudget)
 					if countErr != nil {
 						addErr(fmt.Errorf("failed to get count for key '%s': %w", facet.Key(), countErr))
 						return
 					}
+
 					if countResult.Count > 0 || countResult.BudgetExceeded || filter.HasKey(key) {
 						addItem(search.FacetResultItem{
 							Value:      key,
@@ -299,6 +313,7 @@ func (b optionBuilder) calculateFacets(ctx context.Context) ([]search.FacetResul
 					}
 				}(key, label)
 			}
+
 			wgInner.Wait()
 			addAggregation(search.FacetResult{
 				Key:   facet.Key(),

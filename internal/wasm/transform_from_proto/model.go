@@ -11,78 +11,79 @@ import (
 )
 
 func Torrent(pt *proto.Torrent) model.Torrent {
-	infoHash, _ := protocol.ParseID(pt.InfoHash)
+	infoHash, _ := protocol.ParseID(pt.GetInfoHash())
 
 	return model.Torrent{
 		InfoHash:    infoHash,
-		Name:        pt.Name,
-		Size:        uint(pt.Size),
-		Private:     pt.Private,
-		FilesStatus: FilesStatus(pt.FilesStatus),
-		Extension:   newNullString(pt.Extension),
-		FilesCount:  newNullUint(pt.FilesCount),
-		Files:       slice.Map(pt.Files, TorrentFile),
-		Sources:     slice.Map(pt.Sources, TorrentSource),
-		Tags: slice.Map(pt.Tags, func(s string) model.TorrentTag {
+		Name:        pt.GetName(),
+		Size:        uint(pt.GetSize()),
+		Private:     pt.GetPrivate(),
+		FilesStatus: FilesStatus(pt.GetFilesStatus()),
+		Extension:   newNullString(pt.GetExtension()),
+		FilesCount:  newNullUint(pt.GetFilesCount()),
+		Files:       slice.Map(pt.GetFiles(), TorrentFile),
+		Sources:     slice.Map(pt.GetSources(), TorrentSource),
+		Tags: slice.Map(pt.GetTags(), func(s string) model.TorrentTag {
 			return model.TorrentTag{
 				InfoHash: infoHash,
 				Name:     s,
 			}
 		}),
-		CreatedAt: time.UnixMilli(pt.CreatedAt),
-		UpdatedAt: time.UnixMilli(pt.UpdatedAt),
+		CreatedAt: time.UnixMilli(pt.GetCreatedAt()),
+		UpdatedAt: time.UnixMilli(pt.GetUpdatedAt()),
 	}
 }
 
 func TorrentFile(pf *proto.TorrentFile) model.TorrentFile {
 	return model.TorrentFile{
 		InfoHash: func() protocol.ID {
-			infoHash, _ := protocol.ParseID(pf.InfoHash)
+			infoHash, _ := protocol.ParseID(pf.GetInfoHash())
 			return infoHash
 		}(),
-		Index:     uint(pf.Index),
-		Path:      pf.Path,
-		Extension: newNullString(pf.Extension),
-		Size:      uint(pf.Size),
-		CreatedAt: time.UnixMilli(pf.CreatedAt),
-		UpdatedAt: time.UnixMilli(pf.UpdatedAt),
+		Index:     uint(pf.GetIndex()),
+		Path:      pf.GetPath(),
+		Extension: newNullString(pf.GetExtension()),
+		Size:      uint(pf.GetSize()),
+		CreatedAt: time.UnixMilli(pf.GetCreatedAt()),
+		UpdatedAt: time.UnixMilli(pf.GetUpdatedAt()),
 	}
 }
 
 func TorrentSource(ps *proto.TorrentSource) model.TorrentsTorrentSource {
 	return model.TorrentsTorrentSource{
 		InfoHash: func() protocol.ID {
-			infoHash, _ := protocol.ParseID(ps.InfoHash)
+			infoHash, _ := protocol.ParseID(ps.GetInfoHash())
 			return infoHash
 		}(),
-		Source:   ps.Source,
-		ImportID: newNullString(ps.ImportId),
-		Seeders:  newNullUint(ps.Seeders),
-		Leechers: newNullUint(ps.Leechers),
+		Source:   ps.GetSource(),
+		ImportID: newNullString(ps.GetImportId()),
+		Seeders:  newNullUint(ps.GetSeeders()),
+		Leechers: newNullUint(ps.GetLeechers()),
 		PublishedAt: func() sql.NullTime {
-			if ps.PublishedAt != nil && *ps.PublishedAt != 0 {
+			if publishedAt := ps.GetPublishedAt(); publishedAt != nil && *publishedAt != 0 {
 				return sql.NullTime{
-					Time:  time.UnixMilli(*ps.PublishedAt),
+					Time:  time.UnixMilli(*publishedAt),
 					Valid: true,
 				}
 			}
+
 			return sql.NullTime{}
 		}(),
-		CreatedAt: time.UnixMilli(ps.CreatedAt),
-		UpdatedAt: time.UnixMilli(ps.UpdatedAt),
+		CreatedAt: time.UnixMilli(ps.GetCreatedAt()),
+		UpdatedAt: time.UnixMilli(ps.GetUpdatedAt()),
 	}
 }
 
 func TorrentContent(tcp *proto.TorrentContent) model.TorrentContent {
 	return model.TorrentContent{
-		ID: tcp.Id,
+		ID: tcp.GetId(),
 		InfoHash: func() protocol.ID {
-			infoHash, _ := protocol.ParseID(tcp.InfoHash)
+			infoHash, _ := protocol.ParseID(tcp.GetInfoHash())
 			return infoHash
 		}(),
 		ContentType: func() model.NullContentType {
-			if tcp.ContentType != nil {
-				ct, err := model.ParseContentType(*tcp.ContentType)
+			if ct := tcp.GetContentType(); ct != nil {
+				ct, err := model.ParseContentType(*ct)
 				if err == nil {
 					return model.NullContentType{
 						ContentType: ct,
@@ -93,15 +94,16 @@ func TorrentContent(tcp *proto.TorrentContent) model.TorrentContent {
 
 			return model.NullContentType{}
 		}(),
-		Content: Content(tcp.Content),
+		Content: Content(tcp.GetContent()),
 		Languages: func() model.Languages {
-
 			languages := make(model.Languages)
-			for _, l := range tcp.Languages {
+
+			for _, l := range tcp.GetLanguages() {
 				lang := model.ParseLanguage(l)
 				if !lang.Valid {
 					continue
 				}
+
 				languages[lang.Language] = struct{}{}
 			}
 
@@ -113,7 +115,8 @@ func TorrentContent(tcp *proto.TorrentContent) model.TorrentContent {
 		}(),
 		Episodes: func() model.Episodes {
 			episodes := make(model.Episodes)
-			for _, str := range tcp.Episodes {
+
+			for _, str := range tcp.GetEpisodes() {
 				for season, eps := range model.ParseEpisodes(str) {
 					for ep := range eps {
 						episodes = episodes.AddEpisode(season, ep)
@@ -127,20 +130,20 @@ func TorrentContent(tcp *proto.TorrentContent) model.TorrentContent {
 
 			return episodes
 		}(),
-		VideoResolution: model.NewNullVideoResolution(tcp.VideoResolution),
-		VideoSource:     model.NewNullVideoSource(tcp.VideoSource),
-		Video3D:         model.NewNullVideo3D(tcp.Video3D),
-		VideoModifier:   model.NewNullVideoModifier(tcp.VideoModifier),
-		ReleaseGroup:    newNullString(tcp.ReleaseGroup),
-		Seeders:         newNullUint(tcp.Seeders),
-		Leechers:        newNullUint(tcp.Leechers),
-		Size:            uint(tcp.Size),
-		FilesCount:      newNullUint(tcp.FilesCount),
-		Tags:            tcp.Tags,
-		PublishedAt:     time.UnixMilli(tcp.PublishedAt),
-		CreatedAt:       time.UnixMilli(tcp.CreatedAt),
-		UpdatedAt:       time.UnixMilli(tcp.UpdatedAt),
-		Torrent:         Torrent(tcp.Torrent),
+		VideoResolution: model.NewNullVideoResolution(tcp.GetVideoResolution()),
+		VideoSource:     model.NewNullVideoSource(tcp.GetVideoSource()),
+		Video3D:         model.NewNullVideo3D(tcp.GetVideo3D()),
+		VideoModifier:   model.NewNullVideoModifier(tcp.GetVideoModifier()),
+		ReleaseGroup:    newNullString(tcp.GetReleaseGroup()),
+		Seeders:         newNullUint(tcp.GetSeeders()),
+		Leechers:        newNullUint(tcp.GetLeechers()),
+		Size:            uint(tcp.GetSize()),
+		FilesCount:      newNullUint(tcp.GetFilesCount()),
+		Tags:            tcp.GetTags(),
+		PublishedAt:     time.UnixMilli(tcp.GetPublishedAt()),
+		CreatedAt:       time.UnixMilli(tcp.GetCreatedAt()),
+		UpdatedAt:       time.UnixMilli(tcp.GetUpdatedAt()),
+		Torrent:         Torrent(tcp.GetTorrent()),
 	}
 }
 
@@ -149,70 +152,74 @@ func Content(pc *proto.Content) model.Content {
 		return model.Content{}
 	}
 
-	ref := ContentRef(pc.Ref)
+	ref := ContentRef(pc.GetRef())
 
 	return model.Content{
 		Type:        ref.Type,
 		Source:      ref.Source,
 		ID:          ref.ID,
-		Title:       pc.Title,
-		ReleaseDate: Date(pc.ReleaseDate),
-		Adult:       newNullBool(pc.Adult),
+		Title:       pc.GetTitle(),
+		ReleaseDate: Date(pc.GetReleaseDate()),
+		Adult:       newNullBool(pc.GetAdult()),
 		OriginalLanguage: func() model.NullLanguage {
-			if pc.OriginalLanguage != nil {
-				lang := model.ParseLanguage(*pc.OriginalLanguage)
+			if l := pc.GetOriginalLanguage(); l != nil {
+				lang := model.ParseLanguage(*l)
 				if lang.Valid {
 					return lang
 				}
 			}
+
 			return model.NullLanguage{}
 		}(),
-		OriginalTitle: newNullString(pc.OriginalTitle),
-		Overview:      newNullString(pc.Overview),
-		Runtime:       newNullUint16(pc.Runtime),
-		Popularity:    newNullFloat32(pc.Popularity),
-		VoteAverage:   newNullFloat32(pc.VoteAverage),
-		VoteCount:     newNullUint(pc.VoteCount),
-		Tags:          slice.Map(pc.Tags, func(s string) model.ContentTag { return model.ContentTag{Name: s} }),
-		Collections:   slice.Map(pc.Collections, ContentCollection),
-		Attributes:    slice.Map(pc.Attributes, ContentAttribute),
-		CreatedAt:     time.UnixMilli(pc.CreatedAt),
-		UpdatedAt:     time.UnixMilli(pc.UpdatedAt),
+		OriginalTitle: newNullString(pc.GetOriginalTitle()),
+		Overview:      newNullString(pc.GetOverview()),
+		Runtime:       newNullUint16(pc.GetRuntime()),
+		Popularity:    newNullFloat32(pc.GetPopularity()),
+		VoteAverage:   newNullFloat32(pc.GetVoteAverage()),
+		VoteCount:     newNullUint(pc.GetVoteCount()),
+		Tags: slice.Map(
+			pc.GetTags(),
+			func(s string) model.ContentTag { return model.ContentTag{Name: s} },
+		),
+		Collections: slice.Map(pc.GetCollections(), ContentCollection),
+		Attributes:  slice.Map(pc.GetAttributes(), ContentAttribute),
+		CreatedAt:   time.UnixMilli(pc.GetCreatedAt()),
+		UpdatedAt:   time.UnixMilli(pc.GetUpdatedAt()),
 	}
 }
 
 func ContentRef(r *proto.ContentRef) model.ContentRef {
 	if r != nil {
-		if t, err := model.ParseContentType(r.Type); err != nil {
-
+		if t, err := model.ParseContentType(r.GetType()); err != nil {
 			return model.ContentRef{
 				Type:   t,
-				Source: r.Source,
-				ID:     r.Id,
+				Source: r.GetSource(),
+				ID:     r.GetId(),
 			}
 		}
 	}
+
 	return model.ContentRef{}
 }
 
 func ContentCollection(c *proto.ContentCollection) model.ContentCollection {
 	return model.ContentCollection{
-		Type:      c.Type,
-		Source:    c.Source,
-		ID:        c.Id,
-		Name:      c.Name,
-		CreatedAt: time.UnixMilli(c.CreatedAt),
-		UpdatedAt: time.UnixMilli(c.UpdatedAt),
+		Type:      c.GetType(),
+		Source:    c.GetSource(),
+		ID:        c.GetId(),
+		Name:      c.GetName(),
+		CreatedAt: time.UnixMilli(c.GetCreatedAt()),
+		UpdatedAt: time.UnixMilli(c.GetUpdatedAt()),
 	}
 }
 
 func ContentAttribute(a *proto.ContentAttribute) model.ContentAttribute {
 	return model.ContentAttribute{
-		Source:    a.Source,
-		Key:       a.Key,
-		Value:     a.Value,
-		CreatedAt: time.UnixMilli(a.CreatedAt),
-		UpdatedAt: time.UnixMilli(a.UpdatedAt),
+		Source:    a.GetSource(),
+		Key:       a.GetKey(),
+		Value:     a.GetValue(),
+		CreatedAt: time.UnixMilli(a.GetCreatedAt()),
+		UpdatedAt: time.UnixMilli(a.GetUpdatedAt()),
 	}
 }
 
@@ -232,14 +239,17 @@ func FilesStatus(fs proto.Torrent_FilesStatus) model.FilesStatus {
 func Date(d *proto.Date) model.Date {
 	var result model.Date
 	if d != nil {
-		result.Year = model.Year(d.Year)
-		if d.Month != nil && *d.Month >= int32(time.January) && *d.Month <= int32(time.December) {
-			result.Month = time.Month(*d.Month)
+		result.Year = model.Year(d.GetYear())
+		if month := d.GetMonth(); month != nil && *month >= int32(time.January) &&
+			*month <= int32(time.December) {
+			result.Month = time.Month(*month)
 		}
-		if d.Day != nil {
-			result.Day = uint8(*d.Day)
+
+		if day := d.GetDay(); day != nil {
+			result.Day = uint8(*day)
 		}
 	}
+
 	return result
 }
 
@@ -247,6 +257,7 @@ func newNullString(s *string) model.NullString {
 	if s != nil {
 		return model.NewNullString(*s)
 	}
+
 	return model.NullString{}
 }
 
@@ -254,6 +265,7 @@ func newNullBool(b *bool) model.NullBool {
 	if b != nil {
 		return model.NewNullBool(*b)
 	}
+
 	return model.NullBool{}
 }
 
@@ -265,6 +277,7 @@ func newNullUint[n number](v *n) model.NullUint {
 	if v != nil {
 		return model.NewNullUint(uint(*v))
 	}
+
 	return model.NullUint{}
 }
 
@@ -272,6 +285,7 @@ func newNullUint16[n number](v *n) model.NullUint16 {
 	if v != nil {
 		return model.NewNullUint16(uint16(*v))
 	}
+
 	return model.NullUint16{}
 }
 
@@ -279,5 +293,6 @@ func newNullFloat32[n number](v *n) model.NullFloat32 {
 	if v != nil {
 		return model.NewNullFloat32(float32(*v))
 	}
+
 	return model.NullFloat32{}
 }
