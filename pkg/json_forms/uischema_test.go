@@ -21,7 +21,7 @@ func TestUISchema(t *testing.T) {
   "scope": "#/properties/name"
 }`,
 			expected: json_forms.Control{
-				Type:  json_forms.ControlStr("Control"),
+				Type:  "Control",
 				Scope: "#/properties/name",
 			},
 		},
@@ -35,7 +35,7 @@ func TestUISchema(t *testing.T) {
   }
 }`,
 			expected: json_forms.Control{
-				Type:  json_forms.ControlStr("Control"),
+				Type:  "Control",
 				Scope: "#/properties/name",
 				Label: func() *string { s := "First name"; return &s }(),
 				Options: &json_forms.Options{
@@ -57,7 +57,7 @@ func TestUISchema(t *testing.T) {
 				Type: json_forms.LayoutTypeHorizontal,
 				Elements: []json_forms.Element{
 					json_forms.Control{
-						Type:  json_forms.ControlStr("Control"),
+						Type:  "Control",
 						Scope: "#/properties/name",
 					},
 				},
@@ -81,7 +81,7 @@ func TestUISchema(t *testing.T) {
   }
 }`,
 			expected: json_forms.Control{
-				Type:  json_forms.ControlStr("Control"),
+				Type:  "Control",
 				Scope: "#/properties/name",
 				Label: func() *string { s := "First name"; return &s }(),
 				Options: &json_forms.Options{
@@ -90,7 +90,7 @@ func TestUISchema(t *testing.T) {
 							Type: json_forms.LayoutTypeHorizontal,
 							Elements: []json_forms.Element{
 								json_forms.Control{
-									Type:  json_forms.ControlStr("Control"),
+									Type:  "Control",
 									Scope: "#/properties/name",
 								},
 							},
