@@ -16,7 +16,6 @@ import (
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/bitmagnet-io/bitmagnet/internal/auth/rbac"
 	"github.com/bitmagnet-io/bitmagnet/internal/auth/user"
-	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
 	search1 "github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
@@ -28,7 +27,9 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/search/adapter/multi"
+	"github.com/bitmagnet-io/bitmagnet/internal/target"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
+	"github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -55,7 +56,6 @@ type Config struct {
 type ResolverRoot interface {
 	Content() ContentResolver
 	FacetResult() FacetResultResolver
-	JSONSchema() JSONSchemaResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 	QueueJob() QueueJobResolver
@@ -232,25 +232,6 @@ type ComplexityRoot struct {
 		Role      func(childComplexity int) int
 	}
 
-	JSONSchema struct {
-		Default          func(childComplexity int) int
-		Enum             func(childComplexity int) int
-		ExclusiveMaximum func(childComplexity int) int
-		ExclusiveMinimum func(childComplexity int) int
-		Items            func(childComplexity int) int
-		MaxItems         func(childComplexity int) int
-		MaxLength        func(childComplexity int) int
-		Maximum          func(childComplexity int) int
-		MinItems         func(childComplexity int) int
-		MinLength        func(childComplexity int) int
-		Minimum          func(childComplexity int) int
-		MultipleOf       func(childComplexity int) int
-		Pattern          func(childComplexity int) int
-		Required         func(childComplexity int) int
-		Type             func(childComplexity int) int
-		UniqueItems      func(childComplexity int) int
-	}
-
 	LanguageInfo struct {
 		ID   func(childComplexity int) int
 		Name func(childComplexity int) int
@@ -282,6 +263,7 @@ type ComplexityRoot struct {
 		Config  func(childComplexity int) int
 		Queue   func(childComplexity int) int
 		Self    func(childComplexity int) int
+		Target  func(childComplexity int) int
 		Torrent func(childComplexity int) int
 		Worker  func(childComplexity int) int
 	}
@@ -318,6 +300,7 @@ type ComplexityRoot struct {
 		Plugin  func(childComplexity int) int
 		Queue   func(childComplexity int) int
 		Self    func(childComplexity int) int
+		Target  func(childComplexity int) int
 		Torrent func(childComplexity int) int
 		Version func(childComplexity int) int
 		Worker  func(childComplexity int) int
@@ -424,9 +407,30 @@ type ComplexityRoot struct {
 		PasswordEntropy func(childComplexity int, password string) int
 	}
 
+	SendResult struct {
+		Data              func(childComplexity int) int
+		MissingInfoHashes func(childComplexity int) int
+	}
+
 	SuggestedTag struct {
 		Count func(childComplexity int) int
 		Name  func(childComplexity int) int
+	}
+
+	Target struct {
+		DataSchema func(childComplexity int) int
+		Name       func(childComplexity int) int
+		Ref        func(childComplexity int) int
+		UISchema   func(childComplexity int) int
+	}
+
+	TargetMutation struct {
+		Send func(childComplexity int, input target.Params) int
+	}
+
+	TargetQuery struct {
+		Default func(childComplexity int) int
+		Targets func(childComplexity int) int
 	}
 
 	Torrent struct {
@@ -589,9 +593,6 @@ type ContentResolver interface {
 type FacetResultResolver interface {
 	Label(ctx context.Context, obj *search.FacetResult) (string, error)
 }
-type JSONSchemaResolver interface {
-	Required(ctx context.Context, obj *json_schema.JSONSchema) (*json_schema.JSONValue, error)
-}
 type MutationResolver interface {
 	Torrent(ctx context.Context) (gqlmodel.TorrentMutation, error)
 	Queue(ctx context.Context) (gqlmodel.QueueMutation, error)
@@ -599,6 +600,7 @@ type MutationResolver interface {
 	Config(ctx context.Context) (gqlmodel.ConfigMutation, error)
 	Auth(ctx context.Context) (gqlmodel.AuthMutation, error)
 	Self(ctx context.Context) (gqlmodel.SelfMutation, error)
+	Target(ctx context.Context) (gqlmodel.TargetMutation, error)
 }
 type QueryResolver interface {
 	Version(ctx context.Context) (string, error)
@@ -611,6 +613,7 @@ type QueryResolver interface {
 	Queue(ctx context.Context) (gqlmodel.QueueQuery, error)
 	Torrent(ctx context.Context) (gqlmodel.TorrentQuery, error)
 	Index(ctx context.Context) (gen.IndexQuery, error)
+	Target(ctx context.Context) (gen.TargetQuery, error)
 }
 type QueueJobResolver interface {
 	RanAt(ctx context.Context, obj *model.QueueJob) (*time.Time, error)
@@ -1413,118 +1416,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Invitation.Role(childComplexity), true
 
-	case "JSONSchema.default":
-		if e.complexity.JSONSchema.Default == nil {
-			break
-		}
-
-		return e.complexity.JSONSchema.Default(childComplexity), true
-
-	case "JSONSchema.enum":
-		if e.complexity.JSONSchema.Enum == nil {
-			break
-		}
-
-		return e.complexity.JSONSchema.Enum(childComplexity), true
-
-	case "JSONSchema.exclusiveMaximum":
-		if e.complexity.JSONSchema.ExclusiveMaximum == nil {
-			break
-		}
-
-		return e.complexity.JSONSchema.ExclusiveMaximum(childComplexity), true
-
-	case "JSONSchema.exclusiveMinimum":
-		if e.complexity.JSONSchema.ExclusiveMinimum == nil {
-			break
-		}
-
-		return e.complexity.JSONSchema.ExclusiveMinimum(childComplexity), true
-
-	case "JSONSchema.items":
-		if e.complexity.JSONSchema.Items == nil {
-			break
-		}
-
-		return e.complexity.JSONSchema.Items(childComplexity), true
-
-	case "JSONSchema.maxItems":
-		if e.complexity.JSONSchema.MaxItems == nil {
-			break
-		}
-
-		return e.complexity.JSONSchema.MaxItems(childComplexity), true
-
-	case "JSONSchema.maxLength":
-		if e.complexity.JSONSchema.MaxLength == nil {
-			break
-		}
-
-		return e.complexity.JSONSchema.MaxLength(childComplexity), true
-
-	case "JSONSchema.maximum":
-		if e.complexity.JSONSchema.Maximum == nil {
-			break
-		}
-
-		return e.complexity.JSONSchema.Maximum(childComplexity), true
-
-	case "JSONSchema.minItems":
-		if e.complexity.JSONSchema.MinItems == nil {
-			break
-		}
-
-		return e.complexity.JSONSchema.MinItems(childComplexity), true
-
-	case "JSONSchema.minLength":
-		if e.complexity.JSONSchema.MinLength == nil {
-			break
-		}
-
-		return e.complexity.JSONSchema.MinLength(childComplexity), true
-
-	case "JSONSchema.minimum":
-		if e.complexity.JSONSchema.Minimum == nil {
-			break
-		}
-
-		return e.complexity.JSONSchema.Minimum(childComplexity), true
-
-	case "JSONSchema.multipleOf":
-		if e.complexity.JSONSchema.MultipleOf == nil {
-			break
-		}
-
-		return e.complexity.JSONSchema.MultipleOf(childComplexity), true
-
-	case "JSONSchema.pattern":
-		if e.complexity.JSONSchema.Pattern == nil {
-			break
-		}
-
-		return e.complexity.JSONSchema.Pattern(childComplexity), true
-
-	case "JSONSchema.required":
-		if e.complexity.JSONSchema.Required == nil {
-			break
-		}
-
-		return e.complexity.JSONSchema.Required(childComplexity), true
-
-	case "JSONSchema.type":
-		if e.complexity.JSONSchema.Type == nil {
-			break
-		}
-
-		return e.complexity.JSONSchema.Type(childComplexity), true
-
-	case "JSONSchema.uniqueItems":
-		if e.complexity.JSONSchema.UniqueItems == nil {
-			break
-		}
-
-		return e.complexity.JSONSchema.UniqueItems(childComplexity), true
-
 	case "LanguageInfo.id":
 		if e.complexity.LanguageInfo.ID == nil {
 			break
@@ -1629,6 +1520,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.Self(childComplexity), true
+
+	case "Mutation.target":
+		if e.complexity.Mutation.Target == nil {
+			break
+		}
+
+		return e.complexity.Mutation.Target(childComplexity), true
 
 	case "Mutation.torrent":
 		if e.complexity.Mutation.Torrent == nil {
@@ -1776,6 +1674,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Self(childComplexity), true
+
+	case "Query.target":
+		if e.complexity.Query.Target == nil {
+			break
+		}
+
+		return e.complexity.Query.Target(childComplexity), true
 
 	case "Query.torrent":
 		if e.complexity.Query.Torrent == nil {
@@ -2214,6 +2119,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.SelfQuery.PasswordEntropy(childComplexity, args["password"].(string)), true
 
+	case "SendResult.data":
+		if e.complexity.SendResult.Data == nil {
+			break
+		}
+
+		return e.complexity.SendResult.Data(childComplexity), true
+
+	case "SendResult.missingInfoHashes":
+		if e.complexity.SendResult.MissingInfoHashes == nil {
+			break
+		}
+
+		return e.complexity.SendResult.MissingInfoHashes(childComplexity), true
+
 	case "SuggestedTag.count":
 		if e.complexity.SuggestedTag.Count == nil {
 			break
@@ -2227,6 +2146,60 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SuggestedTag.Name(childComplexity), true
+
+	case "Target.dataSchema":
+		if e.complexity.Target.DataSchema == nil {
+			break
+		}
+
+		return e.complexity.Target.DataSchema(childComplexity), true
+
+	case "Target.name":
+		if e.complexity.Target.Name == nil {
+			break
+		}
+
+		return e.complexity.Target.Name(childComplexity), true
+
+	case "Target.ref":
+		if e.complexity.Target.Ref == nil {
+			break
+		}
+
+		return e.complexity.Target.Ref(childComplexity), true
+
+	case "Target.uiSchema":
+		if e.complexity.Target.UISchema == nil {
+			break
+		}
+
+		return e.complexity.Target.UISchema(childComplexity), true
+
+	case "TargetMutation.send":
+		if e.complexity.TargetMutation.Send == nil {
+			break
+		}
+
+		args, err := ec.field_TargetMutation_send_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.TargetMutation.Send(childComplexity, args["input"].(target.Params)), true
+
+	case "TargetQuery.default":
+		if e.complexity.TargetQuery.Default == nil {
+			break
+		}
+
+		return e.complexity.TargetQuery.Default(childComplexity), true
+
+	case "TargetQuery.targets":
+		if e.complexity.TargetQuery.Targets == nil {
+			break
+		}
+
+		return e.complexity.TargetQuery.Targets(childComplexity), true
 
 	case "Torrent.createdAt":
 		if e.complexity.Torrent.CreatedAt == nil {
@@ -3006,6 +2979,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputQueuePurgeJobsInput,
 		ec.unmarshalInputRegisterInput,
 		ec.unmarshalInputSearchInput,
+		ec.unmarshalInputSendInput,
 		ec.unmarshalInputSuggestTagsQueryInput,
 		ec.unmarshalInputTorrentContentOrderByInput,
 		ec.unmarshalInputTorrentFilesOrderByInput,
@@ -3226,7 +3200,7 @@ type ConfigParam {
   default: JSON!
   dynamic: Boolean!
   pending: Boolean!
-  jsonSchema: JSONSchema!
+  jsonSchema: JSON!
 }
 
 type ConfigMutation {
@@ -3234,32 +3208,32 @@ type ConfigMutation {
   delete(ref: Ref!): ConfigParam!
 }
 
-enum JSONSchemaType {
-  string
-  number
-  integer
-  boolean
-  array
-}
+# enum JSONSchemaType {
+#   string
+#   number
+#   integer
+#   boolean
+#   array
+# }
 
-type JSONSchema {
-  type: JSONSchemaType
-  default: JSON
-  enum: [JSON!]
-  pattern: String
-  multipleOf: Float
-  maximum: Float
-  exclusiveMaximum: Float
-  minimum: Float
-  exclusiveMinimum: Float
-  maxLength: Int
-  minLength: Int
-  minItems: Int
-  maxItems: Int
-  uniqueItems: Boolean
-  required: JSON
-  items: JSONSchema
-}
+# type JSONSchema {
+#   type: JSONSchemaType
+#   default: JSON
+#   enum: [JSON!]
+#   pattern: String
+#   multipleOf: Float
+#   maximum: Float
+#   exclusiveMaximum: Float
+#   minimum: Float
+#   exclusiveMinimum: Float
+#   maxLength: Int
+#   minLength: Int
+#   minItems: Int
+#   maxItems: Int
+#   uniqueItems: Boolean
+#   required: JSON
+#   items: JSONSchema
+# }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/directives.graphqls", Input: `directive @auth(object: String!, action: String!) on FIELD_DEFINITION
 `, BuiltIn: false},
@@ -3684,6 +3658,7 @@ type ContentCollection {
   config: ConfigMutation! @auth(object: "config", action: "mutate")
   auth: AuthMutation! @auth(object: "auth", action: "mutate")
   self: SelfMutation! @auth(object: "self", action: "mutate")
+  target: TargetMutation! @auth(object: "target", action: "mutate")
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/pagination.graphqls", Input: `input PaginationInput {
@@ -3715,6 +3690,7 @@ type PluginInfo {
   queue: QueueQuery! @auth(object: "queue", action: "query")
   torrent: TorrentQuery! @auth(object: "torrent", action: "query")
   index: IndexQuery! @auth(object: "index", action: "query")
+  target: TargetQuery! @auth(object: "target", action: "query")
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/queue.graphqls", Input: `type QueueQuery {
@@ -3885,6 +3861,34 @@ type PasswordEntropyResult {
   entropy: Float!
   minEntropy: Float!
   valid: Boolean!
+}
+`, BuiltIn: false},
+	{Name: "../../graphql/schema/target.graphqls", Input: `type TargetQuery {
+  default: Ref
+  targets: [Target!]!
+}
+
+type TargetMutation {
+  send(input: SendInput!): SendResult!
+}
+
+type Target {
+  ref: Ref!
+  name: String!
+  dataSchema: JSON
+  uiSchema: JSON
+}
+
+input SendInput {
+  target: Ref!
+  index: Ref
+  infoHashes: [Hash20!]!
+  data: JSON
+}
+
+type SendResult {
+  data: JSON
+  missingInfoHashes: [Hash20!]!
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/torrent_content.graphqls", Input: `input SearchInput {
@@ -4483,7 +4487,7 @@ func (ec *executionContext) field_ConfigMutation_save_argsValue(
 
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("value"))
 	if tmp, ok := rawArgs["value"]; ok {
-		return ec.unmarshalNJSON2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐJSONValue(ctx, tmp)
+		return ec.unmarshalNJSON2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋpkgᚋjson_schemaᚐJSONValue(ctx, tmp)
 	}
 
 	var zeroVal json_schema.JSONValue
@@ -4790,6 +4794,34 @@ func (ec *executionContext) field_SelfQuery_passwordEntropy_argsPassword(
 	}
 
 	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_TargetMutation_send_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_TargetMutation_send_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_TargetMutation_send_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (target.Params, error) {
+	if _, ok := rawArgs["input"]; !ok {
+		var zeroVal target.Params
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNSendInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋtargetᚐParams(ctx, tmp)
+	}
+
+	var zeroVal target.Params
 	return zeroVal, nil
 }
 
@@ -6780,7 +6812,7 @@ func (ec *executionContext) _ConfigParam_value(ctx context.Context, field graphq
 	}
 	res := resTmp.(json_schema.JSONValue)
 	fc.Result = res
-	return ec.marshalNJSON2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐJSONValue(ctx, field.Selections, res)
+	return ec.marshalNJSON2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋpkgᚋjson_schemaᚐJSONValue(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ConfigParam_value(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6868,7 +6900,7 @@ func (ec *executionContext) _ConfigParam_default(ctx context.Context, field grap
 	}
 	res := resTmp.(json_schema.JSONValue)
 	fc.Result = res
-	return ec.marshalNJSON2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐJSONValue(ctx, field.Selections, res)
+	return ec.marshalNJSON2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋpkgᚋjson_schemaᚐJSONValue(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ConfigParam_default(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6998,9 +7030,9 @@ func (ec *executionContext) _ConfigParam_jsonSchema(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(json_schema.JSONSchema)
+	res := resTmp.(json_schema.JSONValue)
 	fc.Result = res
-	return ec.marshalNJSONSchema2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐJSONSchema(ctx, field.Selections, res)
+	return ec.marshalNJSON2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋpkgᚋjson_schemaᚐJSONValue(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ConfigParam_jsonSchema(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7010,41 +7042,7 @@ func (ec *executionContext) fieldContext_ConfigParam_jsonSchema(_ context.Contex
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "type":
-				return ec.fieldContext_JSONSchema_type(ctx, field)
-			case "default":
-				return ec.fieldContext_JSONSchema_default(ctx, field)
-			case "enum":
-				return ec.fieldContext_JSONSchema_enum(ctx, field)
-			case "pattern":
-				return ec.fieldContext_JSONSchema_pattern(ctx, field)
-			case "multipleOf":
-				return ec.fieldContext_JSONSchema_multipleOf(ctx, field)
-			case "maximum":
-				return ec.fieldContext_JSONSchema_maximum(ctx, field)
-			case "exclusiveMaximum":
-				return ec.fieldContext_JSONSchema_exclusiveMaximum(ctx, field)
-			case "minimum":
-				return ec.fieldContext_JSONSchema_minimum(ctx, field)
-			case "exclusiveMinimum":
-				return ec.fieldContext_JSONSchema_exclusiveMinimum(ctx, field)
-			case "maxLength":
-				return ec.fieldContext_JSONSchema_maxLength(ctx, field)
-			case "minLength":
-				return ec.fieldContext_JSONSchema_minLength(ctx, field)
-			case "minItems":
-				return ec.fieldContext_JSONSchema_minItems(ctx, field)
-			case "maxItems":
-				return ec.fieldContext_JSONSchema_maxItems(ctx, field)
-			case "uniqueItems":
-				return ec.fieldContext_JSONSchema_uniqueItems(ctx, field)
-			case "required":
-				return ec.fieldContext_JSONSchema_required(ctx, field)
-			case "items":
-				return ec.fieldContext_JSONSchema_items(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type JSONSchema", field.Name)
+			return nil, errors.New("field of type JSON does not have child fields")
 		},
 	}
 	return fc, nil
@@ -10087,696 +10085,6 @@ func (ec *executionContext) fieldContext_Invitation_createdAt(_ context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _JSONSchema_type(ctx context.Context, field graphql.CollectedField, obj *json_schema.JSONSchema) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JSONSchema_type(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Type, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*json_schema.Type)
-	fc.Result = res
-	return ec.marshalOJSONSchemaType2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐType(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_JSONSchema_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "JSONSchema",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type JSONSchemaType does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _JSONSchema_default(ctx context.Context, field graphql.CollectedField, obj *json_schema.JSONSchema) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JSONSchema_default(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Default, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*json_schema.JSONValue)
-	fc.Result = res
-	return ec.marshalOJSON2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐJSONValue(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_JSONSchema_default(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "JSONSchema",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type JSON does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _JSONSchema_enum(ctx context.Context, field graphql.CollectedField, obj *json_schema.JSONSchema) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JSONSchema_enum(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Enum, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]json_schema.JSONValue)
-	fc.Result = res
-	return ec.marshalOJSON2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐJSONValueᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_JSONSchema_enum(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "JSONSchema",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type JSON does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _JSONSchema_pattern(ctx context.Context, field graphql.CollectedField, obj *json_schema.JSONSchema) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JSONSchema_pattern(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Pattern, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_JSONSchema_pattern(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "JSONSchema",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _JSONSchema_multipleOf(ctx context.Context, field graphql.CollectedField, obj *json_schema.JSONSchema) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JSONSchema_multipleOf(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.MultipleOf, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*float64)
-	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_JSONSchema_multipleOf(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "JSONSchema",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _JSONSchema_maximum(ctx context.Context, field graphql.CollectedField, obj *json_schema.JSONSchema) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JSONSchema_maximum(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Maximum, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*float64)
-	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_JSONSchema_maximum(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "JSONSchema",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _JSONSchema_exclusiveMaximum(ctx context.Context, field graphql.CollectedField, obj *json_schema.JSONSchema) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JSONSchema_exclusiveMaximum(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ExclusiveMaximum, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*float64)
-	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_JSONSchema_exclusiveMaximum(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "JSONSchema",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _JSONSchema_minimum(ctx context.Context, field graphql.CollectedField, obj *json_schema.JSONSchema) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JSONSchema_minimum(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Minimum, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*float64)
-	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_JSONSchema_minimum(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "JSONSchema",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _JSONSchema_exclusiveMinimum(ctx context.Context, field graphql.CollectedField, obj *json_schema.JSONSchema) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JSONSchema_exclusiveMinimum(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ExclusiveMinimum, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*float64)
-	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_JSONSchema_exclusiveMinimum(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "JSONSchema",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _JSONSchema_maxLength(ctx context.Context, field graphql.CollectedField, obj *json_schema.JSONSchema) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JSONSchema_maxLength(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.MaxLength, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*int)
-	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_JSONSchema_maxLength(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "JSONSchema",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _JSONSchema_minLength(ctx context.Context, field graphql.CollectedField, obj *json_schema.JSONSchema) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JSONSchema_minLength(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.MinLength, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*int)
-	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_JSONSchema_minLength(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "JSONSchema",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _JSONSchema_minItems(ctx context.Context, field graphql.CollectedField, obj *json_schema.JSONSchema) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JSONSchema_minItems(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.MinItems, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*int)
-	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_JSONSchema_minItems(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "JSONSchema",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _JSONSchema_maxItems(ctx context.Context, field graphql.CollectedField, obj *json_schema.JSONSchema) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JSONSchema_maxItems(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.MaxItems, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*int)
-	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_JSONSchema_maxItems(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "JSONSchema",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _JSONSchema_uniqueItems(ctx context.Context, field graphql.CollectedField, obj *json_schema.JSONSchema) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JSONSchema_uniqueItems(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.UniqueItems, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*bool)
-	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_JSONSchema_uniqueItems(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "JSONSchema",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _JSONSchema_required(ctx context.Context, field graphql.CollectedField, obj *json_schema.JSONSchema) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JSONSchema_required(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.JSONSchema().Required(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*json_schema.JSONValue)
-	fc.Result = res
-	return ec.marshalOJSON2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐJSONValue(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_JSONSchema_required(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "JSONSchema",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type JSON does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _JSONSchema_items(ctx context.Context, field graphql.CollectedField, obj *json_schema.JSONSchema) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JSONSchema_items(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Items, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*json_schema.JSONSchema)
-	fc.Result = res
-	return ec.marshalOJSONSchema2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐJSONSchema(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_JSONSchema_items(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "JSONSchema",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "type":
-				return ec.fieldContext_JSONSchema_type(ctx, field)
-			case "default":
-				return ec.fieldContext_JSONSchema_default(ctx, field)
-			case "enum":
-				return ec.fieldContext_JSONSchema_enum(ctx, field)
-			case "pattern":
-				return ec.fieldContext_JSONSchema_pattern(ctx, field)
-			case "multipleOf":
-				return ec.fieldContext_JSONSchema_multipleOf(ctx, field)
-			case "maximum":
-				return ec.fieldContext_JSONSchema_maximum(ctx, field)
-			case "exclusiveMaximum":
-				return ec.fieldContext_JSONSchema_exclusiveMaximum(ctx, field)
-			case "minimum":
-				return ec.fieldContext_JSONSchema_minimum(ctx, field)
-			case "exclusiveMinimum":
-				return ec.fieldContext_JSONSchema_exclusiveMinimum(ctx, field)
-			case "maxLength":
-				return ec.fieldContext_JSONSchema_maxLength(ctx, field)
-			case "minLength":
-				return ec.fieldContext_JSONSchema_minLength(ctx, field)
-			case "minItems":
-				return ec.fieldContext_JSONSchema_minItems(ctx, field)
-			case "maxItems":
-				return ec.fieldContext_JSONSchema_maxItems(ctx, field)
-			case "uniqueItems":
-				return ec.fieldContext_JSONSchema_uniqueItems(ctx, field)
-			case "required":
-				return ec.fieldContext_JSONSchema_required(ctx, field)
-			case "items":
-				return ec.fieldContext_JSONSchema_items(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type JSONSchema", field.Name)
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _LanguageInfo_id(ctx context.Context, field graphql.CollectedField, obj *model.Language) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_LanguageInfo_id(ctx, field)
 	if err != nil {
@@ -11826,6 +11134,86 @@ func (ec *executionContext) fieldContext_Mutation_self(_ context.Context, field 
 				return ec.fieldContext_SelfMutation_deleteAPIKey(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type SelfMutation", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_target(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_target(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		directive0 := func(rctx context.Context) (any, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().Target(rctx)
+		}
+
+		directive1 := func(ctx context.Context) (any, error) {
+			object, err := ec.unmarshalNString2string(ctx, "target")
+			if err != nil {
+				var zeroVal gqlmodel.TargetMutation
+				return zeroVal, err
+			}
+			action, err := ec.unmarshalNString2string(ctx, "mutate")
+			if err != nil {
+				var zeroVal gqlmodel.TargetMutation
+				return zeroVal, err
+			}
+			if ec.directives.Auth == nil {
+				var zeroVal gqlmodel.TargetMutation
+				return zeroVal, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0, object, action)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(gqlmodel.TargetMutation); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel.TargetMutation`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(gqlmodel.TargetMutation)
+	fc.Result = res
+	return ec.marshalNTargetMutation2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐTargetMutation(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_target(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "send":
+				return ec.fieldContext_TargetMutation_send(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TargetMutation", field.Name)
 		},
 	}
 	return fc, nil
@@ -13199,6 +12587,88 @@ func (ec *executionContext) fieldContext_Query_index(_ context.Context, field gr
 				return ec.fieldContext_IndexQuery_infos(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type IndexQuery", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_target(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_target(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		directive0 := func(rctx context.Context) (any, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().Target(rctx)
+		}
+
+		directive1 := func(ctx context.Context) (any, error) {
+			object, err := ec.unmarshalNString2string(ctx, "target")
+			if err != nil {
+				var zeroVal gen.TargetQuery
+				return zeroVal, err
+			}
+			action, err := ec.unmarshalNString2string(ctx, "query")
+			if err != nil {
+				var zeroVal gen.TargetQuery
+				return zeroVal, err
+			}
+			if ec.directives.Auth == nil {
+				var zeroVal gen.TargetQuery
+				return zeroVal, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0, object, action)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(gen.TargetQuery); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen.TargetQuery`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(gen.TargetQuery)
+	fc.Result = res
+	return ec.marshalNTargetQuery2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTargetQuery(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_target(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "default":
+				return ec.fieldContext_TargetQuery_default(ctx, field)
+			case "targets":
+				return ec.fieldContext_TargetQuery_targets(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TargetQuery", field.Name)
 		},
 	}
 	return fc, nil
@@ -15915,6 +15385,91 @@ func (ec *executionContext) fieldContext_SelfQuery_apiKeys(_ context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _SendResult_data(ctx context.Context, field graphql.CollectedField, obj *target.Result) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SendResult_data(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Data, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*json_schema.JSONValue)
+	fc.Result = res
+	return ec.marshalOJSON2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋpkgᚋjson_schemaᚐJSONValue(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SendResult_data(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SendResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type JSON does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SendResult_missingInfoHashes(ctx context.Context, field graphql.CollectedField, obj *target.Result) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SendResult_missingInfoHashes(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MissingInfoHashes, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]protocol.ID)
+	fc.Result = res
+	return ec.marshalNHash202ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋprotocolᚐIDᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SendResult_missingInfoHashes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SendResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Hash20 does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _SuggestedTag_name(ctx context.Context, field graphql.CollectedField, obj *search1.SuggestedTag) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_SuggestedTag_name(ctx, field)
 	if err != nil {
@@ -15998,6 +15553,332 @@ func (ec *executionContext) fieldContext_SuggestedTag_count(_ context.Context, f
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Target_ref(ctx context.Context, field graphql.CollectedField, obj *gen.Target) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Target_ref(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Ref, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ref.Ref)
+	fc.Result = res
+	return ec.marshalNRef2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋrefᚐRef(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Target_ref(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Target",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Ref does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Target_name(ctx context.Context, field graphql.CollectedField, obj *gen.Target) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Target_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Target_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Target",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Target_dataSchema(ctx context.Context, field graphql.CollectedField, obj *gen.Target) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Target_dataSchema(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DataSchema, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*json_schema.JSONValue)
+	fc.Result = res
+	return ec.marshalOJSON2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋpkgᚋjson_schemaᚐJSONValue(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Target_dataSchema(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Target",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type JSON does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Target_uiSchema(ctx context.Context, field graphql.CollectedField, obj *gen.Target) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Target_uiSchema(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UISchema, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*json_schema.JSONValue)
+	fc.Result = res
+	return ec.marshalOJSON2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋpkgᚋjson_schemaᚐJSONValue(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Target_uiSchema(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Target",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type JSON does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TargetMutation_send(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.TargetMutation) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TargetMutation_send(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Send(ctx, fc.Args["input"].(target.Params))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(target.Result)
+	fc.Result = res
+	return ec.marshalNSendResult2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋtargetᚐResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TargetMutation_send(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TargetMutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "data":
+				return ec.fieldContext_SendResult_data(ctx, field)
+			case "missingInfoHashes":
+				return ec.fieldContext_SendResult_missingInfoHashes(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SendResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_TargetMutation_send_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TargetQuery_default(ctx context.Context, field graphql.CollectedField, obj *gen.TargetQuery) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TargetQuery_default(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Default, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ref.Ref)
+	fc.Result = res
+	return ec.marshalORef2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋrefᚐRef(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TargetQuery_default(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TargetQuery",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Ref does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TargetQuery_targets(ctx context.Context, field graphql.CollectedField, obj *gen.TargetQuery) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TargetQuery_targets(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Targets, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]gen.Target)
+	fc.Result = res
+	return ec.marshalNTarget2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTargetᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TargetQuery_targets(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TargetQuery",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "ref":
+				return ec.fieldContext_Target_ref(ctx, field)
+			case "name":
+				return ec.fieldContext_Target_name(ctx, field)
+			case "dataSchema":
+				return ec.fieldContext_Target_dataSchema(ctx, field)
+			case "uiSchema":
+				return ec.fieldContext_Target_uiSchema(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Target", field.Name)
 		},
 	}
 	return fc, nil
@@ -23458,13 +23339,61 @@ func (ec *executionContext) unmarshalInputSearchInput(ctx context.Context, obj a
 			it.AggregationBudget = data
 		case "criteria":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("criteria"))
-			data, err := ec.unmarshalOJSON2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐJSONValue(ctx, v)
+			data, err := ec.unmarshalOJSON2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋpkgᚋjson_schemaᚐJSONValue(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			if err = ec.resolvers.SearchInput().Criteria(ctx, &it, data); err != nil {
 				return it, err
 			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputSendInput(ctx context.Context, obj any) (target.Params, error) {
+	var it target.Params
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"target", "index", "infoHashes", "data"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "target":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("target"))
+			data, err := ec.unmarshalNRef2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋrefᚐRef(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Target = data
+		case "index":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("index"))
+			data, err := ec.unmarshalORef2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋrefᚐNullable(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Index = data
+		case "infoHashes":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("infoHashes"))
+			data, err := ec.unmarshalNHash202ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋprotocolᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.InfoHashes = data
+		case "data":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("data"))
+			data, err := ec.unmarshalOJSON2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋpkgᚋjson_schemaᚐJSONValue(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Data = data
 		}
 	}
 
@@ -25281,103 +25210,6 @@ func (ec *executionContext) _Invitation(ctx context.Context, sel ast.SelectionSe
 	return out
 }
 
-var jSONSchemaImplementors = []string{"JSONSchema"}
-
-func (ec *executionContext) _JSONSchema(ctx context.Context, sel ast.SelectionSet, obj *json_schema.JSONSchema) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, jSONSchemaImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("JSONSchema")
-		case "type":
-			out.Values[i] = ec._JSONSchema_type(ctx, field, obj)
-		case "default":
-			out.Values[i] = ec._JSONSchema_default(ctx, field, obj)
-		case "enum":
-			out.Values[i] = ec._JSONSchema_enum(ctx, field, obj)
-		case "pattern":
-			out.Values[i] = ec._JSONSchema_pattern(ctx, field, obj)
-		case "multipleOf":
-			out.Values[i] = ec._JSONSchema_multipleOf(ctx, field, obj)
-		case "maximum":
-			out.Values[i] = ec._JSONSchema_maximum(ctx, field, obj)
-		case "exclusiveMaximum":
-			out.Values[i] = ec._JSONSchema_exclusiveMaximum(ctx, field, obj)
-		case "minimum":
-			out.Values[i] = ec._JSONSchema_minimum(ctx, field, obj)
-		case "exclusiveMinimum":
-			out.Values[i] = ec._JSONSchema_exclusiveMinimum(ctx, field, obj)
-		case "maxLength":
-			out.Values[i] = ec._JSONSchema_maxLength(ctx, field, obj)
-		case "minLength":
-			out.Values[i] = ec._JSONSchema_minLength(ctx, field, obj)
-		case "minItems":
-			out.Values[i] = ec._JSONSchema_minItems(ctx, field, obj)
-		case "maxItems":
-			out.Values[i] = ec._JSONSchema_maxItems(ctx, field, obj)
-		case "uniqueItems":
-			out.Values[i] = ec._JSONSchema_uniqueItems(ctx, field, obj)
-		case "required":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._JSONSchema_required(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "items":
-			out.Values[i] = ec._JSONSchema_items(ctx, field, obj)
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
 var languageInfoImplementors = []string{"LanguageInfo"}
 
 func (ec *executionContext) _LanguageInfo(ctx context.Context, sel ast.SelectionSet, obj *model.Language) graphql.Marshaler {
@@ -25660,6 +25492,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "self":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_self(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "target":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_target(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -26138,6 +25977,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_index(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "target":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_target(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -27292,6 +27153,47 @@ func (ec *executionContext) _SelfQuery(ctx context.Context, sel ast.SelectionSet
 	return out
 }
 
+var sendResultImplementors = []string{"SendResult"}
+
+func (ec *executionContext) _SendResult(ctx context.Context, sel ast.SelectionSet, obj *target.Result) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, sendResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SendResult")
+		case "data":
+			out.Values[i] = ec._SendResult_data(ctx, field, obj)
+		case "missingInfoHashes":
+			out.Values[i] = ec._SendResult_missingInfoHashes(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var suggestedTagImplementors = []string{"SuggestedTag"}
 
 func (ec *executionContext) _SuggestedTag(ctx context.Context, sel ast.SelectionSet, obj *search1.SuggestedTag) graphql.Marshaler {
@@ -27310,6 +27212,165 @@ func (ec *executionContext) _SuggestedTag(ctx context.Context, sel ast.Selection
 			}
 		case "count":
 			out.Values[i] = ec._SuggestedTag_count(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var targetImplementors = []string{"Target"}
+
+func (ec *executionContext) _Target(ctx context.Context, sel ast.SelectionSet, obj *gen.Target) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, targetImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Target")
+		case "ref":
+			out.Values[i] = ec._Target_ref(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Target_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "dataSchema":
+			out.Values[i] = ec._Target_dataSchema(ctx, field, obj)
+		case "uiSchema":
+			out.Values[i] = ec._Target_uiSchema(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var targetMutationImplementors = []string{"TargetMutation"}
+
+func (ec *executionContext) _TargetMutation(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.TargetMutation) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, targetMutationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TargetMutation")
+		case "send":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TargetMutation_send(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var targetQueryImplementors = []string{"TargetQuery"}
+
+func (ec *executionContext) _TargetQuery(ctx context.Context, sel ast.SelectionSet, obj *gen.TargetQuery) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, targetQueryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TargetQuery")
+		case "default":
+			out.Values[i] = ec._TargetQuery_default(ctx, field, obj)
+		case "targets":
+			out.Values[i] = ec._TargetQuery_targets(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -29979,18 +30040,14 @@ func (ec *executionContext) unmarshalNInviteInput2githubᚗcomᚋbitmagnetᚑio�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNJSON2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐJSONValue(ctx context.Context, v any) (json_schema.JSONValue, error) {
+func (ec *executionContext) unmarshalNJSON2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋpkgᚋjson_schemaᚐJSONValue(ctx context.Context, v any) (json_schema.JSONValue, error) {
 	var res json_schema.JSONValue
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNJSON2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐJSONValue(ctx context.Context, sel ast.SelectionSet, v json_schema.JSONValue) graphql.Marshaler {
+func (ec *executionContext) marshalNJSON2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋpkgᚋjson_schemaᚐJSONValue(ctx context.Context, sel ast.SelectionSet, v json_schema.JSONValue) graphql.Marshaler {
 	return v
-}
-
-func (ec *executionContext) marshalNJSONSchema2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐJSONSchema(ctx context.Context, sel ast.SelectionSet, v json_schema.JSONSchema) graphql.Marshaler {
-	return ec._JSONSchema(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNLanguageInfo2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐLanguage(ctx context.Context, sel ast.SelectionSet, v model.Language) graphql.Marshaler {
@@ -30602,6 +30659,15 @@ func (ec *executionContext) marshalNSelfQuery2githubᚗcomᚋbitmagnetᚑioᚋbi
 	return ec._SelfQuery(ctx, sel, &v)
 }
 
+func (ec *executionContext) unmarshalNSendInput2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋtargetᚐParams(ctx context.Context, v any) (target.Params, error) {
+	res, err := ec.unmarshalInputSendInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNSendResult2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋtargetᚐResult(ctx context.Context, sel ast.SelectionSet, v target.Result) graphql.Marshaler {
+	return ec._SendResult(ctx, sel, &v)
+}
+
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -30695,6 +30761,62 @@ func (ec *executionContext) marshalNSuggestedTag2ᚕgithubᚗcomᚋbitmagnetᚑi
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalNTarget2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTarget(ctx context.Context, sel ast.SelectionSet, v gen.Target) graphql.Marshaler {
+	return ec._Target(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTarget2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTargetᚄ(ctx context.Context, sel ast.SelectionSet, v []gen.Target) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTarget2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTarget(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNTargetMutation2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐTargetMutation(ctx context.Context, sel ast.SelectionSet, v gqlmodel.TargetMutation) graphql.Marshaler {
+	return ec._TargetMutation(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTargetQuery2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐTargetQuery(ctx context.Context, sel ast.SelectionSet, v gen.TargetQuery) graphql.Marshaler {
+	return ec._TargetQuery(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNTorrent2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐTorrent(ctx context.Context, sel ast.SelectionSet, v model.Torrent) graphql.Marshaler {
@@ -31694,22 +31816,6 @@ func (ec *executionContext) marshalOFloat2githubᚗcomᚋbitmagnetᚑioᚋbitmag
 	return v
 }
 
-func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v any) (*float64, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalFloat(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel ast.SelectionSet, v *float64) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	res := graphql.MarshalFloat(*v)
-	return res
-}
-
 func (ec *executionContext) unmarshalOHash202ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋprotocolᚐIDᚄ(ctx context.Context, v any) ([]protocol.ID, error) {
 	if v == nil {
 		return nil, nil
@@ -31832,45 +31938,17 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) unmarshalOJSON2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐJSONValueᚄ(ctx context.Context, v any) ([]json_schema.JSONValue, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []any
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]json_schema.JSONValue, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNJSON2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐJSONValue(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
+func (ec *executionContext) unmarshalOJSON2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋpkgᚋjson_schemaᚐJSONValue(ctx context.Context, v any) (json_schema.JSONValue, error) {
+	var res json_schema.JSONValue
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOJSON2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐJSONValueᚄ(ctx context.Context, sel ast.SelectionSet, v []json_schema.JSONValue) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalNJSON2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐJSONValue(ctx, sel, v[i])
-	}
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
+func (ec *executionContext) marshalOJSON2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋpkgᚋjson_schemaᚐJSONValue(ctx context.Context, sel ast.SelectionSet, v json_schema.JSONValue) graphql.Marshaler {
+	return v
 }
 
-func (ec *executionContext) unmarshalOJSON2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐJSONValue(ctx context.Context, v any) (*json_schema.JSONValue, error) {
+func (ec *executionContext) unmarshalOJSON2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋpkgᚋjson_schemaᚐJSONValue(ctx context.Context, v any) (*json_schema.JSONValue, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -31879,35 +31957,11 @@ func (ec *executionContext) unmarshalOJSON2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbi
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOJSON2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐJSONValue(ctx context.Context, sel ast.SelectionSet, v *json_schema.JSONValue) graphql.Marshaler {
+func (ec *executionContext) marshalOJSON2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋpkgᚋjson_schemaᚐJSONValue(ctx context.Context, sel ast.SelectionSet, v *json_schema.JSONValue) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return v
-}
-
-func (ec *executionContext) marshalOJSONSchema2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐJSONSchema(ctx context.Context, sel ast.SelectionSet, v *json_schema.JSONSchema) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._JSONSchema(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalOJSONSchemaType2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐType(ctx context.Context, v any) (*json_schema.Type, error) {
-	if v == nil {
-		return nil, nil
-	}
-	tmp, err := graphql.UnmarshalString(v)
-	res := json_schema.Type(tmp)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOJSONSchemaType2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚋjson_schemaᚐType(ctx context.Context, sel ast.SelectionSet, v *json_schema.Type) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	res := graphql.MarshalString(string(*v))
-	return res
 }
 
 func (ec *executionContext) marshalOLanguageInfo2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋmodelᚐLanguageᚄ(ctx context.Context, sel ast.SelectionSet, v []model.Language) graphql.Marshaler {
@@ -32218,6 +32272,22 @@ func (ec *executionContext) unmarshalORef2githubᚗcomᚋbitmagnetᚑioᚋbitmag
 }
 
 func (ec *executionContext) marshalORef2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋrefᚐNullable(ctx context.Context, sel ast.SelectionSet, v ref.Nullable) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalORef2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋrefᚐRef(ctx context.Context, v any) (*ref.Ref, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(ref.Ref)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalORef2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋrefᚐRef(ctx context.Context, sel ast.SelectionSet, v *ref.Ref) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
 	return v
 }
 

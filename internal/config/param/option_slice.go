@@ -1,8 +1,8 @@
 package param
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
+	"github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
 )
 
 func Slice[E any, T ~[]E](opts ...Option[E]) Option[T] {

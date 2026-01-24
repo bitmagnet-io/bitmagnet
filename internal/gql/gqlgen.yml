@@ -196,15 +196,9 @@ models:
   WorkerState:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/workers/worker.State
-  JSONSchema:
-    model:
-      - github.com/bitmagnet-io/bitmagnet/internal/config/json_schema.JSONSchema
-  JSONSchemaType:
-    model:
-      - github.com/bitmagnet-io/bitmagnet/internal/config/json_schema.Type
   JSON:
     model:
-      - github.com/bitmagnet-io/bitmagnet/internal/config/json_schema.JSONValue
+      - github.com/bitmagnet-io/bitmagnet/pkg/json_schema.JSONValue
   Ref:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/ref.Ref
@@ -221,3 +215,9 @@ models:
   SearchResultType:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/search.ResultType
+  SendInput:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/target.Params
+  SendResult:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/target.Result

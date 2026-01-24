@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/queuemetrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
@@ -17,6 +16,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/search/adapter/multi"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
+	"github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
 )
 
 type SearchResult interface {
@@ -34,15 +34,15 @@ type AuthObjectActionInput struct {
 }
 
 type ConfigParam struct {
-	Ref         ref.Ref                `json:"ref"`
-	Plugin      ref.Ref                `json:"plugin"`
-	Description *string                `json:"description,omitempty"`
-	Value       json_schema.JSONValue  `json:"value"`
-	Source      string                 `json:"source"`
-	Default     json_schema.JSONValue  `json:"default"`
-	Dynamic     bool                   `json:"dynamic"`
-	Pending     bool                   `json:"pending"`
-	JSONSchema  json_schema.JSONSchema `json:"jsonSchema"`
+	Ref         ref.Ref               `json:"ref"`
+	Plugin      ref.Ref               `json:"plugin"`
+	Description *string               `json:"description,omitempty"`
+	Value       json_schema.JSONValue `json:"value"`
+	Source      string                `json:"source"`
+	Default     json_schema.JSONValue `json:"default"`
+	Dynamic     bool                  `json:"dynamic"`
+	Pending     bool                  `json:"pending"`
+	JSONSchema  json_schema.JSONValue `json:"jsonSchema"`
 }
 
 type CreateAPIKeyInput struct {
@@ -162,6 +162,18 @@ type QueueMetricsQueryResult struct {
 type SuggestTagsQueryInput struct {
 	Prefix     graphql.Omittable[*string]  `json:"prefix,omitempty"`
 	Exclusions graphql.Omittable[[]string] `json:"exclusions,omitempty"`
+}
+
+type Target struct {
+	Ref        ref.Ref                `json:"ref"`
+	Name       string                 `json:"name"`
+	DataSchema *json_schema.JSONValue `json:"dataSchema,omitempty"`
+	UISchema   *json_schema.JSONValue `json:"uiSchema,omitempty"`
+}
+
+type TargetQuery struct {
+	Default *ref.Ref `json:"default,omitempty"`
+	Targets []Target `json:"targets"`
 }
 
 type TorrentContentOrderByInput struct {

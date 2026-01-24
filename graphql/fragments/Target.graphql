@@ -1,0 +1,6 @@
+fragment Target on Target {
+  ref
+  name
+  dataSchema
+  uiSchema
+}

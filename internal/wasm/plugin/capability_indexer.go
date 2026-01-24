@@ -1,6 +1,6 @@
 package plugin
 
-import "github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+import "github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
 
 const capabilityIndexerName = "indexer"
 

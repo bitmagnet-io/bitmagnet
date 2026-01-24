@@ -1,8 +1,6 @@
 package jen
 
 import (
-	"strings"
-
 	"github.com/bitmagnet-io/bitmagnet/internal/wasm/gen/spec"
 	"github.com/dave/jennifer/jen"
 	"github.com/iancoleman/strcase"
@@ -242,7 +240,7 @@ func genHostService(s spec.ServiceInfo) *jen.Statement {
 		)
 
 		for _, method := range s.Methods {
-			varName := strings.ToLower(method.GoName[:1]) + method.GoName[1:]
+			varName := strcase.ToLowerCamel(method.GoName)
 			funcName := strcase.ToSnake(s.GoName + method.GoName)
 			g.Id(varName).Op(":=").Id("module").Dot("ExportedFunction").Call(
 				jen.Lit(funcName),
@@ -292,7 +290,7 @@ func genHostService(s spec.ServiceInfo) *jen.Statement {
 					g.Line().Id("malloc").Op(":").Id("malloc")
 					g.Line().Id("free").Op(":").Id("free")
 					for _, method := range s.Methods {
-						varName := strings.ToLower(method.GoName[:1]) + method.GoName[1:]
+						varName := strcase.ToLowerCamel(method.GoName)
 						g.Line().Id(varName).Op(":").Id(varName)
 					}
 					g.Line()
@@ -307,7 +305,7 @@ func genHostService(s spec.ServiceInfo) *jen.Statement {
 		g.Id("malloc").Qual(pkgWazeroApi, "Function")
 		g.Id("free").Qual(pkgWazeroApi, "Function")
 		for _, method := range s.Methods {
-			varName := strings.ToLower(method.GoName[:1]) + method.GoName[1:]
+			varName := strcase.ToLowerCamel(method.GoName)
 			g.Id(varName).Qual(pkgWazeroApi, "Function")
 		}
 	})
@@ -457,5 +455,5 @@ func genHostServiceMethod(structName string, m spec.ServiceMethodInfo) *jen.Stat
 			jen.Id("response"),
 			jen.Nil(),
 		),
-	)
+	).Line()
 }

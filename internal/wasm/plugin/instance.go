@@ -12,6 +12,7 @@ type Instance interface {
 	Indexer() plugin_api.Indexer
 	HTTPHandler() plugin_api.HTTPHandler
 	SearchAdapter() plugin_api.SearchAdapter
+	TorrentTarget() plugin_api.TorrentTarget
 }
 
 type instance struct {
@@ -63,6 +64,21 @@ func (i *instance) SearchAdapter() plugin_api.SearchAdapter {
 			pool: i.pool,
 			getService: func(m *module) (plugin_api.SearchAdapter, error) {
 				return m.getSearchAdapter()
+			},
+		},
+	}
+}
+
+func (i *instance) TorrentTarget() plugin_api.TorrentTarget {
+	if i.manifest.Capabilities.TorrentTarget == nil {
+		return nil
+	}
+
+	return &apiTorrentTarget{
+		apiService: &apiService[plugin_api.TorrentTarget]{
+			pool: i.pool,
+			getService: func(m *module) (plugin_api.TorrentTarget, error) {
+				return m.getTorrentTarget()
 			},
 		},
 	}

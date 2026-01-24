@@ -148,7 +148,7 @@ export type ConfigParam = {
   default: Scalars['JSON']['output'];
   description?: Maybe<Scalars['String']['output']>;
   dynamic: Scalars['Boolean']['output'];
-  jsonSchema: JsonSchema;
+  jsonSchema: Scalars['JSON']['output'];
   pending: Scalars['Boolean']['output'];
   plugin: Scalars['Ref']['output'];
   ref: Scalars['Ref']['output'];
@@ -344,33 +344,6 @@ export type InviteInput = {
   role?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type JsonSchema = {
-  __typename?: 'JSONSchema';
-  default?: Maybe<Scalars['JSON']['output']>;
-  enum?: Maybe<Array<Scalars['JSON']['output']>>;
-  exclusiveMaximum?: Maybe<Scalars['Float']['output']>;
-  exclusiveMinimum?: Maybe<Scalars['Float']['output']>;
-  items?: Maybe<JsonSchema>;
-  maxItems?: Maybe<Scalars['Int']['output']>;
-  maxLength?: Maybe<Scalars['Int']['output']>;
-  maximum?: Maybe<Scalars['Float']['output']>;
-  minItems?: Maybe<Scalars['Int']['output']>;
-  minLength?: Maybe<Scalars['Int']['output']>;
-  minimum?: Maybe<Scalars['Float']['output']>;
-  multipleOf?: Maybe<Scalars['Float']['output']>;
-  pattern?: Maybe<Scalars['String']['output']>;
-  required?: Maybe<Scalars['JSON']['output']>;
-  type?: Maybe<JsonSchemaType>;
-  uniqueItems?: Maybe<Scalars['Boolean']['output']>;
-};
-
-export type JsonSchemaType =
-  | 'array'
-  | 'boolean'
-  | 'integer'
-  | 'number'
-  | 'string';
-
 export type Language =
   | 'af'
   | 'ar'
@@ -486,6 +459,7 @@ export type Mutation = {
   config: ConfigMutation;
   queue: QueueMutation;
   self: SelfMutation;
+  target: TargetMutation;
   torrent: TorrentMutation;
   worker: WorkerMutation;
 };
@@ -533,6 +507,7 @@ export type Query = {
   plugin: PluginQuery;
   queue: QueueQuery;
   self: SelfQuery;
+  target: TargetQuery;
   torrent: TorrentQuery;
   version: Scalars['String']['output'];
   worker: WorkerQuery;
@@ -805,6 +780,19 @@ export type SelfQueryPasswordEntropyArgs = {
   password: Scalars['String']['input'];
 };
 
+export type SendInput = {
+  data?: InputMaybe<Scalars['JSON']['input']>;
+  index?: InputMaybe<Scalars['Ref']['input']>;
+  infoHashes: Array<Scalars['Hash20']['input']>;
+  target: Scalars['Ref']['input'];
+};
+
+export type SendResult = {
+  __typename?: 'SendResult';
+  data?: Maybe<Scalars['JSON']['output']>;
+  missingInfoHashes: Array<Scalars['Hash20']['output']>;
+};
+
 export type SuggestTagsQueryInput = {
   exclusions?: InputMaybe<Array<Scalars['String']['input']>>;
   prefix?: InputMaybe<Scalars['String']['input']>;
@@ -814,6 +802,30 @@ export type SuggestedTag = {
   __typename?: 'SuggestedTag';
   count: Scalars['Int']['output'];
   name: Scalars['String']['output'];
+};
+
+export type Target = {
+  __typename?: 'Target';
+  dataSchema?: Maybe<Scalars['JSON']['output']>;
+  name: Scalars['String']['output'];
+  ref: Scalars['Ref']['output'];
+  uiSchema?: Maybe<Scalars['JSON']['output']>;
+};
+
+export type TargetMutation = {
+  __typename?: 'TargetMutation';
+  send: SendResult;
+};
+
+
+export type TargetMutationSendArgs = {
+  input: SendInput;
+};
+
+export type TargetQuery = {
+  __typename?: 'TargetQuery';
+  default?: Maybe<Scalars['Ref']['output']>;
+  targets: Array<Target>;
 };
 
 export type Torrent = {
@@ -1147,7 +1159,7 @@ export type ApiKeyFragment = { __typename?: 'APIKey', id: number, userId: number
 
 export type AuthObjectActionFragment = { __typename?: 'AuthObjectAction', namespace: string, object: string, action: string };
 
-export type ConfigParamFragment = { __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null } };
+export type ConfigParamFragment = { __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: unknown };
 
 export type ContentFragment = { __typename?: 'Content', type: ContentType, source: string, id: string, title: string, releaseDate?: string | null, releaseYear?: number | null, overview?: string | null, runtime?: number | null, voteAverage?: number | null, voteCount?: number | null, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string }, originalLanguage?: { __typename?: 'LanguageInfo', id: string, name: string } | null, attributes: Array<{ __typename?: 'ContentAttribute', source: string, key: string, value: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, collections: Array<{ __typename?: 'ContentCollection', type: string, source: string, id: string, name: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, externalLinks: Array<{ __typename?: 'ExternalLink', url: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }> };
 
@@ -1156,10 +1168,6 @@ export type FacetResultItemFragment = { __typename?: 'FacetResultItem', value: s
 export type FacetResultFragment = { __typename?: 'FacetResult', key: FacetKey, label: string, logic: FacetLogic, items: Array<{ __typename?: 'FacetResultItem', value: string, label: string, count: number, isEstimate: boolean }> };
 
 export type InvitationFragment = { __typename?: 'Invitation', code: string, role: string, email?: string | null, expiresAt?: string | null, createdAt: string, createdBy?: { __typename?: 'User', id: number, username: string, role: string, lastLoginAt?: string | null, createdAt: string, updatedAt: string } | null, claimedBy?: { __typename?: 'User', id: number, username: string, role: string, lastLoginAt?: string | null, createdAt: string, updatedAt: string } | null };
-
-export type JsonSchemaTopLevelFragment = { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null };
-
-export type JsonSchemaFragment = { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null };
 
 export type PasswordEntropyResultFragment = { __typename?: 'PasswordEntropyResult', entropy: number, minEntropy: number, valid: boolean };
 
@@ -1176,6 +1184,8 @@ export type RoleFragment = { __typename?: 'Role', name: string, core: boolean, p
 export type SearchIndexInfoFragment = { __typename?: 'SearchIndexInfo', ref: string, name: string, resultTypes: Array<SearchResultType> };
 
 export type SelfFragment = { __typename?: 'Self', user?: { __typename?: 'User', id: number, username: string, role: string, lastLoginAt?: string | null, createdAt: string, updatedAt: string } | null, apiKey?: { __typename?: 'APIKey', id: number, userId: number, name: string, expiresAt?: string | null, createdAt: string } | null, permissions: Array<{ __typename?: 'AuthObjectAction', namespace: string, object: string, action: string }> };
+
+export type TargetFragment = { __typename?: 'Target', ref: string, name: string, dataSchema?: unknown | null, uiSchema?: unknown | null };
 
 export type TorrentFragment = { __typename?: 'Torrent', infoHash: string, name: string, size: number, filesStatus: FilesStatus, filesCount?: number | null, hasFilesInfo: boolean, singleFile?: boolean | null, fileType?: FileType | null, seeders?: number | null, leechers?: number | null, tagNames: Array<string>, magnetUri: string, createdAt: string, updatedAt: string, sources: Array<{ __typename?: 'TorrentSourceInfo', key: string, name: string }> };
 
@@ -1196,7 +1206,7 @@ export type ConfigDeleteMutationVariables = Exact<{
 }>;
 
 
-export type ConfigDeleteMutation = { __typename?: 'Mutation', config: { __typename?: 'ConfigMutation', delete: { __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null } } } };
+export type ConfigDeleteMutation = { __typename?: 'Mutation', config: { __typename?: 'ConfigMutation', delete: { __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: unknown } } };
 
 export type ConfigSaveMutationVariables = Exact<{
   ref: Scalars['Ref']['input'];
@@ -1204,7 +1214,7 @@ export type ConfigSaveMutationVariables = Exact<{
 }>;
 
 
-export type ConfigSaveMutation = { __typename?: 'Mutation', config: { __typename?: 'ConfigMutation', save: { __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null } } } };
+export type ConfigSaveMutation = { __typename?: 'Mutation', config: { __typename?: 'ConfigMutation', save: { __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: unknown } } };
 
 export type CreateApiKeyMutationVariables = Exact<{
   input: CreateApiKeyInput;
@@ -1263,6 +1273,16 @@ export type RegisterMutationVariables = Exact<{
 
 
 export type RegisterMutation = { __typename?: 'Mutation', self: { __typename?: 'SelfMutation', register: { __typename?: 'RegisterResult', user: { __typename?: 'User', id: number, username: string, role: string, lastLoginAt?: string | null, createdAt: string, updatedAt: string } } } };
+
+export type SendTorrentMutationVariables = Exact<{
+  target: Scalars['Ref']['input'];
+  index?: InputMaybe<Scalars['Ref']['input']>;
+  infoHashes: Array<Scalars['Hash20']['input']> | Scalars['Hash20']['input'];
+  data: Scalars['JSON']['input'];
+}>;
+
+
+export type SendTorrentMutation = { __typename?: 'Mutation', target: { __typename?: 'TargetMutation', send: { __typename?: 'SendResult', data?: unknown | null, missingInfoHashes: Array<string> } } };
 
 export type TorrentDeleteMutationVariables = Exact<{
   infoHashes: Array<Scalars['Hash20']['input']> | Scalars['Hash20']['input'];
@@ -1336,7 +1356,7 @@ export type AuthObjectActionsQuery = { __typename?: 'Query', auth: { __typename?
 export type ConfigParamsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ConfigParamsQuery = { __typename?: 'Query', config: { __typename?: 'ConfigQuery', pending: boolean, params: Array<{ __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null, items?: { __typename?: 'JSONSchema', type?: JsonSchemaType | null, default?: unknown | null, enum?: Array<unknown> | null, pattern?: string | null, required?: unknown | null, multipleOf?: number | null, maximum?: number | null, exclusiveMaximum?: number | null, minimum?: number | null, exclusiveMinimum?: number | null, maxLength?: number | null, minLength?: number | null, maxItems?: number | null, minItems?: number | null, uniqueItems?: boolean | null } | null } }> } };
+export type ConfigParamsQuery = { __typename?: 'Query', config: { __typename?: 'ConfigQuery', pending: boolean, params: Array<{ __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: unknown }> } };
 
 export type HealthCheckQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1391,6 +1411,11 @@ export type RolesQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type RolesQuery = { __typename?: 'Query', auth: { __typename?: 'AuthQuery', listRoles: Array<{ __typename?: 'Role', name: string, core: boolean, permissions: Array<{ __typename?: 'Permission', core: boolean, subject: { __typename?: 'AuthSubject', type: AuthSubjectType, name: string }, objectAction: { __typename?: 'AuthObjectAction', namespace: string, object: string, action: string } }> }> } };
 
+export type TargetsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type TargetsQuery = { __typename?: 'Query', target: { __typename?: 'TargetQuery', default?: string | null, targets: Array<{ __typename?: 'Target', ref: string, name: string, dataSchema?: unknown | null, uiSchema?: unknown | null }> } };
+
 export type TorrentContentSearchQueryVariables = Exact<{
   input: SearchInput;
 }>;
@@ -1436,33 +1461,6 @@ export type WorkersQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type WorkersQuery = { __typename?: 'Query', worker: { __typename?: 'WorkerQuery', listAll: { __typename?: 'WorkerListAllQueryResult', workers: Array<{ __typename?: 'Worker', ref: string, label: string, state: WorkerState, error?: string | null, requiredBy: Array<string>, dependsOn: Array<string> }> } } };
 
-export const JsonSchemaTopLevelFragmentDoc = gql`
-    fragment JSONSchemaTopLevel on JSONSchema {
-  type
-  default
-  enum
-  pattern
-  required
-  multipleOf
-  maximum
-  exclusiveMaximum
-  minimum
-  exclusiveMinimum
-  maxLength
-  minLength
-  maxItems
-  minItems
-  uniqueItems
-}
-    `;
-export const JsonSchemaFragmentDoc = gql`
-    fragment JSONSchema on JSONSchema {
-  ...JSONSchemaTopLevel
-  items {
-    ...JSONSchemaTopLevel
-  }
-}
-    ${JsonSchemaTopLevelFragmentDoc}`;
 export const ConfigParamFragmentDoc = gql`
     fragment ConfigParam on ConfigParam {
   ref
@@ -1473,11 +1471,9 @@ export const ConfigParamFragmentDoc = gql`
   default
   dynamic
   pending
-  jsonSchema {
-    ...JSONSchema
-  }
+  jsonSchema
 }
-    ${JsonSchemaFragmentDoc}`;
+    `;
 export const UserFragmentDoc = gql`
     fragment User on User {
   id
@@ -1614,6 +1610,14 @@ export const SelfFragmentDoc = gql`
     ${UserFragmentDoc}
 ${ApiKeyFragmentDoc}
 ${AuthObjectActionFragmentDoc}`;
+export const TargetFragmentDoc = gql`
+    fragment Target on Target {
+  ref
+  name
+  dataSchema
+  uiSchema
+}
+    `;
 export const TorrentFragmentDoc = gql`
     fragment Torrent on Torrent {
   infoHash
@@ -1989,6 +1993,29 @@ export const RegisterDocument = gql`
   })
   export class RegisterGQL extends Apollo.Mutation<RegisterMutation, RegisterMutationVariables> {
     override document = RegisterDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const SendTorrentDocument = gql`
+    mutation SendTorrent($target: Ref!, $index: Ref, $infoHashes: [Hash20!]!, $data: JSON!) {
+  target {
+    send(
+      input: {target: $target, index: $index, infoHashes: $infoHashes, data: $data}
+    ) {
+      data
+      missingInfoHashes
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class SendTorrentGQL extends Apollo.Mutation<SendTorrentMutation, SendTorrentMutationVariables> {
+    override document = SendTorrentDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
@@ -2401,6 +2428,27 @@ export const RolesDocument = gql`
   })
   export class RolesGQL extends Apollo.Query<RolesQuery, RolesQueryVariables> {
     override document = RolesDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const TargetsDocument = gql`
+    query Targets {
+  target {
+    default
+    targets {
+      ...Target
+    }
+  }
+}
+    ${TargetFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class TargetsGQL extends Apollo.Query<TargetsQuery, TargetsQueryVariables> {
+    override document = TargetsDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

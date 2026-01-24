@@ -8,7 +8,6 @@ SCRIPT_DIR=$DIR/../internal/wasm/gen
 $SCRIPT_DIR/gen_protoc.sh \
   --go-plugin_out="$DIR" \
   -I="$DIR" \
-  "$DIR/common/timestamp.proto" \
   "$DIR/common/http/http.proto" \
   "$DIR/common/model/model.proto" \
   "$DIR/common/search/search.proto" \

@@ -202,6 +202,7 @@ func (p *httphandlerPlugin) Config(ctx context.Context, request *Empty) (*HTTPHa
 	}
 	return response, nil
 }
+
 func (p *httphandlerPlugin) HandleRequest(ctx context.Context, request *http.Request) (*http.Response, error) {
 	data, err := request.MarshalVT()
 	if err != nil {
@@ -344,6 +345,7 @@ func (p *searchAdapterPlugin) SearchTorrentContent(ctx context.Context, request 
 	}
 	return response, nil
 }
+
 func (p *searchAdapterPlugin) SearchTorrentFiles(ctx context.Context, request *search.Params) (*search.TorrentFilesResult, error) {
 	data, err := request.MarshalVT()
 	if err != nil {
@@ -384,6 +386,201 @@ func (p *searchAdapterPlugin) SearchTorrentFiles(ctx context.Context, request *s
 		return nil, errors.New(string(bytes))
 	}
 	response := new(search.TorrentFilesResult)
+	if err = response.UnmarshalVT(bytes); err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+const TorrentTargetPluginAPIVersion = 1
+
+type TorrentTargetPlugin struct{}
+
+func (p *TorrentTargetPlugin) LoadModule(ctx context.Context, module api.Module) (TorrentTarget, error) {
+	apiVersion := module.ExportedFunction("torrent_target_api_version")
+	if apiVersion == nil {
+		return nil, errors.New("torrent_target_api_version is not exported")
+	}
+	results, err := apiVersion.Call(ctx)
+	if err != nil {
+		return nil, err
+	} else if len(results) != 1 {
+		return nil, errors.New("invalid torrent_target_api_version signature")
+	}
+	if results[0] != TorrentTargetPluginAPIVersion {
+		return nil, fmt.Errorf("API version mismatch, host: %d, plugin: %d", TorrentTargetPluginAPIVersion, results[0])
+	}
+	dataSchema := module.ExportedFunction("torrent_target_data_schema")
+	if dataSchema == nil {
+		return nil, errors.New("torrent_target_data_schema is not exported")
+	}
+	uischema := module.ExportedFunction("torrent_target_ui_schema")
+	if uischema == nil {
+		return nil, errors.New("torrent_target_ui_schema is not exported")
+	}
+	send := module.ExportedFunction("torrent_target_send")
+	if send == nil {
+		return nil, errors.New("torrent_target_send is not exported")
+	}
+	malloc := module.ExportedFunction("malloc")
+	if malloc == nil {
+		return nil, errors.New("malloc is not exported")
+	}
+	free := module.ExportedFunction("free")
+	if free == nil {
+		return nil, errors.New("free is not exported")
+	}
+	return &torrentTargetPlugin{
+		module:     module,
+		malloc:     malloc,
+		free:       free,
+		dataSchema: dataSchema,
+		uischema:   uischema,
+		send:       send,
+	}, nil
+}
+
+type torrentTargetPlugin struct {
+	module     api.Module
+	malloc     api.Function
+	free       api.Function
+	dataSchema api.Function
+	uischema   api.Function
+	send       api.Function
+}
+
+func (p *torrentTargetPlugin) DataSchema(ctx context.Context, request *Empty) (*JSONPayload, error) {
+	data, err := request.MarshalVT()
+	if err != nil {
+		return nil, err
+	}
+	var ptr uint64
+	dataSize := len(data)
+	if dataSize != 0 {
+		results, err := p.malloc.Call(ctx, uint64(dataSize))
+		if err != nil {
+			return nil, err
+		}
+		ptr = uint64(results[0])
+		defer p.free.Call(ctx, ptr)
+		if !p.module.Memory().Write(uint32(ptr), data) {
+			return nil, fmt.Errorf("out of range memory size")
+		}
+	}
+	ptrSize, err := p.dataSchema.Call(ctx, ptr, uint64(dataSize))
+	if err != nil {
+		return nil, err
+	}
+	resPtr := uint32(ptrSize[0] >> 32)
+	resSize := uint32(ptrSize[0])
+	var isErrResponse bool
+	if resSize&(1<<31) > 0 {
+		isErrResponse = true
+		resSize &^= (1 << 31)
+	}
+	if resPtr != 0 {
+		defer p.free.Call(ctx, uint64(resPtr))
+	}
+	bytes, ok := p.module.Memory().Read(resPtr, resSize)
+	if !ok {
+		return nil, fmt.Errorf("out of range memory size")
+	}
+	if isErrResponse {
+		return nil, errors.New(string(bytes))
+	}
+	response := new(JSONPayload)
+	if err = response.UnmarshalVT(bytes); err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+func (p *torrentTargetPlugin) UISchema(ctx context.Context, request *SendTorrentsUISchemaParams) (*JSONPayload, error) {
+	data, err := request.MarshalVT()
+	if err != nil {
+		return nil, err
+	}
+	var ptr uint64
+	dataSize := len(data)
+	if dataSize != 0 {
+		results, err := p.malloc.Call(ctx, uint64(dataSize))
+		if err != nil {
+			return nil, err
+		}
+		ptr = uint64(results[0])
+		defer p.free.Call(ctx, ptr)
+		if !p.module.Memory().Write(uint32(ptr), data) {
+			return nil, fmt.Errorf("out of range memory size")
+		}
+	}
+	ptrSize, err := p.uischema.Call(ctx, ptr, uint64(dataSize))
+	if err != nil {
+		return nil, err
+	}
+	resPtr := uint32(ptrSize[0] >> 32)
+	resSize := uint32(ptrSize[0])
+	var isErrResponse bool
+	if resSize&(1<<31) > 0 {
+		isErrResponse = true
+		resSize &^= (1 << 31)
+	}
+	if resPtr != 0 {
+		defer p.free.Call(ctx, uint64(resPtr))
+	}
+	bytes, ok := p.module.Memory().Read(resPtr, resSize)
+	if !ok {
+		return nil, fmt.Errorf("out of range memory size")
+	}
+	if isErrResponse {
+		return nil, errors.New(string(bytes))
+	}
+	response := new(JSONPayload)
+	if err = response.UnmarshalVT(bytes); err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+func (p *torrentTargetPlugin) Send(ctx context.Context, request *SendTorrentsParams) (*JSONPayload, error) {
+	data, err := request.MarshalVT()
+	if err != nil {
+		return nil, err
+	}
+	var ptr uint64
+	dataSize := len(data)
+	if dataSize != 0 {
+		results, err := p.malloc.Call(ctx, uint64(dataSize))
+		if err != nil {
+			return nil, err
+		}
+		ptr = uint64(results[0])
+		defer p.free.Call(ctx, ptr)
+		if !p.module.Memory().Write(uint32(ptr), data) {
+			return nil, fmt.Errorf("out of range memory size")
+		}
+	}
+	ptrSize, err := p.send.Call(ctx, ptr, uint64(dataSize))
+	if err != nil {
+		return nil, err
+	}
+	resPtr := uint32(ptrSize[0] >> 32)
+	resSize := uint32(ptrSize[0])
+	var isErrResponse bool
+	if resSize&(1<<31) > 0 {
+		isErrResponse = true
+		resSize &^= (1 << 31)
+	}
+	if resPtr != 0 {
+		defer p.free.Call(ctx, uint64(resPtr))
+	}
+	bytes, ok := p.module.Memory().Read(resPtr, resSize)
+	if !ok {
+		return nil, fmt.Errorf("out of range memory size")
+	}
+	if isErrResponse {
+		return nil, errors.New(string(bytes))
+	}
+	response := new(JSONPayload)
 	if err = response.UnmarshalVT(bytes); err != nil {
 		return nil, err
 	}

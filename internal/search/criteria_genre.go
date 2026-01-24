@@ -3,8 +3,8 @@ package search
 import (
 	"encoding/json"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
 	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
+	"github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
 )
 
 const nameGenre = "genre"

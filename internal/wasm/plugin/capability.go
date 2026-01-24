@@ -1,6 +1,6 @@
 package plugin
 
-import "github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+import "github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
 
 type Capability interface {
 	capability() string
@@ -11,5 +11,5 @@ type Capabilities struct {
 	SearchAdapter *CapabilitySearchAdapter `json:"search_adapter,omitempty"`
 	Indexer       *CapabilityIndexer       `json:"indexer,omitempty"`
 	HTTPHandler   *CapabilityHTTPHandler   `json:"http_handler,omitempty"`
-	Receiver      *CapabilityReceiver      `json:"receiver,omitempty"`
+	TorrentTarget *CapabilityTorrentTarget `json:"torrent_target,omitempty"`
 }

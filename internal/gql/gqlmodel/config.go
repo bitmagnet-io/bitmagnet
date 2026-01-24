@@ -3,7 +3,6 @@ package gqlmodel
 import (
 	"context"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/manager"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
@@ -11,6 +10,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
+	"github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
 )
 
 type ConfigQuery struct {
@@ -56,7 +56,7 @@ func transformConfigParam(param *resolver.Param, localizer *i18n.Localizer) gen.
 		Default:     json_schema.JSONValue(defaultValue),
 		Dynamic:     param.IsDynamic(),
 		Pending:     param.IsPending(),
-		JSONSchema:  param.JSONSchema(),
+		JSONSchema:  json_schema.MustNewValue(param.JSONSchema()),
 	}
 }
 

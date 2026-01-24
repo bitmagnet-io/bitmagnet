@@ -1,5 +1,3 @@
-#import "./JSONSchema"
-
 fragment ConfigParam on ConfigParam {
   ref
   plugin
@@ -9,7 +7,5 @@ fragment ConfigParam on ConfigParam {
   default
   dynamic
   pending
-  jsonSchema {
-    ...JSONSchema
-  }
+  jsonSchema
 }

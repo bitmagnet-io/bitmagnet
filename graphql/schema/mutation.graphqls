@@ -5,4 +5,5 @@ type Mutation {
   config: ConfigMutation! @auth(object: "config", action: "mutate")
   auth: AuthMutation! @auth(object: "auth", action: "mutate")
   self: SelfMutation! @auth(object: "self", action: "mutate")
+  target: TargetMutation! @auth(object: "target", action: "mutate")
 }

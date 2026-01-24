@@ -7,8 +7,7 @@ package resolvers
 import (
 	"context"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
-	"github.com/bitmagnet-io/bitmagnet/internal/gql"
+	"github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
 )
 
 // Required is the resolver for the required field.
@@ -24,8 +23,5 @@ func (r *jSONSchemaResolver) Required(ctx context.Context, obj *json_schema.JSON
 
 	return &required, nil
 }
-
-// JSONSchema returns gql.JSONSchemaResolver implementation.
-func (r *Resolver) JSONSchema() gql.JSONSchemaResolver { return &jSONSchemaResolver{r} }
 
 type jSONSchemaResolver struct{ *Resolver }

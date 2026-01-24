@@ -15,6 +15,7 @@ type module struct {
 	getIndexer       func() (plugin_api.Indexer, error)
 	getHTTPHandler   func() (plugin_api.HTTPHandler, error)
 	getSearchAdapter func() (plugin_api.SearchAdapter, error)
+	getTorrentTarget func() (plugin_api.TorrentTarget, error)
 }
 
 func (i instanceBuilder) newModule(
@@ -46,6 +47,7 @@ func (i instanceBuilder) newModule(
 		getIndexer       func() (plugin_api.Indexer, error)
 		getHTTPHandler   func() (plugin_api.HTTPHandler, error)
 		getSearchAdapter func() (plugin_api.SearchAdapter, error)
+		getTorrentTarget func() (plugin_api.TorrentTarget, error)
 	)
 
 	if i.manifest.Capabilities.Indexer != nil {
@@ -69,10 +71,18 @@ func (i instanceBuilder) newModule(
 		})
 	}
 
+	if i.manifest.Capabilities.TorrentTarget != nil {
+		getTorrentTarget = sync.OnceValues(func() (plugin_api.TorrentTarget, error) {
+			plugin := plugin_api.TorrentTargetPlugin{}
+			return plugin.LoadModule(ctx, apiModule)
+		})
+	}
+
 	return &module{
 		Module:           apiModule,
 		getIndexer:       getIndexer,
 		getHTTPHandler:   getHTTPHandler,
 		getSearchAdapter: getSearchAdapter,
+		getTorrentTarget: getTorrentTarget,
 	}, nil
 }

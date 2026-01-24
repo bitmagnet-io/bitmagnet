@@ -11,10 +11,10 @@ import (
 
 var corePlugins = plugin.Plugins{
 	config.Plugin,
-	postgres.Plugin,
 	i18n.Plugin,
 	logging.Plugin,
 	logging_console.Plugin,
+	postgres.Plugin,
 }
 
 func Core() plugin.Provider {

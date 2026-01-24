@@ -9,4 +9,5 @@ type Query {
   queue: QueueQuery! @auth(object: "queue", action: "query")
   torrent: TorrentQuery! @auth(object: "torrent", action: "query")
   index: IndexQuery! @auth(object: "index", action: "query")
+  target: TargetQuery! @auth(object: "target", action: "query")
 }

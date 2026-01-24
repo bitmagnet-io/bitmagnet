@@ -1,0 +1,31 @@
+{
+  "name": "qbittorrent",
+  "description": "qBittorrent target",
+  "version": "0.1.0",
+  "concurrency": 2,
+  "capabilities": {
+    "torrent_target": {
+      "name": "qBittorrent"
+    }
+  },
+  "permissions": {
+    "http": {}
+  },
+  "config": {
+    "url": {
+      "type": "string",
+      "description": "qBittorrent Web UI URL",
+      "default": "http://localhost:8080"
+    },
+    "username": {
+      "type": "string",
+      "description": "qBittorrent username",
+      "default": "admin"
+    },
+    "password": {
+      "type": "string",
+      "description": "qBittorrent password",
+      "default": "adminadmin"
+    }
+  }
+}

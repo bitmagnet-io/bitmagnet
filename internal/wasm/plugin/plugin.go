@@ -6,7 +6,8 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/indexer"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/search/adapter/multi"
-	"github.com/bitmagnet-io/bitmagnet/internal/search/adapter/proto"
+	search_proto "github.com/bitmagnet-io/bitmagnet/internal/search/adapter/proto"
+	"github.com/bitmagnet-io/bitmagnet/internal/target"
 	"github.com/bitmagnet-io/bitmagnet/pkg/env"
 	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
@@ -51,27 +52,31 @@ func (*Plugin) Commands() []plugin.Command {
 }
 
 func (p *Plugin) FXOption() fx.Option {
-	type instance Instance
+	instanceTag := `name:"` + p.ref.String() + `:instance"`
 
 	options := []fx.Option{
 		fx.Provide(
-			func(env env.Env, cfg resolver.Resolved) (instance, error) {
-				instance, err := p.NewInstance(env, cfg)
-				if err != nil {
-					return nil, err
-				}
+			fx.Annotate(
+				func(env env.Env, cfg resolver.Resolved) (Instance, error) {
+					instance, err := p.NewInstance(env, cfg)
+					if err != nil {
+						return nil, err
+					}
 
-				return instance, nil
-			},
+					return instance, nil
+				},
+				fx.ResultTags(instanceTag),
+			),
 		),
 	}
 
 	if p.manifest.Capabilities.Indexer != nil {
 		options = append(options, fx.Provide(
 			fx.Annotate(
-				func(inst instance) indexer.Indexer {
+				func(inst Instance) indexer.Indexer {
 					return indexer.NewProto(inst.Indexer())
 				},
+				fx.ParamTags(instanceTag),
 				fx.ResultTags(`group:"indexers"`),
 			),
 		))
@@ -80,14 +85,31 @@ func (p *Plugin) FXOption() fx.Option {
 	if cap := p.manifest.Capabilities.SearchAdapter; cap != nil {
 		options = append(options, fx.Provide(
 			fx.Annotate(
-				func(inst instance) multi.Index {
+				func(inst Instance) multi.Index {
 					return multi.Index{
 						Ref:     p.ref,
 						Name:    cap.Name,
-						Adapter: proto.New(inst.SearchAdapter()),
+						Adapter: search_proto.New(inst.SearchAdapter()),
 					}
 				},
+				fx.ParamTags(instanceTag),
 				fx.ResultTags(`group:"search_adapters"`),
+			),
+		))
+	}
+
+	if cap := p.manifest.Capabilities.TorrentTarget; cap != nil {
+		options = append(options, fx.Provide(
+			fx.Annotate(
+				func(inst Instance) target.TorrentContentTarget {
+					return target.NewTargetProto(
+						p.ref,
+						cap.Name,
+						inst.TorrentTarget(),
+					)
+				},
+				fx.ParamTags(instanceTag),
+				fx.ResultTags(`group:"torrent_targets"`),
 			),
 		))
 	}

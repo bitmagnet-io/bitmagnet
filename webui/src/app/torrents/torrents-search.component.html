@@ -241,6 +241,7 @@
       <mat-divider />
       <app-torrents-bulk-actions
         [selectedItems$]="selectedItems$"
+        [index]="(controller.controls$|async)?.index || null"
         (updated)="dataSource.refresh()"
       />
       <mat-divider />

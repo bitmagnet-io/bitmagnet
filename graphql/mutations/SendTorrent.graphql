@@ -1,0 +1,20 @@
+mutation SendTorrent(
+  $target: Ref!
+  $index: Ref
+  $infoHashes: [Hash20!]!
+  $data: JSON!
+) {
+  target {
+    send(
+      input: {
+        target: $target
+        index: $index
+        infoHashes: $infoHashes
+        data: $data
+      }
+    ) {
+      data
+      missingInfoHashes
+    }
+  }
+}

@@ -19,6 +19,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/queue"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/search"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/target"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/worker"
 	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"github.com/gin-gonic/gin"
@@ -49,6 +50,7 @@ var (
 			processor.Ref,
 			queue.Ref,
 			search.Ref,
+			target.Ref,
 			worker.Ref,
 		),
 		builder.WithFxOption[deps](

@@ -39,3 +39,26 @@ service SearchAdapter {
   rpc SearchTorrentContent(search.Params) returns (search.TorrentContentResult);
   rpc SearchTorrentFiles(search.Params) returns (search.TorrentFilesResult);
 }
+
+// go:plugin type=plugin version=1
+service TorrentTarget {
+  // DataSchema returns an optional JSON schema that will be used to validate the data sent to the Send method
+  rpc DataSchema(Empty) returns (JSONPayload);
+  // UISchema returns an optional JSONForms UI schema that will be used to render the UI form
+  rpc UISchema(SendTorrentsUISchemaParams) returns (JSONPayload);
+  // Send sends the given torrents and data to the target
+  rpc Send(SendTorrentsParams) returns (JSONPayload);
+}
+
+message JSONPayload {
+  bytes data = 1;
+}
+
+message SendTorrentsUISchemaParams {
+  repeated string acceptLanguage = 1;
+}
+
+message SendTorrentsParams {
+  repeated model.TorrentContent torrents = 1;
+  bytes data = 2;
+}

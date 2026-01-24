@@ -1,7 +1,7 @@
 package plugin
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+	"github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -35,7 +35,7 @@ var ManifestSchema = json_schema.MustNew(
 				capabilitySearchAdapterName: CapabilitySearchAdapter{}.jsonSchema(),
 				capabilityIndexerName:       CapabilityIndexer{}.jsonSchema(),
 				capabilityHTTPHandlerName:   CapabilityHTTPHandler{}.jsonSchema(),
-				capabilityReceiverName:      CapabilityReceiver{}.jsonSchema(),
+				capabilityTorrentTargetName: CapabilityTorrentTarget{}.jsonSchema(),
 			}),
 			json_schema.AdditionalPropertiesFalse(),
 		),

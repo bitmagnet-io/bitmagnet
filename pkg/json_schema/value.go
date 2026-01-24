@@ -22,8 +22,13 @@ func NewValue(value any) (JSONValue, error) {
 		value = flt
 	}
 
+	bytes, err := json.Marshal(value)
+	if err != nil {
+		return JSONValue{}, err
+	}
+
 	var node yaml.Node
-	if err := node.Encode(value); err != nil {
+	if err := yaml.Unmarshal(bytes, &node); err != nil {
 		return JSONValue{}, err
 	}
 

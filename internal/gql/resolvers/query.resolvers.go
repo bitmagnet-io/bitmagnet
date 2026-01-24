@@ -6,14 +6,20 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 	"sort"
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
+	"github.com/bitmagnet-io/bitmagnet/internal/gql/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
+	"github.com/bitmagnet-io/bitmagnet/internal/slice"
+	"github.com/bitmagnet-io/bitmagnet/internal/target"
 	"github.com/bitmagnet-io/bitmagnet/internal/version"
+	"github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
 )
 
 // Version is the resolver for the version field.
@@ -132,6 +138,54 @@ func (r *queryResolver) Index(ctx context.Context) (gen.IndexQuery, error) {
 		Default: r.Search.DefaultIndex(),
 		Infos:   r.Search.Indexes(),
 	}, nil
+}
+
+// Target is the resolver for the target field.
+func (r *queryResolver) Target(ctx context.Context) (gen.TargetQuery, error) {
+	var defaultTarget *ref.Ref
+	targets, err := slice.MapErr(r.Targets.Targets(), func(t target.TorrentContentTarget) (gen.Target, error) {
+		var dataSchema *json_schema.JSONValue
+		dataSchemaStruct, err := t.DataSchama(ctx)
+		if err != nil {
+			return gen.Target{}, fmt.Errorf("failed to get target data schema: %w", err)
+		}
+		if dataSchemaStruct != nil {
+			ds, err := json_schema.NewValue(dataSchemaStruct)
+			if err != nil {
+				return gen.Target{}, fmt.Errorf("failed to convert target schema to JSONValue: %w", err)
+			}
+			dataSchema = &ds
+		}
+		var uiSchema *json_schema.JSONValue
+		uiSchemaStruct, err := t.UISchema(ctx, httpserver.AcceptLanguageFromContext(ctx))
+		if err != nil {
+			return gen.Target{}, fmt.Errorf("failed to get target UI schema: %w", err)
+		}
+		if uiSchemaStruct != nil {
+			us, err := json_schema.NewValue(uiSchemaStruct)
+			if err != nil {
+				return gen.Target{}, fmt.Errorf("failed to convert target UI schema to JSONValue: %w", err)
+			}
+			uiSchema = &us
+		}
+
+		if defaultTarget == nil {
+			r := t.Ref()
+			defaultTarget = &r
+		}
+
+		return gen.Target{
+			Ref:        t.Ref(),
+			Name:       t.Name(),
+			DataSchema: dataSchema,
+			UISchema:   uiSchema,
+		}, nil
+	})
+
+	return gen.TargetQuery{
+		Default: defaultTarget,
+		Targets: targets,
+	}, err
 }
 
 // Query returns gql.QueryResolver implementation.

@@ -103,6 +103,31 @@ tasks:
     cmds:
       - npm run build
 
+  build-plugin:
+    preconditions:
+      - sh: test -n "{{.NAME}}"
+        msg: "Plugin name (NAME) is required"
+    dir: ./plugins/{{.NAME}}
+    cmds:
+      - "echo 'Building plugin: {{.NAME}}'"
+      - go build -buildmode=c-shared -o plugin.wasm plugin.go
+    env:
+      GOOS: wasip1
+      GOARCH: wasm
+
+  build-plugins:
+    vars:
+      PLUGINS:
+        sh: find plugins -type d -mindepth 1 -maxdepth 1 | xargs -n1 basename
+    cmds:
+      - for:
+          var: PLUGINS
+          split: "\n"
+          as: PLUGIN
+        task: build-plugin
+        vars:
+          NAME: "{{ .PLUGIN }}"
+
   build-docsite:
     dir: ./bitmagnet.io
     cmds:

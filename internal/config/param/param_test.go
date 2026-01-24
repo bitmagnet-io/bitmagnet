@@ -3,9 +3,9 @@ package param_test
 import (
 	"testing"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/param"
 	"github.com/bitmagnet-io/bitmagnet/internal/logging/level"
+	"github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"

@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/testutils"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
@@ -23,8 +24,8 @@ func TestRegistry(t *testing.T) {
 	test2 := test1
 	r, err := registry.NewRegistry(
 		zap.NewNop(),
-		registry.WithWorker("test1", test1.Runner()),
-		registry.WithWorker("test2", test2.Runner()),
+		registry.WithWorker(ref.MustNew("test1"), test1.Runner()),
+		registry.WithWorker(ref.MustNew("test2"), test2.Runner()),
 	)
 	require.NoError(t, err)
 
@@ -37,7 +38,7 @@ func TestRegistry(t *testing.T) {
 		},
 	}, r.WorkersState())
 
-	err = r.Start(t.Context(), "test1", "test2")
+	err = r.Start(t.Context(), ref.MustNew("test1"), ref.MustNew("test2"))
 	require.NoError(t, err)
 	assert.Equal(t, map[string]worker.StateInfo{
 		"test1": {
@@ -48,7 +49,7 @@ func TestRegistry(t *testing.T) {
 		},
 	}, r.WorkersState())
 
-	err = r.Start(t.Context(), "test1")
+	err = r.Start(t.Context(), ref.MustNew("test1"))
 	require.NoError(t, err)
 
 	<-time.After(10 * time.Millisecond)
@@ -62,7 +63,7 @@ func TestRegistry(t *testing.T) {
 		},
 	}, r.WorkersState())
 
-	require.NoError(t, r.Shutdown(t.Context(), "test1"))
+	require.NoError(t, r.Shutdown(t.Context(), ref.MustNew("test1")))
 
 	assert.Equal(t, map[string]worker.StateInfo{
 		"test1": {
@@ -73,7 +74,7 @@ func TestRegistry(t *testing.T) {
 		},
 	}, r.WorkersState())
 
-	require.NoError(t, r.Shutdown(t.Context(), "test1", "test2"))
+	require.NoError(t, r.Shutdown(t.Context(), ref.MustNew("test1"), ref.MustNew("test2")))
 	assert.Equal(t, map[string]worker.StateInfo{
 		"test1": {
 			State: worker.StateIdle,
@@ -85,7 +86,7 @@ func TestRegistry(t *testing.T) {
 
 	test2.StartupErr = assert.AnError
 
-	err = r.Start(t.Context(), "test1", "test2")
+	err = r.Start(t.Context(), ref.MustNew("test1"), ref.MustNew("test2"))
 	require.Error(t, err)
 	require.ErrorIs(t, err, worker.ErrStart)
 	require.ErrorIs(t, err, registry.ErrPartial)
@@ -100,6 +101,6 @@ func TestRegistry(t *testing.T) {
 		},
 	}, r.WorkersState())
 
-	require.NoError(t, r.Shutdown(t.Context(), "test1"))
-	require.Error(t, r.Shutdown(t.Context(), "test2"))
+	require.NoError(t, r.Shutdown(t.Context(), ref.MustNew("test1")))
+	require.Error(t, r.Shutdown(t.Context(), ref.MustNew("test2")))
 }

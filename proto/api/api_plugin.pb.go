@@ -156,3 +156,79 @@ func _search_adapter_search_torrent_files(ptr uint32, size uint32) uint64 {
 	ptr, size = wasm.ByteToPtr(b)
 	return (uint64(ptr) << uint64(32)) | uint64(size)
 }
+
+const TorrentTargetPluginAPIVersion = 1
+
+//go:wasmexport torrent_target_api_version
+func _torrent_target_api_version() uint64 {
+	return TorrentTargetPluginAPIVersion
+}
+
+var torrentTarget TorrentTarget
+
+func RegisterTorrentTarget(p TorrentTarget) {
+	torrentTarget = p
+}
+
+//go:wasmexport torrent_target_data_schema
+func _torrent_target_data_schema(ptr uint32, size uint32) uint64 {
+	b := wasm.PtrToByte(ptr, size)
+	req := new(Empty)
+	err := req.UnmarshalVT(b)
+	if err != nil {
+		panic(err)
+	}
+	resp, err := torrentTarget.DataSchema(context.Background(), req)
+	if err != nil {
+		ptr, size = wasm.ByteToPtr([]byte(err.Error()))
+		return (uint64(ptr) << uint64(32)) | uint64(size) | (1 << 31)
+	}
+	b, err = resp.MarshalVT()
+	if err != nil {
+		panic(err)
+	}
+	ptr, size = wasm.ByteToPtr(b)
+	return (uint64(ptr) << uint64(32)) | uint64(size)
+}
+
+//go:wasmexport torrent_target_ui_schema
+func _torrent_target_ui_schema(ptr uint32, size uint32) uint64 {
+	b := wasm.PtrToByte(ptr, size)
+	req := new(SendTorrentsUISchemaParams)
+	err := req.UnmarshalVT(b)
+	if err != nil {
+		panic(err)
+	}
+	resp, err := torrentTarget.UISchema(context.Background(), req)
+	if err != nil {
+		ptr, size = wasm.ByteToPtr([]byte(err.Error()))
+		return (uint64(ptr) << uint64(32)) | uint64(size) | (1 << 31)
+	}
+	b, err = resp.MarshalVT()
+	if err != nil {
+		panic(err)
+	}
+	ptr, size = wasm.ByteToPtr(b)
+	return (uint64(ptr) << uint64(32)) | uint64(size)
+}
+
+//go:wasmexport torrent_target_send
+func _torrent_target_send(ptr uint32, size uint32) uint64 {
+	b := wasm.PtrToByte(ptr, size)
+	req := new(SendTorrentsParams)
+	err := req.UnmarshalVT(b)
+	if err != nil {
+		panic(err)
+	}
+	resp, err := torrentTarget.Send(context.Background(), req)
+	if err != nil {
+		ptr, size = wasm.ByteToPtr([]byte(err.Error()))
+		return (uint64(ptr) << uint64(32)) | uint64(size) | (1 << 31)
+	}
+	b, err = resp.MarshalVT()
+	if err != nil {
+		panic(err)
+	}
+	ptr, size = wasm.ByteToPtr(b)
+	return (uint64(ptr) << uint64(32)) | uint64(size)
+}

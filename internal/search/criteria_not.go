@@ -3,7 +3,7 @@ package search
 import (
 	"encoding/json"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+	"github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
 )
 
 const nameNot = "not"

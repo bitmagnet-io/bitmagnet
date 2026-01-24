@@ -8,7 +8,6 @@ import { JsonSchema, UISchemaElement } from "@jsonforms/core";
 import { ConfigParam } from "../../graphql/generated";
 import { AppModule } from "../../app.module";
 import { ConfigService } from "../../config/config.service";
-import * as generated from "../../graphql/generated";
 
 @Component({
   selector: "app-config-form",
@@ -133,7 +132,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
         return;
       }
       this.param = param;
-      this.jsonSchema = transformJSONSchema(this.param.jsonSchema);
+      this.jsonSchema = this.param.jsonSchema as JsonSchema;
       if (this.serverData !== param.value) {
         this.serverData = param.value;
         this.data = this.serverData;
@@ -173,12 +172,19 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
 
   get defaultLabel(): string {
     let label = "";
-    switch (this.param.jsonSchema.type) {
-      case "string":
-      case "number":
-      case "integer":
-      case "boolean":
-        label = `${this.param.default as string}`;
+    let type = "";
+    if (
+      this.param.jsonSchema &&
+      typeof this.param.jsonSchema === "object" &&
+      "type" in this.param.jsonSchema
+    ) {
+      switch (this.param.jsonSchema.type) {
+        case "string":
+        case "number":
+        case "integer":
+        case "boolean":
+          label = `${this.param.default as string}`;
+      }
     }
 
     if (!label) {
@@ -187,21 +193,3 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     return label;
   }
 }
-
-const transformJSONSchema = (s: generated.JsonSchemaFragment): JsonSchema =>
-  ({
-    type: s.type,
-    default: s.default ?? undefined,
-    enum: s.enum ?? undefined,
-    pattern: s.pattern ?? undefined,
-    multipleOf: s.multipleOf ?? undefined,
-    maximum: s.maximum ?? undefined,
-    exclusiveMaximum: s.exclusiveMaximum ?? undefined,
-    minimum: s.minimum ?? undefined,
-    exclusiveMinimum: s.exclusiveMinimum ?? undefined,
-    maxLength: s.maxLength ?? undefined,
-    minItems: s.minItems ?? undefined,
-    maxItems: s.maxItems ?? undefined,
-    uniqueItems: s.uniqueItems ?? undefined,
-    items: s.items ? transformJSONSchema(s.items) : undefined,
-  }) as JsonSchema;

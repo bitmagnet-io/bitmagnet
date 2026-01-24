@@ -12,7 +12,7 @@ type ConfigParam {
   default: JSON!
   dynamic: Boolean!
   pending: Boolean!
-  jsonSchema: JSONSchema!
+  jsonSchema: JSON!
 }
 
 type ConfigMutation {
@@ -20,29 +20,29 @@ type ConfigMutation {
   delete(ref: Ref!): ConfigParam!
 }
 
-enum JSONSchemaType {
-  string
-  number
-  integer
-  boolean
-  array
-}
+# enum JSONSchemaType {
+#   string
+#   number
+#   integer
+#   boolean
+#   array
+# }
 
-type JSONSchema {
-  type: JSONSchemaType
-  default: JSON
-  enum: [JSON!]
-  pattern: String
-  multipleOf: Float
-  maximum: Float
-  exclusiveMaximum: Float
-  minimum: Float
-  exclusiveMinimum: Float
-  maxLength: Int
-  minLength: Int
-  minItems: Int
-  maxItems: Int
-  uniqueItems: Boolean
-  required: JSON
-  items: JSONSchema
-}
+# type JSONSchema {
+#   type: JSONSchemaType
+#   default: JSON
+#   enum: [JSON!]
+#   pattern: String
+#   multipleOf: Float
+#   maximum: Float
+#   exclusiveMaximum: Float
+#   minimum: Float
+#   exclusiveMinimum: Float
+#   maxLength: Int
+#   minLength: Int
+#   minItems: Int
+#   maxItems: Int
+#   uniqueItems: Boolean
+#   required: JSON
+#   items: JSONSchema
+# }

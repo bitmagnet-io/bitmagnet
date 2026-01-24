@@ -73,7 +73,7 @@ const browserStorageIndexKey = "torrents-search-index";
     TorrentsTableComponent,
     IntEstimatePipe,
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  // changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TorrentsSearchComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);

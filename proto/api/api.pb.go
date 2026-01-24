@@ -109,6 +109,80 @@ func (x *Empty) GetEmpty() string {
 	return zero
 }
 
+type JSONPayload struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+	Data          []byte `json:"data,omitempty" protobuf:"bytes,1,opt,name=data,proto3"`
+}
+
+func (x *JSONPayload) ProtoReflect() protoreflect.Message {
+	panic("not implemented")
+}
+
+func (x *JSONPayload) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+
+	var zero []byte
+
+	return zero
+}
+
+type SendTorrentsUISchemaParams struct {
+	state          protoimpl.MessageState
+	sizeCache      protoimpl.SizeCache
+	unknownFields  protoimpl.UnknownFields
+	AcceptLanguage []string `json:"acceptLanguage,omitempty" protobuf:"bytes,1,rep,name=acceptLanguage,proto3"`
+}
+
+func (x *SendTorrentsUISchemaParams) ProtoReflect() protoreflect.Message {
+	panic("not implemented")
+}
+
+func (x *SendTorrentsUISchemaParams) GetAcceptLanguage() []string {
+	if x != nil {
+		return x.AcceptLanguage
+	}
+
+	var zero []string
+
+	return zero
+}
+
+type SendTorrentsParams struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+	Torrents      []*model.TorrentContent `json:"torrents,omitempty" protobuf:"bytes,1,rep,name=torrents,proto3"`
+	Data          []byte                  `json:"data,omitempty" protobuf:"bytes,2,opt,name=data,proto3"`
+}
+
+func (x *SendTorrentsParams) ProtoReflect() protoreflect.Message {
+	panic("not implemented")
+}
+
+func (x *SendTorrentsParams) GetTorrents() []*model.TorrentContent {
+	if x != nil {
+		return x.Torrents
+	}
+
+	var zero []*model.TorrentContent
+
+	return zero
+}
+
+func (x *SendTorrentsParams) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+
+	var zero []byte
+
+	return zero
+}
+
 type Indexer interface {
 	Index(ctx context.Context, indexPayload *IndexPayload) (*Empty, error)
 }
@@ -121,4 +195,10 @@ type HTTPHandler interface {
 type SearchAdapter interface {
 	SearchTorrentContent(ctx context.Context, params *search.Params) (*search.TorrentContentResult, error)
 	SearchTorrentFiles(ctx context.Context, params *search.Params) (*search.TorrentFilesResult, error)
+}
+
+type TorrentTarget interface {
+	DataSchema(ctx context.Context, empty *Empty) (*JSONPayload, error)
+	UISchema(ctx context.Context, sendTorrentsUischemaParams *SendTorrentsUISchemaParams) (*JSONPayload, error)
+	Send(ctx context.Context, sendTorrentsParams *SendTorrentsParams) (*JSONPayload, error)
 }

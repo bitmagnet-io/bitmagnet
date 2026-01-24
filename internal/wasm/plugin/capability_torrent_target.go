@@ -1,18 +1,18 @@
 package plugin
 
-import "github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+import "github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
 
-const capabilityReceiverName = "receiver"
+const capabilityTorrentTargetName = "torrent_target"
 
-type CapabilityReceiver struct {
+type CapabilityTorrentTarget struct {
 	Name string `json:"name"`
 }
 
-func (CapabilityReceiver) capability() string {
-	return capabilityReceiverName
+func (CapabilityTorrentTarget) capability() string {
+	return capabilityTorrentTargetName
 }
 
-func (CapabilityReceiver) jsonSchema() json_schema.JSONSchema {
+func (CapabilityTorrentTarget) jsonSchema() json_schema.JSONSchema {
 	return json_schema.MustNew(
 		json_schema.Typed(json_schema.TypeObject),
 		json_schema.Properties(map[string]json_schema.JSONSchema{

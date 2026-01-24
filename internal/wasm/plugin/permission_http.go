@@ -1,8 +1,8 @@
 package plugin
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
 	"github.com/bitmagnet-io/bitmagnet/internal/wasm/host/http_client"
+	"github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
 )
 
 type PermissionHTTP struct{}

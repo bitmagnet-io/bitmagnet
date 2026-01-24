@@ -4,9 +4,9 @@ import (
 	"strconv"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
-	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
 	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
 )
 
 const attachTMDBContentByIDName = "attach_tmdb_content_by_id"

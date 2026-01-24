@@ -29,6 +29,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/processor"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/queue"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/search"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/target"
 	tmdb "github.com/bitmagnet-io/bitmagnet/internal/plugin/core/tmdb"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/torznab"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/worker"
@@ -62,6 +63,7 @@ func init() {
 		queue.Plugin,
 		search.Plugin,
 		server.Plugin,
+		target.Plugin,
 		tmdb.Plugin,
 		torznab.Plugin,
 		worker.Plugin,

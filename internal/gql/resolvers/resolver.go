@@ -14,6 +14,7 @@ import (
 	queue_manager "github.com/bitmagnet-io/bitmagnet/internal/queue/manager"
 	"github.com/bitmagnet-io/bitmagnet/internal/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/search/adapter/multi"
+	"github.com/bitmagnet-io/bitmagnet/internal/target"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
 	"github.com/bitmagnet-io/bitmagnet/pkg/env"
 	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
@@ -45,4 +46,5 @@ type Resolver struct {
 	User                 user.Service
 	APIKey               api_key.Service
 	RBAC                 rbac.Service
+	Targets              target.Registry
 }

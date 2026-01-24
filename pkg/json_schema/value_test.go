@@ -3,7 +3,7 @@ package json_schema_test
 import (
 	"testing"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/config/json_schema"
+	"github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

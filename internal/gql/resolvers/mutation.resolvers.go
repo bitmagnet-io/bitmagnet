@@ -55,6 +55,13 @@ func (r *mutationResolver) Self(ctx context.Context) (gqlmodel.SelfMutation, err
 	}, nil
 }
 
+// Target is the resolver for the target field.
+func (r *mutationResolver) Target(ctx context.Context) (gqlmodel.TargetMutation, error) {
+	return gqlmodel.TargetMutation{
+		Targets: r.Targets,
+	}, nil
+}
+
 // Mutation returns gql.MutationResolver implementation.
 func (r *Resolver) Mutation() gql.MutationResolver { return &mutationResolver{r} }
 
