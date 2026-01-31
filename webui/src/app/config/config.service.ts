@@ -1,9 +1,12 @@
-import { inject } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import { Apollo } from "apollo-angular";
 import { BehaviorSubject, combineLatest, map } from "rxjs";
 import { ConfigParam } from "../graphql/generated";
 import * as generated from "../graphql/generated";
-import { PluginsInfo, PluginsService } from "../plugins/plugins.service";
+import {
+  PluginsInfoWithContent,
+  PluginsService,
+} from "../plugins/plugins.service";
 import { filterComplete } from "../graphql/util/filter-complete";
 
 const pollInterval = 10000;
@@ -19,7 +22,7 @@ const initialConfigParamsState: ConfigParamsState = {
 };
 
 export type ConfigState = ConfigParamsState & {
-  plugins: PluginsInfo;
+  plugins: PluginsInfoWithContent;
 };
 
 const initialConfigState: ConfigState = {
@@ -27,6 +30,9 @@ const initialConfigState: ConfigState = {
   plugins: {},
 };
 
+@Injectable({
+  providedIn: "root",
+})
 export class ConfigService {
   private apollo = inject(Apollo);
   private plugins = inject(PluginsService);
@@ -42,7 +48,7 @@ export class ConfigService {
   constructor() {
     combineLatest({
       params: this.configParamsSubject.asObservable(),
-      plugins: this.plugins.pluginsInfo$,
+      plugins: this.plugins.pluginsInfoWithContent$,
     }).subscribe((result) => {
       this.configSubject.next({
         ...result.params,
@@ -92,11 +98,17 @@ export class ConfigService {
       .pipe(
         map((result) => {
           const current = this.configParamsSubject.getValue();
+          const { pending, value, source } = result.data!.config.save;
           this.configParamsSubject.next({
-            pending: current.pending || result.data!.config.save.pending,
+            pending: current.pending || pending,
             params: {
               ...current.params,
-              [ref]: result.data!.config.save,
+              [ref]: {
+                ...current.params[ref],
+                pending,
+                value,
+                source,
+              },
             },
           });
         }),
@@ -118,11 +130,17 @@ export class ConfigService {
       .pipe(
         map((result) => {
           const current = this.configParamsSubject.getValue();
+          const { pending, value, source } = result.data!.config.delete;
           this.configParamsSubject.next({
-            pending: current.pending || result.data!.config.delete.pending,
+            pending: current.pending || pending,
             params: {
               ...current.params,
-              [ref]: result.data!.config.delete,
+              [ref]: {
+                ...current.params[ref],
+                pending,
+                value,
+                source,
+              },
             },
           });
         }),

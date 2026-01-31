@@ -33,16 +33,9 @@ type AuthObjectActionInput struct {
 	Action    string `json:"action"`
 }
 
-type ConfigParam struct {
-	Ref         ref.Ref               `json:"ref"`
-	Plugin      ref.Ref               `json:"plugin"`
-	Description *string               `json:"description,omitempty"`
-	Value       json_schema.JSONValue `json:"value"`
-	Source      string                `json:"source"`
-	Default     json_schema.JSONValue `json:"default"`
-	Dynamic     bool                  `json:"dynamic"`
-	Pending     bool                  `json:"pending"`
-	JSONSchema  json_schema.JSONValue `json:"jsonSchema"`
+type ConfigParamLocalizedContent struct {
+	Ref         ref.Ref `json:"ref"`
+	Description string  `json:"description"`
 }
 
 type CreateAPIKeyInput struct {
@@ -100,11 +93,16 @@ type PaginationInput struct {
 }
 
 type PluginInfo struct {
-	Ref         ref.Ref   `json:"ref"`
-	Description *string   `json:"description,omitempty"`
-	Enabled     bool      `json:"enabled"`
-	DependsOn   []ref.Ref `json:"dependsOn"`
-	RequiredBy  []ref.Ref `json:"requiredBy"`
+	Ref              ref.Ref                `json:"ref"`
+	Enabled          bool                   `json:"enabled"`
+	DependsOn        []ref.Ref              `json:"dependsOn"`
+	RequiredBy       []ref.Ref              `json:"requiredBy"`
+	LocalizedContent PluginLocalizedContent `json:"localizedContent"`
+}
+
+type PluginLocalizedContent struct {
+	Description  *string                       `json:"description,omitempty"`
+	ConfigParams []ConfigParamLocalizedContent `json:"configParams"`
 }
 
 type Query struct {

@@ -23,7 +23,8 @@ type (
 		WriteFile(filename string, data []byte, perm os.FileMode) error
 	}
 
-	File = afero.File
+	File     = afero.File
+	FileInfo = fs.FileInfo
 
 	ConfigProvider interface {
 		FSConfig() FS
@@ -72,4 +73,8 @@ func (ProviderNop) FSCurrent() FS {
 
 func (ProviderNop) FSRoot() FS {
 	return afero.Afero{Fs: nopFs}
+}
+
+func FromIOFS(iofs fs.FS) FS {
+	return afero.Afero{Fs: afero.FromIOFS{FS: iofs}}
 }

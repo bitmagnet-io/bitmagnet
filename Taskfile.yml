@@ -110,7 +110,7 @@ tasks:
     dir: ./plugins/{{.NAME}}
     cmds:
       - "echo 'Building plugin: {{.NAME}}'"
-      - go build -buildmode=c-shared -o plugin.wasm plugin.go
+      - go build -buildmode=c-shared -o plugin.wasm .
     env:
       GOOS: wasip1
       GOARCH: wasm

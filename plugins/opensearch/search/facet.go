@@ -1,5 +1,3 @@
-//go:build wasip1
-
 package search
 
 import (
@@ -23,7 +21,7 @@ func (fs facets) req(req *osquery.SearchRequest, params *search.Params) error {
 	aggsMap := make(map[string]struct{})
 	filtersMap := make(map[string]osquery.Mappable)
 	for _, param := range params.Facets {
-		if f, ok := allFacetsMap[param.Key]; ok { //todo return error
+		if f, ok := allFacetsMap[param.Key]; ok { // todo return error
 			if param.Aggregate != nil && *param.Aggregate {
 				aggsMap[param.Key] = struct{}{}
 			}

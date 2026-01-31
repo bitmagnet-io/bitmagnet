@@ -2,40 +2,69 @@ package gqlmodel
 
 import (
 	"context"
+	"slices"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/httpserver"
-	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 )
 
 type PluginQuery struct {
-	I18n  *i18n.Bundle
-	Infos plugin.Infos
+	Plugins ref.Map[plugin.Instance]
 }
 
-func (q PluginQuery) List(ctx context.Context) []gen.PluginInfo {
-	localizer := httpserver.NewLocalizerFromContext(ctx, q.I18n)
+func (q PluginQuery) List(ctx context.Context) ([]gen.PluginInfo, error) {
+	hasLocalizedContent := slices.Contains(graphql.CollectAllFields(ctx), "localizedContent")
 
-	return slice.Map(q.Infos, func(info plugin.Info) gen.PluginInfo {
-		return transformPluginInfo(info, localizer)
+	var acceptLanguage []string
+	if hasLocalizedContent {
+		acceptLanguage = httpserver.AcceptLanguageFromContext(ctx)
+	}
+
+	return slice.MapErr(q.Plugins.Values(), func(instance plugin.Instance) (gen.PluginInfo, error) {
+		var localizedContent plugin.LocalizedContent
+
+		if hasLocalizedContent {
+			var err error
+
+			localizedContent, err = instance.LocalizedContent(ctx, acceptLanguage...)
+			if err != nil {
+				return gen.PluginInfo{}, err
+			}
+		}
+
+		return transformPluginInfo(instance, localizedContent), nil
 	})
 }
 
-func transformPluginInfo(info plugin.Info, localizer *i18n.Localizer) gen.PluginInfo {
+func transformPluginInfo(
+	instance plugin.Instance,
+	localizedContent plugin.LocalizedContent,
+) gen.PluginInfo {
 	var description *string
-	if localized, _ := localizer.LocalizeMessage(&i18n.Message{
-		ID: info.Ref.String(),
-	}); localized != "" {
-		description = &localized
+	if localizedContent.Description != "" {
+		description = &localizedContent.Description
 	}
 
 	return gen.PluginInfo{
-		Ref:         info.Ref,
-		Description: description,
-		Enabled:     info.Enabled,
-		DependsOn:   info.DependsOn,
-		RequiredBy:  info.RequiredBy,
+		Ref:        instance.Ref(),
+		Enabled:    instance.Enabled(),
+		DependsOn:  instance.DependsOn(),
+		RequiredBy: instance.RequiredBy(),
+		LocalizedContent: gen.PluginLocalizedContent{
+			Description: description,
+			ConfigParams: slice.Map(
+				localizedContent.ConfigParams,
+				func(param plugin.LocalizedConfigParam) gen.ConfigParamLocalizedContent {
+					return gen.ConfigParamLocalizedContent{
+						Ref:         param.Ref,
+						Description: param.Description,
+					}
+				},
+			),
+		},
 	}
 }

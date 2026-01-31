@@ -1,0 +1,21 @@
+addresses:
+  description: Description for config field addresses
+  other: ""
+description:
+  description: Description for the OpenSearch plugin
+  other: ""
+index_prefix:
+  description: Description for config field index_prefix
+  other: ""
+number_of_replicas:
+  description: Description for config field number_of_replicas
+  other: ""
+number_of_shards:
+  description: Description for config field number_of_shards
+  other: ""
+password:
+  description: Description for config field password
+  other: ""
+username:
+  description: Description for config field username
+  other: ""

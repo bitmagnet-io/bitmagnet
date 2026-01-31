@@ -13,7 +13,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/bitmagnet-io/bitmagnet/internal/error_registry"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/httpserver/batch"
-	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
+	"github.com/bitmagnet-io/bitmagnet/pkg/i18n"
 	"github.com/gin-gonic/gin"
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/gqlerror"

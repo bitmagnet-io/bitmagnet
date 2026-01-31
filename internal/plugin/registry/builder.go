@@ -7,10 +7,10 @@ import (
 	config_registry "github.com/bitmagnet-io/bitmagnet/internal/config/registry"
 	config_resolver "github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
 	"github.com/bitmagnet-io/bitmagnet/internal/error_registry"
-	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 	"github.com/bitmagnet-io/bitmagnet/pkg/env"
+	"github.com/bitmagnet-io/bitmagnet/pkg/i18n"
 	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 )
 
@@ -87,9 +87,10 @@ func resolveErrors(plugins ref.Map[plugin.Plugin]) error_registry.Registry {
 	})...)
 }
 
-func resolveI18n(plugins ref.Map[plugin.Plugin]) i18n.Provider {
-	return i18n.Providers(
-		i18n.NewProvider(
+// todo move
+func resolveI18n(plugins ref.Map[plugin.Plugin]) i18n.MessageProvider {
+	return i18n.MessageProviders(
+		i18n.NewMessageProvider(
 			slice.FlatMap(plugins.Values(), func(plugin plugin.Plugin) []*i18n.Message {
 				messages := plugin.I18nMessages()
 
@@ -112,7 +113,7 @@ func resolveI18n(plugins ref.Map[plugin.Plugin]) i18n.Provider {
 						plugin.ConfigParams(),
 						func(param config_registry.Param) *i18n.Message {
 							return i18n.NewMessage(
-								param.String(),
+								param.Ref.String(),
 								fmt.Sprintf("description for config: %s", param.Ref),
 								i18n.WithOther(param.Description()),
 							)

@@ -146,7 +146,6 @@ export type ConfigMutationSaveArgs = {
 export type ConfigParam = {
   __typename?: 'ConfigParam';
   default: Scalars['JSON']['output'];
-  description?: Maybe<Scalars['String']['output']>;
   dynamic: Scalars['Boolean']['output'];
   jsonSchema: Scalars['JSON']['output'];
   pending: Scalars['Boolean']['output'];
@@ -154,6 +153,12 @@ export type ConfigParam = {
   ref: Scalars['Ref']['output'];
   source: Scalars['String']['output'];
   value: Scalars['JSON']['output'];
+};
+
+export type ConfigParamLocalizedContent = {
+  __typename?: 'ConfigParamLocalizedContent';
+  description: Scalars['String']['output'];
+  ref: Scalars['Ref']['output'];
 };
 
 export type ConfigQuery = {
@@ -487,10 +492,16 @@ export type Permission = {
 export type PluginInfo = {
   __typename?: 'PluginInfo';
   dependsOn: Array<Scalars['Ref']['output']>;
-  description?: Maybe<Scalars['String']['output']>;
   enabled: Scalars['Boolean']['output'];
+  localizedContent: PluginLocalizedContent;
   ref: Scalars['Ref']['output'];
   requiredBy: Array<Scalars['Ref']['output']>;
+};
+
+export type PluginLocalizedContent = {
+  __typename?: 'PluginLocalizedContent';
+  configParams: Array<ConfigParamLocalizedContent>;
+  description?: Maybe<Scalars['String']['output']>;
 };
 
 export type PluginQuery = {
@@ -1159,7 +1170,7 @@ export type ApiKeyFragment = { __typename?: 'APIKey', id: number, userId: number
 
 export type AuthObjectActionFragment = { __typename?: 'AuthObjectAction', namespace: string, object: string, action: string };
 
-export type ConfigParamFragment = { __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: unknown };
+export type ConfigParamFragment = { __typename?: 'ConfigParam', ref: string, plugin: string, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: unknown };
 
 export type ContentFragment = { __typename?: 'Content', type: ContentType, source: string, id: string, title: string, releaseDate?: string | null, releaseYear?: number | null, overview?: string | null, runtime?: number | null, voteAverage?: number | null, voteCount?: number | null, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string }, originalLanguage?: { __typename?: 'LanguageInfo', id: string, name: string } | null, attributes: Array<{ __typename?: 'ContentAttribute', source: string, key: string, value: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, collections: Array<{ __typename?: 'ContentCollection', type: string, source: string, id: string, name: string, createdAt: string, updatedAt: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }>, externalLinks: Array<{ __typename?: 'ExternalLink', url: string, metadataSource: { __typename?: 'MetadataSource', key: string, name: string } }> };
 
@@ -1173,7 +1184,9 @@ export type PasswordEntropyResultFragment = { __typename?: 'PasswordEntropyResul
 
 export type PermissionFragment = { __typename?: 'Permission', core: boolean, subject: { __typename?: 'AuthSubject', type: AuthSubjectType, name: string }, objectAction: { __typename?: 'AuthObjectAction', namespace: string, object: string, action: string } };
 
-export type PluginInfoFragment = { __typename?: 'PluginInfo', ref: string, description?: string | null, enabled: boolean, dependsOn: Array<string>, requiredBy: Array<string> };
+export type PluginInfoFragment = { __typename?: 'PluginInfo', ref: string, enabled: boolean, dependsOn: Array<string>, requiredBy: Array<string> };
+
+export type PluginLocalizedContentFragment = { __typename?: 'PluginLocalizedContent', description?: string | null, configParams: Array<{ __typename?: 'ConfigParamLocalizedContent', ref: string, description: string }> };
 
 export type QueueJobFragment = { __typename?: 'QueueJob', id: string, queue: string, status: QueueJobStatus, payload: string, priority: number, retries: number, maxRetries: number, runAfter: string, ranAt?: string | null, error?: string | null, createdAt: string };
 
@@ -1206,7 +1219,7 @@ export type ConfigDeleteMutationVariables = Exact<{
 }>;
 
 
-export type ConfigDeleteMutation = { __typename?: 'Mutation', config: { __typename?: 'ConfigMutation', delete: { __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: unknown } } };
+export type ConfigDeleteMutation = { __typename?: 'Mutation', config: { __typename?: 'ConfigMutation', delete: { __typename?: 'ConfigParam', ref: string, plugin: string, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: unknown } } };
 
 export type ConfigSaveMutationVariables = Exact<{
   ref: Scalars['Ref']['input'];
@@ -1214,7 +1227,7 @@ export type ConfigSaveMutationVariables = Exact<{
 }>;
 
 
-export type ConfigSaveMutation = { __typename?: 'Mutation', config: { __typename?: 'ConfigMutation', save: { __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: unknown } } };
+export type ConfigSaveMutation = { __typename?: 'Mutation', config: { __typename?: 'ConfigMutation', save: { __typename?: 'ConfigParam', ref: string, plugin: string, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: unknown } } };
 
 export type CreateApiKeyMutationVariables = Exact<{
   input: CreateApiKeyInput;
@@ -1275,10 +1288,7 @@ export type RegisterMutationVariables = Exact<{
 export type RegisterMutation = { __typename?: 'Mutation', self: { __typename?: 'SelfMutation', register: { __typename?: 'RegisterResult', user: { __typename?: 'User', id: number, username: string, role: string, lastLoginAt?: string | null, createdAt: string, updatedAt: string } } } };
 
 export type SendTorrentMutationVariables = Exact<{
-  target: Scalars['Ref']['input'];
-  index?: InputMaybe<Scalars['Ref']['input']>;
-  infoHashes: Array<Scalars['Hash20']['input']> | Scalars['Hash20']['input'];
-  data: Scalars['JSON']['input'];
+  input: SendInput;
 }>;
 
 
@@ -1356,7 +1366,7 @@ export type AuthObjectActionsQuery = { __typename?: 'Query', auth: { __typename?
 export type ConfigParamsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ConfigParamsQuery = { __typename?: 'Query', config: { __typename?: 'ConfigQuery', pending: boolean, params: Array<{ __typename?: 'ConfigParam', ref: string, plugin: string, description?: string | null, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: unknown }> } };
+export type ConfigParamsQuery = { __typename?: 'Query', config: { __typename?: 'ConfigQuery', pending: boolean, params: Array<{ __typename?: 'ConfigParam', ref: string, plugin: string, value: unknown, source: string, default: unknown, dynamic: boolean, pending: boolean, jsonSchema: unknown }> } };
 
 export type HealthCheckQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1387,10 +1397,15 @@ export type PasswordEntropyQueryVariables = Exact<{
 
 export type PasswordEntropyQuery = { __typename?: 'Query', self: { __typename?: 'SelfQuery', passwordEntropy: { __typename?: 'PasswordEntropyResult', entropy: number, minEntropy: number, valid: boolean } } };
 
-export type PluginsQueryVariables = Exact<{ [key: string]: never; }>;
+export type PluginInfosQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type PluginsQuery = { __typename?: 'Query', plugin: { __typename?: 'PluginQuery', list: Array<{ __typename?: 'PluginInfo', ref: string, description?: string | null, enabled: boolean, dependsOn: Array<string>, requiredBy: Array<string> }> } };
+export type PluginInfosQuery = { __typename?: 'Query', plugin: { __typename?: 'PluginQuery', list: Array<{ __typename?: 'PluginInfo', ref: string, enabled: boolean, dependsOn: Array<string>, requiredBy: Array<string> }> } };
+
+export type PluginLocalizedContentQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type PluginLocalizedContentQuery = { __typename?: 'Query', plugin: { __typename?: 'PluginQuery', list: Array<{ __typename?: 'PluginInfo', ref: string, localizedContent: { __typename?: 'PluginLocalizedContent', description?: string | null, configParams: Array<{ __typename?: 'ConfigParamLocalizedContent', ref: string, description: string }> } }> } };
 
 export type QueueJobsQueryVariables = Exact<{
   input: QueueJobsQueryInput;
@@ -1465,7 +1480,6 @@ export const ConfigParamFragmentDoc = gql`
     fragment ConfigParam on ConfigParam {
   ref
   plugin
-  description
   value
   source
   default
@@ -1509,10 +1523,18 @@ export const PasswordEntropyResultFragmentDoc = gql`
 export const PluginInfoFragmentDoc = gql`
     fragment PluginInfo on PluginInfo {
   ref
-  description
   enabled
   dependsOn
   requiredBy
+}
+    `;
+export const PluginLocalizedContentFragmentDoc = gql`
+    fragment PluginLocalizedContent on PluginLocalizedContent {
+  description
+  configParams {
+    ref
+    description
+  }
 }
     `;
 export const QueueJobFragmentDoc = gql`
@@ -1999,11 +2021,9 @@ export const RegisterDocument = gql`
     }
   }
 export const SendTorrentDocument = gql`
-    mutation SendTorrent($target: Ref!, $index: Ref, $infoHashes: [Hash20!]!, $data: JSON!) {
+    mutation SendTorrent($input: SendInput!) {
   target {
-    send(
-      input: {target: $target, index: $index, infoHashes: $infoHashes, data: $data}
-    ) {
+    send(input: $input) {
       data
       missingInfoHashes
     }
@@ -2346,8 +2366,8 @@ export const PasswordEntropyDocument = gql`
       super(apollo);
     }
   }
-export const PluginsDocument = gql`
-    query Plugins {
+export const PluginInfosDocument = gql`
+    query PluginInfos {
   plugin {
     list {
       ...PluginInfo
@@ -2359,8 +2379,31 @@ export const PluginsDocument = gql`
   @Injectable({
     providedIn: 'root'
   })
-  export class PluginsGQL extends Apollo.Query<PluginsQuery, PluginsQueryVariables> {
-    override document = PluginsDocument;
+  export class PluginInfosGQL extends Apollo.Query<PluginInfosQuery, PluginInfosQueryVariables> {
+    override document = PluginInfosDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const PluginLocalizedContentDocument = gql`
+    query PluginLocalizedContent {
+  plugin {
+    list {
+      ref
+      localizedContent {
+        ...PluginLocalizedContent
+      }
+    }
+  }
+}
+    ${PluginLocalizedContentFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class PluginLocalizedContentGQL extends Apollo.Query<PluginLocalizedContentQuery, PluginLocalizedContentQueryVariables> {
+    override document = PluginLocalizedContentDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

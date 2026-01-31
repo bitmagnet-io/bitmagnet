@@ -1,5 +1,3 @@
-//go:build wasip1
-
 package indexer
 
 import (
@@ -9,8 +7,6 @@ import (
 	"github.com/bitmagnet-io/plugin-opensearch/shared"
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
 )
-
-const templateVersion = 1
 
 func (i *indexer) templates() ([]opensearchapi.IndexTemplateCreateReq, error) {
 	var templates []opensearchapi.IndexTemplateCreateReq
@@ -32,16 +28,16 @@ func (i *indexer) templates() ([]opensearchapi.IndexTemplateCreateReq, error) {
 
 func (i *indexer) createTemplate(recordType shared.RecordType) (opensearchapi.IndexTemplateCreateReq, error) {
 	body := map[string]any{
-		"version":        templateVersion,
-		"index_patterns": []string{i.indexPrefix + string(recordType)},
+		"version":        shared.TemplateVersion,
+		"index_patterns": []string{i.config.FullIndexPrefix() + string(recordType)},
 		"template": map[string]any{
 			"aliases": map[string]any{
-				i.indexAliasPrefix + string(recordType): map[string]any{},
+				i.config.IndexPrefix + string(recordType): map[string]any{},
 			},
 			"settings": map[string]any{
 				"index": map[string]any{
-					"number_of_shards":   1,
-					"number_of_replicas": 1,
+					"number_of_shards":   i.config.NumberOfShards,
+					"number_of_replicas": i.config.NumberOfReplicas,
 				},
 			},
 			"mappings": createMappings(recordType),
@@ -54,7 +50,7 @@ func (i *indexer) createTemplate(recordType shared.RecordType) (opensearchapi.In
 	}
 
 	return opensearchapi.IndexTemplateCreateReq{
-		IndexTemplate: i.indexPrefix + string(recordType),
+		IndexTemplate: i.config.IndexPrefix + string(recordType),
 		Body:          bytes.NewReader(data),
 	}, nil
 }

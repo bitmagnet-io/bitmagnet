@@ -10,9 +10,9 @@ import (
 
 	config_resolver "github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
 	"github.com/bitmagnet-io/bitmagnet/internal/error_registry"
-	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
+	"github.com/bitmagnet-io/bitmagnet/pkg/i18n"
 	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
@@ -23,7 +23,7 @@ import (
 type resolver struct {
 	plugins         ref.Map[plugin.Plugin]
 	config          config_resolver.Resolved
-	i18nProvider    i18n.Provider
+	i18nProvider    i18n.MessageProvider
 	errorRegistry   error_registry.Registry
 	enabledPlugins  []ref.Ref
 	disabledPlugins []ref.Ref
@@ -43,7 +43,7 @@ func (r *resolver) resolve() (*Registry, error) {
 
 	requiredBy := make(map[string][]ref.Ref)
 
-	pluginInfos := plugin.Infos(slice.Map(r.plugins.Refs(), func(ref ref.Ref) plugin.Info {
+	instances := slice.Map(r.plugins.Refs(), func(ref ref.Ref) *instance {
 		_, enabled := resolvedNamesMap[ref.String()]
 
 		dependsOn := r.dependenciesOf(ref)
@@ -52,32 +52,39 @@ func (r *resolver) resolve() (*Registry, error) {
 			requiredBy[dep.String()] = append(requiredBy[dep.String()], ref)
 		}
 
-		return plugin.Info{
-			Ref:       ref,
-			Enabled:   enabled,
-			DependsOn: dependsOn,
+		return &instance{
+			ref:       ref,
+			enabled:   enabled,
+			dependsOn: dependsOn,
+			localizer: r.plugins.Get(ref),
 		}
-	}))
+	})
 
-	for i := range pluginInfos {
-		pluginInfos[i].RequiredBy = requiredBy[pluginInfos[i].Ref.String()]
+	for i := range instances {
+		instances[i].requiredBy = requiredBy[instances[i].ref.String()]
+	}
+
+	instanceMap := ref.NewMap[plugin.Instance]()
+	for _, inst := range instances {
+		instanceMap.Set(inst.ref, inst)
 	}
 
 	return &Registry{
-		pluginInfos: pluginInfos,
-		config:      r.config,
-		commands: slice.FlatMap(pluginInfos, func(info plugin.Info) []plugin.Command {
-			if !info.Enabled {
+		instances: instanceMap,
+		config:    r.config,
+		commands: slice.FlatMap(instances, func(instance *instance) []plugin.Command {
+			if !instance.Enabled() {
 				return nil
 			}
 
-			return r.plugins.Get(info.Ref).Commands()
+			return r.plugins.Get(instance.ref).Commands()
 		}),
 		fxOption: fx.Options(
 			fx.Supply(
 				r.config,
 				r.i18nProvider,
 				r.errorRegistry,
+				instanceMap,
 			),
 			fx.Options(slice.Map(resolvedNames, func(ref ref.Ref) fx.Option {
 				return r.plugins.Get(ref).FXOption()
@@ -88,9 +95,6 @@ func (r *resolver) resolve() (*Registry, error) {
 
 				return fxLogger{l}
 			}),
-			fx.Supply(
-				pluginInfos,
-			),
 		),
 	}, nil
 }

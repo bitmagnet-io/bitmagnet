@@ -11,9 +11,257 @@ import (
 	"errors"
 	"fmt"
 	http "github.com/bitmagnet-io/bitmagnet/proto/common/http"
+	plugin "github.com/bitmagnet-io/bitmagnet/proto/common/plugin"
 	search "github.com/bitmagnet-io/bitmagnet/proto/common/search"
 	api "github.com/tetratelabs/wazero/api"
 )
+
+const PluginPluginAPIVersion = 1
+
+type PluginPlugin struct{}
+
+func (p *PluginPlugin) LoadModule(ctx context.Context, module api.Module) (Plugin, error) {
+	apiVersion := module.ExportedFunction("plugin_api_version")
+	if apiVersion == nil {
+		return nil, errors.New("plugin_api_version is not exported")
+	}
+	results, err := apiVersion.Call(ctx)
+	if err != nil {
+		return nil, err
+	} else if len(results) != 1 {
+		return nil, errors.New("invalid plugin_api_version signature")
+	}
+	if results[0] != PluginPluginAPIVersion {
+		return nil, fmt.Errorf("API version mismatch, host: %d, plugin: %d", PluginPluginAPIVersion, results[0])
+	}
+	identify := module.ExportedFunction("plugin_identify")
+	if identify == nil {
+		return nil, errors.New("plugin_identify is not exported")
+	}
+	localize := module.ExportedFunction("plugin_localize")
+	if localize == nil {
+		return nil, errors.New("plugin_localize is not exported")
+	}
+	configure := module.ExportedFunction("plugin_configure")
+	if configure == nil {
+		return nil, errors.New("plugin_configure is not exported")
+	}
+	instantiate := module.ExportedFunction("plugin_instantiate")
+	if instantiate == nil {
+		return nil, errors.New("plugin_instantiate is not exported")
+	}
+	malloc := module.ExportedFunction("malloc")
+	if malloc == nil {
+		return nil, errors.New("malloc is not exported")
+	}
+	free := module.ExportedFunction("free")
+	if free == nil {
+		return nil, errors.New("free is not exported")
+	}
+	return &pluginPlugin{
+		module:      module,
+		malloc:      malloc,
+		free:        free,
+		identify:    identify,
+		localize:    localize,
+		configure:   configure,
+		instantiate: instantiate,
+	}, nil
+}
+
+type pluginPlugin struct {
+	module      api.Module
+	malloc      api.Function
+	free        api.Function
+	identify    api.Function
+	localize    api.Function
+	configure   api.Function
+	instantiate api.Function
+}
+
+func (p *pluginPlugin) Identify(ctx context.Context, request *Empty) (*plugin.Identity, error) {
+	data, err := request.MarshalVT()
+	if err != nil {
+		return nil, err
+	}
+	var ptr uint64
+	dataSize := len(data)
+	if dataSize != 0 {
+		results, err := p.malloc.Call(ctx, uint64(dataSize))
+		if err != nil {
+			return nil, err
+		}
+		ptr = uint64(results[0])
+		defer p.free.Call(ctx, ptr)
+		if !p.module.Memory().Write(uint32(ptr), data) {
+			return nil, fmt.Errorf("out of range memory size")
+		}
+	}
+	ptrSize, err := p.identify.Call(ctx, ptr, uint64(dataSize))
+	if err != nil {
+		return nil, err
+	}
+	resPtr := uint32(ptrSize[0] >> 32)
+	resSize := uint32(ptrSize[0])
+	var isErrResponse bool
+	if resSize&(1<<31) > 0 {
+		isErrResponse = true
+		resSize &^= (1 << 31)
+	}
+	if resPtr != 0 {
+		defer p.free.Call(ctx, uint64(resPtr))
+	}
+	bytes, ok := p.module.Memory().Read(resPtr, resSize)
+	if !ok {
+		return nil, fmt.Errorf("out of range memory size")
+	}
+	if isErrResponse {
+		return nil, errors.New(string(bytes))
+	}
+	response := new(plugin.Identity)
+	if err = response.UnmarshalVT(bytes); err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+func (p *pluginPlugin) Localize(ctx context.Context, request *LocalizeParams) (*plugin.LocalizedContent, error) {
+	data, err := request.MarshalVT()
+	if err != nil {
+		return nil, err
+	}
+	var ptr uint64
+	dataSize := len(data)
+	if dataSize != 0 {
+		results, err := p.malloc.Call(ctx, uint64(dataSize))
+		if err != nil {
+			return nil, err
+		}
+		ptr = uint64(results[0])
+		defer p.free.Call(ctx, ptr)
+		if !p.module.Memory().Write(uint32(ptr), data) {
+			return nil, fmt.Errorf("out of range memory size")
+		}
+	}
+	ptrSize, err := p.localize.Call(ctx, ptr, uint64(dataSize))
+	if err != nil {
+		return nil, err
+	}
+	resPtr := uint32(ptrSize[0] >> 32)
+	resSize := uint32(ptrSize[0])
+	var isErrResponse bool
+	if resSize&(1<<31) > 0 {
+		isErrResponse = true
+		resSize &^= (1 << 31)
+	}
+	if resPtr != 0 {
+		defer p.free.Call(ctx, uint64(resPtr))
+	}
+	bytes, ok := p.module.Memory().Read(resPtr, resSize)
+	if !ok {
+		return nil, fmt.Errorf("out of range memory size")
+	}
+	if isErrResponse {
+		return nil, errors.New(string(bytes))
+	}
+	response := new(plugin.LocalizedContent)
+	if err = response.UnmarshalVT(bytes); err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+func (p *pluginPlugin) Configure(ctx context.Context, request *JSONPayload) (*plugin.Contract, error) {
+	data, err := request.MarshalVT()
+	if err != nil {
+		return nil, err
+	}
+	var ptr uint64
+	dataSize := len(data)
+	if dataSize != 0 {
+		results, err := p.malloc.Call(ctx, uint64(dataSize))
+		if err != nil {
+			return nil, err
+		}
+		ptr = uint64(results[0])
+		defer p.free.Call(ctx, ptr)
+		if !p.module.Memory().Write(uint32(ptr), data) {
+			return nil, fmt.Errorf("out of range memory size")
+		}
+	}
+	ptrSize, err := p.configure.Call(ctx, ptr, uint64(dataSize))
+	if err != nil {
+		return nil, err
+	}
+	resPtr := uint32(ptrSize[0] >> 32)
+	resSize := uint32(ptrSize[0])
+	var isErrResponse bool
+	if resSize&(1<<31) > 0 {
+		isErrResponse = true
+		resSize &^= (1 << 31)
+	}
+	if resPtr != 0 {
+		defer p.free.Call(ctx, uint64(resPtr))
+	}
+	bytes, ok := p.module.Memory().Read(resPtr, resSize)
+	if !ok {
+		return nil, fmt.Errorf("out of range memory size")
+	}
+	if isErrResponse {
+		return nil, errors.New(string(bytes))
+	}
+	response := new(plugin.Contract)
+	if err = response.UnmarshalVT(bytes); err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+func (p *pluginPlugin) Instantiate(ctx context.Context, request *Empty) (*Empty, error) {
+	data, err := request.MarshalVT()
+	if err != nil {
+		return nil, err
+	}
+	var ptr uint64
+	dataSize := len(data)
+	if dataSize != 0 {
+		results, err := p.malloc.Call(ctx, uint64(dataSize))
+		if err != nil {
+			return nil, err
+		}
+		ptr = uint64(results[0])
+		defer p.free.Call(ctx, ptr)
+		if !p.module.Memory().Write(uint32(ptr), data) {
+			return nil, fmt.Errorf("out of range memory size")
+		}
+	}
+	ptrSize, err := p.instantiate.Call(ctx, ptr, uint64(dataSize))
+	if err != nil {
+		return nil, err
+	}
+	resPtr := uint32(ptrSize[0] >> 32)
+	resSize := uint32(ptrSize[0])
+	var isErrResponse bool
+	if resSize&(1<<31) > 0 {
+		isErrResponse = true
+		resSize &^= (1 << 31)
+	}
+	if resPtr != 0 {
+		defer p.free.Call(ctx, uint64(resPtr))
+	}
+	bytes, ok := p.module.Memory().Read(resPtr, resSize)
+	if !ok {
+		return nil, fmt.Errorf("out of range memory size")
+	}
+	if isErrResponse {
+		return nil, errors.New(string(bytes))
+	}
+	response := new(Empty)
+	if err = response.UnmarshalVT(bytes); err != nil {
+		return nil, err
+	}
+	return response, nil
+}
 
 const IndexerPluginAPIVersion = 1
 
@@ -495,7 +743,7 @@ func (p *torrentTargetPlugin) DataSchema(ctx context.Context, request *Empty) (*
 	return response, nil
 }
 
-func (p *torrentTargetPlugin) UISchema(ctx context.Context, request *SendTorrentsUISchemaParams) (*JSONPayload, error) {
+func (p *torrentTargetPlugin) UISchema(ctx context.Context, request *LocalizeParams) (*JSONPayload, error) {
 	data, err := request.MarshalVT()
 	if err != nil {
 		return nil, err

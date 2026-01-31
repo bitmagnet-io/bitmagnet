@@ -1,8 +1,8 @@
 package search
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
+	"github.com/bitmagnet-io/bitmagnet/pkg/i18n"
 )
 
 func NewFacetLocalizer(ref ref.Ref, i18n *i18n.Bundle) FacetLocalizer {

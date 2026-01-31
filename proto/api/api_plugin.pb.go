@@ -13,6 +13,103 @@ import (
 	search "github.com/bitmagnet-io/bitmagnet/proto/common/search"
 )
 
+const PluginPluginAPIVersion = 1
+
+//go:wasmexport plugin_api_version
+func _plugin_api_version() uint64 {
+	return PluginPluginAPIVersion
+}
+
+var pluginService Plugin
+
+func RegisterPlugin(p Plugin) {
+	pluginService = p
+}
+
+//go:wasmexport plugin_identify
+func _plugin_identify(ptr uint32, size uint32) uint64 {
+	b := wasm.PtrToByte(ptr, size)
+	req := new(Empty)
+	err := req.UnmarshalVT(b)
+	if err != nil {
+		panic(err)
+	}
+	resp, err := pluginService.Identify(context.Background(), req)
+	if err != nil {
+		ptr, size = wasm.ByteToPtr([]byte(err.Error()))
+		return (uint64(ptr) << uint64(32)) | uint64(size) | (1 << 31)
+	}
+	b, err = resp.MarshalVT()
+	if err != nil {
+		panic(err)
+	}
+	ptr, size = wasm.ByteToPtr(b)
+	return (uint64(ptr) << uint64(32)) | uint64(size)
+}
+
+//go:wasmexport plugin_localize
+func _plugin_localize(ptr uint32, size uint32) uint64 {
+	b := wasm.PtrToByte(ptr, size)
+	req := new(LocalizeParams)
+	err := req.UnmarshalVT(b)
+	if err != nil {
+		panic(err)
+	}
+	resp, err := pluginService.Localize(context.Background(), req)
+	if err != nil {
+		ptr, size = wasm.ByteToPtr([]byte(err.Error()))
+		return (uint64(ptr) << uint64(32)) | uint64(size) | (1 << 31)
+	}
+	b, err = resp.MarshalVT()
+	if err != nil {
+		panic(err)
+	}
+	ptr, size = wasm.ByteToPtr(b)
+	return (uint64(ptr) << uint64(32)) | uint64(size)
+}
+
+//go:wasmexport plugin_configure
+func _plugin_configure(ptr uint32, size uint32) uint64 {
+	b := wasm.PtrToByte(ptr, size)
+	req := new(JSONPayload)
+	err := req.UnmarshalVT(b)
+	if err != nil {
+		panic(err)
+	}
+	resp, err := pluginService.Configure(context.Background(), req)
+	if err != nil {
+		ptr, size = wasm.ByteToPtr([]byte(err.Error()))
+		return (uint64(ptr) << uint64(32)) | uint64(size) | (1 << 31)
+	}
+	b, err = resp.MarshalVT()
+	if err != nil {
+		panic(err)
+	}
+	ptr, size = wasm.ByteToPtr(b)
+	return (uint64(ptr) << uint64(32)) | uint64(size)
+}
+
+//go:wasmexport plugin_instantiate
+func _plugin_instantiate(ptr uint32, size uint32) uint64 {
+	b := wasm.PtrToByte(ptr, size)
+	req := new(Empty)
+	err := req.UnmarshalVT(b)
+	if err != nil {
+		panic(err)
+	}
+	resp, err := pluginService.Instantiate(context.Background(), req)
+	if err != nil {
+		ptr, size = wasm.ByteToPtr([]byte(err.Error()))
+		return (uint64(ptr) << uint64(32)) | uint64(size) | (1 << 31)
+	}
+	b, err = resp.MarshalVT()
+	if err != nil {
+		panic(err)
+	}
+	ptr, size = wasm.ByteToPtr(b)
+	return (uint64(ptr) << uint64(32)) | uint64(size)
+}
+
 const IndexerPluginAPIVersion = 1
 
 //go:wasmexport indexer_api_version
@@ -20,10 +117,10 @@ func _indexer_api_version() uint64 {
 	return IndexerPluginAPIVersion
 }
 
-var indexer Indexer
+var indexerService Indexer
 
 func RegisterIndexer(p Indexer) {
-	indexer = p
+	indexerService = p
 }
 
 //go:wasmexport indexer_index
@@ -34,7 +131,7 @@ func _indexer_index(ptr uint32, size uint32) uint64 {
 	if err != nil {
 		panic(err)
 	}
-	resp, err := indexer.Index(context.Background(), req)
+	resp, err := indexerService.Index(context.Background(), req)
 	if err != nil {
 		ptr, size = wasm.ByteToPtr([]byte(err.Error()))
 		return (uint64(ptr) << uint64(32)) | uint64(size) | (1 << 31)
@@ -54,10 +151,10 @@ func _http_handler_api_version() uint64 {
 	return HTTPHandlerPluginAPIVersion
 }
 
-var httphandler HTTPHandler
+var httphandlerService HTTPHandler
 
 func RegisterHTTPHandler(p HTTPHandler) {
-	httphandler = p
+	httphandlerService = p
 }
 
 //go:wasmexport http_handler_config
@@ -68,7 +165,7 @@ func _http_handler_config(ptr uint32, size uint32) uint64 {
 	if err != nil {
 		panic(err)
 	}
-	resp, err := httphandler.Config(context.Background(), req)
+	resp, err := httphandlerService.Config(context.Background(), req)
 	if err != nil {
 		ptr, size = wasm.ByteToPtr([]byte(err.Error()))
 		return (uint64(ptr) << uint64(32)) | uint64(size) | (1 << 31)
@@ -89,7 +186,7 @@ func _http_handler_handle_request(ptr uint32, size uint32) uint64 {
 	if err != nil {
 		panic(err)
 	}
-	resp, err := httphandler.HandleRequest(context.Background(), req)
+	resp, err := httphandlerService.HandleRequest(context.Background(), req)
 	if err != nil {
 		ptr, size = wasm.ByteToPtr([]byte(err.Error()))
 		return (uint64(ptr) << uint64(32)) | uint64(size) | (1 << 31)
@@ -109,10 +206,10 @@ func _search_adapter_api_version() uint64 {
 	return SearchAdapterPluginAPIVersion
 }
 
-var searchAdapter SearchAdapter
+var searchAdapterService SearchAdapter
 
 func RegisterSearchAdapter(p SearchAdapter) {
-	searchAdapter = p
+	searchAdapterService = p
 }
 
 //go:wasmexport search_adapter_search_torrent_content
@@ -123,7 +220,7 @@ func _search_adapter_search_torrent_content(ptr uint32, size uint32) uint64 {
 	if err != nil {
 		panic(err)
 	}
-	resp, err := searchAdapter.SearchTorrentContent(context.Background(), req)
+	resp, err := searchAdapterService.SearchTorrentContent(context.Background(), req)
 	if err != nil {
 		ptr, size = wasm.ByteToPtr([]byte(err.Error()))
 		return (uint64(ptr) << uint64(32)) | uint64(size) | (1 << 31)
@@ -144,7 +241,7 @@ func _search_adapter_search_torrent_files(ptr uint32, size uint32) uint64 {
 	if err != nil {
 		panic(err)
 	}
-	resp, err := searchAdapter.SearchTorrentFiles(context.Background(), req)
+	resp, err := searchAdapterService.SearchTorrentFiles(context.Background(), req)
 	if err != nil {
 		ptr, size = wasm.ByteToPtr([]byte(err.Error()))
 		return (uint64(ptr) << uint64(32)) | uint64(size) | (1 << 31)
@@ -164,10 +261,10 @@ func _torrent_target_api_version() uint64 {
 	return TorrentTargetPluginAPIVersion
 }
 
-var torrentTarget TorrentTarget
+var torrentTargetService TorrentTarget
 
 func RegisterTorrentTarget(p TorrentTarget) {
-	torrentTarget = p
+	torrentTargetService = p
 }
 
 //go:wasmexport torrent_target_data_schema
@@ -178,7 +275,7 @@ func _torrent_target_data_schema(ptr uint32, size uint32) uint64 {
 	if err != nil {
 		panic(err)
 	}
-	resp, err := torrentTarget.DataSchema(context.Background(), req)
+	resp, err := torrentTargetService.DataSchema(context.Background(), req)
 	if err != nil {
 		ptr, size = wasm.ByteToPtr([]byte(err.Error()))
 		return (uint64(ptr) << uint64(32)) | uint64(size) | (1 << 31)
@@ -194,12 +291,12 @@ func _torrent_target_data_schema(ptr uint32, size uint32) uint64 {
 //go:wasmexport torrent_target_ui_schema
 func _torrent_target_ui_schema(ptr uint32, size uint32) uint64 {
 	b := wasm.PtrToByte(ptr, size)
-	req := new(SendTorrentsUISchemaParams)
+	req := new(LocalizeParams)
 	err := req.UnmarshalVT(b)
 	if err != nil {
 		panic(err)
 	}
-	resp, err := torrentTarget.UISchema(context.Background(), req)
+	resp, err := torrentTargetService.UISchema(context.Background(), req)
 	if err != nil {
 		ptr, size = wasm.ByteToPtr([]byte(err.Error()))
 		return (uint64(ptr) << uint64(32)) | uint64(size) | (1 << 31)
@@ -220,7 +317,7 @@ func _torrent_target_send(ptr uint32, size uint32) uint64 {
 	if err != nil {
 		panic(err)
 	}
-	resp, err := torrentTarget.Send(context.Background(), req)
+	resp, err := torrentTargetService.Send(context.Background(), req)
 	if err != nil {
 		ptr, size = wasm.ByteToPtr([]byte(err.Error()))
 		return (uint64(ptr) << uint64(32)) | uint64(size) | (1 << 31)

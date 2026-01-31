@@ -3,12 +3,11 @@ package config
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/config"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/lookup"
-	"github.com/bitmagnet-io/bitmagnet/internal/config/manager"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
-	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/pkg/fs"
+	"github.com/bitmagnet-io/bitmagnet/pkg/i18n"
 	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"github.com/spf13/afero"
 	"go.uber.org/fx"
@@ -30,15 +29,15 @@ var (
 			fx.Provide(
 				lookup.NewFromEnv,
 				resolver.New,
-				func(provider fs.Provider) manager.FS {
+				func(provider fs.Provider) config.FS {
 					return afero.Afero{
-						Fs: afero.NewBasePathFs(provider.FSData(), config.SubpathPersisted),
+						Fs: afero.NewBasePathFs(provider.FSData(), lookup.SubpathPersisted),
 					}
 				},
 				fx.Private,
 			),
 			fx.Provide(
-				manager.New,
+				config.New,
 			),
 		),
 		builder.WithI18nMessage[deps](

@@ -26,7 +26,7 @@ func (api *apiTorrentTarget) DataSchema(ctx context.Context, _ *plugin_api.Empty
 
 func (api *apiTorrentTarget) UISchema(
 	ctx context.Context,
-	params *plugin_api.SendTorrentsUISchemaParams,
+	params *plugin_api.LocalizeParams,
 ) (*plugin_api.JSONPayload, error) {
 	var result *plugin_api.JSONPayload
 

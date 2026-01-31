@@ -2,9 +2,9 @@ package dev
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database"
-	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/app"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/cmd"
+	"github.com/bitmagnet-io/bitmagnet/pkg/i18n"
 	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -21,7 +21,7 @@ func NewCommand() plugin.Command {
 type CommandDeps struct {
 	fx.In
 	DBProvider   database.RunnerProvider
-	I18nProvider i18n.Provider
+	I18nProvider i18n.MessageProvider
 	Logger       *zap.Logger
 }
 

@@ -1,0 +1,15 @@
+category:
+  description: Label for category field in add torrent dialog
+  other: Category
+password:
+  description: Description for config field password
+  other: qBittorrent password
+stopped:
+  description: Label for stopped field in add torrent dialog
+  other: Add as stopped
+url:
+  description: Description for config field url
+  other: qBittorrent web UI URL
+username:
+  description: Description for config field username
+  other: qBittorrent username

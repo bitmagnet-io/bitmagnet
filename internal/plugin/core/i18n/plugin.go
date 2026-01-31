@@ -1,7 +1,7 @@
 package i18n
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
+	"github.com/bitmagnet-io/bitmagnet/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
@@ -18,9 +18,7 @@ var (
 		builder.WithDescription[deps]("Provides translations for backend services"),
 		builder.WithActivation[deps](plugin.ActivationAlways),
 		builder.WithFxOption[deps](
-			fx.Provide(
-				i18n.NewBundle,
-			),
+			fx.Supply(i18n.Bundle),
 		),
 	)
 )

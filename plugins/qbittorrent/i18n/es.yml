@@ -1,0 +1,15 @@
+category:
+  description: Label for category field in add torrent dialog
+  other: ""
+password:
+  description: Description for config field password
+  other: ""
+stopped:
+  description: Label for stopped field in add torrent dialog
+  other: ""
+url:
+  description: Description for config field url
+  other: ""
+username:
+  description: Description for config field username
+  other: ""

@@ -15,7 +15,7 @@ import { ConfigService } from "../../config/config.service";
     <div class="form-container">
       <div class="form-content">
         <mat-label
-          >{{ param.description }}
+          >{{ description }}
           <small>default: {{ defaultLabel }}</small></mat-label
         >
         <jsonforms
@@ -108,6 +108,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   param: ConfigParam;
   jsonSchema: JsonSchema;
   uischema: UISchemaElement;
+  description?: string;
 
   serverData: unknown;
   data: unknown;
@@ -141,6 +142,9 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
       this.persisted = ["dynamic", "persisted", "pending"].includes(
         param.source,
       );
+      this.description = state.plugins[param.plugin]?.configParams?.find(
+        (param) => param.ref === this.ref,
+      )?.description;
     });
   }
 

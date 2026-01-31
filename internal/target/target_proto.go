@@ -102,7 +102,7 @@ func (t *targetProto) dataSchama(ctx context.Context) (*dataSchema, error) {
 
 // todo: Cache
 func (t *targetProto) UISchema(ctx context.Context, acceptLanguage []string) (*json_forms.UISchema, error) {
-	res, err := t.impl.UISchema(ctx, &api.SendTorrentsUISchemaParams{
+	res, err := t.impl.UISchema(ctx, &api.LocalizeParams{
 		AcceptLanguage: acceptLanguage,
 	})
 	if err != nil {

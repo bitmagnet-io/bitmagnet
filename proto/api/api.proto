@@ -6,7 +6,20 @@ option go_package = "github.com/bitmagnet-io/bitmagnet/proto/api;api";
 
 import "common/http/http.proto";
 import "common/model/model.proto";
+import "common/plugin/plugin.proto";
 import "common/search/search.proto";
+
+// go:plugin type=plugin version=1
+service Plugin {
+  // Identify returns the identity of the plugin
+  rpc Identify(Empty) returns (plugin.Identity);
+  // Localize returns localized content for the plugin
+  rpc Localize(LocalizeParams) returns (plugin.LocalizedContent);
+  // Configure sets the configuration for the plugin, and returns its contract
+  rpc Configure(JSONPayload) returns (plugin.Contract);
+  // Instantiate instantiates the plugin with the given configuration
+  rpc Instantiate(Empty) returns (Empty);
+}
 
 // go:plugin type=plugin version=1
 service Indexer {
@@ -45,7 +58,7 @@ service TorrentTarget {
   // DataSchema returns an optional JSON schema that will be used to validate the data sent to the Send method
   rpc DataSchema(Empty) returns (JSONPayload);
   // UISchema returns an optional JSONForms UI schema that will be used to render the UI form
-  rpc UISchema(SendTorrentsUISchemaParams) returns (JSONPayload);
+  rpc UISchema(LocalizeParams) returns (JSONPayload);
   // Send sends the given torrents and data to the target
   rpc Send(SendTorrentsParams) returns (JSONPayload);
 }
@@ -54,7 +67,7 @@ message JSONPayload {
   bytes data = 1;
 }
 
-message SendTorrentsUISchemaParams {
+message LocalizeParams {
   repeated string acceptLanguage = 1;
 }
 

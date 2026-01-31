@@ -148,3 +148,35 @@ func (x *Response) GetHeaders() map[string]string {
 
 	return zero
 }
+
+type Egress struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+	UrlPatterns   []string `json:"urlPatterns,omitempty" protobuf:"bytes,1,rep,name=urlPatterns,proto3"`
+	Methods       []Method `json:"methods,omitempty" protobuf:"varint,2,rep,packed,name=methods,proto3,enum=http.Method"`
+}
+
+func (x *Egress) ProtoReflect() protoreflect.Message {
+	panic("not implemented")
+}
+
+func (x *Egress) GetUrlPatterns() []string {
+	if x != nil {
+		return x.UrlPatterns
+	}
+
+	var zero []string
+
+	return zero
+}
+
+func (x *Egress) GetMethods() []Method {
+	if x != nil {
+		return x.Methods
+	}
+
+	var zero []Method
+
+	return zero
+}

@@ -1,5 +1,3 @@
-//go:build wasip1
-
 package search
 
 import (
@@ -38,9 +36,7 @@ func (a *adapter) SearchTorrentFiles(
 	if err != nil {
 		return nil, err
 	}
-	var (
-		items []*model.TorrentFile
-	)
+	var items []*model.TorrentFile
 	for _, hit := range aggs.Files.Files.Hits.Hits {
 		items = append(items, hit.Source)
 	}

@@ -3,83 +3,41 @@ package plugin
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
 	"github.com/bitmagnet-io/bitmagnet/pkg/env"
-	"github.com/bitmagnet-io/bitmagnet/proto/host/configurator"
+	"github.com/bitmagnet-io/bitmagnet/proto/api"
 	pool "github.com/jolestar/go-commons-pool/v2"
-	"github.com/tetratelabs/wazero"
-	wasi_snapshot_preview1 "github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
 )
-
-type instanceBuilder struct {
-	env           env.Env
-	manifest      Manifest
-	data          []byte
-	runtimeConfig wazero.RuntimeConfig
-	moduleConfig  wazero.ModuleConfig
-	instantiators []instantiator
-}
-
-type instantiator func(ctx context.Context, runtime wazero.Runtime) error
 
 func (p *Plugin) NewInstance(
 	env env.Env,
 	resolvedConfig resolver.Resolved,
 ) (Instance, error) {
-	builder := &instanceBuilder{
-		env:      env,
-		manifest: p.manifest,
-		data:     p.data,
-		runtimeConfig: wazero.NewRuntimeConfig().
-			WithCloseOnContextDone(true).
-			WithCompilationCache(p.compilationCache),
-		moduleConfig: wazero.NewModuleConfig().
-			WithStartFunctions("_initialize").
-			WithStdout(env).
-			WithStderr(env.Stderr()).
-			WithSysWalltime().
-			WithSysNanotime().
-			WithSysNanosleep(),
-		instantiators: []instantiator{
-			func(ctx context.Context, runtime wazero.Runtime) error {
-				_, err := wasi_snapshot_preview1.Instantiate(ctx, runtime)
-				return err
-			},
-		},
-	}
+	cfg := make(map[string]any)
 
-	if len(p.manifest.Config) > 0 {
-		cfg := make(map[string]any)
-
-		for _, param := range p.configParams {
-			if value, ok := resolvedConfig.Param(param.Ref); ok {
-				cfg[param.Name()] = value.Value()
-			}
+	for _, param := range p.configParams {
+		if value, ok := resolvedConfig.Param(param.Ref); ok {
+			cfg[param.Ref.Name()] = value.Value()
 		}
-
-		jsonCfg, err := json.Marshal(cfg)
-		if err != nil {
-			return nil, err
-		}
-
-		builder.instantiators = append(
-			builder.instantiators,
-			func(ctx context.Context, runtime wazero.Runtime) error {
-				return configurator.Instantiate(ctx, runtime, configuratorImpl{
-					jsonConfig: string(jsonCfg),
-				})
-			},
-		)
 	}
 
-	if p.manifest.Permissions.FS != nil {
-		p.manifest.Permissions.FS.build(builder)
+	jsonCfg, err := json.Marshal(cfg)
+	if err != nil {
+		return nil, err
 	}
 
-	if p.manifest.Permissions.HTTP != nil {
-		p.manifest.Permissions.HTTP.build(builder)
+	contract, err := p.api.Configure(env, &api.JSONPayload{
+		Data: jsonCfg,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if contract.GetPermissions() != nil && contract.GetPermissions().GetHttp() != nil {
+		p.httpEgress.Set(contract.GetPermissions().GetHttp().GetEgress())
 	}
 
 	mtx := make(chan struct{}, 1)
@@ -96,7 +54,29 @@ func (p *Plugin) NewInstance(
 
 				defer func() { <-mtx }()
 
-				return builder.newModule(ctx)
+				apiModule, err := p.newModule(ctx)
+				if err != nil {
+					return nil, err
+				}
+
+				pluginAPI, err := pluginPlugin.LoadModule(ctx, apiModule)
+				if err != nil {
+					return nil, fmt.Errorf("failed to load plugin lifecycle: %w", err)
+				}
+
+				_, err = pluginAPI.Configure(ctx, &api.JSONPayload{
+					Data: jsonCfg,
+				})
+				if err != nil {
+					return nil, fmt.Errorf("failed to configure plugin: %w", err)
+				}
+
+				_, err = pluginAPI.Instantiate(ctx, &api.Empty{})
+				if err != nil {
+					return nil, fmt.Errorf("failed to instantiate plugin: %w", err)
+				}
+
+				return apiModule, nil
 			},
 			func(ctx context.Context, obj *pool.PooledObject) error {
 				return obj.Object.(*module).Close(ctx)
@@ -121,10 +101,9 @@ func (p *Plugin) NewInstance(
 		},
 	)
 
-	pool.PreparePool(env)
-
 	return &instance{
-		manifest: p.manifest,
+		ref:      p.ref,
+		contract: contract,
 		pool:     pool,
 	}, nil
 }

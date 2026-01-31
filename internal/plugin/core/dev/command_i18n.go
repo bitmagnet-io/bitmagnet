@@ -2,11 +2,12 @@ package dev
 
 import (
 	"context"
+	"path/filepath"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/cmd"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"github.com/bitmagnet-io/bitmagnet/pkg/env"
+	"github.com/bitmagnet-io/bitmagnet/pkg/i18n"
 )
 
 type I18nCommand struct {
@@ -35,7 +36,7 @@ type extractCommand struct {
 func (cmd *extractCommand) Run(env env.Env) error {
 	return cmd.NewRunner(func(deps CommandDeps) runner.Runner {
 		return runner.SimpleRunner(func(context.Context) error {
-			return i18n.Write(deps.I18nProvider())
+			return i18n.Write(filepath.Join(".", "i18n"), deps.I18nProvider())
 		})
 	})(env)
 }

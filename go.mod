@@ -11,6 +11,7 @@ require (
 	github.com/anacrolix/dht/v2 v2.22.0
 	github.com/anacrolix/torrent v1.58.0
 	github.com/bits-and-blooms/bloom/v3 v3.7.0
+	github.com/bmatcuk/doublestar/v4 v4.6.1
 	github.com/casbin/casbin/v2 v2.121.0
 	github.com/dave/jennifer v1.7.1
 	github.com/facette/natsort v0.0.0-20181210072756-2cd4dd1e2dcb
@@ -89,7 +90,6 @@ require (
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bits-and-blooms/bitset v1.20.0 // indirect
-	github.com/bmatcuk/doublestar/v4 v4.6.1 // indirect
 	github.com/bradfitz/iter v0.0.0-20191230175014-e8f45d346db8 // indirect
 	github.com/bytedance/sonic v1.12.3 // indirect
 	github.com/bytedance/sonic/loader v0.2.0 // indirect

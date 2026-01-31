@@ -8,23 +8,23 @@ import (
 	"strings"
 	"time"
 
+	embed_i18n "github.com/bitmagnet-io/bitmagnet/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/httpserver"
-	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/http_server"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
 	"github.com/bitmagnet-io/bitmagnet/pkg/env"
+	"github.com/bitmagnet-io/bitmagnet/pkg/i18n"
 )
 
 type WorkerQuery struct {
-	I18n     *i18n.Bundle
 	Registry *registry.Registry
 }
 
 func (q *WorkerQuery) ListAll(ctx context.Context) (gen.WorkerListAllQueryResult, error) {
-	return workersListAll(httpserver.NewLocalizerFromContext(ctx, q.I18n), q.Registry)
+	return workersListAll(httpserver.NewLocalizerFromContext(ctx, embed_i18n.Bundle), q.Registry)
 }
 
 type WorkerMutation struct {
@@ -40,7 +40,7 @@ func (m *WorkerMutation) Start(ctx context.Context, refs []ref.Ref) (gen.WorkerL
 		return gen.WorkerListAllQueryResult{}, err
 	}
 
-	return workersListAll(httpserver.NewLocalizerFromContext(ctx, m.I18n), m.Registry)
+	return workersListAll(httpserver.NewLocalizerFromContext(ctx, embed_i18n.Bundle), m.Registry)
 }
 
 func (m *WorkerMutation) Shutdown(ctx context.Context, refs []ref.Ref) (gen.WorkerListAllQueryResult, error) {

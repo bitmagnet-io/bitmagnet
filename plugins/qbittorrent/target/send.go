@@ -1,5 +1,3 @@
-//go:build wasip1
-
 package target
 
 import (
@@ -12,6 +10,7 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/proto/api"
 	"github.com/bitmagnet-io/bitmagnet/proto/common/http"
+	"github.com/bitmagnet-io/bitmagnet/proto/common/model"
 )
 
 func (t *target) Send(ctx context.Context, sendTorrentsParams *api.SendTorrentsParams) (*api.JSONPayload, error) {
@@ -72,10 +71,13 @@ func (t *target) Send(ctx context.Context, sendTorrentsParams *api.SendTorrentsP
 			Body: bytes,
 		}, nil)
 	})
-
 	if err != nil {
 		return nil, err
 	}
 
 	return &api.JSONPayload{}, nil
+}
+
+func createMagnetLink(torrent *model.Torrent) string {
+	return "magnet:?xt=urn:btih:" + torrent.InfoHash + "&dn=" + torrent.Name
 }

@@ -3,81 +3,77 @@ package plugin
 import (
 	"context"
 
-	plugin_api "github.com/bitmagnet-io/bitmagnet/proto/api"
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
+	"github.com/bitmagnet-io/bitmagnet/proto/api"
+	"github.com/bitmagnet-io/bitmagnet/proto/common/plugin"
 	pool "github.com/jolestar/go-commons-pool/v2"
 )
 
 type Instance interface {
+	Contract() *plugin.Contract
 	Close(ctx context.Context)
-	Indexer() plugin_api.Indexer
-	HTTPHandler() plugin_api.HTTPHandler
-	SearchAdapter() plugin_api.SearchAdapter
-	TorrentTarget() plugin_api.TorrentTarget
+	Indexer() api.Indexer
+	HTTPHandler() api.HTTPHandler
+	SearchAdapter() api.SearchAdapter
+	TorrentTarget() api.TorrentTarget
 }
 
 type instance struct {
-	manifest Manifest
+	ref      ref.Ref
+	contract *plugin.Contract
 	pool     *pool.ObjectPool
+}
+
+func (i *instance) Ref() ref.Ref {
+	return i.ref
+}
+
+func (i *instance) Contract() *plugin.Contract {
+	return i.contract
 }
 
 func (i *instance) Close(ctx context.Context) {
 	i.pool.Close(ctx)
 }
 
-func (i *instance) Indexer() plugin_api.Indexer {
-	if i.manifest.Capabilities.Indexer == nil {
-		return nil
-	}
-
+func (i *instance) Indexer() api.Indexer {
 	return &apiIndexer{
-		apiService: &apiService[plugin_api.Indexer]{
+		apiService: &apiService[api.Indexer]{
 			pool: i.pool,
-			getService: func(m *module) (plugin_api.Indexer, error) {
+			getService: func(m *module) (api.Indexer, error) {
 				return m.getIndexer()
 			},
 		},
 	}
 }
 
-func (i *instance) HTTPHandler() plugin_api.HTTPHandler {
-	if i.manifest.Capabilities.HTTPHandler == nil {
-		return nil
-	}
-
+func (i *instance) HTTPHandler() api.HTTPHandler {
 	return &apiHTTPHandler{
-		apiService: &apiService[plugin_api.HTTPHandler]{
+		apiService: &apiService[api.HTTPHandler]{
 			pool: i.pool,
-			getService: func(m *module) (plugin_api.HTTPHandler, error) {
+			getService: func(m *module) (api.HTTPHandler, error) {
 				return m.getHTTPHandler()
 			},
 		},
 	}
 }
 
-func (i *instance) SearchAdapter() plugin_api.SearchAdapter {
-	if i.manifest.Capabilities.SearchAdapter == nil {
-		return nil
-	}
-
+func (i *instance) SearchAdapter() api.SearchAdapter {
 	return &apiSearchAdapter{
-		apiService: &apiService[plugin_api.SearchAdapter]{
+		apiService: &apiService[api.SearchAdapter]{
 			pool: i.pool,
-			getService: func(m *module) (plugin_api.SearchAdapter, error) {
+			getService: func(m *module) (api.SearchAdapter, error) {
 				return m.getSearchAdapter()
 			},
 		},
 	}
 }
 
-func (i *instance) TorrentTarget() plugin_api.TorrentTarget {
-	if i.manifest.Capabilities.TorrentTarget == nil {
-		return nil
-	}
-
+func (i *instance) TorrentTarget() api.TorrentTarget {
 	return &apiTorrentTarget{
-		apiService: &apiService[plugin_api.TorrentTarget]{
+		apiService: &apiService[api.TorrentTarget]{
 			pool: i.pool,
-			getService: func(m *module) (plugin_api.TorrentTarget, error) {
+			getService: func(m *module) (api.TorrentTarget, error) {
 				return m.getTorrentTarget()
 			},
 		},

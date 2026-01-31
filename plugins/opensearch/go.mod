@@ -4,6 +4,7 @@ go 1.25.1
 
 require (
 	github.com/bitmagnet-io/bitmagnet v0.0.0
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/defensestation/osquery/v2 v2.1.0
 	github.com/opensearch-project/opensearch-go/v4 v4.5.0
 )

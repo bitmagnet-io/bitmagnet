@@ -4,7 +4,6 @@ import { map } from "rxjs";
 import { DocumentTitleComponent } from "../../layout/document-title.component";
 import { AppModule } from "../../app.module";
 import { ConfigService } from "../../config/config.service";
-import { ConfigModule } from "../../config/config.module";
 import { ConfigFormComponent } from "./config-form.component";
 
 @Component({
@@ -60,7 +59,6 @@ import { ConfigFormComponent } from "./config-form.component";
   standalone: true,
   imports: [
     AppModule,
-    ConfigModule,
     DocumentTitleComponent,
     JsonFormsAngularMaterialModule,
     ConfigFormComponent,

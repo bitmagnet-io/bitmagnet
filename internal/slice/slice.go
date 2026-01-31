@@ -36,6 +36,12 @@ func FlatMap[T any, R any](t []T, mapFunc func(T) []R) []R {
 	return result
 }
 
+func Flatten[T any](values ...[]T) []T {
+	return FlatMap(values, func(t []T) []T {
+		return t
+	})
+}
+
 func MapWithArg[I any, O any, A any](t []I, arg A, mapFunc func(A, I) O) []O {
 	return Map(t, func(e I) O {
 		return mapFunc(arg, e)
@@ -62,6 +68,18 @@ func Some[T any](t []T, predicate func(T) bool) bool {
 	}
 
 	return false
+}
+
+func Find[T any](t []T, predicate func(T) bool) (T, bool) {
+	for _, e := range t {
+		if predicate(e) {
+			return e, true
+		}
+	}
+
+	var zero T
+
+	return zero, false
 }
 
 func Group[T any, K comparable](s []T, keyFunc func(T) K) map[K][]T {

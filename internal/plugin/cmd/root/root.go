@@ -14,10 +14,10 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 )
 
-func NewFactpry(bundles ...plugin.Provider) cmd.CommandFactory {
+func NewFactpry(providers ...plugin.Provider) cmd.CommandFactory {
 	return func() cmd.Command {
 		return &Command{
-			bundles: bundles,
+			providers: providers,
 		}
 	}
 }
@@ -25,7 +25,7 @@ func NewFactpry(bundles ...plugin.Provider) cmd.CommandFactory {
 // revive:disable:line-length-limit
 type Command struct {
 	cmd.Cmd       `cmd:"name=bitmagnet"`
-	bundles       []plugin.Provider
+	providers     []plugin.Provider
 	LoadPlugin    cmd.CSV[loadPlugin] `cmd:"doc=Load plugins from the specified paths,example='/path/to/plugin,alias:/path/to/plugin'"`
 	EnablePlugin  cmd.CSV[ref.Ref]    `cmd:"doc=Enable plugins,example=plugin"`
 	DisablePlugin cmd.CSV[ref.Ref]    `cmd:"doc=Disable plugins,example=plugin"`
@@ -38,10 +38,10 @@ func (cmd *Command) Setup(env env.Env) error {
 		banner.Write(env)
 	}
 
-	bundles := cmd.bundles
+	providers := cmd.providers
 
 	if len(cmd.LoadPlugin) > 0 {
-		bundle, err := wasm_plugin.NewProvider(slice.Map(
+		provider, err := wasm_plugin.NewProvider(slice.Map(
 			cmd.LoadPlugin,
 			func(lp loadPlugin) wasm_plugin.ProviderOption {
 				return wasm_plugin.LoadPlugin(lp.path, lp.alias)
@@ -51,13 +51,13 @@ func (cmd *Command) Setup(env env.Env) error {
 			return err
 		}
 
-		bundles = append(
-			bundles,
-			bundle,
+		providers = append(
+			providers,
+			provider,
 		)
 	}
 
-	registry, err := registry.New(bundles...).Resolve(
+	registry, err := registry.New(providers...).Resolve(
 		env,
 		registry.WithEnabledPlugins(cmd.EnablePlugin...),
 		registry.WithDisabledPlugins(cmd.DisablePlugin...),

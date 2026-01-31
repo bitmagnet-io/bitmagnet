@@ -8,6 +8,7 @@ import (
 	"context"
 	http "github.com/bitmagnet-io/bitmagnet/proto/common/http"
 	model "github.com/bitmagnet-io/bitmagnet/proto/common/model"
+	plugin "github.com/bitmagnet-io/bitmagnet/proto/common/plugin"
 	search "github.com/bitmagnet-io/bitmagnet/proto/common/search"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -130,18 +131,18 @@ func (x *JSONPayload) GetData() []byte {
 	return zero
 }
 
-type SendTorrentsUISchemaParams struct {
+type LocalizeParams struct {
 	state          protoimpl.MessageState
 	sizeCache      protoimpl.SizeCache
 	unknownFields  protoimpl.UnknownFields
 	AcceptLanguage []string `json:"acceptLanguage,omitempty" protobuf:"bytes,1,rep,name=acceptLanguage,proto3"`
 }
 
-func (x *SendTorrentsUISchemaParams) ProtoReflect() protoreflect.Message {
+func (x *LocalizeParams) ProtoReflect() protoreflect.Message {
 	panic("not implemented")
 }
 
-func (x *SendTorrentsUISchemaParams) GetAcceptLanguage() []string {
+func (x *LocalizeParams) GetAcceptLanguage() []string {
 	if x != nil {
 		return x.AcceptLanguage
 	}
@@ -183,6 +184,13 @@ func (x *SendTorrentsParams) GetData() []byte {
 	return zero
 }
 
+type Plugin interface {
+	Identify(ctx context.Context, empty *Empty) (*plugin.Identity, error)
+	Localize(ctx context.Context, localizeParams *LocalizeParams) (*plugin.LocalizedContent, error)
+	Configure(ctx context.Context, jsonpayload *JSONPayload) (*plugin.Contract, error)
+	Instantiate(ctx context.Context, empty *Empty) (*Empty, error)
+}
+
 type Indexer interface {
 	Index(ctx context.Context, indexPayload *IndexPayload) (*Empty, error)
 }
@@ -199,6 +207,6 @@ type SearchAdapter interface {
 
 type TorrentTarget interface {
 	DataSchema(ctx context.Context, empty *Empty) (*JSONPayload, error)
-	UISchema(ctx context.Context, sendTorrentsUischemaParams *SendTorrentsUISchemaParams) (*JSONPayload, error)
+	UISchema(ctx context.Context, localizeParams *LocalizeParams) (*JSONPayload, error)
 	Send(ctx context.Context, sendTorrentsParams *SendTorrentsParams) (*JSONPayload, error)
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/postgres/migrator"
 	plugin_worker "github.com/bitmagnet-io/bitmagnet/internal/plugin/core/worker"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
+	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
 	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
@@ -48,7 +49,7 @@ var (
 			fx.Provide(
 				fx.Annotate(
 					func(
-						indexers []indexer.Indexer,
+						indexers [][]indexer.Indexer,
 						maxSize *atomic.Value[persister.MaxSize],
 						maxWait *atomic.Value[persister.MaxWait],
 						daoProvider internal_database.DaoTransactionProvider,
@@ -63,7 +64,12 @@ var (
 							blockerBlocker,
 							logger.Named(Ref.String()),
 							metrics.MustNewComponent(Ref),
-							indexers,
+							slice.FlatMap(
+								indexers,
+								func(indexers []indexer.Indexer) []indexer.Indexer {
+									return indexers
+								},
+							),
 						)
 					},
 					fx.ParamTags(`group:"indexers"`),

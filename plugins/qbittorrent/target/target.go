@@ -1,5 +1,3 @@
-//go:build wasip1
-
 package target
 
 import (
@@ -10,7 +8,6 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/proto/api"
 	"github.com/bitmagnet-io/bitmagnet/proto/common/http"
-	"github.com/bitmagnet-io/bitmagnet/proto/common/model"
 	"github.com/bitmagnet-io/bitmagnet/proto/host/http_client"
 	"github.com/bitmagnet-io/plugin-qbittorrent/config"
 )
@@ -83,8 +80,4 @@ func (t *target) retryWithLogin(ctx context.Context, fn func() error) error {
 	}
 
 	return err
-}
-
-func createMagnetLink(torrent *model.Torrent) string {
-	return "magnet:?xt=urn:btih:" + torrent.InfoHash + "&dn=" + torrent.Name
 }

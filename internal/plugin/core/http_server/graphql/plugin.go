@@ -2,6 +2,7 @@ package graphql
 
 import (
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/bitmagnet-io/bitmagnet/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/auth/rbac"
 	"github.com/bitmagnet-io/bitmagnet/internal/error_registry"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
@@ -9,7 +10,6 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/directive"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/resolvers"
-	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/builder"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/health"
 	"github.com/bitmagnet-io/bitmagnet/internal/plugin/core/http_server"
@@ -32,7 +32,6 @@ type deps struct {
 	Schema         graphql.ExecutableSchema
 	AuthDirectives directive.AuthDirectives
 	ErrorRegistry  error_registry.Registry
-	I18n           *i18n.Bundle
 }
 
 var (
@@ -86,7 +85,7 @@ var (
 			Ref,
 			0,
 			func(deps deps) gin.OptionFunc {
-				return httpserver.New(deps.Schema, deps.ErrorRegistry, deps.I18n)
+				return httpserver.New(deps.Schema, deps.ErrorRegistry, i18n.Bundle)
 			},
 		),
 		builder.WithError[deps](Ref.MustSub("unauthorized"), auth.ErrUnauthorized),

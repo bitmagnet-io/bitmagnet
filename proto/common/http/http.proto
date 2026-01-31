@@ -25,3 +25,8 @@ message Response {
   map<string, string> headers = 3;
   // string error = 4;
 }
+
+message Egress {
+  repeated string urlPatterns = 1;
+  repeated http.Method methods = 2;
+}

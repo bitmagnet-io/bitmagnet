@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
-	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
+	"github.com/bitmagnet-io/bitmagnet/pkg/i18n"
 )
 
 const acceptLanguageHeader = "Accept-Language"

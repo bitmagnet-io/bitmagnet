@@ -48,22 +48,19 @@ func (r *queryResolver) Auth(ctx context.Context) (gqlmodel.AuthQuery, error) {
 func (r *queryResolver) Config(ctx context.Context) (gqlmodel.ConfigQuery, error) {
 	return gqlmodel.ConfigQuery{
 		Manager: r.ConfigManager,
-		I18n:    r.I18n,
 	}, nil
 }
 
 // Plugin is the resolver for the plugin field.
 func (r *queryResolver) Plugin(ctx context.Context) (gqlmodel.PluginQuery, error) {
 	return gqlmodel.PluginQuery{
-		Infos: r.Plugins,
-		I18n:  r.I18n,
+		Plugins: r.Plugins,
 	}, nil
 }
 
 // Worker is the resolver for the worker field.
 func (r *queryResolver) Worker(ctx context.Context) (gqlmodel.WorkerQuery, error) {
 	return gqlmodel.WorkerQuery{
-		I18n:     r.I18n,
 		Registry: r.Workers,
 	}, nil
 }

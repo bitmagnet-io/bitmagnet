@@ -117,3 +117,10 @@ func (m Map[T]) StringMap() map[string]T {
 func (m Map[T]) Len() int {
 	return len(m.m)
 }
+
+func (m Map[T]) Clone() Map[T] {
+	clone := NewMap[T]()
+	clone.SetAll(m)
+
+	return clone
+}

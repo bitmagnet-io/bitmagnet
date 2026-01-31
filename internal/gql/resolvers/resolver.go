@@ -4,7 +4,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/auth/api_key"
 	"github.com/bitmagnet-io/bitmagnet/internal/auth/rbac"
 	"github.com/bitmagnet-io/bitmagnet/internal/auth/user"
-	config_manager "github.com/bitmagnet-io/bitmagnet/internal/config/manager"
+	"github.com/bitmagnet-io/bitmagnet/internal/config"
 	"github.com/bitmagnet-io/bitmagnet/internal/database"
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
 	"github.com/bitmagnet-io/bitmagnet/internal/metrics/queuemetrics"
@@ -12,13 +12,13 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/persister"
 	"github.com/bitmagnet-io/bitmagnet/internal/processor"
 	queue_manager "github.com/bitmagnet-io/bitmagnet/internal/queue/manager"
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/search/adapter/multi"
 	"github.com/bitmagnet-io/bitmagnet/internal/target"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
 	"github.com/bitmagnet-io/bitmagnet/pkg/env"
 	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
-	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"go.uber.org/fx"
 )
 
@@ -40,9 +40,8 @@ type Resolver struct {
 	TorrentMetricsClient torrentmetrics.Client `optional:"true"`
 	Indexer              processor.Processor
 	PersisterAdder       persister.Adder
-	ConfigManager        *config_manager.Manager
-	Plugins              plugin.Infos
-	I18n                 *i18n.Bundle
+	ConfigManager        *config.Manager
+	Plugins              ref.Map[plugin.Instance]
 	User                 user.Service
 	APIKey               api_key.Service
 	RBAC                 rbac.Service

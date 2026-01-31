@@ -6,7 +6,6 @@ import (
 	"io/fs"
 	"path/filepath"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/config"
 	"github.com/bitmagnet-io/bitmagnet/pkg/env"
 	"gopkg.in/yaml.v3"
 )
@@ -14,9 +13,9 @@ import (
 func NewFromEnv(env env.Env) (Lookup, error) {
 	var lookups Chain
 
-	persistedPath := filepath.Join(config.SubpathPersisted, config.FilePersisted)
+	persistedPath := filepath.Join(SubpathPersisted, FilePersisted)
 	if yamlBytes, err := env.FSData().ReadFile(persistedPath); err == nil {
-		lookup, err := NewFromYAMLFlat(config.SourcePersisted, yamlBytes)
+		lookup, err := NewFromYAMLFlat(SourcePersisted, yamlBytes)
 		if err != nil {
 			return nil, err
 		}
@@ -26,7 +25,7 @@ func NewFromEnv(env env.Env) (Lookup, error) {
 		return nil, fmt.Errorf("%w: %w: %s: %w", Err, ErrReadFile, persistedPath, err)
 	}
 
-	lookups = append(lookups, Env("env", env))
+	lookups = append(lookups, Env(SourceEnv, env))
 
 	if yamlBytes, err := env.FSCurrent().ReadFile("./config.yml"); err == nil {
 		lookup, err := NewFromYAML("file:./config.yml", yamlBytes)

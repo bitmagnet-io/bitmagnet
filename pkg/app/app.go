@@ -8,18 +8,18 @@ import (
 )
 
 type App struct {
-	bundles []plugin.Provider
+	providers []plugin.Provider
 }
 
-func New(bundles ...plugin.Provider) *App {
+func New(providers ...plugin.Provider) *App {
 	return &App{
-		bundles: append(
+		providers: append(
 			[]plugin.Provider{provider.Core()},
-			bundles...,
+			providers...,
 		),
 	}
 }
 
 func (a *App) Run(env env.Env) (int, error) {
-	return root.NewFactpry(a.bundles...).Run(env)
+	return root.NewFactpry(a.providers...).Run(env)
 }

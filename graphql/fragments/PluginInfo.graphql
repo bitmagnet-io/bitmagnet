@@ -1,6 +1,5 @@
 fragment PluginInfo on PluginInfo {
   ref
-  description
   enabled
   dependsOn
   requiredBy

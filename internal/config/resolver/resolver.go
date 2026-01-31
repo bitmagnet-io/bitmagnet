@@ -4,7 +4,6 @@ import (
 	"reflect"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
-	"github.com/bitmagnet-io/bitmagnet/internal/config"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/lookup"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/registry"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
@@ -39,14 +38,14 @@ func (r Resolver) Resolve() (Resolved, error) {
 }
 
 func (r Resolver) resolve(param registry.Param) (*Param, error) {
-	lookup, _, err := r.lookup.Lookup(param.Path())
+	lkp, _, err := r.lookup.Lookup(param.Ref.Path())
 	if err != nil {
 		return nil, err
 	}
 
-	res := newParam(param, config.SourceDefault, param.NewDefaultAny(), nil)
+	res := newParam(param, lookup.SourceDefault, param.NewDefaultAny(), nil)
 
-	lookupChain := lookup.Chain()
+	lookupChain := lkp.Chain()
 
 	for i := len(lookupChain) - 1; i >= 0; i-- {
 		value, err := resolveValue(param, lookupChain[i])

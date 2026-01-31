@@ -10,13 +10,13 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
 	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
-	"github.com/bitmagnet-io/bitmagnet/internal/i18n"
+	"github.com/bitmagnet-io/bitmagnet/internal/plugin"
 	"github.com/bitmagnet-io/bitmagnet/internal/queue/handler"
 	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	workers_registry "github.com/bitmagnet-io/bitmagnet/internal/workers/registry"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
-	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
+	"github.com/bitmagnet-io/bitmagnet/pkg/i18n"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
@@ -29,7 +29,7 @@ type builder[Deps any] struct {
 	activation    plugin.Activation
 	dependencies  []ref.Ref
 	params        []config_registry.Param
-	i18nProviders []i18n.Provider
+	i18nProviders []i18n.MessageProvider
 	errors        ref.Map[error]
 	fxOptions     []fx.Option
 	commands      []plugin.Command
@@ -73,7 +73,7 @@ func NewPlugin[Deps any](rf ref.Ref, options ...Option[Deps]) plugin.Plugin {
 		b.dependencies,
 		params,
 		b.errors,
-		i18n.Providers(b.i18nProviders...),
+		i18n.MessageProviders(b.i18nProviders...),
 		b.commands,
 		fx.Options(b.fxOptions...),
 	)
@@ -151,12 +151,12 @@ func WithConfig[Deps any, T any](ref ref.Ref, p param.Param[T]) Option[Deps] {
 }
 
 func WithI18nMessage[Deps any](ref ref.Ref, description string, options ...i18n.MessageOption) Option[Deps] {
-	return WithI18nProvider[Deps](i18n.NewProvider(
+	return WithI18nProvider[Deps](i18n.NewMessageProvider(
 		i18n.NewMessage(ref.String(), description, options...),
 	))
 }
 
-func WithI18nProvider[Deps any](provider i18n.Provider) Option[Deps] {
+func WithI18nProvider[Deps any](provider i18n.MessageProvider) Option[Deps] {
 	return func(builder *builder[Deps]) {
 		builder.i18nProviders = append(builder.i18nProviders, provider)
 	}

@@ -26,7 +26,7 @@ func GenPluginFile(s spec.FileInfo) *jen.File {
 }
 
 func genPluginService(s spec.ServiceInfo) *jen.Statement {
-	serviceVar := strcase.ToLowerCamel(s.GoName)
+	serviceVar := strcase.ToLowerCamel(s.GoName) + "Service"
 
 	st := jen.Const().Id(s.GoName + "PluginAPIVersion").Op("=").Lit(s.Version).Line().
 		Comment("//go:wasmexport " + strcase.ToSnake(s.GoName) + "_api_version").Line().

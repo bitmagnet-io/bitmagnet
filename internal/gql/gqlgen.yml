@@ -203,6 +203,9 @@ models:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/ref.Ref
       - github.com/bitmagnet-io/bitmagnet/internal/ref.Nullable
+  ConfigParam:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/config.Param
   RegisterInput:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/auth/user.RegisterRequest

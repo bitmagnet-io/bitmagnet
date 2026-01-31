@@ -1,5 +1,3 @@
-//go:build wasip1
-
 package indexer
 
 import (
@@ -12,6 +10,7 @@ import (
 	"sync/atomic"
 
 	"github.com/bitmagnet-io/bitmagnet/proto/api"
+	"github.com/bitmagnet-io/plugin-opensearch/config"
 	"github.com/bitmagnet-io/plugin-opensearch/shared"
 	"github.com/opensearch-project/opensearch-go/v4"
 	"github.com/opensearch-project/opensearch-go/v4/opensearchapi"
@@ -19,20 +18,18 @@ import (
 
 func New(
 	client *opensearchapi.Client,
-	indexPrefix string,
+	config config.Config,
 ) api.Indexer {
 	return &indexer{
-		client:           client,
-		indexAliasPrefix: indexPrefix,
-		indexPrefix:      fmt.Sprintf("%sv%d-", indexPrefix, templateVersion),
+		client: client,
+		config: config,
 	}
 }
 
 type indexer struct {
-	initialized      atomic.Bool
-	client           *opensearchapi.Client
-	indexPrefix      string
-	indexAliasPrefix string
+	initialized atomic.Bool
+	client      *opensearchapi.Client
+	config      config.Config
 }
 
 type indexID struct {
@@ -86,7 +83,7 @@ func (i *indexer) Index(ctx context.Context, payload *api.IndexPayload) (*api.Em
 		for _, c := range content {
 			rawLines = append(rawLines,
 				actionUpdate{Update: indexID{
-					Index: i.indexPrefix + string(shared.RecordContent),
+					Index: i.config.FullIndexPrefix() + string(shared.RecordContent),
 					ID:    c.GetRef().String(),
 				}},
 				map[string]any{
@@ -102,7 +99,7 @@ func (i *indexer) Index(ctx context.Context, payload *api.IndexPayload) (*api.Em
 	if len(torrentContent) > 0 {
 		for _, tc := range torrentContent {
 			action := actionUpdate{Update: indexID{
-				Index: i.indexPrefix + string(shared.RecordTorrent),
+				Index: i.config.FullIndexPrefix() + string(shared.RecordTorrent),
 				ID:    tc.GetId(),
 			}}
 			rawLines = append(rawLines,
@@ -133,7 +130,10 @@ func (i *indexer) Index(ctx context.Context, payload *api.IndexPayload) (*api.Em
 		for _, item := range res.Items {
 			for _, resp := range item {
 				if resp.Error != nil {
-					errs = append(errs, fmt.Errorf("indexing error for ID %s: %s", resp.ID, resp.Error.Reason))
+					errs = append(
+						errs,
+						fmt.Errorf("indexing error for ID %s: %s", resp.ID, resp.Error.Reason),
+					)
 				}
 			}
 		}

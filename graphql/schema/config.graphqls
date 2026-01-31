@@ -1,12 +1,11 @@
 type ConfigQuery {
-  params: [ConfigParam!]! @auth(object: "config", action: "read")
+  params: [ConfigParam!]!
   pending: Boolean!
 }
 
 type ConfigParam {
   ref: Ref!
   plugin: Ref!
-  description: String
   value: JSON!
   source: String!
   default: JSON!

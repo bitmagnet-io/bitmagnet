@@ -16,6 +16,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/bitmagnet-io/bitmagnet/internal/auth/rbac"
 	"github.com/bitmagnet-io/bitmagnet/internal/auth/user"
+	"github.com/bitmagnet-io/bitmagnet/internal/config"
 	search1 "github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
@@ -116,15 +117,19 @@ type ComplexityRoot struct {
 	}
 
 	ConfigParam struct {
-		Default     func(childComplexity int) int
+		Default    func(childComplexity int) int
+		Dynamic    func(childComplexity int) int
+		JSONSchema func(childComplexity int) int
+		Pending    func(childComplexity int) int
+		Plugin     func(childComplexity int) int
+		Ref        func(childComplexity int) int
+		Source     func(childComplexity int) int
+		Value      func(childComplexity int) int
+	}
+
+	ConfigParamLocalizedContent struct {
 		Description func(childComplexity int) int
-		Dynamic     func(childComplexity int) int
-		JSONSchema  func(childComplexity int) int
-		Pending     func(childComplexity int) int
-		Plugin      func(childComplexity int) int
 		Ref         func(childComplexity int) int
-		Source      func(childComplexity int) int
-		Value       func(childComplexity int) int
 	}
 
 	ConfigQuery struct {
@@ -281,11 +286,16 @@ type ComplexityRoot struct {
 	}
 
 	PluginInfo struct {
-		DependsOn   func(childComplexity int) int
-		Description func(childComplexity int) int
-		Enabled     func(childComplexity int) int
-		Ref         func(childComplexity int) int
-		RequiredBy  func(childComplexity int) int
+		DependsOn        func(childComplexity int) int
+		Enabled          func(childComplexity int) int
+		LocalizedContent func(childComplexity int) int
+		Ref              func(childComplexity int) int
+		RequiredBy       func(childComplexity int) int
+	}
+
+	PluginLocalizedContent struct {
+		ConfigParams func(childComplexity int) int
+		Description  func(childComplexity int) int
 	}
 
 	PluginQuery struct {
@@ -898,13 +908,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ConfigParam.Default(childComplexity), true
 
-	case "ConfigParam.description":
-		if e.complexity.ConfigParam.Description == nil {
-			break
-		}
-
-		return e.complexity.ConfigParam.Description(childComplexity), true
-
 	case "ConfigParam.dynamic":
 		if e.complexity.ConfigParam.Dynamic == nil {
 			break
@@ -953,6 +956,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ConfigParam.Value(childComplexity), true
+
+	case "ConfigParamLocalizedContent.description":
+		if e.complexity.ConfigParamLocalizedContent.Description == nil {
+			break
+		}
+
+		return e.complexity.ConfigParamLocalizedContent.Description(childComplexity), true
+
+	case "ConfigParamLocalizedContent.ref":
+		if e.complexity.ConfigParamLocalizedContent.Ref == nil {
+			break
+		}
+
+		return e.complexity.ConfigParamLocalizedContent.Ref(childComplexity), true
 
 	case "ConfigQuery.params":
 		if e.complexity.ConfigQuery.Params == nil {
@@ -1591,19 +1608,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PluginInfo.DependsOn(childComplexity), true
 
-	case "PluginInfo.description":
-		if e.complexity.PluginInfo.Description == nil {
-			break
-		}
-
-		return e.complexity.PluginInfo.Description(childComplexity), true
-
 	case "PluginInfo.enabled":
 		if e.complexity.PluginInfo.Enabled == nil {
 			break
 		}
 
 		return e.complexity.PluginInfo.Enabled(childComplexity), true
+
+	case "PluginInfo.localizedContent":
+		if e.complexity.PluginInfo.LocalizedContent == nil {
+			break
+		}
+
+		return e.complexity.PluginInfo.LocalizedContent(childComplexity), true
 
 	case "PluginInfo.ref":
 		if e.complexity.PluginInfo.Ref == nil {
@@ -1618,6 +1635,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PluginInfo.RequiredBy(childComplexity), true
+
+	case "PluginLocalizedContent.configParams":
+		if e.complexity.PluginLocalizedContent.ConfigParams == nil {
+			break
+		}
+
+		return e.complexity.PluginLocalizedContent.ConfigParams(childComplexity), true
+
+	case "PluginLocalizedContent.description":
+		if e.complexity.PluginLocalizedContent.Description == nil {
+			break
+		}
+
+		return e.complexity.PluginLocalizedContent.Description(childComplexity), true
 
 	case "PluginQuery.list":
 		if e.complexity.PluginQuery.List == nil {
@@ -3187,14 +3218,13 @@ type Invitation {
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/config.graphqls", Input: `type ConfigQuery {
-  params: [ConfigParam!]! @auth(object: "config", action: "read")
+  params: [ConfigParam!]!
   pending: Boolean!
 }
 
 type ConfigParam {
   ref: Ref!
   plugin: Ref!
-  description: String
   value: JSON!
   source: String!
   default: JSON!
@@ -3673,10 +3703,20 @@ type ContentCollection {
 
 type PluginInfo {
   ref: Ref!
-  description: String
   enabled: Boolean!
   dependsOn: [Ref!]!
   requiredBy: [Ref!]!
+  localizedContent: PluginLocalizedContent!
+}
+
+type PluginLocalizedContent {
+  description: String
+  configParams: [ConfigParamLocalizedContent!]!
+}
+
+type ConfigParamLocalizedContent {
+  ref: Ref!
+  description: String!
 }
 `, BuiltIn: false},
 	{Name: "../../graphql/schema/query.graphqls", Input: `type Query {
@@ -6519,7 +6559,7 @@ func (ec *executionContext) _ConfigMutation_save(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Save(ctx, fc.Args["ref"].(ref.Ref), fc.Args["value"].(json_schema.JSONValue))
+		return obj.Save(fc.Args["ref"].(ref.Ref), fc.Args["value"].(json_schema.JSONValue))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6531,9 +6571,9 @@ func (ec *executionContext) _ConfigMutation_save(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*gen.ConfigParam)
+	res := resTmp.(config.Param)
 	fc.Result = res
-	return ec.marshalNConfigParam2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐConfigParam(ctx, field.Selections, res)
+	return ec.marshalNConfigParam2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚐParam(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ConfigMutation_save(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6548,8 +6588,6 @@ func (ec *executionContext) fieldContext_ConfigMutation_save(ctx context.Context
 				return ec.fieldContext_ConfigParam_ref(ctx, field)
 			case "plugin":
 				return ec.fieldContext_ConfigParam_plugin(ctx, field)
-			case "description":
-				return ec.fieldContext_ConfigParam_description(ctx, field)
 			case "value":
 				return ec.fieldContext_ConfigParam_value(ctx, field)
 			case "source":
@@ -6594,7 +6632,7 @@ func (ec *executionContext) _ConfigMutation_delete(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Delete(ctx, fc.Args["ref"].(ref.Ref))
+		return obj.Delete(fc.Args["ref"].(ref.Ref))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6606,9 +6644,9 @@ func (ec *executionContext) _ConfigMutation_delete(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*gen.ConfigParam)
+	res := resTmp.(config.Param)
 	fc.Result = res
-	return ec.marshalNConfigParam2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐConfigParam(ctx, field.Selections, res)
+	return ec.marshalNConfigParam2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚐParam(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ConfigMutation_delete(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6623,8 +6661,6 @@ func (ec *executionContext) fieldContext_ConfigMutation_delete(ctx context.Conte
 				return ec.fieldContext_ConfigParam_ref(ctx, field)
 			case "plugin":
 				return ec.fieldContext_ConfigParam_plugin(ctx, field)
-			case "description":
-				return ec.fieldContext_ConfigParam_description(ctx, field)
 			case "value":
 				return ec.fieldContext_ConfigParam_value(ctx, field)
 			case "source":
@@ -6655,7 +6691,7 @@ func (ec *executionContext) fieldContext_ConfigMutation_delete(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _ConfigParam_ref(ctx context.Context, field graphql.CollectedField, obj *gen.ConfigParam) (ret graphql.Marshaler) {
+func (ec *executionContext) _ConfigParam_ref(ctx context.Context, field graphql.CollectedField, obj *config.Param) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ConfigParam_ref(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -6699,7 +6735,7 @@ func (ec *executionContext) fieldContext_ConfigParam_ref(_ context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _ConfigParam_plugin(ctx context.Context, field graphql.CollectedField, obj *gen.ConfigParam) (ret graphql.Marshaler) {
+func (ec *executionContext) _ConfigParam_plugin(ctx context.Context, field graphql.CollectedField, obj *config.Param) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ConfigParam_plugin(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -6743,48 +6779,7 @@ func (ec *executionContext) fieldContext_ConfigParam_plugin(_ context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _ConfigParam_description(ctx context.Context, field graphql.CollectedField, obj *gen.ConfigParam) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ConfigParam_description(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Description, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_ConfigParam_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ConfigParam",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _ConfigParam_value(ctx context.Context, field graphql.CollectedField, obj *gen.ConfigParam) (ret graphql.Marshaler) {
+func (ec *executionContext) _ConfigParam_value(ctx context.Context, field graphql.CollectedField, obj *config.Param) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ConfigParam_value(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -6828,7 +6823,7 @@ func (ec *executionContext) fieldContext_ConfigParam_value(_ context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _ConfigParam_source(ctx context.Context, field graphql.CollectedField, obj *gen.ConfigParam) (ret graphql.Marshaler) {
+func (ec *executionContext) _ConfigParam_source(ctx context.Context, field graphql.CollectedField, obj *config.Param) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ConfigParam_source(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -6872,7 +6867,7 @@ func (ec *executionContext) fieldContext_ConfigParam_source(_ context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _ConfigParam_default(ctx context.Context, field graphql.CollectedField, obj *gen.ConfigParam) (ret graphql.Marshaler) {
+func (ec *executionContext) _ConfigParam_default(ctx context.Context, field graphql.CollectedField, obj *config.Param) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ConfigParam_default(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -6916,7 +6911,7 @@ func (ec *executionContext) fieldContext_ConfigParam_default(_ context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _ConfigParam_dynamic(ctx context.Context, field graphql.CollectedField, obj *gen.ConfigParam) (ret graphql.Marshaler) {
+func (ec *executionContext) _ConfigParam_dynamic(ctx context.Context, field graphql.CollectedField, obj *config.Param) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ConfigParam_dynamic(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -6960,7 +6955,7 @@ func (ec *executionContext) fieldContext_ConfigParam_dynamic(_ context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _ConfigParam_pending(ctx context.Context, field graphql.CollectedField, obj *gen.ConfigParam) (ret graphql.Marshaler) {
+func (ec *executionContext) _ConfigParam_pending(ctx context.Context, field graphql.CollectedField, obj *config.Param) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ConfigParam_pending(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -7004,7 +6999,7 @@ func (ec *executionContext) fieldContext_ConfigParam_pending(_ context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _ConfigParam_jsonSchema(ctx context.Context, field graphql.CollectedField, obj *gen.ConfigParam) (ret graphql.Marshaler) {
+func (ec *executionContext) _ConfigParam_jsonSchema(ctx context.Context, field graphql.CollectedField, obj *config.Param) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ConfigParam_jsonSchema(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -7048,6 +7043,94 @@ func (ec *executionContext) fieldContext_ConfigParam_jsonSchema(_ context.Contex
 	return fc, nil
 }
 
+func (ec *executionContext) _ConfigParamLocalizedContent_ref(ctx context.Context, field graphql.CollectedField, obj *gen.ConfigParamLocalizedContent) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ConfigParamLocalizedContent_ref(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Ref, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ref.Ref)
+	fc.Result = res
+	return ec.marshalNRef2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋrefᚐRef(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ConfigParamLocalizedContent_ref(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ConfigParamLocalizedContent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Ref does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ConfigParamLocalizedContent_description(ctx context.Context, field graphql.CollectedField, obj *gen.ConfigParamLocalizedContent) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ConfigParamLocalizedContent_description(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ConfigParamLocalizedContent_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ConfigParamLocalizedContent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ConfigQuery_params(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.ConfigQuery) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ConfigQuery_params(ctx, field)
 	if err != nil {
@@ -7061,40 +7144,8 @@ func (ec *executionContext) _ConfigQuery_params(ctx context.Context, field graph
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		directive0 := func(rctx context.Context) (any, error) {
-			ctx = rctx // use context from middleware stack in children
-			return obj.Params(ctx), nil
-		}
-
-		directive1 := func(ctx context.Context) (any, error) {
-			object, err := ec.unmarshalNString2string(ctx, "config")
-			if err != nil {
-				var zeroVal []gen.ConfigParam
-				return zeroVal, err
-			}
-			action, err := ec.unmarshalNString2string(ctx, "read")
-			if err != nil {
-				var zeroVal []gen.ConfigParam
-				return zeroVal, err
-			}
-			if ec.directives.Auth == nil {
-				var zeroVal []gen.ConfigParam
-				return zeroVal, errors.New("directive auth is not implemented")
-			}
-			return ec.directives.Auth(ctx, obj, directive0, object, action)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.([]gen.ConfigParam); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen.ConfigParam`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return obj.Params(), nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7106,9 +7157,9 @@ func (ec *executionContext) _ConfigQuery_params(ctx context.Context, field graph
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]gen.ConfigParam)
+	res := resTmp.([]config.Param)
 	fc.Result = res
-	return ec.marshalNConfigParam2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐConfigParamᚄ(ctx, field.Selections, res)
+	return ec.marshalNConfigParam2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚐParamᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ConfigQuery_params(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7123,8 +7174,6 @@ func (ec *executionContext) fieldContext_ConfigQuery_params(_ context.Context, f
 				return ec.fieldContext_ConfigParam_ref(ctx, field)
 			case "plugin":
 				return ec.fieldContext_ConfigParam_plugin(ctx, field)
-			case "description":
-				return ec.fieldContext_ConfigParam_description(ctx, field)
 			case "value":
 				return ec.fieldContext_ConfigParam_value(ctx, field)
 			case "source":
@@ -11541,47 +11590,6 @@ func (ec *executionContext) fieldContext_PluginInfo_ref(_ context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _PluginInfo_description(ctx context.Context, field graphql.CollectedField, obj *gen.PluginInfo) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_PluginInfo_description(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Description, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_PluginInfo_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PluginInfo",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _PluginInfo_enabled(ctx context.Context, field graphql.CollectedField, obj *gen.PluginInfo) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PluginInfo_enabled(ctx, field)
 	if err != nil {
@@ -11714,6 +11722,147 @@ func (ec *executionContext) fieldContext_PluginInfo_requiredBy(_ context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _PluginInfo_localizedContent(ctx context.Context, field graphql.CollectedField, obj *gen.PluginInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PluginInfo_localizedContent(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LocalizedContent, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(gen.PluginLocalizedContent)
+	fc.Result = res
+	return ec.marshalNPluginLocalizedContent2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐPluginLocalizedContent(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PluginInfo_localizedContent(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PluginInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "description":
+				return ec.fieldContext_PluginLocalizedContent_description(ctx, field)
+			case "configParams":
+				return ec.fieldContext_PluginLocalizedContent_configParams(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PluginLocalizedContent", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PluginLocalizedContent_description(ctx context.Context, field graphql.CollectedField, obj *gen.PluginLocalizedContent) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PluginLocalizedContent_description(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PluginLocalizedContent_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PluginLocalizedContent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PluginLocalizedContent_configParams(ctx context.Context, field graphql.CollectedField, obj *gen.PluginLocalizedContent) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PluginLocalizedContent_configParams(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ConfigParams, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]gen.ConfigParamLocalizedContent)
+	fc.Result = res
+	return ec.marshalNConfigParamLocalizedContent2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐConfigParamLocalizedContentᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PluginLocalizedContent_configParams(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PluginLocalizedContent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "ref":
+				return ec.fieldContext_ConfigParamLocalizedContent_ref(ctx, field)
+			case "description":
+				return ec.fieldContext_ConfigParamLocalizedContent_description(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ConfigParamLocalizedContent", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PluginQuery_list(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.PluginQuery) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PluginQuery_list(ctx, field)
 	if err != nil {
@@ -11728,7 +11877,7 @@ func (ec *executionContext) _PluginQuery_list(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.List(ctx), nil
+		return obj.List(ctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11755,14 +11904,14 @@ func (ec *executionContext) fieldContext_PluginQuery_list(_ context.Context, fie
 			switch field.Name {
 			case "ref":
 				return ec.fieldContext_PluginInfo_ref(ctx, field)
-			case "description":
-				return ec.fieldContext_PluginInfo_description(ctx, field)
 			case "enabled":
 				return ec.fieldContext_PluginInfo_enabled(ctx, field)
 			case "dependsOn":
 				return ec.fieldContext_PluginInfo_dependsOn(ctx, field)
 			case "requiredBy":
 				return ec.fieldContext_PluginInfo_requiredBy(ctx, field)
+			case "localizedContent":
+				return ec.fieldContext_PluginInfo_localizedContent(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PluginInfo", field.Name)
 		},
@@ -24226,77 +24375,15 @@ func (ec *executionContext) _ConfigMutation(ctx context.Context, sel ast.Selecti
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("ConfigMutation")
 		case "save":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._ConfigMutation_save(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+			out.Values[i] = ec._ConfigMutation_save(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "delete":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._ConfigMutation_delete(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+			out.Values[i] = ec._ConfigMutation_delete(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -24322,7 +24409,7 @@ func (ec *executionContext) _ConfigMutation(ctx context.Context, sel ast.Selecti
 
 var configParamImplementors = []string{"ConfigParam"}
 
-func (ec *executionContext) _ConfigParam(ctx context.Context, sel ast.SelectionSet, obj *gen.ConfigParam) graphql.Marshaler {
+func (ec *executionContext) _ConfigParam(ctx context.Context, sel ast.SelectionSet, obj *config.Param) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, configParamImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -24341,8 +24428,6 @@ func (ec *executionContext) _ConfigParam(ctx context.Context, sel ast.SelectionS
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "description":
-			out.Values[i] = ec._ConfigParam_description(ctx, field, obj)
 		case "value":
 			out.Values[i] = ec._ConfigParam_value(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -24396,6 +24481,50 @@ func (ec *executionContext) _ConfigParam(ctx context.Context, sel ast.SelectionS
 	return out
 }
 
+var configParamLocalizedContentImplementors = []string{"ConfigParamLocalizedContent"}
+
+func (ec *executionContext) _ConfigParamLocalizedContent(ctx context.Context, sel ast.SelectionSet, obj *gen.ConfigParamLocalizedContent) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, configParamLocalizedContentImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ConfigParamLocalizedContent")
+		case "ref":
+			out.Values[i] = ec._ConfigParamLocalizedContent_ref(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "description":
+			out.Values[i] = ec._ConfigParamLocalizedContent_description(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var configQueryImplementors = []string{"ConfigQuery"}
 
 func (ec *executionContext) _ConfigQuery(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.ConfigQuery) graphql.Marshaler {
@@ -24408,45 +24537,14 @@ func (ec *executionContext) _ConfigQuery(ctx context.Context, sel ast.SelectionS
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("ConfigQuery")
 		case "params":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._ConfigQuery_params(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+			out.Values[i] = ec._ConfigQuery_params(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "pending":
 			out.Values[i] = ec._ConfigQuery_pending(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -25640,8 +25738,6 @@ func (ec *executionContext) _PluginInfo(ctx context.Context, sel ast.SelectionSe
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "description":
-			out.Values[i] = ec._PluginInfo_description(ctx, field, obj)
 		case "enabled":
 			out.Values[i] = ec._PluginInfo_enabled(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -25654,6 +25750,52 @@ func (ec *executionContext) _PluginInfo(ctx context.Context, sel ast.SelectionSe
 			}
 		case "requiredBy":
 			out.Values[i] = ec._PluginInfo_requiredBy(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "localizedContent":
+			out.Values[i] = ec._PluginInfo_localizedContent(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var pluginLocalizedContentImplementors = []string{"PluginLocalizedContent"}
+
+func (ec *executionContext) _PluginLocalizedContent(ctx context.Context, sel ast.SelectionSet, obj *gen.PluginLocalizedContent) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, pluginLocalizedContentImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PluginLocalizedContent")
+		case "description":
+			out.Values[i] = ec._PluginLocalizedContent_description(ctx, field, obj)
+		case "configParams":
+			out.Values[i] = ec._PluginLocalizedContent_configParams(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -29408,11 +29550,11 @@ func (ec *executionContext) marshalNConfigMutation2githubᚗcomᚋbitmagnetᚑio
 	return ec._ConfigMutation(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNConfigParam2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐConfigParam(ctx context.Context, sel ast.SelectionSet, v gen.ConfigParam) graphql.Marshaler {
+func (ec *executionContext) marshalNConfigParam2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚐParam(ctx context.Context, sel ast.SelectionSet, v config.Param) graphql.Marshaler {
 	return ec._ConfigParam(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNConfigParam2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐConfigParamᚄ(ctx context.Context, sel ast.SelectionSet, v []gen.ConfigParam) graphql.Marshaler {
+func (ec *executionContext) marshalNConfigParam2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚐParamᚄ(ctx context.Context, sel ast.SelectionSet, v []config.Param) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -29436,7 +29578,7 @@ func (ec *executionContext) marshalNConfigParam2ᚕgithubᚗcomᚋbitmagnetᚑio
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNConfigParam2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐConfigParam(ctx, sel, v[i])
+			ret[i] = ec.marshalNConfigParam2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋconfigᚐParam(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -29456,14 +29598,52 @@ func (ec *executionContext) marshalNConfigParam2ᚕgithubᚗcomᚋbitmagnetᚑio
 	return ret
 }
 
-func (ec *executionContext) marshalNConfigParam2ᚖgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐConfigParam(ctx context.Context, sel ast.SelectionSet, v *gen.ConfigParam) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
+func (ec *executionContext) marshalNConfigParamLocalizedContent2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐConfigParamLocalizedContent(ctx context.Context, sel ast.SelectionSet, v gen.ConfigParamLocalizedContent) graphql.Marshaler {
+	return ec._ConfigParamLocalizedContent(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNConfigParamLocalizedContent2ᚕgithubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐConfigParamLocalizedContentᚄ(ctx context.Context, sel ast.SelectionSet, v []gen.ConfigParamLocalizedContent) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
 	}
-	return ec._ConfigParam(ctx, sel, v)
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNConfigParamLocalizedContent2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐConfigParamLocalizedContent(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNConfigQuery2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐConfigQuery(ctx context.Context, sel ast.SelectionSet, v gqlmodel.ConfigQuery) graphql.Marshaler {
@@ -30178,6 +30358,10 @@ func (ec *executionContext) marshalNPluginInfo2ᚕgithubᚗcomᚋbitmagnetᚑio�
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalNPluginLocalizedContent2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚋgenᚐPluginLocalizedContent(ctx context.Context, sel ast.SelectionSet, v gen.PluginLocalizedContent) graphql.Marshaler {
+	return ec._PluginLocalizedContent(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNPluginQuery2githubᚗcomᚋbitmagnetᚑioᚋbitmagnetᚋinternalᚋgqlᚋgqlmodelᚐPluginQuery(ctx context.Context, sel ast.SelectionSet, v gqlmodel.PluginQuery) graphql.Marshaler {

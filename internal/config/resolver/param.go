@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
-	"github.com/bitmagnet-io/bitmagnet/internal/config"
+	"github.com/bitmagnet-io/bitmagnet/internal/config/lookup"
 	"github.com/bitmagnet-io/bitmagnet/internal/config/registry"
 	"gopkg.in/yaml.v3"
 )
@@ -126,17 +126,17 @@ func (p *Param) Save(value any) error {
 			return err
 		}
 
-		if p.source != config.SourceDynamic {
+		if p.source != lookup.SourceDynamic {
 			p.chain = &chain{
-				source: config.SourceDynamic,
+				source: lookup.SourceDynamic,
 				value:  chainCopy.value,
 				prev:   chainCopy,
 			}
 		}
 	} else {
-		if p.source != config.SourcePending {
+		if p.source != lookup.SourcePending {
 			p.chain = &chain{
-				source: config.SourcePending,
+				source: lookup.SourcePending,
 				prev:   chainCopy,
 			}
 		}
@@ -153,7 +153,7 @@ func (p *Param) Delete() error {
 	defer p.mtx.Unlock()
 
 	if reflected, ok := atomic.ReflectValue(reflect.ValueOf(p.value)); ok {
-		if p.source == config.SourceDynamic || p.source == config.SourcePersisted {
+		if p.source == lookup.SourceDynamic || p.source == lookup.SourcePersisted {
 			prev := p.prev
 
 			err := reflected.SetAny(prev.initialValue)
@@ -164,8 +164,8 @@ func (p *Param) Delete() error {
 			p.chain = prev
 		}
 	} else {
-		if p.source == config.SourcePending || p.source == config.SourcePersisted {
-			p.pending = p.source == config.SourcePersisted
+		if p.source == lookup.SourcePending || p.source == lookup.SourcePersisted {
+			p.pending = p.source == lookup.SourcePersisted
 			p.chain = p.prev
 		}
 	}

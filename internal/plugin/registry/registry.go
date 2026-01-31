@@ -3,6 +3,7 @@ package registry
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/cmd"
 	config_resolver "github.com/bitmagnet-io/bitmagnet/internal/config/resolver"
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
 	"github.com/bitmagnet-io/bitmagnet/internal/slice"
 	"github.com/bitmagnet-io/bitmagnet/pkg/plugin"
 	"go.uber.org/fx"
@@ -11,16 +12,16 @@ import (
 type (
 	Registry struct {
 		config
-		pluginInfos []plugin.Info
-		commands    []plugin.Command
-		fxOption    fx.Option
+		instances ref.Map[plugin.Instance]
+		commands  []plugin.Command
+		fxOption  fx.Option
 	}
 
 	config = config_resolver.Resolved
 )
 
-func (r *Registry) PluginInfos() []plugin.Info {
-	return append([]plugin.Info(nil), r.pluginInfos...)
+func (r *Registry) Instances() ref.Map[plugin.Instance] {
+	return r.instances.Clone()
 }
 
 func (r *Registry) Commands() []cmd.Command {

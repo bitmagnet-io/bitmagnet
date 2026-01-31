@@ -4,8 +4,18 @@ type PluginQuery {
 
 type PluginInfo {
   ref: Ref!
-  description: String
   enabled: Boolean!
   dependsOn: [Ref!]!
   requiredBy: [Ref!]!
+  localizedContent: PluginLocalizedContent!
+}
+
+type PluginLocalizedContent {
+  description: String
+  configParams: [ConfigParamLocalizedContent!]!
+}
+
+type ConfigParamLocalizedContent {
+  ref: Ref!
+  description: String!
 }

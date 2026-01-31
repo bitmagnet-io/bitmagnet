@@ -10,6 +10,7 @@ $SCRIPT_DIR/gen_protoc.sh \
   -I="$DIR" \
   "$DIR/common/http/http.proto" \
   "$DIR/common/model/model.proto" \
+  "$DIR/common/plugin/plugin.proto" \
   "$DIR/common/search/search.proto" \
   "$DIR/api/api.proto" \
   "$DIR/host/configurator/configurator.proto" \

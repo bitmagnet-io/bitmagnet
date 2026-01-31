@@ -1,5 +1,3 @@
-//go:build wasip1
-
 package search
 
 import (
@@ -32,10 +30,6 @@ func (agg customAgg) Name() string {
 func (agg customAgg) Map() map[string]interface{} {
 	return agg.body
 }
-
-// var facetFields = map[string]string{
-// 	"content_type": "contentType",
-// }
 
 type responseBucket struct {
 	Key      string `json:"key"`

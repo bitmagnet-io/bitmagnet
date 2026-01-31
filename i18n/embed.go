@@ -3,13 +3,13 @@ package i18n
 import (
 	"embed"
 
-	"github.com/bitmagnet-io/bitmagnet/pkg/fs"
+	"github.com/bitmagnet-io/bitmagnet/pkg/i18n"
 	"github.com/spf13/afero"
 )
 
 var (
-	//go:embed *.yaml
+	//go:embed *.yml
 	embedFS embed.FS
 
-	FS fs.FS = afero.Afero{Fs: afero.FromIOFS{FS: embedFS}}
+	Bundle = i18n.MustNewBundle(afero.Afero{Fs: afero.FromIOFS{FS: embedFS}})
 )

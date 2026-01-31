@@ -1,5 +1,3 @@
-//go:build wasip1
-
 package target
 
 import (
@@ -51,7 +49,7 @@ func (t *target) getCategories(ctx context.Context) ([]string, error) {
 	return slices.Sorted(maps.Keys(categoriesMap)), nil
 }
 
-func (t *target) UISchema(ctx context.Context, params *api.SendTorrentsUISchemaParams) (*api.JSONPayload, error) {
+func (t *target) UISchema(ctx context.Context, params *api.LocalizeParams) (*api.JSONPayload, error) {
 	schemaBytes, err := json.Marshal(newUISchema(params.AcceptLanguage))
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal UI schema: %w", err)
