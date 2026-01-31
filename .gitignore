@@ -9,6 +9,7 @@
 dump.rdb
 .jekyll-cache
 .sass-cache
+*.wasm
 
 # Node
 /webui/node_modules
