@@ -16,7 +16,7 @@ export const emptyResult: generated.TorrentContentSearchResult = {
   items: [],
   totalCount: 0,
   totalCountIsEstimate: false,
-  aggregations: {},
+  facets: [],
 };
 
 type BudgetedCount = {
@@ -24,10 +24,8 @@ type BudgetedCount = {
   isEstimate: boolean;
 };
 
-export class TorrentsSearchDatasource
-  implements DataSource<generated.TorrentContent>
-{
-  private input: generated.TorrentContentSearchQueryInput;
+export class TorrentsSearchDatasource implements DataSource<generated.TorrentContent> {
+  private input: generated.SearchInput;
 
   private currentRequest = new BehaviorSubject(0);
   private currentSubscription?: Subscription;
@@ -46,9 +44,12 @@ export class TorrentsSearchDatasource
     map((result) => {
       let overallTotalCount = 0;
       let overallIsEstimate = false;
-      for (const ct of result.aggregations.contentType ?? []) {
-        overallTotalCount += ct.count;
-        overallIsEstimate = overallIsEstimate || ct.isEstimate;
+      const ctFacet = result.facets.find((f) => f.key === "content_type");
+      if (ctFacet) {
+        for (const item of ctFacet.items) {
+          overallTotalCount += item.count;
+          overallIsEstimate = overallIsEstimate || item.isEstimate;
+        }
       }
       return {
         count: overallTotalCount,
@@ -63,9 +64,11 @@ export class TorrentsSearchDatasource
           Array.from(
             new Set([
               ...acc,
-              ...(next.aggregations.contentType ?? []).flatMap((agg) =>
-                agg.value ? [agg.value] : [],
-              ),
+              ...next.facets
+                .filter((f) => f.key === "content_type")
+                .flatMap((f) =>
+                  f.items.map((i) => i.value as generated.ContentType),
+                ),
             ]),
           ),
         [],
@@ -76,8 +79,10 @@ export class TorrentsSearchDatasource
     this.resultSubject.pipe(
       map((result) =>
         Object.fromEntries<BudgetedCount>(
-          (result.aggregations.contentType ?? []).map((ct) => [
-            ct.value as string,
+          (
+            result.facets.find((f) => f.key === "content_type")?.items ?? []
+          ).map((ct) => [
+            ct.value,
             {
               count: ct.count,
               isEstimate: ct.isEstimate,
@@ -144,7 +149,7 @@ export class TorrentsSearchDatasource
         variables,
         fetchPolicy: "no-cache",
       })
-      .pipe(map((r) => r.data.torrentContent.search))
+      .pipe(map((r) => r.data!.torrent.searchTorrentContent))
       .pipe(
         catchError((err: Error) => {
           this.errorsService.addError(

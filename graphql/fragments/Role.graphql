@@ -1,0 +1,9 @@
+#import "./Permission"
+
+fragment Role on Role {
+  name
+  core
+  permissions {
+    ...Permission
+  }
+}

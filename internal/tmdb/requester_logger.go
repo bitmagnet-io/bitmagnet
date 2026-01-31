@@ -9,7 +9,7 @@ import (
 
 type requesterLogger struct {
 	requester Requester
-	logger    *zap.SugaredLogger
+	logger    *zap.Logger
 }
 
 func (r requesterLogger) Request(
@@ -19,17 +19,21 @@ func (r requesterLogger) Request(
 	result any,
 ) (*resty.Response, error) {
 	res, err := r.requester.Request(ctx, path, queryParams, result)
-	kvs := []interface{}{"path", path, "queryParams", queryParams}
+
+	fields := []zap.Field{
+		zap.String("path", path),
+		zap.Any("params", queryParams),
+	}
 
 	if res != nil {
-		kvs = append(kvs, "status", res.Status(), "trace", res.Request.TraceInfo())
+		fields = append(fields, zap.String("status", res.Status()), zap.Any("trace", res.Request.TraceInfo()))
 	}
 
 	if err == nil {
-		r.logger.Debugw("request succeeded", kvs...)
+		r.logger.Debug("request succeeded", fields...)
 	} else {
-		kvs = append(kvs, "error", err)
-		r.logger.Errorw("request failed", kvs...)
+		fields = append(fields, zap.Error(err))
+		r.logger.Error("request failed", fields...)
 	}
 
 	return res, err

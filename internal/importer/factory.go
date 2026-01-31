@@ -3,33 +3,19 @@ package importer
 import (
 	"time"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
-	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
-	"go.uber.org/fx"
+	"github.com/bitmagnet-io/bitmagnet/internal/database"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor"
+	"github.com/bitmagnet-io/bitmagnet/internal/queue"
 )
 
-type Params struct {
-	fx.In
-	Dao lazy.Lazy[*dao.Query]
-}
-
-type Result struct {
-	fx.Out
-	Importer lazy.Lazy[Importer]
-}
-
-func New(p Params) Result {
-	return Result{
-		Importer: lazy.New(func() (Importer, error) {
-			d, err := p.Dao.Get()
-			if err != nil {
-				return nil, err
-			}
-			return importer{
-				dao:         d,
-				bufferSize:  100,
-				maxWaitTime: 500 * time.Millisecond,
-			}, nil
-		}),
+func New(
+	daoProvider database.DaoTransactionProvider,
+	queueJobProvider queue.JobProvider[processor.MessageParams],
+) Importer {
+	return importer{
+		daoProvider:      daoProvider,
+		bufferSize:       100,
+		maxWaitTime:      time.Second,
+		queueJobProvider: queueJobProvider,
 	}
 }

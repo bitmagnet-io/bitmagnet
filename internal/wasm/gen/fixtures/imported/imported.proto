@@ -1,0 +1,28 @@
+syntax = "proto3";
+package imported;
+option go_package = "github.com/bitmagnet-io/bitmagnet/internal/wasm/gen/fixtures/imported;imported";
+
+enum Method {
+  get = 0;
+  post = 1;
+  put = 3;
+  delete = 4;
+  patch = 5;
+  head = 6;
+  options = 7;
+}
+
+message Request {
+  Method method = 1;
+  string url = 2;
+  optional string optionalString = 3;
+  map<string, string> headers = 4;
+  bytes body = 5;
+}
+
+message Response {
+  int32 status = 1;
+  bytes body = 2;
+  map<string, string> headers = 3;
+  // string error = 4;
+}

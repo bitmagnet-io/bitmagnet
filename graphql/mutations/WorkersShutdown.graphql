@@ -1,0 +1,11 @@
+#import "../fragments/Worker"
+
+mutation WorkersShutdown($refs: [Ref!]!) {
+  worker {
+    shutdown(refs: $refs) {
+      workers {
+        ...Worker
+      }
+    }
+  }
+}

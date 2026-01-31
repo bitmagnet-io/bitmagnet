@@ -1,0 +1,9 @@
+#import "./TorrentFile"
+
+fragment TorrentFilesSearchResult on TorrentFilesSearchResult {
+  items {
+    ...TorrentFile
+  }
+  totalCount
+  hasNextPage
+}

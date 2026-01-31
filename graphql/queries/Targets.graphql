@@ -1,0 +1,10 @@
+#import "../fragments/Target.graphql"
+
+query Targets {
+  target {
+    default
+    targets {
+      ...Target
+    }
+  }
+}

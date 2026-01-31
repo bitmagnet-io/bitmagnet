@@ -1,32 +1,11 @@
 {
-  "content_types": {
-    "plural": {
-      "all": "Tous",
-      "audiobook": "Livres audio",
-      "comic": "Bandes dessinées",
-      "ebook": "E-livres",
-      "game": "Jeux",
-      "movie": "Films",
-      "music": "Musique",
-      "null": "Inconnu",
-      "software": "Logiciels",
-      "tv_show": "Séries TV",
-      "xxx": "XXX"
-    },
-    "singular": {
-      "audiobook": "Livre audio",
-      "comic": "Bande dessinée",
-      "ebook": "E-livre",
-      "game": "Jeu",
-      "movie": "Film",
-      "music": "Musique",
-      "null": "Inconnu",
-      "software": "Logiciel",
-      "tv_show": "Série TV",
-      "xxx": "XXX"
-    }
+  "account": {
+    "account": "__missing__",
+    "api_key_created": "__missing__",
+    "api_key_take_note": "__missing__",
+    "new_api_key": "__missing__"
   },
-  "dashboard": {
+  "admin": {
     "event": {
       "created": "Créé",
       "failed": "Échoué",
@@ -84,6 +63,55 @@
       "total_counts_by_status": "Totaux par statut"
     }
   },
+  "auth": {
+    "claimed_by": "__missing__",
+    "confirm_password": "__missing__",
+    "created_by": "__missing__",
+    "expires_at": "__missing__",
+    "expiry": "__missing__",
+    "invitation_code": "__missing__",
+    "last_login_at": "__missing__",
+    "login": "__missing__",
+    "login_failed": "__missing__",
+    "logout": "__missing__",
+    "new_invitation": "__missing__",
+    "new_role": "__missing__",
+    "password": "__missing__",
+    "password_has_insufficient_entropy": "__missing__",
+    "passwords_do_not_match": "__missing__",
+    "register": "__missing__",
+    "register_failed": "__missing__",
+    "role": "__missing__",
+    "unclaimed": "__missing__",
+    "username": "__missing__"
+  },
+  "content_types": {
+    "plural": {
+      "all": "Tous",
+      "audiobook": "Livres audio",
+      "comic": "Bandes dessinées",
+      "ebook": "E-livres",
+      "game": "Jeux",
+      "movie": "Films",
+      "music": "Musique",
+      "null": "Inconnu",
+      "software": "Logiciels",
+      "tv_show": "Séries TV",
+      "xxx": "XXX"
+    },
+    "singular": {
+      "audiobook": "Livre audio",
+      "comic": "Bande dessinée",
+      "ebook": "E-livre",
+      "game": "Jeu",
+      "movie": "Film",
+      "music": "Musique",
+      "null": "Inconnu",
+      "software": "Logiciel",
+      "tv_show": "Série TV",
+      "xxx": "XXX"
+    }
+  },
   "facets": {
     "content_type": "Type de contenu",
     "file_type": "Type de fichier",
@@ -108,13 +136,26 @@
     "video": "Vidéo"
   },
   "general": {
+    "actions": "__missing__",
     "all": "Tous",
+    "cancel": "__missing__",
+    "code": "__missing__",
+    "confirm": "__missing__",
+    "copy_to_clipboard": "__missing__",
+    "created_at": "__missing__",
+    "delete": "__missing__",
     "dismiss": "Fermer",
+    "email": "__missing__",
     "error": "Erreur",
+    "index": "__missing__",
+    "name": "__missing__",
+    "never": "__missing__",
     "none": "Aucun",
     "page_not_found": "Page non trouvée",
     "refresh": "Rafraîchir",
-    "status": "Statut"
+    "save": "__missing__",
+    "status": "Statut",
+    "system": "__missing__"
   },
   "health": {
     "bitmagnet_is_status": "bitmagnet est {{status}}",
@@ -228,13 +269,19 @@
     "x_to_y_of_z": "{{x}} à {{y}} sur {{z}}"
   },
   "routes": {
+    "account": "__missing__",
     "admin": "Admin",
-    "dashboard": "Tableau de bord",
+    "api_keys": "__missing__",
+    "config": "__missing__",
     "home": "Accueil",
+    "invitations": "__missing__",
     "jobs": "Tâches",
     "queues": "Files d'attente",
+    "roles": "__missing__",
     "torrents": "Torrents",
-    "visualize": "Visualiser"
+    "users": "__missing__",
+    "visualize": "Visualiser",
+    "workers": "__missing__"
   },
   "torrents": {
     "classification": "Classification",
@@ -313,5 +360,24 @@
   "version": {
     "bitmagnet_version": "version bitmagnet {{version}}",
     "unknown": "inconnu"
+  },
+  "workers": {
+    "actions": {
+      "restart": "__missing__",
+      "shutdown": "__missing__",
+      "start": "__missing__"
+    },
+    "states": {
+      "error": "__missing__",
+      "idle": "__missing__",
+      "running": "__missing__",
+      "shutdown": "__missing__",
+      "startup": "__missing__"
+    },
+    "warnings": {
+      "depends_on": "__missing__",
+      "required_by": "__missing__"
+    },
+    "worker": "__missing__"
   }
 }

@@ -11,7 +11,8 @@
   @if (heading) {
     <h2>
       <a
-        [routerLink]="'permalink/' + torrentContent.infoHash"
+        [routerLink]="['permalink', torrentContent.infoHash]"
+        [queryParams]="index ? { index: index } : null"
         [matTooltip]="t('torrents.permalink')"
         >{{ torrentContent.torrent.name }}</a
       >
@@ -42,7 +43,7 @@
   <p class="info-hash">
     <strong>{{ t("torrents.info_hash") }}:</strong>
     <span
-      [matTooltip]="t('torrents.copy_to_clipboard')"
+      [matTooltip]="t('general.copy_to_clipboard')"
       [cdkCopyToClipboard]="torrentContent.infoHash"
       >{{ torrentContent.infoHash }}</span
     >
@@ -151,7 +152,10 @@
           @if (torrentContent.torrent.filesStatus === "no_info") {
             <p>{{ t("torrents.files_no_info") }}</p>
           }
-          <app-torrent-files-table [torrent]="torrentContent.torrent" />
+          <app-torrent-files-table
+            [torrent]="torrentContent.torrent"
+            [index]="index"
+          />
         </mat-card>
       </ng-template>
     </mat-tab>

@@ -1,0 +1,21 @@
+addresses:
+  description: Description for config field addresses
+  other: List of OpenSearch node addresses
+description:
+  description: Description for the OpenSearch plugin
+  other: OpenSearch indexer and search adapter
+index_prefix:
+  description: Description for config field index_prefix
+  other: Prefix for OpenSearch indexes
+number_of_replicas:
+  description: Description for config field number_of_replicas
+  other: Number of replicas for OpenSearch indexes
+number_of_shards:
+  description: Description for config field number_of_shards
+  other: Number of shards for OpenSearch indexes
+password:
+  description: Description for config field password
+  other: Password for OpenSearch
+username:
+  description: Description for config field username
+  other: Username for OpenSearch

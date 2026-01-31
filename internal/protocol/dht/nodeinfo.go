@@ -10,7 +10,6 @@ import (
 	"net"
 	"reflect"
 
-	"github.com/anacrolix/missinggo/v2/slices"
 	"github.com/anacrolix/torrent/bencode"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
@@ -43,6 +42,7 @@ var _ interface {
 
 func (ni NodeInfo) MarshalBinary() ([]byte, error) {
 	var w bytes.Buffer
+
 	_, _ = w.Write(ni.ID[:])
 	_, _ = w.Write(ni.Addr.IP)
 
@@ -66,15 +66,22 @@ func (CompactIPv4NodeInfo) ElemSize() int {
 	return 26
 }
 
-// func (me *CompactIPv4NodeInfo) Scrub() {
-// 	slices.FilterInPlace(me, func(ni *NodeInfo) bool {
-// 		ni.Addr.IP = ni.Addr.IP.To4()
-// 		return ni.Addr.IP != nil
-// 	})
-// }
+func slicesMap(f, input interface{}) interface{} {
+	inputValue := reflect.ValueOf(input)
+	funcValue := reflect.ValueOf(f)
+	_len := inputValue.Len()
+
+	retValue := reflect.MakeSlice(reflect.TypeOf(input), _len, _len)
+	for i := range _len {
+		out := funcValue.Call([]reflect.Value{inputValue.Index(i)})
+		retValue.Index(i).Set(out[0])
+	}
+
+	return retValue.Interface()
+}
 
 func (ni CompactIPv4NodeInfo) MarshalBinary() ([]byte, error) {
-	return marshalBinarySlice(slices.Map(func(ni NodeInfo) NodeInfo {
+	return marshalBinarySlice(slicesMap(func(ni NodeInfo) NodeInfo {
 		ni.Addr.IP = ni.Addr.IP.To4()
 		return ni
 	}, ni).(CompactIPv4NodeInfo))
@@ -153,7 +160,7 @@ func marshalBinarySlice(slice elemSizer) (ret []byte, err error) {
 		}
 
 		if len(b) != slice.ElemSize() {
-			panic(fmt.Sprintf("marshalled %d bytes, but expected %d", len(b), slice.ElemSize()))
+			return nil, fmt.Errorf("marshalled %d bytes, but expected %d", len(b), slice.ElemSize())
 		}
 
 		ret = append(ret, b...)

@@ -1,9 +1,7 @@
 package search
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
-	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
-	"go.uber.org/fx"
+	"github.com/bitmagnet-io/bitmagnet/internal/database"
 )
 
 type Search interface {
@@ -15,29 +13,11 @@ type Search interface {
 }
 
 type search struct {
-	q *dao.Query
+	daoProvider database.DaoProvider
 }
 
-type Params struct {
-	fx.In
-	Query lazy.Lazy[*dao.Query]
-}
-
-type Result struct {
-	fx.Out
-	Search lazy.Lazy[Search]
-}
-
-func New(params Params) Result {
-	return Result{
-		Search: lazy.New(func() (Search, error) {
-			q, err := params.Query.Get()
-			if err != nil {
-				return nil, err
-			}
-			return &search{
-				q: q,
-			}, nil
-		}),
+func New(dao database.DaoProvider) Search {
+	return &search{
+		daoProvider: dao,
 	}
 }

@@ -1,0 +1,369 @@
+auth:
+  description: description for plugin auth
+  other: ""
+auth.anonymous_access:
+  description: "description for config: auth.anonymous_access"
+  other: ""
+auth.email_required:
+  description: "description for config: auth.email_required"
+  other: ""
+auth.email_verification:
+  description: "description for config: auth.email_verification"
+  other: ""
+auth.invitation_required:
+  description: "description for config: auth.invitation_required"
+  other: ""
+auth.jwt_duration:
+  description: "description for config: auth.jwt_duration"
+  other: ""
+auth.jwt_secret:
+  description: "description for config: auth.jwt_secret"
+  other: ""
+auth.login_request_burst:
+  description: "description for config: auth.login_request_burst"
+  other: ""
+auth.login_requests_per_minute:
+  description: "description for config: auth.login_requests_per_minute"
+  other: ""
+auth.password_hashing_cost:
+  description: "description for config: auth.password_hashing_cost"
+  other: ""
+auth.password_min_entropy:
+  description: "description for config: auth.password_min_entropy"
+  other: ""
+auth.rbac_cache_ttl:
+  description: "description for config: auth.rbac_cache_ttl"
+  other: ""
+auth.user.account_disabled:
+  description: "message for error: auth.user.account_disabled"
+  other: ""
+auth.user.credentials_invalid:
+  description: "message for error: auth.user.credentials_invalid"
+  other: ""
+auth.user.email_invalid:
+  description: "message for error: auth.user.email_invalid"
+  other: ""
+auth.user.email_missing:
+  description: "message for error: auth.user.email_missing"
+  other: ""
+auth.user.invitation_claimed:
+  description: "message for error: auth.user.invitation_claimed"
+  other: ""
+auth.user.invitation_code_missing:
+  description: "message for error: auth.user.invitation_code_missing"
+  other: ""
+auth.user.invitation_expired:
+  description: "message for error: auth.user.invitation_expired"
+  other: ""
+auth.user.invitation_not_found:
+  description: "message for error: auth.user.invitation_not_found"
+  other: ""
+auth.user.password_insufficient_entropy:
+  description: "message for error: auth.user.password_insufficient_entropy"
+  other: ""
+auth.user.user_already_exists:
+  description: "message for error: auth.user.user_already_exists"
+  other: ""
+auth.user.username_invalid:
+  description: "message for error: auth.user.username_invalid"
+  other: ""
+config:
+  description: description for plugin config
+  other: 設定機能を提供します
+config.plugin_activation:
+  description: description for plugin activation param
+  other: ""
+database.gorm.cache:
+  description: description for plugin database.gorm.cache
+  other: Postgresクエリ結果のキャッシュを提供します
+database.gorm.cache.activation:
+  description: "description for config: database.gorm.cache.activation"
+  other: ""
+database.gorm.cache.max_items:
+  description: "description for config: database.gorm.cache.max_items"
+  other: キャッシュする項目の最大数
+database.gorm.cache.ttl:
+  description: "description for config: database.gorm.cache.ttl"
+  other: キャッシュのTTL
+database.info_hash_blocker:
+  description: description for plugin database.info_hash_blocker
+  other: 削除およびブロックされた情報ハッシュの安定したブルームフィルターを維持し、再度クロールされることを防ぎます
+database.migrator:
+  description: description for plugin database.migrator
+  other: ""
+database.persister:
+  description: description for plugin database.persister
+  other: ""
+database.persister.max_size:
+  description: "description for config: database.persister.max_size"
+  other: 最大バッファサイズ
+database.persister.max_wait:
+  description: "description for config: database.persister.max_wait"
+  other: フラッシュ前にアイテムをバッファリングする最大時間
+database.postgres:
+  description: description for plugin database.postgres
+  other: Postgresデータベース接続を開始および管理します
+database.postgres.database:
+  description: "description for config: database.postgres.database"
+  other: Postgresデータベース名
+database.postgres.dsn:
+  description: "description for config: database.postgres.dsn"
+  other: Postgresデータソース名（指定された場合、このプラグインの他のすべてのオプションは無視されます）
+database.postgres.host:
+  description: "description for config: database.postgres.host"
+  other: Postgresホスト
+database.postgres.password:
+  description: "description for config: database.postgres.password"
+  other: Postgresパスワード
+database.postgres.port:
+  description: "description for config: database.postgres.port"
+  other: Postgresポート番号
+database.postgres.user:
+  description: "description for config: database.postgres.user"
+  other: Postgresユーザー名
+dht.crawler:
+  description: description for plugin dht.crawler
+  other: トレントのためにDHTをクロールします
+dht.crawler.activation:
+  description: "description for config: dht.crawler.activation"
+  other: ""
+dht.crawler.autostart:
+  description: "description for config: dht.crawler.autostart"
+  other: ワーカーを自動的に開始
+dht.crawler.bootstrap_nodes:
+  description: "description for config: dht.crawler.bootstrap_nodes"
+  other: DHTクローラーをブートストラップするためのノードアドレスのリスト
+dht.crawler.rescrape_threshold:
+  description: "description for config: dht.crawler.rescrape_threshold"
+  other: DHTからシーダーとリーチャーの数を再問い合わせするまでの最小間隔
+dht.crawler.reseed_bootstrap_nodes_interval:
+  description: "description for config: dht.crawler.reseed_bootstrap_nodes_interval"
+  other: ブートストラップノードの再シードの間隔
+dht.crawler.save_files_threshold:
+  description: "description for config: dht.crawler.save_files_threshold"
+  other: 各トレントでDHTクローラーが保存するファイル数の上限
+dht.crawler.save_pieces:
+  description: "description for config: dht.crawler.save_pieces"
+  other: 各トレントでトレントピースを保存（大量のディスク容量を使用）
+dht.server:
+  description: description for plugin dht.server
+  other: DHTサーバーノードを実行します
+dht.server.activation:
+  description: "description for config: dht.server.activation"
+  other: ""
+dht.server.query_timeout:
+  description: "description for config: dht.server.query_timeout"
+  other: クエリタイムアウト
+dht.socket:
+  description: description for plugin dht.socket
+  other: DHTサーバー用のUDPソケットを実行します
+dht.socket.activation:
+  description: "description for config: dht.socket.activation"
+  other: ""
+dht.socket.adapter:
+  description: "description for config: dht.socket.adapter"
+  other: ソケットアダプター名
+dht.socket.port:
+  description: "description for config: dht.socket.port"
+  other: ソケットポート番号
+health:
+  description: description for plugin health
+  other: ヘルスチェック機能を提供します
+http_server:
+  description: description for plugin http_server
+  other: HTTPサーバーを実行します
+http_server.activation:
+  description: "description for config: http_server.activation"
+  other: ""
+http_server.cors:
+  description: description for plugin http_server.cors
+  other: HTTPサーバー用のCORSミドルウェアを提供します
+http_server.cors.allowed_origins:
+  description: "description for config: http_server.cors.allowed_origins"
+  other: CORS許可オリジン
+http_server.docs:
+  description: description for plugin http_server.docs
+  other: /docsエンドポイントでドキュメントウェブサイトのインスタンスを実行します
+http_server.docs.activation:
+  description: "description for config: http_server.docs.activation"
+  other: ""
+http_server.graphql:
+  description: description for plugin http_server.graphql
+  other: GraphQL APIサーバーを実行します
+http_server.graphql.activation:
+  description: "description for config: http_server.graphql.activation"
+  other: ""
+http_server.graphql.unauthorized:
+  description: "message for error: http_server.graphql.unauthorized"
+  other: ""
+http_server.local_address:
+  description: "description for config: http_server.local_address"
+  other: リッスンするローカルアドレス
+http_server.logging:
+  description: description for plugin http_server.logging
+  other: HTTPサーバーのログ記録を提供します
+http_server.webui:
+  description: description for plugin http_server.webui
+  other: /webuiエンドポイントでウェブユーザーインターフェースを実行します
+http_server.webui.activation:
+  description: "description for config: http_server.webui.activation"
+  other: ""
+i18n:
+  description: description for plugin i18n
+  other: バックエンドサービスの翻訳を提供します
+importer:
+  description: description for plugin importer
+  other: /importエンドポイントでインポート機能を実行します
+importer.activation:
+  description: "description for config: importer.activation"
+  other: ""
+logging:
+  description: description for plugin logging
+  other: ログ記録サービスを提供します
+logging.console:
+  description: description for plugin logging.console
+  other: コンソール形式でログを出力します
+logging.console.activation:
+  description: "description for config: logging.console.activation"
+  other: ""
+logging.file_rotator:
+  description: description for plugin logging.file_rotator
+  other: ""
+logging.file_rotator.activation:
+  description: "description for config: logging.file_rotator.activation"
+  other: ""
+logging.file_rotator.base_name:
+  description: "description for config: logging.file_rotator.base_name"
+  other: ""
+logging.file_rotator.buffer_size:
+  description: "description for config: logging.file_rotator.buffer_size"
+  other: ""
+logging.file_rotator.level:
+  description: "description for config: logging.file_rotator.level"
+  other: ""
+logging.file_rotator.max_age:
+  description: "description for config: logging.file_rotator.max_age"
+  other: ""
+logging.file_rotator.max_backups:
+  description: "description for config: logging.file_rotator.max_backups"
+  other: ""
+logging.file_rotator.max_size:
+  description: "description for config: logging.file_rotator.max_size"
+  other: ""
+logging.file_rotator.sub_path:
+  description: "description for config: logging.file_rotator.sub_path"
+  other: ""
+logging.json:
+  description: description for plugin logging.json
+  other: ""
+logging.json.activation:
+  description: "description for config: logging.json.activation"
+  other: ""
+logging.level:
+  description: "description for config: logging.level"
+  other: ログレベル
+meta_info:
+  description: description for plugin meta_info
+  other: ピアからトレントメタ情報をダウンロードするサービスを提供します
+meta_info.dial_timeout:
+  description: "description for config: meta_info.dial_timeout"
+  other: ダイヤルタイムアウト
+meta_info.max_concurrency:
+  description: "description for config: meta_info.max_concurrency"
+  other: 最大リクエスト同時実行数
+meta_info.request_timeout:
+  description: "description for config: meta_info.request_timeout"
+  other: リクエストタイムアウト
+metrics:
+  description: description for plugin metrics
+  other: メトリクスを提供します
+metrics.prometheus:
+  description: description for plugin metrics.prometheus
+  other: ""
+metrics.prometheus.activation:
+  description: "description for config: metrics.prometheus.activation"
+  other: ""
+pipeline.batcher:
+  description: description for plugin pipeline.batcher
+  other: ""
+pipeline.classifier:
+  description: description for plugin pipeline.classifier
+  other: トレント分類サービスを提供します
+pipeline.classifier.concurrency:
+  description: "description for config: pipeline.classifier.concurrency"
+  other: 並列実行する分類の最大数
+pipeline.classifier.delete_xxx:
+  description: "description for config: pipeline.classifier.delete_xxx"
+  other: XXXコンテンツを分類器によって削除するかを示すブール値フラグ
+pipeline.classifier.extensions:
+  description: "description for config: pipeline.classifier.extensions"
+  other: ファイルタイプからそれに関連するファイル拡張子へのマップ
+pipeline.classifier.flags:
+  description: "description for config: pipeline.classifier.flags"
+  other: 分類器ワークフローを設定するためのフラグキーからフラグ値へのマップ
+pipeline.classifier.keywords:
+  description: "description for config: pipeline.classifier.keywords"
+  other: カテゴリ名から異なるタイプのトレントに関連するキーワードへのマップ
+pipeline.classifier.workflow:
+  description: "description for config: pipeline.classifier.workflow"
+  other: デフォルトの分類器ワークフロー
+pipeline.processor:
+  description: description for plugin pipeline.processor
+  other: トレントを分類しインデックス化するプロセッサーサービスを提供します
+queue:
+  description: description for plugin queue
+  other: キュージョブワーカーを実行します
+queue.autostart:
+  description: "description for config: queue.autostart"
+  other: ""
+search:
+  description: description for plugin search
+  other: ""
+search.facet.content_genre:
+  description: "label for search facet: content_genre"
+  other: ""
+search.facet.content_type:
+  description: "label for search facet: content_type"
+  other: ""
+search.facet.file_type:
+  description: "label for search facet: file_type"
+  other: ""
+search.facet.language:
+  description: "label for search facet: language"
+  other: ""
+search.facet.release_year:
+  description: "label for search facet: release_year"
+  other: ""
+search.facet.tag:
+  description: "label for search facet: tag"
+  other: ""
+search.facet.torrent_source:
+  description: "label for search facet: torrent_source"
+  other: ""
+search.facet.video_3d:
+  description: "label for search facet: video_3d"
+  other: ""
+search.facet.video_codec:
+  description: "label for search facet: video_codec"
+  other: ""
+search.facet.video_modifier:
+  description: "label for search facet: video_modifier"
+  other: ""
+search.facet.video_resolution:
+  description: "label for search facet: video_resolution"
+  other: ""
+search.facet.video_source:
+  description: "label for search facet: video_source"
+  other: ""
+tmdb.activation:
+  description: "description for config: tmdb.activation"
+  other: ""
+torznab:
+  description: description for plugin torznab
+  other: /torznabエンドポイントでTorznab APIサーバーを実行します
+torznab.activation:
+  description: "description for config: torznab.activation"
+  other: ""
+worker:
+  description: description for plugin worker
+  other: ワーカーを管理します

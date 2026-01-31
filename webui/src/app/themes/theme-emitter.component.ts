@@ -14,10 +14,31 @@ import { ThemeManager } from "./theme-manager.service";
 
 @Component({
   selector: "app-theme-emitter",
+  template: `
+    <ng-container>
+      @for (c of themeColors; track c) {
+        <app-theme-emitter-color [color]="c" />
+      }
+      <div class="theme-emitter-lightdark" #lightdark></div>
+    </ng-container>
+  `,
+  styles: [
+    `
+      :host {
+        display: none;
+      }
+
+      .theme-emitter-color.background {
+        color: var(--mat-app-background-color);
+      }
+
+      .theme-emitter-color.foreground {
+        color: var(--mat-app-text-color);
+      }
+    `,
+  ],
   standalone: true,
-  templateUrl: "./theme-emitter.component.html",
   imports: [ThemeEmitterColorComponent],
-  styleUrl: "./theme-emitter.component.scss",
 })
 export class ThemeEmitterComponent implements AfterViewInit {
   private service = inject(ThemeInfoService);

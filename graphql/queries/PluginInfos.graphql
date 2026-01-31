@@ -1,0 +1,9 @@
+#import "../fragments/PluginInfo"
+
+query PluginInfos {
+  plugin {
+    list {
+      ...PluginInfo
+    }
+  }
+}

@@ -7,24 +7,18 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 	"gorm.io/gen/field"
 )
 
-type ContentResultItem struct {
-	query.ResultItem
-	model.Content
-}
-
-type ContentResult = query.GenericResult[ContentResultItem]
-
 type ContentSearch interface {
-	Content(ctx context.Context, options ...query.Option) (result ContentResult, err error)
+	Content(ctx context.Context, options ...query.Option) (result adapter.ContentResult, err error)
 }
 
-func (s search) Content(ctx context.Context, options ...query.Option) (result ContentResult, err error) {
-	return query.GenericQuery[ContentResultItem](
+func (s search) Content(ctx context.Context, options ...query.Option) (result adapter.ContentResult, err error) {
+	return query.GenericQuery[adapter.ContentResultItem](
 		ctx,
-		s.q,
+		s.daoProvider,
 		query.Options(append([]query.Option{query.SelectAll()}, options...)...),
 		model.TableNameContent,
 		func(ctx context.Context, q *dao.Query) query.SubQuery {
@@ -97,6 +91,7 @@ func ContentDefaultPreload() query.Option {
 			query.Content.MetadataSource.RelationField,
 			query.Content.Attributes.RelationField,
 			query.Content.Attributes.MetadataSource.RelationField,
+			query.Content.Tags.RelationField,
 		}
 	})
 }

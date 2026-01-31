@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/netip"
 	"sync"
 	"time"
@@ -11,50 +10,59 @@ import (
 	"github.com/anacrolix/torrent/bencode"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/responder"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/socket"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"go.uber.org/zap"
 )
 
 type Server interface {
-	start() error
-	stop()
 	Query(ctx context.Context, addr netip.AddrPort, q string, args dht.MsgArgs) (dht.RecvMsg, error)
 }
 
+type Runner interface {
+	Server
+	runner.Provider
+}
+
 type server struct {
-	stopped          chan struct{}
 	mutex            sync.Mutex
-	localAddr        netip.AddrPort
-	socket           Socket
+	socket           socket.Socket
 	queryTimeout     time.Duration
 	queries          map[string]chan dht.RecvMsg
 	responder        responder.Responder
 	responderTimeout time.Duration
 	idIssuer         IDIssuer
-	logger           *zap.SugaredLogger
+	logger           *zap.Logger
 }
 
-func (s *server) start() error {
-	if err := s.socket.Open(s.localAddr); err != nil {
-		return fmt.Errorf("could not open socket: %w", err)
+func (s *server) Runner() runner.Runner {
+	return func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
+		shutdown := make(chan struct{})
+
+		go func() {
+			err := s.read(ctx)
+
+			select {
+			case <-shutdown:
+				if errors.Is(err, context.Canceled) {
+					err = nil
+				}
+			default:
+			}
+
+			cancel(err)
+		}()
+
+		return func(context.Context) error {
+			close(shutdown)
+			cancel(runner.ErrShutdownRequested)
+
+			return nil
+		}, nil
 	}
-
-	go func() {
-		ctx, cancel := context.WithCancel(context.Background())
-		go s.read(ctx)
-		<-s.stopped
-		cancel()
-
-		_ = s.socket.Close()
-	}()
-
-	return nil
 }
 
-func (s *server) stop() {
-	close(s.stopped)
-}
-
-func (s *server) read(ctx context.Context) {
+func (s *server) read(ctx context.Context) error {
 	/*   The field size sets a theoretical limit of 65,535 bytes (8 byte header + 65,527 bytes of
 	 * data) for a UDP datagram. However the actual limit for the data length, which is imposed by
 	 * the underlying IPv4 protocol, is 65,507 bytes (65,535 − 8 byte UDP header − 20 byte IP
@@ -69,18 +77,19 @@ func (s *server) read(ctx context.Context) {
 	buffer := make([]byte, 65507)
 
 	for {
-		if ctx.Err() != nil {
-			return
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
 		}
 
 		n, from, err := s.socket.Receive(buffer)
 		if err != nil {
-			// Socket is probably closed; if we're not shutting down then panic
-			if ctx.Err() == nil {
-				panic(fmt.Errorf("socket read error: %w", err))
+			if errors.Is(err, runner.ErrShutdownRequested) {
+				return nil
 			}
 
-			return
+			return err
 		}
 
 		if n == 0 {
@@ -94,7 +103,7 @@ func (s *server) read(ctx context.Context) {
 
 		err = bencode.Unmarshal(buffer[:n], &msg)
 		if err != nil {
-			s.logger.Debugw("could not unmarshal packet data", "error", err)
+			s.logger.Debug("failed to unmarshal packet data", zap.Error(err))
 			continue
 		}
 
@@ -121,10 +130,10 @@ func (s *server) handleQuery(ctx context.Context, msg dht.RecvMsg) {
 		Y: dht.YResponse,
 	}
 
-	ret, retErr := s.responder.Respond(ctx, msg)
-	if retErr != nil {
+	ret, err := s.responder.Respond(ctx, msg)
+	if err != nil {
 		dhtErr := &dht.Error{}
-		if ok := errors.As(retErr, dhtErr); ok {
+		if ok := errors.As(err, dhtErr); ok {
 			res.E = dhtErr
 		} else {
 			res.E = &dht.Error{
@@ -132,14 +141,14 @@ func (s *server) handleQuery(ctx context.Context, msg dht.RecvMsg) {
 				Msg:  "server error",
 			}
 
-			s.logger.Errorw("server error", "msg", msg, "retErr", retErr)
+			s.logger.Error("server error", zap.Any("msg", msg), zap.Error(err))
 		}
 	} else {
 		res.R = &ret
 	}
 
-	if sendErr := s.send(msg.From, res); sendErr != nil {
-		s.logger.Debugw("could not send response", "msg", msg, "retErr", sendErr)
+	if err = s.send(msg.From, res); err != nil {
+		s.logger.Debug("failed to send response", zap.Any("msg", msg), zap.Error(err))
 	}
 }
 
@@ -180,15 +189,15 @@ func (s *server) Query(
 		A: &args,
 		Y: dht.YQuery,
 	}
-	if sendErr := s.send(addr, msg); sendErr != nil {
-		s.logger.Debugw("could not send query", "msg", msg, "sendErr", sendErr)
-		err = sendErr
+	if err = s.send(addr, msg); err != nil {
+		s.logger.Debug("failed to send query", zap.Any("msg", msg), zap.Error(err))
 
 		return
 	}
 
 	queryCtx, cancel := context.WithTimeout(ctx, s.queryTimeout)
 	defer cancel()
+
 	select {
 	case <-queryCtx.Done():
 		err = queryCtx.Err()

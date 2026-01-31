@@ -17,13 +17,19 @@ import (
 
 var (
 	Q                        = new(Query)
+	APIKey                   *aPIKey
+	APIKeyPermission         *aPIKeyPermission
 	Content                  *content
 	ContentAttribute         *contentAttribute
 	ContentCollection        *contentCollection
 	ContentCollectionContent *contentCollectionContent
+	ContentTag               *contentTag
+	Invitation               *invitation
 	KeyValue                 *keyValue
 	MetadataSource           *metadataSource
 	QueueJob                 *queueJob
+	Role                     *role
+	RolePermission           *rolePermission
 	Torrent                  *torrent
 	TorrentContent           *torrentContent
 	TorrentFile              *torrentFile
@@ -32,17 +38,24 @@ var (
 	TorrentSource            *torrentSource
 	TorrentTag               *torrentTag
 	TorrentsTorrentSource    *torrentsTorrentSource
+	User                     *user
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
+	APIKey = &Q.APIKey
+	APIKeyPermission = &Q.APIKeyPermission
 	Content = &Q.Content
 	ContentAttribute = &Q.ContentAttribute
 	ContentCollection = &Q.ContentCollection
 	ContentCollectionContent = &Q.ContentCollectionContent
+	ContentTag = &Q.ContentTag
+	Invitation = &Q.Invitation
 	KeyValue = &Q.KeyValue
 	MetadataSource = &Q.MetadataSource
 	QueueJob = &Q.QueueJob
+	Role = &Q.Role
+	RolePermission = &Q.RolePermission
 	Torrent = &Q.Torrent
 	TorrentContent = &Q.TorrentContent
 	TorrentFile = &Q.TorrentFile
@@ -51,18 +64,25 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	TorrentSource = &Q.TorrentSource
 	TorrentTag = &Q.TorrentTag
 	TorrentsTorrentSource = &Q.TorrentsTorrentSource
+	User = &Q.User
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
 		db:                       db,
+		APIKey:                   newAPIKey(db, opts...),
+		APIKeyPermission:         newAPIKeyPermission(db, opts...),
 		Content:                  newContent(db, opts...),
 		ContentAttribute:         newContentAttribute(db, opts...),
 		ContentCollection:        newContentCollection(db, opts...),
 		ContentCollectionContent: newContentCollectionContent(db, opts...),
+		ContentTag:               newContentTag(db, opts...),
+		Invitation:               newInvitation(db, opts...),
 		KeyValue:                 newKeyValue(db, opts...),
 		MetadataSource:           newMetadataSource(db, opts...),
 		QueueJob:                 newQueueJob(db, opts...),
+		Role:                     newRole(db, opts...),
+		RolePermission:           newRolePermission(db, opts...),
 		Torrent:                  newTorrent(db, opts...),
 		TorrentContent:           newTorrentContent(db, opts...),
 		TorrentFile:              newTorrentFile(db, opts...),
@@ -71,19 +91,26 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		TorrentSource:            newTorrentSource(db, opts...),
 		TorrentTag:               newTorrentTag(db, opts...),
 		TorrentsTorrentSource:    newTorrentsTorrentSource(db, opts...),
+		User:                     newUser(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
+	APIKey                   aPIKey
+	APIKeyPermission         aPIKeyPermission
 	Content                  content
 	ContentAttribute         contentAttribute
 	ContentCollection        contentCollection
 	ContentCollectionContent contentCollectionContent
+	ContentTag               contentTag
+	Invitation               invitation
 	KeyValue                 keyValue
 	MetadataSource           metadataSource
 	QueueJob                 queueJob
+	Role                     role
+	RolePermission           rolePermission
 	Torrent                  torrent
 	TorrentContent           torrentContent
 	TorrentFile              torrentFile
@@ -92,6 +119,7 @@ type Query struct {
 	TorrentSource            torrentSource
 	TorrentTag               torrentTag
 	TorrentsTorrentSource    torrentsTorrentSource
+	User                     user
 }
 
 func (q *Query) Available() bool { return q.db != nil }
@@ -99,13 +127,19 @@ func (q *Query) Available() bool { return q.db != nil }
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
 		db:                       db,
+		APIKey:                   q.APIKey.clone(db),
+		APIKeyPermission:         q.APIKeyPermission.clone(db),
 		Content:                  q.Content.clone(db),
 		ContentAttribute:         q.ContentAttribute.clone(db),
 		ContentCollection:        q.ContentCollection.clone(db),
 		ContentCollectionContent: q.ContentCollectionContent.clone(db),
+		ContentTag:               q.ContentTag.clone(db),
+		Invitation:               q.Invitation.clone(db),
 		KeyValue:                 q.KeyValue.clone(db),
 		MetadataSource:           q.MetadataSource.clone(db),
 		QueueJob:                 q.QueueJob.clone(db),
+		Role:                     q.Role.clone(db),
+		RolePermission:           q.RolePermission.clone(db),
 		Torrent:                  q.Torrent.clone(db),
 		TorrentContent:           q.TorrentContent.clone(db),
 		TorrentFile:              q.TorrentFile.clone(db),
@@ -114,6 +148,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		TorrentSource:            q.TorrentSource.clone(db),
 		TorrentTag:               q.TorrentTag.clone(db),
 		TorrentsTorrentSource:    q.TorrentsTorrentSource.clone(db),
+		User:                     q.User.clone(db),
 	}
 }
 
@@ -128,13 +163,19 @@ func (q *Query) WriteDB() *Query {
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
 		db:                       db,
+		APIKey:                   q.APIKey.replaceDB(db),
+		APIKeyPermission:         q.APIKeyPermission.replaceDB(db),
 		Content:                  q.Content.replaceDB(db),
 		ContentAttribute:         q.ContentAttribute.replaceDB(db),
 		ContentCollection:        q.ContentCollection.replaceDB(db),
 		ContentCollectionContent: q.ContentCollectionContent.replaceDB(db),
+		ContentTag:               q.ContentTag.replaceDB(db),
+		Invitation:               q.Invitation.replaceDB(db),
 		KeyValue:                 q.KeyValue.replaceDB(db),
 		MetadataSource:           q.MetadataSource.replaceDB(db),
 		QueueJob:                 q.QueueJob.replaceDB(db),
+		Role:                     q.Role.replaceDB(db),
+		RolePermission:           q.RolePermission.replaceDB(db),
 		Torrent:                  q.Torrent.replaceDB(db),
 		TorrentContent:           q.TorrentContent.replaceDB(db),
 		TorrentFile:              q.TorrentFile.replaceDB(db),
@@ -143,17 +184,24 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		TorrentSource:            q.TorrentSource.replaceDB(db),
 		TorrentTag:               q.TorrentTag.replaceDB(db),
 		TorrentsTorrentSource:    q.TorrentsTorrentSource.replaceDB(db),
+		User:                     q.User.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
+	APIKey                   IAPIKeyDo
+	APIKeyPermission         IAPIKeyPermissionDo
 	Content                  IContentDo
 	ContentAttribute         IContentAttributeDo
 	ContentCollection        IContentCollectionDo
 	ContentCollectionContent IContentCollectionContentDo
+	ContentTag               IContentTagDo
+	Invitation               IInvitationDo
 	KeyValue                 IKeyValueDo
 	MetadataSource           IMetadataSourceDo
 	QueueJob                 IQueueJobDo
+	Role                     IRoleDo
+	RolePermission           IRolePermissionDo
 	Torrent                  ITorrentDo
 	TorrentContent           ITorrentContentDo
 	TorrentFile              ITorrentFileDo
@@ -162,17 +210,24 @@ type queryCtx struct {
 	TorrentSource            ITorrentSourceDo
 	TorrentTag               ITorrentTagDo
 	TorrentsTorrentSource    ITorrentsTorrentSourceDo
+	User                     IUserDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
+		APIKey:                   q.APIKey.WithContext(ctx),
+		APIKeyPermission:         q.APIKeyPermission.WithContext(ctx),
 		Content:                  q.Content.WithContext(ctx),
 		ContentAttribute:         q.ContentAttribute.WithContext(ctx),
 		ContentCollection:        q.ContentCollection.WithContext(ctx),
 		ContentCollectionContent: q.ContentCollectionContent.WithContext(ctx),
+		ContentTag:               q.ContentTag.WithContext(ctx),
+		Invitation:               q.Invitation.WithContext(ctx),
 		KeyValue:                 q.KeyValue.WithContext(ctx),
 		MetadataSource:           q.MetadataSource.WithContext(ctx),
 		QueueJob:                 q.QueueJob.WithContext(ctx),
+		Role:                     q.Role.WithContext(ctx),
+		RolePermission:           q.RolePermission.WithContext(ctx),
 		Torrent:                  q.Torrent.WithContext(ctx),
 		TorrentContent:           q.TorrentContent.WithContext(ctx),
 		TorrentFile:              q.TorrentFile.WithContext(ctx),
@@ -181,6 +236,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		TorrentSource:            q.TorrentSource.WithContext(ctx),
 		TorrentTag:               q.TorrentTag.WithContext(ctx),
 		TorrentsTorrentSource:    q.TorrentsTorrentSource.WithContext(ctx),
+		User:                     q.User.WithContext(ctx),
 	}
 }
 

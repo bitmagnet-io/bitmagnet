@@ -27,6 +27,7 @@ func testMarshalUnmarshalMsg(t *testing.T, m Msg, expected string) {
 	c.Assert(string(b), qt.Equals, expected)
 
 	var _m Msg
+
 	err = bencode.Unmarshal([]byte(expected), &_m)
 	c.Assert(err, qt.IsNil)
 	c.Assert(_m, qt.ContentEquals, m)
@@ -110,9 +111,11 @@ func TestMarshalUnmarshalMsg(t *testing.T) {
 	}, "d2:ip6:|\xa8\xb4\b\xf5|1:rd2:id20:\xeb\xff6isQ\xffJ\xec)ͺ\xab\xf2\xfb\xe3F|\xc2ge1:t1:\x031:y1:re")
 
 	var k [32]byte
+
 	_, _ = rand.Read(k[:])
 
 	var sig [64]byte
+
 	_, _ = rand.Read(sig[:])
 	testMarshalUnmarshalMsg(t, Msg{
 		A: &MsgArgs{
@@ -158,6 +161,7 @@ func TestUnmarshalGetPeersResponse(t *testing.T) {
 	t.Parallel()
 
 	var msg Msg
+
 	err := bencode.Unmarshal(
 		[]byte(
 			"d1:rd6:valuesl6:\x01\x02\x03\x04\x05\x066:\x07\x08\x09\x0a\x0b\x0ce5:nodes52:\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x02\x03\x04\x05\x06\x07\x08\x09\x02\x03\x04\x05\x06\x07\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x02\x03\x04\x05\x06\x07\x08\x09\x02\x03\x04\x05\x06\x07ee",

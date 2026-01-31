@@ -1,0 +1,12 @@
+#import "./AuthObjectAction"
+
+fragment Permission on Permission {
+  subject {
+    type
+    name
+  }
+  objectAction {
+    ...AuthObjectAction
+  }
+  core
+}

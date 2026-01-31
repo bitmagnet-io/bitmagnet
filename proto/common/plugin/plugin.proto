@@ -1,0 +1,69 @@
+syntax = "proto3";
+package plugin;
+option go_package = "github.com/bitmagnet-io/bitmagnet/proto/common/plugin;plugin";
+
+import "common/http/http.proto";
+
+message Identity {
+  // Default name of the plugin; must be lower_snake_case.
+  string name = 1;
+  string version = 2;
+  repeated ConfigParam configParams = 3;
+}
+
+message ConfigParam {
+  // Name of the configuration parameter; must be lower_snake_case.
+  string name = 1;
+  // JSON schema for the configuration parameter.
+  bytes schema = 2;
+}
+
+message LocalizedContent {
+  // Localized description of the plugin.
+  string description = 1;
+  // Localized descriptions for configuration parameters; names must match those in ConfigParam.
+  repeated ConfigParamLocalizedContent configParams = 2;
+}
+
+message ConfigParamLocalizedContent {
+  // Name of the configuration parameter; must be lower_snake_case.
+  string name = 1;
+  // Localized description for the configuration parameter.
+  string description = 2;
+}
+
+message Contract {
+  Capabilities capabilities = 1;
+  Permissions permissions = 2;
+}
+
+message Capabilities {
+  CapabilityIndexer indexer = 1;
+  CapabilityHTTPHandler httpHandler = 2;
+  CapabilityTorrentTarget torrentTarget = 3;
+  CapabilitySearchAdapter searchAdapter = 4;
+}
+
+message CapabilityIndexer {
+  string name = 1;
+}
+
+message CapabilityHTTPHandler {
+  string name = 1;
+}
+
+message CapabilitySearchAdapter {
+  string name = 1;
+}
+
+message CapabilityTorrentTarget {
+  string name = 1;
+}
+
+message Permissions {
+  PermissionHTTP http = 1;
+}
+
+message PermissionHTTP {
+  repeated http.Egress egress = 1;
+}

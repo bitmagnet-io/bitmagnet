@@ -1,0 +1,9 @@
+#import "../fragments/ConfigParam"
+
+mutation ConfigSave($ref: Ref!, $value: JSON!) {
+  config {
+    save(ref: $ref, value: $value) {
+      ...ConfigParam
+    }
+  }
+}

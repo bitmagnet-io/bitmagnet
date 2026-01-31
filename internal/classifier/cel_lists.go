@@ -168,7 +168,8 @@ var listsLibraryDecls = map[string][]cel.FunctionOpt{
 }
 
 func (*lists) CompileOptions() []cel.EnvOption {
-	options := []cel.EnvOption{}
+	options := make([]cel.EnvOption, 0, len(listsLibraryDecls))
+
 	for name, overloads := range listsLibraryDecls {
 		options = append(options, cel.Function(name, overloads...))
 	}

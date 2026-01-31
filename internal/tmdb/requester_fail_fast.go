@@ -4,14 +4,14 @@ import (
 	"context"
 	"errors"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/go-resty/resty/v2"
 )
 
 // requesterFailFast is a Requester that fails fast on subsequent requests having received an unauthorized response.
 type requesterFailFast struct {
 	requester      Requester
-	isUnauthorized *concurrency.AtomicValue[bool]
+	isUnauthorized *atomic.Value[bool]
 }
 
 func (r requesterFailFast) Request(

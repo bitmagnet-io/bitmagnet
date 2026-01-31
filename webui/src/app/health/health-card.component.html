@@ -1,5 +1,5 @@
 <ng-container *transloco="let t">
-  <mat-card class="dashboard-card dashboard-card-health">
+  <mat-card class="admin-card admin-card-health">
     <mat-card-header>
       <mat-card-title>
         <h3>
@@ -15,8 +15,12 @@
         </h3>
       </mat-card-title>
     </mat-card-header>
-    <mat-card-content class="dashboard-card-content">
-      <app-health-summary></app-health-summary>
+    <mat-card-content class="admin-card-content">
+      <mat-card>
+        <mat-card-content
+          ><app-health-summary></app-health-summary
+        ></mat-card-content>
+      </mat-card>
     </mat-card-content>
   </mat-card>
 </ng-container>

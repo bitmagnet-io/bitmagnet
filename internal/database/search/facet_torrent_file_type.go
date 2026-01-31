@@ -5,15 +5,14 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 )
-
-const TorrentFileTypeFacetKey = "file_type"
 
 func TorrentFileTypeFacet(options ...query.FacetOption) query.Facet {
 	return torrentFileTypeFacet{
 		FacetConfig: query.NewFacetConfig(
 			append([]query.FacetOption{
-				query.FacetHasKey(TorrentFileTypeFacetKey),
+				query.FacetHasKey(adapter.FacetFileType),
 				query.FacetHasLabel("File Type"),
 				query.FacetUsesOrLogic(),
 				query.FacetHasAggregationOption(query.RequireJoin(model.TableNameTorrentContent)),
@@ -43,14 +42,17 @@ func (torrentFileTypeFacet) Criteria(filter query.FacetFilter) []query.Criteria 
 		if len(filter) == 0 {
 			return query.AndCriteria{}, nil
 		}
+
 		fileTypes := make([]model.FileType, 0, len(filter))
 		for _, v := range filter.Values() {
 			ft, ftErr := model.ParseFileType(v)
 			if ftErr != nil {
 				return nil, errors.New("invalid file type filter specified")
 			}
+
 			fileTypes = append(fileTypes, ft)
 		}
+
 		return TorrentFileTypeCriteria(fileTypes...), nil
 	})}
 }

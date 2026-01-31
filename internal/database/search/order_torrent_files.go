@@ -2,20 +2,14 @@ package search
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
-	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 	"gorm.io/gorm/clause"
 )
 
-// TorrentFilesOrderBy represents sort orders for torrent content search results
-// ENUM(index, path, extension, size)
-type TorrentFilesOrderBy string
-
-func (ob TorrentFilesOrderBy) Clauses(direction OrderDirection) []query.OrderByColumn {
-	desc := direction == OrderDirectionDescending
-
+func TorrentFilesOrderByClauses(ob adapter.TorrentFilesOrderBy, desc bool) []query.OrderByColumn {
 	switch ob {
-	case TorrentFilesOrderByIndex:
+	case adapter.TorrentFilesOrderByIndex:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
@@ -25,7 +19,7 @@ func (ob TorrentFilesOrderBy) Clauses(direction OrderDirection) []query.OrderByC
 				Desc: desc,
 			},
 		}}
-	case TorrentFilesOrderByPath:
+	case adapter.TorrentFilesOrderByPath:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
@@ -35,7 +29,7 @@ func (ob TorrentFilesOrderBy) Clauses(direction OrderDirection) []query.OrderByC
 				Desc: desc,
 			},
 		}}
-	case TorrentFilesOrderByExtension:
+	case adapter.TorrentFilesOrderByExtension:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
@@ -45,7 +39,7 @@ func (ob TorrentFilesOrderBy) Clauses(direction OrderDirection) []query.OrderByC
 				Desc: desc,
 			},
 		}}
-	case TorrentFilesOrderBySize:
+	case adapter.TorrentFilesOrderBySize:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
@@ -58,21 +52,4 @@ func (ob TorrentFilesOrderBy) Clauses(direction OrderDirection) []query.OrderByC
 	default:
 		return []query.OrderByColumn{}
 	}
-}
-
-type TorrentFilesFullOrderBy maps.InsertMap[TorrentFilesOrderBy, OrderDirection]
-
-func (fob TorrentFilesFullOrderBy) Clauses() []query.OrderByColumn {
-	im := maps.InsertMap[TorrentFilesOrderBy, OrderDirection](fob)
-	clauses := make([]query.OrderByColumn, 0, im.Len())
-
-	for _, ob := range im.Entries() {
-		clauses = append(clauses, ob.Key.Clauses(ob.Value)...)
-	}
-
-	return clauses
-}
-
-func (fob TorrentFilesFullOrderBy) Option() query.Option {
-	return query.OrderBy(fob.Clauses()...)
 }

@@ -1,0 +1,369 @@
+auth:
+  description: description for plugin auth
+  other: ""
+auth.anonymous_access:
+  description: "description for config: auth.anonymous_access"
+  other: ""
+auth.email_required:
+  description: "description for config: auth.email_required"
+  other: ""
+auth.email_verification:
+  description: "description for config: auth.email_verification"
+  other: ""
+auth.invitation_required:
+  description: "description for config: auth.invitation_required"
+  other: ""
+auth.jwt_duration:
+  description: "description for config: auth.jwt_duration"
+  other: ""
+auth.jwt_secret:
+  description: "description for config: auth.jwt_secret"
+  other: ""
+auth.login_request_burst:
+  description: "description for config: auth.login_request_burst"
+  other: ""
+auth.login_requests_per_minute:
+  description: "description for config: auth.login_requests_per_minute"
+  other: ""
+auth.password_hashing_cost:
+  description: "description for config: auth.password_hashing_cost"
+  other: ""
+auth.password_min_entropy:
+  description: "description for config: auth.password_min_entropy"
+  other: ""
+auth.rbac_cache_ttl:
+  description: "description for config: auth.rbac_cache_ttl"
+  other: ""
+auth.user.account_disabled:
+  description: "message for error: auth.user.account_disabled"
+  other: ""
+auth.user.credentials_invalid:
+  description: "message for error: auth.user.credentials_invalid"
+  other: ""
+auth.user.email_invalid:
+  description: "message for error: auth.user.email_invalid"
+  other: ""
+auth.user.email_missing:
+  description: "message for error: auth.user.email_missing"
+  other: ""
+auth.user.invitation_claimed:
+  description: "message for error: auth.user.invitation_claimed"
+  other: ""
+auth.user.invitation_code_missing:
+  description: "message for error: auth.user.invitation_code_missing"
+  other: ""
+auth.user.invitation_expired:
+  description: "message for error: auth.user.invitation_expired"
+  other: ""
+auth.user.invitation_not_found:
+  description: "message for error: auth.user.invitation_not_found"
+  other: ""
+auth.user.password_insufficient_entropy:
+  description: "message for error: auth.user.password_insufficient_entropy"
+  other: ""
+auth.user.user_already_exists:
+  description: "message for error: auth.user.user_already_exists"
+  other: ""
+auth.user.username_invalid:
+  description: "message for error: auth.user.username_invalid"
+  other: ""
+config:
+  description: description for plugin config
+  other: ""
+config.plugin_activation:
+  description: description for plugin activation param
+  other: ""
+database.gorm.cache:
+  description: description for plugin database.gorm.cache
+  other: ""
+database.gorm.cache.activation:
+  description: "description for config: database.gorm.cache.activation"
+  other: ""
+database.gorm.cache.max_items:
+  description: "description for config: database.gorm.cache.max_items"
+  other: Nombre màxim d'elements per emmagatzemar a la memòria cau
+database.gorm.cache.ttl:
+  description: "description for config: database.gorm.cache.ttl"
+  other: TTL per a la memòria cau
+database.info_hash_blocker:
+  description: description for plugin database.info_hash_blocker
+  other: ""
+database.migrator:
+  description: description for plugin database.migrator
+  other: ""
+database.persister:
+  description: description for plugin database.persister
+  other: ""
+database.persister.max_size:
+  description: "description for config: database.persister.max_size"
+  other: Mida màxima de la memòria intermèdia
+database.persister.max_wait:
+  description: "description for config: database.persister.max_wait"
+  other: Temps màxim per emmagatzemar elements a la memòria intermèdia abans de buidar
+database.postgres:
+  description: description for plugin database.postgres
+  other: ""
+database.postgres.database:
+  description: "description for config: database.postgres.database"
+  other: Nom de la base de dades Postgres
+database.postgres.dsn:
+  description: "description for config: database.postgres.dsn"
+  other: Nom de font de dades Postgres (si s'especifica, s'ignoren totes les altres opcions per a aquest complement)
+database.postgres.host:
+  description: "description for config: database.postgres.host"
+  other: Host Postgres
+database.postgres.password:
+  description: "description for config: database.postgres.password"
+  other: Contrasenya Postgres
+database.postgres.port:
+  description: "description for config: database.postgres.port"
+  other: Número de port Postgres
+database.postgres.user:
+  description: "description for config: database.postgres.user"
+  other: Nom d'usuari Postgres
+dht.crawler:
+  description: description for plugin dht.crawler
+  other: ""
+dht.crawler.activation:
+  description: "description for config: dht.crawler.activation"
+  other: ""
+dht.crawler.autostart:
+  description: "description for config: dht.crawler.autostart"
+  other: ""
+dht.crawler.bootstrap_nodes:
+  description: "description for config: dht.crawler.bootstrap_nodes"
+  other: ""
+dht.crawler.rescrape_threshold:
+  description: "description for config: dht.crawler.rescrape_threshold"
+  other: ""
+dht.crawler.reseed_bootstrap_nodes_interval:
+  description: "description for config: dht.crawler.reseed_bootstrap_nodes_interval"
+  other: ""
+dht.crawler.save_files_threshold:
+  description: "description for config: dht.crawler.save_files_threshold"
+  other: ""
+dht.crawler.save_pieces:
+  description: "description for config: dht.crawler.save_pieces"
+  other: ""
+dht.server:
+  description: description for plugin dht.server
+  other: ""
+dht.server.activation:
+  description: "description for config: dht.server.activation"
+  other: ""
+dht.server.query_timeout:
+  description: "description for config: dht.server.query_timeout"
+  other: ""
+dht.socket:
+  description: description for plugin dht.socket
+  other: ""
+dht.socket.activation:
+  description: "description for config: dht.socket.activation"
+  other: ""
+dht.socket.adapter:
+  description: "description for config: dht.socket.adapter"
+  other: ""
+dht.socket.port:
+  description: "description for config: dht.socket.port"
+  other: ""
+health:
+  description: description for plugin health
+  other: ""
+http_server:
+  description: description for plugin http_server
+  other: ""
+http_server.activation:
+  description: "description for config: http_server.activation"
+  other: ""
+http_server.cors:
+  description: description for plugin http_server.cors
+  other: ""
+http_server.cors.allowed_origins:
+  description: "description for config: http_server.cors.allowed_origins"
+  other: Orígens permesos CORS
+http_server.docs:
+  description: description for plugin http_server.docs
+  other: ""
+http_server.docs.activation:
+  description: "description for config: http_server.docs.activation"
+  other: ""
+http_server.graphql:
+  description: description for plugin http_server.graphql
+  other: ""
+http_server.graphql.activation:
+  description: "description for config: http_server.graphql.activation"
+  other: ""
+http_server.graphql.unauthorized:
+  description: "message for error: http_server.graphql.unauthorized"
+  other: ""
+http_server.local_address:
+  description: "description for config: http_server.local_address"
+  other: Adreça local on escoltar
+http_server.logging:
+  description: description for plugin http_server.logging
+  other: ""
+http_server.webui:
+  description: description for plugin http_server.webui
+  other: ""
+http_server.webui.activation:
+  description: "description for config: http_server.webui.activation"
+  other: ""
+i18n:
+  description: description for plugin i18n
+  other: ""
+importer:
+  description: description for plugin importer
+  other: ""
+importer.activation:
+  description: "description for config: importer.activation"
+  other: ""
+logging:
+  description: description for plugin logging
+  other: ""
+logging.console:
+  description: description for plugin logging.console
+  other: ""
+logging.console.activation:
+  description: "description for config: logging.console.activation"
+  other: ""
+logging.file_rotator:
+  description: description for plugin logging.file_rotator
+  other: ""
+logging.file_rotator.activation:
+  description: "description for config: logging.file_rotator.activation"
+  other: ""
+logging.file_rotator.base_name:
+  description: "description for config: logging.file_rotator.base_name"
+  other: ""
+logging.file_rotator.buffer_size:
+  description: "description for config: logging.file_rotator.buffer_size"
+  other: ""
+logging.file_rotator.level:
+  description: "description for config: logging.file_rotator.level"
+  other: ""
+logging.file_rotator.max_age:
+  description: "description for config: logging.file_rotator.max_age"
+  other: ""
+logging.file_rotator.max_backups:
+  description: "description for config: logging.file_rotator.max_backups"
+  other: ""
+logging.file_rotator.max_size:
+  description: "description for config: logging.file_rotator.max_size"
+  other: ""
+logging.file_rotator.sub_path:
+  description: "description for config: logging.file_rotator.sub_path"
+  other: ""
+logging.json:
+  description: description for plugin logging.json
+  other: ""
+logging.json.activation:
+  description: "description for config: logging.json.activation"
+  other: ""
+logging.level:
+  description: "description for config: logging.level"
+  other: El nivell de registre
+meta_info:
+  description: description for plugin meta_info
+  other: ""
+meta_info.dial_timeout:
+  description: "description for config: meta_info.dial_timeout"
+  other: Temps d'espera de marcatge
+meta_info.max_concurrency:
+  description: "description for config: meta_info.max_concurrency"
+  other: Concurrència màxima de sol·licituds
+meta_info.request_timeout:
+  description: "description for config: meta_info.request_timeout"
+  other: Temps d'espera de sol·licitud
+metrics:
+  description: description for plugin metrics
+  other: ""
+metrics.prometheus:
+  description: description for plugin metrics.prometheus
+  other: ""
+metrics.prometheus.activation:
+  description: "description for config: metrics.prometheus.activation"
+  other: ""
+pipeline.batcher:
+  description: description for plugin pipeline.batcher
+  other: ""
+pipeline.classifier:
+  description: description for plugin pipeline.classifier
+  other: ""
+pipeline.classifier.concurrency:
+  description: "description for config: pipeline.classifier.concurrency"
+  other: Nombre màxim de classificacions per executar en paral·lel
+pipeline.classifier.delete_xxx:
+  description: "description for config: pipeline.classifier.delete_xxx"
+  other: Una bandera booleana que indica que el contingut XXX ha de ser eliminat pel classificador
+pipeline.classifier.extensions:
+  description: "description for config: pipeline.classifier.extensions"
+  other: Un mapa de tipus d'arxiu a extensions d'arxiu associades amb ells
+pipeline.classifier.flags:
+  description: "description for config: pipeline.classifier.flags"
+  other: Un mapa de claus de bandera a valors de bandera per configurar fluxos de treball del classificador
+pipeline.classifier.keywords:
+  description: "description for config: pipeline.classifier.keywords"
+  other: Un mapa de noms de categoria a paraules clau associades amb diferents tipus de torrents
+pipeline.classifier.workflow:
+  description: "description for config: pipeline.classifier.workflow"
+  other: El flux de treball del classificador per defecte
+pipeline.processor:
+  description: description for plugin pipeline.processor
+  other: ""
+queue:
+  description: description for plugin queue
+  other: ""
+queue.autostart:
+  description: "description for config: queue.autostart"
+  other: ""
+search:
+  description: description for plugin search
+  other: ""
+search.facet.content_genre:
+  description: "label for search facet: content_genre"
+  other: ""
+search.facet.content_type:
+  description: "label for search facet: content_type"
+  other: ""
+search.facet.file_type:
+  description: "label for search facet: file_type"
+  other: ""
+search.facet.language:
+  description: "label for search facet: language"
+  other: ""
+search.facet.release_year:
+  description: "label for search facet: release_year"
+  other: ""
+search.facet.tag:
+  description: "label for search facet: tag"
+  other: ""
+search.facet.torrent_source:
+  description: "label for search facet: torrent_source"
+  other: ""
+search.facet.video_3d:
+  description: "label for search facet: video_3d"
+  other: ""
+search.facet.video_codec:
+  description: "label for search facet: video_codec"
+  other: ""
+search.facet.video_modifier:
+  description: "label for search facet: video_modifier"
+  other: ""
+search.facet.video_resolution:
+  description: "label for search facet: video_resolution"
+  other: ""
+search.facet.video_source:
+  description: "label for search facet: video_source"
+  other: ""
+tmdb.activation:
+  description: "description for config: tmdb.activation"
+  other: ""
+torznab:
+  description: description for plugin torznab
+  other: ""
+torznab.activation:
+  description: "description for config: torznab.activation"
+  other: ""
+worker:
+  description: description for plugin worker
+  other: ""

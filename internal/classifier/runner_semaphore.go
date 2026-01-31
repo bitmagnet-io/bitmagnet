@@ -14,7 +14,7 @@ type runnerSemaphore struct {
 
 func (r runnerSemaphore) Run(
 	ctx context.Context,
-	workflow string,
+	workflow Workflow,
 	flags Flags,
 	t model.Torrent,
 ) (classification.Result, error) {

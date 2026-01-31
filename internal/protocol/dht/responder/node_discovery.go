@@ -6,13 +6,16 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/channel"
 )
 
 // responderNodeDiscovery attempts to add nodes from incoming requests to the discovered nodes channel.
 type responderNodeDiscovery struct {
 	responder       Responder
-	discoveredNodes chan<- ktable.Node
+	discoveredNodes channel.Worker[ktable.Node]
 }
+
+var _ Responder = responderNodeDiscovery{}
 
 func (r responderNodeDiscovery) Respond(ctx context.Context, msg dht.RecvMsg) (dht.Return, error) {
 	ret, err := r.responder.Respond(ctx, msg)
@@ -21,10 +24,8 @@ func (r responderNodeDiscovery) Respond(ctx context.Context, msg dht.RecvMsg) (d
 			// wait for up to a second
 			cancelCtx, cancel := context.WithTimeout(ctx, time.Second)
 			defer cancel()
-			select {
-			case <-cancelCtx.Done():
-			case r.discoveredNodes <- ktable.NewNode(msg.Msg.A.ID, msg.From):
-			}
+
+			_ = r.discoveredNodes.Add(cancelCtx, ktable.NewNode(msg.Msg.A.ID, msg.From))
 		}()
 	}
 

@@ -2,20 +2,16 @@ package search
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
-	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 	"gorm.io/gorm/clause"
 )
 
-// QueueJobsOrderBy represents sort orders for queue jobs search results
-// ENUM(created_at, ran_at, priority)
-type QueueJobsOrderBy string
-
-func (ob QueueJobsOrderBy) Clauses(direction OrderDirection) []query.OrderByColumn {
-	desc := direction == OrderDirectionDescending
+func QueueJobsOrderByClauses(ob adapter.QueueJobsOrderBy, direction adapter.OrderDirection) []query.OrderByColumn {
+	desc := direction == adapter.OrderDirectionDescending
 
 	switch ob {
-	case QueueJobsOrderByCreatedAt:
+	case adapter.QueueJobsOrderByCreatedAt:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
@@ -25,7 +21,7 @@ func (ob QueueJobsOrderBy) Clauses(direction OrderDirection) []query.OrderByColu
 				Desc: desc,
 			},
 		}}
-	case QueueJobsOrderByRanAt:
+	case adapter.QueueJobsOrderByRanAt:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
@@ -35,7 +31,7 @@ func (ob QueueJobsOrderBy) Clauses(direction OrderDirection) []query.OrderByColu
 				Desc: desc,
 			},
 		}}
-	case QueueJobsOrderByPriority:
+	case adapter.QueueJobsOrderByPriority:
 		return []query.OrderByColumn{{
 			OrderByColumn: clause.OrderByColumn{
 				Column: clause.Column{
@@ -50,19 +46,13 @@ func (ob QueueJobsOrderBy) Clauses(direction OrderDirection) []query.OrderByColu
 	}
 }
 
-type QueueJobsFullOrderBy maps.InsertMap[QueueJobsOrderBy, OrderDirection]
-
-func (fob QueueJobsFullOrderBy) Clauses() []query.OrderByColumn {
-	im := maps.InsertMap[QueueJobsOrderBy, OrderDirection](fob)
+func QueueJobsFullOrderByClauses(fob adapter.QueueJobsFullOrderBy) []query.OrderByColumn {
+	im := fob
 	clauses := make([]query.OrderByColumn, 0, im.Len())
 
 	for _, ob := range im.Entries() {
-		clauses = append(clauses, ob.Key.Clauses(ob.Value)...)
+		clauses = append(clauses, QueueJobsOrderByClauses(ob.Key, ob.Value)...)
 	}
 
 	return clauses
-}
-
-func (fob QueueJobsFullOrderBy) Option() query.Option {
-	return query.OrderBy(fob.Clauses()...)
 }

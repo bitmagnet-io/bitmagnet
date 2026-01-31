@@ -24,7 +24,7 @@ export class VersionComponent implements OnInit {
       .query<generated.VersionQuery, generated.VersionQueryVariables>({
         query: generated.VersionDocument,
       })
-      .pipe(map((r) => r.data.version))
+      .pipe(map((r) => r.data!.version))
       .subscribe({
         next: (version: string) => {
           if (version) {

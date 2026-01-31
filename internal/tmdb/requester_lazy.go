@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/go-resty/resty/v2"
 	"go.uber.org/zap"
 	"golang.org/x/sync/semaphore"
@@ -19,7 +19,7 @@ import (
 type requesterLazy struct {
 	once      sync.Once
 	config    Config
-	logger    *zap.SugaredLogger
+	logger    *zap.Logger
 	err       error
 	requester Requester
 }
@@ -41,15 +41,11 @@ func (r *requesterLazy) Request(
 	return r.requester.Request(ctx, path, queryParams, result)
 }
 
-func newRequester(ctx context.Context, config Config, logger *zap.SugaredLogger) (Requester, error) {
-	if !config.Enabled {
-		return nil, errors.New("TMDB is disabled")
-	}
-
+func newRequester(ctx context.Context, config Config, logger *zap.Logger) (Requester, error) {
 	if config.APIKey == defaultTmdbAPIKey {
-		logger.Warnln(
-			"you are using the default TMDB api key; TMDB requests will be limited to 1 per second; " +
-				"to remove this warning please configure a personal TMDB api key",
+		logger.Warn(
+			"you are using the default TMDB API key; TMDB requests will be limited to 1 per second; " +
+				"to remove this warning please configure a personal TMDB API key",
 		)
 
 		config.RateLimit = time.Second
@@ -69,13 +65,13 @@ func newRequester(ctx context.Context, config Config, logger *zap.SugaredLogger)
 							SetRetryMaxWaitTime(20 * time.Second).
 							SetTimeout(10 * time.Second).
 							EnableTrace().
-							SetLogger(logger),
+							SetLogger(logger.Sugar()),
 					},
 					limiter: rate.NewLimiter(rate.Every(config.RateLimit), config.RateLimitBurst),
 				},
 				semaphore: semaphore.NewWeighted(2),
 			},
-			isUnauthorized: &concurrency.AtomicValue[bool]{},
+			isUnauthorized: &atomic.Value[bool]{},
 		},
 		logger: logger,
 	}
@@ -83,10 +79,10 @@ func newRequester(ctx context.Context, config Config, logger *zap.SugaredLogger)
 	err := client{r}.ValidateAPIKey(ctx)
 	if errors.Is(err, ErrUnauthorized) {
 		if config.APIKey == defaultTmdbAPIKey {
-			return r, fmt.Errorf("default api key is invalid: %w", err)
+			return r, fmt.Errorf("default API key is invalid: %w", err)
 		}
 
-		logger.Errorw("invalid api key, falling back to default", "error", err)
+		logger.Error("invalid API key, falling back to default", zap.Error(err))
 
 		config.APIKey = defaultTmdbAPIKey
 

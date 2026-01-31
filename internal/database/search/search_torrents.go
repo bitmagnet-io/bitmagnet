@@ -7,14 +7,13 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 	"gorm.io/gen/field"
 	"gorm.io/gorm/clause"
 )
 
-type TorrentsResult = query.GenericResult[model.Torrent]
-
 type TorrentSearch interface {
-	Torrents(ctx context.Context, options ...query.Option) (TorrentsResult, error)
+	Torrents(ctx context.Context, options ...query.Option) (adapter.TorrentsResult, error)
 	TorrentsWithMissingInfoHashes(
 		ctx context.Context,
 		infoHashes []protocol.ID,
@@ -27,10 +26,10 @@ type TorrentSearch interface {
 	) (TorrentSuggestTagsResult, error)
 }
 
-func (s search) Torrents(ctx context.Context, options ...query.Option) (TorrentsResult, error) {
+func (s search) Torrents(ctx context.Context, options ...query.Option) (adapter.TorrentsResult, error) {
 	return query.GenericQuery[model.Torrent](
 		ctx,
-		s.q,
+		s.daoProvider,
 		query.Options(append([]query.Option{query.SelectAll()}, options...)...),
 		model.TableNameTorrent,
 		func(ctx context.Context, q *dao.Query) query.SubQuery {
@@ -60,6 +59,7 @@ func (s search) TorrentsWithMissingInfoHashes(
 	torrents := make([]model.Torrent, 0, len(searchResult.Items))
 	missingInfoHashes := make([]protocol.ID, 0, len(infoHashes)-len(searchResult.Items))
 	foundInfoHashes := make(map[protocol.ID]struct{}, len(searchResult.Items))
+
 nextInfoHash:
 	for _, h := range infoHashes {
 		for _, t := range searchResult.Items {
@@ -67,11 +67,15 @@ nextInfoHash:
 				if _, ok := foundInfoHashes[h]; ok {
 					continue nextInfoHash
 				}
+
 				foundInfoHashes[h] = struct{}{}
+
 				torrents = append(torrents, t)
+
 				continue nextInfoHash
 			}
 		}
+
 		missingInfoHashes = append(missingInfoHashes, h)
 	}
 
@@ -123,7 +127,7 @@ func (s search) TorrentSuggestTags(
 
 	result, resultErr := query.GenericQuery[SuggestedTag](
 		ctx,
-		s.q,
+		s.daoProvider,
 		query.Options(append([]query.Option{
 			query.Select(
 				clause.Expr{

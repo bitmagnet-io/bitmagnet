@@ -119,11 +119,16 @@
           <mat-card class="torrent-permalink">
             <mat-card-content>
               <app-torrent-content
+                [index]="(controller.controls$ | async)?.index"
                 [torrentContent]="i"
                 [size]="false"
                 [published]="breakpoints.sizeAtLeast('Medium')"
                 [peers]="breakpoints.sizeAtLeast('Medium')"
-                [selectedTab]="(controller.selection$ | async)?.tab"
+                [selectedTab]="
+                  (controller.selection$ | async)?.infoHash == i.infoHash
+                    ? (controller.selection$ | async)?.tab
+                    : undefined
+                "
                 (updated)="updated.emit(item(i).infoHash)"
                 (tabSelected)="
                   controller.selectTorrent(i.infoHash, $event ? $event : null)

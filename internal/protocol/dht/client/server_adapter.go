@@ -34,9 +34,14 @@ func (a serverAdapter) FindNode(
 		return FindNodeResult{}, err
 	}
 
+	nodes := extractNodes(res.Msg)
+	if len(nodes) == 0 {
+		return FindNodeResult{}, errors.New("no nodes returned")
+	}
+
 	return FindNodeResult{
 		ID:    res.Msg.R.ID,
-		Nodes: extractNodes(res.Msg),
+		Nodes: nodes,
 	}, nil
 }
 
@@ -50,10 +55,16 @@ func (a serverAdapter) GetPeers(
 		return GetPeersResult{}, err
 	}
 
+	values, nodes := extractValues(res.Msg), extractNodes(res.Msg)
+
+	if len(values)+len(nodes) == 0 {
+		return GetPeersResult{}, errors.New("no values or nodes returned")
+	}
+
 	return GetPeersResult{
 		ID:     res.Msg.R.ID,
-		Values: extractValues(res.Msg),
-		Nodes:  extractNodes(res.Msg),
+		Values: values,
+		Nodes:  nodes,
 	}, nil
 }
 
@@ -119,27 +130,32 @@ func (a serverAdapter) SampleInfoHashes(
 }
 
 func extractNodes(msg dht.Msg) []NodeInfo {
-	if len(msg.R.Nodes) == 0 {
-		return nil
-	}
-
 	nodes := make([]NodeInfo, 0, len(msg.R.Nodes))
+
 	for _, n := range msg.R.Nodes {
-		nodes = append(nodes, NodeInfo{ID: n.ID, Addr: n.Addr.ToAddrPort()})
+		addrPort := n.Addr.ToAddrPort()
+
+		if isValidRemoteAddr(addrPort.Addr()) {
+			nodes = append(nodes, NodeInfo{ID: n.ID, Addr: addrPort})
+		}
 	}
 
 	return nodes
 }
 
 func extractValues(msg dht.Msg) []netip.AddrPort {
-	if len(msg.R.Values) == 0 {
-		return nil
-	}
-
 	values := make([]netip.AddrPort, 0, len(msg.R.Values))
 	for _, v := range msg.R.Values {
-		values = append(values, v.ToAddrPort())
+		addrPort := v.ToAddrPort()
+
+		if isValidRemoteAddr(addrPort.Addr()) {
+			values = append(values, addrPort)
+		}
 	}
 
 	return values
+}
+
+func isValidRemoteAddr(addr netip.Addr) bool {
+	return addr.IsValid() && !addr.IsUnspecified() && !addr.IsLoopback()
 }

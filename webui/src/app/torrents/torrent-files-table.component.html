@@ -54,13 +54,13 @@
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *matRowDef="let i; columns: displayedColumns"></tr>
   </table>
-  @if (dataSource.result.totalCount > 10) {
+  @if (dataSource.result.totalCount ?? 0 > 10) {
     <app-paginator
       (paging)="controller.handlePageEvent($event)"
       [page]="controls.page"
       [pageSize]="controls.limit"
       [pageLength]="dataSource.result.items.length"
-      [totalLength]="dataSource.result.totalCount"
+      [totalLength]="dataSource.result.totalCount ?? null"
       [totalIsEstimate]="false"
       [showLastPage]="true"
     />

@@ -1,23 +1,31 @@
 package cache
 
-import "time"
+import (
+	"time"
 
-type Config struct {
-	CacheEnabled bool
-	EaserEnabled bool
-	TTL          time.Duration
-	MaxKeys      uint
-}
+	"github.com/bitmagnet-io/bitmagnet/internal/config/param"
+)
 
-func NewDefaultConfig() Config {
-	return Config{
-		CacheEnabled: true,
-		// The easer has been disabled as it seems to cause a bug whereby zero results are
-		// sometimes incorrectly returned; if I can get time to understand the problem better
-		// I may open an issue in https://github.com/go-gorm/caches, though they don't seem very
-		// responsive to issues, hence why bitmagnet uses a forked version of this library...
-		EaserEnabled: false,
-		TTL:          time.Minute * 10,
-		MaxKeys:      1000,
-	}
-}
+type (
+	TTL      time.Duration
+	MaxItems int
+)
+
+var (
+	ParamTTL = param.MustNew(
+		param.Dynamic(
+			param.Description[TTL]("TTL for the cache"),
+			param.Duration[TTL](true),
+			param.Default(TTL(time.Minute)),
+		),
+	)
+
+	ParamMaxItems = param.MustNew(
+		param.Dynamic(
+			param.Description[MaxItems]("Maximum number of items to cache"),
+			param.Int[MaxItems](),
+			param.Default(MaxItems(1000)),
+			param.GreaterThan(MaxItems(0)),
+		),
+	)
+)

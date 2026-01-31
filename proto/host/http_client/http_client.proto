@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package http;
+
+option go_package = "github.com/bitmagnet-io/bitmagnet/proto/host/http_client;http_client";
+
+import "common/http/http.proto";
+
+// go:plugin type=host module=http_client version=1
+service Service {
+  rpc Request(http.Request) returns (http.Response);
+}

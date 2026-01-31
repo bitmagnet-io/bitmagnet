@@ -44,6 +44,7 @@ func (i Int160) WithBit(index int, val bool) Int160 {
 	}
 
 	var mask uint8 = ^(1 << (7 - index%8))
+
 	i.bits[index/8] = i.bits[index/8]&mask | orVal
 
 	return i

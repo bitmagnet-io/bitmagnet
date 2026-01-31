@@ -1,0 +1,6 @@
+fragment PluginInfo on PluginInfo {
+  ref
+  enabled
+  dependsOn
+  requiredBy
+}

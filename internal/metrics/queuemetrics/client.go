@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/metrics"
+	"github.com/bitmagnet-io/bitmagnet/internal/database"
+	"github.com/bitmagnet-io/bitmagnet/internal/metrics/bucket"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
-	"gorm.io/gorm"
 )
 
 type Bucket struct {
@@ -20,7 +20,7 @@ type Bucket struct {
 }
 
 type Request struct {
-	BucketDuration metrics.BucketDuration
+	BucketDuration bucket.Duration
 	Statuses       []model.QueueJobStatus
 	Queues         []string
 	StartTime      time.Time
@@ -32,10 +32,15 @@ type Client interface {
 }
 
 type client struct {
-	db *gorm.DB
+	dbProvider database.GormDBProvider
 }
 
 func (c client) Request(ctx context.Context, req Request) ([]Bucket, error) {
+	db, err := c.dbProvider.GormDB()
+	if err != nil {
+		return nil, err
+	}
+
 	params := []any{
 		req.BucketDuration,
 		req.BucketDuration,
@@ -70,7 +75,7 @@ func (c client) Request(ctx context.Context, req Request) ([]Bucket, error) {
 	}
 
 	var rawResult []rawBucket
-	if err := c.db.WithContext(ctx).Raw(`select queue,
+	if err := db.WithContext(ctx).Raw(`select queue,
         status,
         date_trunc(?, created_at) as created_at_bucket,
         date_trunc(?, ran_at) as ran_at_bucket,

@@ -7,6 +7,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab"
 )
 
@@ -46,14 +47,14 @@ func searchRequestToQueryOptions(r torznab.SearchRequest) ([]query.Option, error
 	}
 
 	if r.Query != "" {
-		order := search.TorrentContentOrderByRelevance
+		order := adapter.TorrentContentOrderByRelevance
 		if r.Profile.DisableOrderByRelevance {
-			order = search.TorrentContentOrderByPublishedAt
+			order = adapter.TorrentContentOrderByPublishedAt
 		}
 
 		options = append(options,
 			query.SearchString(r.Query),
-			query.OrderBy(order.Clauses(search.OrderDirectionDescending)...))
+			query.OrderBy(search.TorrentContentOrderByClauses(order, true)...))
 	}
 
 	var catsCriteria []query.Criteria

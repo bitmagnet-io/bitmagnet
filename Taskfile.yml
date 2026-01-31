@@ -18,7 +18,7 @@ tasks:
 
   gen-gorm:
     cmds:
-      - go run ./internal/dev gorm gen
+      - go run -tags dev . dev gorm-gen
 
   gen-gql-enums:
     cmds:
@@ -38,7 +38,7 @@ tasks:
 
   gen-classifier-schema:
     cmds:
-      - go run . classifier schema --format json > ./bitmagnet.io/schemas/classifier-0.1.json
+      - go run . --no-banner classifier schema --format json > ./bitmagnet.io/schemas/classifier-0.1.json
 
   gen-webui-graphql:
     dir: ./webui
@@ -88,22 +88,57 @@ tasks:
 
   migrate:
     cmds:
-      - go run ./internal/dev migrate up
+      - go run -tags dev . dev migrate up
 
   build:
     cmds:
       - go build -ldflags "-X github.com/bitmagnet-io/bitmagnet/internal/version.GitTag=$(git describe --tags --always --dirty)"
+
+  start:
+    cmds:
+      - go run . start
 
   build-webui:
     dir: ./webui
     cmds:
       - npm run build
 
+  build-plugin:
+    preconditions:
+      - sh: test -n "{{.NAME}}"
+        msg: "Plugin name (NAME) is required"
+    dir: ./plugins/{{.NAME}}
+    cmds:
+      - "echo 'Building plugin: {{.NAME}}'"
+      - go build -buildmode=c-shared -o plugin.wasm .
+    env:
+      GOOS: wasip1
+      GOARCH: wasm
+
+  build-plugins:
+    vars:
+      PLUGINS:
+        sh: find plugins -type d -mindepth 1 -maxdepth 1 | xargs -n1 basename
+    cmds:
+      - for:
+          var: PLUGINS
+          split: "\n"
+          as: PLUGIN
+        task: build-plugin
+        vars:
+          NAME: "{{ .PLUGIN }}"
+
   build-docsite:
     dir: ./bitmagnet.io
     cmds:
       - bundle install
       - bundle exec jekyll build
+
+  build-docsite-embed:
+    dir: ./bitmagnet.io
+    cmds:
+      - bundle install
+      - bundle exec jekyll build --baseurl /docs
 
   install-webui:
     dir: ./webui
@@ -115,8 +150,8 @@ tasks:
     cmds:
       - npm start -- --host {{.HOST}} --port {{.PORT}}
     vars:
-      HOST: localhost
-      PORT: 3334
+      HOST: 0.0.0.0
+      PORT: 4200
 
   serve-docsite:
     dir: ./bitmagnet.io

@@ -1,0 +1,1 @@
+directive @auth(object: String!, action: String!) on FIELD_DEFINITION

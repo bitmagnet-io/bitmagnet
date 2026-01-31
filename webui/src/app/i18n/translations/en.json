@@ -1,32 +1,11 @@
 {
-  "content_types": {
-    "plural": {
-      "all": "All",
-      "audiobook": "Audiobooks",
-      "comic": "Comics",
-      "ebook": "E-Books",
-      "game": "Games",
-      "movie": "Movies",
-      "music": "Music",
-      "null": "Unknown",
-      "software": "Software",
-      "tv_show": "TV Shows",
-      "xxx": "XXX"
-    },
-    "singular": {
-      "audiobook": "Audiobook",
-      "comic": "Comic",
-      "ebook": "E-Book",
-      "game": "Game",
-      "movie": "Movie",
-      "music": "Music",
-      "null": "Unknown",
-      "software": "Software",
-      "tv_show": "TV Show",
-      "xxx": "XXX"
-    }
+  "account": {
+    "account": "__missing__",
+    "api_key_created": "__missing__",
+    "api_key_take_note": "__missing__",
+    "new_api_key": "__missing__"
   },
-  "dashboard": {
+  "admin": {
     "event": {
       "created": "Created",
       "failed": "Failed",
@@ -60,7 +39,6 @@
     },
     "queues": {
       "created": "Created",
-      "created_at": "Created at",
       "enqueue_jobs": "Enqueue jobs",
       "enqueue_torrent_processing_batch": "Enqueue Torrent Processing Batch",
       "failed": "Failed",
@@ -79,6 +57,55 @@
       "ran_at": "Ran at",
       "retry": "Retry",
       "total_counts_by_status": "Total counts by status"
+    }
+  },
+  "auth": {
+    "claimed_by": "Claimed by",
+    "confirm_password": "Confirm password",
+    "created_by": "Created by",
+    "expires_at": "Expires at",
+    "expiry": "Expiry",
+    "invitation_code": "Invitation code",
+    "last_login_at": "Last login at",
+    "login": "Login",
+    "login_failed": "Login failed",
+    "logout": "Logout",
+    "new_invitation": "New invitation",
+    "new_role": "__missing__",
+    "password": "Password",
+    "password_has_insufficient_entropy": "Password has insufficient entropy",
+    "passwords_do_not_match": "Passwords do not match",
+    "register": "Register",
+    "register_failed": "Register failed",
+    "role": "Role",
+    "unclaimed": "Unclaimed",
+    "username": "Username"
+  },
+  "content_types": {
+    "plural": {
+      "all": "All",
+      "audiobook": "Audiobooks",
+      "comic": "Comics",
+      "ebook": "E-Books",
+      "game": "Games",
+      "movie": "Movies",
+      "music": "Music",
+      "null": "Unknown",
+      "software": "Software",
+      "tv_show": "TV Shows",
+      "xxx": "XXX"
+    },
+    "singular": {
+      "audiobook": "Audiobook",
+      "comic": "Comic",
+      "ebook": "E-Book",
+      "game": "Game",
+      "movie": "Movie",
+      "music": "Music",
+      "null": "Unknown",
+      "software": "Software",
+      "tv_show": "TV Show",
+      "xxx": "XXX"
     }
   },
   "facets": {
@@ -105,13 +132,26 @@
     "video": "Video"
   },
   "general": {
+    "actions": "Actions",
     "all": "All",
+    "cancel": "Cancel",
+    "code": "Code",
+    "confirm": "Confirm",
+    "copy_to_clipboard": "Copy to clipboard",
+    "created_at": "Created at",
+    "delete": "Delete",
     "dismiss": "Dismiss",
+    "email": "Email",
     "error": "Error",
+    "index": "__missing__",
+    "name": "__missing__",
+    "never": "Never",
     "none": "None",
     "page_not_found": "Page not found",
     "refresh": "Refresh",
-    "status": "Status"
+    "save": "Save",
+    "status": "Status",
+    "system": "System"
   },
   "health": {
     "bitmagnet_is_status": "bitmagnet is {{status}}",
@@ -120,7 +160,8 @@
     "components": {
       "dht": "DHT",
       "postgres": "Postgres",
-      "tmdb": "TMDB"
+      "tmdb": "TMDB",
+      "workers": "Workers"
     },
     "dismiss": "Dismiss",
     "error": "Error",
@@ -130,16 +171,14 @@
       "down": "Down",
       "error": "Error",
       "inactive": "Inactive",
-      "started": "Started",
       "unknown": "Pending",
       "up": "Up"
     },
     "summary": "Health summary",
-    "worker": "Worker",
     "workers": {
-      "dht_crawler": "DHT crawler",
-      "http_server": "HTTP server",
-      "queue_server": "Queue server"
+      "dht_crawler": "__missing__",
+      "http_server": "__missing__",
+      "queue_server": "__missing__"
     }
   },
   "languages": {
@@ -225,19 +264,24 @@
     "x_to_y_of_z": "{{x}} to {{y}} of {{z}}"
   },
   "routes": {
+    "account": "Account",
     "admin": "Admin",
-    "dashboard": "Dashboard",
+    "api_keys": "__missing__",
+    "config": "Config",
     "home": "Home",
+    "invitations": "Invitations",
     "jobs": "Jobs",
     "queues": "Queues",
+    "roles": "Roles",
     "torrents": "Torrents",
-    "visualize": "Visualize"
+    "users": "Users",
+    "visualize": "Visualize",
+    "workers": "Workers"
   },
   "torrents": {
     "classification": "Classification",
     "clear_search": "Clear Search",
     "copy": "Copy",
-    "copy_to_clipboard": "Copy to clipboard",
     "delete": "Delete",
     "delete_action_cannot_be_undone": "This action cannot be undone",
     "delete_are_you_sure": "Are you sure you want to delete this torrent?",
@@ -310,5 +354,35 @@
   "version": {
     "bitmagnet_version": "bitmagnet version {{version}}",
     "unknown": "unknown"
+  },
+  "workers": {
+    "actions": {
+      "restart": "Restart",
+      "shutdown": "Shutdown",
+      "start": "Start"
+    },
+    "names": {
+      "blocker": "Blocker",
+      "database": "Database",
+      "dht_crawler": "DHT crawler",
+      "dht_server": "DHT server",
+      "dht_socket": "DHT socket",
+      "health_checker": "Health checker",
+      "http_server": "HTTP server",
+      "logger": "Logger",
+      "queue_server": "Queue server"
+    },
+    "states": {
+      "error": "Error",
+      "idle": "Idle",
+      "running": "Running",
+      "shutdown": "Shutdown",
+      "startup": "Startup"
+    },
+    "warnings": {
+      "depends_on": "This action will also start the following services:",
+      "required_by": "This action will affect the following dependent services:"
+    },
+    "worker": "Worker"
   }
 }

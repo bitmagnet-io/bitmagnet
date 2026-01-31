@@ -1,10 +1,14 @@
 package main
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/app"
-	_ "github.com/joho/godotenv/autoload"
+	"os"
+
+	"github.com/bitmagnet-io/bitmagnet/pkg/app"
+	"github.com/bitmagnet-io/bitmagnet/pkg/env"
 )
 
 func main() {
-	app.New().Run()
+	exitCode, _ := app.New().Run(env.NewDefault())
+
+	os.Exit(exitCode)
 }

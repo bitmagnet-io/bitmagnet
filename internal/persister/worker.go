@@ -1,0 +1,138 @@
+package persister
+
+import (
+	"context"
+	"fmt"
+	"sync"
+	"time"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
+	"go.uber.org/zap"
+)
+
+type worker struct {
+	iflusher
+	mtx      sync.RWMutex
+	in       chan Input
+	shutdown chan struct{}
+	maxSize  *atomic.Value[MaxSize]
+	maxWait  *atomic.Value[MaxWait]
+	logger   *zap.Logger
+}
+
+type iflusher interface {
+	flush(ctx context.Context, payload *payload) (AllTablesStats, error)
+}
+
+func (w *worker) Add(ctx context.Context, payload Input) error {
+	w.mtx.RLock()
+	defer w.mtx.RUnlock()
+
+	in := w.in
+
+	if in == nil {
+		return fmt.Errorf("%w: %w", Err, runner.ErrNotRunning)
+	}
+
+	select {
+	case <-ctx.Done():
+		return fmt.Errorf("%w: %w", Err, ctx.Err())
+	case <-w.shutdown:
+		return fmt.Errorf("%w: %w", Err, runner.ErrShutdownRequested)
+	case in <- payload:
+		return nil
+	}
+}
+
+func (w *worker) Runner() runner.Runner {
+	return func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
+		w.mtx.Lock()
+		defer w.mtx.Unlock()
+
+		if w.in != nil {
+			return runner.NopShutdowner, fmt.Errorf("%w: %w", Err, runner.ErrAlreadyRunning)
+		}
+
+		in := make(chan Input, 1)
+
+		w.in = in
+
+		shutdown := make(chan struct{})
+
+		payload := newPayload()
+
+		lastFlush := time.Now()
+
+		checkFlush := func(ctx context.Context) error {
+			size := payload.len()
+			if size == 0 {
+				lastFlush = time.Now()
+				return nil
+			}
+
+			if !payload.shouldFlush &&
+				size < int(w.maxSize.Get()) &&
+				time.Since(lastFlush) < time.Duration(w.maxWait.Get()) {
+				return nil
+			}
+
+			w.logger.Debug("flushing", zap.Int("size", size))
+
+			_, err := w.flush(ctx, payload)
+
+			payload = newPayload()
+
+			if err != nil {
+				w.logger.Error("flush failed", zap.Error(err))
+
+				return err
+			}
+
+			lastFlush = time.Now()
+
+			return nil
+		}
+
+		go func() {
+			defer cancel(nil)
+
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case <-shutdown:
+					return
+				case <-time.After(time.Duration(w.maxWait.Get()) - time.Since(lastFlush)):
+					_ = checkFlush(ctx)
+				case item, ok := <-w.in:
+					if !ok {
+						return
+					}
+
+					item(payload)
+
+					_ = checkFlush(ctx)
+				}
+			}
+		}()
+
+		return func(shutdownCtx context.Context) error {
+			close(shutdown)
+
+			w.mtx.Lock()
+			w.in = nil
+			close(in)
+			w.mtx.Unlock()
+
+			select {
+			case <-ctx.Done():
+				InputFlush(payload)
+
+				return checkFlush(shutdownCtx)
+			case <-shutdownCtx.Done():
+				return shutdownCtx.Err()
+			}
+		}, nil
+	}
+}

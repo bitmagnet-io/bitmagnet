@@ -21,7 +21,7 @@ func (m InsertMap[K, V]) Len() int {
 }
 
 func (m InsertMap[K, V]) Keys() []K {
-	return m.keys
+	return append([]K(nil), m.keys...)
 }
 
 func (m InsertMap[K, V]) Values() []V {
@@ -59,10 +59,21 @@ func (m *InsertMap[K, V]) SetKey(key K) {
 	m.Set(key, value)
 }
 
+func (m *InsertMap[K, V]) SetKeys(keys ...K) {
+	for _, k := range keys {
+		m.SetKey(k)
+	}
+}
+
 func (m *InsertMap[K, V]) SetEntries(entries ...MapEntry[K, V]) {
 	for _, e := range entries {
 		m.Set(e.Key, e.Value)
 	}
+}
+
+func (m *InsertMap[K, V]) Clear() {
+	m.keys = nil
+	m.keyValues = make(map[K]V)
 }
 
 func (m InsertMap[K, V]) Get(key K) (V, bool) {

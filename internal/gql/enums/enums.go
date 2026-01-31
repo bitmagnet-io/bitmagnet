@@ -1,8 +1,9 @@
 package enums
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/search"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/worker"
 )
 
 type enum struct {
@@ -18,8 +19,9 @@ func newEnum(name string, values []string) enum {
 }
 
 var Enums = []enum{
-	newEnum("ContentType", model.ContentTypeNames()),
 	newEnum("FacetLogic", model.FacetLogicNames()),
+	newEnum("FacetKey", search.FacetNames()),
+	newEnum("ContentType", model.ContentTypeNames()),
 	newEnum("FileType", model.FileTypeNames()),
 	newEnum("FilesStatus", model.FilesStatusNames()),
 	newEnum("Language", model.LanguageValueStrings()),
@@ -31,4 +33,6 @@ var Enums = []enum{
 	newEnum("TorrentContentOrderByField", search.TorrentContentOrderByNames()),
 	newEnum("TorrentFilesOrderByField", search.TorrentFilesOrderByNames()),
 	newEnum("QueueJobsOrderByField", search.QueueJobsOrderByNames()),
+	newEnum("WorkerState", worker.StateNames()),
+	newEnum("SearchResultType", search.ResultTypeNames()),
 }

@@ -1,0 +1,25 @@
+type AuthQuery {
+  listUsers(input: ListUsersInput): ListUsersResult!
+  listRoles: [Role!]!
+  listObjectActions: [AuthObjectAction!]!
+  listInvitations(input: ListInvitationsInput): ListInvitationsResult!
+}
+
+input ListUsersInput {
+  pagination: PaginationInput
+  usernameLike: String
+}
+
+type ListUsersResult {
+  users: [User!]!
+  totalCount: Int!
+}
+
+input ListInvitationsInput {
+  pagination: PaginationInput
+}
+
+type ListInvitationsResult {
+  invitations: [Invitation!]!
+  totalCount: Int!
+}

@@ -2,11 +2,8 @@ package processor
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
-	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
-
-const MessageName = "process_torrent"
 
 type ClassifyMode int
 
@@ -19,17 +16,13 @@ const (
 	ClassifyModeRematch
 )
 
-type MessageParams struct {
-	ClassifyMode       ClassifyMode     `json:"ClassifyMode,omitempty"`
-	ClassifierWorkflow string           `json:"ClassifierWorkflow,omitempty"`
-	ClassifierFlags    classifier.Flags `json:"ClassifierFlags,omitempty"`
-	InfoHashes         []protocol.ID    `json:"InfoHashes"`
+type ClassifierParams struct {
+	ClassifyMode       ClassifyMode        `json:"ClassifyMode,omitempty"`
+	ClassifierWorkflow classifier.Workflow `json:"ClassifierWorkflow,omitempty"`
+	ClassifierFlags    classifier.Flags    `json:"ClassifierFlags,omitempty"`
 }
 
-func NewQueueJob(msg MessageParams, options ...model.QueueJobOption) (model.QueueJob, error) {
-	return model.NewQueueJob(
-		MessageName,
-		msg,
-		append([]model.QueueJobOption{model.QueueJobMaxRetries(2)}, options...)...,
-	)
+type MessageParams struct {
+	ClassifierParams
+	InfoHashes []protocol.ID `json:"InfoHashes"`
 }

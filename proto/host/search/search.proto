@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package search;
+
+option go_package = "github.com/bitmagnet-io/bitmagnet/proto/host/search;search";
+
+import "common/search/search.proto";
+
+// go:plugin type=host version=1
+service SearchService {
+  rpc SearchTorrentContent(search.Params) returns (search.TorrentContentResult);
+}

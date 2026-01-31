@@ -79,7 +79,7 @@ export class GraphQLService {
         variables: input,
         fetchPolicy,
       })
-      .pipe(map((r) => r.data.torrent.suggestTags));
+      .pipe(map((r) => r.data!.torrent.suggestTags));
   }
 }
 

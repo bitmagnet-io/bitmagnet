@@ -30,7 +30,6 @@ func newTorrentTag(db *gorm.DB, opts ...gen.DOOption) torrentTag {
 	_torrentTag.InfoHash = field.NewField(tableName, "info_hash")
 	_torrentTag.Name = field.NewString(tableName, "name")
 	_torrentTag.CreatedAt = field.NewTime(tableName, "created_at")
-	_torrentTag.UpdatedAt = field.NewTime(tableName, "updated_at")
 
 	_torrentTag.fillFieldMap()
 
@@ -44,7 +43,6 @@ type torrentTag struct {
 	InfoHash  field.Field
 	Name      field.String
 	CreatedAt field.Time
-	UpdatedAt field.Time
 
 	fieldMap map[string]field.Expr
 }
@@ -64,7 +62,6 @@ func (t *torrentTag) updateTableName(table string) *torrentTag {
 	t.InfoHash = field.NewField(table, "info_hash")
 	t.Name = field.NewString(table, "name")
 	t.CreatedAt = field.NewTime(table, "created_at")
-	t.UpdatedAt = field.NewTime(table, "updated_at")
 
 	t.fillFieldMap()
 
@@ -81,11 +78,10 @@ func (t *torrentTag) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (t *torrentTag) fillFieldMap() {
-	t.fieldMap = make(map[string]field.Expr, 4)
+	t.fieldMap = make(map[string]field.Expr, 3)
 	t.fieldMap["info_hash"] = t.InfoHash
 	t.fieldMap["name"] = t.Name
 	t.fieldMap["created_at"] = t.CreatedAt
-	t.fieldMap["updated_at"] = t.UpdatedAt
 }
 
 func (t torrentTag) clone(db *gorm.DB) torrentTag {

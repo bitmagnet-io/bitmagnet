@@ -3,8 +3,8 @@ package adapter
 import (
 	"strconv"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/torznab"
 )
 

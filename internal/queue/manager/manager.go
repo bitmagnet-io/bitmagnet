@@ -1,11 +1,12 @@
 package manager
 
 import (
-	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
-	"gorm.io/gorm"
+	"github.com/bitmagnet-io/bitmagnet/internal/database"
+	"github.com/bitmagnet-io/bitmagnet/internal/processor/batch"
+	"github.com/bitmagnet-io/bitmagnet/internal/queue"
 )
 
 type manager struct {
-	dao *dao.Query
-	db  *gorm.DB
+	batchJobProvider queue.JobProvider[batch.MessageParams]
+	db               database.GormDBProvider
 }

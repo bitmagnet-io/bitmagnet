@@ -59,6 +59,7 @@ func New(p Params) Result {
 					peersMap[p.Addr.Addr().String()] = p
 					rm.putAddrHashes(p.Addr.Addr(), id)
 				}
+
 				return &hash{
 					id:           id,
 					peers:        peersMap,

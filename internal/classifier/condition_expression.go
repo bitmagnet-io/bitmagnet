@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
+	"github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
 	"github.com/google/cel-go/cel"
 )
 
@@ -12,42 +14,51 @@ const expressionName = "expression"
 
 type expressionCondition struct{}
 
-var celProgramPayload = payloadTransformer[string, cel.Program]{
-	spec: payloadGeneric[string]{
-		jsonSchema: JSONSchema{
-			"type":        "string",
-			"minLength":   1,
-			"description": "A CEL expression describing a condition",
+func celProgramPayload(env *cel.Env) json_spec.Transformer[string, cel.Program] {
+	return json_spec.Transformer[string, cel.Program]{
+		Typed: json_spec.Generic[string]{
+			Schema: json_schema.MustNew(
+				json_schema.Typed(json_schema.TypeString),
+				json_schema.MinLength(1),
+				json_schema.Description("A CEL expression describing a condition"),
+			),
 		},
-	},
-	transform: func(s string, ctx compilerContext) (cel.Program, error) {
-		ast, issues := ctx.celEnv.Compile(s)
-		if issues != nil && issues.Err() != nil {
-			return nil, ctx.error(fmt.Errorf("type-check error: %w", issues.Err()))
-		}
-		if !reflect.DeepEqual(ast.OutputType(), cel.BoolType) {
-			return nil, ctx.error(
-				fmt.Errorf("got %v, wanted %v output type", ast.OutputType(), cel.BoolType),
+		Transform: func(s string, ctx json_spec.ParseContext) (cel.Program, error) {
+			ast, issues := env.Compile(s)
+			if issues != nil && issues.Err() != nil {
+				return nil, ctx.Error(fmt.Errorf("type-check error: %w", issues.Err()))
+			}
+
+			if !reflect.DeepEqual(ast.OutputType(), cel.BoolType) {
+				return nil, ctx.Error(
+					fmt.Errorf("got %v, wanted %v output type", ast.OutputType(), cel.BoolType),
+				)
+			}
+
+			prg, prgErr := env.Program(ast,
+				cel.EvalOptions(cel.OptOptimize),
 			)
-		}
-		prg, prgErr := ctx.celEnv.Program(ast,
-			cel.EvalOptions(cel.OptOptimize),
-		)
-		if prgErr != nil {
-			return nil, ctx.error(fmt.Errorf("program construction error: %w", prgErr))
-		}
-		return prg, nil
-	},
+			if prgErr != nil {
+				return nil, ctx.Error(fmt.Errorf("program construction error: %w", prgErr))
+			}
+
+			return prg, nil
+		},
+	}
 }
 
-var expressionConditionPayload = payloadUnion[cel.Program]{
-	oneOf: []TypedPayload[cel.Program]{
-		payloadSingleKeyValue[cel.Program]{
-			key:       expressionName,
-			valueSpec: payloadMustSucceed[cel.Program]{celProgramPayload},
+func expressionConditionSpec(env *cel.Env) json_spec.Union[cel.Program] {
+	valueSpec := json_spec.MustSucceed[cel.Program]{Typed: celProgramPayload(env)}
+
+	return json_spec.Union[cel.Program]{
+		OneOf: []json_spec.Typed[cel.Program]{
+			json_spec.SingleKeyValue[cel.Program]{
+				Key:       expressionName,
+				ValueSpec: valueSpec,
+			},
+			valueSpec,
 		},
-		payloadMustSucceed[cel.Program]{celProgramPayload},
-	},
+	}
 }
 
 func (expressionCondition) name() string {
@@ -55,9 +66,9 @@ func (expressionCondition) name() string {
 }
 
 func (expressionCondition) compileCondition(ctx compilerContext) (condition, error) {
-	prg, err := expressionConditionPayload.Unmarshal(ctx)
+	prg, err := expressionConditionSpec(ctx.celEnv).Parse(ctx.jsonSpec)
 	if err != nil {
-		return condition{}, ctx.error(err)
+		return condition{}, ctx.Error(err)
 	}
 
 	return condition{
@@ -69,19 +80,22 @@ func (expressionCondition) compileCondition(ctx compilerContext) (condition, err
 			for k, v := range ctx.flags {
 				vars["flags."+k] = v
 			}
+
 			result, _, err := prg.ContextEval(ctx.Context, vars)
 			if err != nil {
 				return false, err
 			}
+
 			bl, ok := result.Value().(bool)
 			if !ok {
 				return false, errors.New("not bool")
 			}
+
 			return bl, nil
 		},
 	}, nil
 }
 
-func (expressionCondition) JSONSchema() JSONSchema {
-	return expressionConditionPayload.JSONSchema()
+func (expressionCondition) JSONSchema() json_schema.JSONSchema {
+	return expressionConditionSpec(nil).JSONSchema()
 }

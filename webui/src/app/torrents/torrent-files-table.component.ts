@@ -1,7 +1,6 @@
 import { Component, inject, Input, OnInit } from "@angular/core";
 import { Apollo } from "apollo-angular";
 import { TranslocoService } from "@jsverse/transloco";
-import { TimeAgoPipe } from "../pipes/time-ago.pipe";
 import * as generated from "../graphql/generated";
 import { ErrorsService } from "../errors/errors.service";
 import { PaginatorComponent } from "../paginator/paginator.component";
@@ -20,7 +19,7 @@ import {
 @Component({
   selector: "app-torrent-files-table",
   standalone: true,
-  imports: [AppModule, FilesizePipe, PaginatorComponent, TimeAgoPipe],
+  imports: [AppModule, FilesizePipe, PaginatorComponent],
   templateUrl: "./torrent-files-table.component.html",
   styleUrl: "./torrent-files-table.component.scss",
 })
@@ -30,6 +29,7 @@ export class TorrentFilesTableComponent implements OnInit {
   protected transloco = inject(TranslocoService);
 
   @Input() torrent: generated.Torrent;
+  @Input() index?: string;
 
   protected controller: TorrentFilesController;
   protected dataSource: ITorrentFilesDatasource;
@@ -39,7 +39,10 @@ export class TorrentFilesTableComponent implements OnInit {
   protected controls: TorrentFilesControls;
 
   ngOnInit() {
-    this.controller = new TorrentFilesController(this.torrent.infoHash);
+    this.controller = new TorrentFilesController(
+      this.index,
+      this.torrent.infoHash,
+    );
     this.dataSource =
       this.torrent.filesStatus === "single"
         ? new TorrentFilesSingleDatasource(this.torrent)

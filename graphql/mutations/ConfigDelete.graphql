@@ -1,0 +1,9 @@
+#import "../fragments/ConfigParam"
+
+mutation ConfigDelete($ref: Ref!) {
+  config {
+    delete(ref: $ref) {
+      ...ConfigParam
+    }
+  }
+}

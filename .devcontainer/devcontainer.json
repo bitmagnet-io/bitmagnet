@@ -1,0 +1,14 @@
+{
+  "name": "bitmagnet",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "bitmagnet-dev",
+  "workspaceFolder": "/home/bitmagnet/code",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh"
+      }
+    }
+  },
+  "remoteUser": "bitmagnet"
+}

@@ -9,13 +9,11 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
-const MessageName = "process_torrent_batch"
-
 type MessageParams struct {
 	InfoHashGreaterThan protocol.ID             `json:"InfoHashGreaterThan,omitempty"`
 	UpdatedBefore       time.Time               `json:"UpdatedBefore,omitempty"`
 	ClassifyMode        processor.ClassifyMode  `json:"ClassifyMode,omitempty"`
-	ClassifierWorkflow  string                  `json:"ClassifierWorkflow,omitempty"`
+	ClassifierWorkflow  classifier.Workflow     `json:"ClassifierWorkflow,omitempty"`
 	ClassifierFlags     classifier.Flags        `json:"ClassifierFlags,omitempty"`
 	ChunkSize           uint                    `json:"ChunkSize,omitempty"`
 	BatchSize           uint                    `json:"BatchSize,omitempty"`
@@ -38,18 +36,19 @@ func (p MessageParams) ApisDisabled() bool {
 	return ok && !enabled
 }
 
-func NewQueueJob(msg MessageParams, options ...model.QueueJobOption) (model.QueueJob, error) {
-	if msg.BatchSize == 0 {
-		msg.BatchSize = 100
-	}
-
-	if msg.ChunkSize == 0 {
-		msg.ChunkSize = 10_000
-	}
-
-	return model.NewQueueJob(
-		MessageName,
-		msg,
-		append([]model.QueueJobOption{model.QueueJobMaxRetries(2)}, options...)...,
-	)
-}
+//
+// func NewQueueJob(msg MessageParams, options ...model.QueueJobOption) (model.QueueJob, error) {
+//	if msg.BatchSize == 0 {
+//		msg.BatchSize = 100
+//	}
+//
+//	if msg.ChunkSize == 0 {
+//		msg.ChunkSize = 10_000
+//	}
+//
+//	return model.NewQueueJob(
+//		MessageName,
+//		msg,
+//		append([]model.QueueJobOption{model.QueueJobMaxRetries(2)}, options...)...,
+//	)
+//}

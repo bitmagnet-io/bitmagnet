@@ -91,15 +91,19 @@ var (
 
 func (l *keywordsLexer) lexGroupToken(parens bool) (base.GroupToken, error) {
 	var groupTokens []dialect.Token
+
 outer:
 	for {
 		var tokens []dialect.Token
+
 		addGroup := func() {
 			if len(tokens) > 0 {
 				groupTokens = append(groupTokens, rex.Group.NonCaptured(tokens...))
 			}
+
 			tokens = nil
 		}
+
 	inner:
 		for {
 			if parens {
@@ -107,6 +111,7 @@ outer:
 					l.Backup()
 					return base.GroupToken{}, ErrUnexpectedChar
 				}
+
 				if l.ReadChar(')') {
 					addGroup()
 					break outer
@@ -116,33 +121,44 @@ outer:
 				if err != nil {
 					return base.GroupToken{}, err
 				}
+
 				if l.ReadChar('?') {
 					tokens = append(tokens, group.Repeat().ZeroOrOne())
 				} else {
 					tokens = append(tokens, group)
 				}
+
 				continue inner
 			}
+
 			if l.ReadChar('|') {
 				if len(tokens) == 0 {
 					l.Backup()
 					return base.GroupToken{}, ErrUnexpectedChar
 				}
+
 				addGroup()
+
 				continue outer
 			}
+
 			token, err := l.lexClassWithModifierToken()
 			if errors.Is(err, ErrEOF) {
 				if parens {
 					return base.GroupToken{}, ErrUnexpectedEOF
 				}
+
 				addGroup()
+
 				break outer
 			}
+
 			if err != nil {
 				return base.GroupToken{}, err
 			}
+
 			tokens = append(tokens, token)
+
 			continue inner
 		}
 	}

@@ -2,6 +2,8 @@ package classifier
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
+	"github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
 )
 
 const attachLocalContentBySearchName = "attach_local_content_by_search"
@@ -12,14 +14,14 @@ func (attachLocalContentBySearchAction) name() string {
 	return attachLocalContentBySearchName
 }
 
-var attachLocalContentBySearchPayloadSpec = payloadLiteral[string]{
-	literal:     attachLocalContentBySearchName,
-	description: "Attempt to attach local content with a search on the torrent name",
+var attachLocalContentBySearchSpec = json_spec.Literal[string]{
+	Literal:     attachLocalContentBySearchName,
+	Description: "Attempt to attach local content with a search on the torrent name",
 }
 
-func (attachLocalContentBySearchAction) compileAction(ctx compilerContext) (action, error) {
-	if _, err := attachLocalContentBySearchPayloadSpec.Unmarshal(ctx); err != nil {
-		return action{}, ctx.error(err)
+func (attachLocalContentBySearchAction) compile(ctx compilerContext) (action, error) {
+	if _, err := attachLocalContentBySearchSpec.Parse(ctx.jsonSpec); err != nil {
+		return action{}, ctx.Error(err)
 	}
 
 	return action{
@@ -28,6 +30,7 @@ func (attachLocalContentBySearchAction) compileAction(ctx compilerContext) (acti
 			if !cl.ContentType.Valid || !cl.BaseTitle.Valid {
 				return cl, classification.ErrUnmatched
 			}
+
 			content, err := ctx.search.ContentBySearch(
 				ctx.Context,
 				cl.ContentType.ContentType,
@@ -37,12 +40,14 @@ func (attachLocalContentBySearchAction) compileAction(ctx compilerContext) (acti
 			if err != nil {
 				return cl, err
 			}
+
 			cl.AttachContent(&content)
+
 			return cl, nil
 		},
 	}, nil
 }
 
-func (attachLocalContentBySearchAction) JSONSchema() JSONSchema {
-	return attachLocalContentBySearchPayloadSpec.JSONSchema()
+func (attachLocalContentBySearchAction) JSONSchema() json_schema.JSONSchema {
+	return attachLocalContentBySearchSpec.JSONSchema()
 }

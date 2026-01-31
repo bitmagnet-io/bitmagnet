@@ -10,48 +10,52 @@ import (
 
 type responderLogger struct {
 	responder Responder
-	logger    *zap.SugaredLogger
+	logger    *zap.Logger
 }
 
 func (r responderLogger) Respond(ctx context.Context, msg dht.RecvMsg) (dht.Return, error) {
 	start := time.Now()
 	ret, err := r.responder.Respond(ctx, msg)
 
-	var logData []interface{}
-
-	log := func(k string, v interface{}) {
-		logData = append(logData, k, v)
+	fields := []zap.Field{
+		zap.Stringer("from", msg.From),
+		zap.Duration("duration", time.Since(start)),
 	}
+
 	message := msg.Msg.Q
-	log("from", msg.From)
-	log("duration", time.Since(start))
 
 	if err == nil {
 		switch msg.Msg.Q {
 		case dht.QFindNode:
-			log("target", msg.Msg.A.Target)
-			log("nodes", len(ret.Nodes))
+			fields = append(fields,
+				zap.Stringer("target", msg.Msg.A.Target),
+				zap.Int("nodes", len(ret.Nodes)),
+			)
 		case dht.QGetPeers:
-			log("values", len(ret.Values))
-			log("nodes", len(ret.Nodes))
-			log("token", ret.Token)
+			fields = append(fields,
+				zap.Int("values", len(ret.Values)),
+				zap.Int("nodes", len(ret.Nodes)),
+				zap.Stringp("token", ret.Token),
+			)
 		case dht.QAnnouncePeer:
-			log("infoHash", msg.Msg.A.InfoHash)
-			log("port", msg.AnnouncePort())
-			log("token", msg.Msg.A.Token)
+			fields = append(fields,
+				zap.Stringer("info_hash", msg.Msg.A.InfoHash),
+				zap.Uint16("port", msg.AnnouncePort()),
+				zap.String("token", msg.Msg.A.Token))
 		case dht.QSampleInfohashes:
-			log("samples", len(*ret.Samples))
-			log("nodes", len(ret.Nodes))
-			log("num", *ret.Num)
-			log("interval", *ret.Interval)
+			fields = append(fields,
+				zap.Int("samples", len(*ret.Samples)),
+				zap.Int("nodes", len(ret.Nodes)),
+				zap.Int64("num", *ret.Num),
+				zap.Int64("interval", *ret.Interval))
 		}
 	} else {
 		message += " error"
 
-		log("error", err)
+		fields = append(fields, zap.Error(err))
 	}
 
-	r.logger.Debugw(message, logData...)
+	r.logger.Debug(message, fields...)
 
 	return ret, err
 }

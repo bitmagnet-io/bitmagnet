@@ -1,0 +1,10 @@
+fragment ConfigParam on ConfigParam {
+  ref
+  plugin
+  value
+  source
+  default
+  dynamic
+  pending
+  jsonSchema
+}

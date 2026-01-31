@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { Apollo } from "apollo-angular";
+import { combineLatest } from "rxjs";
 import * as generated from "../graphql/generated";
 import { GraphQLModule } from "../graphql/graphql.module";
 import { AppModule } from "../app.module";
@@ -27,34 +28,39 @@ export class TorrentPermalinkComponent implements OnInit {
   private router = inject(Router);
   private apollo = inject(Apollo);
   torrentContent: generated.TorrentContent | undefined;
+  index?: string;
 
   ngOnInit() {
-    this.route.paramMap.subscribe((params) => {
-      const infoHash = params.get("infoHash");
-      if (typeof infoHash !== "string" || !/^[0-9a-f]{40}$/.test(infoHash)) {
-        return this.notFound();
-      }
-      this.apollo
-        .query<
-          generated.TorrentContentSearchQuery,
-          generated.TorrentContentSearchQueryVariables
-        >({
-          query: generated.TorrentContentSearchDocument,
-          variables: {
-            input: {
-              infoHashes: [infoHash],
+    combineLatest([this.route.paramMap, this.route.queryParamMap]).subscribe(
+      ([params, queryParams]) => {
+        this.index = queryParams.get("index") || undefined;
+        const infoHash = params.get("infoHash");
+        if (typeof infoHash !== "string" || !/^[0-9a-f]{40}$/.test(infoHash)) {
+          return this.notFound();
+        }
+        this.apollo
+          .query<
+            generated.TorrentContentSearchQuery,
+            generated.TorrentContentSearchQueryVariables
+          >({
+            query: generated.TorrentContentSearchDocument,
+            variables: {
+              input: {
+                index: this.index,
+                criteria: { infoHash },
+              },
             },
-          },
-          fetchPolicy: "no-cache",
-        })
-        .subscribe((result) => {
-          const items = result.data.torrentContent.search.items;
-          if (items.length === 0) {
-            return this.notFound();
-          }
-          this.torrentContent = items[0];
-        });
-    });
+            fetchPolicy: "no-cache",
+          })
+          .subscribe((result) => {
+            const items = result.data!.torrent.searchTorrentContent.items;
+            if (items.length === 0) {
+              return this.notFound();
+            }
+            this.torrentContent = items[0];
+          });
+      },
+    );
   }
 
   private notFound() {

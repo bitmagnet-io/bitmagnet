@@ -9,10 +9,12 @@ import {
   MatCard,
   MatCardContent,
   MatCardHeader,
+  MatCardSubtitle,
   MatCardTitle,
 } from "@angular/material/card";
 import { MatGridTile } from "@angular/material/grid-list";
 import { MatMenu, MatMenuItem } from "@angular/material/menu";
+import { MatDivider } from "@angular/material/divider";
 import { GraphQLModule } from "../graphql/graphql.module";
 import { HealthCardComponent } from "./health-card.component";
 import { HealthSummaryComponent } from "./health-summary.component";
@@ -37,6 +39,8 @@ import { HealthService } from "./health.service";
     MatGridTile,
     MatMenu,
     MatMenuItem,
+    MatCardSubtitle,
+    MatDivider,
   ],
   declarations: [
     HealthCardComponent,

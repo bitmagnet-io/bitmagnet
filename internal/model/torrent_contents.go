@@ -5,27 +5,71 @@ import (
 	"strings"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/database/fts"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
-func (tc TorrentContent) InferID() string {
-	parts := make([]string, 4)
-	parts[0] = tc.InfoHash.String()
+type ContentSourceID struct {
+	Source string
+	ID     string
+}
 
-	if tc.ContentType.Valid {
-		parts[1] = tc.ContentType.ContentType.String()
-	} else {
-		parts[1] = "?"
+type TorrentContentContentRef struct {
+	Type     ContentType
+	SourceID Maybe[ContentSourceID]
+}
+
+type TorrentContentRef struct {
+	InfoHash   protocol.ID
+	ContentRef Maybe[TorrentContentContentRef]
+}
+
+func (ref TorrentContentRef) InferID() string {
+	parts := []string{
+		ref.InfoHash.String(),
+		"?",
+		"?",
+		"?",
 	}
 
-	if tc.ContentSource.Valid {
-		parts[2] = tc.ContentSource.String
-		parts[3] = tc.ContentID.String
-	} else {
-		parts[2] = "?"
-		parts[3] = "?"
+	if contentRef, ok := ref.ContentRef.ValueOK(); ok {
+		parts[1] = contentRef.Type.String()
+		if sourceID, ok := contentRef.SourceID.ValueOK(); ok {
+			parts[2] = sourceID.Source
+			parts[3] = sourceID.ID
+		}
 	}
 
 	return strings.Join(parts, ":")
+}
+
+func (tc TorrentContent) Ref() TorrentContentRef {
+	var contentRef Maybe[TorrentContentContentRef]
+
+	if tc.ContentType.Valid {
+		ct := tc.ContentType.ContentType
+
+		var sourceID Maybe[ContentSourceID]
+		if tc.ContentSource.Valid && tc.ContentID.Valid {
+			sourceID = MaybeValid(ContentSourceID{
+				Source: tc.ContentSource.String,
+				ID:     tc.ContentID.String,
+			})
+		}
+
+		contentRef = MaybeValid(TorrentContentContentRef{
+			Type:     ct,
+			SourceID: sourceID,
+		})
+	}
+
+	return TorrentContentRef{
+		InfoHash:   tc.InfoHash,
+		ContentRef: contentRef,
+	}
+}
+
+func (tc TorrentContent) InferID() string {
+	return tc.Ref().InferID()
 }
 
 func (tc TorrentContent) Title() string {

@@ -1,3 +1,3 @@
 package version
 
-var GitTag string
+var GitTag = "v-unknown"

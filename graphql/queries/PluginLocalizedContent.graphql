@@ -1,0 +1,12 @@
+#import "../fragments/PluginLocalizedContent"
+
+query PluginLocalizedContent {
+  plugin {
+    list {
+      ref
+      localizedContent {
+        ...PluginLocalizedContent
+      }
+    }
+  }
+}

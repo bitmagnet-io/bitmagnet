@@ -1,0 +1,64 @@
+syntax = "proto3";
+package search;
+
+option go_package = "github.com/bitmagnet-io/bitmagnet/proto/common/search;search";
+import "common/model/model.proto";
+
+message Params {
+  optional string queryString = 1;
+  optional string criteria = 2;
+  optional int32 limit = 3;
+  optional int32 page = 4;
+  optional int32 offset = 5;
+  optional bool totalCount = 6;
+  optional bool hasNextPage = 7;
+  optional float aggregationBudget = 8;
+  repeated OrderByParam orderBy = 9;
+  repeated FacetParam facets = 10;
+}
+
+message OrderByParam {
+  string key = 1;
+  optional bool descending = 2;
+}
+
+message FacetParam {
+  string key = 1;
+  repeated string filter = 2;
+  optional bool aggregate = 3;
+  optional FacetLogic logic = 4;
+}
+
+enum FacetLogic {
+  or = 0;
+  and = 1;
+}
+
+message TorrentContentResult {
+  optional int32 totalCount = 1;
+  optional bool totalCountIsEstimate = 2;
+  optional bool hasNextPage = 3;
+  repeated model.TorrentContent items = 4;
+  repeated FacetResult facets = 5;
+}
+
+message TorrentFilesResult {
+  optional int32 totalCount = 1;
+  optional bool totalCountIsEstimate = 2;
+  optional bool hasNextPage = 3;
+  repeated model.TorrentFile items = 4;
+  repeated FacetResult facets = 5;
+}
+
+message FacetResult {
+  string key = 1;
+  FacetLogic logic = 3;
+  repeated FacetResultItem items = 4;
+}
+
+message FacetResultItem {
+  string value = 1;
+  optional string label = 2;
+  int32 count = 3;
+  optional bool isEstimate = 4;
+}

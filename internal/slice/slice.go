@@ -1,9 +1,5 @@
 package slice
 
-import (
-	"iter"
-)
-
 func Map[T any, R any](t []T, mapFunc func(T) R) []R {
 	r := make([]R, len(t))
 
@@ -14,10 +10,76 @@ func Map[T any, R any](t []T, mapFunc func(T) R) []R {
 	return r
 }
 
+func MapErr[T any, R any](t []T, mapFunc func(T) (R, error)) ([]R, error) {
+	var err error
+
+	r := make([]R, len(t))
+
+	for i, e := range t {
+		r[i], err = mapFunc(e)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return r, nil
+}
+
+func FlatMap[T any, R any](t []T, mapFunc func(T) []R) []R {
+	//nolint:prealloc
+	var result []R
+
+	for _, e := range t {
+		result = append(result, mapFunc(e)...)
+	}
+
+	return result
+}
+
+func Flatten[T any](values ...[]T) []T {
+	return FlatMap(values, func(t []T) []T {
+		return t
+	})
+}
+
 func MapWithArg[I any, O any, A any](t []I, arg A, mapFunc func(A, I) O) []O {
 	return Map(t, func(e I) O {
 		return mapFunc(arg, e)
 	})
+}
+
+func Filter[T any](t []T, predicate func(T) bool) []T {
+	var result []T
+
+	for _, e := range t {
+		if predicate(e) {
+			result = append(result, e)
+		}
+	}
+
+	return result
+}
+
+func Some[T any](t []T, predicate func(T) bool) bool {
+	for _, e := range t {
+		if predicate(e) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func Find[T any](t []T, predicate func(T) bool) (T, bool) {
+	for _, e := range t {
+		if predicate(e) {
+			return e, true
+		}
+	}
+
+	var zero T
+
+	return zero, false
 }
 
 func Group[T any, K comparable](s []T, keyFunc func(T) K) map[K][]T {
@@ -29,25 +91,6 @@ func Group[T any, K comparable](s []T, keyFunc func(T) K) map[K][]T {
 	}
 
 	return m
-}
-
-func ToMap[T any, K comparable, V any](s []T, transformFunc func(T) (K, V)) map[K]V {
-	m := make(map[K]V, len(s))
-
-	for _, item := range s {
-		k, v := transformFunc(item)
-		m[k] = v
-	}
-
-	return m
-}
-
-func Insert[T any](slice []T, value T, index int) []T {
-	return append(slice[:index], append([]T{value}, slice[index:]...)...)
-}
-
-func Remove[T any](slice []T, index int) []T {
-	return append(slice[:index], slice[index+1:]...)
 }
 
 func Unique[T comparable](list []T) []T {
@@ -64,37 +107,4 @@ func Unique[T comparable](list []T) []T {
 	}
 
 	return result
-}
-
-// CollectChunks collects chunks of n elements from the input sequence and return a Seq of chunks
-func CollectChunks[T any](it iter.Seq[T], n int) iter.Seq[[]T] {
-	return func(yield func([]T) bool) {
-		s := make([]T, 0, n)
-
-		for x := range it {
-			s = append(s, x)
-			if len(s) >= n {
-				if !yield(s) {
-					return
-				}
-
-				s = make([]T, 0, n)
-			}
-		}
-
-		if len(s) > 0 {
-			yield(s)
-		}
-	}
-}
-
-// SeqFunc returns a Seq that iterates over the slice with the given mapping function
-func SeqFunc[I, O any](s []I, f func(I) O) iter.Seq[O] {
-	return func(yield func(O) bool) {
-		for _, x := range s {
-			if !yield(f(x)) {
-				return
-			}
-		}
-	}
 }

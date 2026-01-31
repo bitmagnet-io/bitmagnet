@@ -1,6 +1,10 @@
 package classifier
 
-import "github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
+import (
+	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
+	"github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
+)
 
 const unmatchedName = "unmatched"
 
@@ -10,17 +14,17 @@ func (unmatchedAction) name() string {
 	return unmatchedName
 }
 
-var unmatchedPayloadSpec = payloadLiteral[string]{
-	literal:     unmatchedName,
-	description: "Return a unmatched error for the current torrent",
+var unmatchedSpec = json_spec.Literal[string]{
+	Literal:     unmatchedName,
+	Description: "Return a unmatched error for the current torrent",
 }
 
-func (unmatchedAction) compileAction(ctx compilerContext) (action, error) {
-	if _, err := unmatchedPayloadSpec.Unmarshal(ctx); err != nil {
-		return action{}, ctx.error(err)
+func (unmatchedAction) compile(ctx compilerContext) (action, error) {
+	if _, err := unmatchedSpec.Parse(ctx.jsonSpec); err != nil {
+		return action{}, ctx.Error(err)
 	}
 
-	path := ctx.path
+	path := ctx.Path
 
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
@@ -29,6 +33,6 @@ func (unmatchedAction) compileAction(ctx compilerContext) (action, error) {
 	}, nil
 }
 
-func (unmatchedAction) JSONSchema() JSONSchema {
-	return unmatchedPayloadSpec.JSONSchema()
+func (unmatchedAction) JSONSchema() json_schema.JSONSchema {
+	return unmatchedSpec.JSONSchema()
 }

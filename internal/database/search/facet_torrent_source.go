@@ -2,16 +2,15 @@ package search
 
 import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 	"gorm.io/gen"
 )
-
-const TorrentSourceFacetKey = "torrent_source"
 
 func TorrentSourceFacet(options ...query.FacetOption) query.Facet {
 	return torrentSourceFacet{
 		FacetConfig: query.NewFacetConfig(
 			append([]query.FacetOption{
-				query.FacetHasKey(TorrentSourceFacetKey),
+				query.FacetHasKey(adapter.FacetTorrentSource),
 				query.FacetHasLabel("Torrent Source"),
 				query.FacetUsesOrLogic(),
 			}, options...)...,

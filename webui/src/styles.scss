@@ -5,8 +5,8 @@
 // Plus imports for other components in your app.
 @use "./app/health/health-widget-component.theme";
 @use "./app/layout/layout-component.theme";
-@use "./app/dashboard/dashboard-component.theme";
-@use "./app/dashboard/queue/queue-visualize-component.theme";
+@use "./app/admin/admin-component.theme";
+@use "./app/admin/queue/queue-visualize-component.theme";
 @use "./app/themes/theme-emitter-component.theme";
 @use "app/torrents/torrents-search-component.theme";
 @use "app/torrents/torrents-table-component.theme";
@@ -15,10 +15,10 @@
 @use "app/themes/neon-theme";
 @use "app/themes/tundra-theme";
 
-@import "@fontsource/roboto";
-@import "@fontsource/material-icons";
-@import "@fontsource/material-icons-outlined";
-@import "@fontsource/material-symbols-outlined";
+@use "@fontsource/roboto";
+@use "@fontsource/material-icons";
+@use "@fontsource/material-icons-outlined";
+@use "@fontsource/material-symbols-outlined";
 
 // Include the common styles for Angular Material. We include this here so that you only
 // have to load a single css file for Angular Material in your app.
@@ -28,7 +28,7 @@
 @mixin app-component-themes($theme) {
   @include health-widget-component.theme($theme);
   @include layout-component.theme($theme);
-  @include dashboard-component.theme($theme);
+  @include admin-component.theme($theme);
   @include queue-visualize-component.theme($theme);
   @include theme-emitter-component.theme($theme);
   @include torrents-search-component.theme($theme);

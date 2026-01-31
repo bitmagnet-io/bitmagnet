@@ -4,6 +4,7 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 )
 
+// todo: Consolidate with internal/search package
 type SearchParams struct {
 	QueryString       model.NullString
 	Limit             model.NullUint

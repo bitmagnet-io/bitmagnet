@@ -2,11 +2,10 @@ package classifier
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protobuf"
 	"github.com/google/cel-go/cel"
@@ -18,7 +17,7 @@ type Compiler interface {
 }
 
 type Runner interface {
-	Run(ctx context.Context, workflow string, flags Flags, t model.Torrent) (classification.Result, error)
+	Run(ctx context.Context, workflow Workflow, flags Flags, t model.Torrent) (classification.Result, error)
 }
 
 type compiler struct {
@@ -26,12 +25,13 @@ type compiler struct {
 	dependencies dependencies
 }
 
+type jsonSpec = json_spec.ParseContext
+
 type compilerContext struct {
+	jsonSpec
 	features
 	celEnv        *cel.Env
-	source        any
-	path          []string
-	workflowNames map[string]struct{}
+	workflowNames map[Workflow]struct{}
 }
 
 type compilerOption func(Source, *compilerContext) error
@@ -40,8 +40,7 @@ type executionContext struct {
 	context.Context
 	dependencies
 	flags     map[string]ref.Val
-	workflows map[string]action
-	torrent   model.Torrent
+	workflows map[Workflow]action
 	torrentPb *protobuf.Torrent
 	result    classification.Result
 	resultPb  *protobuf.Classification
@@ -55,60 +54,38 @@ func (c executionContext) withResult(result classification.Result) executionCont
 }
 
 func (c compilerContext) child(pathPart string, source any) compilerContext {
-	c.source = source
-	newPath := make([]string, len(c.path), len(c.path)+1)
-	copy(newPath, c.path)
-	newPath = append(newPath, pathPart)
-	c.path = newPath
+	c.jsonSpec = c.Child(pathPart, source)
 
 	return c
 }
 
-func (c compilerContext) error(cause error) error {
-	if asCompilerError(cause) != nil {
-		return cause
-	}
-
-	return compilerError{c.path, cause}
-}
-
-func (c compilerContext) fatal(cause error) error {
-	if asFatalCompilerError(cause) != nil {
-		return cause
-	}
-
-	cErr := asCompilerError(cause)
-	if cErr != nil {
-		return fatalCompilerError{compilerError: *cErr}
-	}
-
-	return fatalCompilerError{compilerError{c.path, cause}}
-}
-
 func (c compiler) Compile(source Source) (Runner, error) {
 	ctx := &compilerContext{
-		source:        source,
+		jsonSpec: json_spec.ParseContext{
+			Source:     source,
+			KeyMatcher: json_spec.KeyMatcherSnake,
+		},
 		workflowNames: source.workflowNames(),
 	}
-	source, sourceErr := decode[Source](*ctx)
 
+	source, sourceErr := json_spec.Decode[Source](ctx.jsonSpec)
 	if sourceErr != nil {
-		return nil, ctx.fatal(sourceErr)
+		return nil, ctx.Fatal(sourceErr)
 	}
 
 	for _, opt := range c.options {
 		if err := opt(source, ctx); err != nil {
-			return nil, ctx.fatal(err)
+			return nil, ctx.Fatal(err)
 		}
 	}
 
 	workflowsCtx := ctx.child("workflows", source.Workflows)
-	workflows := make(map[string]action)
+	workflows := make(map[Workflow]action)
 
 	for name, src := range source.Workflows {
-		a, err := ctx.compileAction(workflowsCtx.child(name, src))
+		a, err := compileAction(workflowsCtx.child(string(name), src))
 		if err != nil {
-			return nil, ctx.fatal(err)
+			return nil, ctx.Fatal(err)
 		}
 
 		workflows[name] = a
@@ -119,12 +96,12 @@ func (c compiler) Compile(source Source) (Runner, error) {
 	for k, def := range source.FlagDefinitions {
 		rawVal, ok := source.Flags[k]
 		if !ok {
-			return nil, ctx.fatal(fmt.Errorf("missing value for flag '%q'", k))
+			return nil, ctx.Fatal(fmt.Errorf("missing value for flag '%q'", k))
 		}
 
 		val, err := def.celVal(rawVal)
 		if err != nil {
-			return nil, ctx.fatal(fmt.Errorf("invalid value for flag '%s': %w", k, err))
+			return nil, ctx.Fatal(fmt.Errorf("invalid value for flag '%s': %w", k, err))
 		}
 
 		cfs[k] = val
@@ -136,63 +113,4 @@ func (c compiler) Compile(source Source) (Runner, error) {
 		compiledFlags:   cfs,
 		workflows:       workflows,
 	}, nil
-}
-
-func decodeTo[T any](ctx compilerContext, target *T) error {
-	decoder, decoderErr := newDecoder(target)
-	if decoderErr != nil {
-		return ctx.error(decoderErr)
-	}
-
-	return decoder.Decode(ctx.source)
-}
-
-func decode[T any](ctx compilerContext) (T, error) {
-	var target T
-	err := decodeTo(ctx, &target)
-
-	return target, err
-}
-
-type compilerError struct {
-	path  []string
-	cause error
-}
-
-func (e compilerError) Error() string {
-	return fmt.Sprintf("compiler error at path '%s': %s", strings.Join(e.path, "."), e.cause)
-}
-
-func (e compilerError) Unwrap() error {
-	return e.cause
-}
-
-func asCompilerError(err error) *compilerError {
-	ue := &compilerError{}
-	if ok := errors.As(err, ue); ok {
-		return ue
-	}
-
-	return nil
-}
-
-type fatalCompilerError struct {
-	compilerError
-}
-
-func (e fatalCompilerError) Unwrap() error {
-	return e.compilerError
-}
-
-func asFatalCompilerError(err error) *fatalCompilerError {
-	ue := &fatalCompilerError{}
-	if ok := errors.As(err, ue); ok {
-		return ue
-	}
-
-	return nil
-}
-
-func numericPathPart(num int) string {
-	return fmt.Sprintf("[%d]", num)
 }

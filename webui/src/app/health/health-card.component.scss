@@ -1,4 +1,4 @@
-.dashboard-card-health {
+.admin-card-health {
   position: absolute;
   top: 15px;
   left: 15px;
@@ -12,5 +12,8 @@
       margin-left: 4px;
       margin-right: 6px;
     }
+  }
+  mat-card mat-card-header {
+    margin-bottom: 16px;
   }
 }

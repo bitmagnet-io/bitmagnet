@@ -20,7 +20,7 @@ func (e WorkflowError) Error() string {
 		return e.message
 	}
 
-	return fmt.Sprintf("workflow unmarshalError: %s", e.key)
+	return fmt.Sprintf("workflow failed: %s", e.key)
 }
 
 func (e WorkflowError) Key() string {

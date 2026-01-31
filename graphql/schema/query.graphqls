@@ -1,69 +1,13 @@
 type Query {
-  version: String!
-  workers: WorkersQuery!
-  health: HealthQuery!
-  queue: QueueQuery!
-  torrent: TorrentQuery!
-  torrentContent: TorrentContentQuery!
-}
-
-type TorrentQuery {
-  files(input: TorrentFilesQueryInput!): TorrentFilesQueryResult!
-  listSources: TorrentListSourcesResult!
-  suggestTags(input: SuggestTagsQueryInput): TorrentSuggestTagsResult!
-  metrics(input: TorrentMetricsQueryInput!): TorrentMetricsQueryResult!
-}
-
-input SuggestTagsQueryInput {
-  prefix: String
-  exclusions: [String!]
-}
-
-type TorrentSuggestTagsResult {
-  suggestions: [SuggestedTag!]!
-}
-
-type TorrentListSourcesResult {
-  sources: [TorrentSource!]!
-}
-
-type SuggestedTag {
-  name: String!
-  count: Int!
-}
-
-type TorrentContentQuery {
-  search(input: TorrentContentSearchQueryInput!): TorrentContentSearchResult!
-}
-
-type Worker {
-  key: String!
-  started: Boolean!
-}
-
-type WorkersListAllQueryResult {
-  workers: [Worker!]!
-}
-
-type WorkersQuery {
-  listAll: WorkersListAllQueryResult!
-}
-
-enum HealthStatus {
-  unknown
-  inactive
-  up
-  down
-}
-
-type HealthCheck {
-  key: String!
-  status: HealthStatus!
-  timestamp: DateTime!
-  error: String
-}
-
-type HealthQuery {
-  status: HealthStatus!
-  checks: [HealthCheck!]!
+  version: String! @auth(object: "version", action: "query")
+  self: SelfQuery! @auth(object: "self", action: "query")
+  auth: AuthQuery! @auth(object: "auth", action: "query")
+  config: ConfigQuery! @auth(object: "config", action: "query")
+  plugin: PluginQuery! @auth(object: "plugin", action: "query")
+  worker: WorkerQuery! @auth(object: "worker", action: "query")
+  health: HealthQuery! @auth(object: "health", action: "query")
+  queue: QueueQuery! @auth(object: "queue", action: "query")
+  torrent: TorrentQuery! @auth(object: "torrent", action: "query")
+  index: IndexQuery! @auth(object: "index", action: "query")
+  target: TargetQuery! @auth(object: "target", action: "query")
 }

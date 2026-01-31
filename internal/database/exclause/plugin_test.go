@@ -17,6 +17,7 @@ func Test(t *testing.T) {
 	}
 
 	defer mockDB.Close()
+
 	db, _ := gorm.Open(mysql.New(mysql.Config{
 		Conn:                      mockDB,
 		SkipInitializeWithVersion: true,

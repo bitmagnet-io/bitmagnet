@@ -1,0 +1,16 @@
+#import "../fragments/Permission"
+#import "../fragments/User"
+
+mutation Login($username: String!, $password: String!) {
+  self {
+    login(username: $username, password: $password) {
+      token
+      user {
+        ...User
+      }
+      permissions {
+        ...Permission
+      }
+    }
+  }
+}

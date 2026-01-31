@@ -24,7 +24,7 @@ func (m manager) EnqueueReprocessTorrentsBatch(ctx context.Context, req EnqueueR
 		flags["local_search_enabled"] = false
 	}
 
-	job, err := batch.NewQueueJob(batch.MessageParams{
+	job, err := m.batchJobProvider(batch.MessageParams{
 		ClassifyMode:    req.ClassifyMode,
 		ClassifierFlags: flags,
 		ChunkSize:       req.ChunkSize,
@@ -37,7 +37,12 @@ func (m manager) EnqueueReprocessTorrentsBatch(ctx context.Context, req EnqueueR
 		return err
 	}
 
-	return m.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+	db, err := m.db.GormDB()
+	if err != nil {
+		return err
+	}
+
+	return db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if req.Purge {
 			if _, err := tx.WithContext(ctx).Raw("TRUNCATE TABLE queue_jobs;").Rows(); err != nil {
 				return fmt.Errorf("error purging queue: %w", err)

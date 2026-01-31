@@ -37,6 +37,7 @@ export class TorrentContentComponent {
   breakpoints = inject(BreakpointsService);
 
   @Input() torrentContent: generated.TorrentContent;
+  @Input() index?: string;
   @Input() heading = true;
   @Input() size = true;
   @Input() peers = true;

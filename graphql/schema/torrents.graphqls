@@ -1,0 +1,42 @@
+type TorrentQuery {
+  searchTorrentContent(input: SearchInput!): TorrentContentSearchResult!
+  searchTorrentFiles(input: SearchInput!): TorrentFilesSearchResult!
+  listSources: TorrentListSourcesResult!
+  suggestTags(input: SuggestTagsQueryInput): TorrentSuggestTagsResult!
+  metrics(input: TorrentMetricsQueryInput!): TorrentMetricsQueryResult!
+}
+
+input SuggestTagsQueryInput {
+  prefix: String
+  exclusions: [String!]
+}
+
+type TorrentSuggestTagsResult {
+  suggestions: [SuggestedTag!]!
+}
+
+type TorrentListSourcesResult {
+  sources: [TorrentSource!]!
+}
+
+type SuggestedTag {
+  name: String!
+  count: Int!
+}
+
+type TorrentMutation {
+  delete(infoHashes: [Hash20!]!): Void
+    @auth(object: "torrent", action: "delete")
+  putTags(infoHashes: [Hash20!]!, tagNames: [String!]!): Void
+  setTags(infoHashes: [Hash20!]!, tagNames: [String!]!): Void
+  deleteTags(infoHashes: [Hash20!], tagNames: [String!]): Void
+  reprocess(input: TorrentReprocessInput!): Void
+}
+
+input TorrentReprocessInput {
+  infoHashes: [Hash20!]!
+  classifierRematch: Boolean
+  classifierWorkflow: String
+  apisDisabled: Boolean
+  localSearchDisabled: Boolean
+}

@@ -1,0 +1,369 @@
+auth:
+  description: description for plugin auth
+  other: Provides user authentication and authorization services
+auth.anonymous_access:
+  description: "description for config: auth.anonymous_access"
+  other: Allow anonymous access to the application
+auth.email_required:
+  description: "description for config: auth.email_required"
+  other: Require users to have an email address
+auth.email_verification:
+  description: "description for config: auth.email_verification"
+  other: Enable email address verification
+auth.invitation_required:
+  description: "description for config: auth.invitation_required"
+  other: Require invitation for registration
+auth.jwt_duration:
+  description: "description for config: auth.jwt_duration"
+  other: JWT validity duration
+auth.jwt_secret:
+  description: "description for config: auth.jwt_secret"
+  other: JWT secret (if empty, a random string will be generated at runtime)
+auth.login_request_burst:
+  description: "description for config: auth.login_request_burst"
+  other: Login requests limit burst
+auth.login_requests_per_minute:
+  description: "description for config: auth.login_requests_per_minute"
+  other: Login requests per minute
+auth.password_hashing_cost:
+  description: "description for config: auth.password_hashing_cost"
+  other: Cost for password hashing
+auth.password_min_entropy:
+  description: "description for config: auth.password_min_entropy"
+  other: Minimum password entropy
+auth.rbac_cache_ttl:
+  description: "description for config: auth.rbac_cache_ttl"
+  other: Permissions cache TTL
+auth.user.account_disabled:
+  description: "message for error: auth.user.account_disabled"
+  other: account is disabled
+auth.user.credentials_invalid:
+  description: "message for error: auth.user.credentials_invalid"
+  other: invalid username or password
+auth.user.email_invalid:
+  description: "message for error: auth.user.email_invalid"
+  other: invalid email
+auth.user.email_missing:
+  description: "message for error: auth.user.email_missing"
+  other: email is required
+auth.user.invitation_claimed:
+  description: "message for error: auth.user.invitation_claimed"
+  other: invitation already claimed
+auth.user.invitation_code_missing:
+  description: "message for error: auth.user.invitation_code_missing"
+  other: invitation code is required
+auth.user.invitation_expired:
+  description: "message for error: auth.user.invitation_expired"
+  other: invitation expired
+auth.user.invitation_not_found:
+  description: "message for error: auth.user.invitation_not_found"
+  other: invitation not found
+auth.user.password_insufficient_entropy:
+  description: "message for error: auth.user.password_insufficient_entropy"
+  other: password has insufficient entropy
+auth.user.user_already_exists:
+  description: "message for error: auth.user.user_already_exists"
+  other: user already exists
+auth.user.username_invalid:
+  description: "message for error: auth.user.username_invalid"
+  other: invalid username
+config:
+  description: description for plugin config
+  other: Provides configuration functionality
+config.plugin_activation:
+  description: description for plugin activation param
+  other: Activation
+database.gorm.cache:
+  description: description for plugin database.gorm.cache
+  other: Provides Postgres query result caching
+database.gorm.cache.activation:
+  description: "description for config: database.gorm.cache.activation"
+  other: Activation
+database.gorm.cache.max_items:
+  description: "description for config: database.gorm.cache.max_items"
+  other: Maximum number of items to cache
+database.gorm.cache.ttl:
+  description: "description for config: database.gorm.cache.ttl"
+  other: TTL for the cache
+database.info_hash_blocker:
+  description: description for plugin database.info_hash_blocker
+  other: Maintains a stable bloom filter of info hashes that have been deleted and blocked, preventing them from being crawled again
+database.migrator:
+  description: description for plugin database.migrator
+  other: Runs database migrations on startup
+database.persister:
+  description: description for plugin database.persister
+  other: Runs the worker for persisting database entities
+database.persister.max_size:
+  description: "description for config: database.persister.max_size"
+  other: Maximum buffer size
+database.persister.max_wait:
+  description: "description for config: database.persister.max_wait"
+  other: Maximum time to buffer items before flushing
+database.postgres:
+  description: description for plugin database.postgres
+  other: Initiates and manages the Postgres database connection
+database.postgres.database:
+  description: "description for config: database.postgres.database"
+  other: Postgres database name
+database.postgres.dsn:
+  description: "description for config: database.postgres.dsn"
+  other: Postgres Data Source Name (if specified, all other options for this plugin are ignored)
+database.postgres.host:
+  description: "description for config: database.postgres.host"
+  other: Postgres host
+database.postgres.password:
+  description: "description for config: database.postgres.password"
+  other: Postgres password
+database.postgres.port:
+  description: "description for config: database.postgres.port"
+  other: Postgres port number
+database.postgres.user:
+  description: "description for config: database.postgres.user"
+  other: Postgres username
+dht.crawler:
+  description: description for plugin dht.crawler
+  other: Crawls the DHT for torrents
+dht.crawler.activation:
+  description: "description for config: dht.crawler.activation"
+  other: Activation
+dht.crawler.autostart:
+  description: "description for config: dht.crawler.autostart"
+  other: Start the DHT crawler automatically
+dht.crawler.bootstrap_nodes:
+  description: "description for config: dht.crawler.bootstrap_nodes"
+  other: A list of node addresses for bootstrapping the DHT crawler
+dht.crawler.rescrape_threshold:
+  description: "description for config: dht.crawler.rescrape_threshold"
+  other: The minimum interval before re-querying seeder and leecher numbers from the DHT
+dht.crawler.reseed_bootstrap_nodes_interval:
+  description: "description for config: dht.crawler.reseed_bootstrap_nodes_interval"
+  other: Interval between reseeding of the bootstrap nodes
+dht.crawler.save_files_threshold:
+  description: "description for config: dht.crawler.save_files_threshold"
+  other: The maximum limit for the number of files saved by the DHT crawler with each torrent
+dht.crawler.save_pieces:
+  description: "description for config: dht.crawler.save_pieces"
+  other: Save torrent pieces with each torrent (uses a lot of disk space)
+dht.server:
+  description: description for plugin dht.server
+  other: Runs a DHT server node
+dht.server.activation:
+  description: "description for config: dht.server.activation"
+  other: Activation
+dht.server.query_timeout:
+  description: "description for config: dht.server.query_timeout"
+  other: Query timeout
+dht.socket:
+  description: description for plugin dht.socket
+  other: Runs a UDP socket for the DHT server
+dht.socket.activation:
+  description: "description for config: dht.socket.activation"
+  other: Activation
+dht.socket.adapter:
+  description: "description for config: dht.socket.adapter"
+  other: Socket adapter name
+dht.socket.port:
+  description: "description for config: dht.socket.port"
+  other: Socket port number
+health:
+  description: description for plugin health
+  other: Provides health check functionality
+http_server:
+  description: description for plugin http_server
+  other: Runs the HTTP server
+http_server.activation:
+  description: "description for config: http_server.activation"
+  other: Activation
+http_server.cors:
+  description: description for plugin http_server.cors
+  other: Provides CORS middleware for the HTTP server
+http_server.cors.allowed_origins:
+  description: "description for config: http_server.cors.allowed_origins"
+  other: CORS allowed origins
+http_server.docs:
+  description: description for plugin http_server.docs
+  other: Runs an instance of the documentation website at the /docs endpoint
+http_server.docs.activation:
+  description: "description for config: http_server.docs.activation"
+  other: Activation
+http_server.graphql:
+  description: description for plugin http_server.graphql
+  other: Runs the GraphQL API server
+http_server.graphql.activation:
+  description: "description for config: http_server.graphql.activation"
+  other: Activation
+http_server.graphql.unauthorized:
+  description: "message for error: http_server.graphql.unauthorized"
+  other: unauthorized
+http_server.local_address:
+  description: "description for config: http_server.local_address"
+  other: Local address on which to listen
+http_server.logging:
+  description: description for plugin http_server.logging
+  other: Provides logging for the HTTP server
+http_server.webui:
+  description: description for plugin http_server.webui
+  other: Runs the web user interface at the /webui endpoint
+http_server.webui.activation:
+  description: "description for config: http_server.webui.activation"
+  other: Activation
+i18n:
+  description: description for plugin i18n
+  other: Provides translations for backend services
+importer:
+  description: description for plugin importer
+  other: Runs an import facility at the /import endpoint
+importer.activation:
+  description: "description for config: importer.activation"
+  other: Activation
+logging:
+  description: description for plugin logging
+  other: Provides logging services
+logging.console:
+  description: description for plugin logging.console
+  other: Outputs logs with console formatting
+logging.console.activation:
+  description: "description for config: logging.console.activation"
+  other: Activation
+logging.file_rotator:
+  description: description for plugin logging.file_rotator
+  other: Outputs JSON logs to rotated log files
+logging.file_rotator.activation:
+  description: "description for config: logging.file_rotator.activation"
+  other: Activation
+logging.file_rotator.base_name:
+  description: "description for config: logging.file_rotator.base_name"
+  other: Base name for log files
+logging.file_rotator.buffer_size:
+  description: "description for config: logging.file_rotator.buffer_size"
+  other: Maximum number of logs to keep in memory before writing
+logging.file_rotator.level:
+  description: "description for config: logging.file_rotator.level"
+  other: The logging level
+logging.file_rotator.max_age:
+  description: "description for config: logging.file_rotator.max_age"
+  other: Maximum age of log files to retain
+logging.file_rotator.max_backups:
+  description: "description for config: logging.file_rotator.max_backups"
+  other: Maximum number of log files to retain before deleting
+logging.file_rotator.max_size:
+  description: "description for config: logging.file_rotator.max_size"
+  other: Maximum size of a log file before writing to a new file
+logging.file_rotator.sub_path:
+  description: "description for config: logging.file_rotator.sub_path"
+  other: Subpath within the data folder to write log files
+logging.json:
+  description: description for plugin logging.json
+  other: Outputs logs in JSON format
+logging.json.activation:
+  description: "description for config: logging.json.activation"
+  other: Activation
+logging.level:
+  description: "description for config: logging.level"
+  other: The logging level
+meta_info:
+  description: description for plugin meta_info
+  other: Provides services for downloading torrent meta info from peers
+meta_info.dial_timeout:
+  description: "description for config: meta_info.dial_timeout"
+  other: Dial timeout
+meta_info.max_concurrency:
+  description: "description for config: meta_info.max_concurrency"
+  other: Maximum request concurrency
+meta_info.request_timeout:
+  description: "description for config: meta_info.request_timeout"
+  other: Request timeout
+metrics:
+  description: description for plugin metrics
+  other: Provides metrics
+metrics.prometheus:
+  description: description for plugin metrics.prometheus
+  other: Provides a Prometheus metrics endpoint at /metrics
+metrics.prometheus.activation:
+  description: "description for config: metrics.prometheus.activation"
+  other: Activation
+pipeline.batcher:
+  description: description for plugin pipeline.batcher
+  other: Provides a queue worker for batch torrent processing jobs
+pipeline.classifier:
+  description: description for plugin pipeline.classifier
+  other: Provides the torrent classifier service
+pipeline.classifier.concurrency:
+  description: "description for config: pipeline.classifier.concurrency"
+  other: Maximum number of classifications to run in parallel
+pipeline.classifier.delete_xxx:
+  description: "description for config: pipeline.classifier.delete_xxx"
+  other: A boolean flag indicating that XXX content should be deleted by the classifier
+pipeline.classifier.extensions:
+  description: "description for config: pipeline.classifier.extensions"
+  other: A map of file types to file extensions associated with them
+pipeline.classifier.flags:
+  description: "description for config: pipeline.classifier.flags"
+  other: A map of flag keys to flag values for configuring classifier workflows
+pipeline.classifier.keywords:
+  description: "description for config: pipeline.classifier.keywords"
+  other: A map of category names to keywords associated with different types of torrents
+pipeline.classifier.workflow:
+  description: "description for config: pipeline.classifier.workflow"
+  other: The default classifier workflow
+pipeline.processor:
+  description: description for plugin pipeline.processor
+  other: Provides the processor service that classifies and indexes torrents
+queue:
+  description: description for plugin queue
+  other: Runs queued background jobs
+queue.autostart:
+  description: "description for config: queue.autostart"
+  other: Start the queue worker automatically
+search:
+  description: description for plugin search
+  other: Provides search functionality via the Postgres database
+search.facet.content_genre:
+  description: "label for search facet: content_genre"
+  other: Content Genre
+search.facet.content_type:
+  description: "label for search facet: content_type"
+  other: Content Type
+search.facet.file_type:
+  description: "label for search facet: file_type"
+  other: File Type
+search.facet.language:
+  description: "label for search facet: language"
+  other: Language
+search.facet.release_year:
+  description: "label for search facet: release_year"
+  other: Release Year
+search.facet.tag:
+  description: "label for search facet: tag"
+  other: Tag
+search.facet.torrent_source:
+  description: "label for search facet: torrent_source"
+  other: Torrent Source
+search.facet.video_3d:
+  description: "label for search facet: video_3d"
+  other: 3D
+search.facet.video_codec:
+  description: "label for search facet: video_codec"
+  other: Video Codec
+search.facet.video_modifier:
+  description: "label for search facet: video_modifier"
+  other: Video Modifier
+search.facet.video_resolution:
+  description: "label for search facet: video_resolution"
+  other: Video Resolution
+search.facet.video_source:
+  description: "label for search facet: video_source"
+  other: Video Source
+tmdb.activation:
+  description: "description for config: tmdb.activation"
+  other: Activation
+torznab:
+  description: description for plugin torznab
+  other: Runs the Torznab API server on the /torznab endpoint
+torznab.activation:
+  description: "description for config: torznab.activation"
+  other: Activation
+worker:
+  description: description for plugin worker
+  other: Manages workers

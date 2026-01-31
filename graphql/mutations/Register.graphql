@@ -1,0 +1,11 @@
+#import "../fragments/User"
+
+mutation Register($input: RegisterInput!) {
+  self {
+    register(input: $input) {
+      user {
+        ...User
+      }
+    }
+  }
+}

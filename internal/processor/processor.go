@@ -6,45 +6,110 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
+	"github.com/bitmagnet-io/bitmagnet/internal/blocker"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier"
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/persister"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/bitmagnet-io/bitmagnet/internal/queue"
+	"github.com/bitmagnet-io/bitmagnet/internal/workers/runner"
 	"gorm.io/gen/field"
-	"gorm.io/gorm/clause"
 )
 
 type Processor interface {
-	Process(ctx context.Context, params MessageParams) error
+	NewJob(params MessageParams) runner.Runner
 }
 
 type processor struct {
-	defaultWorkflow string
-	search          search.Search
-	runner          classifier.Runner
-	dao             *dao.Query
-	blockingManager blocking.Manager
+	searchClient     search.Search
+	blocker          blocker.Blocker
+	runner           classifier.Runner
+	queueJobProvider queue.JobProvider[MessageParams]
+	persister        persister.Adder
+	defaultWorkflow  classifier.Workflow
 }
 
-type MissingHashesError struct {
-	InfoHashes []protocol.ID
-}
+const concurrency = 10
 
-func (e MissingHashesError) Error() string {
-	return fmt.Sprintf("missing %d info hashes", len(e.InfoHashes))
-}
+func (p processor) NewJob(params MessageParams) runner.Runner {
+	return func(ctx context.Context, cancel context.CancelCauseFunc) (runner.Shutdowner, error) {
+		shutdown := make(chan struct{})
 
-func (c processor) Process(ctx context.Context, params MessageParams) error {
-	workflowName := params.ClassifierWorkflow
-	if workflowName == "" {
-		workflowName = c.defaultWorkflow
+		setupCtx, setupCancel := context.WithCancel(ctx)
+
+		go func() {
+			// abort setup if shutdown initiated:
+			select {
+			case <-shutdown:
+				cancel(fmt.Errorf("%w: %w: %w", Err, ErrSetup, ErrInterrupted))
+			case <-setupCtx.Done():
+			}
+
+			setupCancel()
+		}()
+
+		searchResult, err := p.getTorrentsToClassify(setupCtx, params)
+
+		setupCancel()
+
+		if err != nil {
+			err = fmt.Errorf("%w: %w: %w", Err, ErrSetup, err)
+			cancel(err)
+
+			return runner.NopShutdowner, err
+		}
+
+		if len(searchResult.Torrents)+len(searchResult.MissingInfoHashes) == 0 {
+			cancel(runner.ErrCompleted)
+
+			return runner.NopShutdowner, nil
+		}
+
+		go func() {
+			defer cancel(runner.ErrCompleted)
+
+			err := p.handleTorrents(
+				ctx,
+				shutdown,
+				params.ClassifierParams,
+				searchResult,
+			)
+			if err != nil {
+				// todo: Check error handling
+				err = fmt.Errorf("%w: %w: %w", Err, ErrClassify, err)
+				cancel(err)
+
+				return
+			}
+		}()
+
+		return func(shutdownCtx context.Context) error {
+			close(shutdown)
+
+			select {
+			case <-ctx.Done():
+			case <-shutdownCtx.Done():
+			}
+
+			cause := context.Cause(ctx)
+			if cause != nil && !errors.Is(cause, runner.ErrCompleted) {
+				return fmt.Errorf("%w: %w: %w", Err, ErrShutdown, cause)
+			}
+
+			return nil
+		}, nil
 	}
+}
 
-	searchResult, searchErr := c.search.TorrentsWithMissingInfoHashes(
+func (p processor) getTorrentsToClassify(
+	ctx context.Context,
+	params MessageParams,
+) (search.TorrentsWithMissingInfoHashesResult, error) {
+	searchResult, searchErr := p.searchClient.TorrentsWithMissingInfoHashes(
 		ctx,
 		params.InfoHashes,
 		query.Preload(func(q *dao.Query) []field.RelationField {
@@ -52,20 +117,21 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 				q.Torrent.Files.RelationField,
 				q.Torrent.Hint.RelationField,
 				q.Torrent.Sources.RelationField,
+				q.Torrent.Tags.RelationField,
 			}
 		}),
 	)
 	if searchErr != nil {
-		return searchErr
+		return searchResult, searchErr
 	}
 
-	tcResult, tcErr := c.search.TorrentContent(
+	tcResult, tcErr := p.searchClient.TorrentContent(
 		ctx,
 		query.Where(search.TorrentContentInfoHashCriteria(params.InfoHashes...)),
 		search.HydrateTorrentContentContent(),
 	)
 	if tcErr != nil {
-		return tcErr
+		return searchResult, tcErr
 	}
 
 	for _, tc := range tcResult.Items {
@@ -81,154 +147,219 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		}
 	}
 
+	return searchResult, nil
+}
+
+func (p processor) handleTorrents(
+	ctx context.Context,
+	shutdown <-chan struct{},
+	params ClassifierParams,
+	searchResult search.TorrentsWithMissingInfoHashesResult,
+) error {
 	var (
-		mtx                sync.Mutex
-		wg                 sync.WaitGroup
-		errs               []error
-		idsToDelete        []string
-		infoHashesToDelete []protocol.ID
+		mtx         sync.Mutex
+		interrupted bool
+		hasInputs   bool
+		errs        []error
 	)
 
-	tcs := make([]model.TorrentContent, 0, len(searchResult.Torrents))
+	addErr := func(err error) {
+		if err == nil {
+			return
+		}
 
-	tagsToAdd := make(map[protocol.ID]map[string]struct{})
+		mtx.Lock()
+		defer mtx.Unlock()
+
+		errs = append(errs, err)
+	}
 
 	failedHashes := make([]protocol.ID, 0, len(searchResult.MissingInfoHashes))
 	failedHashes = append(failedHashes, searchResult.MissingInfoHashes...)
 
-	if len(failedHashes) > 0 {
-		errs = append(errs, MissingHashesError{InfoHashes: failedHashes})
-	}
+	sem := make(chan struct{}, concurrency)
+
+	classifyCtx, classifyCancel := context.WithCancel(ctx)
+	defer classifyCancel()
 
 	for _, torrent := range searchResult.Torrents {
-		wg.Add(1)
+		select {
+		case <-classifyCtx.Done():
+			return classifyCtx.Err()
+		case <-shutdown:
+			mtx.Lock()
+
+			failedHashes = append(failedHashes, torrent.InfoHash)
+			interrupted = true
+
+			mtx.Unlock()
+
+			continue
+		case sem <- struct{}{}:
+		}
 
 		go func(torrent model.Torrent) {
-			defer wg.Done()
+			defer func() {
+				<-sem
+			}()
 
-			thisDeleteIDs := make(map[string]struct{}, len(torrent.Contents))
-			foundMatch := false
+			persisterInputs, err := p.handleTorrent(classifyCtx, params, torrent)
+			if err != nil {
+				failedHashes = append(failedHashes, torrent.InfoHash)
 
-			for _, tc := range torrent.Contents {
-				thisDeleteIDs[tc.ID] = struct{}{}
-
-				if !foundMatch &&
-					!torrent.Hint.ContentSource.Valid &&
-					params.ClassifyMode != ClassifyModeRematch &&
-					tc.ContentType.Valid &&
-					tc.ContentSource.Valid &&
-					(torrent.Hint.IsNil() || torrent.Hint.ContentType == tc.ContentType.ContentType) {
-					torrent.Hint.ContentType = tc.ContentType.ContentType
-					torrent.Hint.ContentSource = tc.ContentSource
-					torrent.Hint.ContentID = tc.ContentID
-					foundMatch = true
-				}
+				addErr(err)
 			}
 
-			cl, classifyErr := c.runner.Run(ctx, workflowName, params.ClassifierFlags, torrent)
-
-			mtx.Lock()
-			defer mtx.Unlock()
-
-			if classifyErr != nil {
-				if errors.Is(classifyErr, classification.ErrDeleteTorrent) {
-					infoHashesToDelete = append(infoHashesToDelete, torrent.InfoHash)
+			if len(persisterInputs) > 0 {
+				err := p.persister.Add(ctx, persisterInputs.Input())
+				if err != nil {
+					addErr(err)
 				} else {
-					failedHashes = append(failedHashes, torrent.InfoHash)
-					errs = append(errs, classifyErr)
-				}
-			} else {
-				torrentContent := newTorrentContent(torrent, cl)
-
-				tcID := torrentContent.InferID()
-				for id := range thisDeleteIDs {
-					if id != tcID {
-						idsToDelete = append(idsToDelete, id)
-					}
-				}
-
-				tcs = append(tcs, torrentContent)
-
-				if len(cl.Tags) > 0 {
-					tagsToAdd[torrent.InfoHash] = cl.Tags
+					hasInputs = true
 				}
 			}
 		}(torrent)
 	}
 
-	wg.Wait()
+	// wait for all classifications:
+	for range concurrency {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case sem <- struct{}{}:
+		}
+	}
+
+	if !hasInputs {
+		var err error
+
+		if interrupted {
+			err = ErrInterrupted
+		} else {
+			err = errors.Join(errs...)
+			if err != nil {
+				err = fmt.Errorf("%w: %w: %w", Err, ErrAllTorrentsFailed, err)
+			}
+		}
+
+		return err
+	}
 
 	if len(failedHashes) > 0 {
-		if len(tcs) == 0 {
-			return errors.Join(errs...)
+		var inputs persister.Inputs
+
+		for _, infoHash := range failedHashes {
+			job, err := p.queueJobProvider(MessageParams{
+				InfoHashes:       []protocol.ID{infoHash},
+				ClassifierParams: params,
+			})
+			if err != nil {
+				return fmt.Errorf("%w: %w", Err, err)
+			}
+
+			inputs = append(inputs, persister.InputQueueJobs(job))
 		}
 
-		republishJob, republishJobErr := NewQueueJob(MessageParams{
-			InfoHashes:         failedHashes,
-			ClassifyMode:       params.ClassifyMode,
-			ClassifierWorkflow: workflowName,
-			ClassifierFlags:    params.ClassifierFlags,
-		})
-		if republishJobErr != nil {
-			return errors.Join(append(errs, republishJobErr)...)
-		}
-
-		if err := c.dao.QueueJob.WithContext(ctx).Clauses(clause.OnConflict{
-			DoNothing: true,
-		}).Create(&republishJob); err != nil {
-			return errors.Join(append(errs, err)...)
+		err := p.persister.Add(ctx, inputs.Input())
+		if err != nil {
+			return fmt.Errorf("%w: %w", Err, err)
 		}
 	}
 
-	if len(tcs) == 0 {
-		return nil
-	}
-
-	return c.persist(ctx, persistPayload{
-		torrentContents:  tcs,
-		deleteIDs:        idsToDelete,
-		deleteInfoHashes: infoHashesToDelete,
-		addTags:          tagsToAdd,
-	})
+	return nil
 }
 
-func newTorrentContent(t model.Torrent, c classification.Result) model.TorrentContent {
-	var filesCount model.NullUint
-	if t.FilesCount.Valid {
-		filesCount = t.FilesCount
-	} else if t.FilesStatus == model.FilesStatusSingle {
-		filesCount = model.NewNullUint(1)
+type handleTorrentResult struct {
+	torrentContent model.TorrentContent
+	tcRefsToDelete map[model.TorrentContentRef]struct{}
+	tags           map[string]bool
+}
+
+func (p processor) handleTorrent(
+	ctx context.Context,
+	params ClassifierParams,
+	torrent model.Torrent,
+) (persister.Inputs, error) {
+	thisDeleteIDs := make(map[model.TorrentContentRef]struct{}, len(torrent.Contents))
+	foundMatch := false
+
+	for _, tc := range torrent.Contents {
+		thisDeleteIDs[tc.Ref()] = struct{}{}
+
+		if !foundMatch &&
+			!torrent.Hint.ContentSource.Valid &&
+			params.ClassifyMode != ClassifyModeRematch &&
+			tc.ContentType.Valid &&
+			tc.ContentSource.Valid &&
+			(torrent.Hint.IsNil() || torrent.Hint.ContentType == tc.ContentType.ContentType) {
+			torrent.Hint.ContentType = tc.ContentType.ContentType
+			torrent.Hint.ContentSource = tc.ContentSource
+			torrent.Hint.ContentID = tc.ContentID
+			foundMatch = true
+		}
 	}
 
-	tc := model.TorrentContent{
-		Torrent:         t,
-		InfoHash:        t.InfoHash,
-		ContentType:     c.ContentType,
-		Languages:       c.Languages,
-		Episodes:        c.Episodes,
-		VideoResolution: c.VideoResolution,
-		VideoSource:     c.VideoSource,
-		VideoCodec:      c.VideoCodec,
-		Video3D:         c.Video3D,
-		VideoModifier:   c.VideoModifier,
-		ReleaseGroup:    c.ReleaseGroup,
-		Size:            t.Size,
-		FilesCount:      filesCount,
-		Seeders:         t.Seeders(),
-		Leechers:        t.Leechers(),
-		PublishedAt:     t.PublishedAt(),
+	workflowName := params.ClassifierWorkflow
+	if workflowName == "" {
+		workflowName = p.defaultWorkflow
 	}
 
-	if c.Content != nil {
-		content := *c.Content
-		content.UpdateTsv()
-		tc.ContentType = model.NewNullContentType(content.Type)
-		tc.ContentSource = model.NewNullString(content.Source)
-		tc.ContentID = model.NewNullString(content.ID)
-		tc.Content = content
+	cl, err := p.runner.Run(ctx, workflowName, params.ClassifierFlags, torrent)
+	if err != nil {
+		return errorToInputs(torrent.InfoHash, err)
 	}
 
-	tc.UpdateTsv()
+	torrentContent := cl.ToTorrentContent()
 
-	return tc
+	delete(thisDeleteIDs, torrentContent.Ref())
+
+	return resultToInputs(handleTorrentResult{
+		torrentContent: torrentContent,
+		tcRefsToDelete: thisDeleteIDs,
+		tags:           cl.Tags,
+	}), nil
+}
+
+func errorToInputs(infoHash protocol.ID, err error) (persister.Inputs, error) {
+	if errors.Is(err, classification.ErrDeleteTorrent) {
+		return persister.Inputs{persister.InputDeleteInfoHashes(infoHash)}, nil
+	}
+
+	return nil, err
+}
+
+func resultToInputs(result handleTorrentResult) persister.Inputs {
+	var inputs persister.Inputs
+
+	for ref := range result.tcRefsToDelete {
+		inputs = append(inputs, persister.InputDeleteTorrentContent(ref))
+	}
+
+	inputs = append(inputs, persister.InputTorrentContent(result.torrentContent))
+
+	var tagsToAdd, tagsToRemove []string
+
+	for tagName, addRemove := range result.tags {
+		if addRemove {
+			tagsToAdd = append(tagsToAdd, tagName)
+		} else {
+			tagsToRemove = append(tagsToRemove, tagName)
+		}
+	}
+
+	if len(tagsToAdd) > 0 {
+		inputs = append(
+			inputs,
+			persister.InputTorrentTags(result.torrentContent.InfoHash, tagsToAdd...),
+		)
+	}
+
+	if len(tagsToRemove) > 0 {
+		inputs = append(
+			inputs,
+			persister.InputDeleteTorrentTags(result.torrentContent.InfoHash, tagsToRemove...),
+		)
+	}
+
+	return inputs
 }

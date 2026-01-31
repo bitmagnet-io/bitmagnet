@@ -1,0 +1,5 @@
+mutation InvitationDelete($code: String!) {
+  auth {
+    deleteInvitation(code: $code)
+  }
+}

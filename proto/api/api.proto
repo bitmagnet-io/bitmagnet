@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "github.com/bitmagnet-io/bitmagnet/proto/api;api";
+
+import "common/http/http.proto";
+import "common/model/model.proto";
+import "common/plugin/plugin.proto";
+import "common/search/search.proto";
+
+// go:plugin type=plugin version=1
+service Plugin {
+  // Identify returns the identity of the plugin
+  rpc Identify(Empty) returns (plugin.Identity);
+  // Localize returns localized content for the plugin
+  rpc Localize(LocalizeParams) returns (plugin.LocalizedContent);
+  // Configure sets the configuration for the plugin, and returns its contract
+  rpc Configure(JSONPayload) returns (plugin.Contract);
+  // Instantiate instantiates the plugin with the given configuration
+  rpc Instantiate(Empty) returns (Empty);
+}
+
+// go:plugin type=plugin version=1
+service Indexer {
+  rpc Index(IndexPayload) returns(Empty);
+}
+
+message IndexPayload {
+  repeated model.Content content = 1;
+  repeated model.TorrentContent torrentContent = 2;
+  repeated string deleteTorrentContent = 3;
+  repeated string deleteInfoHashes = 4;
+}
+
+// go:plugin type=plugin version=1
+service HTTPHandler {
+  rpc Config(Empty) returns (HTTPHandlerConfig);
+  rpc HandleRequest(http.Request) returns (http.Response);
+}
+
+message HTTPHandlerConfig {
+  string pattern = 1;
+}
+
+message Empty {
+  string empty = 1;
+}
+
+// go:plugin type=plugin version=1
+service SearchAdapter {
+  rpc SearchTorrentContent(search.Params) returns (search.TorrentContentResult);
+  rpc SearchTorrentFiles(search.Params) returns (search.TorrentFilesResult);
+}
+
+// go:plugin type=plugin version=1
+service TorrentTarget {
+  // DataSchema returns an optional JSON schema that will be used to validate the data sent to the Send method
+  rpc DataSchema(Empty) returns (JSONPayload);
+  // UISchema returns an optional JSONForms UI schema that will be used to render the UI form
+  rpc UISchema(LocalizeParams) returns (JSONPayload);
+  // Send sends the given torrents and data to the target
+  rpc Send(SendTorrentsParams) returns (JSONPayload);
+}
+
+message JSONPayload {
+  bytes data = 1;
+}
+
+message LocalizeParams {
+  repeated string acceptLanguage = 1;
+}
+
+message SendTorrentsParams {
+  repeated model.TorrentContent torrents = 1;
+  bytes data = 2;
+}

@@ -31,9 +31,10 @@ import { ChartAdapter } from "./types";
   templateUrl: "./chart.component.html",
   styleUrl: "./chart.component.scss",
 })
-export class ChartComponent<Data = unknown, Type extends ChartType = ChartType>
-  implements OnInit
-{
+export class ChartComponent<
+  Data = unknown,
+  Type extends ChartType = ChartType,
+> implements OnInit {
   private themeInfo = inject(ThemeInfoService);
   private transloco = inject(TranslocoService);
   breakpoints = inject(BreakpointsService);

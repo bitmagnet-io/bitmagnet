@@ -8,6 +8,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
@@ -31,7 +32,7 @@ func (r *queueJobResolver) RanAt(ctx context.Context, obj *model.QueueJob) (*tim
 
 // Jobs is the resolver for the jobs field.
 func (r *queueQueryResolver) Jobs(ctx context.Context, obj *gqlmodel.QueueQuery, input gqlmodel.QueueJobsQueryInput) (gqlmodel.QueueJobsQueryResult, error) {
-	return gqlmodel.QueueQuery{QueueJobSearch: r.Search}.Jobs(ctx, input)
+	return gqlmodel.QueueQuery{QueueJobSearch: search.New(r.DaoProvider)}.Jobs(ctx, input)
 }
 
 // ClassifierRematch is the resolver for the classifierRematch field.

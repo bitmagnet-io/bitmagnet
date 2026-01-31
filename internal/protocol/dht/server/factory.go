@@ -1,92 +1,70 @@
 package server
 
 import (
-	"context"
-	"fmt"
-	"net/netip"
 	"time"
 
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
-	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/responder"
-	"github.com/prometheus/client_golang/prometheus"
-	"go.uber.org/fx"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/socket"
 	"go.uber.org/zap"
 	"golang.org/x/time/rate"
 )
 
-type Params struct {
-	fx.In
-	Config    Config
-	Responder responder.Responder
-	Logger    *zap.SugaredLogger
-}
+// type Params struct {
+// 	fx.In
+// 	// Config        Config
+// 	Responder     responder.Responder
+// 	Logger        *zap.Logger
+// 	LastResponses *atomic.Value[LastResponses]
+// 	Socket        socket.Socket
+// }
 
-type Result struct {
-	fx.Out
-	Server            lazy.Lazy[Server]
-	LastResponses     *concurrency.AtomicValue[LastResponses] `name:"dht_server_last_responses"`
-	AppHook           fx.Hook                                 `group:"app_hooks"`
-	QueryDuration     prometheus.Collector                    `group:"prometheus_collectors"`
-	QuerySuccessTotal prometheus.Collector                    `group:"prometheus_collectors"`
-	QueryErrorTotal   prometheus.Collector                    `group:"prometheus_collectors"`
-	QueryConcurrency  prometheus.Collector                    `group:"prometheus_collectors"`
-}
+// type Result struct {
+// 	fx.Out
+// 	Server            Runner
+// 	QueryDuration     prometheus.Collector `group:"prometheus_collectors"`
+// 	QuerySuccessTotal prometheus.Collector `group:"prometheus_collectors"`
+// 	QueryErrorTotal   prometheus.Collector `group:"prometheus_collectors"`
+// 	QueryConcurrency  prometheus.Collector `group:"prometheus_collectors"`
+// }
 
-const (
-	namespace = "bitmagnet"
-	subsystem = "dht_server"
-)
+// const (
+// 	namespace = "bitmagnet" // todo: Change
+// )
 
-func New(p Params) Result {
-	lastResponses := &concurrency.AtomicValue[LastResponses]{}
-	collector := newPrometheusCollector()
-	ls := lazy.New(func() (Server, error) {
-		s := queryLimiter{
-			server: prometheusServerWrapper{
-				prometheusCollector: collector,
-				server: healthCollector{
-					baseServer: &server{
-						stopped: make(chan struct{}),
-						localAddr: netip.AddrPortFrom(
-							netip.IPv4Unspecified(),
-							p.Config.Port,
-						),
-						socket:           NewSocket(),
-						queries:          make(map[string]chan dht.RecvMsg),
-						queryTimeout:     p.Config.QueryTimeout,
-						responder:        p.Responder,
-						responderTimeout: time.Second * 5,
-						idIssuer:         &variantIDIssuer{},
-						logger:           p.Logger.Named(subsystem),
-					},
-					lastResponses: lastResponses,
-				},
-			},
-			queryLimiter: concurrency.NewKeyedLimiter(rate.Every(time.Second), 4, 1000, time.Second*20),
-		}
-		if err := s.start(); err != nil {
-			return nil, fmt.Errorf("could not start server: %w", err)
-		}
+func New(
+	socket socket.Socket,
+	queryTimeout QueryTimeout,
+	lastResponses *atomic.Value[LastResponses],
+	responder responder.Responder,
+	logger *zap.Logger,
+) Runner {
+	// collector := newPrometheusCollector()
 
-		return s, nil
-	})
-
-	return Result{
-		Server: ls,
-		AppHook: fx.Hook{
-			OnStop: func(context.Context) error {
-				return ls.IfInitialized(func(s Server) error {
-					s.stop()
-					return nil
-				})
-			},
-		},
-		LastResponses:     lastResponses,
-		QueryDuration:     collector.queryDuration,
-		QuerySuccessTotal: collector.querySuccessTotal,
-		QueryErrorTotal:   collector.queryErrorTotal,
-		QueryConcurrency:  collector.queryConcurrency,
+	// todo: Remove prometheus
+	return queryLimiter{
+		serverRunner: serverRunner{healthCollector{
+			serverRunner: serverRunner{&server{
+				socket:           socket,
+				queries:          make(map[string]chan dht.RecvMsg),
+				queryTimeout:     time.Duration(queryTimeout),
+				responder:        responder,
+				responderTimeout: time.Second * 5,
+				idIssuer:         &VariantIDIssuer{},
+				logger:           logger,
+			}},
+			lastResponses: lastResponses,
+		}},
+		queryLimiter: concurrency.NewKeyedLimiter(rate.Every(time.Second), 4, 1000, time.Second*20),
 	}
+
+	// return Result{
+	// 	Server:            s,
+	// 	QueryDuration:     collector.queryDuration,
+	// 	QuerySuccessTotal: collector.querySuccessTotal,
+	// 	QueryErrorTotal:   collector.queryErrorTotal,
+	// 	QueryConcurrency:  collector.queryConcurrency,
+	// }
 }

@@ -1,0 +1,8 @@
+fragment User on User {
+  id
+  username
+  role
+  lastLoginAt
+  createdAt
+  updatedAt
+}

@@ -176,14 +176,14 @@ func ParseTitleYearEpisodes(
 	return "", 0, nil, "", classification.ErrUnmatched
 }
 
-func ParseVideoContent(torrent model.Torrent, result classification.Result) (classification.ContentAttributes, error) {
-	title, year, episodes, rest, err := ParseTitleYearEpisodes(result.ContentType, torrent.Name)
+func ParseVideoContent(result classification.Result) (classification.ContentAttributes, error) {
+	title, year, episodes, rest, err := ParseTitleYearEpisodes(result.ContentType, result.Torrent.Name)
 	if err != nil {
 		if !result.ContentType.Valid {
 			return classification.ContentAttributes{}, err
 		}
 
-		rest = torrent.Name
+		rest = result.Torrent.Name
 	}
 
 	ct := model.NullContentType{}
@@ -202,7 +202,7 @@ func ParseVideoContent(torrent model.Torrent, result classification.Result) (cla
 
 		if year.IsNil() {
 			title = ""
-			rest = torrent.Name
+			rest = result.Torrent.Name
 		}
 	}
 

@@ -1,0 +1,8 @@
+mutation SendTorrent($input: SendInput!) {
+  target {
+    send(input: $input) {
+      data
+      missingInfoHashes
+    }
+  }
+}

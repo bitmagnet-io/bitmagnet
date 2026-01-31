@@ -6,6 +6,8 @@ package resolvers
 
 import (
 	"context"
+	"maps"
+	"slices"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
@@ -27,11 +29,28 @@ func (r *torrentResolver) Sources(ctx context.Context, obj *model.Torrent) ([]gq
 	return gqlmodel.TorrentSourceInfosFromTorrent(*obj), nil
 }
 
+// Languages is the resolver for the languages field.
+func (r *torrentContentResolver) Languages(ctx context.Context, obj *gqlmodel.TorrentContent) ([]model.Language, error) {
+	return slices.Collect(maps.Keys(obj.Languages)), nil
+}
+
+// Episodes is the resolver for the episodes field.
+func (r *torrentContentResolver) Episodes(ctx context.Context, obj *gqlmodel.TorrentContent) (*gqlmodel.Episodes, error) {
+	return &gqlmodel.Episodes{
+		Label:   obj.Episodes.String(),
+		Seasons: obj.Episodes.SeasonEntries(),
+	}, nil
+}
+
 // Content returns gql.ContentResolver implementation.
 func (r *Resolver) Content() gql.ContentResolver { return &contentResolver{r} }
 
 // Torrent returns gql.TorrentResolver implementation.
 func (r *Resolver) Torrent() gql.TorrentResolver { return &torrentResolver{r} }
 
+// TorrentContent returns gql.TorrentContentResolver implementation.
+func (r *Resolver) TorrentContent() gql.TorrentContentResolver { return &torrentContentResolver{r} }
+
 type contentResolver struct{ *Resolver }
 type torrentResolver struct{ *Resolver }
+type torrentContentResolver struct{ *Resolver }

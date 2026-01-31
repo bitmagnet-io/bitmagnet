@@ -5,7 +5,7 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
+	"github.com/bitmagnet-io/bitmagnet/internal/atomic"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht"
 )
 
@@ -16,25 +16,8 @@ type LastResponses struct {
 }
 
 type healthCollector struct {
-	baseServer    Server
-	lastResponses *concurrency.AtomicValue[LastResponses]
-}
-
-func (c healthCollector) start() error {
-	err := c.baseServer.start()
-	if err == nil {
-		c.lastResponses.Update(func(lr LastResponses) LastResponses {
-			lr.StartTime = time.Now()
-			return lr
-		})
-	}
-
-	return err
-}
-
-func (c healthCollector) stop() {
-	c.lastResponses.Set(LastResponses{})
-	c.baseServer.stop()
+	serverRunner
+	lastResponses *atomic.Value[LastResponses]
 }
 
 func (c healthCollector) Query(
@@ -43,7 +26,7 @@ func (c healthCollector) Query(
 	q string,
 	args dht.MsgArgs,
 ) (dht.RecvMsg, error) {
-	res, err := c.baseServer.Query(ctx, addr, q, args)
+	res, err := c.serverRunner.Query(ctx, addr, q, args)
 	c.lastResponses.Update(func(lr LastResponses) LastResponses {
 		lr.LastResponse = time.Now()
 		if err == nil {

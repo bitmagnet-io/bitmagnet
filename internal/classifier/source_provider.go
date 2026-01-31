@@ -4,11 +4,15 @@ import (
 	"os"
 
 	"github.com/adrg/xdg"
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
 	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
 	"gopkg.in/yaml.v3"
 )
 
-func newSourceProvider(config Config, tmdbConfig tmdb.Config) sourceProvider {
+func newSourceProvider(
+	config Config,
+	tmdbEnabled tmdb.Enabled,
+) sourceProvider {
 	return mergeSourceProvider{
 		providers: []sourceProvider{
 			yamlSourceProvider{rawSourceProvider: coreSourceProvider{}},
@@ -16,7 +20,7 @@ func newSourceProvider(config Config, tmdbConfig tmdb.Config) sourceProvider {
 			yamlSourceProvider{rawSourceProvider: cwdSourceProvider{}},
 			configSourceProvider{
 				config:      config,
-				tmdbEnabled: tmdbConfig.Enabled,
+				tmdbEnabled: tmdbEnabled,
 			},
 		},
 	}
@@ -72,7 +76,7 @@ func (y yamlSourceProvider) source() (Source, error) {
 
 	src := Source{}
 
-	decoder, decoderErr := newDecoder(&src)
+	decoder, decoderErr := json_spec.NewDecoder(json_spec.KeyMatcherSnake, &src)
 	if decoderErr != nil {
 		return Source{}, decoderErr
 	}
@@ -118,7 +122,7 @@ func (cwdSourceProvider) source() ([]byte, error) {
 
 type configSourceProvider struct {
 	config      Config
-	tmdbEnabled bool
+	tmdbEnabled tmdb.Enabled
 }
 
 func (c configSourceProvider) source() (Source, error) {
@@ -127,7 +131,7 @@ func (c configSourceProvider) source() (Source, error) {
 		fs[k] = v
 	}
 
-	if c.config.DeleteXxx {
+	if c.config.DeleteXXX {
 		fs["delete_xxx"] = true
 	}
 
@@ -136,8 +140,8 @@ func (c configSourceProvider) source() (Source, error) {
 	}
 
 	return Source{
-		Keywords:   c.config.Keywords,
-		Extensions: c.config.Extensions,
+		Keywords:   map[string][]string(c.config.Keywords),
+		Extensions: map[string][]string(c.config.Extensions),
 		Flags:      fs,
 	}, nil
 }

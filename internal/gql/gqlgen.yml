@@ -150,24 +150,37 @@ models:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/model.VideoModifier
       - github.com/bitmagnet-io/bitmagnet/internal/model.NullVideoModifier
-  SearchQueryInput:
+  SearchInput:
     model:
-      - github.com/bitmagnet-io/bitmagnet/internal/database/query.SearchParams
-  TorrentContentResult:
+      - github.com/bitmagnet-io/bitmagnet/internal/search.Params
+  FacetInput:
     model:
-      - github.com/bitmagnet-io/bitmagnet/internal/database/search.TorrentContentResult
-  TorrentFilesQueryResult:
+      - github.com/bitmagnet-io/bitmagnet/internal/search.FacetParam
+  FacetKey:
     model:
-      - github.com/bitmagnet-io/bitmagnet/internal/database/search.TorrentFilesResult
+      - github.com/bitmagnet-io/bitmagnet/internal/search.Facet
+  FacetLogic:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/model.FacetLogic
+      - github.com/bitmagnet-io/bitmagnet/internal/model.NullFacetLogic
+  FacetResult:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/search.FacetResult
+  FacetResultItem:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/search.FacetResultItem
+  OrderByInput:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/search.OrderByParam
+  TorrentContentSearchQueryInput:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/search.TorrentContentResult
   TorrentSuggestTagsResult:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/database/search.TorrentSuggestTagsResult
   SuggestedTag:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/database/search.SuggestedTag
-  FacetAggregationInput:
-    model:
-      - github.com/bitmagnet-io/bitmagnet/internal/database/query.FacetAggregationConfig
   QueueMetricsBucket:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/metrics/queuemetrics.Bucket
@@ -180,3 +193,34 @@ models:
   TorrentMetricsBucket:
     model:
       - github.com/bitmagnet-io/bitmagnet/internal/metrics/torrentmetrics.Bucket
+  WorkerState:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/workers/worker.State
+  JSON:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/pkg/json_schema.JSONValue
+  Ref:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/ref.Ref
+      - github.com/bitmagnet-io/bitmagnet/internal/ref.Nullable
+  ConfigParam:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/config.Param
+  RegisterInput:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/auth/user.RegisterRequest
+  PasswordEntropyResult:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/auth/user.PasswordEntropyResult
+  SearchIndexInfo:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/search/adapter/multi.IndexInfo
+  SearchResultType:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/search.ResultType
+  SendInput:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/target.Params
+  SendResult:
+    model:
+      - github.com/bitmagnet-io/bitmagnet/internal/target.Result

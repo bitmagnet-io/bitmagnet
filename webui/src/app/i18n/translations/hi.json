@@ -1,32 +1,11 @@
 {
-  "content_types": {
-    "plural": {
-      "all": "सभी",
-      "audiobook": "ऑडियोबुक्स",
-      "comic": "कॉमिक्स",
-      "ebook": "ई-बुक्स",
-      "game": "गेम्स",
-      "movie": "फ़िल्में",
-      "music": "संगीत",
-      "null": "अज्ञात",
-      "software": "सॉफ़्टवेयर",
-      "tv_show": "टीवी शो",
-      "xxx": "XXX"
-    },
-    "singular": {
-      "audiobook": "ऑडियोबुक",
-      "comic": "कॉमिक",
-      "ebook": "ई-बुक",
-      "game": "गेम",
-      "movie": "फ़िल्म",
-      "music": "संगीत",
-      "null": "अज्ञात",
-      "software": "सॉफ़्टवेयर",
-      "tv_show": "टीवी शो",
-      "xxx": "XXX"
-    }
+  "account": {
+    "account": "__missing__",
+    "api_key_created": "__missing__",
+    "api_key_take_note": "__missing__",
+    "new_api_key": "__missing__"
   },
-  "dashboard": {
+  "admin": {
     "event": {
       "created": "बनाया गया",
       "failed": "असफल",
@@ -84,6 +63,55 @@
       "total_counts_by_status": "स्थिति द्वारा कुल गणना"
     }
   },
+  "auth": {
+    "claimed_by": "__missing__",
+    "confirm_password": "__missing__",
+    "created_by": "__missing__",
+    "expires_at": "__missing__",
+    "expiry": "__missing__",
+    "invitation_code": "__missing__",
+    "last_login_at": "__missing__",
+    "login": "__missing__",
+    "login_failed": "__missing__",
+    "logout": "__missing__",
+    "new_invitation": "__missing__",
+    "new_role": "__missing__",
+    "password": "__missing__",
+    "password_has_insufficient_entropy": "__missing__",
+    "passwords_do_not_match": "__missing__",
+    "register": "__missing__",
+    "register_failed": "__missing__",
+    "role": "__missing__",
+    "unclaimed": "__missing__",
+    "username": "__missing__"
+  },
+  "content_types": {
+    "plural": {
+      "all": "सभी",
+      "audiobook": "ऑडियोबुक्स",
+      "comic": "कॉमिक्स",
+      "ebook": "ई-बुक्स",
+      "game": "गेम्स",
+      "movie": "फ़िल्में",
+      "music": "संगीत",
+      "null": "अज्ञात",
+      "software": "सॉफ़्टवेयर",
+      "tv_show": "टीवी शो",
+      "xxx": "XXX"
+    },
+    "singular": {
+      "audiobook": "ऑडियोबुक",
+      "comic": "कॉमिक",
+      "ebook": "ई-बुक",
+      "game": "गेम",
+      "movie": "फ़िल्म",
+      "music": "संगीत",
+      "null": "अज्ञात",
+      "software": "सॉफ़्टवेयर",
+      "tv_show": "टीवी शो",
+      "xxx": "XXX"
+    }
+  },
   "facets": {
     "content_type": "सामग्री प्रकार",
     "file_type": "फ़ाइल प्रकार",
@@ -108,13 +136,26 @@
     "video": "वीडियो"
   },
   "general": {
+    "actions": "__missing__",
     "all": "सभी",
+    "cancel": "__missing__",
+    "code": "__missing__",
+    "confirm": "__missing__",
+    "copy_to_clipboard": "__missing__",
+    "created_at": "__missing__",
+    "delete": "__missing__",
     "dismiss": "खारिज करें",
+    "email": "__missing__",
     "error": "त्रुटि",
+    "index": "__missing__",
+    "name": "__missing__",
+    "never": "__missing__",
     "none": "कोई नहीं",
     "page_not_found": "पृष्ठ नहीं मिला",
     "refresh": "ताज़ा करें",
-    "status": "स्थिति"
+    "save": "__missing__",
+    "status": "स्थिति",
+    "system": "__missing__"
   },
   "health": {
     "bitmagnet_is_status": "bitmagnet {{status}} है",
@@ -228,13 +269,19 @@
     "x_to_y_of_z": "{{x}} से {{y}} तक {{z}} में"
   },
   "routes": {
+    "account": "__missing__",
     "admin": "प्रशासक",
-    "dashboard": "डैशबोर्ड",
+    "api_keys": "__missing__",
+    "config": "__missing__",
     "home": "होम",
+    "invitations": "__missing__",
     "jobs": "नौकरियां",
     "queues": "कतारें",
+    "roles": "__missing__",
     "torrents": "टोरेंट्स",
-    "visualize": "दृश्य करें"
+    "users": "__missing__",
+    "visualize": "दृश्य करें",
+    "workers": "__missing__"
   },
   "torrents": {
     "classification": "वर्गीकरण",
@@ -313,5 +360,24 @@
   "version": {
     "bitmagnet_version": "bitmagnet संस्करण {{version}}",
     "unknown": "अज्ञात"
+  },
+  "workers": {
+    "actions": {
+      "restart": "__missing__",
+      "shutdown": "__missing__",
+      "start": "__missing__"
+    },
+    "states": {
+      "error": "__missing__",
+      "idle": "__missing__",
+      "running": "__missing__",
+      "shutdown": "__missing__",
+      "startup": "__missing__"
+    },
+    "warnings": {
+      "depends_on": "__missing__",
+      "required_by": "__missing__"
+    },
+    "worker": "__missing__"
   }
 }

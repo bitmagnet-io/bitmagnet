@@ -1,3 +1,23 @@
+enum FacetLogic {
+  and
+  or
+}
+
+enum FacetKey {
+  release_year
+  content_genre
+  language
+  content_type
+  video_3d
+  video_codec
+  video_modifier
+  video_resolution
+  video_source
+  file_type
+  torrent_source
+  tag
+}
+
 enum ContentType {
   movie
   tv_show
@@ -8,11 +28,6 @@ enum ContentType {
   game
   software
   xxx
-}
-
-enum FacetLogic {
-  and
-  or
 }
 
 enum FileType {
@@ -169,4 +184,19 @@ enum QueueJobsOrderByField {
   created_at
   ran_at
   priority
+}
+
+enum WorkerState {
+  idle
+  startup
+  running
+  shutdown
+  error
+}
+
+enum SearchResultType {
+  torrent
+  torrent_content
+  torrent_file
+  content
 }

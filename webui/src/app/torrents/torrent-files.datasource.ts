@@ -15,17 +15,14 @@ const emptyResult = {
   items: [],
   hasNextPage: false,
   totalCount: 0,
-  aggregations: {
-    queue: [],
-    status: [],
-  },
+  totalCountIsEstimate: false,
+  facets: [],
 };
 
-export interface ITorrentFilesDatasource
-  extends DataSource<generated.TorrentFile> {
+export interface ITorrentFilesDatasource extends DataSource<generated.TorrentFile> {
   loading$: Observable<boolean>;
-  result$: Observable<generated.TorrentFilesQueryResult>;
-  result: generated.TorrentFilesQueryResult;
+  result$: Observable<generated.TorrentFilesSearchResultFragment>;
+  result: generated.TorrentFilesSearchResultFragment;
   items$: Observable<generated.TorrentFile[]>;
 }
 
@@ -36,9 +33,11 @@ export class TorrentFilesDatasource implements ITorrentFilesDatasource {
   private loadingSubject = new BehaviorSubject(false);
   public loading$ = this.loadingSubject.asObservable();
 
-  public result: generated.TorrentFilesQueryResult = emptyResult;
+  public result: generated.TorrentFilesSearchResultFragment = emptyResult;
   private resultSubject =
-    new BehaviorSubject<generated.TorrentFilesQueryResult>(this.result);
+    new BehaviorSubject<generated.TorrentFilesSearchResultFragment>(
+      this.result,
+    );
   public result$ = this.resultSubject.asObservable();
 
   public items$ = this.resultSubject.pipe(map((result) => result.items));
@@ -46,10 +45,10 @@ export class TorrentFilesDatasource implements ITorrentFilesDatasource {
   constructor(
     private apollo: Apollo,
     private errorsService: ErrorsService,
-    queryVariables: Observable<generated.TorrentFilesQueryVariables>,
+    queryVariables: Observable<generated.TorrentFilesSearchQueryVariables>,
   ) {
     queryVariables.subscribe(
-      (variables: generated.TorrentFilesQueryVariables) => {
+      (variables: generated.TorrentFilesSearchQueryVariables) => {
         this.loadResult(variables);
       },
     );
@@ -66,7 +65,9 @@ export class TorrentFilesDatasource implements ITorrentFilesDatasource {
     this.resultSubject.complete();
   }
 
-  private loadResult(variables: generated.TorrentFilesQueryVariables): void {
+  private loadResult(
+    variables: generated.TorrentFilesSearchQueryVariables,
+  ): void {
     if (this.currentSubscription) {
       this.currentSubscription.unsubscribe();
       this.currentSubscription = undefined;
@@ -75,14 +76,15 @@ export class TorrentFilesDatasource implements ITorrentFilesDatasource {
     const currentRequest = this.currentRequest.getValue() + 1;
     this.currentRequest.next(currentRequest);
     const result = this.apollo
-      .query<generated.TorrentFilesQuery, generated.TorrentFilesQueryVariables>(
-        {
-          query: generated.TorrentFilesDocument,
-          variables,
-          fetchPolicy: "no-cache",
-        },
-      )
-      .pipe(map((r) => r.data.torrent.files))
+      .query<
+        generated.TorrentFilesSearchQuery,
+        generated.TorrentFilesSearchQueryVariables
+      >({
+        query: generated.TorrentFilesSearchDocument,
+        variables,
+        fetchPolicy: "no-cache",
+      })
+      .pipe(map((r) => r.data!.torrent.searchTorrentFiles))
       .pipe(
         catchError((err: Error) => {
           this.errorsService.addError(
@@ -104,8 +106,8 @@ export class TorrentFilesSingleDatasource implements ITorrentFilesDatasource {
   private file: generated.TorrentFile;
 
   loading$ = new BehaviorSubject(false).asObservable();
-  result: generated.TorrentFilesQueryResult;
-  result$: Observable<generated.TorrentFilesQueryResult>;
+  result: generated.TorrentFilesSearchResult;
+  result$: Observable<generated.TorrentFilesSearchResult>;
   items$: Observable<generated.TorrentFile[]>;
 
   constructor(private torrent: generated.Torrent) {
@@ -123,6 +125,8 @@ export class TorrentFilesSingleDatasource implements ITorrentFilesDatasource {
       hasNextPage: false,
       items: [this.file],
       totalCount: 1,
+      totalCountIsEstimate: false,
+      facets: [],
     };
     this.result$ = new BehaviorSubject(this.result).asObservable();
     this.items$ = new BehaviorSubject([this.file]).asObservable();

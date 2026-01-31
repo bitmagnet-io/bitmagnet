@@ -68,6 +68,11 @@ func newContentCollectionContent(db *gorm.DB, opts ...gen.DOOption) contentColle
 		}{
 			RelationField: field.NewRelation("Content.MetadataSource", "model.MetadataSource"),
 		},
+		Tags: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("Content.Tags", "model.ContentTag"),
+		},
 	}
 
 	_contentCollectionContent.Collection = contentCollectionContentBelongsToCollection{
@@ -175,6 +180,9 @@ type contentCollectionContentBelongsToContent struct {
 		}
 	}
 	MetadataSource struct {
+		field.RelationField
+	}
+	Tags struct {
 		field.RelationField
 	}
 }

@@ -1,0 +1,10 @@
+#import "../fragments/ConfigParam"
+
+query ConfigParams {
+  config {
+    pending
+    params {
+      ...ConfigParam
+    }
+  }
+}

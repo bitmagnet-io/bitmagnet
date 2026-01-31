@@ -37,6 +37,7 @@ const compareTorrentSelection = (
 };
 
 export type TorrentSearchControls = {
+  index?: string;
   limit: number;
   page: number;
   queryString?: string;
@@ -58,62 +59,78 @@ const controlsToQueryVariables = (
   ctrl: TorrentSearchControls,
 ): generated.TorrentContentSearchQueryVariables => ({
   input: {
+    index: ctrl.index,
     queryString: ctrl.queryString,
     limit: ctrl.limit,
     page: ctrl.page,
     totalCount: true,
     hasNextPage: true,
-    orderBy: [ctrl.orderBy],
-    facets: {
-      contentType: {
-        aggregate: true,
-        filter: ctrl.contentType
-          ? [ctrl.contentType === "null" ? null : ctrl.contentType]
-          : undefined,
+    orderBy: [
+      {
+        // todo: check field vs key
+        field: ctrl.orderBy.key,
+        descending: ctrl.orderBy.descending,
       },
-      genre: ctrl.facets.genre.active
-        ? {
+    ],
+    facets: [
+      {
+        key: "content_type",
+        aggregate: true,
+        filter:
+          ctrl.contentType && ctrl.contentType !== "null"
+            ? [ctrl.contentType as string]
+            : undefined,
+      },
+      ...(ctrl.facets.genre.active
+        ? Array<generated.FacetInput>({
+            key: "content_genre",
             aggregate: true,
             filter: ctrl.facets.genre.filter,
-          }
-        : undefined,
-      language: ctrl.facets.language.active
-        ? {
-            aggregate: ctrl.facets.language.active,
+          })
+        : []),
+      ...(ctrl.facets.language.active
+        ? Array<generated.FacetInput>({
+            key: "language",
+            aggregate: true,
             filter: ctrl.facets.language.filter,
-          }
-        : undefined,
-      torrentFileType: ctrl.facets.fileType.active
-        ? {
+          })
+        : []),
+      ...(ctrl.facets.fileType.active
+        ? Array<generated.FacetInput>({
+            key: "file_type",
             aggregate: true,
             filter: ctrl.facets.fileType.filter,
-          }
-        : undefined,
-      torrentSource: ctrl.facets.torrentSource.active
-        ? {
+          })
+        : []),
+      ...(ctrl.facets.torrentSource.active
+        ? Array<generated.FacetInput>({
+            key: "torrent_source",
             aggregate: true,
             filter: ctrl.facets.torrentSource.filter,
-          }
-        : undefined,
-      torrentTag: ctrl.facets.torrentTag.active
-        ? {
+          })
+        : []),
+      ...(ctrl.facets.torrentTag.active
+        ? Array<generated.FacetInput>({
+            key: "tag",
             aggregate: true,
             filter: ctrl.facets.torrentTag.filter,
-          }
-        : undefined,
-      videoResolution: ctrl.facets.videoResolution.active
-        ? {
+          })
+        : []),
+      ...(ctrl.facets.videoResolution.active
+        ? Array<generated.FacetInput>({
+            key: "video_resolution",
             aggregate: true,
             filter: ctrl.facets.videoResolution.filter,
-          }
-        : undefined,
-      videoSource: ctrl.facets.videoSource.active
-        ? {
+          })
+        : []),
+      ...(ctrl.facets.videoSource.active
+        ? Array<generated.FacetInput>({
+            key: "video_source",
             aggregate: true,
             filter: ctrl.facets.videoSource.filter,
-          }
-        : undefined,
-    },
+          })
+        : []),
+    ],
   },
 });
 
@@ -132,6 +149,13 @@ export class TorrentsSearchController {
   selection$: Observable<TorrentSelection | undefined>;
 
   constructor(initialControls: TorrentSearchControls) {
+    // initialControls = {
+    //   ...initialControls,
+    //   index:
+    //     (initialControls.index ??
+    //       this.browserStorage.get(browserStorageIndexKey)) ||
+    //     undefined,
+    // };
     this.controlsSubject = new BehaviorSubject(initialControls);
     this.controls$ = this.controlsSubject.asObservable();
     this.paramsSubject = new BehaviorSubject(
@@ -161,12 +185,23 @@ export class TorrentsSearchController {
     });
   }
 
+  get controls(): TorrentSearchControls {
+    return this.controlsSubject.getValue();
+  }
+
   update(fn: (c: TorrentSearchControls) => TorrentSearchControls) {
     const ctrl = this.controlsSubject.getValue();
     const next = fn(ctrl);
     if (JSON.stringify(ctrl) !== JSON.stringify(next)) {
       this.controlsSubject.next(next);
     }
+  }
+
+  selectIndex(index?: string) {
+    this.update((ctrl) => ({
+      ...ctrl,
+      index,
+    }));
   }
 
   selectTorrent(infoHash: string, tab?: TorrentTabSelection | null) {
@@ -279,7 +314,7 @@ export class TorrentsSearchController {
         if (str !== ctrl.queryString) {
           orderBy = defaultQueryOrderBy;
         }
-      } else if (orderBy.field === "relevance") {
+      } else if (orderBy.key === "relevance") {
         orderBy = defaultOrderBy;
       }
       return {
@@ -291,17 +326,17 @@ export class TorrentsSearchController {
     });
   }
 
-  selectOrderBy(field: generated.TorrentContentOrderByField) {
+  selectOrderBy(key: generated.TorrentContentOrderByField) {
     const orderBy = {
-      field,
+      key,
       descending:
-        orderByOptions.find((option) => option.field === field)?.descending ??
+        orderByOptions.find((option) => option.key === key)?.descending ??
         false,
     };
     this.update((ctrl) => ({
       ...ctrl,
       orderBy:
-        orderBy.field !== "relevance" || ctrl.queryString
+        orderBy.key !== "relevance" || ctrl.queryString
           ? orderBy
           : defaultOrderBy,
       page: 1,
@@ -328,6 +363,8 @@ export class TorrentsSearchController {
   }
 }
 
+// todo: Get labels from backend
+
 export type FacetDefinition<T, _allowNull extends boolean = boolean> = {
   key: string;
   icon: string;
@@ -339,9 +376,6 @@ export type FacetDefinition<T, _allowNull extends boolean = boolean> = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     input: FacetInput<any>,
   ) => TorrentSearchControls["facets"];
-  extractAggregations: (
-    aggs: generated.TorrentContentSearchResult["aggregations"],
-  ) => Array<Agg<T, _allowNull>>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   resolveLabel: (agg: Agg<any, any>, t: TranslocoService) => string;
 };
@@ -355,7 +389,6 @@ export const torrentSourceFacet: FacetDefinition<string, false> = {
     ...f,
     torrentSource: i,
   }),
-  extractAggregations: (aggs) => aggs.torrentSource ?? [],
   resolveLabel: (agg) => agg.label,
 };
 
@@ -368,7 +401,6 @@ export const torrentTagFacet: FacetDefinition<string, false> = {
     ...f,
     torrentTag: i,
   }),
-  extractAggregations: (aggs) => aggs.torrentTag ?? [],
   resolveLabel: (agg) => agg.value as string,
 };
 
@@ -381,7 +413,6 @@ export const fileTypeFacet: FacetDefinition<generated.FileType, false> = {
     ...f,
     fileType: i,
   }),
-  extractAggregations: (aggs) => aggs.torrentFileType ?? [],
   resolveLabel: (agg, t) => t.translate(`file_types.${agg.value}`),
 };
 
@@ -394,7 +425,6 @@ export const languageFacet: FacetDefinition<generated.Language, false> = {
     ...f,
     language: i,
   }),
-  extractAggregations: (aggs) => aggs.language ?? [],
   resolveLabel: (agg, t) => t.translate(`languages.${agg.value}`),
 };
 
@@ -408,7 +438,6 @@ export const genreFacet: FacetDefinition<string, false> = {
     ...f,
     genre: i,
   }),
-  extractAggregations: (aggs) => aggs.genre ?? [],
   resolveLabel: (agg) => agg.label,
 };
 
@@ -425,11 +454,6 @@ export const videoResolutionFacet: FacetDefinition<
     ...f,
     videoResolution: i,
   }),
-  extractAggregations: (aggs) =>
-    (aggs.videoResolution ?? []).map((agg) => ({
-      ...agg,
-      value: agg.value ?? null,
-    })),
   resolveLabel: (agg) => (agg.value as string | undefined)?.slice(1) ?? "?",
 };
 
@@ -443,11 +467,6 @@ export const videoSourceFacet: FacetDefinition<generated.VideoSource, true> = {
     ...f,
     videoSource: i,
   }),
-  extractAggregations: (aggs) =>
-    (aggs.videoSource ?? []).map((agg) => ({
-      ...agg,
-      value: (agg.value as generated.VideoSource | undefined) ?? null,
-    })),
   resolveLabel: (agg) => (agg.value as string | undefined) ?? "?",
 };
 
@@ -484,51 +503,51 @@ export type FacetInfo<
 
 export const orderByOptions: OrderBySelection[] = [
   {
-    field: "relevance",
+    key: "relevance",
     descending: true,
   },
   {
-    field: "published_at",
+    key: "published_at",
     descending: true,
   },
   {
-    field: "updated_at",
+    key: "updated_at",
     descending: true,
   },
   {
-    field: "size",
+    key: "size",
     descending: true,
   },
   {
-    field: "files_count",
+    key: "files_count",
     descending: true,
   },
   {
-    field: "seeders",
+    key: "seeders",
     descending: true,
   },
   {
-    field: "leechers",
+    key: "leechers",
     descending: true,
   },
   {
-    field: "name",
+    key: "name",
     descending: false,
   },
 ];
 
 export const defaultOrderBy = {
-  field: "published_at" as const,
+  key: "published_at" as const,
   descending: true,
 };
 
 export const defaultQueryOrderBy = {
-  field: "relevance" as const,
+  key: "relevance" as const,
   descending: true,
 };
 
 export type OrderBySelection = {
-  field: generated.TorrentContentOrderByField;
+  key: generated.TorrentContentOrderByField;
   descending: boolean;
 };
 
@@ -541,7 +560,5 @@ export const isDefaultOrdering = (ctrl: TorrentSearchControls): boolean => {
   if (!ctrl.orderBy.descending) {
     return false;
   }
-  return (
-    ctrl.orderBy.field === (ctrl.queryString ? "relevance" : "published_at")
-  );
+  return ctrl.orderBy.key === (ctrl.queryString ? "relevance" : "published_at");
 };

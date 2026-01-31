@@ -1,0 +1,123 @@
+syntax = "proto3";
+package model;
+
+option go_package = "github.com/bitmagnet-io/bitmagnet/proto/common/model;model";
+
+message Torrent {
+  string infoHash = 1;
+  string name = 2;
+  int64 size = 4;
+  bool private = 5;
+  FilesStatus filesStatus = 6;
+  optional string extension = 7;
+  repeated TorrentFile files = 8;
+  optional int32 filesCount = 9;
+  repeated string tags = 10;
+  repeated TorrentSource sources = 11;
+  int64 createdAt = 12;
+  int64 updatedAt = 13;
+
+  enum FilesStatus {
+    no_info = 0;
+    single = 1;
+    multi = 2;
+    over_threshold = 3;
+  }
+}
+
+message TorrentFile {
+  string infoHash = 1;
+  int32 index = 2;
+  string path = 3;
+  optional string extension = 4;
+  optional string fileType = 5;
+  int64 size = 6;
+  int64 createdAt = 7;
+  int64 updatedAt = 8;
+}
+
+message TorrentSource {
+  string infoHash = 1;
+  string source = 2;
+  optional string importId = 3;
+  optional int32 seeders = 4;
+  optional int32 leechers = 5;
+  optional int64 publishedAt = 6;
+  int64 createdAt = 7;
+  int64 updatedAt = 8;
+}
+
+message TorrentContent {
+  string id = 1;
+  string infoHash = 2;
+  optional string contentType = 3;
+  optional ContentRef contentRef = 4;
+  repeated string languages = 5;
+  repeated string episodes = 6;
+  optional string videoResolution = 7;
+  optional string videoSource = 8;
+  optional string videoCodec = 9;
+  optional string video3d = 10;
+  optional string videoModifier = 11;
+  optional string releaseGroup = 12;
+  optional int32 seeders = 13;
+  optional int32 leechers = 14;
+  int64 size = 15;
+  optional int32 filesCount = 16;
+  repeated string tags = 17;
+  int64 publishedAt = 18;
+  int64 createdAt = 19;
+  int64 updatedAt = 20;
+  Torrent torrent = 21;
+  Content content = 22;
+}
+
+message Content {
+  ContentRef ref = 1;
+  string title = 2;
+  optional Date releaseDate = 3;
+  optional bool adult = 4;
+  optional string originalLanguage = 5;
+  optional string originalTitle = 6;
+  optional string overview = 7;
+  optional int32 runtime = 8;
+  optional float popularity = 9;
+  optional float voteAverage = 10;
+  optional int32 voteCount = 11;
+  repeated string tags = 12;
+  repeated ContentCollection collections = 13;
+  repeated ContentAttribute attributes = 14;
+  int64 createdAt = 15;
+  int64 updatedAt = 16;
+}
+
+message ContentRef {
+  string type = 1;
+  string source = 2;
+  string id = 3;
+}
+
+message ContentCollection {
+  string type = 1;
+  string source = 2;
+  string id = 3;
+  string name = 4;
+  int64 createdAt = 5;
+  int64 updatedAt = 6;
+}
+
+message ContentAttribute {
+  string source = 1;
+  string key = 2;
+  string value = 3;
+  int64 createdAt = 4;
+  int64 updatedAt = 5;
+}
+
+message Date {
+  int32 year = 1;
+  optional int32 month = 2;
+  optional int32 day = 3;
+}
+
+

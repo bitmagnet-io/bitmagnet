@@ -26,26 +26,6 @@
             }
           </tr>
         }
-        @for (worker of health.result.workers; track worker.key) {
-          <tr>
-            <td class="td-icon">
-              <mat-icon>{{ worker.icon }}</mat-icon>
-            </td>
-            <th scope="row">
-              {{ t("health.worker") }}: {{ t("health.workers." + worker.key) }}
-            </th>
-            <td>
-              {{
-                t(
-                  "health.statuses." + (worker.started ? "started" : "inactive")
-                )
-              }}
-            </td>
-            @if (health.result.status === "down") {
-              <td></td>
-            }
-          </tr>
-        }
       </tbody>
     </table>
   }

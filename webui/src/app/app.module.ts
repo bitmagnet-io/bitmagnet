@@ -10,7 +10,10 @@ import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatDialogModule } from "@angular/material/dialog";
 import { MatDividerModule } from "@angular/material/divider";
 import { MatExpansionModule } from "@angular/material/expansion";
-import { MatFormFieldModule } from "@angular/material/form-field";
+import {
+  MAT_FORM_FIELD_DEFAULT_OPTIONS,
+  MatFormFieldModule,
+} from "@angular/material/form-field";
 import { MatGridListModule } from "@angular/material/grid-list";
 import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
@@ -26,11 +29,14 @@ import { MatTabsModule } from "@angular/material/tabs";
 import { RouterModule } from "@angular/router";
 import { TranslocoModule } from "@jsverse/transloco";
 import { GraphQLModule } from "./graphql/graphql.module";
+import { DocumentTitleComponent } from "./layout/document-title.component";
 
 @NgModule({
+  imports: [DocumentTitleComponent],
   exports: [
     ClipboardModule,
     CommonModule,
+    DocumentTitleComponent,
     GraphQLModule,
     MatAutocompleteModule,
     MatButtonModule,
@@ -56,6 +62,12 @@ import { GraphQLModule } from "./graphql/graphql.module";
     ReactiveFormsModule,
     RouterModule,
     TranslocoModule,
+  ],
+  providers: [
+    {
+      provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+      useValue: { subscriptSizing: "dynamic" },
+    },
   ],
 })
 export class AppModule {}

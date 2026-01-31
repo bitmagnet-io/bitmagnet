@@ -8,6 +8,7 @@ import {
 import { ActivatedRoute, Params, Router } from "@angular/router";
 import {
   BehaviorSubject,
+  combineLatest,
   combineLatestWith,
   Observable,
   Subscription,
@@ -26,6 +27,7 @@ import { intParam, stringListParam, stringParam } from "../util/query-string";
 import { AppModule } from "../app.module";
 import { DocumentTitleComponent } from "../layout/document-title.component";
 import { IntEstimatePipe } from "../pipes/int-estimate.pipe";
+import { BrowserStorageService } from "../browser-storage/browser-storage.service";
 import { TorrentsBulkActionsComponent } from "./torrents-bulk-actions.component";
 import { contentTypeList, contentTypeMap } from "./content-types";
 import {
@@ -53,6 +55,9 @@ import {
   torrentTabNames,
   TorrentTabSelection,
 } from "./torrents-search.controller";
+import { IndexesService } from "./indexes.service";
+
+const browserStorageIndexKey = "torrents-search-index";
 
 @Component({
   selector: "app-torrents-search",
@@ -68,7 +73,7 @@ import {
     TorrentsTableComponent,
     IntEstimatePipe,
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  // changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TorrentsSearchComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
@@ -76,13 +81,14 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
   private apollo = inject(Apollo);
   private errorsService = inject(ErrorsService);
   private transloco = inject(TranslocoService);
+  private browserStorage = inject(BrowserStorageService);
+
   breakpoints = inject(BreakpointsService);
+  indexes = inject(IndexesService);
 
   dataSource: TorrentsSearchDatasource;
 
   controller: TorrentsSearchController;
-
-  controls = initControls;
 
   contentTypes = contentTypeList;
   orderByOptions = orderByOptions;
@@ -107,16 +113,17 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
   private subscriptions = Array<Subscription>();
 
   constructor() {
-    this.controller = new TorrentsSearchController(this.controls);
+    this.controller = new TorrentsSearchController({
+      ...initControls,
+      index:
+        (initControls.index ??
+          this.browserStorage.get(browserStorageIndexKey)) ||
+        undefined,
+    });
     this.dataSource = new TorrentsSearchDatasource(
       this.apollo,
       this.errorsService,
       this.controller.params$,
-    );
-    this.subscriptions.push(
-      this.controller.controls$.subscribe((ctrl) => {
-        this.controls = ctrl;
-      }),
     );
     this.facets$ = this.controller.controls$.pipe(
       combineLatestWith(this.dataSource.result$),
@@ -131,12 +138,13 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
               controls.contentType !== "null" &&
               f.contentTypes.includes(controls.contentType)
             ),
-          aggregations: f
-            .extractAggregations(result.aggregations)
-            .map((agg) => ({
-              ...agg,
-              label: f.resolveLabel(agg, this.transloco),
-            })),
+          aggregations:
+            result.facets
+              .find((rf) => rf.key === f.key)
+              ?.items.map((agg) => ({
+                ...agg,
+                label: f.resolveLabel(agg, this.transloco),
+              })) ?? [],
         })),
       ),
     );
@@ -159,14 +167,16 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.route.queryParams.subscribe((params) => {
         this.queryString.setValue(stringParam(params, "query") ?? null);
-        this.controller.update(() => paramsToControls(params));
+        this.controller.update((ctrl) => {
+          const result = paramsToControls(params);
+          return {
+            ...result,
+            index: result.index || ctrl.index,
+          };
+        });
       }),
       this.controller.controls$.subscribe((ctrl) => {
-        void this.router.navigate([], {
-          relativeTo: this.route,
-          queryParams: controlsToParams(ctrl),
-          queryParamsHandling: "replace",
-        });
+        this.navigate(ctrl);
       }),
       this.multiSelection.changed.subscribe((selection) => {
         const infoHashes = new Set(selection.source.selected);
@@ -174,12 +184,39 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
           this.result.items.filter((i) => infoHashes.has(i.infoHash)),
         );
       }),
+      combineLatest([
+        this.indexes.indexes$,
+        this.controller.controls$,
+      ]).subscribe(([indexes, controls]) => {
+        if (
+          controls.index &&
+          indexes.infos.length &&
+          !indexes.infos.find((idx) => idx.ref === controls.index)
+        ) {
+          this.controller.selectIndex(undefined);
+        }
+      }),
     );
+  }
+
+  private navigate(controls: TorrentSearchControls) {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: controlsToParams(controls),
+      queryParamsHandling: "replace",
+    });
   }
 
   ngOnDestroy() {
     this.subscriptions.forEach((subscription) => subscription.unsubscribe());
     this.subscriptions = new Array<Subscription>();
+  }
+
+  selectIndex(index?: string) {
+    if (index) {
+      this.browserStorage.set(browserStorageIndexKey, index);
+    }
+    this.controller.selectIndex(index);
   }
 }
 
@@ -201,7 +238,11 @@ const initControls: TorrentSearchControls = {
   },
 };
 
-const paramsToControls = (params: Params): TorrentSearchControls => {
+const paramsToControls = (
+  // index: string,
+  params: Params,
+): TorrentSearchControls => {
+  const index = stringParam(params, "index");
   const queryString = stringParam(params, "query");
   const activeFacets = stringListParam(params, "facets");
   let selectedTorrent: TorrentSelection | undefined;
@@ -218,6 +259,7 @@ const paramsToControls = (params: Params): TorrentSearchControls => {
     };
   }
   return {
+    index,
     queryString,
     orderBy: orderByParam(params, !!queryString),
     contentType: contentTypeParam(params),
@@ -250,11 +292,12 @@ const controlsToParams = (ctrl: TorrentSearchControls): Params => {
     desc = orderBy.descending ? "1" : "0";
   }
   return {
+    index: ctrl.index || undefined,
     query: ctrl.queryString ? encodeURIComponent(ctrl.queryString) : undefined,
     page,
     limit,
     content_type: ctrl.contentType,
-    order: orderBy?.field,
+    order: orderBy?.key,
     desc,
     ...(ctrl.selectedTorrent
       ? {
@@ -281,15 +324,15 @@ const orderByParam = (params: Params, hasQuery: boolean): OrderBySelection => {
   }
   const field = stringParam(params, "order");
   for (const opt of orderByOptions) {
-    if (opt.field === field) {
+    if (opt.key === field) {
       return {
-        field,
+        key: opt.key,
         descending: desc ?? opt.descending,
       };
     }
   }
   return {
-    field: hasQuery ? "relevance" : "published_at",
+    key: hasQuery ? "relevance" : "published_at",
     descending: desc ?? true,
   };
 };

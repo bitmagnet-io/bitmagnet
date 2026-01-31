@@ -6,15 +6,20 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 	"sort"
+	"time"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
+	"github.com/bitmagnet-io/bitmagnet/internal/gql/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/internal/health"
-	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/ref"
+	"github.com/bitmagnet-io/bitmagnet/internal/slice"
+	"github.com/bitmagnet-io/bitmagnet/internal/target"
 	"github.com/bitmagnet-io/bitmagnet/internal/version"
+	"github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
 )
 
 // Version is the resolver for the version field.
@@ -22,20 +27,41 @@ func (r *queryResolver) Version(ctx context.Context) (string, error) {
 	return version.GitTag, nil
 }
 
-// Workers is the resolver for the workers field.
-func (r *queryResolver) Workers(ctx context.Context) (gen.WorkersQuery, error) {
-	var workers []gen.Worker
-	for _, w := range r.Resolver.Workers.Workers() {
-		workers = append(workers, gen.Worker{
-			Key:     w.Key(),
-			Started: w.Started(),
-		})
-	}
+// Self is the resolver for the self field.
+func (r *queryResolver) Self(ctx context.Context) (gqlmodel.SelfQuery, error) {
+	return gqlmodel.SelfQuery{
+		RBAC:   r.RBAC,
+		User:   r.User,
+		APIKey: r.APIKey,
+	}, nil
+}
 
-	return gen.WorkersQuery{
-		ListAll: gen.WorkersListAllQueryResult{
-			Workers: workers,
-		},
+// Auth is the resolver for the auth field.
+func (r *queryResolver) Auth(ctx context.Context) (gqlmodel.AuthQuery, error) {
+	return gqlmodel.AuthQuery{
+		RBAC: r.RBAC,
+		User: r.User,
+	}, nil
+}
+
+// Config is the resolver for the config field.
+func (r *queryResolver) Config(ctx context.Context) (gqlmodel.ConfigQuery, error) {
+	return gqlmodel.ConfigQuery{
+		Manager: r.ConfigManager,
+	}, nil
+}
+
+// Plugin is the resolver for the plugin field.
+func (r *queryResolver) Plugin(ctx context.Context) (gqlmodel.PluginQuery, error) {
+	return gqlmodel.PluginQuery{
+		Plugins: r.Plugins,
+	}, nil
+}
+
+// Worker is the resolver for the worker field.
+func (r *queryResolver) Worker(ctx context.Context) (gqlmodel.WorkerQuery, error) {
+	return gqlmodel.WorkerQuery{
+		Registry: r.Workers,
 	}, nil
 }
 
@@ -64,10 +90,16 @@ func (r *queryResolver) Health(ctx context.Context) (gen.HealthQuery, error) {
 			err = &strErr
 		}
 
+		var timestamp *time.Time
+
+		if !v.Timestamp.IsZero() {
+			timestamp = &v.Timestamp
+		}
+
 		checks = append(checks, gen.HealthCheck{
 			Key:       k,
 			Status:    transformHealthCheckStatus(v.Status),
-			Timestamp: v.Timestamp,
+			Timestamp: timestamp,
 			Error:     err,
 		})
 	}
@@ -92,31 +124,68 @@ func (r *queryResolver) Queue(ctx context.Context) (gqlmodel.QueueQuery, error) 
 // Torrent is the resolver for the torrent field.
 func (r *queryResolver) Torrent(ctx context.Context) (gqlmodel.TorrentQuery, error) {
 	return gqlmodel.TorrentQuery{
-		Dao:                  r.Dao,
-		Search:               r.Search,
+		DaoProvider:          r.DaoProvider,
 		TorrentMetricsClient: r.TorrentMetricsClient,
 	}, nil
 }
 
-// TorrentContent is the resolver for the torrentContent field.
-func (r *queryResolver) TorrentContent(ctx context.Context) (gqlmodel.TorrentContentQuery, error) {
-	return gqlmodel.TorrentContentQuery{
-		TorrentContentSearch: r.Search,
+// Index is the resolver for the index field.
+func (r *queryResolver) Index(ctx context.Context) (gen.IndexQuery, error) {
+	return gen.IndexQuery{
+		Default: r.Search.DefaultIndex(),
+		Infos:   r.Search.Indexes(),
 	}, nil
 }
 
-// Files is the resolver for the files field.
-func (r *torrentQueryResolver) Files(ctx context.Context, obj *gqlmodel.TorrentQuery, input gqlmodel.TorrentFilesQueryInput) (query.GenericResult[model.TorrentFile], error) {
-	return gqlmodel.TorrentQuery{
-		Search: r.Search,
-	}.Files(ctx, input)
+// Target is the resolver for the target field.
+func (r *queryResolver) Target(ctx context.Context) (gen.TargetQuery, error) {
+	var defaultTarget *ref.Ref
+	targets, err := slice.MapErr(r.Targets.Targets(), func(t target.TorrentContentTarget) (gen.Target, error) {
+		var dataSchema *json_schema.JSONValue
+		dataSchemaStruct, err := t.DataSchama(ctx)
+		if err != nil {
+			return gen.Target{}, fmt.Errorf("failed to get target data schema: %w", err)
+		}
+		if dataSchemaStruct != nil {
+			ds, err := json_schema.NewValue(dataSchemaStruct)
+			if err != nil {
+				return gen.Target{}, fmt.Errorf("failed to convert target schema to JSONValue: %w", err)
+			}
+			dataSchema = &ds
+		}
+		var uiSchema *json_schema.JSONValue
+		uiSchemaStruct, err := t.UISchema(ctx, httpserver.AcceptLanguageFromContext(ctx))
+		if err != nil {
+			return gen.Target{}, fmt.Errorf("failed to get target UI schema: %w", err)
+		}
+		if uiSchemaStruct != nil {
+			us, err := json_schema.NewValue(uiSchemaStruct)
+			if err != nil {
+				return gen.Target{}, fmt.Errorf("failed to convert target UI schema to JSONValue: %w", err)
+			}
+			uiSchema = &us
+		}
+
+		if defaultTarget == nil {
+			r := t.Ref()
+			defaultTarget = &r
+		}
+
+		return gen.Target{
+			Ref:        t.Ref(),
+			Name:       t.Name(),
+			DataSchema: dataSchema,
+			UISchema:   uiSchema,
+		}, nil
+	})
+
+	return gen.TargetQuery{
+		Default: defaultTarget,
+		Targets: targets,
+	}, err
 }
 
 // Query returns gql.QueryResolver implementation.
 func (r *Resolver) Query() gql.QueryResolver { return &queryResolver{r} }
 
-// TorrentQuery returns gql.TorrentQueryResolver implementation.
-func (r *Resolver) TorrentQuery() gql.TorrentQueryResolver { return &torrentQueryResolver{r} }
-
 type queryResolver struct{ *Resolver }
-type torrentQueryResolver struct{ *Resolver }

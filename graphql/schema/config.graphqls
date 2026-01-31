@@ -1,0 +1,47 @@
+type ConfigQuery {
+  params: [ConfigParam!]!
+  pending: Boolean!
+}
+
+type ConfigParam {
+  ref: Ref!
+  plugin: Ref!
+  value: JSON!
+  source: String!
+  default: JSON!
+  dynamic: Boolean!
+  pending: Boolean!
+  jsonSchema: JSON!
+}
+
+type ConfigMutation {
+  save(ref: Ref!, value: JSON!): ConfigParam!
+  delete(ref: Ref!): ConfigParam!
+}
+
+# enum JSONSchemaType {
+#   string
+#   number
+#   integer
+#   boolean
+#   array
+# }
+
+# type JSONSchema {
+#   type: JSONSchemaType
+#   default: JSON
+#   enum: [JSON!]
+#   pattern: String
+#   multipleOf: Float
+#   maximum: Float
+#   exclusiveMaximum: Float
+#   minimum: Float
+#   exclusiveMinimum: Float
+#   maxLength: Int
+#   minLength: Int
+#   minItems: Int
+#   maxItems: Int
+#   uniqueItems: Boolean
+#   required: JSON
+#   items: JSONSchema
+# }

@@ -1,6 +1,10 @@
 package classifier
 
-import "github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
+import (
+	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
+	"github.com/bitmagnet-io/bitmagnet/pkg/json_schema"
+)
 
 const deleteName = "delete"
 
@@ -10,17 +14,17 @@ func (deleteAction) name() string {
 	return deleteName
 }
 
-var deletePayloadSpec = payloadLiteral[string]{
-	literal:     deleteName,
-	description: "Delete the current torrent",
+var deleteSpec = json_spec.Literal[string]{
+	Literal:     deleteName,
+	Description: "Delete the current torrent",
 }
 
-func (deleteAction) compileAction(ctx compilerContext) (action, error) {
-	if _, err := deletePayloadSpec.Unmarshal(ctx); err != nil {
-		return action{}, ctx.error(err)
+func (deleteAction) compile(ctx compilerContext) (action, error) {
+	if _, err := deleteSpec.Parse(ctx.jsonSpec); err != nil {
+		return action{}, ctx.Error(err)
 	}
 
-	path := ctx.path
+	path := ctx.Path
 
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
@@ -32,6 +36,6 @@ func (deleteAction) compileAction(ctx compilerContext) (action, error) {
 	}, nil
 }
 
-func (deleteAction) JSONSchema() JSONSchema {
-	return deletePayloadSpec.JSONSchema()
+func (deleteAction) JSONSchema() json_schema.JSONSchema {
+	return deleteSpec.JSONSchema()
 }

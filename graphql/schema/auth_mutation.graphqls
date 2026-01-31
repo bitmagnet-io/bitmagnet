@@ -1,0 +1,21 @@
+type AuthMutation {
+  setUserRole(userId: Int!, roleName: String!): User!
+  setUserEnabled(userId: Int!, enabled: Boolean!): User!
+  deleteUser(userId: Int!): Void
+  putRole(role: String!, objectActions: [AuthObjectActionInput!]!): Role!
+  deleteRole(role: String!): Void
+  invite(input: InviteInput!): Invitation!
+  deleteInvitation(code: String!): Void
+}
+
+input AuthObjectActionInput {
+  namespace: String!
+  object: String!
+  action: String!
+}
+
+input InviteInput {
+  email: String
+  role: String
+  expiry: Duration
+}

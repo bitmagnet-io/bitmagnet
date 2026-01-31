@@ -1,0 +1,7 @@
+fragment PluginLocalizedContent on PluginLocalizedContent {
+  description
+  configParams {
+    ref
+    description
+  }
+}

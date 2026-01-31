@@ -10,7 +10,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/anacrolix/torrent/bencode"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol/bencode"
 )
 
 // There are 2 main conventions for encoding client and client version information into the client ID,

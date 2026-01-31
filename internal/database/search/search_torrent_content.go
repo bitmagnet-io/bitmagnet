@@ -6,25 +6,19 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/dao"
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 	"gorm.io/gen/field"
 	"gorm.io/gorm/clause"
 )
 
-type TorrentContentResultItem struct {
-	query.ResultItem
-	model.TorrentContent
-}
-
-type TorrentContentResult = query.GenericResult[TorrentContentResultItem]
-
 type TorrentContentSearch interface {
-	TorrentContent(ctx context.Context, options ...query.Option) (TorrentContentResult, error)
+	TorrentContent(ctx context.Context, options ...query.Option) (adapter.TorrentContentResult, error)
 }
 
-func (s search) TorrentContent(ctx context.Context, options ...query.Option) (TorrentContentResult, error) {
-	return query.GenericQuery[TorrentContentResultItem](
+func (s search) TorrentContent(ctx context.Context, options ...query.Option) (adapter.TorrentContentResult, error) {
+	return query.GenericQuery[adapter.TorrentContentResultItem](
 		ctx,
-		s.q,
+		s.daoProvider,
 		query.Options(append([]query.Option{query.SelectAll()}, options...)...),
 		model.TableNameTorrentContent,
 		func(ctx context.Context, q *dao.Query) query.SubQuery {

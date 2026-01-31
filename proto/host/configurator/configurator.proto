@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package configurator;
+
+option go_package = "github.com/bitmagnet-io/bitmagnet/proto/host/configurator;configurator";
+
+// go:plugin type=host module=configurator version=1
+service Service {
+  rpc GetConfig(Empty) returns (Config);
+}
+
+message Empty {
+  string empty = 1;
+}
+
+message Config {
+  string json = 1;
+}

@@ -1,0 +1,27 @@
+type TargetQuery {
+  default: Ref
+  targets: [Target!]!
+}
+
+type TargetMutation {
+  send(input: SendInput!): SendResult!
+}
+
+type Target {
+  ref: Ref!
+  name: String!
+  dataSchema: JSON
+  uiSchema: JSON
+}
+
+input SendInput {
+  target: Ref!
+  index: Ref
+  infoHashes: [Hash20!]!
+  data: JSON
+}
+
+type SendResult {
+  data: JSON
+  missingInfoHashes: [Hash20!]!
+}

@@ -7,56 +7,29 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/bitmagnet-io/bitmagnet/internal/httpserver"
 	"github.com/bitmagnet-io/bitmagnet/internal/importer"
-	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
-type Params struct {
-	fx.In
-	Importer lazy.Lazy[importer.Importer]
-	Logger   *zap.SugaredLogger
-}
-
-type Result struct {
-	fx.Out
-	Option httpserver.Option `group:"http_server_options"`
-}
-
-func New(p Params) Result {
-	return Result{
-		Option: &builder{
-			importer: p.Importer,
-			logger:   p.Logger.Named("importer"),
-		},
-	}
+func New(importer importer.Importer, logger *zap.Logger) gin.OptionFunc {
+	return builder{
+		importer: importer,
+		logger:   logger.Named("importer"),
+	}.Apply
 }
 
 const ImportIDHeader = "X-Import-Id"
 
 type builder struct {
-	importer lazy.Lazy[importer.Importer]
-	logger   *zap.SugaredLogger
+	importer importer.Importer
+	logger   *zap.Logger
 }
 
-func (builder) Key() string {
-	return "import"
-}
-
-func (b builder) Apply(e *gin.Engine) error {
-	i, err := b.importer.Get()
-	if err != nil {
-		return err
-	}
-
+func (b builder) Apply(e *gin.Engine) {
 	e.POST("/import", func(ctx *gin.Context) {
-		b.handle(ctx, i)
+		b.handle(ctx, b.importer)
 	})
-
-	return nil
 }
 
 func (b builder) handle(ctx *gin.Context, i importer.Importer) {
@@ -79,11 +52,11 @@ func (b builder) handle(ctx *gin.Context, i importer.Importer) {
 		_, _ = fmt.Fprintf(ctx.Writer, "%d items imported\n", count)
 	}
 	addItem := func() error {
-		item := importer.Item{}
-		// todo: Fix this
+		item := importer.Torrent{}
+
 		//nolint:musttag
 		if err := json.Unmarshal([]byte(string(currentLine)), &item); err != nil {
-			b.logger.Errorw("error adding item", "error", err)
+			b.logger.Error("failed to add item", zap.Error(err))
 			ctx.Status(400)
 			_, _ = ctx.Writer.WriteString(err.Error())
 
@@ -91,7 +64,7 @@ func (b builder) handle(ctx *gin.Context, i importer.Importer) {
 		}
 
 		if err := ai.Import(item); err != nil {
-			b.logger.Errorw("error importing item", "error", err)
+			b.logger.Error("feiled to import item", zap.Error(err))
 			ctx.Status(400)
 			_, _ = ctx.Writer.WriteString(err.Error())
 
@@ -133,7 +106,7 @@ func (b builder) handle(ctx *gin.Context, i importer.Importer) {
 	ai.Drain()
 
 	if err := ai.Close(); err != nil {
-		b.logger.Errorw("error closing import", "error", err)
+		b.logger.Error("failed to close import", zap.Error(err))
 		ctx.Status(400)
 		_, _ = ctx.Writer.WriteString(err.Error())
 

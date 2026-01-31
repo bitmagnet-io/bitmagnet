@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
+	"github.com/bitmagnet-io/bitmagnet/internal/json_spec"
 )
 
 func actions(defs ...actionDefinition) feature {
@@ -14,47 +15,51 @@ func actions(defs ...actionDefinition) feature {
 }
 
 type actionCompiler interface {
-	compileAction(ctx compilerContext) (action, error)
+	compile(compilerContext) (action, error)
 }
 
 type actionDefinition interface {
-	HasJSONSchema
-	name() string
+	json_spec.HasJSONSchema
 	actionCompiler
+	name() string
 }
 
-func (c compilerContext) compileAction(ctx compilerContext) (action, error) {
-	var rawActions []any
+func compileAction(ctx compilerContext) (action, error) {
+	var (
+		rawActions []any
+		actions    []action
+		errs       []error
+	)
 
 	isArray := false
 
-	if s, ok := ctx.source.([]any); ok {
+	if s, ok := ctx.Source.([]any); ok {
 		rawActions = s
 		isArray = true
 	} else {
-		rawActions = []any{ctx.source}
+		rawActions = []any{ctx.Source}
 	}
 
-	var actions []action
-
-	var errs []error
 outer:
 	for i, rawAction := range rawActions {
 		actionCtx := ctx
 		if isArray {
-			actionCtx = ctx.child(numericPathPart(i), rawAction)
+			actionCtx = ctx.child(json_spec.NumericPathPart(i), rawAction)
 		}
-		for _, def := range c.actions {
-			a, err := def.compileAction(actionCtx.child(def.name(), rawAction))
+
+		for _, def := range ctx.actions {
+			a, err := def.compile(actionCtx.child(def.name(), rawAction))
 			if err == nil {
 				actions = append(actions, a)
 				continue outer
 			}
-			if asFatalCompilerError(err) != nil {
+
+			if json_spec.AsFatalCompilerError(err) != nil {
 				return action{}, err
 			}
 		}
-		errs = append(errs, fmt.Errorf("no action matched: %v", ctx.source))
+
+		errs = append(errs, fmt.Errorf("no action matched: %v", ctx.Source))
 	}
 
 	if len(errs) > 0 {
@@ -67,8 +72,10 @@ outer:
 			if err != nil {
 				return classification.Result{}, err
 			}
+
 			ctx = ctx.withResult(result)
 		}
+
 		return ctx.result, nil
 	}}, errors.Join(errs...)
 }

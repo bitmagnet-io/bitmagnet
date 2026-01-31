@@ -7,16 +7,15 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/query"
 	"github.com/bitmagnet-io/bitmagnet/internal/maps"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	adapter "github.com/bitmagnet-io/bitmagnet/internal/search"
 	"gorm.io/gen/field"
 )
-
-const ReleaseYearFacetKey = "release_year"
 
 func ReleaseYearFacet(options ...query.FacetOption) query.Facet {
 	return yearFacet{
 		FacetConfig: query.NewFacetConfig(
 			append([]query.FacetOption{
-				query.FacetHasKey(ReleaseYearFacetKey),
+				query.FacetHasKey(adapter.FacetReleaseYear),
 				query.FacetHasLabel("Release Year"),
 				query.FacetUsesOrLogic(),
 				// avoids counting different versions of the same piece of content,
@@ -41,22 +40,28 @@ func (yearFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 		query.GenCriteria(func(ctx query.DBContext) (query.Criteria, error) {
 			years := make([]uint16, 0, len(filter))
 			hasNull := false
+
 			for _, v := range filter.Values() {
 				if v == "null" {
 					hasNull = true
 					continue
 				}
+
 				strYear := v
+
 				vInt, intErr := strconv.Atoi(strYear)
 				if intErr != nil {
 					return nil, fmt.Errorf("invalid year filter specified: %w", intErr)
 				} else if vInt < 1000 || vInt > 9999 {
 					return nil, fmt.Errorf("out-of-bounds year filter specified: %s", strYear)
 				}
+
 				years = append(years, uint16(vInt))
 			}
+
 			yearField := ctx.Query().Content.ReleaseYear
 			joins := maps.NewInsertMap(maps.MapEntry[string, struct{}]{Key: model.TableNameContent})
+
 			var or []query.Criteria
 			if len(years) > 0 {
 				or = append(or, query.RawCriteria{
@@ -67,12 +72,14 @@ func (yearFacet) Criteria(filter query.FacetFilter) []query.Criteria {
 					Joins: joins,
 				})
 			}
+
 			if hasNull {
 				or = append(or, query.RawCriteria{
 					Query: ctx.Query().Content.UnderlyingDB().Where(yearField.IsNull().RawExpr()),
 					Joins: joins,
 				})
 			}
+
 			return query.Or(or...), nil
 		}),
 	}
