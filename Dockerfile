@@ -12,7 +12,6 @@ RUN apk --update add \
   chromium \
   curl \
   go-task \
-  golangci-lint \
   iproute2-ss \
   jekyll \
   nodejs \
@@ -28,6 +27,8 @@ RUN apk --update add \
   zsh-history-substring-search \
   zsh-syntax-highlighting \
   && rm -rf /var/cache/apk/*
+
+RUN curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.8.0
 
 RUN ln -s /usr/bin/go-task /usr/bin/task
 

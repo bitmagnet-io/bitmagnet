@@ -1,7 +1,18 @@
 {
   "editor.formatOnSave": true,
-  "go.lintTool": "golangci-lint-v2",
-  "go.formatTool": "default",
+  "go.lintTool": "golangci-lint",
+  "go.lintFlags": [
+    "--path-mode=abs",
+    "--fast-only"
+  ],
+  "go.formatTool": "custom",
+  "go.alternateTools": {
+    "customFormatter": "golangci-lint"
+  },
+  "go.formatFlags": [
+    "fmt",
+    "--stdin"
+  ],
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
