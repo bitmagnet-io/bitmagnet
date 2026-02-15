@@ -247,9 +247,11 @@ keywords:
     - "*wank*"
     - "*xxx*"
   banned:
-    - pa?edo(fil*|phil*)?
-    - preteen
-    - pthc
+    - pa?edo(fil*|phil*|land|dad|mom|s)?
+    - preteens?z?
+    - pteenlover
+    - nablot
+    - pthc(ed)?
     - ptsc
     - lsbar
     - lsm
