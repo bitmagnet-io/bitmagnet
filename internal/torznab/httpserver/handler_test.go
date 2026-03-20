@@ -207,3 +207,106 @@ func TestSearch(t *testing.T) {
 		})
 	}
 }
+
+func TestSearchAddsPermalinkLinkAndComments(t *testing.T) {
+	t.Parallel()
+
+	h := newTestHarness(t)
+	result := torznab.SearchResult{
+		Channel: torznab.SearchResultChannel{
+			Items: []torznab.SearchResultItem{
+				{
+					Title: "test torrent",
+					GUID:  "1111111111111111111111111111111111111111",
+					Size:  1234,
+					Enclosure: torznab.SearchResultItemEnclosure{
+						URL:    "magnet:?xt=urn:btih:1111111111111111111111111111111111111111",
+						Length: "1234",
+						Type:   "application/x-bittorrent;x-scheme-handler/magnet",
+					},
+				},
+			},
+		},
+	}
+
+	h.clientMock.EXPECT().Search(
+		mock.IsType(&gin.Context{}),
+		torznab.SearchRequest{
+			Profile: torznab.ProfileDefault,
+			Type:    torznab.FunctionSearch,
+		},
+	).Return(result, nil).Times(1)
+
+	req, err := http.NewRequestWithContext(
+		context.Background(),
+		http.MethodGet,
+		"http://example.com/torznab/?t=search",
+		nil,
+	)
+	require.NoError(t, err)
+
+	h.engine.ServeHTTP(h.responseRecorder, req)
+
+	assert.Equal(t, http.StatusOK, h.responseRecorder.Code)
+	assert.Contains(
+		t,
+		h.responseRecorder.Body.String(),
+		"<link>http://example.com/webui/torrents/permalink/1111111111111111111111111111111111111111</link>",
+	)
+	assert.Contains(
+		t,
+		h.responseRecorder.Body.String(),
+		"<comments>http://example.com/webui/torrents/permalink/1111111111111111111111111111111111111111</comments>",
+	)
+}
+
+func TestSearchUsesForwardedHeadersForPermalinkBaseURL(t *testing.T) {
+	t.Parallel()
+
+	h := newTestHarness(t)
+	result := torznab.SearchResult{
+		Channel: torznab.SearchResultChannel{
+			Items: []torznab.SearchResultItem{
+				{
+					Title: "test torrent",
+					GUID:  "2222222222222222222222222222222222222222",
+					Size:  5678,
+					Enclosure: torznab.SearchResultItemEnclosure{
+						URL:    "magnet:?xt=urn:btih:2222222222222222222222222222222222222222",
+						Length: "5678",
+						Type:   "application/x-bittorrent;x-scheme-handler/magnet",
+					},
+				},
+			},
+		},
+	}
+
+	h.clientMock.EXPECT().Search(
+		mock.IsType(&gin.Context{}),
+		torznab.SearchRequest{
+			Profile: torznab.ProfileDefault,
+			Type:    torznab.FunctionSearch,
+		},
+	).Return(result, nil).Times(1)
+
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/torznab/?t=search", nil)
+	require.NoError(t, err)
+	req.Host = "internal:3333"
+	req.Header.Set("X-Forwarded-Proto", "https")
+	req.Header.Set("X-Forwarded-Host", "downloads.example.com")
+	req.Header.Set("X-Forwarded-Prefix", "/bitmagnet")
+
+	h.engine.ServeHTTP(h.responseRecorder, req)
+
+	assert.Equal(t, http.StatusOK, h.responseRecorder.Code)
+	assert.Contains(
+		t,
+		h.responseRecorder.Body.String(),
+		"<link>https://downloads.example.com/bitmagnet/webui/torrents/permalink/2222222222222222222222222222222222222222</link>",
+	)
+	assert.Contains(
+		t,
+		h.responseRecorder.Body.String(),
+		"<comments>https://downloads.example.com/bitmagnet/webui/torrents/permalink/2222222222222222222222222222222222222222</comments>",
+	)
+}

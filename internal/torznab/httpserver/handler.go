@@ -110,6 +110,7 @@ func (h handler) handleSearch(ctx *gin.Context, profile torznab.Profile, tp stri
 		return
 	}
 
+	addPermalinks(ctx, &result)
 	h.writeXML(ctx, result)
 }
 
@@ -177,4 +178,55 @@ func (h handler) getProfile(c *gin.Context) (torznab.Profile, error) {
 
 		return profile, nil
 	}
+}
+
+func addPermalinks(ctx *gin.Context, result *torznab.SearchResult) {
+	baseURL := requestBaseURL(ctx)
+	if baseURL == "" {
+		return
+	}
+
+	for i := range result.Channel.Items {
+		if result.Channel.Items[i].GUID == "" {
+			continue
+		}
+
+		permalink := baseURL + "/webui/torrents/permalink/" + result.Channel.Items[i].GUID
+		result.Channel.Items[i].Link = permalink
+
+		if result.Channel.Items[i].Comments == "" {
+			result.Channel.Items[i].Comments = permalink
+		}
+	}
+}
+
+func requestBaseURL(ctx *gin.Context) string {
+	host := forwardedHeaderValue(ctx, "X-Forwarded-Host")
+	if host == "" {
+		host = ctx.Request.Host
+	}
+	if host == "" {
+		return ""
+	}
+
+	scheme := forwardedHeaderValue(ctx, "X-Forwarded-Proto")
+	if scheme == "" {
+		if ctx.Request.TLS != nil {
+			scheme = "https"
+		} else {
+			scheme = "http"
+		}
+	}
+
+	prefix := strings.TrimSuffix(forwardedHeaderValue(ctx, "X-Forwarded-Prefix"), "/")
+	if prefix != "" && !strings.HasPrefix(prefix, "/") {
+		prefix = "/" + prefix
+	}
+
+	return scheme + "://" + host + prefix
+}
+
+func forwardedHeaderValue(ctx *gin.Context, key string) string {
+	value := strings.TrimSpace(strings.Split(ctx.Request.Header.Get(key), ",")[0])
+	return strings.TrimSpace(value)
 }
