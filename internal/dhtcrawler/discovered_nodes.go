@@ -2,7 +2,6 @@ package dhtcrawler
 
 import (
 	"context"
-	"net/netip"
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
@@ -36,20 +35,7 @@ func (c *crawler) runDiscoveredNodes(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case ps := <-c.discoveredNodes.Out():
-			addrs := make([]netip.Addr, 0, 1)
-
-			m := make(map[string]ktable.Node, 1)
-			for _, p := range ps {
-				if _, ok := m[p.Addr().Addr().String()]; !ok {
-					m[p.Addr().Addr().String()] = p
-					addrs = append(addrs, p.Addr().Addr())
-				}
-			}
-			// for any discovered node not already in the routing table,
-			// we will block until it can be sent to any one of the pipeline channels.
-			unknownAddrs := c.kTable.FilterKnownAddrs(addrs)
-			for _, addr := range unknownAddrs {
-				p := m[addr.String()]
+			for _, p := range c.filterDiscoveredNodes(ps) {
 				select {
 				case <-ctx.Done():
 					return
@@ -60,4 +46,27 @@ func (c *crawler) runDiscoveredNodes(ctx context.Context) {
 			}
 		}
 	}
+}
+
+func (c *crawler) filterDiscoveredNodes(nodes []ktable.Node) []ktable.Node {
+	filtered := make([]ktable.Node, 0, len(nodes))
+	seenInBatch := make(map[string]struct{}, len(nodes))
+
+	for _, node := range nodes {
+		addr := node.Addr().Addr().Unmap()
+		addrKey := addr.String()
+
+		if _, ok := seenInBatch[addrKey]; ok {
+			continue
+		}
+		seenInBatch[addrKey] = struct{}{}
+
+		if c.seenNodes != nil && c.seenNodes.testAndAdd(addr) {
+			continue
+		}
+
+		filtered = append(filtered, node)
+	}
+
+	return filtered
 }

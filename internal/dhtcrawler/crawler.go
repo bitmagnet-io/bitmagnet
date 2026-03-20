@@ -49,6 +49,7 @@ type crawler struct {
 	// This avoids multiple attempts to crawl the same hash, and takes a lot of load off the database query
 	// that checks if a hash has already been indexed.
 	ignoreHashes    *ignoreHashes
+	seenNodes       *seenNodes
 	blockingManager blocking.Manager
 	// soughtNodeID is a random node ID used as the target for find_node and sample_infohashes requests.
 	// It is rotated every 10 seconds.
@@ -106,11 +107,33 @@ type ignoreHashes struct {
 	bloom *boom.StableBloomFilter
 }
 
+type testAndAdder interface {
+	TestAndAdd([]byte) bool
+}
+
+type seenNodes struct {
+	mutex sync.Mutex
+	bloom testAndAdder
+}
+
 func (i *ignoreHashes) testAndAdd(id protocol.ID) bool {
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
 
 	return i.bloom.TestAndAdd(id[:])
+}
+
+func newSeenNodes() *seenNodes {
+	return &seenNodes{
+		bloom: boom.NewStableBloomFilter(10_000_000, 2, 0.001),
+	}
+}
+
+func (s *seenNodes) testAndAdd(addr netip.Addr) bool {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	return s.bloom.TestAndAdd(addr.Unmap().AsSlice())
 }
 
 func (c *crawler) rotateSoughtNodeID(ctx context.Context) {

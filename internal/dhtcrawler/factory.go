@@ -120,6 +120,7 @@ func New(params Params) Result {
 						ignoreHashes: &ignoreHashes{
 							bloom: boom.NewStableBloomFilter(10_000_000, 2, 0.001),
 						},
+						seenNodes:       newSeenNodes(),
 						blockingManager: blockingManager,
 						soughtNodeID:    &concurrency.AtomicValue[protocol.ID]{},
 						stopped:         make(chan struct{}),
