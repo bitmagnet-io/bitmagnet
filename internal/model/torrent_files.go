@@ -30,12 +30,20 @@ func (f TorrentFile) BaseName() string {
 	return basePathParts[len(basePathParts)-1]
 }
 
-var fileExtensionRegex = regexp.MustCompile(`[^/.]\.([a-z0-9]+)$`)
+var fileExtensionRegex = regexp.MustCompile(`^[a-z0-9]+$`)
 
 func FileExtensionFromPath(path string) NullString {
-	match := fileExtensionRegex.FindStringSubmatch(strings.ToLower(path))
-	if len(match) == 2 {
-		return NewNullString(match[1])
+	path = strings.ToLower(path)
+
+	lastSlashIndex := strings.LastIndexByte(path, '/')
+	lastDotIndex := strings.LastIndexByte(path, '.')
+	if lastDotIndex <= lastSlashIndex+1 || lastDotIndex == len(path)-1 {
+		return NullString{}
+	}
+
+	ext := path[lastDotIndex+1:]
+	if fileExtensionRegex.MatchString(ext) {
+		return NewNullString(ext)
 	}
 
 	return NullString{}
