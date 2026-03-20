@@ -7,6 +7,8 @@ import (
 	"github.com/bitmagnet-io/bitmagnet/internal/database/fts"
 )
 
+const maxPostgresTsvectorBytes = 1<<20 - 1
+
 func (tc TorrentContent) InferID() string {
 	parts := make([]string, 4)
 	parts[0] = tc.InfoHash.String()
@@ -63,7 +65,7 @@ func (tc TorrentContent) ContentRef() Maybe[ContentRef] {
 	return Maybe[ContentRef]{}
 }
 
-func (tc *TorrentContent) UpdateTsv() {
+func (tc TorrentContent) baseTsv() fts.Tsvector {
 	var tsv fts.Tsvector
 	if !tc.ContentID.Valid {
 		tsv = fts.Tsvector{}
@@ -98,9 +100,41 @@ func (tc *TorrentContent) UpdateTsv() {
 	tsv.AddText(tc.InfoHash.String(), fts.TsvectorWeightA)
 	tsv.AddText(tc.Torrent.Name, fts.TsvectorWeightA)
 
-	for _, str := range tc.Torrent.fileSearchStrings() {
+	return tsv
+}
+
+func buildTruncatedTsvector(base fts.Tsvector, fileSearchStrings []string, maxBytes int) fts.Tsvector {
+	tsv := base.Copy()
+
+	for _, str := range fileSearchStrings {
+		next := tsv.Copy()
+		next.AddText(str, fts.TsvectorWeightD)
+		if len(next.String()) > maxBytes {
+			break
+		}
+
+		tsv = next
+	}
+
+	return tsv
+}
+
+func (tc *TorrentContent) updateTsv(maxBytes int) {
+	baseTsv := tc.baseTsv()
+	fileSearchStrings := tc.Torrent.fileSearchStrings()
+
+	tsv := baseTsv.Copy()
+	for _, str := range fileSearchStrings {
 		tsv.AddText(str, fts.TsvectorWeightD)
 	}
 
+	if len(tsv.String()) > maxBytes {
+		tsv = buildTruncatedTsvector(baseTsv, fileSearchStrings, maxBytes)
+	}
+
 	tc.Tsv = tsv
+}
+
+func (tc *TorrentContent) UpdateTsv() {
+	tc.updateTsv(maxPostgresTsvectorBytes)
 }
