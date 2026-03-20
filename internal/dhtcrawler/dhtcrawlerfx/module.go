@@ -1,7 +1,6 @@
 package dhtcrawlerfx
 
 import (
-	"net"
 	"net/netip"
 
 	adht "github.com/anacrolix/dht/v2"
@@ -21,11 +20,11 @@ func New() fx.Option {
 				Target: func() []netip.AddrPort {
 					addrs := make([]netip.AddrPort, 0, len(adht.DefaultGlobalBootstrapHostPorts))
 					for _, strAddr := range adht.DefaultGlobalBootstrapHostPorts {
-						addr, err := net.ResolveUDPAddr("udp", strAddr)
+						addr, err := dhtcrawler.ResolveBootstrapAddr(strAddr)
 						if err != nil {
 							panic(err)
 						}
-						addrs = append(addrs, addr.AddrPort())
+						addrs = append(addrs, addr)
 					}
 					return addrs
 				},
