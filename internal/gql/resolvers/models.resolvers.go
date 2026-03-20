@@ -9,7 +9,9 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/internal/gql"
 	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel"
+	"github.com/bitmagnet-io/bitmagnet/internal/gql/gqlmodel/gen"
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
+	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
 )
 
 // OriginalLanguage is the resolver for the originalLanguage field.
@@ -20,6 +22,34 @@ func (r *contentResolver) OriginalLanguage(ctx context.Context, obj *model.Conte
 	}
 
 	return language, nil
+}
+
+// Files is the resolver for the files field.
+func (r *torrentResolver) Files(ctx context.Context, obj *model.Torrent) ([]model.TorrentFile, error) {
+	if obj.Files != nil {
+		return obj.Files, nil
+	}
+
+	if !obj.HasFilesInfo() {
+		return nil, nil
+	}
+
+	result, err := gqlmodel.TorrentQuery{
+		Search: r.Search,
+	}.Files(ctx, gqlmodel.TorrentFilesQueryInput{
+		InfoHashes: []protocol.ID{obj.InfoHash},
+		Limit:      model.NewNullUint(torrentFilesResolverLimit(*obj)),
+		OrderBy: []gen.TorrentFilesOrderByInput{
+			{
+				Field: gen.TorrentFilesOrderByFieldIndex,
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return result.Items, nil
 }
 
 // Sources is the resolver for the sources field.
@@ -35,3 +65,15 @@ func (r *Resolver) Torrent() gql.TorrentResolver { return &torrentResolver{r} }
 
 type contentResolver struct{ *Resolver }
 type torrentResolver struct{ *Resolver }
+
+func torrentFilesResolverLimit(t model.Torrent) uint {
+	if t.FilesCount.Valid {
+		return t.FilesCount.Uint
+	}
+
+	if t.FilesStatus == model.FilesStatusSingle {
+		return 1
+	}
+
+	return uint(^uint(0) >> 1)
+}
