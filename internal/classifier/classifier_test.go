@@ -68,6 +68,43 @@ func TestClassifier(t *testing.T) {
 		},
 		{
 			torrent: model.Torrent{
+				Name:        "[Group] Cool Anime Name S4 - 02 (1080p) [FFAA1234].mkv",
+				FilesStatus: model.FilesStatusSingle,
+				Extension:   model.NewNullString("mkv"),
+				Size:        1000000000,
+			},
+			prepareMocks: func(mocks testClassifierMocks) {
+				mocks.search.On(
+					"ContentBySearch",
+					matchContext,
+					model.ContentTypeTvShow,
+					"Cool Anime Name",
+					mock.Anything,
+				).
+					Return(model.Content{}, classification.ErrUnmatched)
+				mocks.tmdbClient.On(
+					"SearchTv",
+					matchContext,
+					tmdb.SearchTvRequest{
+						Query:        "Cool Anime Name",
+						IncludeAdult: true,
+					},
+				).
+					Return(tmdb.SearchTvResponse{}, nil)
+			},
+			expected: classification.Result{
+				ContentAttributes: classification.ContentAttributes{
+					ContentType: model.NewNullContentType(model.ContentTypeTvShow),
+					BaseTitle:   model.NewNullString("Cool Anime Name"),
+					Episodes: model.Episodes{
+						4: {2: {}},
+					},
+					VideoResolution: model.NewNullVideoResolution(model.VideoResolutionV1080p),
+				},
+			},
+		},
+		{
+			torrent: model.Torrent{
 				Name:        "The Regular Local Movie (2000).mkv",
 				FilesStatus: model.FilesStatusSingle,
 				Extension:   model.NewNullString("mkv"),

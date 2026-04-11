@@ -10,7 +10,19 @@ import (
 	"github.com/hedhyw/rex/pkg/rex"
 )
 
-func rangeToken(runes string, startName, dashEndName, commaEndName string) dialect.Token {
+func rangeToken(runes string, requirePrefix bool, startName, dashEndName, commaEndName string) dialect.Token {
+	var prefixToken dialect.Token
+	if requirePrefix {
+		prefixToken = rex.Group.NonCaptured(
+			rex.Chars.Runes(runes),
+			rex.Chars.Whitespace().Repeat().ZeroOrOne(),
+		)
+	} else {
+		prefixToken = rex.Group.NonCaptured(
+			rex.Chars.Runes(runes).Repeat().ZeroOrOne(),
+			rex.Chars.Whitespace().Repeat().ZeroOrOne(),
+		).Repeat().ZeroOrOne()
+	}
 	return rex.Group.Define(
 		rex.Group.Define(rex.Chars.Digits().Repeat().Between(1, 2)).WithName(startName),
 		rex.Group.Composite(
@@ -18,10 +30,7 @@ func rangeToken(runes string, startName, dashEndName, commaEndName string) diale
 				rex.Chars.Whitespace().Repeat().ZeroOrOne(),
 				rex.Chars.Single('-'),
 				rex.Chars.Whitespace().Repeat().ZeroOrOne(),
-				rex.Group.NonCaptured(
-					rex.Chars.Runes(runes).Repeat().ZeroOrOne(),
-					rex.Chars.Whitespace().Repeat().ZeroOrOne(),
-				).Repeat().ZeroOrOne(),
+				prefixToken,
 				rex.Group.Define(rex.Chars.Digits().Repeat().Between(1, 2)).WithName(dashEndName),
 			).NonCaptured(),
 			rex.Group.Define(
@@ -44,7 +53,7 @@ var seasonToken = rex.Group.Define(
 		keywords.MustNewRexTokensFromKeywords("season", "s")...,
 	).NonCaptured(),
 	rex.Chars.Whitespace().Repeat().ZeroOrOne(),
-	rangeToken("sS", "seasonStart", "seasonDashEnd", "seasonCommaEnd"),
+	rangeToken("sS", true, "seasonStart", "seasonDashEnd", "seasonCommaEnd"),
 	rex.Chars.Whitespace().Repeat().ZeroOrOne(),
 ).NonCaptured()
 
@@ -53,7 +62,7 @@ var episodeToken = rex.Group.Define(
 		keywords.MustNewRexTokensFromKeywords("episode", "ep", "e")...,
 	).NonCaptured(),
 	rex.Chars.Whitespace().Repeat().ZeroOrOne(),
-	rangeToken("eE", "episodeStart", "episodeDashEnd", "episodeCommaEnd"),
+	rangeToken("eE", false, "episodeStart", "episodeDashEnd", "episodeCommaEnd"),
 ).NonCaptured()
 
 var episodeDashToken = rex.Group.Define(
@@ -97,12 +106,14 @@ var episodesRegex = rex.New(
 ).MustCompile()
 
 func namedMatch(re *regexp.Regexp, match []string, name string) string {
+	result := ""
 	for i, n := range re.SubexpNames() {
-		if n == name && i < len(match) {
-			return match[i]
+		if n == name && i < len(match) && match[i] != "" {
+			result = match[i]
+			break
 		}
 	}
-	return ""
+	return result
 }
 
 // EpisodesMatchToEpisodes converts a regex submatch to Episodes using named groups.
