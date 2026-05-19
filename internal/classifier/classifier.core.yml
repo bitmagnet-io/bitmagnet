@@ -273,8 +273,8 @@ keywords:
     - kinderkutje
     - kinderficker
     - yvm
-    - (#|10|11|12|13|14|15|16|17) ?y ?o
-    - (#|10|11|12|13|14|15|16|17) ?y ?r ?s
+    - 0?(#|10|11|12|13|14|15|16|17) ?y ?o
+    - 0?(#|10|11|12|13|14|15|16|17) ?y ?r ?s
 flag_definitions:
   local_search_enabled: bool
   apis_enabled: bool
