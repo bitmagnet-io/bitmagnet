@@ -1,6 +1,7 @@
 package model
 
 import (
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -9,19 +10,28 @@ import (
 	"github.com/hedhyw/rex/pkg/rex"
 )
 
-func rangeToken(runes string) dialect.Token {
+func rangeToken(runes string, requirePrefix bool, startName, dashEndName, commaEndName string) dialect.Token {
+	var prefixToken dialect.Token
+	if requirePrefix {
+		prefixToken = rex.Group.NonCaptured(
+			rex.Chars.Runes(runes),
+			rex.Chars.Whitespace().Repeat().ZeroOrOne(),
+		)
+	} else {
+		prefixToken = rex.Group.NonCaptured(
+			rex.Chars.Runes(runes).Repeat().ZeroOrOne(),
+			rex.Chars.Whitespace().Repeat().ZeroOrOne(),
+		).Repeat().ZeroOrOne()
+	}
 	return rex.Group.Define(
-		rex.Group.Define(rex.Chars.Digits().Repeat().Between(1, 2)),
+		rex.Group.Define(rex.Chars.Digits().Repeat().Between(1, 2)).WithName(startName),
 		rex.Group.Composite(
 			rex.Group.Define(
 				rex.Chars.Whitespace().Repeat().ZeroOrOne(),
 				rex.Chars.Single('-'),
 				rex.Chars.Whitespace().Repeat().ZeroOrOne(),
-				rex.Group.NonCaptured(
-					rex.Chars.Runes(runes).Repeat().ZeroOrOne(),
-					rex.Chars.Whitespace().Repeat().ZeroOrOne(),
-				).Repeat().ZeroOrOne(),
-				rex.Group.Define(rex.Chars.Digits().Repeat().Between(1, 2)),
+				prefixToken,
+				rex.Group.Define(rex.Chars.Digits().Repeat().Between(1, 2)).WithName(dashEndName),
 			).NonCaptured(),
 			rex.Group.Define(
 				rex.Chars.Whitespace().Repeat().ZeroOrOne(),
@@ -31,7 +41,7 @@ func rangeToken(runes string) dialect.Token {
 					rex.Chars.Runes(runes).Repeat().ZeroOrOne(),
 					rex.Chars.Whitespace().Repeat().ZeroOrOne(),
 				).Repeat().ZeroOrOne(),
-				rex.Group.Define(rex.Chars.Digits().Repeat().Between(1, 2)),
+				rex.Group.Define(rex.Chars.Digits().Repeat().Between(1, 2)).WithName(commaEndName),
 				rex.Chars.Whitespace().Repeat().ZeroOrOne(),
 			).NonCaptured().Repeat().OneOrMore(),
 		).NonCaptured().Repeat().ZeroOrOne(),
@@ -43,7 +53,7 @@ var seasonToken = rex.Group.Define(
 		keywords.MustNewRexTokensFromKeywords("season", "s")...,
 	).NonCaptured(),
 	rex.Chars.Whitespace().Repeat().ZeroOrOne(),
-	rangeToken("sS"),
+	rangeToken("sS", true, "seasonStart", "seasonDashEnd", "seasonCommaEnd"),
 	rex.Chars.Whitespace().Repeat().ZeroOrOne(),
 ).NonCaptured()
 
@@ -52,25 +62,35 @@ var episodeToken = rex.Group.Define(
 		keywords.MustNewRexTokensFromKeywords("episode", "ep", "e")...,
 	).NonCaptured(),
 	rex.Chars.Whitespace().Repeat().ZeroOrOne(),
-	rangeToken("eE"),
+	rangeToken("eE", false, "episodeStart", "episodeDashEnd", "episodeCommaEnd"),
+).NonCaptured()
+
+var episodeDashToken = rex.Group.Define(
+	rex.Chars.Whitespace().Repeat().ZeroOrOne(),
+	rex.Chars.Single('-'),
+	rex.Chars.Whitespace().Repeat().ZeroOrOne(),
+	rex.Group.Define(rex.Chars.Digits().Repeat().Between(1, 2)).WithName("episodeStart"),
 ).NonCaptured()
 
 var episodesRegularTokens = rex.Group.Define(
 	seasonToken,
-	episodeToken.Repeat().ZeroOrOne(),
+	rex.Group.Composite(
+		episodeToken,
+		episodeDashToken,
+	).NonCaptured().Repeat().ZeroOrOne(),
 ).NonCaptured()
 
 var episodesXFormatTokens = rex.Group.Define(
 	rex.Group.Define(
-		rex.Group.Define(rex.Chars.Digits().Repeat().Between(1, 2)),
+		rex.Group.Define(rex.Chars.Digits().Repeat().Between(1, 2)).WithName("xSeason"),
 		rex.Chars.Runes("xX"),
-		rex.Group.Define(rex.Chars.Digits().Repeat().Between(1, 2)),
+		rex.Group.Define(rex.Chars.Digits().Repeat().Between(1, 2)).WithName("xEpisodeStart"),
 	).NonCaptured(),
 	rex.Group.Define(
 		rex.Chars.Whitespace().Repeat().ZeroOrOne(),
 		rex.Chars.Single('-'),
 		rex.Chars.Whitespace().Repeat().ZeroOrOne(),
-		rex.Group.Define(rex.Chars.Digits().Repeat().Between(1, 2)),
+		rex.Group.Define(rex.Chars.Digits().Repeat().Between(1, 2)).WithName("xEpisodeEnd"),
 	).NonCaptured().Repeat().ZeroOrOne(),
 ).NonCaptured()
 
@@ -85,30 +105,61 @@ var episodesRegex = rex.New(
 	rex.Chars.End(),
 ).MustCompile()
 
-func EpisodesMatchToEpisodes(match []string) Episodes {
-	if len(match) < 12 {
+func namedMatch(re *regexp.Regexp, match []string, name string) string {
+	result := ""
+	for i, n := range re.SubexpNames() {
+		if n == name && i < len(match) && match[i] != "" {
+			result = match[i]
+			break
+		}
+	}
+	return result
+}
+
+// EpisodesMatchToEpisodes converts a regex submatch to Episodes using named groups.
+// The re parameter should be a regex compiled from EpisodesToken.
+func EpisodesMatchToEpisodes(re *regexp.Regexp, match []string) Episodes {
+	if match == nil {
 		return nil
+	}
+
+	nm := func(name string) string {
+		return namedMatch(re, match, name)
 	}
 
 	episodes := Episodes{}
 
-	if match[1] != "" {
+	if nm("seasonStart") != "" {
 		// regular format
-		seasonStart, _ := strconv.ParseInt(match[2], 10, 16)
+		seasonStart, _ := strconv.ParseInt(nm("seasonStart"), 10, 16)
 
-		if match[5] == "" {
+		if nm("episodeStart") == "" {
 			// no episodes
 			switch {
-			case match[3] != "":
+			case nm("seasonDashEnd") != "":
 				// a season range
-				seasonEnd, _ := strconv.ParseInt(match[3], 10, 16)
+				seasonEnd, _ := strconv.ParseInt(nm("seasonDashEnd"), 10, 16)
 				for i := seasonStart; i <= seasonEnd; i++ {
 					episodes = episodes.AddSeason(int(i))
 				}
-			case match[4] != "":
-				// a list of seasons
-				includedSeasons := strings.Split(match[1], ",")
+			case nm("seasonCommaEnd") != "":
+				// a list of seasons - find the parent range group containing commas
+				var seasonRange string
+				for i, n := range re.SubexpNames() {
+					if n == "seasonStart" && i < len(match) {
+						for j := i - 1; j >= 0; j-- {
+							if match[j] != "" && strings.Contains(match[j], ",") {
+								seasonRange = match[j]
+								break
+							}
+						}
+						break
+					}
+				}
+				includedSeasons := strings.Split(seasonRange, ",")
 				for _, season := range includedSeasons {
+					season = strings.TrimSpace(season)
+					season = strings.TrimLeft(season, "sS ")
 					seasonIndex, _ := strconv.ParseInt(season, 10, 16)
 					episodes = episodes.AddSeason(int(seasonIndex))
 				}
@@ -118,19 +169,33 @@ func EpisodesMatchToEpisodes(match []string) Episodes {
 			}
 		} else {
 			// episodes
-			episodeStart, _ := strconv.ParseInt(match[6], 10, 16)
+			episodeStart, _ := strconv.ParseInt(nm("episodeStart"), 10, 16)
 
 			switch {
-			case match[7] != "":
+			case nm("episodeDashEnd") != "":
 				// an episode range
-				episodeEnd, _ := strconv.ParseInt(match[7], 10, 16)
+				episodeEnd, _ := strconv.ParseInt(nm("episodeDashEnd"), 10, 16)
 				for i := episodeStart; i <= episodeEnd; i++ {
 					episodes = episodes.AddEpisode(int(seasonStart), int(i))
 				}
-			case match[8] != "":
-				// a list of episodes
-				includedEpisodes := strings.Split(match[5], ",")
+			case nm("episodeCommaEnd") != "":
+				// a list of episodes - find the parent range group containing commas
+				var episodeRange string
+				for i, n := range re.SubexpNames() {
+					if n == "episodeStart" && i < len(match) {
+						for j := i - 1; j >= 0; j-- {
+							if match[j] != "" && strings.Contains(match[j], ",") {
+								episodeRange = match[j]
+								break
+							}
+						}
+						break
+					}
+				}
+				includedEpisodes := strings.Split(episodeRange, ",")
 				for _, episode := range includedEpisodes {
+					episode = strings.TrimSpace(episode)
+					episode = strings.TrimLeft(episode, "eE ")
 					episodeIndex, _ := strconv.ParseInt(episode, 10, 16)
 					episodes = episodes.AddEpisode(int(seasonStart), int(episodeIndex))
 				}
@@ -141,12 +206,12 @@ func EpisodesMatchToEpisodes(match []string) Episodes {
 		}
 	} else {
 		// x format
-		season, _ := strconv.ParseInt(match[9], 10, 16)
-		episodeStart, _ := strconv.ParseInt(match[10], 10, 16)
+		season, _ := strconv.ParseInt(nm("xSeason"), 10, 16)
+		episodeStart, _ := strconv.ParseInt(nm("xEpisodeStart"), 10, 16)
 		episodeEnd := episodeStart
 
-		if match[11] != "" {
-			episodeEnd, _ = strconv.ParseInt(match[11], 10, 16)
+		if nm("xEpisodeEnd") != "" {
+			episodeEnd, _ = strconv.ParseInt(nm("xEpisodeEnd"), 10, 16)
 		}
 
 		for i := episodeStart; i <= episodeEnd; i++ {
@@ -158,5 +223,5 @@ func EpisodesMatchToEpisodes(match []string) Episodes {
 }
 
 func ParseEpisodes(input string) Episodes {
-	return EpisodesMatchToEpisodes(episodesRegex.FindStringSubmatch(input))
+	return EpisodesMatchToEpisodes(episodesRegex, episodesRegex.FindStringSubmatch(input))
 }

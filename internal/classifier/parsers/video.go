@@ -26,7 +26,7 @@ var titleTokens = []dialect.Token{
 			regex.AnyNonWordChar().Repeat().OneOrMore(),
 			rex.Chars.End(),
 		).NonCaptured(),
-	),
+	).WithName("title"),
 }
 
 var titleRegex = rex.New(
@@ -41,7 +41,7 @@ var yearTokens = []dialect.Token{
 			rex.Common.Text("18"), rex.Common.Text("19"), rex.Common.Text("20"),
 		).NonCaptured(),
 		rex.Chars.Digits().Repeat().Exactly(2),
-	),
+	).WithName("year"),
 	rex.Group.Composite(
 		rex.Common.NotClass(rex.Chars.WordCharacter()),
 		rex.Chars.End(),
@@ -67,7 +67,7 @@ var separatorToken = rex.Chars.Runes(" ._")
 
 var titlePartRegex = rex.New(
 	separatorToken.Repeat().ZeroOrOne(),
-	rex.Group.Define(regex.WordToken()),
+	rex.Group.Define(regex.WordToken()).WithName("part"),
 	separatorToken.Repeat().ZeroOrOne(),
 ).MustCompile()
 
@@ -92,7 +92,7 @@ var trimTitleRegex = rex.New(
 			rex.Chars.Any(),
 			regex.WordToken(),
 		).Repeat().ZeroOrMore(),
-	),
+	).WithName("trimmed"),
 	regex.AnyNonWordChar().Repeat().ZeroOrMore(),
 	rex.Chars.End(),
 ).MustCompile()
@@ -104,17 +104,17 @@ func cleanTitle(title string) string {
 			return ""
 		}
 
-		return partMatch[1] + " "
+		return partMatch[titlePartRegex.SubexpIndex("part")] + " "
 	})
-	title = trimTitleRegex.ReplaceAllString(title, "$1")
+	title = trimTitleRegex.ReplaceAllString(title, "${trimmed}")
 
 	return title
 }
 
 func parseTitleYear(input string) (string, model.Year, string, error) {
 	if match := titleYearRegex.FindStringSubmatch(input); match != nil {
-		yearMatch, _ := strconv.ParseUint(match[2], 10, 16)
-		title := cleanTitle(match[1])
+		yearMatch, _ := strconv.ParseUint(match[titleYearRegex.SubexpIndex("year")], 10, 16)
+		title := cleanTitle(match[titleYearRegex.SubexpIndex("title")])
 
 		if title != "" {
 			return title, model.Year(yearMatch), input[len(match[0]):], nil
@@ -126,7 +126,7 @@ func parseTitleYear(input string) (string, model.Year, string, error) {
 
 func parseTitle(input string) (title string, rest string, err error) {
 	if match := titleRegex.FindStringSubmatch(input); match != nil {
-		title = cleanTitle(match[1])
+		title = cleanTitle(match[titleRegex.SubexpIndex("title")])
 		if title != "" {
 			return title, input[len(match[0]):], nil
 		}
@@ -137,7 +137,7 @@ func parseTitle(input string) (title string, rest string, err error) {
 
 func parseTitleYearEpisodes(input string) (string, model.Year, model.Episodes, string, error) {
 	if match := titleEpisodesRegex.FindStringSubmatch(input); match != nil {
-		title := match[1]
+		title := match[titleEpisodesRegex.SubexpIndex("title")]
 		year := model.Year(0)
 
 		if t, y, _, err := parseTitleYear(title); err == nil {
@@ -147,7 +147,7 @@ func parseTitleYearEpisodes(input string) (string, model.Year, model.Episodes, s
 			title = cleanTitle(title)
 		}
 
-		episodes := model.EpisodesMatchToEpisodes(match[2:])
+		episodes := model.EpisodesMatchToEpisodes(titleEpisodesRegex, match)
 
 		return title, year, episodes, input[len(match[0]):], nil
 	}
