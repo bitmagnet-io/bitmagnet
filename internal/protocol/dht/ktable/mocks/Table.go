@@ -121,54 +121,6 @@ func (_c *Table_DropNode_Call) RunAndReturn(run func(protocol.ID, error) bool) *
 	return _c
 }
 
-// FilterKnownAddrs provides a mock function with given fields: addrs
-func (_m *Table) FilterKnownAddrs(addrs []netip.Addr) []netip.Addr {
-	ret := _m.Called(addrs)
-
-	if len(ret) == 0 {
-		panic("no return value specified for FilterKnownAddrs")
-	}
-
-	var r0 []netip.Addr
-	if rf, ok := ret.Get(0).(func([]netip.Addr) []netip.Addr); ok {
-		r0 = rf(addrs)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]netip.Addr)
-		}
-	}
-
-	return r0
-}
-
-// Table_FilterKnownAddrs_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FilterKnownAddrs'
-type Table_FilterKnownAddrs_Call struct {
-	*mock.Call
-}
-
-// FilterKnownAddrs is a helper method to define mock.On call
-//   - addrs []netip.Addr
-func (_e *Table_Expecter) FilterKnownAddrs(addrs interface{}) *Table_FilterKnownAddrs_Call {
-	return &Table_FilterKnownAddrs_Call{Call: _e.mock.On("FilterKnownAddrs", addrs)}
-}
-
-func (_c *Table_FilterKnownAddrs_Call) Run(run func(addrs []netip.Addr)) *Table_FilterKnownAddrs_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].([]netip.Addr))
-	})
-	return _c
-}
-
-func (_c *Table_FilterKnownAddrs_Call) Return(_a0 []netip.Addr) *Table_FilterKnownAddrs_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *Table_FilterKnownAddrs_Call) RunAndReturn(run func([]netip.Addr) []netip.Addr) *Table_FilterKnownAddrs_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // GetClosestNodes provides a mock function with given fields: id
 func (_m *Table) GetClosestNodes(id protocol.ID) []ktable.Node {
 	ret := _m.Called(id)
