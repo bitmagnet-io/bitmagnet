@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 func (c *crawler) getNodesForSampleInfoHashes(ctx context.Context) {
@@ -39,6 +40,9 @@ func (c *crawler) runSampleInfoHashes(ctx context.Context) {
 			return
 		}
 
+		c.sampleInfohashesHashCount.Observe(float64(len(res.Samples)))
+		c.sampleInfohashesNodeCount.Observe(float64(len(res.Nodes)))
+
 		var discoveredHashes []nodeHasPeersForHash
 
 		for _, s := range res.Samples {
@@ -47,6 +51,9 @@ func (c *crawler) runSampleInfoHashes(ctx context.Context) {
 					infoHash: s,
 					node:     n.Addr(),
 				})
+				c.sampleInfohashesHashTotal.With(prometheus.Labels{"result": "infohash_triage"}).Inc()
+			} else {
+				c.sampleInfohashesHashTotal.With(prometheus.Labels{"result": "skipped"}).Inc()
 			}
 		}
 
@@ -83,14 +90,20 @@ func (c *crawler) runSampleInfoHashes(ctx context.Context) {
 				timeoutCtx, cancel := context.WithTimeout(ctx, time.Second)
 				defer cancel()
 
+				processed := 0
+
+			nodes:
 				for _, n := range res.Nodes {
 					select {
 					case <-timeoutCtx.Done():
-						return
+						break nodes
 					case c.discoveredNodes.In() <- ktable.NewNode(n.ID, n.Addr):
-						continue
+						processed++
 					}
 				}
+
+				c.sampleInfohashesNodeTotal.With(prometheus.Labels{"result": "discovered_nodes"}).Add(float64(processed))
+				c.sampleInfohashesNodeTotal.With(prometheus.Labels{"result": "skipped"}).Add(float64(len(res.Nodes) - processed))
 			}()
 		}
 	})

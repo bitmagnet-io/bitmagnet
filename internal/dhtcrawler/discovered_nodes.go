@@ -7,6 +7,7 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/internal/concurrency"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
+	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
 )
 
@@ -45,18 +46,31 @@ func (c *crawler) runDiscoveredNodes(ctx context.Context) {
 					addrs = append(addrs, p.Addr().Addr())
 				}
 			}
-			// for any discovered node not already in the routing table,
-			// we will block until it can be sent to any one of the pipeline channels.
-			unknownAddrs := c.kTable.FilterKnownAddrs(addrs)
-			for _, addr := range unknownAddrs {
+
+			// For any newly discovered node, we will block until it can be
+			// sent to any one of the pipeline channels.
+			for _, addr := range addrs {
 				p := m[addr.String()]
-				select {
-				case <-ctx.Done():
-					return
-				case c.nodesForFindNode.In() <- p:
-				case c.nodesForSampleInfoHashes.In() <- p:
-				case c.nodesForPing.In() <- p:
+
+				var result string
+
+				if c.ignoreNodes.test(p.ID()) {
+					result = "ignored"
+				} else {
+					select {
+					case <-ctx.Done():
+						return
+					case c.nodesForFindNode.In() <- p:
+						result = "find_node"
+					case c.nodesForSampleInfoHashes.In() <- p:
+						c.ignoreNodes.add(p.ID())
+						result = "sample_infohashes"
+					case c.nodesForPing.In() <- p:
+						result = "ping"
+					}
 				}
+
+				c.discoveredNodesTotal.With(prometheus.Labels{"result": result}).Inc()
 			}
 		}
 	}

@@ -48,14 +48,28 @@ type crawler struct {
 	// containing every hash it has already encountered.
 	// This avoids multiple attempts to crawl the same hash, and takes a lot of load off the database query
 	// that checks if a hash has already been indexed.
-	ignoreHashes    *ignoreHashes
+	ignoreHashes    *ignoreFilter
+	ignoreNodes     *ignoreFilter
 	blockingManager blocking.Manager
 	// soughtNodeID is a random node ID used as the target for find_node and sample_infohashes requests.
 	// It is rotated every 10 seconds.
-	soughtNodeID   *concurrency.AtomicValue[protocol.ID]
-	stopped        chan struct{}
-	persistedTotal *prometheus.CounterVec
-	logger         *zap.SugaredLogger
+	soughtNodeID              *concurrency.AtomicValue[protocol.ID]
+	stopped                   chan struct{}
+	persistedTotal            *prometheus.CounterVec
+	discoveredNodesTotal      *prometheus.CounterVec
+	findNodesCount            prometheus.Histogram
+	getPeersPeerCount         prometheus.Histogram
+	getPeersNodeCount         prometheus.Histogram
+	getPeersNodeTotal         *prometheus.CounterVec
+	requestMetaInfoTotal      *prometheus.CounterVec
+	infohashTriageTotal       *prometheus.CounterVec
+	sampleInfohashesHashCount prometheus.Histogram
+	sampleInfohashesHashTotal *prometheus.CounterVec
+	sampleInfohashesNodeCount prometheus.Histogram
+	sampleInfohashesNodeTotal *prometheus.CounterVec
+	scrapeNodeCount           prometheus.Histogram
+	scrapeNodeTotal           *prometheus.CounterVec
+	logger                    *zap.SugaredLogger
 }
 
 func (c *crawler) start() {
@@ -101,16 +115,30 @@ type infoHashWithScrape struct {
 	bfpe bloom.Filter
 }
 
-type ignoreHashes struct {
+type ignoreFilter struct {
 	mutex sync.Mutex
 	bloom *boom.StableBloomFilter
 }
 
-func (i *ignoreHashes) testAndAdd(id protocol.ID) bool {
+func (i *ignoreFilter) testAndAdd(id protocol.ID) bool {
 	i.mutex.Lock()
 	defer i.mutex.Unlock()
 
 	return i.bloom.TestAndAdd(id[:])
+}
+
+func (i *ignoreFilter) test(id protocol.ID) bool {
+	i.mutex.Lock()
+	defer i.mutex.Unlock()
+
+	return i.bloom.Test(id[:])
+}
+
+func (i *ignoreFilter) add(id protocol.ID) {
+	i.mutex.Lock()
+	defer i.mutex.Unlock()
+
+	i.bloom.Add(id[:])
 }
 
 func (c *crawler) rotateSoughtNodeID(ctx context.Context) {

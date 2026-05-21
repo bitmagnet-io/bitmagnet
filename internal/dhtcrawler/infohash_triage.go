@@ -7,6 +7,7 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/internal/model"
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 // runInfoHashTriage receives discovered hashes on the infoHashTriage channel, determines if they should be crawled,
@@ -30,6 +31,7 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 			reqMap := make(map[protocol.ID]nodeHasPeersForHash, len(reqs))
 			for _, r := range reqs {
 				if _, ok := reqMap[r.infoHash]; ok {
+					c.infohashTriageTotal.With(prometheus.Labels{"result": "duplicate"}).Inc()
 					continue
 				}
 
@@ -43,16 +45,15 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 				break
 			}
 
+			c.infohashTriageTotal.With(prometheus.Labels{"result": "blocked"}).Add(float64(len(allHashes) - len(filteredHashes)))
+
 			if len(filteredHashes) == 0 {
 				break
 			}
 
-			filteredHashMap := make(map[protocol.ID]struct{}, len(filteredHashes))
 			valuers := make([]driver.Valuer, 0, len(filteredHashes))
 
 			for _, h := range filteredHashes {
-				filteredHashMap[h] = struct{}{}
-
 				valuers = append(valuers, h)
 			}
 
@@ -80,7 +81,7 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 				foundTorrents[t.InfoHash] = *t
 			}
 
-			for h := range filteredHashMap {
+			for _, h := range filteredHashes {
 				r := reqMap[h]
 				if t, ok := foundTorrents[r.infoHash]; !ok ||
 					t.FilesStatus == model.FilesStatusNoInfo ||
@@ -90,7 +91,7 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 					case <-ctx.Done():
 						return
 					case c.getPeers.In() <- r:
-						continue
+						c.infohashTriageTotal.With(prometheus.Labels{"result": "get_peers"}).Inc()
 					}
 				} else if (!t.Seeders.Valid || !t.Leechers.Valid) ||
 					t.UpdatedAt.Before(time.Now().Add(-c.rescrapeThreshold)) {
@@ -98,7 +99,7 @@ func (c *crawler) runInfoHashTriage(ctx context.Context) {
 					case <-ctx.Done():
 						return
 					case c.scrape.In() <- r:
-						continue
+						c.infohashTriageTotal.With(prometheus.Labels{"result": "scrape"}).Inc()
 					}
 				}
 			}

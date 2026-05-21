@@ -33,6 +33,8 @@ func (c *crawler) runFindNode(ctx context.Context) {
 				Reason: fmt.Errorf("find_node failed: %w", err),
 			})
 		} else {
+			c.findNodesCount.Observe(float64(len(res.Nodes)))
+
 			c.kTable.BatchCommand(ktable.PutNode{
 				ID:      p.ID(),
 				Addr:    p.Addr(),

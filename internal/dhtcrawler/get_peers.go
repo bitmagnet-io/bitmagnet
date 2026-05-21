@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/protocol/dht/ktable"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 func (c *crawler) runGetPeers(ctx context.Context) {
@@ -62,18 +63,27 @@ func (c *crawler) requestPeersForHash(
 		Options: []ktable.NodeOption{ktable.NodeResponded()},
 	})
 
+	c.getPeersPeerCount.Observe(float64(len(res.Values)))
+	c.getPeersNodeCount.Observe(float64(len(res.Nodes)))
+
 	if len(res.Nodes) > 0 {
 		// block the channel for up to a second in an attempt to add the nodes to the discoveredNodes channel
 		cancelCtx, cancel := context.WithTimeout(ctx, time.Second)
 
+		processed := 0
+
+	nodes:
 		for _, n := range res.Nodes {
 			select {
 			case <-cancelCtx.Done():
-				break
+				break nodes
 			case c.discoveredNodes.In() <- ktable.NewNode(n.ID, n.Addr):
-				continue
+				processed++
 			}
 		}
+
+		c.getPeersNodeTotal.With(prometheus.Labels{"result": "discovered_nodes"}).Add(float64(processed))
+		c.getPeersNodeTotal.With(prometheus.Labels{"result": "skipped"}).Add(float64(len(res.Nodes) - processed))
 
 		cancel()
 	}

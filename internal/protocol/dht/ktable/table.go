@@ -25,7 +25,6 @@ type TableQuery interface {
 	GetClosestNodes(id ID) []Node
 	GetOldestNodes(cutoff time.Time, n int) []Node
 	GetNodesForSampleInfoHashes(n int) []Node
-	FilterKnownAddrs(addrs []netip.Addr) []netip.Addr
 	GetHashOrClosestNodes(id ID) GetHashOrClosestNodesResult
 	// SampleHashesAndNodes returns a random sample of up to 8 hashes and nodes, and the total hashes count.
 	SampleHashesAndNodes() SampleHashesAndNodesResult
@@ -130,15 +129,6 @@ func (t *table) GetNodesForSampleInfoHashes(n int) []Node {
 
 	return GetNodesForSampleInfoHashes{
 		N: n,
-	}.execReturn(t)
-}
-
-func (t *table) FilterKnownAddrs(addrs []netip.Addr) []netip.Addr {
-	t.mutex.RLock()
-	defer t.mutex.RUnlock()
-
-	return FilterKnownAddrs{
-		Addrs: addrs,
 	}.execReturn(t)
 }
 
