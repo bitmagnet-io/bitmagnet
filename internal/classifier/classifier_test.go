@@ -201,8 +201,8 @@ func TestClassifier(t *testing.T) {
 			t.Parallel()
 
 			mocks := newTestClassifierMocks(t)
+			source, sourceErr := coreSourceProvider{}.provider().source()
 
-			source, sourceErr := yamlSourceProvider{rawSourceProvider: coreSourceProvider{}}.source()
 			if sourceErr != nil {
 				t.Fatal(sourceErr)
 				return
