@@ -180,7 +180,7 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		}
 	}
 
-	if len(tcs) == 0 {
+	if len(tcs) == 0 && len(infoHashesToDelete) == 0 {
 		return nil
 	}
 
