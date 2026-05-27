@@ -8,7 +8,7 @@ import (
 )
 
 type StableBloomFilter struct {
-	boom.StableBloomFilter
+	*boom.StableBloomFilter
 }
 
 const (
@@ -18,7 +18,7 @@ const (
 )
 
 func NewDefaultStableBloomFilter() *StableBloomFilter {
-	return &StableBloomFilter{*boom.NewStableBloomFilter(defaultCapacity, defaultD, defaultFpRate)}
+	return &StableBloomFilter{boom.NewStableBloomFilter(defaultCapacity, defaultD, defaultFpRate)}
 }
 
 func (s *StableBloomFilter) Scan(value interface{}) error {
@@ -32,7 +32,7 @@ func (s *StableBloomFilter) Scan(value interface{}) error {
 		return err
 	}
 
-	s.StableBloomFilter = *bf
+	s.StableBloomFilter = bf
 
 	return nil
 }
