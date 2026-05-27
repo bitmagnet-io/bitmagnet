@@ -24,6 +24,7 @@ jobs:
           nix develop --ignore-environment --keep HOME . --command task lint
       # Adding golang-ci lint as a separate step as the Nix package is currently broken
       - name: golangci-lint
+        if: ${{ !env.ACT }}
         uses: golangci/golangci-lint-action@v8
         with:
           version: v2.1.6
@@ -31,14 +32,14 @@ jobs:
 
   test:
     # The Ubuntu image has been downgraded and pinned for the `test` and `generated` jobs as they are broken on 24.04
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v26
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Install web UI
+      - name: Install npm dependencies
         run: |
           nix develop --ignore-environment --command task install-webui
       - name: Run tests
@@ -47,7 +48,7 @@ jobs:
 
   # This job runs all code generations and builds the WebUI, to check that everything is correctly committed
   generated:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     services:
       # Label used to access the service container
       postgres:
@@ -79,9 +80,13 @@ jobs:
           nix develop --ignore-environment --keep HOME --keep POSTGRES_PASSWORD . --command task gen
           nix develop --ignore-environment --keep HOME . --command go fmt ./...
           nix develop --ignore-environment . --command task i18n-extract
-          nix develop --ignore-environment . --command task build-webui
         env:
           POSTGRES_PASSWORD: postgres
+      - name: build web app
+        # builds incorrect diffs when running in nektos/act
+        if: ${{ !env.ACT }}
+        run: |
+          nix develop --ignore-environment . --command task build-webui
       - name: Check nothing changed
         # excluding the 3rdpartylicenses file in a horrible hack:
-        run: git diff --exit-code -- . ':(exclude)webui/dist/bitmagnet/3rdpartylicenses.txt'
+        run: git diff --exit-code -- . ':(exclude)webui/dist/bitmagnet/3rdpartylicenses.txt' ':(exclude).github/workflows/*.yml'
