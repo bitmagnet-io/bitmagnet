@@ -47,10 +47,10 @@ func (addTagAction) compileAction(ctx compilerContext) (action, error) {
 		func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result
 			if cl.Tags == nil {
-				cl.Tags = make(map[string]struct{})
+				cl.Tags = classification.NewTagAction()
 			}
 			for _, tag := range tags {
-				cl.Tags[tag] = struct{}{}
+				cl.Tags.Add[tag] = struct{}{}
 			}
 			return cl, nil
 		},
