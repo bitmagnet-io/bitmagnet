@@ -1,5 +1,7 @@
 package classifier
 
+import "fmt"
+
 const andName = "and"
 
 type andCondition struct{}
@@ -39,8 +41,13 @@ func (andCondition) compileCondition(ctx compilerContext) (condition, error) {
 
 	return condition{
 		check: func(ctx executionContext) (bool, error) {
-			for _, c := range conds {
-				if result, err := c.check(ctx); err != nil {
+			ctx.logger.Info()
+			for i, c := range conds {
+				logger := ctx.logger
+				ctx.logger = logger.Named(fmt.Sprintf("and.[%d]", i))
+				result, err := c.check(ctx)
+				ctx.logger = logger
+				if err != nil {
 					return false, err
 				} else if !result {
 					return false, nil

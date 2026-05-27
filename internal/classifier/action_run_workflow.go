@@ -46,6 +46,7 @@ func (runWorkflowAction) compileAction(ctx compilerContext) (action, error) {
 			var err error
 			cl := ctx.result
 			for _, name := range names {
+				ctx.logger.Info(name)
 				cl, err = ctx.workflows[name].run(ctx.withResult(cl))
 				if err != nil {
 					return cl, err

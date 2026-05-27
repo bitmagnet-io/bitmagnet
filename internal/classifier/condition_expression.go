@@ -60,6 +60,8 @@ func (expressionCondition) compileCondition(ctx compilerContext) (condition, err
 		return condition{}, ctx.error(err)
 	}
 
+	source := ctx.source
+
 	return condition{
 		check: func(ctx executionContext) (bool, error) {
 			vars := map[string]any{
@@ -71,12 +73,15 @@ func (expressionCondition) compileCondition(ctx compilerContext) (condition, err
 			}
 			result, _, err := prg.ContextEval(ctx.Context, vars)
 			if err != nil {
+				ctx.logger.Infow("error","source",source)
 				return false, err
 			}
 			bl, ok := result.Value().(bool)
 			if !ok {
+				ctx.logger.Infow("not bool","source",source)
 				return false, errors.New("not bool")
 			}
+			ctx.logger.Infow(fmt.Sprint(bl),"source",source)
 			return bl, nil
 		},
 	}, nil

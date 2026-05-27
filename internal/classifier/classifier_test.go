@@ -12,6 +12,7 @@ import (
 	tmdb_mocks "github.com/bitmagnet-io/bitmagnet/internal/tmdb/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"go.uber.org/zap"
 )
 
 func TestClassifier(t *testing.T) {
@@ -250,6 +251,8 @@ func newTestClassifierMocks(t *testing.T) testClassifierMocks {
 			dependencies: dependencies{
 				search:     search,
 				tmdbClient: tmdbClient,
+				_logger:    zap.NewNop().Sugar(),
+				logger:     zap.NewNop().Sugar(),
 			},
 		},
 		search:     search,

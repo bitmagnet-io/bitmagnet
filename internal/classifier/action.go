@@ -3,6 +3,7 @@ package classifier
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/classifier/classification"
 )
@@ -61,14 +62,18 @@ outer:
 		return action{}, errors.Join(errs...)
 	}
 
+	path := ctx.path
+
 	return action{func(ctx executionContext) (classification.Result, error) {
-		for _, a := range actions {
+		for i, a := range actions {
+			ctx.logger = ctx._logger.Named(strings.Join(path, ".")+".["+fmt.Sprint(i)+"]")
 			result, err := a.run(ctx)
 			if err != nil {
 				return classification.Result{}, err
 			}
 			ctx = ctx.withResult(result)
 		}
+		ctx.logger = ctx._logger
 		return ctx.result, nil
 	}}, errors.Join(errs...)
 }

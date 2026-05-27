@@ -31,6 +31,7 @@ func (notCondition) compileCondition(ctx compilerContext) (condition, error) {
 
 	return condition{
 		check: func(ctx executionContext) (bool, error) {
+			ctx.logger.Info()
 			result, err := cond.check(ctx)
 			return !result, err
 		},

@@ -24,6 +24,7 @@ func (unmatchedAction) compileAction(ctx compilerContext) (action, error) {
 
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
+			ctx.logger.Info()
 			return ctx.result, classification.RuntimeError{Cause: classification.ErrUnmatched, Path: path}
 		},
 	}, nil
