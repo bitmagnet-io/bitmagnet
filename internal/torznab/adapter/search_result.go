@@ -14,7 +14,7 @@ func torrentContentResultToTorznabResult(
 ) torznab.SearchResult {
 	entries := make([]torznab.SearchResultItem, 0, len(res.Items))
 	for _, item := range res.Items {
-		entries = append(entries, torrentContentResultItemToTorznabResultItem(item))
+		entries = append(entries, torrentContentResultItemToTorznabResultItem(item, req.Profile))
 	}
 
 	return torznab.SearchResult{
@@ -29,7 +29,9 @@ func torrentContentResultToTorznabResult(
 	}
 }
 
-func torrentContentResultItemToTorznabResultItem(item search.TorrentContentResultItem) torznab.SearchResultItem {
+func torrentContentResultItemToTorznabResultItem(
+	item search.TorrentContentResultItem, profile torznab.Profile,
+) torznab.SearchResultItem {
 	category := "Unknown"
 	if item.ContentType.Valid {
 		category = item.ContentType.ContentType.Label()
@@ -82,6 +84,7 @@ func torrentContentResultItemToTorznabResultItem(item search.TorrentContentResul
 			AttrValue: item.PublishedAt.Format(torznab.RssDateDefaultFormat),
 		},
 	}
+
 	seeders := item.Torrent.Seeders()
 	leechers := item.Torrent.Leechers()
 
@@ -171,7 +174,7 @@ func torrentContentResultItemToTorznabResultItem(item search.TorrentContentResul
 		})
 	}
 
-	return torznab.SearchResultItem{
+	res := torznab.SearchResultItem{
 		Title:    item.Torrent.Name,
 		Size:     item.Torrent.Size,
 		Category: category,
@@ -184,4 +187,12 @@ func torrentContentResultItemToTorznabResultItem(item search.TorrentContentResul
 		},
 		TorznabAttrs: attrs,
 	}
+
+	permalink := item.Torrent.PermaLink(profile.BaseURL)
+	if permalink.Valid {
+		res.Comments = permalink.String
+		res.Link = permalink.String
+	}
+
+	return res
 }

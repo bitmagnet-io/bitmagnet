@@ -1,6 +1,10 @@
 package torznab
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/bitmagnet-io/bitmagnet/internal/model"
+)
 
 type Profile struct {
 	ID                      string `validate:"required"`
@@ -9,6 +13,7 @@ type Profile struct {
 	DefaultLimit            uint
 	MaxLimit                uint
 	Tags                    []string
+	BaseURL                 model.NullString
 }
 
 var ProfileDefault = Profile{
@@ -16,6 +21,7 @@ var ProfileDefault = Profile{
 	Title:        "bitmagnet",
 	DefaultLimit: 100,
 	MaxLimit:     100,
+	BaseURL:      model.NullString{},
 }
 
 func (p Profile) MergeDefaults() Profile {
