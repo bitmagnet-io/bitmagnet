@@ -1,6 +1,12 @@
 import { Component, inject, Input, OnInit } from "@angular/core";
 import { BaseChartDirective } from "ng2-charts";
-import { ChartConfiguration, ChartType } from "chart.js";
+import {
+  ChartConfiguration,
+  ChartType,
+  ChartEvent,
+  LegendItem,
+  LegendElement,
+} from "chart.js";
 import { Observable } from "rxjs";
 import { TranslocoDirective, TranslocoService } from "@jsverse/transloco";
 import {
@@ -36,6 +42,7 @@ export class ChartComponent<Data = unknown, Type extends ChartType = ChartType>
 {
   private themeInfo = inject(ThemeInfoService);
   private transloco = inject(TranslocoService);
+  private hiddenDatasets = new Map<string, boolean>();
   breakpoints = inject(BreakpointsService);
 
   @Input() title: string;
@@ -69,9 +76,22 @@ export class ChartComponent<Data = unknown, Type extends ChartType = ChartType>
     this.updateChart();
   }
 
+  private legendOnClick(
+    e: ChartEvent,
+    item: LegendItem,
+    ctx: LegendElement<"line">,
+  ) {
+    const meta = ctx.chart.getDatasetMeta(item.datasetIndex!);
+    meta.hidden = !meta.hidden;
+    this.hiddenDatasets.set(meta.label, meta.hidden);
+    ctx.chart.update();
+  }
+
   private updateChart() {
     this.chartConfig = this.adapter.create(this.data, {
       legend: this.legend,
+      hiddenDatasets: this.hiddenDatasets,
+      legendOnClick: this.legendOnClick.bind(this),
     }) as ChartConfiguration;
   }
 }

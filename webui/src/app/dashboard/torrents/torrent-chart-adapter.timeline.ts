@@ -72,10 +72,14 @@ export class TorrentChartAdapterTimeline
                   ?.count ?? 0,
               );
             }
+            const label = [source.source, event].join("/");
             datasets.push({
               yAxisID: "yCount",
-              label: [source.source, event].join("/"),
+              label: label,
               data: series,
+              hidden: params.hiddenDatasets.has(label)
+                ? params.hiddenDatasets.get(label)
+                : false,
               borderColor: colors[createThemeColor(eventColors[event], 50)],
               pointBackgroundColor:
                 colors[createThemeColor(eventColors[event], 20)],
@@ -114,6 +118,7 @@ export class TorrentChartAdapterTimeline
         plugins: {
           legend: {
             display: params.legend,
+            onClick: params.legendOnClick,
           },
           decimation: {
             enabled: true,
