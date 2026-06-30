@@ -62,16 +62,22 @@ func (s *socket) Receive(data []byte) (int, netip.AddrPort, error) {
 }
 
 func addrPortToSockaddr(addr netip.AddrPort) (unix.Sockaddr, error) {
-	if addr.Addr().Is4() {
+	// Unmap IPv4-in-IPv6 addresses (e.g. ::ffff:1.2.3.4 → 1.2.3.4).
+	// Go's net.ResolveUDPAddr can return mapped-v6 on dual-stack systems,
+	// which would fail with EAFNOSUPPORT on this AF_INET socket.
+	// See https://github.com/bitmagnet-io/bitmagnet/issues/437
+	ip := addr.Addr().Unmap()
+
+	if ip.Is4() {
 		return &unix.SockaddrInet4{
-			Addr: addr.Addr().As4(),
+			Addr: ip.As4(),
 			Port: int(addr.Port()),
 		}, nil
 	}
 
-	if addr.Addr().Is6() {
+	if ip.Is6() {
 		return &unix.SockaddrInet6{
-			Addr: addr.Addr().As16(),
+			Addr: ip.As16(),
 			Port: int(addr.Port()),
 		}, nil
 	}
