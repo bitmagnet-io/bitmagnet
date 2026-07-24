@@ -7,9 +7,13 @@ RUN apk --update add \
 
 RUN mkdir /build
 
-COPY . /build
-
 WORKDIR /build
+
+COPY go.mod go.sum /build/
+
+RUN go mod download
+
+COPY . /build
 
 RUN go build -ldflags "-s -w -X github.com/bitmagnet-io/bitmagnet/internal/version.GitTag=$(git describe --tags --always --dirty)"
 
