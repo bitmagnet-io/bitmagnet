@@ -67,6 +67,7 @@ select
     when cat like '%_bd_remux' then 'REMUX'
   end as videoModifier,
   case
+    when cat like '%_av1%' then 'AV1'
     when cat like '%_x264%' then 'x264'
     when cat like '%_x265%' then 'x265'
     when cat like '%_xvid%' then 'XviD'
