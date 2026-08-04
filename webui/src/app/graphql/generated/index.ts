@@ -783,6 +783,7 @@ export type Video3D =
   | 'V3DSBS';
 
 export type VideoCodec =
+  | 'AV1'
   | 'DivX'
   | 'H264'
   | 'MPEG2'

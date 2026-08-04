@@ -10,7 +10,7 @@ import (
 )
 
 // VideoCodec represents the codec of a video
-// ENUM(H264, x264, x265, XviD, DivX, MPEG2, MPEG4)
+// ENUM(AV1, H264, x264, x265, XviD, DivX, MPEG2, MPEG4)
 type VideoCodec string
 
 func (v VideoCodec) Label() string {

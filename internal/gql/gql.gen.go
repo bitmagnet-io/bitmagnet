@@ -2338,6 +2338,7 @@ enum Video3D {
 }
 
 enum VideoCodec {
+  AV1
   H264
   x264
   x265

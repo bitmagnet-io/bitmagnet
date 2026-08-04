@@ -16,6 +16,7 @@ import (
 )
 
 const (
+	VideoCodecAV1   VideoCodec = "AV1"
 	VideoCodecH264  VideoCodec = "H264"
 	VideoCodecX264  VideoCodec = "x264"
 	VideoCodecX265  VideoCodec = "x265"
@@ -28,6 +29,7 @@ const (
 var ErrInvalidVideoCodec = fmt.Errorf("not a valid VideoCodec, try [%s]", strings.Join(_VideoCodecNames, ", "))
 
 var _VideoCodecNames = []string{
+	string(VideoCodecAV1),
 	string(VideoCodecH264),
 	string(VideoCodecX264),
 	string(VideoCodecX265),
@@ -47,6 +49,7 @@ func VideoCodecNames() []string {
 // VideoCodecValues returns a list of the values for VideoCodec
 func VideoCodecValues() []VideoCodec {
 	return []VideoCodec{
+		VideoCodecAV1,
 		VideoCodecH264,
 		VideoCodecX264,
 		VideoCodecX265,
@@ -70,6 +73,7 @@ func (x VideoCodec) IsValid() bool {
 }
 
 var _VideoCodecValue = map[string]VideoCodec{
+	"AV1":   VideoCodecAV1,
 	"H264":  VideoCodecH264,
 	"h264":  VideoCodecH264,
 	"x264":  VideoCodecX264,
