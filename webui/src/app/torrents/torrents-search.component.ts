@@ -99,6 +99,10 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
 
   multiSelection = new SelectionModel<string>(true, []);
 
+  /** True once the user has explicitly chosen to act on every result matching
+   * the current search, not just the ones selected on the current page. */
+  selectedAllMatching = false;
+
   private selectedItemsSubject = new BehaviorSubject<
     generated.TorrentContent[]
   >([]);
@@ -169,12 +173,22 @@ export class TorrentsSearchComponent implements OnInit, OnDestroy {
         });
       }),
       this.multiSelection.changed.subscribe((selection) => {
+        this.selectedAllMatching = false;
         const infoHashes = new Set(selection.source.selected);
         this.selectedItemsSubject.next(
           this.result.items.filter((i) => infoHashes.has(i.infoHash)),
         );
       }),
     );
+  }
+
+  onSelectAllMatching(): void {
+    this.selectedAllMatching = true;
+  }
+
+  onBulkActionsUpdated(): void {
+    this.selectedAllMatching = false;
+    this.dataSource.refresh();
   }
 
   ngOnDestroy() {

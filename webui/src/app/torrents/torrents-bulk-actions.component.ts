@@ -7,7 +7,7 @@ import {
   Output,
 } from "@angular/core";
 import { FormControl } from "@angular/forms";
-import { catchError, EMPTY, Observable, tap } from "rxjs";
+import { catchError, EMPTY, Observable, switchMap, tap } from "rxjs";
 import { COMMA, ENTER } from "@angular/cdk/keycodes";
 import * as generated from "../graphql/generated";
 import { BreakpointsService } from "../layout/breakpoints.service";
@@ -15,6 +15,7 @@ import { ErrorsService } from "../errors/errors.service";
 import { GraphQLService } from "../graphql/graphql.service";
 import { AppModule } from "../app.module";
 import { TorrentReprocessComponent } from "./torrent-reprocess.component";
+import { TorrentsSearchDatasource } from "./torrents-search.datasource";
 
 @Component({
   selector: "app-torrents-bulk-actions",
@@ -30,6 +31,12 @@ export class TorrentsBulkActionsComponent implements OnInit {
 
   @Input() selectedItems$: Observable<generated.TorrentContent[]> =
     new Observable();
+  /** True when the user has chosen to act on every result matching the
+   * current search, rather than just the items selected on this page. */
+  @Input() selectedAllMatching = false;
+  /** Needed to resolve the full set of matching info hashes when
+   * selectedAllMatching is true. */
+  @Input() dataSource?: TorrentsSearchDatasource;
   @Output() updated = new EventEmitter<null>();
 
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
@@ -182,6 +189,31 @@ export class TorrentsBulkActionsComponent implements OnInit {
   }
 
   deleteTorrents() {
+    if (this.selectedAllMatching && this.dataSource) {
+      this.dataSource
+        .fetchAllMatchingInfoHashes()
+        .pipe(
+          catchError((err: Error) => {
+            this.errorsService.addError(
+              `Error fetching matching torrents: ${err.message}`,
+            );
+            return EMPTY;
+          }),
+          switchMap((infoHashes) =>
+            this.graphQLService.torrentDelete({ infoHashes }),
+          ),
+          catchError((err: Error) => {
+            this.errorsService.addError(
+              `Error deleting torrents: ${err.message}`,
+            );
+            return EMPTY;
+          }),
+        )
+        .subscribe(() => {
+          this.updated.emit();
+        });
+      return;
+    }
     const infoHashes = this.selectedItems.map(({ infoHash }) => infoHash);
     this.graphQLService
       .torrentDelete({ infoHashes })
