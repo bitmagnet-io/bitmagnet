@@ -152,7 +152,15 @@
         <mat-card>
           <mat-card-content>
             <p>
-              <strong>{{ t("torrents.delete_are_you_sure") }}</strong>
+              @if (selectedAllMatching && dataSource) {
+                <strong>{{
+                  t("torrents.delete_are_you_sure_count", {
+                    count: dataSource.result.totalCount
+                  })
+                }}</strong>
+              } @else {
+                <strong>{{ t("torrents.delete_are_you_sure") }}</strong>
+              }
               <br />{{ t("torrents.delete_action_cannot_be_undone") }}.
             </p>
           </mat-card-content>
@@ -160,7 +168,7 @@
             <button
               mat-stroked-button
               color="warning"
-              [disabled]="!selectedItems.length"
+              [disabled]="!selectedItems.length && !selectedAllMatching"
               (click)="deleteTorrents()"
             >
               <mat-icon>delete_forever</mat-icon>{{ t("torrents.delete") }}

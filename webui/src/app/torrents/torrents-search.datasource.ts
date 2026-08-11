@@ -4,13 +4,19 @@ import {
   catchError,
   EMPTY,
   Observable,
+  of,
   scan,
   Subscription,
 } from "rxjs";
-import { map } from "rxjs/operators";
+import { map, switchMap } from "rxjs/operators";
 import { Apollo } from "apollo-angular";
 import * as generated from "../graphql/generated";
 import { ErrorsService } from "../errors/errors.service";
+
+/** Page size used when paginating through every result matching the current
+ * search, e.g. for "select all matching" bulk actions. Independent of the
+ * user-selected page size shown in the table. */
+const selectAllPageSize = 100;
 
 export const emptyResult: generated.TorrentContentSearchResult = {
   items: [],
@@ -123,6 +129,41 @@ export class TorrentsSearchDatasource
         cached: false,
       },
     });
+  }
+
+  /**
+   * Fetches the info hashes of every item matching the current search,
+   * not just the ones on the current page. Pages through the full result
+   * set using the same filters, requesting only the info hash field.
+   */
+  fetchAllMatchingInfoHashes(): Observable<string[]> {
+    const fetchPage = (page: number, acc: string[]): Observable<string[]> =>
+      this.apollo
+        .query<
+          generated.TorrentContentSearchInfoHashesQuery,
+          generated.TorrentContentSearchInfoHashesQueryVariables
+        >({
+          query: generated.TorrentContentSearchInfoHashesDocument,
+          variables: {
+            input: {
+              ...this.input,
+              page,
+              limit: selectAllPageSize,
+              hasNextPage: true,
+              cached: false,
+            },
+          },
+          fetchPolicy: "no-cache",
+        })
+        .pipe(
+          map((r) => r.data.torrentContent.search),
+          switchMap((result) => {
+            const next = acc.concat(result.items.map((item) => item.infoHash));
+            return result.hasNextPage ? fetchPage(page + 1, next) : of(next);
+          }),
+        );
+
+    return fetchPage(1, []);
   }
 
   private loadResult(

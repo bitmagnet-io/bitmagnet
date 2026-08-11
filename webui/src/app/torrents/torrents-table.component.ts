@@ -62,6 +62,7 @@ export class TorrentsTableComponent implements OnInit {
   @Input() displayedColumns: readonly Column[] = allColumns;
 
   @Output() updated = new EventEmitter<string>();
+  @Output() selectAllMatching = new EventEmitter<void>();
 
   items = Array<generated.TorrentContent>();
 
@@ -83,6 +84,11 @@ export class TorrentsTableComponent implements OnInit {
       return;
     }
     this.multiSelection.select(...this.items.map((i) => i.infoHash));
+  }
+
+  /** Whether the search has more matching results than are currently loaded. */
+  hasMoreThanPage(): boolean {
+    return this.dataSource.result.totalCount > this.items.length;
   }
 
   toggleSelectedTorrent(infoHash: string) {

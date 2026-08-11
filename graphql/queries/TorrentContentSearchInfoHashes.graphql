@@ -1,0 +1,13 @@
+query TorrentContentSearchInfoHashes(
+  $input: TorrentContentSearchQueryInput!
+) {
+  torrentContent {
+    search(input: $input) {
+      items {
+        infoHash
+      }
+      totalCount
+      hasNextPage
+    }
+  }
+}

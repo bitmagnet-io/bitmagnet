@@ -205,7 +205,9 @@
       <mat-divider />
       <app-torrents-bulk-actions
         [selectedItems$]="selectedItems$"
-        (updated)="dataSource.refresh()"
+        [selectedAllMatching]="selectedAllMatching"
+        [dataSource]="dataSource"
+        (updated)="onBulkActionsUpdated()"
       />
       <mat-divider />
       <app-torrents-table
@@ -216,6 +218,7 @@
         "
         [multiSelection]="multiSelection"
         (updated)="dataSource.refresh()"
+        (selectAllMatching)="onSelectAllMatching()"
       />
       <app-paginator
         (paging)="controller.handlePageEvent($event)"

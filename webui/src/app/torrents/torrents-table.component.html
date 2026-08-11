@@ -5,6 +5,22 @@
       [value]="0"
     ></mat-progress-bar>
   </div>
+  @if (
+    multiSelection.hasValue() && isAllSelected() && hasMoreThanPage()
+  ) {
+    <div class="select-all-matching-bar">
+      <span>{{
+        t("torrents.selected_page_count", { count: items.length })
+      }}</span>
+      <button mat-button (click)="selectAllMatching.emit()">
+        {{
+          t("torrents.select_all_matching", {
+            count: dataSource.result.totalCount
+          })
+        }}
+      </button>
+    </div>
+  }
   <table
     mat-table
     [dataSource]="dataSource"

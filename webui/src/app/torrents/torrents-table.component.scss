@@ -88,3 +88,10 @@ span.filesize {
   text-decoration-style: dotted;
   cursor: default;
 }
+
+.select-all-matching-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 1rem;
+}
