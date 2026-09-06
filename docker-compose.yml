@@ -70,6 +70,7 @@ services:
       - "5432:5432"
     shm_size: 1g
     restart: unless-stopped
+    stop_grace_period: 1m30s
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=bitmagnet
