@@ -106,7 +106,7 @@ So far we've got the data looking almost like we need it. We now need to make a 
 
 ```sh
 sqlite3 -json -batch /path/to/your/rarbg_db.sqlite "$(cat rarbg-import.sql)" \
-  | jq -r --indent 0 '.[] | . * { source: "rarbg" } | . + if .imdb != null then { contentSource: "imdb", contentId: .imdb } else {} end | del(.imdb) | del(..|nulls)' \
+  | jq -r -c '.[] | . * { source: "rarbg" } | . + if .imdb != null then { contentSource: "imdb", contentId: .imdb } else {} end | del(.imdb) | del(..|nulls)' \
   | curl --verbose -H "Content-Type: application/json" -H "Connection: close" --data-binary @- http://localhost:3333/import
 ```
 
