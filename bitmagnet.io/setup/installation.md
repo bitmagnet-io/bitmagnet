@@ -49,6 +49,7 @@ services:
     #    ports:
     #      - "5432:5432" Expose this port if you'd like to dig around in the database
     restart: unless-stopped
+    stop_grace_period: 1m30s
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=bitmagnet
