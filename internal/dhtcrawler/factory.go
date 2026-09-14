@@ -42,6 +42,7 @@ type Result struct {
 	DhtCrawlerActive *concurrency.AtomicValue[bool] `name:"dht_crawler_active"`
 
 	PersistedTotal prometheus.Collector `group:"prometheus_collectors"`
+	DeletedTotal   prometheus.Collector `group:"prometheus_collectors"`
 }
 
 func New(params Params) Result {
@@ -55,6 +56,13 @@ func New(params Params) Result {
 		Name:      "persisted_total",
 		Help:      "A counter of persisted database entities.",
 	}, []string{"entity"})
+
+	deletedTotal := prometheus.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "bitmagnet",
+		Subsystem: "dht_crawler",
+		Name:      "deleted_total",
+		Help:      "A counter of torrents deleted for having too few confirmed seeders.",
+	}, []string{"reason"})
 
 	return Result{
 		Worker: worker.NewWorker(
@@ -113,10 +121,12 @@ func New(params Params) Result {
 							1000,
 							time.Minute,
 						),
-						saveFilesThreshold: params.Config.SaveFilesThreshold,
-						savePieces:         params.Config.SavePieces,
-						rescrapeThreshold:  params.Config.RescrapeThreshold,
-						dao:                query,
+						saveFilesThreshold:    params.Config.SaveFilesThreshold,
+						savePieces:            params.Config.SavePieces,
+						rescrapeThreshold:     params.Config.RescrapeThreshold,
+						minSeeders:            params.Config.MinSeeders,
+						confirmDeleteCooldown: params.Config.ConfirmDeleteCooldown,
+						dao:                   query,
 						ignoreHashes: &ignoreHashes{
 							bloom: boom.NewStableBloomFilter(10_000_000, 2, 0.001),
 						},
@@ -124,6 +134,7 @@ func New(params Params) Result {
 						soughtNodeID:    &concurrency.AtomicValue[protocol.ID]{},
 						stopped:         make(chan struct{}),
 						persistedTotal:  persistedTotal,
+						deletedTotal:    deletedTotal,
 						logger:          params.Logger.Named("dht_crawler"),
 					}
 					c.soughtNodeID.Set(protocol.RandomNodeID())
@@ -143,6 +154,7 @@ func New(params Params) Result {
 			},
 		),
 		PersistedTotal:   persistedTotal,
+		DeletedTotal:     deletedTotal,
 		DhtCrawlerActive: active,
 	}
 }

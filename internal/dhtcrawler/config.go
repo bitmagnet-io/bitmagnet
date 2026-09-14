@@ -22,6 +22,16 @@ type Config struct {
 	// RescrapeThreshold is the amount of time that must pass before a torrent is rescraped
 	// to count seeders and leechers.
 	RescrapeThreshold time.Duration
+	// MinSeeders is the minimum seeders a torrent must have, as measured by a live DHT
+	// scrape, to avoid being pruned. A torrent is only ever deleted after two independent
+	// scrapes, ConfirmDeleteCooldown apart, both come back below this threshold - a single
+	// low reading is not sufficient, since a BEP-33 scrape result is only an approximation
+	// from whichever single DHT node answers.
+	MinSeeders uint
+	// ConfirmDeleteCooldown is the amount of time that must pass after a torrent's seeders
+	// first measure below MinSeeders before it is rescraped a second time to confirm
+	// deletion.
+	ConfirmDeleteCooldown time.Duration
 }
 
 func NewDefaultConfig() Config {
@@ -32,6 +42,8 @@ func NewDefaultConfig() Config {
 		SaveFilesThreshold:           100,
 		SavePieces:                   false,
 		RescrapeThreshold:            time.Hour * 24 * 30,
+		MinSeeders:                   1,
+		ConfirmDeleteCooldown:        time.Hour * 24,
 	}
 }
 

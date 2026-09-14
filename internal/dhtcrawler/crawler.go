@@ -41,6 +41,8 @@ type crawler struct {
 	persistTorrents              concurrency.BatchingChannel[infoHashWithMetaInfo]
 	persistSources               concurrency.BatchingChannel[infoHashWithScrape]
 	rescrapeThreshold            time.Duration
+	minSeeders                   uint
+	confirmDeleteCooldown        time.Duration
 	saveFilesThreshold           uint
 	savePieces                   bool
 	dao                          *dao.Query
@@ -55,6 +57,7 @@ type crawler struct {
 	soughtNodeID   *concurrency.AtomicValue[protocol.ID]
 	stopped        chan struct{}
 	persistedTotal *prometheus.CounterVec
+	deletedTotal   *prometheus.CounterVec
 	logger         *zap.SugaredLogger
 }
 
@@ -77,6 +80,7 @@ func (c *crawler) start() {
 	go c.runPersistTorrents(ctx)
 	go c.runPersistSources(ctx)
 	go c.getOldNodes(ctx)
+	go c.runRescrapeStale(ctx)
 	<-c.stopped
 }
 
