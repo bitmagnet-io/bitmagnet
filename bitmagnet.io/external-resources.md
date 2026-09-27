@@ -14,4 +14,5 @@ Community members have developed the following resources, tools and packages; th
 - [@DyonR](https://github.com/DyonR) has developed [magnetico2bitmagnet](https://github.com/DyonR/magnetico2bitmagnet), a collection of scripts for importing into **bitmagnet** from Magnetico and other sources.
 - [@DyonR](https://github.com/DyonR) has written [a **bitmagnet** on Unraid guide](https://github.com/DyonR/bitmagnet-unraid).
 - There is a project initiative that simplifies the setup of Proxmox Virtual Environment (VE), they provide a [script to set up **bitmagnet** in an LXC containers](https://community-scripts.github.io/ProxmoxVE/scripts?id=bitmagnet)
+- The [MASH Ansible playbook](https://github.com/mother-of-all-self-hosting/mash-playbook/blob/main/docs/services/bitmagnet.md) can install **bitmagnet** as a Docker container, alongside other self-hosted services.
 - Your link could be here!
