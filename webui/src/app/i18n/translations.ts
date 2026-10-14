@@ -7,6 +7,7 @@ import fr from "./translations/fr.json";
 import hi from "./translations/hi.json";
 import ja from "./translations/ja.json";
 import nl from "./translations/nl.json";
+import pl from "./translations/pl.json";
 import pt from "./translations/pt.json";
 import ru from "./translations/ru.json";
 import tr from "./translations/tr.json";
@@ -23,6 +24,7 @@ export default {
   hi,
   ja,
   nl,
+  pl,
   pt,
   ru,
   tr,

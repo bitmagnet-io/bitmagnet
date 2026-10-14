@@ -88,6 +88,10 @@ export const appConfig: ApplicationConfig = {
             label: "Nederlands",
           },
           {
+            id: "pl",
+            label: "Polski",
+          },
+          {
             id: "pt",
             label: "Português",
           },
