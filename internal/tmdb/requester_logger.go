@@ -2,6 +2,7 @@ package tmdb
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/go-resty/resty/v2"
 	"go.uber.org/zap"
@@ -10,6 +11,12 @@ import (
 type requesterLogger struct {
 	requester Requester
 	logger    *zap.SugaredLogger
+}
+
+var sensitiveQueryParams = regexp.MustCompile(`(?i)(api_key=)[^&"\s]+`)
+
+func redactSensitive(s string) string {
+	return sensitiveQueryParams.ReplaceAllString(s, "${1}REDACTED")
 }
 
 func (r requesterLogger) Request(
@@ -28,7 +35,7 @@ func (r requesterLogger) Request(
 	if err == nil {
 		r.logger.Debugw("request succeeded", kvs...)
 	} else {
-		kvs = append(kvs, "error", err)
+		kvs = append(kvs, "error", redactSensitive(err.Error()))
 		r.logger.Errorw("request failed", kvs...)
 	}
 
