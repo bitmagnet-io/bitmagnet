@@ -98,9 +98,97 @@ func (tc *TorrentContent) UpdateTsv() {
 	tsv.AddText(tc.InfoHash.String(), fts.TsvectorWeightA)
 	tsv.AddText(tc.Torrent.Name, fts.TsvectorWeightA)
 
-	for _, str := range tc.Torrent.fileSearchStrings() {
-		tsv.AddText(str, fts.TsvectorWeightD)
+	tc.Tsv = addFileSearchStrings(tsv, tc.Torrent.fileSearchStrings())
+}
+
+const (
+	// tsvMaxBytes keeps a tsvector below PostgreSQL's limit on its lexeme and position data
+	// (1048575 bytes, "string is too long for tsvector", see #410).
+	tsvMaxBytes = 1_000_000
+	// tsvMaxPositions is the number of positions PostgreSQL keeps per lexeme (MAXNUMPOS).
+	tsvMaxPositions = 256
+	// tsvPositionBytes is the size of a stored position (WordEntryPos).
+	tsvPositionBytes = 2
+	// tsvPositionsHeaderBytes covers the alignment padding and the position count of a lexeme.
+	tsvPositionsHeaderBytes = 3
+)
+
+// tsvLexemeBytes is an upper bound of the space PostgreSQL uses for a lexeme with n positions:
+// the lexeme, alignment, the position count and the positions.
+func tsvLexemeBytes(lexeme string, n int) int {
+	if n == 0 {
+		return len(lexeme)
 	}
 
-	tc.Tsv = tsv
+	return len(lexeme) + tsvPositionsHeaderBytes + tsvPositionBytes*min(n, tsvMaxPositions)
+}
+
+// addFileSearchStrings adds the file search strings in order until the next one would take the
+// tsvector past tsvMaxBytes; the rest of a huge file list is not indexed. Positions are the same
+// as with Tsvector.AddText, which rescans all positions on each call (quadratic for huge lists).
+func addFileSearchStrings(tsv fts.Tsvector, strs []string) fts.Tsvector {
+	size := 0
+	nextPos := 1
+
+	for lexeme, positions := range tsv {
+		size += tsvLexemeBytes(lexeme, len(positions))
+
+		for pos := range positions {
+			if pos >= nextPos {
+				nextPos = pos + 1
+			}
+		}
+	}
+
+	for _, str := range strs {
+		lexemes := fts.TokenizeFlat(str)
+		if len(lexemes) == 0 {
+			continue
+		}
+
+		grow := tsvGrowth(tsv, lexemes)
+		if size+grow > tsvMaxBytes {
+			break
+		}
+
+		size += grow
+
+		if nextPos > 1 {
+			nextPos++
+		}
+
+		for _, lexeme := range lexemes {
+			if _, ok := tsv[lexeme]; !ok {
+				tsv[lexeme] = make(map[int]fts.TsvectorWeight)
+			}
+
+			tsv[lexeme][nextPos] = fts.TsvectorWeightD
+			nextPos++
+		}
+	}
+
+	return tsv
+}
+
+// tsvGrowth is how many bytes adding these lexemes adds to tsv in PostgreSQL (an upper bound).
+func tsvGrowth(tsv fts.Tsvector, lexemes []string) int {
+	counts := make(map[string]int)
+	for _, lexeme := range lexemes {
+		counts[lexeme]++
+	}
+
+	grow := 0
+
+	for lexeme, n := range counts {
+		positions, ok := tsv[lexeme]
+		before := 0
+
+		if ok {
+			before = tsvLexemeBytes(lexeme, len(positions))
+		}
+
+		grow += tsvLexemeBytes(lexeme, len(positions)+n) - before
+	}
+
+	return grow
 }
