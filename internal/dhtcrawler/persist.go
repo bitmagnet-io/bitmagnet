@@ -169,6 +169,7 @@ func createTorrentModel(
 	}
 
 	files := make([]model.TorrentFile, 0, min(int(saveFilesThreshold), len(info.Files)))
+	seenPaths := make(map[string]struct{}, min(int(saveFilesThreshold), len(info.Files)))
 
 	for i, file := range info.Files {
 		if i >= int(saveFilesThreshold) {
@@ -176,10 +177,19 @@ func createTorrentModel(
 			break
 		}
 
+		// Keep the first occurrence of a duplicate path, matching the old
+		// (info_hash, path) primary key behavior for malformed metadata.
+		path := file.DisplayPath(&info)
+		if _, ok := seenPaths[path]; ok {
+			continue
+		}
+
+		seenPaths[path] = struct{}{}
+
 		files = append(files, model.TorrentFile{
 			InfoHash: hash,
 			Index:    uint(i),
-			Path:     file.DisplayPath(&info),
+			Path:     path,
 			Size:     uint(file.Length),
 		})
 	}
