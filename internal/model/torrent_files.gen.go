@@ -15,8 +15,8 @@ const TableNameTorrentFile = "torrent_files"
 // TorrentFile mapped from table <torrent_files>
 type TorrentFile struct {
 	InfoHash  protocol.ID `gorm:"column:info_hash;primaryKey;<-:create" json:"infoHash"`
-	Index     uint        `gorm:"column:index;not null;<-:create" json:"index"`
-	Path      string      `gorm:"column:path;primaryKey;<-:create" json:"path"`
+	Index     uint        `gorm:"column:index;primaryKey;<-:create" json:"index"`
+	Path      string      `gorm:"column:path;not null;<-:create" json:"path"`
 	Extension NullString  `gorm:"column:extension;<-:false" json:"extension"`
 	Size      uint        `gorm:"column:size;not null" json:"size"`
 	CreatedAt time.Time   `gorm:"column:created_at;not null;<-:create" json:"createdAt"`
