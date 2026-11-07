@@ -37,6 +37,10 @@
       "const": "attach_local_content_by_search",
       "description": "Attempt to attach local content with a search on the torrent name"
     },
+    "action__attach_matchlab_content_by_search": {
+      "const": "attach_matchlab_content_by_search",
+      "description": "Identify a release with MatchLab, then retrieve metadata by verified IMDb ID from TMDB"
+    },
     "action__attach_tmdb_content_by_id": {
       "const": "attach_tmdb_content_by_id",
       "description": "Use the torrent hint to attach content from the TMDB API by ID"
@@ -163,6 +167,9 @@
         },
         {
           "$ref": "#/definitions/action__attach_local_content_by_search"
+        },
+        {
+          "$ref": "#/definitions/action__attach_matchlab_content_by_search"
         },
         {
           "$ref": "#/definitions/action__attach_tmdb_content_by_id"

@@ -5,16 +5,21 @@ import (
 
 	"github.com/bitmagnet-io/bitmagnet/internal/database/search"
 	"github.com/bitmagnet-io/bitmagnet/internal/lazy"
+	"github.com/bitmagnet-io/bitmagnet/internal/matchlab"
 	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 type Params struct {
 	fx.In
-	Config     Config
-	TmdbConfig tmdb.Config
-	Search     lazy.Lazy[search.Search]
-	TmdbClient lazy.Lazy[tmdb.Client]
+	Config         Config
+	TmdbConfig     tmdb.Config
+	MatchlabConfig matchlab.Config
+	MatchlabClient lazy.Lazy[matchlab.Client]
+	Logger         *zap.SugaredLogger
+	Search         lazy.Lazy[search.Search]
+	TmdbClient     lazy.Lazy[tmdb.Client]
 }
 
 type Result struct {
@@ -26,6 +31,10 @@ type Result struct {
 
 func New(params Params) Result {
 	lc := lazy.New(func() (Compiler, error) {
+		matchlabAPI, matchlabErr := params.MatchlabClient.Get()
+		if matchlabErr != nil {
+			return nil, matchlabErr
+		}
 		s, err := params.Search.Get()
 		if err != nil {
 			return nil, err
@@ -46,12 +55,15 @@ func New(params Params) Result {
 					search:    localSearch{s},
 					semaphore: make(chan struct{}, 1),
 				},
-				tmdbClient: tmdbClient,
+				tmdbClient:     tmdbClient,
+				matchlabClient: matchlabAPI,
+				tmdbEnabled:    params.TmdbConfig.Enabled,
+				logger:         params.Logger,
 			},
 		}, nil
 	})
 	lsrc := lazy.New[Source](func() (Source, error) {
-		src, err := newSourceProvider(params.Config, params.TmdbConfig).source()
+		src, err := newSourceProvider(params.Config, params.TmdbConfig, params.MatchlabConfig).source()
 		if err != nil {
 			return Source{}, err
 		}

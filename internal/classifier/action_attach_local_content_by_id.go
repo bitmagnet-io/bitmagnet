@@ -26,6 +26,12 @@ func (attachLocalContentByIDAction) compileAction(ctx compilerContext) (action, 
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result
+			// Also block unverified movie/TV hints in custom workflows.
+			if ctx.matchlabClient != nil &&
+				(ctx.torrent.Hint.ContentType == model.ContentTypeMovie ||
+					ctx.torrent.Hint.ContentType == model.ContentTypeTvShow) {
+				return cl, classification.ErrUnmatched
+			}
 			if ctx.torrent.Hint.IsNil() || !ctx.torrent.Hint.ContentSource.Valid {
 				return cl, classification.ErrUnmatched
 			}

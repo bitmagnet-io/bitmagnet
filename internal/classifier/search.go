@@ -28,20 +28,17 @@ func (l localSearch) ContentByID(ctx context.Context, ref model.ContentRef) (mod
 		search.ContentDefaultHydrate(),
 		query.Limit(1),
 	}
-	if ref.Source == "tmdb" {
-		options = append(options, query.Where(
-			search.ContentCanonicalIdentifierCriteria(model.ContentRef{
-				Source: ref.Source,
-				ID:     ref.ID,
-			}),
-		))
-	} else {
-		options = append(options, query.Where(
-			search.ContentAlternativeIdentifierCriteria(model.ContentRef{
-				Source: ref.Source,
-				ID:     ref.ID,
-			}),
-		))
+	identifier := model.ContentRef{Source: ref.Source, ID: ref.ID}
+	switch ref.Source {
+	case model.SourceTmdb:
+		// Preserve the original fast canonical-ID lookup for TMDB.
+		options = append(options, query.Where(search.ContentCanonicalIdentifierCriteria(identifier)))
+	case model.SourceImdb:
+		// MatchLab writes canonical IMDb IDs, while older TMDB records
+		// reference IMDb through an alternate identifier. Accept both.
+		options = append(options, query.Where(search.ContentIdentifierCriteria(identifier)))
+	default:
+		options = append(options, query.Where(search.ContentAlternativeIdentifierCriteria(identifier)))
 	}
 
 	result, err := l.Content(ctx, options...)

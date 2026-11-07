@@ -122,6 +122,7 @@
     "component": "组件",
     "components": {
       "dht": "DHT",
+      "matchlab": "MatchLab",
       "postgres": "Postgres",
       "tmdb": "TMDB"
     },
