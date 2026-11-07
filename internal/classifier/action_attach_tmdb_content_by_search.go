@@ -26,6 +26,11 @@ func (attachTmdbContentBySearchAction) compileAction(ctx compilerContext) (actio
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result
+			// MatchLab is authoritative even for custom workflows that invoke
+			// a title-search action without checking the standard provider flags.
+			if ctx.matchlabClient != nil {
+				return cl, classification.ErrUnmatched
+			}
 			if !cl.BaseTitle.Valid {
 				return cl, classification.ErrUnmatched
 			}

@@ -84,6 +84,18 @@ Environment variables can be used to configure simple scalar types (strings, num
 
 It's recommended that you run **bitmagnet** behind a VPN. If you're using Docker then [gluetun](https://github.com/qdm12/gluetun-wiki) is a good solution for this, although the networking settings can be tricky. The [example docker-compose file](https://github.com/bitmagnet-io/bitmagnet/blob/main/docker-compose.yml) demonstrates this.
 
+## Optional MatchLab IMDb matching
+
+Bitmagnet can use the separate [MatchLab API](https://github.com/Dizzybog/MatchLab) for torrent-to-IMDb identity matching. This integration is **off by default** and does not change the native classifier when its URL is absent.
+
+- `matchlab.url` / `MATCHLAB_URL`: MatchLab API base URL; empty (default) disables the integration.
+- `matchlab.timeout_seconds` / `MATCHLAB_TIMEOUT_SECONDS`: per-request timeout (default `8` seconds; allowed 1–120).
+- `matchlab.max_concurrent` / `MATCHLAB_MAX_CONCURRENT`: maximum concurrent requests (default `4`; allowed 1–64).
+
+When enabled, MatchLab verifies the IMDb identity and any episode coordinates; TMDB is used only for enrichment by that verified IMDb ID rather than title matching. The existing dashboard Health and queue workflows report readiness and retry failed requests. Switching the URL off restores the normal native/TMDB matching path; historical rows are not automatically reclassified.
+
+See the [MatchLab integration guide]({% link setup/matchlab.md %}) for Docker/network setup, configuration examples, matching behavior, and safe reprocessing.
+
 ## Obtaining a TMDB API Key
 
 {: .highlight }

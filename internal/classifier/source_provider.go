@@ -4,19 +4,21 @@ import (
 	"os"
 
 	"github.com/adrg/xdg"
+	"github.com/bitmagnet-io/bitmagnet/internal/matchlab"
 	"github.com/bitmagnet-io/bitmagnet/internal/tmdb"
 	"gopkg.in/yaml.v3"
 )
 
-func newSourceProvider(config Config, tmdbConfig tmdb.Config) sourceProvider {
+func newSourceProvider(config Config, tmdbConfig tmdb.Config, matchlabConfig matchlab.Config) sourceProvider {
 	return mergeSourceProvider{
 		providers: []sourceProvider{
 			yamlSourceProvider{rawSourceProvider: coreSourceProvider{}},
 			yamlSourceProvider{rawSourceProvider: xdgSourceProvider{}},
 			yamlSourceProvider{rawSourceProvider: cwdSourceProvider{}},
 			configSourceProvider{
-				config:      config,
-				tmdbEnabled: tmdbConfig.Enabled,
+				config:          config,
+				tmdbEnabled:     tmdbConfig.Enabled,
+				matchlabEnabled: matchlabConfig.Enabled(),
 			},
 		},
 	}
@@ -117,8 +119,9 @@ func (cwdSourceProvider) source() ([]byte, error) {
 }
 
 type configSourceProvider struct {
-	config      Config
-	tmdbEnabled bool
+	config          Config
+	tmdbEnabled     bool
+	matchlabEnabled bool
 }
 
 func (c configSourceProvider) source() (Source, error) {
@@ -131,6 +134,7 @@ func (c configSourceProvider) source() (Source, error) {
 		fs["delete_xxx"] = true
 	}
 
+	fs["matchlab_enabled"] = c.matchlabEnabled
 	if !c.tmdbEnabled {
 		fs["tmdb_enabled"] = false
 	}

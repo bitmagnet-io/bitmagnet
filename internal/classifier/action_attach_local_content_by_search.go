@@ -25,6 +25,11 @@ func (attachLocalContentBySearchAction) compileAction(ctx compilerContext) (acti
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result
+			// MatchLab is authoritative even for custom workflows that invoke
+			// a title-search action without checking the standard provider flags.
+			if ctx.matchlabClient != nil {
+				return cl, classification.ErrUnmatched
+			}
 			if !cl.ContentType.Valid || !cl.BaseTitle.Valid {
 				return cl, classification.ErrUnmatched
 			}

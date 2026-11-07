@@ -155,7 +155,8 @@ type serverHandler struct {
 }
 
 func (h *serverHandler) start(ctx context.Context) {
-	checkTicker := time.NewTicker(1)
+	checkTicker := time.NewTicker(time.Second)
+	defer checkTicker.Stop()
 
 	for {
 		select {
@@ -183,7 +184,7 @@ func (h *serverHandler) start(ctx context.Context) {
 				// if a job was found, we should check straight away for another job,
 				// otherwise we wait for the check interval
 				if err == nil && jobID != "" {
-					checkTicker.Reset(1)
+					checkTicker.Reset(time.Second)
 				}
 			}()
 		}

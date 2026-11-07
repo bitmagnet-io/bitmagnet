@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: cachix/install-nix-action@v26
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
@@ -26,8 +28,10 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
-          version: v2.1.6
-          args: --timeout=10m
+          # v2.1.6 was built against Go 1.24 and panics on Go 1.25 sources.
+          version: latest
+          # Check newly introduced issues without enforcing deprecated wsl across the legacy tree.
+          args: --timeout=10m --new-from-rev=origin/main --disable=wsl
 
   test:
     # The Ubuntu image has been downgraded and pinned for the `test` and `generated` jobs as they are broken on 24.04

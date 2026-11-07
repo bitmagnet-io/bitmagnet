@@ -28,6 +28,12 @@ func (attachTMDBContentByIDAction) compileAction(ctx compilerContext) (action, e
 	return action{
 		run: func(ctx executionContext) (classification.Result, error) {
 			cl := ctx.result
+			// A movie/TV hint is not a MatchLab-verified identity.
+			if ctx.matchlabClient != nil &&
+				(ctx.torrent.Hint.ContentType == model.ContentTypeMovie ||
+					ctx.torrent.Hint.ContentType == model.ContentTypeTvShow) {
+				return cl, classification.ErrUnmatched
+			}
 			var ref model.ContentRef
 			maybeRef := ctx.torrent.Hint.ContentRef()
 			if !maybeRef.Valid {
