@@ -147,6 +147,38 @@
       "const": "unmatched",
       "description": "Return a unmatched error for the current torrent"
     },
+    "action__webhook": {
+      "additionalProperties": false,
+      "description": "Send the torrent and the current classification to an external classifier service via HTTP POST",
+      "properties": {
+        "webhook": {
+          "additionalProperties": false,
+          "properties": {
+            "headers": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "timeout": {
+              "type": "string"
+            },
+            "url": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "webhook"
+      ],
+      "type": "object"
+    },
     "action_multi": {
       "items": {
         "$ref": "#/definitions/action_single"
@@ -193,6 +225,9 @@
         },
         {
           "$ref": "#/definitions/action__set_content_type"
+        },
+        {
+          "$ref": "#/definitions/action__webhook"
         }
       ]
     },

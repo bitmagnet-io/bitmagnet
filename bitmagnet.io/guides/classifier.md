@@ -132,6 +132,71 @@ find_match:
       else_action: unmatched
 ```
 
+### The `webhook` action
+
+The `webhook` action delegates classification of the current torrent to an external classifier service. It sends the torrent and the current classification result to a configurable HTTP endpoint via `POST`, and expects the service to respond with a classification. This lets you run custom classification logic (e.g. a machine-learning model, a custom rules engine, or an integration with an external metadata API) without modifying bitmagnet.
+
+```yaml
+webhook:
+  url: "https://classifier.example.com/classify"
+  headers:
+    Authorization: "Bearer <token>"
+  timeout: "10s"
+```
+
+Configuration options:
+
+- `url` (required): the HTTP endpoint to `POST` the classification request to.
+- `headers` (optional): additional HTTP headers to send with the request (e.g. authentication).
+- `timeout` (optional): the request timeout, as a Go duration string (e.g. `"10s"`). Defaults to `10s`.
+
+The request body is a JSON object containing the torrent and the current classification result:
+
+```json
+{
+  "torrent": {
+    "name": "The Webhook Movie (2000).mkv",
+    "baseName": "The Webhook Movie (2000)",
+    "size": 1000000000,
+    "filesStatus": "single",
+    "files": [
+      { "path": "The Webhook Movie (2000).mkv", "extension": "mkv", "fileType": "video", "size": 1000000000 }
+    ]
+  },
+  "classification": {
+    "contentType": "unknown",
+    "baseTitle": null,
+    "date": null,
+    "languages": [],
+    "content": null
+  }
+}
+```
+
+The service should respond with a JSON object describing the classification. All fields are optional and are merged into the current result:
+
+```json
+{
+  "matched": true,
+  "contentType": "movie",
+  "baseTitle": "The Webhook Movie",
+  "year": 2000,
+  "languages": ["en"],
+  "content": {
+    "source": "webhook",
+    "id": "456",
+    "title": "The Webhook Movie",
+    "type": "movie"
+  }
+}
+```
+
+- If the response contains `"delete": true`, the torrent is deleted (a `delete` error is returned).
+- If the response contains `"matched": false` (and no `delete`), an `unmatched` error is returned.
+- Any non-`2xx` HTTP status, or a response that cannot be parsed, is treated as an unhandled error and terminates classification.
+- The `year` field sets only the year of the release date; month and day are left unset.
+- A `2xx` response with an empty body is treated as a successful match with no changes.
+
 For a full list of available actions, please refer to [the JSON schema](https://bitmagnet.io/schemas/classifier-0.1.json).
 
 ## Conditions
