@@ -3,7 +3,6 @@ package processor
 import (
 	"context"
 	"errors"
-	"fmt"
 	"sync"
 
 	"github.com/bitmagnet-io/bitmagnet/internal/blocking"
@@ -28,14 +27,6 @@ type processor struct {
 	runner          classifier.Runner
 	dao             *dao.Query
 	blockingManager blocking.Manager
-}
-
-type MissingHashesError struct {
-	InfoHashes []protocol.ID
-}
-
-func (e MissingHashesError) Error() string {
-	return fmt.Sprintf("missing %d info hashes", len(e.InfoHashes))
 }
 
 func (c processor) Process(ctx context.Context, params MessageParams) error {
@@ -93,12 +84,10 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 
 	tagsToAdd := make(map[protocol.ID]map[string]struct{})
 
-	failedHashes := make([]protocol.ID, 0, len(searchResult.MissingInfoHashes))
-	failedHashes = append(failedHashes, searchResult.MissingInfoHashes...)
-
-	if len(failedHashes) > 0 {
-		errs = append(errs, MissingHashesError{InfoHashes: failedHashes})
-	}
+	// Hashes that failed classification (as opposed to missing from the
+	// torrents table). Missing hashes are dropped: the torrents were deleted
+	// between the batch scan and this job running, so retrying them is pointless.
+	classifyFailedHashes := make([]protocol.ID, 0)
 
 	for _, torrent := range searchResult.Torrents {
 		wg.Add(1)
@@ -134,7 +123,7 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 				if errors.Is(classifyErr, classification.ErrDeleteTorrent) {
 					infoHashesToDelete = append(infoHashesToDelete, torrent.InfoHash)
 				} else {
-					failedHashes = append(failedHashes, torrent.InfoHash)
+					classifyFailedHashes = append(classifyFailedHashes, torrent.InfoHash)
 					errs = append(errs, classifyErr)
 				}
 			} else {
@@ -158,13 +147,22 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 
 	wg.Wait()
 
-	if len(failedHashes) > 0 {
-		if len(tcs) == 0 {
+	if len(tcs) == 0 {
+		if len(classifyFailedHashes) > 0 {
 			return errors.Join(errs...)
 		}
+		// Only missing hashes — the torrents were deleted between the batch
+		// scan and this job running, so there's nothing to do: terminal no-op
+		// instead of a retrying failure.
+		return nil
+	}
 
+	// Some classifications succeeded. Republish only the classification-failed
+	// hashes; missing hashes are dropped (the torrents were deleted between the
+	// batch scan and this job running), so they don't create a retrying poison job.
+	if len(classifyFailedHashes) > 0 {
 		republishJob, republishJobErr := NewQueueJob(MessageParams{
-			InfoHashes:         failedHashes,
+			InfoHashes:         classifyFailedHashes,
 			ClassifyMode:       params.ClassifyMode,
 			ClassifierWorkflow: workflowName,
 			ClassifierFlags:    params.ClassifierFlags,
@@ -178,10 +176,6 @@ func (c processor) Process(ctx context.Context, params MessageParams) error {
 		}).Create(&republishJob); err != nil {
 			return errors.Join(append(errs, err)...)
 		}
-	}
-
-	if len(tcs) == 0 {
-		return nil
 	}
 
 	return c.persist(ctx, persistPayload{
